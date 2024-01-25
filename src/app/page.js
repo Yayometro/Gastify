@@ -1,113 +1,167 @@
 import Image from 'next/image'
+import Link from 'next/link'
+
 
 export default function Home() {
+  
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+      <div className="bg-stone-50 flex flex-col items-center py-12">
+      <div className="w-full max-w-[1218px] mt-36 max-md:max-w-full max-md:mt-10">
+        <div className="gap-5 flex max-md:flex-col max-md:items-stretch max-md:gap-0">
+          <div className="flex flex-col items-stretch w-[39%] max-md:w-full max-md:ml-0">
+            <div className="flex flex-col px-5 max-md:max-w-full max-md:mt-10">
+              <div className="items-stretch mix-blend-multiply bg-purple-50 flex gap-3 pl-1 pr-2.5 py-1 rounded-2xl self-start">
+                <div className="text-violet-700 text-center text-sm font-medium leading-5 whitespace-nowrap items-stretch bg-white aspect-[3.0833333333333335] justify-center px-2.5 py-0.5 rounded-2xl">
+                  Express
+                </div>
+                <div className="items-stretch self-center flex gap-1 my-auto">
+                  <div className="text-violet-700 text-sm font-medium leading-5 grow whitespace-nowrap">
+                    Subscribe now
+                  </div>
+
+                  {/* <img
+                    loading="lazy"
+                    src="/Laptop.png"
+                    className="aspect-square object-contain object-center w-4 overflow-hidden self-center shrink-0 max-w-full my-auto"
+                  /> */}
+                </div>
+              </div>
+              <div className="text-zinc-900 text-5xl font-bold tracking-tighter self-stretch mt-7 max-md:max-w-full max-md:text-4xl">
+                <span className="font-medium leading-[60.5113639831543px] text-violet-600">
+                  Discover
+                </span>
+                <span className="font-medium"> your spending habits in </span>
+                <span className="font-medium text-violet-600">1 min</span>
+              </div>
+              <div className="text-zinc-700 text-xl leading-8 self-stretch mt-9 max-md:max-w-full">
+                Register your expenses, import your Bank Statements directly
+                using Excel or XLM files
+              </div>
+              <div className="self-stretch flex items-stretch justify-between gap-5 mt-9 max-md:max-w-full max-md:flex-wrap">
+                <Link 
+                    href="/login"
+                    className="text-zinc-700 text-base font-bold leading-8 uppercase items-stretch border-[color:var(--Alert-Content-Header,#1B1C20)] bg-white grow justify-center px-6 py-4 rounded-xl border-[0.628px] border-solid max-md:px-5">
+                  <p>Login 🤓</p>
+                </Link>
+                <Link 
+                    href="/register"
+                    className="text-zinc-700 text-base font-bold leading-8 uppercase items-stretch border-[color:var(--Alert-Content-Header,#1B1C20)] bg-white grow justify-center px-6 py-4 rounded-xl border-[0.628px] border-solid max-md:px-5">
+                  RegistER ME ❤️
+                </Link>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col items-stretch w-[61%] ml-5 max-md:w-full max-md:ml-0">
+            <img
+              loading="lazy"
+              src="/Laptop.png"
+              className="aspect-[1.5] object-contain object-center w-full shadow-2xl overflow-hidden grow mt-1.5 max-md:max-w-full max-md:mt-10"
             />
-          </a>
+            {/* <Image 
+              src="/Laptop.png"
+              width="100"
+              height="100"
+              alt="chip"
+              className="aspect-[1.5] object-contain object-center w-full shadow-2xl overflow-hidden grow mt-1.5 max-md:max-w-full max-md:mt-10"
+            /> */}
+          </div>
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className="self-stretch mr-9 mt-28 max-md:max-w-full max-md:mr-2.5 max-md:mt-10">
+        <div className="gap-5 flex max-md:flex-col max-md:items-stretch max-md:gap-0">
+          <div className="flex flex-col items-stretch w-[54%] max-md:w-full max-md:ml-0">
+            <img
+              loading="lazy"
+              srcSet="https://cdn.builder.io/api/v1/image/assets/TEMP/cac9e3a71b396a6472a3e5f806d1e5bbccbd5400a3c79f883104106b78d34fb1?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=100 100w, https://cdn.builder.io/api/v1/image/assets/TEMP/cac9e3a71b396a6472a3e5f806d1e5bbccbd5400a3c79f883104106b78d34fb1?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=200 200w, https://cdn.builder.io/api/v1/image/assets/TEMP/cac9e3a71b396a6472a3e5f806d1e5bbccbd5400a3c79f883104106b78d34fb1?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=400 400w, https://cdn.builder.io/api/v1/image/assets/TEMP/cac9e3a71b396a6472a3e5f806d1e5bbccbd5400a3c79f883104106b78d34fb1?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=800 800w, https://cdn.builder.io/api/v1/image/assets/TEMP/cac9e3a71b396a6472a3e5f806d1e5bbccbd5400a3c79f883104106b78d34fb1?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=1200 1200w, https://cdn.builder.io/api/v1/image/assets/TEMP/cac9e3a71b396a6472a3e5f806d1e5bbccbd5400a3c79f883104106b78d34fb1?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=1600 1600w, https://cdn.builder.io/api/v1/image/assets/TEMP/cac9e3a71b396a6472a3e5f806d1e5bbccbd5400a3c79f883104106b78d34fb1?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=2000 2000w, https://cdn.builder.io/api/v1/image/assets/TEMP/cac9e3a71b396a6472a3e5f806d1e5bbccbd5400a3c79f883104106b78d34fb1?apiKey=8ed03c2ea308415ab0f4baf5adb83802&"
+              className="aspect-[1.07] object-contain object-center w-full overflow-hidden grow max-md:max-w-full max-md:mt-10"
+            />
+          </div>
+          <div className="flex flex-col items-stretch w-[46%] ml-5 max-md:w-full max-md:ml-0">
+            <div className="flex flex-col items-stretch my-auto max-md:max-w-full max-md:mt-10">
+              <div className="text-zinc-900 text-4xl font-bold tracking-tighter max-md:max-w-full">
+                <span className="font-medium leading-[48.409088134765625px] text-violet-600">
+                  Import
+                </span>
+                <span className="font-medium"> your </span>
+                <span className="font-medium text-violet-600">
+                  Bank Statements
+                </span>
+                <span className="font-medium">
+                  {" "}
+                  directly using Excel or XML
+                </span>
+              </div>
+              <div className="text-zinc-700 text-xl leading-8 mt-9 max-md:max-w-full">
+                Forget about register manually all your bills and incomes. Just
+                download your bank statements and automatize the power of
+                Gastify.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <div className="self-stretch flex w-full flex-col items-stretch mt-32 mb-11 px-9 max-md:max-w-full max-md:my-10 max-md:px-5">
+        <div className="max-md:max-w-full">
+          <div className="gap-5 flex max-md:flex-col max-md:items-stretch max-md:gap-0">
+            <div className="flex flex-col items-stretch w-[56%] max-md:w-full max-md:ml-0">
+              <img
+                loading="lazy"
+                srcSet="https://cdn.builder.io/api/v1/image/assets/TEMP/72c6265dd7735969e6293eb7d8509368be48c4b84d43f0adbafc855b16aaf34c?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=100 100w, https://cdn.builder.io/api/v1/image/assets/TEMP/72c6265dd7735969e6293eb7d8509368be48c4b84d43f0adbafc855b16aaf34c?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=200 200w, https://cdn.builder.io/api/v1/image/assets/TEMP/72c6265dd7735969e6293eb7d8509368be48c4b84d43f0adbafc855b16aaf34c?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=400 400w, https://cdn.builder.io/api/v1/image/assets/TEMP/72c6265dd7735969e6293eb7d8509368be48c4b84d43f0adbafc855b16aaf34c?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=800 800w, https://cdn.builder.io/api/v1/image/assets/TEMP/72c6265dd7735969e6293eb7d8509368be48c4b84d43f0adbafc855b16aaf34c?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=1200 1200w, https://cdn.builder.io/api/v1/image/assets/TEMP/72c6265dd7735969e6293eb7d8509368be48c4b84d43f0adbafc855b16aaf34c?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=1600 1600w, https://cdn.builder.io/api/v1/image/assets/TEMP/72c6265dd7735969e6293eb7d8509368be48c4b84d43f0adbafc855b16aaf34c?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=2000 2000w, https://cdn.builder.io/api/v1/image/assets/TEMP/72c6265dd7735969e6293eb7d8509368be48c4b84d43f0adbafc855b16aaf34c?apiKey=8ed03c2ea308415ab0f4baf5adb83802&"
+                className="aspect-[1.42] object-contain object-center w-full overflow-hidden grow max-md:max-w-full max-md:mt-10"
+              />
+            </div>
+            <div className="flex flex-col items-stretch w-[44%] ml-5 max-md:w-full max-md:ml-0">
+              <div className="flex flex-col items-stretch my-auto max-md:max-w-full max-md:mt-10">
+                <div className="text-zinc-900 text-4xl font-bold tracking-tighter max-md:max-w-full">
+                  <span className="font-medium leading-[48.409088134765625px] text-violet-600">
+                    Get all
+                  </span>
+                  <span className="font-medium"> your </span>
+                  <span className="font-medium text-violet-600">
+                    cash movements{" "}
+                  </span>
+                  <span className="font-medium">
+                    in customizable charts. Don’t forget anything!
+                  </span>
+                </div>
+                <div className="text-zinc-700 text-xl leading-8 mt-7 max-md:max-w-full">
+                  Analyze your cash flow with responsive and dynamic charts.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="self-center w-full max-w-[1276px] mt-24 max-md:max-w-full max-md:mt-10">
+          <div className="gap-5 flex max-md:flex-col max-md:items-stretch max-md:gap-0">
+            <div className="flex flex-col items-stretch w-[44%] max-md:w-full max-md:ml-0">
+              <div className="flex flex-col items-stretch my-auto max-md:max-w-full max-md:mt-10">
+                <div className="text-violet-600 text-5xl font-bold tracking-tighter max-md:max-w-full max-md:text-4xl">
+                  <span className="font-medium leading-[60.5113639831543px] text-violet-600">
+                    Ready to take the control over your finances?
+                  </span>{" "}
+                </div>
+                <div className="text-zinc-700 text-xl leading-8 mt-9 max-md:max-w-full">
+                  In less than a minute you’ll be ready to use the app.
+                  Register!
+                </div>
+                <Link href="/register" 
+                    className="text-zinc-700 text-center text-base font-bold leading-8 uppercase items-stretch border-[color:var(--Alert-Content-Header,#1B1C20)] bg-white justify-center mt-9 px-6 py-4 rounded-xl border-[0.628px] border-solid max-md:max-w-full max-md:px-5">
+                  REGISTER ME ❤️
+                </Link>
+              </div>
+            </div>
+            <div className="flex flex-col items-stretch w-[56%] ml-5 max-md:w-full max-md:ml-0">
+              <img
+                loading="lazy"
+                srcSet="https://cdn.builder.io/api/v1/image/assets/TEMP/b72bcdb2fcb91a5d8ad1672ebda63b3a4d7e935c47ddc87407cdbe597428b76a?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=100 100w, https://cdn.builder.io/api/v1/image/assets/TEMP/b72bcdb2fcb91a5d8ad1672ebda63b3a4d7e935c47ddc87407cdbe597428b76a?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=200 200w, https://cdn.builder.io/api/v1/image/assets/TEMP/b72bcdb2fcb91a5d8ad1672ebda63b3a4d7e935c47ddc87407cdbe597428b76a?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=400 400w, https://cdn.builder.io/api/v1/image/assets/TEMP/b72bcdb2fcb91a5d8ad1672ebda63b3a4d7e935c47ddc87407cdbe597428b76a?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=800 800w, https://cdn.builder.io/api/v1/image/assets/TEMP/b72bcdb2fcb91a5d8ad1672ebda63b3a4d7e935c47ddc87407cdbe597428b76a?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=1200 1200w, https://cdn.builder.io/api/v1/image/assets/TEMP/b72bcdb2fcb91a5d8ad1672ebda63b3a4d7e935c47ddc87407cdbe597428b76a?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=1600 1600w, https://cdn.builder.io/api/v1/image/assets/TEMP/b72bcdb2fcb91a5d8ad1672ebda63b3a4d7e935c47ddc87407cdbe597428b76a?apiKey=8ed03c2ea308415ab0f4baf5adb83802&width=2000 2000w, https://cdn.builder.io/api/v1/image/assets/TEMP/b72bcdb2fcb91a5d8ad1672ebda63b3a4d7e935c47ddc87407cdbe597428b76a?apiKey=8ed03c2ea308415ab0f4baf5adb83802&"
+                className="aspect-[1.17] object-contain object-center w-full overflow-hidden grow max-md:max-w-full max-md:mt-10"
+              />
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
     </main>
   )
 }

@@ -9,15 +9,44 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/charts": "^2.0.3",
+    "@ant-design/plots": "^2.1.6",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.15.3",
+    "@mui/x-date-pickers": "^6.18.7",
+    "@nivo/bar": "^0.84.0",
+    "@nivo/circle-packing": "^0.84.0",
+    "@nivo/core": "^0.84.0",
+    "@nivo/sunburst": "^0.84.0",
+    "@reduxjs/toolkit": "^2.0.1",
+    "@tanstack/react-table": "^8.11.2",
+    "animate.css": "^4.1.1",
+    "antd": "^5.12.8",
+    "axios": "^1.6.2",
+    "bcryptjs": "^2.4.3",
+    "currency-formatter": "^1.5.9",
+    "dayjs": "^1.11.10",
+    "jsonwebtoken": "^9.0.2",
+    "magic.css": "^1.4.8",
+    "mongoose": "^8.0.3",
+    "next": "14.0.3",
+    "next-auth": "^4.24.5",
+    "next-redux-wrapper": "^8.1.0",
+    "randomcolor": "^0.6.2",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.0.3"
+    "react-icons": "^4.12.0",
+    "react-redux": "^9.0.4",
+    "react-toastify": "^10.0.3",
+    "redux-thunk": "^3.1.0",
+    "utc": "^0.1.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.1",
-    "postcss": "^8",
-    "tailwindcss": "^3.3.0",
     "eslint": "^8",
-    "eslint-config-next": "14.0.3"
+    "eslint-config-next": "14.0.3",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0"
   }
 }

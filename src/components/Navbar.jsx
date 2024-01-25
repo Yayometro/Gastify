@@ -1,0 +1,126 @@
+"use client";
+
+import React, { useState } from "react";
+import { signOut } from "next-auth/react"; //only ones need it
+import { useSession } from "next-auth/react"; //too
+import Link from "next/link";
+import Image from "next/image";
+import "animate.css";
+import "@/components/animations.css";
+
+import { IoIosArrowUp } from "react-icons/io";
+import { FaMoneyBillTransfer } from "react-icons/fa6";
+import { FaWallet } from "react-icons/fa6";
+import { MdAutoGraph } from "react-icons/md";
+import { IoAddCircle } from "react-icons/io5";
+import { MdAccountBalance } from "react-icons/md";
+import { IoPricetags } from "react-icons/io5";
+import { IoMdExit } from "react-icons/io";
+
+import "@/components/NavbarStyle.css";
+
+function Navbar({ sesion }) {
+  const [toggleNav, setToggleNav] = useState(false);
+  //   console.log(sesion);
+  const handleToggleNav = () => {
+    setToggleNav(!toggleNav);
+  };
+  return (
+    <nav className="navbar w-full fixed flex flex-col items-center justify-center bottom-0 md:w-fit md:fixed md:top-0 z-[1000] ">
+      <ul
+        className={`nav-full pt-8 pb-12 -mb-6 w-[93%] flex flex-col items-center justify-center gap-4 bg-white z-[1001] rounded-t-[50px] text-center text-purple-900 md:w-fit md:flex md:h-[95vh] md:inset-0  md:mb-0 md:rounded-3xl md:ml-2 md:justify-between shadow-xl ${
+          toggleNav ? "" : "hidden"
+        }`}
+      >
+        <li className="flex flex-row items-center justify-center micro-pulse">
+          <Link href="/dashboard/profile">
+            <Image
+              className="rounded-full border-[1px] border-purple-800 m-auto w-13  sm:w-[60px]"
+              src={sesion?.user?.image}
+              alt={`${sesion.user.name} profile account`}
+              width={100}
+              height={50}
+              objectPosition="center"
+            />
+            <p className="text-[10px] sm:text-[8px]">{sesion?.user?.name}</p>
+            <p className="hidden hoverTooltip">Profile</p>
+          </Link>
+        </li>
+        <li className="micro-pulse">
+          <Link href="/dashboard/movements">
+            <FaMoneyBillTransfer size={40} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Movements</p>
+          </Link>
+        </li>
+        <li className="micro-pulse">
+          <Link href="/dashboard/wallet">
+            <FaWallet size={40} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Wallet</p>
+          </Link>
+        </li>
+        <li className="micro-pulse">
+          <Link href="/dashboard/accounts">
+            <MdAccountBalance size={40} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Accounts</p>
+          </Link>
+        </li>
+        <li className="text-purple-600 add-more hidden sm:flex micro-pulse">
+          <Link href={`/dashboard/add-movement`}>
+            <IoAddCircle size={70} />
+            <p className="hidden hoverTooltip">Add a transaction</p>
+          </Link>
+        </li>
+        <li className="micro-pulse">
+          <Link href="/dashboard/cashflow">
+            <MdAutoGraph size={40} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Cash Flow</p>
+          </Link>
+        </li>
+        <li className="micro-pulse">
+          <Link href="/dashboard/categories">
+            <IoPricetags size={40} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Categories</p>
+          </Link>
+        </li>
+        <li className=" flash">
+          <button onClick={() => signOut()}>
+            <IoMdExit size={40} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Sign Out</p>
+          </button>
+        </li>
+      </ul>
+      <ul className="bg-white mb-3 n-mobile w-[93%] flex flex-row justify-between py-2 px-3 items-center rounded-full shadow-xl z-[1002] fadeInUp md:hidden">
+        <li className="nb-li-btn">
+          <button onClick={handleToggleNav}>
+            <IoIosArrowUp size={20} />
+          </button>
+        </li>
+        <li className="">
+          <Link href={`/dashboard/movements`}>
+            <FaMoneyBillTransfer size={30} />
+          </Link>
+        </li>
+        <li className="li-add-more ">
+          <Link href={`/dashboard/add-movement`}>
+            <IoAddCircle size={50} />
+          </Link>
+        </li>
+        <li className="">
+          <Link href={`/dashboard/wallet`}>
+            <FaWallet size={25} />
+          </Link>
+        </li>
+        <li className="">
+          <Link href="/dashboard/cashflow">
+            <MdAutoGraph size={28} />
+          </Link>
+        </li>
+      </ul>
+      {/* <ul className="nav-desktop hidden sm:flex">
+        li
+      </ul> */}
+    </nav>
+  );
+}
+
+export default Navbar;

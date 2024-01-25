@@ -1,0 +1,366 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import CategoIcon from "./multiUsedComp/CategoIcon";
+import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
+
+import "@/components/animations.css";
+import "@/components/multiUsedComp/css/muliUsed.css";
+
+import MultiCreditCard from "./multiUsedComp/MultiCreditCard";
+import Category from "./multiUsedComp/Category";
+import Movements from "./multiUsedComp/Movements";
+import BudgetCont from "./multiUsedComp/BudgetCont";
+//REDUX
+import { useDispatch, useSelector } from "react-redux";
+import { setGeneralData } from "@/lib/features/loadGeneralDataSlice";
+import { setUser } from "@/lib/features/userSlice";
+import { setWallet } from "@/lib/features/walletSlice";
+import { setAccounts } from "@/lib/features/accountsSlice";
+import { setCategories } from "@/lib/features/categoriesSlice";
+import { setSubCategories } from "@/lib/features/subCategorySlice";
+import { setTags } from "@/lib/features/tagsSlice";
+import { setTransacctions } from "@/lib/features/transacctionsSlice";
+//
+import ResumeTabsTrans from "./multiUsedComp/ResumeTabsTrans";
+import {
+  MdKeyboardDoubleArrowUp,
+  MdKeyboardDoubleArrowDown,
+} from "react-icons/md";
+import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
+import RangePicker from "./multiUsedComp/RangePicker";
+import dayjs from "dayjs";
+import { Tooltip } from "antd";
+import Top3 from "./multiUsedComp/Top3";
+import currencyFormatter from "currency-formatter";
+import Top3ContComp from "./multiUsedComp/Top3ContComp";
+
+function Wallet({ dataServ, session }) {
+  // const [generateData, { data: dataFromMutation, error, isLoading }] = useGetAllDataMutation();
+  const [sed, setSed] = useState([]);
+  const [totalDataFromServer, setTotalDataFromServer] = useState({});
+  const [user, setUser] = useState([]);
+  const [wallet, setWallet] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [budgets, setBudgets] = useState([]);
+  const [transactions, setTransacctions] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  // DATES
+  let [selectedDuration, setSelectedDuration] = useState(30);
+  let [startDate, setStartDate] = useState(null);
+  let [endDate, setEndDate] = useState(null);
+  //TRANSACTIONS and TYPES OF
+  let [allTransactions, setAllTransacctions] = useState([]);
+  let [allBills, setAllBills] = useState([]);
+  let [allIncomes, setAllIncomes] = useState([]);
+  let [totalAmountBalance, setTotalAmountBalance] = useState(0);
+  let [totalBill, setTotalBill] = useState(0);
+  let [totalIncome, setTotalIncome] = useState(0);
+
+  const dispatch = useDispatch();
+  const seeGeneralData = useSelector((state) => state.generalDataReducer);
+  console.log(seeGeneralData);
+  // const seeUser = useSelector((state) => state.userReducer);
+  // console.log(seeUser);
+
+  //SET in REDUX
+  useEffect(() => {
+    if (dataServ) {
+      console.log(dataServ);
+      setTotalDataFromServer(dataServ);
+      //Redux dispatches
+      dispatch(setGeneralData(dataServ));
+      // dispatch(setUser(dataServ))
+      // dispatch(setWallet(dataServ.wallet))
+      // dispatch(setAccounts(dataServ.accounts))
+      // dispatch(setCategories(dataServ.categories))
+      // dispatch(setSubCategories(dataServ.subCategories))
+      // dispatch(setTransacctions(dataServ.transactions))
+    }
+  }, [dataServ]);
+
+  useEffect(() => {
+    if (totalDataFromServer) {
+      console.log(dataServ);
+      setUser(dataServ.user);
+      setWallet(dataServ.wallet);
+      setAccounts(dataServ.accounts);
+      setBudgets(dataServ.budgets);
+      setTransacctions(dataServ.transactions);
+      setCategories(dataServ.categories);
+      setSubCategories(dataServ.subCategories);
+    }
+  }, [totalDataFromServer]);
+
+  useEffect(() => {
+    const today = new Date();
+    const start = new Date(today.setDate(today.getDate() - selectedDuration));
+    setStartDate(start);
+    setEndDate(new Date()); //
+  }, []);
+  useEffect(() => {
+    const today = new Date();
+    const start = new Date(today.setDate(today.getDate() - selectedDuration));
+    setStartDate(start);
+  }, [selectedDuration]);
+
+  useEffect(() => {
+    console.log(user);
+    console.log(wallet);
+    console.log(accounts);
+    console.log(budgets);
+    console.log(transactions);
+    console.log(categories);
+    //DATE
+    let startFilterDate;
+    let endFilterDate;
+    // if(!startDate && !endDate) {
+    //   console.log('Range Date is empty')
+    // };
+    // if(selectedDuration){
+    //   const selectDurationDay = new Date();
+    //   startFilterDate = new Date(
+    //     selectDurationDay.setDate(selectDurationDay.getDate() - selectedDuration)
+    //   );
+    //   endFilterDate = new Date();
+    //   console.log(startFilterDate)
+    //   console.log(endFilterDate)
+    // }
+    if (startDate && endDate) {
+      console.log(startDate);
+      console.log(endDate);
+      startFilterDate = startDate;
+      endFilterDate = endDate;
+    } else {
+      console.log(selectedDuration);
+      const today = new Date();
+      startFilterDate = new Date(
+        today.setDate(today.getDate() - selectedDuration)
+      );
+      endFilterDate = new Date();
+    }
+    console.log(startFilterDate);
+    console.log(endFilterDate);
+    //TRANS
+    if (transactions.length > 0 && wallet) {
+      let total = transactions.filter((tra) => {
+        const transactionDate = new Date(tra.date || tra.createdAt);
+        return (
+          transactionDate >= startFilterDate && transactionDate <= endFilterDate
+        );
+      });
+      // console.log(total)
+      total = total.sort((a, b) => {
+        let dateA = new Date(a.date || a.createdAt);
+        let dateB = new Date(b.date || b.createdAt);
+
+        return dateB - dateA;
+      });
+      // console.log(total)
+      const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
+      const accIncomes = total.filter((bill) => bill.isIncome && !bill.isBill);
+      // let finalAmount = total.filter((tra) => tra.isReadable);
+      // finalAmount = total.reduce((current, tra) => current + tra.amount, 0);
+      // console.log(accBills)
+      // console.log(accIncomes)
+      const finalBill = accBills.reduce(
+        (current, bill) => current + bill.amount,
+        0
+      );
+      const finalIncome = accIncomes.reduce(
+        (current, income) => current + income.amount,
+        0
+      );
+      let finalAmount = finalIncome - finalBill;
+      setAllTransacctions(total);
+      setAllBills(accBills);
+      setAllIncomes(accIncomes);
+      setTotalAmountBalance(finalAmount);
+      setTotalBill(finalBill);
+      setTotalIncome(finalIncome);
+      //
+    }
+  }, [
+    user,
+    wallet,
+    accounts,
+    transactions,
+    categories,
+    selectedDuration,
+    endDate,
+    startDate,
+  ]);
+
+  const handleDurationChange = (event) => {
+    setSelectedDuration(parseInt(event.target.value, 10));
+  };
+  const handleRangeDate = (sDate, eDate) => {
+    console.log(sDate);
+    console.log(eDate);
+    setStartDate(sDate);
+    setEndDate(eDate);
+  };
+
+  return (
+    <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px]">
+      {user && wallet ? (
+        <div className="walllet-header ">
+          <div className="wallet-header pt-5 pb-2 px-3 flex flex-col gap-4 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
+            <div className="w-credentials max-w-[620px]">
+              <h2 className="text-white text-3xl sm:text-6xl font-thin text-center sm:text-start">
+                {wallet.name}
+              </h2>
+              <div
+                className={`text-white flex flex-col text-center items-center justify-center sm:justify-between pt-4 sm:pt-6`}
+              >
+                <div className="expense-header-cont w-full flex flex-row text-center items-center justify-between px-4">
+                  <p className="current-money text-lg font-thin">Incomes:</p>
+                  <div className="flex flex-row gap-4">
+                    <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6 sm:mt-1" />
+                    <p className={`text-xl flash text-green-400`}>
+                      {!totalIncome ? "No amount..." : currencyFormatter.format(totalIncome, {
+                              locale: "en-US",
+                            })}
+                    </p>
+                  </div>
+                </div>
+                <div className="expense-header-cont w-full flex flex-row text-center items-center justify-between px-4">
+                  <p className="current-money text-lg font-thin">Expenses:</p>
+                  <div className="flex flex-row gap-4">
+                    <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6 sm:mt-1" />
+                    <p className={`text-xl flash text-red-400`}>
+                      {!totalBill ? "No amount..." : currencyFormatter.format(totalBill, {
+                              locale: "en-US",
+                            })}
+                    </p>
+                  </div>
+                </div>
+                <div className="balance-header-cont w-full flex flex-row text-center items-center justify-between px-4">
+                  <p className="current-money text-lg font-thin">Balance:</p>
+                  <div className="flex flex-col items-end">
+                    <div className="flex gap-2 ">
+                      {totalAmountBalance < 0 ? (
+                        <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6" />
+                      ) : (
+                        <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7" />
+                      )}
+                      <p
+                        className={`text-2xl flash ${
+                          totalAmountBalance < 0
+                            ? "text-red-400"
+                            : "text-green-400"
+                        }`}
+                      >
+                        {!totalAmountBalance
+                          ? "No amount..."
+                          : currencyFormatter.format(totalAmountBalance, {
+                            locale: "en-US",
+                          })}
+                      </p>
+                    </div>
+                    <p className="text-[10px]  pt-1">
+                      From {dayjs(startDate).format("DD-MM-YYYY")} to{" "}
+                      {dayjs(endDate).format("DD-MM-YYYY")}.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="filters flex items-center justify-center gap-2">
+              <div className=" bg-slate-100 text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] py-[2px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
+                <select
+                  className="bg-transparent appearance-none w-full pr-4"
+                  name="DateSelector"
+                  value={selectedDuration}
+                  onChange={handleDurationChange}
+                >
+                  <option value={2}>Yesterday </option>
+                  <option value={7}>Las week</option>
+                  <option value={15}>Las 15 days</option>
+                  <option value={30}>Last 30 days</option>
+                  <option value={60}>Last 60 days</option>
+                  <option value={90}>Last 90 days</option>
+                </select>
+                <div className="filterIconContainer absolute right-[3px] pointer-events-none">
+                  <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
+                </div>
+              </div>
+              <RangePicker rpDate={handleRangeDate} rpResponse={""} />
+              <Tooltip title="Filter de date by generic filter or selecting a specific range 🤓">
+                <div className="text-white w-[10px]">
+                  <UniversalCategoIcon
+                    type={`${"fa/FaRegQuestionCircle"}`}
+                    siz={15}
+                  />
+                </div>
+              </Tooltip>
+            </div>
+          </div>
+          <div className="content-wallet px-2 bg-stone-100 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px]">
+            <div className="multi-container">
+              <MultiCreditCard
+                acc={accounts}
+                user={user.fullName}
+                trans={transactions}
+                key="MultiCreditCard"
+              />
+            </div>
+            <div className="top-3-general-container">
+              <h1 className="text-center text-black text-2xl font-bold py-4">Top 3 resume</h1>
+              <div className="top-3-modules-cont flex flex-col justify-center items-center gap-2">
+                <Top3ContComp t3ccTransactions={allTransactions} />
+                <Top3ContComp t3ccTransactions={allTransactions} ist3ccCategory={true}/>
+              </div>
+            </div>
+            <div className="resume-transactions-cont-tabs w-full h-full">
+              <ResumeTabsTrans
+                rttTrans={allTransactions}
+              />
+            </div>
+            <div className="TransactionsDetails w-full h-full">
+              <TransDetailsGrandContainer
+                tdgcBills={allBills}
+                tdgcInc={allIncomes}
+              />
+            </div>
+            <div>
+              <div className="asociatedCategories py-3 px-1 flex gap-1 justify-center items-center flex-wrap">
+                {!categories.length > 0 ? (
+                  <div>No categories...</div>
+                ) : (
+                  categories.map((category) => (
+                    <Category
+                      category={category}
+                      key={category._id + String(Math.random(1))}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+            <div className="movements w-full h-full">
+              <Movements
+                movements={allTransactions}
+                incomes={allIncomes}
+                bills={allBills}
+                period={selectedDuration}
+              />
+            </div>
+            <div className="budget">
+              <BudgetCont
+                bWallet={wallet}
+                bBudgets={budgets}
+                bTransactions={transactions}
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <p>Loading data...</p>
+        </div>
+      )}
+    </div>
+  );
+}
+export default Wallet;

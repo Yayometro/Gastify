@@ -1,0 +1,62 @@
+
+
+.edit-animation{
+    animation: shakeY 2s infinite;
+}
+.pulse-animation:hover{
+    animation: pulse;
+    animation-duration: 1s;
+}
+.pulse-animation-short:hover{
+    animation: pulse;
+    animation-duration: .5s;
+}
+.micro-pulse:hover{
+    animation: pulse;
+    animation-duration: .3s;
+}
+.bounceInUp{
+    animation: bounceInUp;
+    animation-duration: 1s;
+}
+.micro-bounceInUp{
+    animation: bounceInUp;
+    animation-duration: .5s;
+}
+.fadeInUp{
+    animation: fadeInUp;
+    animation-duration: 1s;
+}
+.shortFadeInHover:hover{
+    animation: fadeIn;
+    animation-duration: .5s;
+}
+/* .flash{
+    animation: flash;
+    animation-duration: 1s;
+} */
+.flash:hover{
+    animation: flash;
+    animation-duration: 1s;
+}
+.backOutDown-5seg{
+    animation: backOutDown;
+    animation-duration: .5s;
+}
+.bounceOut-5seg{
+    animation: bounceOut;
+    animation-duration: .5s;
+}
+.rotateOut-5seg{
+    animation: rotateOut;
+    animation-duration: .5s;
+}
+.fadeOut-5seg{
+    animation: fadeOut;
+    animation-duration: .5s;
+}
+.rollOut-5seg{
+    animation: rollOut;
+    animation-duration: .5s;
+}
+

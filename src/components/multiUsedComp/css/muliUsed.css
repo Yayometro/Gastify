@@ -1,0 +1,126 @@
+
+.form-trans-edit {
+    
+}
+
+.MuiOutlinedInput-notchedOutline{
+    border: 1px none rgb(176, 23, 176) !important;
+    /* border-radius: 1000px !important;
+    width: 100% !important; */
+}
+
+.label-tfp{
+    font-size: 8px;
+    color: rgb(98, 48, 98);
+    font-weight: 400;
+}
+.form-trans-edit input {
+    width: 100% !important;
+    color: rgb(51, 51, 51);
+    height: 40px;
+    padding: 4px 10px;
+    border: 1px solid rgb(176, 23, 176);
+    border-radius: 1000px;
+
+}
+.form-trans-edit .etm-selector {
+    width: 100%;
+    color: rgb(51, 51, 51);
+    height: 40px;
+    padding: 4px 10px;
+    border: 1px solid rgb(176, 23, 176);
+    border-radius: 1000px;
+
+}
+.form-trans-edit:active{
+    border: 1px solid rgb(231, 33, 231);
+}
+.walllet-bg{
+    background: linear-gradient(0deg, rgba(0,179,255,1) 4%, rgba(187,71,255,1) 35%, rgba(0,98,255,1) 58%, rgba(187,71,255,1) 92%, rgba(0,98,255,1) 100%);
+}
+.ant-date-picker-range{
+    height: 15px;
+    width: 90px;
+    color:rgb(66, 66, 66);
+    border: none;
+    font-size: 10px;
+    position: absolute;
+    top: 0;
+}
+.ant-date-picker-range input{
+    font-size: 10px;
+    color: rgb(88, 88, 88);
+}
+.ant-date-range-encapsulator{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 15px;
+    background: rgb(230, 230, 230);
+    padding: 4px 6px;
+    border-radius: 20px;
+}
+.unit-date-enc{
+    /* border: 1px solid red; */
+    width: 90px;
+    height: 15px;
+    overflow: hidden;
+    position: relative;
+}
+select{
+    appearance: none;
+}
+select:focus {
+    outline: none;
+}
+@media (max-width: 400px) {
+    .pop-date{
+        inset-inline-start: 0px !important;
+        width: 350px !important;
+        padding-right: 100px;
+        overflow: scroll !important;
+    }
+    
+  }
+  @media (min-width: 400px) {
+    /* DATE RANGE PICKER FROM ANT  */
+    .ant-date-picker-range{
+        height: 20px;
+        width: 120px;
+        font-size: 15px;
+    }
+    .ant-date-picker-range input{
+        font-size: 15px;
+    }
+    .ant-date-range-encapsulator{
+        height: 20px;
+        padding: 0px 8px;
+        border-radius: 40px;
+    }
+    .unit-date-enc{
+        /* border: 1px solid red; */
+        width: 120px;
+        height: 20px;
+    }
+  }
+  @media (min-width: 640px) {
+    /* DATE RANGE PICKER FROM ANT  */
+    .ant-date-picker-range{
+        height: 25px;
+        width: 120px;
+        font-size: 15px;
+    }
+    .ant-date-picker-range input{
+        font-size: 15px;
+    }
+    .ant-date-range-encapsulator{
+        height: 25px;
+        padding: 0px 8px;
+        border-radius: 40px;
+    }
+    .unit-date-enc{
+        /* border: 1px solid red; */
+        width: 120px;
+        height: 25px;
+    }
+  }
