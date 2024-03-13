@@ -14,13 +14,16 @@ import BudgetCont from "./multiUsedComp/BudgetCont";
 //REDUX
 import { useDispatch, useSelector } from "react-redux";
 import { setGeneralData } from "@/lib/features/loadGeneralDataSlice";
-import { setUser } from "@/lib/features/userSlice";
-import { setWallet } from "@/lib/features/walletSlice";
-import { setAccounts } from "@/lib/features/accountsSlice";
-import { setCategories } from "@/lib/features/categoriesSlice";
-import { setSubCategories } from "@/lib/features/subCategorySlice";
+import { fetchUser, setUser } from "@/lib/features/userSlice";
+import { fetchWallet, setWallet } from "@/lib/features/walletSlice";
+import { fetchAccounts, setAccounts } from "@/lib/features/accountsSlice";
+import { fetchCategories, setCategories } from "@/lib/features/categoriesSlice";
+import { fetchSubCat, setSubCategories } from "@/lib/features/subCategorySlice";
 import { setTags } from "@/lib/features/tagsSlice";
-import { setTransacctions } from "@/lib/features/transacctionsSlice";
+import {
+  fetchTrans,
+  setTransacctions,
+} from "@/lib/features/transacctionsSlice";
 //
 import ResumeTabsTrans from "./multiUsedComp/ResumeTabsTrans";
 import {
@@ -30,10 +33,11 @@ import {
 import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
 import RangePicker from "./multiUsedComp/RangePicker";
 import dayjs from "dayjs";
-import { Tooltip } from "antd";
+import { Skeleton, Spin, Tooltip } from "antd";
 import Top3 from "./multiUsedComp/Top3";
 import currencyFormatter from "currency-formatter";
 import Top3ContComp from "./multiUsedComp/Top3ContComp";
+import { fetchBudget } from "@/lib/features/budgetSlice";
 
 function Wallet({ dataServ, session }) {
   // const [generateData, { data: dataFromMutation, error, isLoading }] = useGetAllDataMutation();
@@ -57,48 +61,114 @@ function Wallet({ dataServ, session }) {
   let [totalAmountBalance, setTotalAmountBalance] = useState(0);
   let [totalBill, setTotalBill] = useState(0);
   let [totalIncome, setTotalIncome] = useState(0);
-
+  // Redux
   const dispatch = useDispatch();
-  const seeGeneralData = useSelector((state) => state.generalDataReducer);
-  console.log(seeGeneralData);
-  // const seeUser = useSelector((state) => state.userReducer);
-  // console.log(seeUser);
-
-  //SET in REDUX
+  const ccUser = useSelector((state) => state.userReducer);
+  const ccWallet = useSelector((state) => state.walletReducer);
+  const ccAccounts = useSelector((state) => state.accountsReducer);
+  const ccCategories = useSelector((state) => state.categoriesReducer);
+  // const ccSubCategories = useSelector((state) => state.subCategoryReducer);
+  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
+  const ccBudgets = useSelector((state) => state.budgetReducer);
+  //
+  // console.log(ccUser);
+  // console.log(ccWallet);
+  // console.log(ccAccounts);
+  // console.log(ccCategories);
+  // console.log(ccSubCategories);
+  // console.log(ccTransacciones);
+  //
   useEffect(() => {
-    if (dataServ) {
-      console.log(dataServ);
-      setTotalDataFromServer(dataServ);
-      //Redux dispatches
-      dispatch(setGeneralData(dataServ));
-      // dispatch(setUser(dataServ))
-      // dispatch(setWallet(dataServ.wallet))
-      // dispatch(setAccounts(dataServ.accounts))
-      // dispatch(setCategories(dataServ.categories))
-      // dispatch(setSubCategories(dataServ.subCategories))
-      // dispatch(setTransacctions(dataServ.transactions))
+    // console.log(session)
+    // User
+    if (ccUser.status == "idle") {
+      // console.log("first");
+      dispatch(fetchUser(session));
     }
-  }, [dataServ]);
-
-  useEffect(() => {
-    if (totalDataFromServer) {
-      console.log(dataServ);
-      setUser(dataServ.user);
-      setWallet(dataServ.wallet);
-      setAccounts(dataServ.accounts);
-      setBudgets(dataServ.budgets);
-      setTransacctions(dataServ.transactions);
-      setCategories(dataServ.categories);
-      setSubCategories(dataServ.subCategories);
+    // Wallet
+    if (ccWallet.status == "idle") {
+      // console.log("first");
+      dispatch(fetchWallet(session));
     }
-  }, [totalDataFromServer]);
-
-  useEffect(() => {
+    // Account
+    if (ccAccounts.status == "idle") {
+      // console.log("first");
+      dispatch(fetchAccounts(session));
+    }
+    //Categories
+    if (ccCategories.status == "idle") {
+      // console.log("first");
+      dispatch(fetchCategories(session));
+    }
+    // //Sub-categories
+    // if (ccSubCategories.status == "idle") {
+    //   console.log("first");
+    //   dispatch(fetchSubCat(session));
+    // }
+    //Transactions
+    if (ccTransacciones.status == "idle" && session) {
+      // console.log("first");
+      dispatch(fetchTrans(session));
+    }
+    //Budget
+    if (ccBudgets.status == "idle" && session) {
+      // console.log("first");
+      dispatch(fetchBudget(session));
+    }
+    //
     const today = new Date();
     const start = new Date(today.setDate(today.getDate() - selectedDuration));
     setStartDate(start);
     setEndDate(new Date()); //
   }, []);
+
+  useEffect(() => {
+    // User
+    if (ccUser.status == "succeeded") {
+      // console.log("first");
+      setUser(ccUser.data);
+    }
+    if (ccWallet.status == "succeeded") {
+      // console.log("first");
+      setWallet(ccWallet.data);
+    }
+    // Account
+    if (ccAccounts.status == "succeeded") {
+      // console.log("first");
+      setAccounts(ccAccounts.data);
+    }
+    //Categories
+    if (ccCategories.status == "succeeded") {
+      // console.log("first");
+      setCategories(ccCategories.data.user.concat(ccCategories.data.default));
+    }
+    // //Sub-categories
+    // if (ccSubCategories.status == "succeeded") {
+    //   console.log("first");
+    //   setSubCategories(
+    //     ccSubCategories.data?.subCat.concat(ccCategories.data?.default)
+    //   );
+    // }
+    //Transactions
+    if (ccTransacciones.status == "succeeded") {
+      // console.log('first')
+      setTransacctions(ccTransacciones.data);
+    }
+    //Budgets
+    if (ccBudgets.status == "succeeded") {
+      // console.log('first')
+      setBudgets(ccBudgets.data);
+    }
+  }, [
+    ccUser,
+    ccWallet,
+    ccAccounts,
+    ccCategories,
+    // ccSubCategories,
+    ccTransacciones,
+    ccBudgets
+  ]);
+
   useEffect(() => {
     const today = new Date();
     const start = new Date(today.setDate(today.getDate() - selectedDuration));
@@ -106,12 +176,12 @@ function Wallet({ dataServ, session }) {
   }, [selectedDuration]);
 
   useEffect(() => {
-    console.log(user);
-    console.log(wallet);
-    console.log(accounts);
-    console.log(budgets);
-    console.log(transactions);
-    console.log(categories);
+    // console.log(user);
+    // console.log(wallet);
+    // console.log(accounts);
+    // console.log(budgets);
+    // console.log(transactions);
+    // console.log(categories);
     //DATE
     let startFilterDate;
     let endFilterDate;
@@ -128,20 +198,20 @@ function Wallet({ dataServ, session }) {
     //   console.log(endFilterDate)
     // }
     if (startDate && endDate) {
-      console.log(startDate);
-      console.log(endDate);
+      // console.log(startDate);
+      // console.log(endDate);
       startFilterDate = startDate;
       endFilterDate = endDate;
     } else {
-      console.log(selectedDuration);
+      // console.log(selectedDuration);
       const today = new Date();
       startFilterDate = new Date(
         today.setDate(today.getDate() - selectedDuration)
       );
       endFilterDate = new Date();
     }
-    console.log(startFilterDate);
-    console.log(endFilterDate);
+    // console.log(startFilterDate);
+    // console.log(endFilterDate);
     //TRANS
     if (transactions.length > 0 && wallet) {
       let total = transactions.filter((tra) => {
@@ -196,8 +266,8 @@ function Wallet({ dataServ, session }) {
     setSelectedDuration(parseInt(event.target.value, 10));
   };
   const handleRangeDate = (sDate, eDate) => {
-    console.log(sDate);
-    console.log(eDate);
+    // console.log(sDate);
+    // console.log(eDate);
     setStartDate(sDate);
     setEndDate(eDate);
   };
@@ -209,7 +279,11 @@ function Wallet({ dataServ, session }) {
           <div className="wallet-header pt-5 pb-2 px-3 flex flex-col gap-4 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
             <div className="w-credentials max-w-[620px]">
               <h2 className="text-white text-3xl sm:text-6xl font-thin text-center sm:text-start">
-                {wallet.name}
+                {
+                  !user.fullName ? (<Spin size="large"/>) : (
+                    `${user.fullName} `
+                  )
+                } Wallet
               </h2>
               <div
                 className={`text-white flex flex-col text-center items-center justify-center sm:justify-between pt-4 sm:pt-6`}
@@ -219,9 +293,11 @@ function Wallet({ dataServ, session }) {
                   <div className="flex flex-row gap-4">
                     <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6 sm:mt-1" />
                     <p className={`text-xl flash text-green-400`}>
-                      {!totalIncome ? "No amount..." : currencyFormatter.format(totalIncome, {
-                              locale: "en-US",
-                            })}
+                      {!totalIncome
+                        ? "No amount..."
+                        : currencyFormatter.format(totalIncome, {
+                            locale: "en-US",
+                          })}
                     </p>
                   </div>
                 </div>
@@ -230,9 +306,11 @@ function Wallet({ dataServ, session }) {
                   <div className="flex flex-row gap-4">
                     <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6 sm:mt-1" />
                     <p className={`text-xl flash text-red-400`}>
-                      {!totalBill ? "No amount..." : currencyFormatter.format(totalBill, {
-                              locale: "en-US",
-                            })}
+                      {!totalBill
+                        ? "No amount..."
+                        : currencyFormatter.format(totalBill, {
+                            locale: "en-US",
+                          })}
                     </p>
                   </div>
                 </div>
@@ -255,8 +333,8 @@ function Wallet({ dataServ, session }) {
                         {!totalAmountBalance
                           ? "No amount..."
                           : currencyFormatter.format(totalAmountBalance, {
-                            locale: "en-US",
-                          })}
+                              locale: "en-US",
+                            })}
                       </p>
                     </div>
                     <p className="text-[10px]  pt-1">
@@ -268,9 +346,9 @@ function Wallet({ dataServ, session }) {
               </div>
             </div>
             <div className="filters flex items-center justify-center gap-2">
-              <div className=" bg-slate-100 text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] py-[2px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
+              <div className=" bg-slate-100 text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]">
                 <select
-                  className="bg-transparent appearance-none w-full pr-4"
+                  className="bg-transparent w-full pr-4 appearance-none"
                   name="DateSelector"
                   value={selectedDuration}
                   onChange={handleDurationChange}
@@ -298,66 +376,120 @@ function Wallet({ dataServ, session }) {
             </div>
           </div>
           <div className="content-wallet px-2 bg-stone-100 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px]">
-            <div className="multi-container">
+            <div className="multi-container lg:flex lg:item">
               <MultiCreditCard
                 acc={accounts}
                 user={user.fullName}
                 trans={transactions}
-                key="MultiCreditCard"
               />
-            </div>
-            <div className="top-3-general-container">
-              <h1 className="text-center text-black text-2xl font-bold py-4">Top 3 resume</h1>
-              <div className="top-3-modules-cont flex flex-col justify-center items-center gap-2">
-                <Top3ContComp t3ccTransactions={allTransactions} />
-                <Top3ContComp t3ccTransactions={allTransactions} ist3ccCategory={true}/>
-              </div>
             </div>
             <div className="resume-transactions-cont-tabs w-full h-full">
-              <ResumeTabsTrans
-                rttTrans={allTransactions}
-              />
+              {allTransactions.length <= 0 ? (
+                <div className="w-full py-[20px]">
+                  <Skeleton active />
+                </div>
+              ) : (
+                <ResumeTabsTrans rttTrans={allTransactions} />
+              )}
             </div>
-            <div className="TransactionsDetails w-full h-full">
-              <TransDetailsGrandContainer
-                tdgcBills={allBills}
-                tdgcInc={allIncomes}
-              />
-            </div>
-            <div>
-              <div className="asociatedCategories py-3 px-1 flex gap-1 justify-center items-center flex-wrap">
-                {!categories.length > 0 ? (
-                  <div>No categories...</div>
-                ) : (
-                  categories.map((category) => (
-                    <Category
-                      category={category}
-                      key={category._id + String(Math.random(1))}
+            <div className="wallet-total-col-container flex flex-col items-center justify-center lg:flex-row lg:gap-2 lg:items-start ">
+              <div className="wallet-left-col-container w-full lg:max-w-[50%]">
+                <div className="top-3-general-container w-full">
+                  <h1 className="text-center text-black text-2xl font-bold py-4">
+                    Top 3 resume
+                  </h1>
+                  <div className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 min-[950px]:flex-row lg:flex-col">
+                    <div className="w-full ">
+                      {allTransactions.length <= 0 ? (
+                        <div className="w-full py-[20px]">
+                          <Skeleton active />
+                        </div>
+                      ) : (
+                        <Top3ContComp t3ccTransactions={allTransactions} />
+                      )}
+                    </div>
+                    <div className="w-full ">
+                      {allTransactions.length <= 0 ? (
+                        <div className="w-full py-[20px]">
+                          <Skeleton active />
+                        </div>
+                      ) : (
+                        <Top3ContComp
+                          t3ccTransactions={allTransactions}
+                          ist3ccCategory={true}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="TransactionsDetails w-full h-full">
+                  {allTransactions.length <= 0 ? (
+                    <div className="w-full py-[20px]">
+                      <Skeleton active />
+                    </div>
+                  ) : (
+                    <TransDetailsGrandContainer
+                      tdgcBills={allBills}
+                      tdgcInc={allIncomes}
                     />
-                  ))
-                )}
+                  )}
+                </div>
+                <div>
+                  <div className="asociatedCategories py-3 px-1 flex gap-1 justify-center items-center flex-wrap">
+                    {!categories.length > 0 ? (
+                      <div className="w-full py-[20px]">
+                        <Skeleton active />
+                      </div>
+                    ) : (
+                      categories.map((category) => (
+                        <Category
+                          category={category}
+                          key={`dashboard-categories-min-circle${category._id}`}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="movements w-full h-full">
-              <Movements
-                movements={allTransactions}
-                incomes={allIncomes}
-                bills={allBills}
-                period={selectedDuration}
-              />
-            </div>
-            <div className="budget">
-              <BudgetCont
-                bWallet={wallet}
-                bBudgets={budgets}
-                bTransactions={transactions}
-              />
+              <div className="wallet-right-col-container w-full h-full lg:max-w-[50%] lg:flex lg:flex-col">
+                <div className="movements w-full h-full max-h-[500px] lg:max-h-[1000px] overflow-scroll">
+                  <Movements
+                    movements={allTransactions}
+                    incomes={allIncomes}
+                    bills={allBills}
+                    period={selectedDuration}
+                  />
+                </div>
+                <div className="budget">
+                  {/* {
+                    allTransactions.length <= 0 ? (
+                      <div className="w-full py-[20px]">
+                        <Skeleton active />
+                      </div>
+                    ) : (
+                      <BudgetCont
+                        bWallet={wallet}
+                        bBudgets={budgets}
+                        bTransactions={transactions}
+                      />
+                      )
+                    } */}
+                    <BudgetCont
+                      bcSession={session}
+                    />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       ) : (
-        <div>
-          <p>Loading data...</p>
+        <div className="w-full h-[500px]">
+          <Skeleton active />
+          <Skeleton active />
+          <Skeleton active />
+          <Skeleton active />
+          <Skeleton active />
+          <Skeleton active />
         </div>
       )}
     </div>

@@ -13,6 +13,13 @@ export async function POST(request){
             color,
             accounts
         } = await request.json()
+        // console.log(
+        //     id,
+        //     name,
+        //     icon,
+        //     color,
+        //     accounts
+        // )
         await dbConnection();
         const findCatego = await Category.findById(id);
         if(!findCatego) throw new Error("No category found to UPDATE")
@@ -20,11 +27,12 @@ export async function POST(request){
         findCatego.name = !name ? findCatego.name : name,
         findCatego.icon = !icon ? findCatego.icon : icon,
         findCatego.color = !color ? findCatego.color : color;
-       
-        if(accounts.length > 0){
-            accounts.map(acc => {
-                findCatego.accounts.push(acc)
-            })
+        if(accounts){
+            if(accounts.length > 0){
+                accounts.map(acc => {
+                    findCatego.accounts.push(acc)
+                })
+            }
         }
         const saveCatego = await findCatego.save()
         if(!saveCatego) throw new Error(`${saveCatego.name} not saved 🤕`)
@@ -35,6 +43,7 @@ export async function POST(request){
             status: 201
         })
     } catch(e){
+        // console.log(e)
         throw new Error(e)
     }
 }

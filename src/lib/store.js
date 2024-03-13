@@ -12,7 +12,7 @@ import categoriesReducer from './features/categoriesSlice'
 import subCategoryReducer from './features/subCategorySlice'
 import tagsReducer from './features/tagsSlice'
 import generalDataReducer from './features/loadGeneralDataSlice';
-
+import budgetReducer from './features/budgetSlice';
 
 export const store = configureStore({ //We set our general store using configureStore
     reducer: {
@@ -23,10 +23,11 @@ export const store = configureStore({ //We set our general store using configure
         categoriesReducer,
         subCategoryReducer,
         tagsReducer,
+        budgetReducer,
         generalDataReducer
     },
-    middleware: (getDefaultMiddleware) => 
-        getDefaultMiddleware().concat(apiSlice.middleware)
+    // middleware: (getDefaultMiddleware) => 
+    //     getDefaultMiddleware().concat(apiSlice.middleware)
 })
 
 export const wrapper = createWrapper(store);

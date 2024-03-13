@@ -81,6 +81,14 @@ export default async function defCategoriesCreator() {
         color: "#EF5350",
       },
     ];
+    // const allDefaultSubCategories = [
+    //   {
+    //     name: "House",
+    //     icon: "md/MdOutlineHouse",
+    //     color: "#DCE775",
+    //     fatherCategory: ,
+    //   }
+    // ]
     //Connection
     await dbConnection();
     // If exist already:

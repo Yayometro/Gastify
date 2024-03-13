@@ -32,6 +32,9 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
 
   useEffect(() => {
     if (acc && user && trans) {
+      // console.log(acc)
+      // console.log(user)
+      // console.log(trans)
       setUserName(user);
       setAllTransacctions(trans);
       setAccount(acc);

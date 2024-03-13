@@ -12,8 +12,9 @@ import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { Switch } from "antd";
 import { Button, ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
+import { updateManyTransactions } from "@/lib/features/transacctionsSlice";
 
 function EditMultipleTransModal({ hidden, trans }) {
   const [active, setActive] = useState(false);
@@ -23,16 +24,22 @@ function EditMultipleTransModal({ hidden, trans }) {
   // const [isReadable, setIsReadable] = useState(false);
   // const [defAccount, setDefAccount] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  //Get fetcher function
   const toFetch = fetcher();
-
+  // Redux
+  const dispatch = useDispatch()
+  const ccUser = useSelector((state) => state.userReducer)
+  const ccategories = useSelector((state) => state.categoriesReducer)
+  const ccSubCategories = useSelector((state) => state.subCategoryReducer)
+  const ccAccounts = useSelector((state) => state.accountsReducer)
+  
   const seeGeneralData = useSelector((state) => state.generalDataReducer);
   // console.log(seeGeneralData);
-  const accounts = seeGeneralData?.accounts;
+  const accounts = ccAccounts.data;
   // console.log(accounts);
-  const categories = seeGeneralData?.categories;
+  const categories = ccategories.data.user.concat(ccategories.data.default)
   // console.log(categories);
-  const subCategories = seeGeneralData?.subCategories;
+  const subCategories = ccSubCategories.data.subCat;
   // console.log(subCategories);
 
   // console.log(trans);
@@ -126,7 +133,9 @@ function EditMultipleTransModal({ hidden, trans }) {
       if (response.data) {
         console.log(response.data)
         runNotify("ok", response.message);
-        trans = response.data;
+        //UPDATE FRONT END
+        dispatch(updateManyTransactions(response.data))
+        // trans = response.data;
         // console.log(trans);
         setIsLoading(false);
         handleClose();

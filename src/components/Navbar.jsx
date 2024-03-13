@@ -32,13 +32,13 @@ function Navbar({ sesion }) {
           toggleNav ? "" : "hidden"
         }`}
       >
-        <li className="flex flex-row items-center justify-center micro-pulse">
+        <li className="flex flex-row items-center justify-center micro-pulse sm:px-2">
           <Link href="/dashboard/profile">
             <Image
-              className="rounded-full border-[1px] border-purple-800 m-auto w-13  sm:w-[60px]"
+              className="rounded-full border-[1px] border-purple-800 m-auto w-[60px]  sm:w-[40px]"
               src={sesion?.user?.image}
               alt={`${sesion.user.name} profile account`}
-              width={100}
+              width={50}
               height={50}
               objectPosition="center"
             />
@@ -48,43 +48,43 @@ function Navbar({ sesion }) {
         </li>
         <li className="micro-pulse">
           <Link href="/dashboard/movements">
-            <FaMoneyBillTransfer size={40} className="hidden sm:inline" />
+            <FaMoneyBillTransfer size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Movements</p>
           </Link>
         </li>
         <li className="micro-pulse">
-          <Link href="/dashboard/wallet">
-            <FaWallet size={40} className="hidden sm:inline" />
+          <Link href="/dashboard">
+            <FaWallet size={27} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Wallet</p>
           </Link>
         </li>
         <li className="micro-pulse">
           <Link href="/dashboard/accounts">
-            <MdAccountBalance size={40} className="hidden sm:inline" />
+            <MdAccountBalance size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Accounts</p>
           </Link>
         </li>
         <li className="text-purple-600 add-more hidden sm:flex micro-pulse">
-          <Link href={`/dashboard/add-movement`}>
-            <IoAddCircle size={70} />
+          <Link href={`/dashboard/add-transaction`}>
+            <IoAddCircle size={50} />
             <p className="hidden hoverTooltip">Add a transaction</p>
           </Link>
         </li>
         <li className="micro-pulse">
           <Link href="/dashboard/cashflow">
-            <MdAutoGraph size={40} className="hidden sm:inline" />
+            <MdAutoGraph size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Cash Flow</p>
           </Link>
         </li>
         <li className="micro-pulse">
           <Link href="/dashboard/categories">
-            <IoPricetags size={40} className="hidden sm:inline" />
+            <IoPricetags size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Categories</p>
           </Link>
         </li>
         <li className=" flash">
           <button onClick={() => signOut()}>
-            <IoMdExit size={40} className="hidden sm:inline" />
+            <IoMdExit size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Sign Out</p>
           </button>
         </li>
@@ -101,12 +101,12 @@ function Navbar({ sesion }) {
           </Link>
         </li>
         <li className="li-add-more ">
-          <Link href={`/dashboard/add-movement`}>
+          <Link href={`/dashboard/add-transaction`}>
             <IoAddCircle size={50} />
           </Link>
         </li>
         <li className="">
-          <Link href={`/dashboard/wallet`}>
+          <Link href={`/dashboard`}>
             <FaWallet size={25} />
           </Link>
         </li>

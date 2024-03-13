@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import CategoryCirclePacking from "./CategoryCirclePacking";
-import { Tooltip } from "antd";
+import { Skeleton, Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+import EmptyModule from "./EmptyModule";
 
 function DisplayerCategoryCirclePacking({ dccpIncomes, dccoBills }) {
   // Función para renderizar el contenido de cada pestaña
@@ -46,15 +47,39 @@ function DisplayerCategoryCirclePacking({ dccpIncomes, dccoBills }) {
         <div
           className={`dccp-tc-bill w-full h-full ${tabBill ? "" : "hidden"}`}
         >
-          <CategoryCirclePacking ccpTransacctions={dccoBills} ccpIsBill={true}/>
+          {
+            dccoBills.length <= 0 ? (
+              <div className="w-full py-[20px]">
+              <EmptyModule
+                emMessage={`Ups... Nothing here 🤔. 
+                If this module is empty maybe the is not data in general or there is no data in this time-period. 
+                Try with a time-period older, like 3 months or 6 months to check.`}
+              />
+            </div>
+            ) : (
+              <CategoryCirclePacking ccpTransacctions={dccoBills} ccpIsBill={true}/>
+            )
+          }
         </div>
         <div
           className={`dccp-tc-income w-full h-full ${tabBill ? "hidden" : ""}`}
         >
-          <CategoryCirclePacking
-            ccpTransacctions={dccpIncomes}
-            ccpIsBill={false}
-          />
+          {
+            dccpIncomes.length <= 0 ? (
+              <div className="w-full py-[20px]">
+              <EmptyModule
+                emMessage={`Ups... Nothing here 🤔. 
+                If this module is empty maybe the is not data in general or there is no data in this time-period. 
+                Try with a time-period older, like 3 months or 6 months to check.`}
+              />
+            </div>
+            ) : (
+              <CategoryCirclePacking
+                ccpTransacctions={dccpIncomes}
+                ccpIsBill={false}
+              />
+            )
+          }
         </div>
       </div>
     </div>

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import TabsTrans from "./TabsTrans";
-import { Tooltip } from "antd";
+import { Skeleton, Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+import EmptyModule from "./EmptyModule";
 
 function ResumeTabsTrans({ rttIncomes, rttBills, rttTrans }) {
   let [isBillTab, setIsBillTab] = useState(true);
@@ -98,16 +99,40 @@ function ResumeTabsTrans({ rttIncomes, rttBills, rttTrans }) {
         <div
           className={`rtt-sub-cont w-full h-full ${isBillTab ? "" : "hidden"}`}
         >
-          <TabsTrans ttTrans={allBills} ttIsbill={true} ttHorizontal={false} />
+          {allBills.length <= 0 ? (
+            <div className="w-full py-[20px]">
+              <EmptyModule
+                emMessage={`Ups... Nothing here 🤔. 
+                If this module is empty maybe the is not data in general or there is no data in this time-period. 
+                Try with a time-period older, like 3 months or 6 months to check.`}
+              />
+            </div>
+          ) : (
+            <TabsTrans
+              ttTrans={allBills}
+              ttIsbill={true}
+              ttHorizontal={false}
+            />
+          )}
         </div>
         <div
           className={`rtt-sub-cont w-full h-full ${isBillTab ? "hidden" : ""}`}
         >
-          <TabsTrans
-            ttTrans={allIncomes}
-            ttIsbill={false}
-            ttHorizontal={false}
-          />
+          {allIncomes.length <= 0 ? (
+            <div className="w-full py-[20px]">
+            <EmptyModule
+              emMessage={`Ups... Nothing here 🤔. 
+              If this module is empty maybe the is not data in general or there is no data in this time-period. 
+              Try with a time-period older, like 3 months or 6 months to check.`}
+            />
+          </div>
+          ) : (
+            <TabsTrans
+              ttTrans={allIncomes}
+              ttIsbill={false}
+              ttHorizontal={false}
+            />
+          )}
         </div>
       </div>
     </div>

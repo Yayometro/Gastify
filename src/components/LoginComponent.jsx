@@ -26,7 +26,13 @@ function LoginComponent() {
     setFormData({ ...formData, [name]: value });
   };
   const googleSignIn = async () => {
-    const reqGoogle = await signIn("google");
+    try{
+      const reqGoogle = await signIn("google");
+      console.log(reqGoogle)
+    } catch(e){
+      console.log(e)
+      throw new Error(e)
+    }
   };
   const githubSignIn = async () => {
     const reqGithub = await signIn("github");

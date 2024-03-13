@@ -40,7 +40,15 @@ body {
 .wallet{
   width: 100%;
 } */
-
+.profile-component-container{
+  background: linear-gradient(0deg, rgba(187,71,255,1) 80%, rgba(0,98,255,1) 100%);
+}
+.default-gradient{
+  background: linear-gradient(0deg, rgba(187,71,255,1) 80%, rgba(0,98,255,1) 100%);
+}
+.walllet-bg{
+  background: linear-gradient(0deg, rgba(0,179,255,1) 4%, rgba(187,71,255,1) 35%, rgba(0,98,255,1) 58%, rgba(187,71,255,1) 92%, rgba(0,98,255,1) 100%);
+}
 .form-login input {
   border: 1px solid rgb(169, 32, 169);
   border-radius: 20px;
@@ -78,5 +86,46 @@ body {
   background: linear-gradient(180deg, rgba(72,0,103,1) 0%, rgba(143,0,176,1) 0%, rgba(77,172,255,1) 16%);
   -webkit-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.31);
 -moz-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.31);
-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.70);
+box-shadow: -1px 0px 20px 5px rgba(143, 143, 143, 0.7);
+}
+.modal-gradient{
+  
+  background: linear-gradient(180deg, rgba(72,0,103,1) 0%, rgba(143,0,176,1) 0%, rgba(77,172,255,1) 20%);
+  -webkit-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.31);
+-moz-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.31);
+box-shadow: -1px 0px 20px 5px rgba(142, 142, 142, 0.7);
+}
+.inner-modal-gradient{
+  
+  background: linear-gradient(360deg, rgba(142, 142, 142, 0.7) 0%, rgba(77,172,255,1) 20%);
+  -webkit-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.31);
+-moz-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.31);
+box-shadow: -1px 0px 20px 5px rgba(142, 142, 142, 0.7);
+}
+
+.profile-input-password{
+  border: 2px solid rgb(192 132 252)  !important;
+  border-radius: 0.80rem !important;
+}
+
+.react-international-phone-input-container{
+  border-radius: 50px !important;
+  border: 2px solid rgb(192 132 252) !important;
+}
+.react-international-phone-input{
+  border: none !important;
+  border-radius: 0px 50px 50px 0px !important;
+  background-color: transparent;
+}
+.react-international-phone-country-selector{
+  /* border-radius: 50px !important; */
+  border: none !important;
+  border-radius: 0px 50px 50px 0px !important;
+  background-color: transparent;
+}
+.react-international-phone-country-selector button{
+  /* border-radius: 50px !important; */
+  border: none !important;
+  border-radius: 50px 0px 0px 50px !important;
+  padding-left: 5px !important;
 }

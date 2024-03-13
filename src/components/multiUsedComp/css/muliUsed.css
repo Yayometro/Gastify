@@ -32,12 +32,9 @@
     border-radius: 1000px;
 
 }
-.form-trans-edit:active{
+/* .form-trans-edit:active{
     border: 1px solid rgb(231, 33, 231);
-}
-.walllet-bg{
-    background: linear-gradient(0deg, rgba(0,179,255,1) 4%, rgba(187,71,255,1) 35%, rgba(0,98,255,1) 58%, rgba(187,71,255,1) 92%, rgba(0,98,255,1) 100%);
-}
+} */
 .ant-date-picker-range{
     height: 15px;
     width: 90px;

@@ -14,6 +14,14 @@ export async function POST(request){
             wallet,
             accounts
         } = await request.json()
+        // console.log(
+        //     name,
+        //     icon,
+        //     color,
+        //     user,
+        //     wallet,
+        //     accounts
+        // )
         if(!user) throw new Error("No USER received for NEW CATEGORY")
         if(!wallet) throw new Error("No WALLET received for NEW CATEGORY")
         await dbConnection();
@@ -24,10 +32,12 @@ export async function POST(request){
             icon: !icon ? null : icon,
             color: !color ? null : color
         })
-        if(accounts.length > 0){
-            accounts.map(acc => {
-                newCategory.accounts.push(acc)
-            })
+        if(accounts){
+            if(accounts.length > 0){
+                accounts.map(acc => {
+                    newCategory.accounts.push(acc)
+                })
+            }
         }
         const saveCatego = await newCategory.save()
         if(!saveCatego) throw new Error("New category not saved 🤕")
@@ -38,6 +48,7 @@ export async function POST(request){
             status: 201
         })
     } catch(e){
+        console.log(e)
         throw new Error(e)
     }
 }

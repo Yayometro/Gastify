@@ -12,23 +12,28 @@ import Tag from "./Tag";
 import fetcher from "@/helpers/fetcher";
 import EditTransModal from "./EditTransModal";
 import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
-import { Tooltip, Button, Modal } from "antd";
+import { Tooltip, Button, Modal, Skeleton } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import EditMultipleTransModal from "./EditMultipleTransModal";
-// import runNotify from "@/helpers/gastifyNotifier";
+import EmptyModule from "./EmptyModule";
+import runNotify from "@/helpers/gastifyNotifier";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchTrans,
+  removeManyTransactions,
+  removeOneTransacction,
+} from "@/lib/features/transacctionsSlice";
 
-function Movements({ movements, bills, incomes, period }) {
+function Movements({ movements, period, mail }) {
   const [allMovements, setAllMovements] = useState([]);
-  const [allBills, setAllBills] = useState([]);
-  const [allIncomes, setAllIncomes] = useState([]);
   const [timePeriod, setTimePeriod] = useState(30);
   const [trastType, setTransType] = useState("all");
   const [readable, setReadable] = useState("all");
   const [removedElement, setRemovedElement] = useState(false);
   const [editModal, setEditModal] = useState([]);
-  const [editMultiModal, setEditMultiModal] = useState([]);  
-  const [showMultipleTransEdit, setShowMultipleTransEdit] = useState(false)
+  const [editMultiModal, setEditMultiModal] = useState([]);
+  const [showMultipleTransEdit, setShowMultipleTransEdit] = useState(false);
   const [selectedTrans, setSelectedTrans] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
@@ -37,55 +42,75 @@ function Movements({ movements, bills, incomes, period }) {
   const [isRemoveModalMany, setIsRemoveModalMany] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [transRemovableId, setTransRemovableId] = useState("");
-
-  //
+  const [loadingComponent, setLoadingComponent] = useState(true);
+  // Loading FETCHER
   const toFetch = fetcher();
+  // REDUX
+  const reduxDispartcher = useDispatch();
+  const reduxAllTrans = useSelector((state) => state.transacctionsReducer);
+  const rdxTransactions = reduxAllTrans?.data;
+  // console.log(reduxAllTrans);
+  // console.log(reduxAllTrans.status);
+  // console.log(rdxTransactions);
   //
-  //   console.log(movements);
-  //   console.log(bills);
-  //   console.log(incomes);
   const today = new Date();
   const dayRange = new Date();
+  // First loading the component
   useEffect(() => {
-    //DATE
-    dayRange.setDate(today.getDate() - timePeriod);
-    //
-    let total = movements.filter((mov) => {
-      const transactionDate = new Date(mov.date || mov.createdAt);
-      return transactionDate >= dayRange;
-    });
-    total = total.sort((a, b) => {
-      let dateA = new Date(a.date || a.createdAt);
-      let dateB = new Date(b.date || b.createdAt);
-
-      return dateB - dateA;
-    });
-
-    setAllMovements(total);
-    setAllBills(bills);
-    setAllIncomes(incomes);
-    setTimePeriod(period);
-  }, [movements, bills, incomes, period]);
+    if (reduxAllTrans.status == "idle") {
+      // console.log(rdxTransactions);
+      reduxDispartcher(fetchTrans(mail));
+    }
+  }, []);
   useEffect(() => {
-    //DATE
-    dayRange.setDate(today.getDate() - timePeriod);
-    //
-    let total = movements.filter((mov) => {
-      const transactionDate = new Date(mov.date || mov.createdAt);
-      return transactionDate >= dayRange;
-    });
-    total = total.sort((a, b) => {
-      let dateA = new Date(a.date || a.createdAt);
-      let dateB = new Date(b.date || b.createdAt);
+    if (rdxTransactions.length > 0) {
+      //REDUX
+      if (reduxAllTrans.status == "succeeded") {
+        setLoadingComponent(false);
+      }
+      //DATE
+      dayRange.setDate(today.getDate() - timePeriod);
+      //
+      let total = rdxTransactions.filter((mov) => {
+        const transactionDate = new Date(mov.date || mov.createdAt);
+        return transactionDate >= dayRange;
+      });
+      total = total.sort((a, b) => {
+        let dateA = new Date(a.date || a.createdAt);
+        let dateB = new Date(b.date || b.createdAt);
 
-      return dateB - dateA;
-    });
+        return dateB - dateA;
+      });
 
-    setAllMovements(total);
-    setAllBills(bills);
-    setAllIncomes(incomes);
-    setTimePeriod(timePeriod);
-  }, [timePeriod]);
+      setAllMovements(total);
+      setTimePeriod(period);
+    }
+  }, [rdxTransactions, period]);
+
+  useEffect(() => {
+    if (rdxTransactions.length > 0) {
+      //REDUX
+      if (reduxAllTrans.status == "succeeded") {
+        setLoadingComponent(false);
+      }
+      //DATE
+      dayRange.setDate(today.getDate() - timePeriod);
+      //
+      let total = rdxTransactions.filter((mov) => {
+        const transactionDate = new Date(mov.date || mov.createdAt);
+        return transactionDate >= dayRange;
+      });
+      total = total.sort((a, b) => {
+        let dateA = new Date(a.date || a.createdAt);
+        let dateB = new Date(b.date || b.createdAt);
+
+        return dateB - dateA;
+      });
+
+      setAllMovements(total);
+      setTimePeriod(timePeriod);
+    }
+  }, [timePeriod, rdxTransactions]);
 
   const handleDurationChange = (event) => {
     setTimePeriod(parseInt(event.target.value, 10));
@@ -95,7 +120,7 @@ function Movements({ movements, bills, incomes, period }) {
     const today = new Date();
     const dayRange = new Date();
     dayRange.setDate(today.getDate() - timePeriod);
-    let total = movements.filter((mov) => {
+    let total = rdxTransactions.filter((mov) => {
       const transactionDate = new Date(mov.date || mov.createdAt);
       return transactionDate >= dayRange;
     });
@@ -125,7 +150,7 @@ function Movements({ movements, bills, incomes, period }) {
     const today = new Date();
     const dayRange = new Date();
     dayRange.setDate(today.getDate() - timePeriod);
-    let total = movements.filter((mov) => {
+    let total = rdxTransactions.filter((mov) => {
       const transactionDate = new Date(mov.date || mov.createdAt);
       return transactionDate >= dayRange;
     });
@@ -163,9 +188,10 @@ function Movements({ movements, bills, incomes, period }) {
       await new Promise((resolve) => setTimeout(resolve, 251));
       element.classList.add("hidden");
       // Removed in Front End
-      // dispatch(removeOneTransacction(id))
-      const cleanedMov = allMovements.filter((mov) => mov._id !== id);
-      setAllMovements(cleanedMov);
+      // const cleanedMov = allMovements.filter((mov) => mov._id !== id);
+      // setAllMovements(cleanedMov);
+      //Remove from, Redux
+      reduxDispartcher(removeOneTransacction(id));
       // Removed in BackEnd
       const res = await toFetch.post(
         `general-data/transactions/remove-transaction/${id}`
@@ -184,6 +210,7 @@ function Movements({ movements, bills, incomes, period }) {
         setConfirmLoading(false);
       }
     } catch (e) {
+      console.log(e);
       runNotify("error", String(e));
       setIsRemoveModal(false);
       setConfirmLoading(false);
@@ -217,11 +244,13 @@ function Movements({ movements, bills, incomes, period }) {
           }
         }
       }
-      // Eliminar los elementos del estado (Front End)
-      const remainingMovements = allMovements.filter(
-        (mov) => !transs.includes(mov._id)
-      );
-      setAllMovements(remainingMovements);
+      // Remove elements (Front End)
+      // const remainingMovements = allMovements.filter(
+      //   (mov) => !transs.includes(mov._id)
+      // );
+      // Remove in REDUX
+      reduxDispartcher(removeManyTransactions(transs));
+      // setAllMovements(remainingMovements);
       // Remove items from selector mode
       setSelectedTrans([]);
       // Eliminar los elementos del backend
@@ -262,7 +291,7 @@ function Movements({ movements, bills, incomes, period }) {
     setEditModal([...editModal, editTransMo]);
   };
   const handleMultiTransEdit = (ids) => {
-    console.log(ids)
+    console.log(ids);
     const editMultiTransMo = (
       <EditMultipleTransModal
         hidden={editMultiModal}
@@ -378,61 +407,10 @@ function Movements({ movements, bills, incomes, period }) {
     }
   };
 
-  function runNotify(nType, nMessage) {
-    if (nType === "ok") {
-      return toast.success(`${nMessage}`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } else if (nType === "error") {
-      return toast.error(` ${nMessage}`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } else if (nType === "info") {
-      return toast.info(` ${nMessage}`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } else if (nType === "warning") {
-      return toast.warn(` ${nMessage}`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } else {
-      return toast(nMessage);
-    }
-  }
   return (
     <div className="w-full h-full pt-5">
       <div className={"edit-modal-cont"}>{editModal}</div>
-      <div className={`edit-multi-modal-cont`}>
-      {editMultiModal}
-      </div>
+      <div className={`edit-multi-modal-cont`}>{editMultiModal}</div>
       <div className="remove-modal-container">
         <Modal
           title="Warning"
@@ -531,12 +509,17 @@ function Movements({ movements, bills, incomes, period }) {
         </div>
       </div>
       <div className="head">
-        <div></div>
       </div>
-      {!allMovements.length > 0 ? (
-        <p>No movements...</p>
+      {loadingComponent ? (
+        <div className="w-full h-full flex justify-center items-center">
+          <Skeleton active />
+        </div>
+      ) : !allMovements.length > 0 ? (
+        <div className="w-full h-full flex justify-center items-center">
+          <EmptyModule emMessage={"No transactions here... 🤕"} />
+        </div>
       ) : (
-        <div className="table-container w-full max-h-[500px] overflow-y-scroll relative">
+        <div className="table-container w-full overflow-y-scroll relative">
           <div className="bg-slate-50 text-slate-700 sticky z-50 top-0 border-b-2 border-slate-200 px-1 py-2 mb-1">
             <div className="flex flex-row justify-between items-center first-line:font-semibold ">
               <div className="flex gap-1">
@@ -645,15 +628,19 @@ function Movements({ movements, bills, incomes, period }) {
                           <p className="tra-nameless">No name. Asign one...</p>
                         ) : (
                           <div className="tra-center-cont ">
-                            <p className="tra-name">{movement?.name}</p>
+                            <p className="tra-name text-start">
+                              {movement?.name}
+                            </p>
                           </div>
                         )}
                       </div>
                       <div className="tra-acount-cont text-[10px] font-normal">
                         {!movement.account ? (
-                          <p>No account...</p>
+                          <p className=" text-start">No account...</p>
                         ) : (
-                          <p>{movement.account?.name}</p>
+                          <p className=" text-start">
+                            {movement.account?.name}
+                          </p>
                         )}
                       </div>
                       <div className="tra-tag-cont flex flex-wrap gap-1 items-center justify-start text-[10px] font-thin">

@@ -83,7 +83,7 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
                 <div
                   className={`tra-cat-cont flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 hover:mix-blend-multiply min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2 min-[352px]:min-h-[130px] min-[352px]:min-w-[100px]`}
                   style={{
-                    backgroundColor: trans?.category.color || "#DADADA",
+                    backgroundColor: trans?.category?.color || "#DADADA",
                   }}
                   // key={`t3-trans-${trans.id}`}
                 >

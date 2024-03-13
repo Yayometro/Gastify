@@ -91,11 +91,11 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
         
           return acc;
         }, {});
-        console.log(result);
+        // console.log(result);
         if (result) {
           const newDataCat = {
             name: ccpIsBill ? "Total expenses" : "Total incomes",
-            color: ccpIsBill ? "#E29595" : "#A7E295",
+            color: ccpIsBill ? "#FF9797" : "#A7E295",
             icon: "md/MdMonetizationOn",
             children: Object.values(result),
           };

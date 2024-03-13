@@ -4,15 +4,15 @@ export default function fetcher(){
     const baseUrl = "http://localhost:3000";
     const apiRoute = "/api/"
     let fullPath = baseUrl.concat(apiRoute);
-    console.log(fullPath)
+    // console.log(fullPath)
     if(process.env.NEXTAUTH_URL){
-        console.log(process.env.NEXTAUTH_URL)
+        // console.log(process.env.NEXTAUTH_URL)
         fullPath = process.env.NEXTAUTH_URL.concat(apiRoute)
     }
-    console.log(fullPath)
-    console.log(baseUrl)
-    console.log(apiRoute)
-    console.log(process.env)
+    // console.log(fullPath)
+    // console.log(baseUrl)
+    // console.log(apiRoute)
+    // console.log(process.env)
     return {
         get: async function(path){
             try{
@@ -32,8 +32,12 @@ export default function fetcher(){
         },
         post: async function(path, content){
             try{
+                // console.log(fullPath)
+                // console.log(path)
+                // console.log(content)
                 if(!fullPath) throw new Error("The is no fullPath in PATH")
                 const localPath = fullPath.concat(path)
+                // console.log(localPath)
                 const res = await fetch(localPath, {
                     method: "POST",
                     headers: {
@@ -41,15 +45,21 @@ export default function fetcher(){
                     },
                     body: JSON.stringify(content)
                 })
+                // console.log(res)
                 if(!res) throw new Error("No data from response")
-                console.log(res)
+                // console.log(res)
                 const data = await res.json()
-                console.log(data)
+                // console.log(data)
                 return data
             } catch(e){
+                console.log(e)
                 throw new Error(e)
-                throw new Error("Something went wrong in the POST request to backend using FETCHER: ", e)
+                // throw new Error("Something went wrong in the POST request to backend using FETCHER: ", e)
             }
+        },
+        getFullPath: function(path){
+            const localPath = fullPath.concat(path)
+            return localPath
         }
     }
 }

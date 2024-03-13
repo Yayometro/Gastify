@@ -7,7 +7,6 @@ import bcryptjs from 'bcryptjs'
 //     try{
 
 //     } catch (e){
-
 //     }
 // }
 
@@ -28,15 +27,23 @@ export async function POST(request){
     try{    
         if(!request) throw new Error("No data in request on GENERAL-DATA POST") 
         const dataRequest = await request.json()
+        console.log(dataRequest)
         //Password check
         let encryptPassword;
         if(dataRequest.password){
+            console.log(dataRequest.password)
             const salt = await bcryptjs.genSalt(10)
             encryptPassword = await bcryptjs.hash(dataRequest.password, salt)
         }
         console.log(encryptPassword)
+        let parsedPhone
+        if(typeof dataRequest.phone === "string"){
+            console.log(dataRequest.phone)
+            parsedPhone = Number(dataRequest.phone)
+        }
+        console.log(parsedPhone)
         await dbConnection()
-        const userFounded = await User.findOne({mail: dataRequest.mail}).lean()
+        let userFounded = await User.findOne({mail: dataRequest.mail}).lean()
         if(!userFounded) throw new Error({error: "User not found, review the email provided in GENERAL-DATA POST"});
 
         // const userUpdated = await userFounded.save();
@@ -45,9 +52,10 @@ export async function POST(request){
             {
               $set: {
                 fullName: dataRequest.fullName || userFounded.fullName,
-                mail: dataRequest.changedMail || userFounded.mail,
+                mail: dataRequest.mail || userFounded.mail,
                 password: encryptPassword || userFounded.password,
-                image: dataRequest.image || userFounded.image
+                image: dataRequest.image || userFounded.image,
+                phone: parsedPhone || userFounded.phone,
               }
             },
             { new: true } // Devuelve el documento modificado
@@ -56,9 +64,9 @@ export async function POST(request){
           if (!userUpdated) {
             throw new Error({ error: "User not found, review the email provided in GENERAL-DATA POST" });
           }
-        
+        console.log(userFounded)
         return NextResponse.json({
-            message: "Data founded in POST",
+            message: `User ${userFounded?.fullName || ""} was updated 🤓`,
             data: userUpdated,
             status: 201,
             ok: true
