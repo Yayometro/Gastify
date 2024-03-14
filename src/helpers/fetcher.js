@@ -1,10 +1,11 @@
 
 export default function fetcher(){
     // let baseUrl = process.env.REACT_APP_APP_URL
-    const baseUrl = "http://localhost:3000";
+    // const baseUrl = "http://localhost:3000";
+    const baseUrl = "https://gastify-jair-vazquez-navarretes-projects.vercel.app";
     const apiRoute = "/api/"
     let fullPath = baseUrl.concat(apiRoute);
-    // console.log(fullPath)
+    // // console.log(fullPath)
     if(process.env.NEXTAUTH_URL){
         // console.log(process.env.NEXTAUTH_URL)
         fullPath = process.env.NEXTAUTH_URL.concat(apiRoute)
@@ -13,6 +14,8 @@ export default function fetcher(){
     // console.log(baseUrl)
     // console.log(apiRoute)
     // console.log(process.env)
+    // const fullPath = `${process.env.NEXTAUTH_URL}/api/` || "https://gastify-jair-vazquez-navarretes-projects.vercel.app/api/"
+    // console.log(fullPath)
     return {
         get: async function(path){
             try{

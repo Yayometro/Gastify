@@ -16,6 +16,7 @@ import { IoAddCircle } from "react-icons/io5";
 import { MdAccountBalance } from "react-icons/md";
 import { IoPricetags } from "react-icons/io5";
 import { IoMdExit } from "react-icons/io";
+import { BiSolidCategory } from "react-icons/bi";
 
 import "@/components/NavbarStyle.css";
 
@@ -64,21 +65,21 @@ function Navbar({ sesion }) {
             <p className="sm:hidden hoverTooltip">Accounts</p>
           </Link>
         </li>
-        <li className="text-purple-600 add-more hidden sm:flex micro-pulse">
+        {/* <li className="text-purple-600 add-more hidden sm:flex micro-pulse">
           <Link href={`/dashboard/add-transaction`}>
             <IoAddCircle size={50} />
             <p className="hidden hoverTooltip">Add a transaction</p>
           </Link>
-        </li>
-        <li className="micro-pulse">
+        </li> */}
+        {/* <li className="micro-pulse">
           <Link href="/dashboard/cashflow">
             <MdAutoGraph size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Cash Flow</p>
           </Link>
-        </li>
+        </li> */}
         <li className="micro-pulse">
           <Link href="/dashboard/categories">
-            <IoPricetags size={30} className="hidden sm:inline" />
+            <BiSolidCategory size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Categories</p>
           </Link>
         </li>
@@ -100,9 +101,9 @@ function Navbar({ sesion }) {
             <FaMoneyBillTransfer size={30} />
           </Link>
         </li>
-        <li className="li-add-more ">
-          <Link href={`/dashboard/add-transaction`}>
-            <IoAddCircle size={50} />
+        <li className="">
+          <Link href={`/dashboard/categories`}>
+            <BiSolidCategory size={30} />
           </Link>
         </li>
         <li className="">
@@ -111,8 +112,15 @@ function Navbar({ sesion }) {
           </Link>
         </li>
         <li className="">
-          <Link href="/dashboard/cashflow">
-            <MdAutoGraph size={28} />
+          <Link href="/dashboard/profile">
+            <Image
+              className="rounded-full border-[1px] border-purple-800 m-auto w-[30px]  sm:w-[40px]"
+              src={sesion?.user?.image}
+              alt={`${sesion.user.name} profile account`}
+              width={50}
+              height={50}
+              objectPosition="center"
+            />
           </Link>
         </li>
       </ul>
