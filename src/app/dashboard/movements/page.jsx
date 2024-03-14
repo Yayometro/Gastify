@@ -4,6 +4,8 @@ import React from 'react'
 import fetcher from '@/helpers/fetcher'
 import { getServerSession } from "next-auth";
 
+export const dynamic = 'force-dynamic';
+
 async function page() {
   const sesion = await getServerSession();
   // console.log(sesion)

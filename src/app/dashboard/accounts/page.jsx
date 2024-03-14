@@ -5,6 +5,8 @@ import AccountClient from '@/components/multiUsedComp/AccountClient'
 import { getServerSession } from 'next-auth';
 import React from 'react'
 
+export const dynamic = 'force-dynamic';
+
 async function page() {
   const sesion = await getServerSession();
   // console.log(sesion)

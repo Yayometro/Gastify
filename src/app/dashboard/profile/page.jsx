@@ -4,6 +4,8 @@ import ProfileClient from '@/components/ProfileClient'
 import { getServerSession } from 'next-auth';
 import React from 'react'
 
+export const dynamic = 'force-dynamic';
+
 async function page() {
   const sesion = await getServerSession();
   // console.log(sesion)
