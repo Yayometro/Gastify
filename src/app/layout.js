@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "./Providers";
 import { getServerSession } from "next-auth";
 import { ToastContainer } from "react-toastify";
-
 import ReduxProvider from "@/lib/ReduxProvider";
+
 
 const inter = Inter({ subsets: ["latin"] });
 

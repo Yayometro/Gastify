@@ -23,6 +23,7 @@
     "@tanstack/react-table": "^8.11.2",
     "animate.css": "^4.1.1",
     "antd": "^5.12.8",
+    "aws4": "^1.12.0",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "currency-formatter": "^1.5.9",
