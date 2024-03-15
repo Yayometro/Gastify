@@ -135,7 +135,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
         >
           Savings
         </div>
-        <Tooltip title="The needle indicator shows your actual state regarding your budget or saving 🤓">
+        <Tooltip title="Filter by time to see your current progress in a specific time period. As well as change between tabs to see progress in Budgets or Savings. 🤓">
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}

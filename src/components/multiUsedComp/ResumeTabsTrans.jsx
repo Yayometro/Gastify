@@ -16,7 +16,7 @@ function ResumeTabsTrans({ rttIncomes, rttBills, rttTrans }) {
     //DATE
     dayRange.setDate(today.getDate() - timePeriod);
     //
-    //if trans don't wxist
+    //if trans don't exist
     if(rttTrans.length > 0){
       let total = rttTrans.filter((mov) => {
         const transactionDate = new Date(mov.date || mov.createdAt);
@@ -89,7 +89,8 @@ function ResumeTabsTrans({ rttIncomes, rttBills, rttTrans }) {
         >
           Income Resume
         </div>
-        <Tooltip title="The needle indicator shows your actual state regarding your budget or saving 🤓">
+        <Tooltip title="This module is affected by the general time selection of the dashboard. So if the dashboard filters at last 30 days. Even if you in this module are using the filter of *Last 60 days* it won't work. So first review the time selection on the general dashboard and then filter at the module level.
+        If you want more details about the charts, just hover over the chart and column you're interested in 😎">
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}
@@ -106,8 +107,8 @@ function ResumeTabsTrans({ rttIncomes, rttBills, rttTrans }) {
             <div className="w-full py-[20px]">
               <EmptyModule
                 emMessage={`Ups... Nothing here 🤔. 
-                If this module is empty maybe the is not data in general or there is no data in this time-period. 
-                Try with a time-period older, like 3 months or 6 months to check.`}
+                If this module is empty, maybe you do not have data (transactions) enough or there is no data in this time-period.
+                Try with a time-period older, like 3 months or 6 months to check. Or add new transactions to display data 😉`}
               />
             </div>
           ) : (
@@ -125,8 +126,8 @@ function ResumeTabsTrans({ rttIncomes, rttBills, rttTrans }) {
             <div className="w-full py-[20px]">
             <EmptyModule
               emMessage={`Ups... Nothing here 🤔. 
-              If this module is empty maybe the is not data in general or there is no data in this time-period. 
-              Try with a time-period older, like 3 months or 6 months to check.`}
+              If this module is empty, maybe you do not have data (transactions) enough or there is no data in this time-period.
+              Try with a time-period older, like 3 months or 6 months to check. Or add new transactions to display data 😉`}
             />
           </div>
           ) : (
