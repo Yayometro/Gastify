@@ -10,10 +10,11 @@ import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { Switch } from "antd";
 import { Button, ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
 import "@/components/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
+import { addNewTransacction } from "@/lib/features/transacctionsSlice";
 
 function AddTransactionComp({
   atcUser,
@@ -45,6 +46,9 @@ function AddTransactionComp({
   const subCategories = atcSubCategories;
   const accounts = atcAccounts;
   // console.log(subCategories)
+
+  //REDUX
+  const dispatch = useDispatch();
 
   //EFFECTS
   useEffect(() => {
@@ -121,6 +125,9 @@ function AddTransactionComp({
       if (response.data) {
         // console.log(response.data)
         runNotify("ok", response.message);
+        const addlyData = [response.data]
+        //UPDATE FRON END
+        dispatch(addNewTransacction(response.data))
         // trans = response.data;
         // console.log(trans);
         setIsLoading(false);

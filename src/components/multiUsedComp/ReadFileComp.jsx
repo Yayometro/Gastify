@@ -7,6 +7,8 @@ import fetcher from "@/helpers/fetcher";
 import { useSelector, useDispatch } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
 import { addNewTransacctions } from "@/lib/features/transacctionsSlice";
+import { MdFormatAlignLeft } from "react-icons/md";
+
 
 
 function ReadFileComp({}) {
@@ -62,9 +64,9 @@ function ReadFileComp({}) {
           <p className="">{isExcel ? "Excel file On" : "XML file On"}</p>
           {isExcel ? (
             <PiMicrosoftExcelLogoFill size={20} />
-          ) : (
-            <BsFiletypeXml size={20} />
-          )}
+            ) : (
+              <BsFiletypeXml size={20} />
+              )}
         </div>
         <div className="file-input-cont">
           <Upload
@@ -72,6 +74,10 @@ function ReadFileComp({}) {
           >
             <Button icon={<UploadOutlined />}>Upload</Button>
           </Upload>
+        </div>
+        <div className="example-file flex justify-start items-center w-fit pt-2 pb-2 cursor-pointer text-purple-400 hover:text-purple-300 hover:underline gap-1">
+          <MdFormatAlignLeft size={20} />
+          <a href="/excelExample/example.xlsx" className="" download>Download format</a>
         </div>
       </form>
     </div>

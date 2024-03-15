@@ -52,15 +52,22 @@ export const transacctionsSlice = createSlice({
     },
 
     removeManyTransactions: (state, action) => {
-      console.log(state);
+      // console.log(state);
       //Filter using Inmer, asigned directly to state.data
       state.data = state.data.filter(
         (mov) => !action.payload.includes(mov._id)
       );
     },
+    addNewTransacction: (state, action) => {
+      // console.log(state);
+      // console.log(action);
+      if (action.payload) {
+          state.data.push(action.payload);
+      }
+    },
     addNewTransacctions: (state, action) => {
-      console.log(state);
-      console.log(action);
+      // console.log(state);
+      // console.log(action);
       if (action.payload.length > 0) {
         action.payload.forEach((element) => {
           console.log(element);
@@ -110,6 +117,7 @@ export const getRedxTransactionsError = (state) => state.accounts.error;
 
 export const {
   setTransacctions,
+  addNewTransacction,
   addNewTransacctions,
   removeOneTransacction,
   removeManyTransactions,

@@ -50,6 +50,7 @@ export async function POST(request, { params }) {
 
     await dbConnection();
     const findTrans = await Transaction.findById(params.id);
+    // console.log(findTrans)
     if (!findTrans)
       throw new Error("No Transactions found work on POST UPDATE TRANSACTION");
     // UPDATES:
@@ -62,9 +63,9 @@ export async function POST(request, { params }) {
     findTrans.account = !account ? findTrans.account : account;
     // SUB CCATEGORY UPD
     if (subCategory) {
-      if (findTrans.subCategory._id !== subCategory) {
-        let findSubCategory = await SubCategory.findById(subCategory);
-        console.log(findSubCategory);
+      if (findTrans.subCategory !== subCategory) {
+        let findSubCategory = await SubCategory.findById(subCategory).lean();
+        // console.log(findSubCategory);
         if (!findSubCategory)
           throw new Error("No SUB-CATEGORY found at UPDATE TRANSACTION");
         findTrans.category = findSubCategory.fatherCategory;
@@ -73,13 +74,14 @@ export async function POST(request, { params }) {
     }
     // CATEGORY UPDATE
     if (category && !subCategory) {
-      // console.log('first')
+      console.log('first')
       findTrans.category = !category ? findTrans.category : category;
     }
-    // TAGS UPATE
+    // TAGS UPDATE
     if (!tags) return null;
     if (!tags.length < 0) return null;
     const newTags = [];
+    // console.log('first')
     for (const tag of tags) {
       const findTag = await Tag.findOne({ name: tag, user: findTrans.user });
       // console.log(findTag)
@@ -93,9 +95,12 @@ export async function POST(request, { params }) {
         newTags.push(findTag._id);
       }
     }
+    // console.log('first')
     findTrans.tags = newTags;
+    // console.log(findTrans)
     //SAVE
     const updatedTrans = await findTrans.save()
+    // console.log(updatedTrans)
     if (!updatedTrans)
       throw new Error("NEW TRANSACTIONS could not be saved on POST");
     const transToSend = await Transaction.findById(updatedTrans._id)

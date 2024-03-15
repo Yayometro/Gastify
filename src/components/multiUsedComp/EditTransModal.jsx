@@ -129,9 +129,9 @@ function EditTransModal({ hidden, trans }) {
         `general-data/transactions/${trans._id}`,
         newTrans
       );
-      // console.log(response);
+      console.log(response);
       if (response.data) {
-        // console.log(response.data)
+        console.log(response.data)
         runNotify("ok", response.message)
         //UPDATE FRONT END REDUX
         dispatch(updateTransaction(response.data))
@@ -141,6 +141,7 @@ function EditTransModal({ hidden, trans }) {
         handleClose();
       }
     } catch (e) {
+      console.log(e)
       runNotify("error", String(e))
       throw new Error(e);
     }

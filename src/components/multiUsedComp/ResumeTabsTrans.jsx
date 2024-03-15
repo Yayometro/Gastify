@@ -16,21 +16,24 @@ function ResumeTabsTrans({ rttIncomes, rttBills, rttTrans }) {
     //DATE
     dayRange.setDate(today.getDate() - timePeriod);
     //
-    let total = rttTrans.filter((mov) => {
-      const transactionDate = new Date(mov.date || mov.createdAt);
-      return transactionDate >= dayRange;
-    });
-    total = total.sort((a, b) => {
-      let dateA = new Date(a.date || a.createdAt);
-      let dateB = new Date(b.date || b.createdAt);
-
-      return dateB - dateA;
-    });
-    const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
-    const accIncomes = total.filter((bill) => bill.isIncome && !bill.isBill);
-
-    setAllBills(accBills);
-    setAllIncomes(accIncomes);
+    //if trans don't wxist
+    if(rttTrans.length > 0){
+      let total = rttTrans.filter((mov) => {
+        const transactionDate = new Date(mov.date || mov.createdAt);
+        return transactionDate >= dayRange;
+      });
+      total = total.sort((a, b) => {
+        let dateA = new Date(a.date || a.createdAt);
+        let dateB = new Date(b.date || b.createdAt);
+  
+        return dateB - dateA;
+      });
+      const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
+      const accIncomes = total.filter((bill) => bill.isIncome && !bill.isBill);
+  
+      setAllBills(accBills);
+      setAllIncomes(accIncomes);
+    }
   }, [rttTrans, timePeriod]);
 
   const handleDurationChange = (event) => {
