@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { signOut } from "next-auth/react"; //only ones need it
 import { useSession } from "next-auth/react"; //too
 import Link from "next/link";
@@ -19,13 +19,27 @@ import { IoMdExit } from "react-icons/io";
 import { BiSolidCategory } from "react-icons/bi";
 
 import "@/components/NavbarStyle.css";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUser } from "@/lib/features/userSlice";
 
 function Navbar({ sesion }) {
   const [toggleNav, setToggleNav] = useState(false);
-  //   console.log(sesion);
+  console.log(sesion);
   const handleToggleNav = () => {
     setToggleNav(!toggleNav);
   };
+  // REDUX
+  const reduxDispatch = useDispatch()
+  const ccUser = useSelector((state) => state.userReducer.data);
+  console.log(ccUser)
+  // 
+  useEffect(() => {
+    // User
+    if (ccUser.status == "idle") {
+      reduxDispatch(fetchUser(sesion.user.email));
+    }
+  }, []);
+
   return (
     <nav className="navbar w-full fixed flex flex-col items-center justify-center bottom-0 md:w-fit md:fixed md:top-0 z-[1000] ">
       <ul
@@ -37,13 +51,13 @@ function Navbar({ sesion }) {
           <Link href="/dashboard/profile">
             <Image
               className="rounded-full border-[1px] border-purple-800 m-auto w-[60px]  sm:w-[40px]"
-              src={sesion?.user?.image}
-              alt={`${sesion.user.name} profile account`}
+              src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
+              alt={`${ccUser?.fullName} profile account`}
               width={50}
               height={50}
               objectPosition="center"
             />
-            <p className="text-[10px] sm:text-[8px]">{sesion?.user?.name}</p>
+            <p className="text-[10px] sm:text-[8px] w-[45px] break-word text-ellipsis overflow-hidden group truncate">{ccUser?.fullName}</p>
             <p className="hidden hoverTooltip">Profile</p>
           </Link>
         </li>

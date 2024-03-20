@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
+import { quantum } from "ldrs";
 
 export default function RegisterComp({ params }) {
   const [formData, setFormData] = useState({
@@ -22,6 +23,10 @@ export default function RegisterComp({ params }) {
     passSpecial: "hidden",
   });
   const router = useRouter();
+  const [loading, setLoading] = useState(false)
+
+  //Loader
+  quantum.register()
 
   const passString =
     'The password must have at least one special character "!@#$%^&*(),.?":{}|<>".';
@@ -50,17 +55,27 @@ export default function RegisterComp({ params }) {
   };
 
   const googleSignIn = async () => {
-    const reqGoogle = await signIn("google");
-    console.log(reqGoogle);
+    try{
+      setLoading(true)
+      const reqGoogle = await signIn("google");
+    } catch(e){
+      console.log(e)
+      throw new Error(e)
+    }
   };
   const githubSignIn = async () => {
-    const reqGithub = await signIn("github");
-    console.log(reqGithub);
+    try{
+      setLoading(true)
+      const reqGithub = await signIn("github");
+    } catch(e){
+      console.log(e)
+    }
   };
 
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
+      setLoading(true);
       // Send data to backend using fetcher(formData)
       console.log(formData);
       if (formData.termnsYes === false) {
@@ -94,34 +109,9 @@ export default function RegisterComp({ params }) {
         setFormData({ ...formData, mail: "" });
         return;
       }
-      //Deprecated code:
-      // const signInResponse = await signIn('credentials', {
-      //   email: formData.mail,
-      //   password: formData.password,
-      //   redirect: false
-      // })
-      // console.log(signInResponse)
-      // //
-      // if(signInResponse.error){
-      //   console.log(signInResponse.error)
-      //   window.alert(signInResponse.error)
-      //   return ;
-      // }
-
-      // router.replace('dashboard')
       if (response.userCreatedStatus) {
         router.push(`/login?mail=${formData.mail}`);
       }
-
-      //Must handle this cleaning form only if the response was successfull
-      // setFormData({
-      //     name: "",
-      //     lastName: "",
-      //     username: "",
-      //     mail: "",
-      //     password: "",
-      //     termnsYes: false,
-      // })
     } catch (e) {
       console.log(e);
       throw new Error(e);
@@ -129,7 +119,18 @@ export default function RegisterComp({ params }) {
   };
   //refresh y accesstoken con JWT - medium
   return (
-    <div className="login-componnt-cont  flex flex-col w-[97%] h-[95%] sm:w-[550px] sm:h-[750px] relative rounded-2xl items-center justify-center pt-[10px] sm:pt[20px] overflow-y-auto">
+    <div className="login-componnt-cont  flex flex-col w-[97%] h-[100%] sm:w-[550px] sm:h-[750px] relative rounded-2xl items-center justify-center sm:pt[20px] overflow-y-auto">
+       <div className="loader">
+      {
+              !loading ? ('') : (
+                <div className="w-full h-full flex flex-col justify-center items-center bg-white/80 z-50 absolute text-center p-4 gap-4 left-0">
+                  <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
+                  <p className=" text-xl text-purple-800">We are building up your dashboard and data</p>
+                  <p className=" text-xl text-purple-800">Please wait a moment 🤓</p>
+                </div>
+              )
+            }
+      </div>
       <div className="py-5">
         <h1 className="text-center text-white text-2xl font-normal">
           Register

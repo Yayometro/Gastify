@@ -1,8 +1,8 @@
 
 export default function fetcher(){
     // let baseUrl = process.env.REACT_APP_APP_URL
-    // const baseUrl = "http://localhost:3000";
-    const baseUrl = "https://gastify-jair-vazquez-navarretes-projects.vercel.app";
+    const baseUrl = "http://localhost:3000";
+    // const baseUrl = "https://gastify-jair-vazquez-navarretes-projects.vercel.app";
     const apiRoute = "/api/"
     let fullPath = baseUrl.concat(apiRoute);
     // // console.log(fullPath)

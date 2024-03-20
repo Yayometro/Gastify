@@ -1,14 +1,13 @@
 "use client";
-import React from "react";
-import { useState, useEffect } from "react";
-import fetcher from "@/helpers/fetcher"; // (verb, path, content )
-import bcryptjs from "bcryptjs";
+import React, { useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import runNotify from "@/helpers/gastifyNotifier";
+import { quantum } from "ldrs";
 
 function LoginComponent() {
   const [formData, setFormData] = useState({
@@ -16,34 +15,47 @@ function LoginComponent() {
     password: "",
   });
   const [errorForm, setErrorForm] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
   const searchParamas = useSearchParams();
   const email = searchParamas.get("mail");
+
+  useEffect(() => {
+    if (email) {
+      runNotify("ok", `${email} was created successfully 🤓`);
+    }
+  }, []);
+
+  //Loader
+  quantum.register()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
   const googleSignIn = async () => {
-    try{
+    try {
+      setLoading(true);
       const reqGoogle = await signIn("google");
-      console.log(reqGoogle)
-    } catch(e){
-      console.log(e)
-      throw new Error(e)
+    } catch (e) {
+      console.log(e);
+      throw new Error(e);
     }
   };
   const githubSignIn = async () => {
-    const reqGithub = await signIn("github");
+    try {
+      setLoading(true);
+      const reqGithub = await signIn("github");
+    } catch (e) {
+      console.log(e);
+    }
   };
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
-      // Send data to backend using fetcher(formData)
-      console.log(formData);
-      //password validation:
-      // usando AUTH
+      setLoading(true);
+      // AUTH
       const authResponse = await signIn("credentials", {
         mail: formData.mail,
         password: formData.password,
@@ -52,6 +64,10 @@ function LoginComponent() {
       if (!authResponse) {
         console.log(authResponse);
         setErrorForm(
+          "Something went wrong, please verify your username or try again later 🤕"
+        );
+        runNotify(
+          "error",
           "Something went wrong, please verify your username or try again later 🤕"
         );
         router.push("/login");
@@ -63,34 +79,35 @@ function LoginComponent() {
         return;
       }
       console.log(authResponse);
-      // router.replace("dashboard");
       router.push("/dashboard");
-      //Vlidar si no hay respuesta ****
-
-      //Must handle this cleaning form only if the response was successfull
-      // setFormData({
-      //     name: "",
-      //     lastName: "",
-      //     username: "",
-      //     mail: "",
-      //     password: "",
-      //     termnsYes: false,
-      // })
     } catch (e) {
       console.log(e);
       throw new Error(e);
     }
   };
   return (
-    <div className="login-componnt-cont  border-purple-600 flex flex-col w-[97%] h-[95%] sm:w-[550px] sm:h-[80%] relative rounded-2xl items-center justify-center pt-[10px] sm:pt[20px] overflow-y-auto">
-      <div className="py-5">
+    <div className="login-componnt-cont flex flex-col w-[95%] h-[95%] sm:w-[550px] sm:h-[650px] relative rounded-2xl items-center justify-center sm:pt[20px] overflow-y-auto">
+      <div className="loader">
+        {!loading ? (
+          ""
+        ) : (
+          <div className="w-full h-full flex flex-col justify-center items-center bg-white/80 z-50 absolute text-center p-4 gap-4 left-0">
+            <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
+            <p className=" text-xl text-purple-800">
+              We are working to set everything up for you
+            </p>
+            <p className=" text-xl text-purple-800">Please wait a moment 🤓</p>
+          </div>
+        )}
+      </div>
+      <div className="pb-4 pt-10">
         <h1 className="text-center text-white text-2xl font-normal">
           Login to use Gastify 💸
         </h1>
       </div>
       <div className="form-container bg-white w-full rounded-t-[100px] h-full m-auto">
         <form
-          className="form-login w-full h-full text-center flex flex-col gap-4 justify-start items-center pt-5 sm:pt-10"
+          className="form-login w-full h-full text-center flex flex-col gap-4 justify-start items-center pt-2 sm:pt-10"
           onSubmit={handleSubmit}
         >
           <div className="w-full flex flex-col justify-center items-center gap-1">

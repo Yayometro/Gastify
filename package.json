@@ -29,6 +29,7 @@
     "currency-formatter": "^1.5.9",
     "dayjs": "^1.11.10",
     "jsonwebtoken": "^9.0.2",
+    "ldrs": "^1.0.1",
     "magic.css": "^1.4.8",
     "mongoose": "^8.0.3",
     "next": "14.0.3",

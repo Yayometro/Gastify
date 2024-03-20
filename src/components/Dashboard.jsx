@@ -38,6 +38,8 @@ import Top3 from "./multiUsedComp/Top3";
 import currencyFormatter from "currency-formatter";
 import Top3ContComp from "./multiUsedComp/Top3ContComp";
 import { fetchBudget } from "@/lib/features/budgetSlice";
+import { quantum } from "ldrs";
+import { IoIosCloseCircleOutline } from "react-icons/io";
 
 function Wallet({ dataServ, session }) {
   // const [generateData, { data: dataFromMutation, error, isLoading }] = useGetAllDataMutation();
@@ -61,6 +63,10 @@ function Wallet({ dataServ, session }) {
   let [totalAmountBalance, setTotalAmountBalance] = useState(0);
   let [totalBill, setTotalBill] = useState(0);
   let [totalIncome, setTotalIncome] = useState(0);
+  //LOADER
+  const [loading, setLoading] = useState(true);
+  //Loader
+  quantum.register();
   // Redux
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);
@@ -70,13 +76,7 @@ function Wallet({ dataServ, session }) {
   // const ccSubCategories = useSelector((state) => state.subCategoryReducer);
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
   const ccBudgets = useSelector((state) => state.budgetReducer);
-  //
-  // console.log(ccUser);
-  // console.log(ccWallet);
-  // console.log(ccAccounts);
-  // console.log(ccCategories);
-  // console.log(ccSubCategories);
-  // console.log(ccTransacciones);
+
   //
   useEffect(() => {
     // console.log(session)
@@ -153,6 +153,7 @@ function Wallet({ dataServ, session }) {
     if (ccTransacciones.status == "succeeded") {
       // console.log('first')
       setTransacctions(ccTransacciones.data);
+      setLoading(false);
     }
     //Budgets
     if (ccBudgets.status == "succeeded") {
@@ -166,7 +167,7 @@ function Wallet({ dataServ, session }) {
     ccCategories,
     // ccSubCategories,
     ccTransacciones,
-    ccBudgets
+    ccBudgets,
   ]);
 
   useEffect(() => {
@@ -176,42 +177,19 @@ function Wallet({ dataServ, session }) {
   }, [selectedDuration]);
 
   useEffect(() => {
-    // console.log(user);
-    // console.log(wallet);
-    // console.log(accounts);
-    // console.log(budgets);
-    // console.log(transactions);
-    // console.log(categories);
     //DATE
     let startFilterDate;
     let endFilterDate;
-    // if(!startDate && !endDate) {
-    //   console.log('Range Date is empty')
-    // };
-    // if(selectedDuration){
-    //   const selectDurationDay = new Date();
-    //   startFilterDate = new Date(
-    //     selectDurationDay.setDate(selectDurationDay.getDate() - selectedDuration)
-    //   );
-    //   endFilterDate = new Date();
-    //   console.log(startFilterDate)
-    //   console.log(endFilterDate)
-    // }
     if (startDate && endDate) {
-      // console.log(startDate);
-      // console.log(endDate);
       startFilterDate = startDate;
       endFilterDate = endDate;
     } else {
-      // console.log(selectedDuration);
       const today = new Date();
       startFilterDate = new Date(
         today.setDate(today.getDate() - selectedDuration)
       );
       endFilterDate = new Date();
     }
-    // console.log(startFilterDate);
-    // console.log(endFilterDate);
     //TRANS
     if (transactions.length > 0 && wallet) {
       let total = transactions.filter((tra) => {
@@ -220,20 +198,14 @@ function Wallet({ dataServ, session }) {
           transactionDate >= startFilterDate && transactionDate <= endFilterDate
         );
       });
-      // console.log(total)
       total = total.sort((a, b) => {
         let dateA = new Date(a.date || a.createdAt);
         let dateB = new Date(b.date || b.createdAt);
 
         return dateB - dateA;
       });
-      // console.log(total)
       const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
       const accIncomes = total.filter((bill) => bill.isIncome && !bill.isBill);
-      // let finalAmount = total.filter((tra) => tra.isReadable);
-      // finalAmount = total.reduce((current, tra) => current + tra.amount, 0);
-      // console.log(accBills)
-      // console.log(accIncomes)
       const finalBill = accBills.reduce(
         (current, bill) => current + bill.amount,
         0
@@ -250,6 +222,7 @@ function Wallet({ dataServ, session }) {
       setTotalBill(finalBill);
       setTotalIncome(finalIncome);
       //
+      setLoading(false)
     }
   }, [
     user,
@@ -266,24 +239,42 @@ function Wallet({ dataServ, session }) {
     setSelectedDuration(parseInt(event.target.value, 10));
   };
   const handleRangeDate = (sDate, eDate) => {
-    // console.log(sDate);
-    // console.log(eDate);
     setStartDate(sDate);
     setEndDate(eDate);
   };
 
   return (
-    <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px]">
+    <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
+      <div className="loader">
+        {!loading ? (
+          ""
+        ) : (
+          <div className=" fixed w-full h-full left-0 top-0 flex justify-center items-center z-[1009]">
+            <div className="w-[90%] h-[70%] sm:w-[50%] bg-white/90 flex flex-col justify-center items-center text-center p-4 gap-4 rounded-2xl z-[1010] shadow-2xl relative">
+              <div
+                className="close absolute right-0 top-0 cursor-pointer"
+                onClick={() => setLoading(!loading)}
+              >
+                <IoIosCloseCircleOutline size={40} />
+              </div>
+              <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
+              <p className=" text-xl text-purple-800">
+                We are building up your dashboard and data
+              </p>
+              <p className=" text-xl text-purple-800">
+                Please wait a moment 🤓
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
       {user && wallet ? (
         <div className="walllet-header ">
           <div className="wallet-header pt-5 pb-2 px-3 flex flex-col gap-4 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
             <div className="w-credentials max-w-[620px]">
               <h2 className="text-white text-3xl sm:text-6xl font-thin text-center sm:text-start">
-                {
-                  !user.fullName ? (<Spin size="large"/>) : (
-                    `${user.fullName} `
-                  )
-                } Wallet
+                {!user.fullName ? <Spin size="large" /> : `${user.fullName} `}{" "}
+                Wallet
               </h2>
               <div
                 className={`text-white flex flex-col text-center items-center justify-center sm:justify-between pt-4 sm:pt-6`}
@@ -474,9 +465,7 @@ function Wallet({ dataServ, session }) {
                       />
                       )
                     } */}
-                    <BudgetCont
-                      bcSession={session}
-                    />
+                  <BudgetCont bcSession={session} />
                 </div>
               </div>
             </div>
