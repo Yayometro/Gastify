@@ -11,6 +11,7 @@ import { fetchUser } from "@/lib/features/userSlice";
 import { fetchAccounts } from "@/lib/features/accountsSlice";
 import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import ReadFileComp from "./ReadFileComp";
+import VoiceRecognicionComponent from "./VoiceRecognicionComponent";
 
 function MovementsClient({ mcData, mcSession }) {
   // Redux
@@ -88,6 +89,9 @@ function MovementsClient({ mcData, mcSession }) {
           </div>
           <div className="add-file-trans w-full h-full flex justify-center items-center">
             <ReadFileComp />
+          </div>
+          <div className="voice">
+            {/* <VoiceRecognicionComponent /> */}
           </div>
           <div className="mov-grans-cont w-full flex justify-center items-center ">
             <div className="w-full h-full min-[810px]:w-[800px] max-h-[1000px]  px-1 relative">
