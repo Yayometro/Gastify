@@ -115,7 +115,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
         </h1>
       </div>
       <div className="circle-graph-container w-full h-full">
-        <div className="circle-graph-container w-[100%] h-[500px] sm:[600px]">
+        <div className="circle-graph-container w-[100%] h-[500px] sm:h-[700px] md:h-[800px]">
           <ResponsiveCirclePacking
             data={dataCat}
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}

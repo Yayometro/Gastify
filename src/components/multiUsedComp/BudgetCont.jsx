@@ -91,7 +91,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   };
   // console.log(budgets);
   return (
-    <div className="budget-cont py-4">
+    <div className="budget-cont py-4 px-2">
       <div className="wallet-budget-Content">
         <h1 className="wallet-budget-title text-2xl text-center font-bold">
           Wallet Budgets

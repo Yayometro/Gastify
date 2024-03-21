@@ -435,81 +435,8 @@ function Movements({ movements, period, mail }) {
           </p>
         </Modal>
       </div>
-      <div className="movement-content">
-        <h1 className="movement-title text-2xl text-center font-bold">
-          Transactions details
-        </h1>
-      </div>
-      <p className="text-center font-xl">Filters</p>
-      <div className="filters flex items-center justify-center gap-2">
-        <div
-          className={`clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight  relative pulse-animation-short cursor-pointer ${
-            isSelectionMode ? "text-purple-500" : ""
-          }`}
-          onClick={handeTransSelection}
-        >
-          <p className="pr-2">Select {isSelectionMode ? "ON" : ""}</p>
-          <HiMiniCursorArrowRipple size={15} />
-        </div>
-        <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
-          <select
-            className="bg-transparent appearance-none w-full pr-4 "
-            name="DateSelector"
-            value={timePeriod}
-            onChange={handleDurationChange}
-          >
-            <option value={2}>Yesterday</option>
-            <option value={7}>Las week</option>
-            <option value={15}>Las 15 days</option>
-            <option value={30}>Last 30 days</option>
-            <option value={60}>Last 60 days</option>
-            <option value={90}>Last 90 days</option>
-            <option value={180}>Last 6 months</option>
-          </select>
-          <div className="filterIconContainer absolute right-[0px] pointer-events-none">
-            <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
-          </div>
-        </div>
-        <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
-          <select
-            className="bg-transparent appearance-none w-full pr-4"
-            name="DateSelector"
-            value={trastType}
-            onChange={handleTransType}
-          >
-            <option value={"all"}>All transactions</option>
-            <option value={"incomes"}>All incomes</option>
-            <option value={"bills"}>All bills</option>
-          </select>
-          <div className="filterIconContainer absolute right-[0px] pointer-events-none">
-            <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
-          </div>
-        </div>
-        <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
-          <select
-            className="bg-transparent appearance-none pr-4 max-w-[30px]"
-            name="DateSelector"
-            value={readable}
-            onChange={handleReadable}
-          >
-            <option value={"all"}>All</option>
-            <option value={"true"}>Readable transactions</option>
-            <option value={"false"}>Not readable transactions</option>
-          </select>
-          <div className="filterIconContainer absolute right-[0px] pointer-events-none">
-            <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
-          </div>
-        </div>
-        <div
-          className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight  relative pulse-animation-short"
-          onClick={handleCleanFilter}
-        >
-          <p className="pr-2">Clear filters</p>
-          <UniversalCategoIcon type={"ai/AiOutlineClear"} siz={13} />
-        </div>
-      </div>
-      <div className="head">
-      </div>
+      
+      <div className="head"></div>
       {loadingComponent ? (
         <div className="w-full h-full flex justify-center items-center">
           <Skeleton active />
@@ -519,8 +446,92 @@ function Movements({ movements, period, mail }) {
           <EmptyModule emMessage={"No transactions here... 🤕"} />
         </div>
       ) : (
-        <div className="table-container w-full overflow-y-scroll relative">
-          <div className="bg-slate-50 text-slate-700 sticky z-50 top-0 border-b-2 border-slate-200 px-1 py-2 mb-1">
+        <div className="table-container w-full h-full overflow-y-scroll relative max-h-[1000px]  px-1 ">
+          <div className="bg-slate-50 text-slate-900 sticky z-50 top-0 border-b-2 border-slate-200 px-1 py-2 mb-1 rounded-t-2xl">
+            <div className="movement-content">
+              <h1 className="movement-title text-2xl text-center font-bold">
+                Transactions details
+              </h1>
+            </div>
+            <div className="header-filters">
+              <p className="text-center font-xl">Filters</p>
+              <div className="filters flex items-center justify-center gap-2">
+                <div
+                  className={`clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight  relative pulse-animation-short cursor-pointer ${
+                    isSelectionMode ? "text-purple-500" : ""
+                  }`}
+                  onClick={handeTransSelection}
+                >
+                  <p className="pr-2">Select {isSelectionMode ? "ON" : ""}</p>
+                  <HiMiniCursorArrowRipple size={15} />
+                </div>
+                <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
+                  <select
+                    className="bg-transparent appearance-none w-full pr-4 "
+                    name="DateSelector"
+                    value={timePeriod}
+                    onChange={handleDurationChange}
+                  >
+                    <option value={2}>Yesterday</option>
+                    <option value={7}>Las week</option>
+                    <option value={15}>Las 15 days</option>
+                    <option value={30}>Last 30 days</option>
+                    <option value={60}>Last 60 days</option>
+                    <option value={90}>Last 90 days</option>
+                    <option value={180}>Last 6 months</option>
+                  </select>
+                  <div className="filterIconContainer absolute right-[0px] pointer-events-none">
+                    <UniversalCategoIcon
+                      type={"md/MdOutlineArrowDownward"}
+                      siz={12}
+                    />
+                  </div>
+                </div>
+                <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
+                  <select
+                    className="bg-transparent appearance-none w-full pr-4"
+                    name="DateSelector"
+                    value={trastType}
+                    onChange={handleTransType}
+                  >
+                    <option value={"all"}>All transactions</option>
+                    <option value={"incomes"}>All incomes</option>
+                    <option value={"bills"}>All bills</option>
+                  </select>
+                  <div className="filterIconContainer absolute right-[0px] pointer-events-none">
+                    <UniversalCategoIcon
+                      type={"md/MdOutlineArrowDownward"}
+                      siz={12}
+                    />
+                  </div>
+                </div>
+                <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
+                  <select
+                    className="bg-transparent appearance-none pr-4 max-w-[30px]"
+                    name="DateSelector"
+                    value={readable}
+                    onChange={handleReadable}
+                  >
+                    <option value={"all"}>All</option>
+                    <option value={"true"}>Readable transactions</option>
+                    <option value={"false"}>Not readable transactions</option>
+                  </select>
+                  <div className="filterIconContainer absolute right-[0px] pointer-events-none">
+                    <UniversalCategoIcon
+                      type={"md/MdOutlineArrowDownward"}
+                      siz={12}
+                    />
+                  </div>
+                </div>
+                <div
+                  className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight  relative pulse-animation-short"
+                  onClick={handleCleanFilter}
+                >
+                  <p className="pr-2">Clear filters</p>
+                  <UniversalCategoIcon type={"ai/AiOutlineClear"} siz={13} />
+                </div>
+              </div>
+            </div>
             <div className="flex flex-row justify-between items-center first-line:font-semibold ">
               <div className="flex gap-1">
                 <div>Category</div>

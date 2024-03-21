@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { writeFile, unlink } from "fs/promises";
 import path from "path";
-import xlsxPopulate from 'xlsx-populate'
+import xlsxPopulate from "xlsx-populate";
 import Transaction from "@/model/Transaction";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
+import { v2 as cloudinary } from "cloudinary";
 
 export async function POST(request, { params }) {
   try {
@@ -16,28 +17,36 @@ export async function POST(request, { params }) {
     //Transform to bytes and buffer.
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    //Path
-    const filePath = path.join(process.cwd(), "public/filesTemp", file.name);
-    //Saved the file
-    await writeFile(filePath, buffer);
-    console.log("first");
-    console.log(filePath)
+    //Path and Saved the file
+    const tmpFilePath = path.join('/tmp', file.name);
+    await writeFile(tmpFilePath, buffer);
+    console.log('first')
+    // //CLOUDINARY
+    // cloudinary.config({
+    //   cloud_name: "dvwlzqssk",
+    //   api_key: "483428741778831",
+    //   api_secret: "fuc7oXxM1SOkXcG3fqMlj-YRJsE",
+    // });
+    // // CLOUDINARY UPLOAD
+    // const couldinaryResponse = await cloudinary.uploader.upload(tmpFilePath);
+    // console.log(couldinaryResponse)
+    
     // Read and process the Excel File
-    const workbook = await xlsxPopulate.fromFileAsync(filePath);
+    const workbook = await xlsxPopulate.fromFileAsync(tmpFilePath);
     // console.log(workbook)
     const sheet = workbook.sheet(0); // Acceder a la primera hoja
-    console.log(sheet)
+    console.log(sheet);
     // const transactions = [];
     // const lastRow = workbook.sheet(0).usedRange().endRowNumber();
     // const lastRows = sheet.usedRange().endRowNumber();
     // const lastRow = sheet.usedRange() // Obtener la última fila de la hoja
-    // // const lastRowNumber = lastRow ? lastRow.rowNumber() : 0; 
+    // // const lastRowNumber = lastRow ? lastRow.rowNumber() : 0;
     // console.log(lastRow)
     // console.log("first");
     if (!params)
       throw new Error("No params ID send to work on POST UPDATE TRANSACTION");
-    // 
-    console.log(params)
+    //
+    console.log(params);
     //Find USER
     await dbConnection();
     const userFound = await User.findOne({ mail: params.id }).lean();
@@ -47,51 +56,51 @@ export async function POST(request, { params }) {
         error:
           "User not found, review the email provided in Create trans from file",
       });
-      console.log("first");
-      // Nueva lógica para determinar la última fila con datos y procesar las filas
-let i = 2; // Asumiendo que la primera fila contiene encabezados y empiezas desde la segunda fila
-let isEmpty = false;
-const transactions = [];
-// Función para convertir el número serial de Excel a una fecha en JavaScript
-function excelSerialDateToJSDate(serial) {
-    const utc_days = Math.floor(serial - 25569);
-    const utc_value = utc_days * 86400; // convertir días a segundos
-    const date_info = new Date(utc_value * 1000); // convertir segundos a milisegundos
-  
-    // Ajustar la zona horaria
-    const offset = date_info.getTimezoneOffset() * 60000;
-    const date = new Date(date_info.getTime() + offset);
-  
-    return date;
-  }
+    console.log("first");
+    // Nueva lógica para determinar la última fila con datos y procesar las filas
+    let i = 2; // Asumiendo que la primera fila contiene encabezados y empiezas desde la segunda fila
+    let isEmpty = false;
+    const transactions = [];
+    // Función para convertir el número serial de Excel a una fecha en JavaScript
+    function excelSerialDateToJSDate(serial) {
+      const utc_days = Math.floor(serial - 25569);
+      const utc_value = utc_days * 86400; // convertir días a segundos
+      const date_info = new Date(utc_value * 1000); // convertir segundos a milisegundos
 
-  while (!isEmpty) {
-    const dateCell = sheet.cell(`A${i}`);
-    const serialDate = dateCell.value(); // Obtén el valor de la fecha como número serial de Excel
-    if (serialDate !== null && serialDate !== undefined) {
+      // Ajustar la zona horaria
+      const offset = date_info.getTimezoneOffset() * 60000;
+      const date = new Date(date_info.getTime() + offset);
+
+      return date;
+    }
+
+    while (!isEmpty) {
+      const dateCell = sheet.cell(`A${i}`);
+      const serialDate = dateCell.value(); // Obtén el valor de la fecha como número serial de Excel
+      if (serialDate !== null && serialDate !== undefined) {
         // Convierte el número serial a una fecha legible
         const date = excelSerialDateToJSDate(serialDate);
         // Procesa la fila
         const concept = sheet.cell(`B${i}`).value() || "no concept";
         const bill = sheet.cell(`C${i}`).value() || 0;
         const income = sheet.cell(`D${i}`).value() || 0;
-        
+
         transactions.push({
-            date,
-            name: concept,
-            amount: bill || income || 0,
-            isBill: !!bill,
-            isIncome: !!income,
-            isReadable: true,
-            user: userFound._id,
-            wallet: userFound.wallet,
+          date,
+          name: concept,
+          amount: bill || income || 0,
+          isBill: !!bill,
+          isIncome: !!income,
+          isReadable: true,
+          user: userFound._id,
+          wallet: userFound.wallet,
         });
-        
+
         i++; // Pasa a la siguiente fila
-    } else {
+      } else {
         isEmpty = true; // No hay más datos, sal del bucle
+      }
     }
-}
 
     // Iterar sobre las filas
     // for (let i = 2; i <= lastRow; i++) {
@@ -128,7 +137,7 @@ function excelSerialDateToJSDate(serial) {
     console.log("first");
     console.log(newTransactions);
     // Remove it after creation on database
-    await unlink(filePath);
+    await unlink(tmpFilePath);
     //
     return NextResponse.json({
       data: newTransactions,

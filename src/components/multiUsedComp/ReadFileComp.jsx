@@ -74,6 +74,7 @@ function ReadFileComp({}) {
           >
             <Button icon={<UploadOutlined />}>Upload</Button>
           </Upload>
+            
         </div>
         <div className="example-file flex justify-start items-center w-fit pt-2 pb-2 cursor-pointer text-purple-400 hover:text-purple-300 hover:underline gap-1">
           <MdFormatAlignLeft size={20} />

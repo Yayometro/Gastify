@@ -443,6 +443,9 @@ function Wallet({ dataServ, session }) {
                 </div>
               </div>
               <div className="wallet-right-col-container w-full h-full lg:max-w-[50%] lg:flex lg:flex-col">
+                <div className="budget">
+                  <BudgetCont bcSession={session} />
+                </div>
                 <div className="movements w-full h-full max-h-[500px] lg:max-h-[1000px] overflow-scroll">
                   <Movements
                     movements={allTransactions}
@@ -450,22 +453,6 @@ function Wallet({ dataServ, session }) {
                     bills={allBills}
                     period={selectedDuration}
                   />
-                </div>
-                <div className="budget">
-                  {/* {
-                    allTransactions.length <= 0 ? (
-                      <div className="w-full py-[20px]">
-                        <Skeleton active />
-                      </div>
-                    ) : (
-                      <BudgetCont
-                        bWallet={wallet}
-                        bBudgets={budgets}
-                        bTransactions={transactions}
-                      />
-                      )
-                    } */}
-                  <BudgetCont bcSession={session} />
                 </div>
               </div>
             </div>

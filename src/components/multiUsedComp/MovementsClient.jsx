@@ -90,7 +90,7 @@ function MovementsClient({ mcData, mcSession }) {
             <ReadFileComp />
           </div>
           <div className="mov-grans-cont w-full flex justify-center items-center ">
-            <div className="w-full h-full min-[810px]:w-[800px] max-h-[1000px] overflow-scroll px-1">
+            <div className="w-full h-full min-[810px]:w-[800px] max-h-[1000px]  px-1 relative">
               <Movements mail={mcSession} />
             </div>
           </div>
