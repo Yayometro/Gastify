@@ -231,10 +231,10 @@ function AddTransactionComp({
         </ConfigProvider>
       </div>
       {isShort ? (
-        <div className="w-full h-full">
+        <div className="w-full h-full flex justify-center items-center">
           <form
             onSubmit={handleSubmit}
-            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-10`}
+            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-10 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
           >
             <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
               Add Short Transaction
@@ -340,10 +340,10 @@ function AddTransactionComp({
           </form>
         </div>
       ) : (
-        <div className="w-full h-full">
+        <div className="w-full h-full flex justify-center items-center">
           <form
             onSubmit={handleSubmit}
-            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20`}
+            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
           >
             <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
               Add New Transaction

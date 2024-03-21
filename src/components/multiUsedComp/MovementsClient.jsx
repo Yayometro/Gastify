@@ -86,7 +86,7 @@ function MovementsClient({ mcData, mcSession }) {
               atcAccounts={accounts}
             />
           </div>
-          <div className="add-file-trans w-full h-full">
+          <div className="add-file-trans w-full h-full flex justify-center items-center">
             <ReadFileComp />
           </div>
           <div className="mov-grans-cont w-full flex justify-center items-center ">
