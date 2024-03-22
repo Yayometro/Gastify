@@ -90,8 +90,8 @@ function MovementsClient({ mcData, mcSession }) {
           <div className="add-file-trans w-full h-full flex justify-center items-center">
             <ReadFileComp />
           </div>
-          <div className="voice">
-            {/* <VoiceRecognicionComponent /> */}
+          <div className="voice w-full h-full flex justify-center items-center">
+            <VoiceRecognicionComponent />
           </div>
           <div className="mov-grans-cont w-full flex justify-center items-center ">
             <div className="w-full h-full min-[810px]:w-[800px] max-h-[1000px]  px-1 relative">
