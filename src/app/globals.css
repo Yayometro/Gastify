@@ -42,11 +42,15 @@ body {
 } */
 .profile-component-container{
   /* background: linear-gradient(0deg, rgba(187,71,255,1) 80%, rgba(0,98,255,1) 100%); */
-  background: linear-gradient(0deg, rgba(201,184,255,1) 69%, rgba(169,141,255,1) 100%);
+  /* background: linear-gradient(0deg, rgba(201,184,255,1) 69%, rgba(169,141,255,1) 100%); */
+  background: linear-gradient(0deg, rgba(144,107,255,1) 0%, rgba(198,181,255,1) 90%, rgba(160,129,255,1) 100%);
+
 }
 .default-gradient{
   /* background: linear-gradient(0deg, rgba(187,71,255,1) 80%, rgba(0,98,255,1) 100%); */
-  background: linear-gradient(0deg, rgba(201,184,255,1) 69%, rgba(169,141,255,1) 100%);
+  /* background: linear-gradient(0deg, rgba(201,184,255,1) 69%, rgba(169,141,255,1) 100%); */
+  background: linear-gradient(0deg, rgba(144,107,255,1) 0%, rgba(198,181,255,1) 90%, rgba(160,129,255,1) 100%);
+
 }
 .walllet-bg{
   /* background: linear-gradient(0deg, rgba(0,179,255,1) 4%, rgba(187,71,255,1) 35%, rgba(0,98,255,1) 58%, rgba(187,71,255,1) 92%, rgba(0,98,255,1) 100%); */

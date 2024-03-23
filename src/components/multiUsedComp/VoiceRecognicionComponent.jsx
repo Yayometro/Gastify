@@ -204,15 +204,25 @@ function VoiceRecognicionComponent() {
         <div className="flex gap-2 pl-2 items-center">
           <FaDotCircle size={10} />
           <div className=" text-sm font-light">
-            Create a bill with the <strong className=" font-bold">title</strong>
-            &quot;Vacation in Hawaii&quot;, with a
-            <strong className=" font-bold">value</strong> of &quot;10,000
+            Create a bill with the <strong className=" font-bold">title </strong>
+            &quot; school payment&quot;, with a
+            <strong className=" font-bold"> value</strong> of &quot; 250
             dollars&quot;,
-            <strong className=" font-bold">dated</strong> &quot;August 20, 2024
-            at 12:00 p.m.&quot;, with the &quot;vacation&quot;
-            <strong className=" font-bold">category</strong>, in the
-            &quot;Santander&quot;
-            <strong className=" font-bold">account</strong>
+          </div>
+        </div>
+        <p className=" text-sm font-medium pb-2">And you can also add more conditions. Here and example:</p>
+        <div className="flex gap-2 pl-2 items-center">
+          <FaDotCircle size={10} />
+          <div className=" text-sm font-light">
+            Create a bill with the <strong className=" font-bold">title </strong>
+            &quot;Vacation in Hawaii&quot;, with a
+            <strong className=" font-bold"> value</strong> of &quot;10,000
+            dollars&quot;,
+            <strong className=" font-bold"> dated</strong> &quot;August 20, 2024
+            at 12:00 p.m.&quot;, with the &quot; vacation&quot;
+            <strong className=" font-bold"> category</strong>, in the
+            &quot; Santander&quot;
+            <strong className=" font-bold"> account</strong>
           </div>
         </div>
         <p className=" text-base font-medium pt-2">
