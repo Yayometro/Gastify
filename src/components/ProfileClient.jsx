@@ -6,12 +6,13 @@ import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./multiUsedComp/EmptyModule";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
 import "@/components/animations.css";
-import { Switch, Spin, ConfigProvider, Space, Input } from "antd";
+import { Switch, Spin, ConfigProvider, Space, Input, Button } from "antd";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 import { fetchUser, updateUser } from "@/lib/features/userSlice";
+import { CldUploadWidget } from "next-cloudinary";
 
 function ProfileClient({ pcSession }) {
   const [onEdition, setOnEdition] = useState(false);
@@ -25,6 +26,7 @@ function ProfileClient({ pcSession }) {
     image: "",
     phone: "",
   });
+  const [imageUrl, setImageUrl] = useState();
   // Redux
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);
@@ -60,6 +62,7 @@ function ProfileClient({ pcSession }) {
         image: userData.image || null,
         phone: userData.phone || null,
       });
+      setImageUrl(userData.image);
     }
   }, [userData]);
 
@@ -134,7 +137,7 @@ function ProfileClient({ pcSession }) {
         // console.log(res);
         runNotify("ok", `${res.message}`);
         //UPDATE REDUX FRONT END
-        dispatch(updateUser(res.data))
+        dispatch(updateUser(res.data));
         // userData = res.data;
         setIsLoading(false);
       }
@@ -144,6 +147,18 @@ function ProfileClient({ pcSession }) {
       setIsLoading(false);
     }
   };
+  //IMAGE PROCESSING
+  const onImgHandling = (res) => {
+    console.log(res);
+    if (res.info.secure_url) {
+      setUserInfo({ ...userInfo, image: res.info.secure_url });
+      runNotify(
+        "ok",
+        "Your new avatar was successfully uploaded into our database, now SAVE THE CHANGES to finally apply changes 🤓"
+      );
+    }
+  };
+  //
   return (
     <div className="profile-component-container w-full h-full sm:pr-2">
       {!userData ? (
@@ -221,11 +236,17 @@ function ProfileClient({ pcSession }) {
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start">
                   <p className="text-[11px]">Image:</p>
-                  <div className="w-full border-2 border-purple-400 rounded-xl truncate px-2">
-                    <p className="text-lg font-light truncate pt-0.5">
-                      {userData.image}
-                    </p>
-                  </div>
+                    <div className="prof-edit-img flex justify-center items-center w-full">
+                      <Image
+                      className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500"
+                        alt="gastify-profile-avatar"
+                        width={100}
+                        height={100}
+                        src={userInfo.image
+                          ? userInfo.image
+                          : "/img/profile/user-non-profile.jpg"}
+                      />
+                    </div>
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start">
                   <p className="text-[11px]">Phone:</p>
@@ -347,13 +368,32 @@ function ProfileClient({ pcSession }) {
                   )}
                   <div className=" w-full cpc-name flex flex-col justify-center items-start">
                     <p className="text-[11px]">Image:</p>
-                    <input
-                      className="w-full border-2 border-purple-400 rounded-xl truncate px-2 text-lg font-light"
-                      type="text"
-                      name="image"
-                      value={userInfo.image || null}
-                      onChange={handleChange}
-                    />
+                    <div className=" w-full h-full flex  flex-col gap-2 justify-center items-center">
+                      <Image
+                      className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500 mb-2 hover:bg-white"
+                        alt="gastify-profile-avatar"
+                        width={100}
+                        height={100}
+                        src={userInfo.image
+                          ? userInfo.image
+                          : "/img/profile/user-non-profile.jpg"}
+                      />
+                      <CldUploadWidget
+                        uploadPreset="Gastify_Cloudinary_Preset"
+                        onSuccess={(success) => onImgHandling(success)}
+                      >
+                        {({ open }) => {
+                          return (
+                            <button
+                              className=" py-1 px-2 bg-purple-600 rounded-2xl text-white hover:bg-purple-500"
+                              onClick={() => open()}
+                            >
+                              Upload an Image
+                            </button>
+                          );
+                        }}
+                      </CldUploadWidget>
+                    </div>
                   </div>
                   <div className=" w-full cpc-name flex flex-col justify-center items-start">
                     <p className="text-[11px]">Phone:</p>
