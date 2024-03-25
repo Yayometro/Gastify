@@ -129,8 +129,8 @@ function Navbar({ sesion }) {
           <Link href="/dashboard/profile">
             <Image
               className="rounded-full border-[1px] border-purple-800 m-auto w-[30px]  sm:w-[40px]"
-              src={sesion?.user?.image}
-              alt={`${sesion.user.name} profile account`}
+              src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
+              alt={`${ccUser?.fullName} profile account`}
               width={50}
               height={50}
               objectPosition="center"

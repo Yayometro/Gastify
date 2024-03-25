@@ -12,8 +12,11 @@ export async function POST(request) {
     console.log(transObj);
     //Variables
     // Title extraction regex
-    let titleRegex =
-      /(?:title|titulo|name|nombre|descripción|descripcion)[\s:]*["']?([^,"']+)[,"']?/i;
+    // let titleRegex =
+    //   /(?:title|titulo|name|nombre|descripción|descripcion)[\s:]*["']?([^,"']+)[,"']?/i;
+    let titleRegex = /(?:title|titulo|name|nombre|descripción|descripcion)[\s:]*["']?([^,"']+?)(?=\s+(?:with|value|amount))/i
+
+
     // Amount extraction regex
     let amountRegex =
       /(?:value|valor|amount|monto|suma|number)\s*of\s*\$?([0-9,]+)/i;
@@ -90,14 +93,14 @@ export async function POST(request) {
     // Processing the 'types' to set 'isBill' and 'isIncome' accordingly.
     if (transObj.lang === "English") {
       let typesRegex =
-        /(create|new|add|generate) (a|an|one) (expense|income|bill|transaction)/i;
+        /(create|new|add|generate) (a|an|one)(.*?) (expense|income|bill|transaction)/i;
       const typesMatch = transObj.text.match(typesRegex);
       console.log(typesMatch)
       if (typesMatch) {
-        transaction.isBill = /expense|bill/.test(typesMatch[3]);
-        console.log(transaction.isBill)
-        transaction.isIncome = /income/.test(typesMatch[3]);
-        console.log(transaction.isIncome)
+        transaction.isBill = /expense|bill/.test(typesMatch[4]);
+        console.log(transaction.isBill); // Ahora debería reflejar correctamente si es un bill
+        transaction.isIncome = /income/.test(typesMatch[4]);
+        console.log(transaction.isIncome); // Y esto si es un ingreso
       }
     } else if (transObj.lang === "Spanish") {
       // Integración en español para determinar el tipo de transacción
@@ -128,7 +131,7 @@ export async function POST(request) {
       date: !transaction.date ? new Date() : transaction.date,
       account: null,
       category: null,
-    });
+    })
     console.log(newTransacction);
     if (transaction.category) {
       const categoryFound = await Category.findOne({
