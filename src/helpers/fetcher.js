@@ -9,7 +9,7 @@ export default function fetcher(){
     if(process.env.NEXTAUTH_URL){
         // console.log(process.env.NEXTAUTH_URL)
         fullPath = process.env.NEXTAUTH_URL.concat(apiRoute)
-    }
+    } 
     // console.log(fullPath)
     // console.log(baseUrl)
     // console.log(apiRoute)
