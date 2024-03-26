@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import { Switch, Spin, ConfigProvider, Space, Input, Tooltip, Skeleton } from "antd";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";

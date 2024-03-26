@@ -12,7 +12,7 @@ import { Button, ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch, useSelector } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { addNewTransacction } from "@/lib/features/transacctionsSlice";
 

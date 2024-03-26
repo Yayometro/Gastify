@@ -4,8 +4,7 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import EmptyModule from "./EmptyModule";
-import "@/components/animations.css";
-import { Switch, Spin, ConfigProvider, Space, Input, Tooltip } from "antd";
+import "@/components/styles/animations.css";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import CategoIcon from "./CategoIcon";
@@ -16,7 +15,7 @@ import EditCategoryModal from "./EditCategoryModal";
 import SubCategoryList from "./SubCategoryList";
 
 
-import { fetchCategories, getRedxCategories, getRedxCategoriesEstatus } from '@/lib/features/categoriesSlice';
+import { fetchCategories} from '@/lib/features/categoriesSlice';
 import { fetchUser } from '@/lib/features/userSlice'
 import { fetchSubCat } from "@/lib/features/subCategorySlice";
 
