@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import CategoIcon from "./multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
 
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
 import MultiCreditCard from "./multiUsedComp/MultiCreditCard";

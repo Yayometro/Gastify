@@ -2,7 +2,7 @@ import React from "react";
 
 
 import { PiExcludeSquareDuotone } from "react-icons/pi";
-import '@/components/animations.css'
+import '@/components/styles/animations.css'
 import CategoIcon from "./CategoIcon";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 

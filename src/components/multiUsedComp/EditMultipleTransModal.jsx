@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CategoIcon from "./CategoIcon";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import dayjs from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";

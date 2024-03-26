@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"; //too
 import Link from "next/link";
 import Image from "next/image";
 import "animate.css";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 
 import { IoIosArrowUp } from "react-icons/io";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
@@ -18,7 +18,7 @@ import { IoPricetags } from "react-icons/io5";
 import { IoMdExit } from "react-icons/io";
 import { BiSolidCategory } from "react-icons/bi";
 
-import "@/components/NavbarStyle.css";
+import "@/components/styles/NavbarStyle.css"
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "@/lib/features/userSlice";
 
