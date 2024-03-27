@@ -42,7 +42,6 @@ import { quantum } from "ldrs";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 
 function Wallet({ dataServ, session }) {
-  // const [generateData, { data: dataFromMutation, error, isLoading }] = useGetAllDataMutation();
   const [sed, setSed] = useState([]);
   const [totalDataFromServer, setTotalDataFromServer] = useState({});
   const [user, setUser] = useState([]);
@@ -79,40 +78,29 @@ function Wallet({ dataServ, session }) {
 
   //
   useEffect(() => {
-    // console.log(session)
     // User
     if (ccUser.status == "idle") {
-      // console.log("first");
       dispatch(fetchUser(session));
     }
     // Wallet
     if (ccWallet.status == "idle") {
-      // console.log("first");
       dispatch(fetchWallet(session));
     }
     // Account
     if (ccAccounts.status == "idle") {
-      // console.log("first");
       dispatch(fetchAccounts(session));
     }
     //Categories
     if (ccCategories.status == "idle") {
-      // console.log("first");
       dispatch(fetchCategories(session));
     }
     // //Sub-categories
-    // if (ccSubCategories.status == "idle") {
-    //   console.log("first");
-    //   dispatch(fetchSubCat(session));
-    // }
     //Transactions
     if (ccTransacciones.status == "idle" && session) {
-      // console.log("first");
       dispatch(fetchTrans(session));
     }
     //Budget
     if (ccBudgets.status == "idle" && session) {
-      // console.log("first");
       dispatch(fetchBudget(session));
     }
     //
@@ -125,39 +113,27 @@ function Wallet({ dataServ, session }) {
   useEffect(() => {
     // User
     if (ccUser.status == "succeeded") {
-      // console.log("first");
       setUser(ccUser.data);
     }
     if (ccWallet.status == "succeeded") {
-      // console.log("first");
       setWallet(ccWallet.data);
     }
     // Account
     if (ccAccounts.status == "succeeded") {
-      // console.log("first");
       setAccounts(ccAccounts.data);
     }
     //Categories
     if (ccCategories.status == "succeeded") {
-      // console.log("first");
       setCategories(ccCategories.data.user.concat(ccCategories.data.default));
     }
     // //Sub-categories
-    // if (ccSubCategories.status == "succeeded") {
-    //   console.log("first");
-    //   setSubCategories(
-    //     ccSubCategories.data?.subCat.concat(ccCategories.data?.default)
-    //   );
-    // }
     //Transactions
     if (ccTransacciones.status == "succeeded") {
-      // console.log('first')
       setTransacctions(ccTransacciones.data);
       setLoading(false);
     }
     //Budgets
     if (ccBudgets.status == "succeeded") {
-      // console.log('first')
       setBudgets(ccBudgets.data);
     }
   }, [

@@ -31,25 +31,20 @@ function ProfileClient({ pcSession }) {
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);
   let userData = ccUser.data;
-  // console.log(ccUser);
-  // console.log(userData);
   //FETCHER
   const toFetch = fetcher();
   //USE EFFECTS
   useEffect(() => {
     // User
     if (ccUser.status == "idle") {
-      // console.log("first");
       dispatch(fetchUser(pcSession));
     }
   }, []);
   useEffect(() => {
     if (ccUser.status == "loading") {
-      console.log("first");
       setIsLoading(true);
     }
     if (ccUser.status == "succeeded") {
-      // console.log("first");
       setIsLoading(false);
     }
     if (userData) {
@@ -67,7 +62,6 @@ function ProfileClient({ pcSession }) {
   }, [userData]);
 
   const onEditPassword = (val) => {
-    console.log(val);
     setOnEditPasswordState(val);
   };
   const handleChange = (e, tp) => {
@@ -75,7 +69,6 @@ function ProfileClient({ pcSession }) {
       setUserInfo({ ...userInfo, phone: e });
     } else {
       const { name, value } = e.target;
-      // console.log(name, value);
       setUserInfo({ ...userInfo, [name]: value });
     }
   };
@@ -84,7 +77,6 @@ function ProfileClient({ pcSession }) {
     try {
       e.preventDefault();
       setIsLoading(true);
-      // console.log(userInfo);
       //   verify double password
       if (onEditPasswordState) {
         const regexCapital = /[A-Z]/;
@@ -131,25 +123,20 @@ function ProfileClient({ pcSession }) {
           setIsLoading(false);
         }
       }
-      // console.log(userInfo);
       const res = await toFetch.post("general-data/user/update-user", userInfo);
       if (res.ok) {
-        // console.log(res);
         runNotify("ok", `${res.message}`);
         //UPDATE REDUX FRONT END
         dispatch(updateUser(res.data));
-        // userData = res.data;
         setIsLoading(false);
       }
     } catch (e) {
-      // console.log(e);
       runNotify("error", String(e));
       setIsLoading(false);
     }
   };
   //IMAGE PROCESSING
   const onImgHandling = (res) => {
-    console.log(res);
     if (res.info.secure_url) {
       setUserInfo({ ...userInfo, image: res.info.secure_url });
       runNotify(

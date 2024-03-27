@@ -14,14 +14,6 @@ export async function POST(request){
             wallet,
             accounts
         } = await request.json()
-        // console.log(
-        //     name,
-        //     icon,
-        //     color,
-        //     user,
-        //     wallet,
-        //     accounts
-        // )
         if(!user) throw new Error("No USER received for NEW CATEGORY")
         if(!wallet) throw new Error("No WALLET received for NEW CATEGORY")
         await dbConnection();

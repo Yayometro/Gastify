@@ -14,13 +14,10 @@ export async function POST(request){
         const removedCatego = await Category.findByIdAndDelete(id);
         if(!removedCatego) throw new Error("NO category REMOVED 🤕")
         //
-        // let deleteChildren = await SubCategory.deleteMany({fatherCategory: removedCatego._id})
-        // if(!deleteChildren) throw new Error(`No ALL childrens were removed from parent ${removedCatego.name}`)
-        return NextResponse.json({
+       return NextResponse.json({
             message: `${removedCatego.name} was removed successfully 🤓`,
             data: {
                 categoRemoved: removedCatego, 
-                // childrensDeleted: !deleteChildren ? null : deleteChildren
             },
             ok: true,
             status: 201

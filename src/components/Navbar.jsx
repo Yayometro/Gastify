@@ -24,14 +24,12 @@ import { fetchUser } from "@/lib/features/userSlice";
 
 function Navbar({ sesion }) {
   const [toggleNav, setToggleNav] = useState(false);
-  console.log(sesion);
   const handleToggleNav = () => {
     setToggleNav(!toggleNav);
   };
   // REDUX
   const reduxDispatch = useDispatch()
   const ccUser = useSelector((state) => state.userReducer.data);
-  console.log(ccUser)
   // 
   useEffect(() => {
     // User

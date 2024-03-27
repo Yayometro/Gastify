@@ -19,7 +19,7 @@ export async function POST(request, { params }) {
     // Read and process the Excel File
     const workbook = await xlsxPopulate.fromFileAsync(tmpFilePath);
     const sheet = workbook.sheet(0); // Getting the first page
-    console.log(sheet);
+    
     if (!params)
       throw new Error("No params ID send to work on POST UPDATE TRANSACTION");
     //Find USER

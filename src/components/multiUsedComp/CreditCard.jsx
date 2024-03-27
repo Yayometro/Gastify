@@ -74,10 +74,6 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
       setTotalAmount(finalAmount);
       setTotalBill(finalBill);
       setTotalIncome(finalIncome);
-      //
-      // console.log(allTransactions);
-      // console.log(account);
-      // console.log(selectedDuration);
     }
   }, [allTransactions, account, selectedDuration]);
 

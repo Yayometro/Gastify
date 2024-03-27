@@ -5,10 +5,8 @@ import Account from "@/model/Account";
 
 export async function POST(request) {
   try {
-    console.log("first");
     if (!request) throw new Error("No request received from NEW CATEGORY");
     const userMail = await request.json();
-    // console.log(userMail);
     //DB
     await dbConnection();
     // User find
@@ -29,7 +27,6 @@ export async function POST(request) {
       throw new Error(
         "No accounts found, review the user and wallet id on GET-ACCOUNT POST"
       );
-    console.log(accountFounded)
     return NextResponse.json({
       data: accountFounded,
       message: "Accoutns founded",

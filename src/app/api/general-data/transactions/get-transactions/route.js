@@ -12,7 +12,6 @@ export async function POST(request) {
     if (!request)
       throw new Error("No request received from get-all in Transactions");
     const userMail = await request.json();
-    // console.log(userMail);
     //DB
     await dbConnection();
     // User find
@@ -23,7 +22,6 @@ export async function POST(request) {
       });
     const userId = userFound._id;
     const walletId = userFound.wallet;
-    // console.log(userFound)
     //FIND TRANSACTIONS
     const movementsFounded = await Transaction.find({
       user: userId,
@@ -45,7 +43,6 @@ export async function POST(request) {
       throw new Error(
         "No movements found, review the user and wallet id on get-all/transactions in POST"
       );
-    // console.log(movementsFounded)
     return NextResponse.json({
       data: movementsFounded,
       message: "Transactions founded",

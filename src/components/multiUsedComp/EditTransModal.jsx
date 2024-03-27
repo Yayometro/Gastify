@@ -18,11 +18,6 @@ import { updateTransaction } from "@/lib/features/transacctionsSlice";
 
 function EditTransModal({ hidden, trans }) {
   const [active, setActive] = useState(false);
-  // const [defaultDate, setDefaultDate] = useState(new Date());
-  // const [isIncome, setIsIncome] = useState(false);
-  // const [isBill, setIsBill] = useState(false);
-  // const [isReadable, setIsReadable] = useState(false);
-  // const [defAccount, setDefAccount] = useState([]);
   const [isLoading, setIsLoading] = useState(false)
 
   const toFetch = fetcher();
@@ -33,17 +28,10 @@ function EditTransModal({ hidden, trans }) {
    const ccSubCategories = useSelector((state) => state.subCategoryReducer)
    const ccAccounts = useSelector((state) => state.accountsReducer)
    
-  //
-  // const seeGeneralData = useSelector((state) => state.generalDataReducer);
-  // console.log(seeGeneralData);
   const accounts = ccAccounts.data;
-  // console.log(accounts);
   const categories = ccategories.data.user.concat(ccategories.data.default)
-  // console.log(categories);
+  
   const subCategories = ccSubCategories.data.subCat;
-  // console.log(subCategories);
-
-  // console.log(trans);
   const [transactionInfo, setTransactionInfo] = useState({
     name: "",
     amount: 0,
@@ -73,21 +61,6 @@ function EditTransModal({ hidden, trans }) {
         tags: trans?.tags.map((tag) => tag.name).join(","),
         account: trans?.account?._id,
       });
-      // if(accounts){
-      //   console.log('first')
-      //   let accSelected = accounts.filter(acc => acc._id == trans?.account?._id)
-      //   console.log(accSelected)
-      //   if(accSelected){
-      //     console.log(accSelected)
-      //     setDefAccount(accSelected[0]._id)
-      //   }
-      // }
-      //   const formatRight = dayjs(trans.date || trans.createdAt).format("YYYY-MM-DDTHH:mm");
-      //   console.log(formatRight);
-      //   setDefaultDate(formatRight);
-      //   setIsIncome(trans?.isIncome);
-      //   setIsBill(trans?.isBill);
-      //   setIsReadable(trans?.isReadable);
     }
   }, [trans]);
   //MATERIAL UI
@@ -119,24 +92,19 @@ function EditTransModal({ hidden, trans }) {
     setIsLoading(true)
     const trimmedName = transactionInfo.name.trim();
     const tagsArray = transactionInfo.tags.split(",");
-    // console.log(tagsArray)
     const tagsArrCleaned = tagsArray.map(tag => tag.trim())
-    // console.log(tagsArrCleaned)
     const newTrans = { ...transactionInfo, name: trimmedName, tags: tagsArrCleaned };
-    // console.log(newTrans)
+    
     try {
       const response = await toFetch.post(
         `general-data/transactions/${trans._id}`,
         newTrans
       );
-      console.log(response);
+      
       if (response.data) {
-        console.log(response.data)
         runNotify("ok", response.message)
         //UPDATE FRONT END REDUX
         dispatch(updateTransaction(response.data))
-        // trans = response.data;
-        // console.log(trans);
         setIsLoading(false)
         handleClose();
       }
@@ -173,13 +141,11 @@ function EditTransModal({ hidden, trans }) {
   };
   const handleDefAccount = (event) => {
     if(event.target.value ===   'No account'){
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         account: null,
       });
     } else {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         account: event.target.value,
@@ -188,13 +154,11 @@ function EditTransModal({ hidden, trans }) {
   };
   const handleDefCategory = (event) => {
     if(event.target.value ===   'No category'){
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         category: null,
       });
     } else {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         category: event.target.value,
@@ -204,16 +168,13 @@ function EditTransModal({ hidden, trans }) {
   };
   const handleDefSubCategory = (event) => {
     if(event.target.value ===   'No subcategory'){
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         subCategory: null,
       });
     } else {
-      // console.log(event.target.value);
       const filterSub = subCategories.filter(sub => sub._id === event.target.value );
       const defFather = filterSub[0].fatherCategory._id
-      // console.log(defFather)
       setTransactionInfo({
         ...transactionInfo,
         subCategory: event.target.value,

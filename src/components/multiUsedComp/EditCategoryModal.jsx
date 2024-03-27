@@ -53,7 +53,6 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData }) {
     if (ecmCategory) {
       if (ecmMode === "edition") {
         if (ecmCategory.fatherCategory) {
-          // console.log(ecmCategory);
           setFormCategory({
             id: ecmCategory._id,
             name: ecmCategory?.name,

@@ -7,7 +7,6 @@ export async function POST(request){
     try{
         if(!request) throw new Error("No data in request on REMOVE-ACCOUNT POST") 
         const accountId = await request.json()
-        console.log(accountId)
         await dbConnection();
         // FIND ACCOUNT
         const removedAccount = await Account.findByIdAndDelete(accountId)

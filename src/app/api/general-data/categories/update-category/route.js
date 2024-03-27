@@ -19,7 +19,7 @@ export async function POST(request){
         //     icon,
         //     color,
         //     accounts
-        // )
+        // )  
         await dbConnection();
         const findCatego = await Category.findById(id);
         if(!findCatego) throw new Error("No category found to UPDATE")

@@ -8,11 +8,11 @@ import User from "@/model/User";
 
 export async function POST(request, { params }) {
   try {
-    console.log("first");
+    
     const data = await request.formData();
-    console.log(data);
+    
     const file = data.get("file");
-    console.log(file);
+    
     //Transform to bytes and buffer.
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -20,20 +20,20 @@ export async function POST(request, { params }) {
     const filePath = path.join(process.cwd(), "public/filesTemp", file.name);
     //Saved the file
     writeFile(filePath, buffer);
-    console.log("first");
+    
     // Read and process the Excel File
     const workbook = await xlsxPopulate.fromFileAsync(filePath);
     const sheet = workbook.sheet(0); // Acceder a la primera hoja
     const transactions = [];
     const lastRow = sheet.usedRange().endRowNumber();
-    console.log("first");
+    
     if (!params)
       throw new Error("No params ID send to work on POST UPDATE TRANSACTION");
     // //
     //Find USER
     await dbConnection();
     const userFound = await User.findOne({ mail: params.id }).lean();
-    console.log("first");
+    
     if (!userFound)
       throw new Error({
         error:

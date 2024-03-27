@@ -8,9 +8,8 @@ export async function POST(request){
         if(!request) throw new Error("No request received from NEW CATEGORY")
         const id = await request.json()
         await dbConnection();
-        console.log(id)
         const removeSub = await SubCategory.findByIdAndDelete(id).lean();
-        console.log(removeSub)
+        
         //UPDATE
         if(!removeSub) throw new Error(`${removeSub.name || 'SubCategory'} not removed 🤕`)
         return NextResponse.json({

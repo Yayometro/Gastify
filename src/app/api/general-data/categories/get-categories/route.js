@@ -5,10 +5,8 @@ import User from "@/model/User";
 
 export async function POST(request) {
   try {
-    // console.log('first')
     if (!request) throw new Error("No request received from NEW CATEGORY");
     const userMail = await request.json();
-    // console.log(userMail);
     //DB
     await dbConnection();
     // User find
@@ -29,7 +27,6 @@ export async function POST(request) {
       throw new Error(
         "No categories found, review the user and wallet id on GENERAL-DATA POST"
       );
-    // console.log(categoriesFounded)
     //FIND DEFUALT CATEGORIES
     const defaultCategoriesFounded = await Category.find({
       isDefaultCatego: true,
@@ -38,7 +35,6 @@ export async function POST(request) {
       throw new Error(
         "No default categories found, review the user and wallet id on GENERAL-DATA POST"
       );
-    // console.log(categoriesFounded)
     const dataFull = {
       categories: categoriesFounded,
       defCat: defaultCategoriesFounded,

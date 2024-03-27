@@ -12,7 +12,6 @@ export async function POST(request) {
     if (!request)
       throw new Error("No request received from get-all in Transactions");
     const userMail = await request.json();
-    // console.log(userMail);
     //DB
     await dbConnection();
     // User find
@@ -24,8 +23,6 @@ export async function POST(request) {
     const userId = userFound._id;
     const walletId = userFound.wallet;
     userFound.password = null;
-    //
-    // console.log(userFound)
     //FIND TRANSACTIONS
     const movementsFounded = await Transaction.find({
       user: userId,
@@ -56,7 +53,6 @@ export async function POST(request) {
       throw new Error(
         "No categories found, review the user and wallet id on GENERAL-DATA POST"
       );
-    // console.log(categoriesFounded)
     //FIND DEFUALT CATEGORIES
     const defaultCategoriesFounded = await Category.find({
       isDefaultCatego: true,

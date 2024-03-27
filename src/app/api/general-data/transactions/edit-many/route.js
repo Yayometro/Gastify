@@ -20,19 +20,6 @@ export async function POST(request) {
       subCategory,
       tags,
     } = await request.json();
-    console.log(
-      transactions,
-      name,
-      amount,
-      isIncome,
-      isBill,
-      isReadable,
-      date,
-      account,
-      category,
-      subCategory,
-      tags
-    );
     await dbConnection();
     //Validators
     if (!transactions)
@@ -40,7 +27,7 @@ export async function POST(request) {
     let savedTrans = [];
     for (const transId of transactions) {
       const transaction = await Transaction.findById(transId);
-      console.log(transaction);
+     
       if (!transaction) {
         throw new Error(`Transaction ${transId} not found on update many`);
         // continue; // jump iteration
@@ -53,12 +40,12 @@ export async function POST(request) {
       transaction.isReadable = isReadable || transaction.isReadable;
       transaction.date = !date ? transaction.date : new Date(date);
       transaction.account = account || transaction.account;
-      //   console.log('first')
+      
       //SUB
       if (transaction.subCategory !== subCategory && subCategory) {
         if (!subCategory) return null;
         const findSubCategory = await SubCategory.findById(subCategory);
-        console.log(findSubCategory);
+        
         if (!findSubCategory)
           throw new Error("No SUB-CATEGORY found at UPDATE TRANSACTION");
         transaction.category = findSubCategory.fatherCategory;
@@ -66,7 +53,7 @@ export async function POST(request) {
       }
       // CATEGORY UPDATE
       if (category && !subCategory) {
-        // console.log('first')
+       
         transaction.category = !category ? transaction.category : category;
       }
       // TAGS UPATE
@@ -78,7 +65,7 @@ export async function POST(request) {
           name: tag,
           user: transaction.user,
         });
-        console.log(findTag);
+        
         if (!findTag) {
           const newTag = new Tag({ name: tag, user: transaction.user });
           if (!newTag)
@@ -109,7 +96,7 @@ export async function POST(request) {
       //Push to send data
       savedTrans.push(transToSend);
     }
-    console.log(savedTrans);
+    
     return NextResponse.json({
       message: `${savedTrans.length} transactions were updated successfully 😎`,
       data: savedTrans,

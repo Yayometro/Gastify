@@ -11,8 +11,6 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
 import Budget from "@/model/Budget";
-// import defCategoriesCreator from "../defCategoriesCreator.js";
-//
 
 export async function POST(request) {
   try {
@@ -22,11 +20,7 @@ export async function POST(request) {
     // if(!isDefCategories) throw new Error("Some issue while runing defCategoriesCreator function")
     //
     const dataFront = await request.json();
-    console.log(dataFront);
-    // Validate if mail already exist
     const mailUsed = await User.findOne({ mail: dataFront.mail });
-    // const mailUsed = await User.findOne({mail: 'lalo@lalo'});
-    console.log(mailUsed);
     if (mailUsed) {
       return NextResponse.json({
         error: `This mail(${mailUsed.mail}) is already registered with us. Please set up a new email account.`,
@@ -60,17 +54,17 @@ export async function POST(request) {
       date: new Date(),
     });
     const fisrtAssociateCategory = new Category({
-      name: `${dataFront.fullName} First Category Example`,
+      name: `${dataFront.fullName} First Category`,
     });
     const fisrtAssociateSubCategory = new SubCategory({
-      name: `${dataFront.fullName} First Sub Category Example`,
+      name: `${dataFront.fullName} First Sub Category`,
     });
     const fisrtAssociateTag = new Tag({
-      name: `${dataFront.fullName} First Tag Example`,
+      name: `${dataFront.fullName} First Tag`,
       user: newUser._id,
     });
     const firstBudget = new Budget({
-      name: `${dataFront.fullName} First Budget Example`,
+      name: `${dataFront.fullName} First Budget`,
       goalAmount: 1,
       isSurpassed: false,
       isSaving: false,
