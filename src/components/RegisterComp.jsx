@@ -77,9 +77,9 @@ export default function RegisterComp({ params }) {
       e.preventDefault();
       setLoading(true);
       // Send data to backend using fetcher(formData)
-      console.log(formData);
       if (formData.termnsYes === false) {
         window.alert("Accept the terms and conditions");
+        setLoading(false)
       }
       //password validation:
       if (
@@ -90,23 +90,24 @@ export default function RegisterComp({ params }) {
         window.alert(
           "Verify that password length is higher than 8, that also includes min one capital letter and has at least one special character"
         );
-        console.log(formData.password);
         setFormData({ ...formData, password: "" });
+        setLoading(false)
         return false;
       }
 
       const toBack = fetcher();
       const response = await toBack.post("register", formData);
-      console.log(response);
       //
       if (response.error) {
         if (response.errorUser) {
           setFormData({ ...formData, formError: "Email already exist" });
+          setLoading(false)
           return;
         }
         //Some other error aside user in use
         window.alert(response.error);
         setFormData({ ...formData, mail: "" });
+        setLoading(false)
         return;
       }
       if (response.userCreatedStatus) {
@@ -114,6 +115,7 @@ export default function RegisterComp({ params }) {
       }
     } catch (e) {
       console.log(e);
+      setLoading(false)
       throw new Error(e);
     }
   };

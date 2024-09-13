@@ -198,7 +198,7 @@ function Wallet({ dataServ, session }) {
       setTotalBill(finalBill);
       setTotalIncome(finalIncome);
       //
-      setLoading(false)
+      setLoading(false);
     }
   }, [
     user,
@@ -359,36 +359,66 @@ function Wallet({ dataServ, session }) {
                 <ResumeTabsTrans rttTrans={allTransactions} />
               )}
             </div>
-            <div className="wallet-total-col-container flex flex-col items-center justify-center lg:flex-row lg:gap-2 lg:items-start ">
-              <div className="wallet-left-col-container w-full lg:max-w-[50%]">
-                <div className="top-3-general-container w-full">
-                  <h1 className="text-center text-black text-2xl font-bold py-4">
-                    Top 3 resume
-                  </h1>
-                  <div className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 min-[950px]:flex-row lg:flex-col">
-                    <div className="w-full ">
-                      {allTransactions.length <= 0 ? (
-                        <div className="w-full py-[20px]">
-                          <Skeleton active />
-                        </div>
-                      ) : (
-                        <Top3ContComp t3ccTransactions={allTransactions} />
-                      )}
+            <div className="top-3-general-container w-full">
+              <h1 className="text-center text-black text-2xl font-bold py-4">
+                Top 6 resume
+              </h1>
+              <div className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
+                <div className="w-full ">
+                  {allTransactions.length <= 0 ? (
+                    <div className="w-full py-[20px]">
+                      <Skeleton active />
                     </div>
-                    <div className="w-full ">
-                      {allTransactions.length <= 0 ? (
-                        <div className="w-full py-[20px]">
-                          <Skeleton active />
-                        </div>
-                      ) : (
-                        <Top3ContComp
-                          t3ccTransactions={allTransactions}
-                          ist3ccCategory={true}
-                        />
-                      )}
-                    </div>
-                  </div>
+                  ) : (
+                    <Top3ContComp t3ccTransactions={allTransactions} />
+                  )}
                 </div>
+                <div className="w-full ">
+                  {allTransactions.length <= 0 ? (
+                    <div className="w-full py-[20px]">
+                      <Skeleton active />
+                    </div>
+                  ) : (
+                    <Top3ContComp
+                      t3ccTransactions={allTransactions}
+                      ist3ccCategory={true}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="wallet-left-col-container w-full h-full">
+              <div className="TransactionsDetails w-full h-full">
+                {allTransactions.length <= 0 ? (
+                  <div className="w-full py-[20px]">
+                    <Skeleton active />
+                  </div>
+                ) : (
+                  <TransDetailsGrandContainer
+                    tdgcBills={allBills}
+                    tdgcInc={allIncomes}
+                  />
+                )}
+              </div>
+              <div>
+                <div className="asociatedCategories py-3 px-1 flex gap-1 justify-center items-center flex-wrap">
+                  {!categories.length > 0 ? (
+                    <div className="w-full py-[20px]">
+                      <Skeleton active />
+                    </div>
+                  ) : (
+                    categories.map((category) => (
+                      <Category
+                        category={category}
+                        key={`dashboard-categories-min-circle${category._id}`}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="wallet-total-col-container flex flex-col items-center justify-center lg:flex-row lg:gap-2 lg:items-start ">
+              {/* <div className="wallet-left-col-container w-full lg:max-w-[50%]">
                 <div className="TransactionsDetails w-full h-full">
                   {allTransactions.length <= 0 ? (
                     <div className="w-full py-[20px]">
@@ -417,18 +447,18 @@ function Wallet({ dataServ, session }) {
                     )}
                   </div>
                 </div>
-              </div>
-              <div className="wallet-right-col-container w-full h-full lg:max-w-[50%] lg:flex lg:flex-col">
-                <div className="budget">
-                  <BudgetCont bcSession={session} />
-                </div>
-                <div className="movements w-full h-full max-h-[500px] lg:max-h-[1000px] overflow-scroll">
+              </div> */}
+              <div className="wallet-right-col-container w-full h-full lg:max-w-[50%]s lg:flex lg:flex-col justify-center items-center">
+                <div className="movements w-full h-full max-h-[500px] lg:max-w-[800px] lg:max-h-[1000px] overflow-scroll flex flex-row justify-center items-center">
                   <Movements
                     movements={allTransactions}
                     incomes={allIncomes}
                     bills={allBills}
                     period={selectedDuration}
                   />
+                </div>
+                <div className="budget">
+                  <BudgetCont bcSession={session} />
                 </div>
               </div>
             </div>

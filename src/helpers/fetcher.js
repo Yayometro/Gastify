@@ -1,12 +1,8 @@
 
 export default function fetcher(){
-    // const baseUrl = "http://localhost:3000";
-    const baseUrl = "https://gastify-jair-vazquez-navarretes-projects.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_API_ROUTE
     const apiRoute = "/api/"
     let fullPath = baseUrl.concat(apiRoute);
-    if(process.env.NEXTAUTH_URL){
-        fullPath = process.env.NEXTAUTH_URL.concat(apiRoute)
-    }
     
     return {
         get: async function(path){
