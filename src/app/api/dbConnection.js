@@ -13,7 +13,6 @@ export default async function dbConnection() {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
-        console.log(`Database connected to ----> ${connectionString}`)
         return data
     } catch(e){
         throw new Error(e)

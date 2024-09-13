@@ -12,7 +12,7 @@ import { Button, ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch, useSelector } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { addNewTransacction } from "@/lib/features/transacctionsSlice";
 
@@ -45,7 +45,6 @@ function AddTransactionComp({
   const categories = atcCategories;
   const subCategories = atcSubCategories;
   const accounts = atcAccounts;
-  // console.log(subCategories)
 
   //REDUX
   const dispatch = useDispatch();
@@ -88,13 +87,11 @@ function AddTransactionComp({
   };
   const handleDefAccount = (event) => {
     if (event.target.value === "No account") {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         account: null,
       });
     } else {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         account: event.target.value,
@@ -104,32 +101,24 @@ function AddTransactionComp({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log(transactionInfo);
     const trimmedName = transactionInfo.name.trim();
     const tagsArray = transactionInfo.tags.split(",");
-    // console.log(tagsArray)
     const tagsArrCleaned = tagsArray.map((tag) => tag.trim());
-    // console.log(tagsArrCleaned)
     const newTrans = {
       ...transactionInfo,
       name: trimmedName,
       tags: tagsArrCleaned,
     };
-    // console.log(newTrans)
     try {
       const response = await toFetch.post(
         `general-data/transactions/new-transaction`,
         newTrans
       );
-      // console.log(response);
       if (response.data) {
-        // console.log(response.data)
         runNotify("ok", response.message);
         const addlyData = [response.data]
         //UPDATE FRON END
         dispatch(addNewTransacction(response.data))
-        // trans = response.data;
-        // console.log(trans);
         setIsLoading(false);
         clearForm();
       }
@@ -164,18 +153,15 @@ function AddTransactionComp({
   //
   const handleDefSubCategory = (event) => {
     if (event.target.value === "No subcategory") {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         subCategory: null,
       });
     } else {
-      // console.log(event.target.value);
       const filterSub = subCategories.filter(
         (sub) => sub._id === event.target.value
       );
       const defFather = filterSub[0].fatherCategory._id;
-      // console.log(defFather)
       setTransactionInfo({
         ...transactionInfo,
         subCategory: event.target.value,
@@ -185,13 +171,11 @@ function AddTransactionComp({
   };
   const handleDefCategory = (event) => {
     if (event.target.value === "No category") {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         category: null,
       });
     } else {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         category: event.target.value,
@@ -231,10 +215,10 @@ function AddTransactionComp({
         </ConfigProvider>
       </div>
       {isShort ? (
-        <div className="w-full h-full">
+        <div className="w-full h-full flex justify-center items-center">
           <form
             onSubmit={handleSubmit}
-            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-10`}
+            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-10 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
           >
             <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
               Add Short Transaction
@@ -340,10 +324,10 @@ function AddTransactionComp({
           </form>
         </div>
       ) : (
-        <div className="w-full h-full">
+        <div className="w-full h-full flex justify-center items-center">
           <form
             onSubmit={handleSubmit}
-            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20`}
+            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
           >
             <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
               Add New Transaction

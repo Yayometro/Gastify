@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import CreditCard from "./CreditCard";
 import randomColor from "randomcolor";
 import { useDispatch, useSelector } from "react-redux";

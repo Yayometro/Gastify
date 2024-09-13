@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
 import { PiExcludeSquareDuotone } from "react-icons/pi";

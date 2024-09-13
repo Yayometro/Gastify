@@ -11,6 +11,8 @@
   "dependencies": {
     "@ant-design/charts": "^2.0.3",
     "@ant-design/plots": "^2.1.6",
+    "@cloudinary/react": "^1.13.0",
+    "@cloudinary/url-gen": "^1.19.0",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.15.3",
@@ -35,6 +37,7 @@
     "mongoose": "^8.0.3",
     "next": "14.0.3",
     "next-auth": "^4.24.5",
+    "next-cloudinary": "^6.3.0",
     "next-redux-wrapper": "^8.1.0",
     "randomcolor": "^0.6.2",
     "react": "^18",

@@ -13,7 +13,6 @@ export async function POST(request){
         if(!request) throw new Error("No data in request on REMOVE USER")
         const {mail} = await request.json()
         await dbConnection();
-        console.log(mail)
         const removedUser = await User.findOneAndDelete({mail});
             if(!removedUser) throw new Error(`User not removed, please verify the email`);
         const removeWalletAssociated = await Wallet.findOneAndDelete({user: removedUser._id});

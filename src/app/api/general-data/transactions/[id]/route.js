@@ -6,18 +6,6 @@ import Tag from "@/model/Tag";
 import Account from "@/model/Account";
 import SubCategory from "@/model/SubCategory";
 
-export async function GET() {
-  try {
-    return NextResponse.json({
-      message: "Data founded in new Transaction",
-      status: 201,
-      ok: true,
-    });
-  } catch (e) {
-    throw new Error(e);
-  }
-}
-
 export async function POST(request, { params }) {
   try {
     if (!request) throw new Error("No data in request on GENERAL-DATA POST");
@@ -33,16 +21,6 @@ export async function POST(request, { params }) {
       subCategory,
       tags,
     } = await request.json();
-    // console.log(name,
-    //     amount,
-    //     isIncome,
-    //     isBill,
-    //     isReadable,
-    //     date,
-    //     account,
-    //     category,
-    //     subCategory,
-    //     tags)
     //Validators
     if (!params)
       throw new Error("No params ID send to work on POST UPDATE TRANSACTION");
@@ -50,7 +28,7 @@ export async function POST(request, { params }) {
 
     await dbConnection();
     const findTrans = await Transaction.findById(params.id);
-    // console.log(findTrans)
+    
     if (!findTrans)
       throw new Error("No Transactions found work on POST UPDATE TRANSACTION");
     // UPDATES:
@@ -65,7 +43,7 @@ export async function POST(request, { params }) {
     if (subCategory) {
       if (findTrans.subCategory !== subCategory) {
         let findSubCategory = await SubCategory.findById(subCategory).lean();
-        // console.log(findSubCategory);
+        
         if (!findSubCategory)
           throw new Error("No SUB-CATEGORY found at UPDATE TRANSACTION");
         findTrans.category = findSubCategory.fatherCategory;
@@ -74,17 +52,17 @@ export async function POST(request, { params }) {
     }
     // CATEGORY UPDATE
     if (category && !subCategory) {
-      console.log('first')
+      
       findTrans.category = !category ? findTrans.category : category;
     }
     // TAGS UPDATE
     if (!tags) return null;
     if (!tags.length < 0) return null;
     const newTags = [];
-    // console.log('first')
+    
     for (const tag of tags) {
       const findTag = await Tag.findOne({ name: tag, user: findTrans.user });
-      // console.log(findTag)
+      
       if (!findTag) {
         const newTag = new Tag({ name: tag, user: findTrans.user });
         if (!newTag)
@@ -95,12 +73,12 @@ export async function POST(request, { params }) {
         newTags.push(findTag._id);
       }
     }
-    // console.log('first')
+    
     findTrans.tags = newTags;
-    // console.log(findTrans)
+    
     //SAVE
     const updatedTrans = await findTrans.save()
-    // console.log(updatedTrans)
+    
     if (!updatedTrans)
       throw new Error("NEW TRANSACTIONS could not be saved on POST");
     const transToSend = await Transaction.findById(updatedTrans._id)
@@ -116,7 +94,7 @@ export async function POST(request, { params }) {
         .populate({
           path: "subCategory",
         });
-    // console.log(updatedTrans)
+    
     if (!transToSend)
       throw new Error("Updated transaction -transToSend- could not be loaded to send");
     return NextResponse.json({

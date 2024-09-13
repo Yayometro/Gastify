@@ -37,12 +37,6 @@ export async function GET(request, {params}){
             if(!accountsFounded) throw new Error("Accounts no found, review the user id on GENERAL-DATA POST");
         //FIND BUDGETS
         const budgetsFounded = await Budget.find({user: userId, wallet: walletId })
-            // .populate({
-            //     path: "category",
-            // })
-            // .populate({
-            //     path: "subCategory",
-            // })
             if(!budgetsFounded) throw new Error("No Budgets found, review the user and wallet id on GENERAL-DATA POST");
         //FIND TRANSACTIONS
         const transactionsFounded = await Transaction.find({ user: userId, wallet: walletId}).lean()
@@ -57,22 +51,18 @@ export async function GET(request, {params}){
             })
             
             if(!transactionsFounded) throw new Error("No transactions found, review the user and wallet id on GENERAL-DATA POST");
-            // console.log(transactionsFounded)
         //FIND CATEGORIES
         const categoriesFounded = await Category.find({ user: userId, wallet: walletId}).lean()
             if(!categoriesFounded) throw new Error("No categories found, review the user and wallet id on GENERAL-DATA POST");
-            // console.log(categoriesFounded)
         //FIND CATEGORIES
         const subCategoriesFounded = await SubCategory.find({ user: userId, wallet: walletId}).lean()
             .populate({
                 path: "fatherCategory",
             })
             if(!subCategoriesFounded) throw new Error("No SubCategories found, review the user and wallet id on GENERAL-DATA POST");
-            // console.log(subCategoriesFounded)
         // FIND TAGS
         const tagsFounded = await Tag.find({ user: userId,  wallet: walletId}).lean()
             if(!tagsFounded) throw new Error("No Tags found, review the user and wallet id on GENERAL-DATA POST");
-            // console.log(tagsFounded)
             
         const fullInfo = {
             user: userFound,

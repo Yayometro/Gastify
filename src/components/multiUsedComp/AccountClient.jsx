@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import { Switch, Spin, ConfigProvider, Space, Input, Tooltip, Skeleton } from "antd";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
@@ -43,41 +43,21 @@ function AccountClient({acSession}) {
   const userData = ccUser.data;
   const accountData = ccAccounts.data;
   const transactionData = ccTransacciones.data;
-  // const categoriesData = ccCategories.data.user.concat(ccCategories.data.default)
-  // const subCatData = ccSubCategories.data.subCat.concat(ccCategories.data.default)
+  
   let nameGeneral = userData?.fullName;
-  // console.log(nameGeneral)
-  //
-  // console.log(userData)
-  // console.log(accountData)
-  // console.log(transactionData)
-  // console.log(categoriesData)
-  // console.log(subCatData)
-  // console.log(nameGeneral)
+  
   // FETCHER
   const toFetch = fetcher();
   // START USE EFFECTS
   useEffect(() => {
     // User
     if(ccUser.status == 'idle'){
-      console.log('first')
       dispatch(fetchUser(acSession))
     }
     // Account
-    if(ccAccounts.status == 'idle'){
-      console.log('first') 
+    if(ccAccounts.status == 'idle'){ 
       dispatch(fetchAccounts(acSession))
     }
-    // //Categories
-    // if(ccCategories.status == 'idle'){
-    //   console.log('first')
-    //   dispatch(fetchCategories(acSession))
-    // }
-    // //Sub-categories
-    // if(ccSubCategories.status == 'idle'){
-    //   console.log('first')
-    //   dispatch(fetchSubCat(acSession))
-    // }
     //Transactions
     if(ccTransacciones.status == 'idle'){
       // console.log('first')
@@ -104,24 +84,17 @@ function AccountClient({acSession}) {
       let startFilterDate;
       let endFilterDate;
       if (startDate && endDate) {
-        // console.log(startDate);
-        // console.log(endDate);
         startFilterDate = startDate;
         endFilterDate = endDate;
       } else {
-        // console.log(selectedDuration);
         const today = new Date();
         startFilterDate = new Date(
           today.setDate(today.getDate() - selectedDuration)
         );
         endFilterDate = new Date();
       }
-      // console.log(startFilterDate);
-      // console.log(endFilterDate);
       //TRANS
       if (transactionData.length > 0 && accountData) {
-        // console.log(transactionData)
-        // console.log(accountData)
         let total = transactionData.filter((tra) => {
           const transactionDate = new Date(tra.date || tra.createdAt);
           return (
@@ -129,14 +102,12 @@ function AccountClient({acSession}) {
             transactionDate <= endFilterDate
           );
         });
-        // console.log(total)
         total = total.sort((a, b) => {
           let dateA = new Date(a.date || a.createdAt);
           let dateB = new Date(b.date || b.createdAt);
 
           return dateB - dateA;
         });
-        // console.log(total)
         const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
         const accIncomes = total.filter(
           (bill) => bill.isIncome && !bill.isBill
@@ -154,15 +125,10 @@ function AccountClient({acSession}) {
           }
           return obj;
         }, {});
-        // console.log(accToObject)
         const dividedArr = Object.values(accToObject);
-        // console.log(dividedArr)
         dividedArr.forEach((acc) => {
-          // console.log(acc)
           total.forEach((tra) => {
-            // console.log(tra)
             if (tra?.account?._id === acc._id) {
-              // console.log(acc)
               acc.allTransactionsList.push(tra);
               if (tra.isBill) {
                 acc.billsList.push(tra);
@@ -172,7 +138,6 @@ function AccountClient({acSession}) {
             }
           });
         });
-        // console.log(dividedArr)
         setFinalAccounts(dividedArr);
       }
     }
@@ -187,8 +152,6 @@ function AccountClient({acSession}) {
     setSelectedDuration(parseInt(event.target.value, 10));
   };
   const handleRangeDate = (sDate, eDate) => {
-    // console.log(sDate);
-    // console.log(eDate);
     setStartDate(sDate);
     setEndDate(eDate);
   };
@@ -204,8 +167,6 @@ function AccountClient({acSession}) {
     }
   }, [carruselCurrent, finalAccounts]);
 
-
-  // console.log(carruselCurrent);
   return (
     <div className=" w-full h-full sm:pr-2">
         <div className="w-full h-full relative">

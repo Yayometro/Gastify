@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"; //too
 import Link from "next/link";
 import Image from "next/image";
 import "animate.css";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 
 import { IoIosArrowUp } from "react-icons/io";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
@@ -18,20 +18,18 @@ import { IoPricetags } from "react-icons/io5";
 import { IoMdExit } from "react-icons/io";
 import { BiSolidCategory } from "react-icons/bi";
 
-import "@/components/NavbarStyle.css";
+import "@/components/styles/NavbarStyle.css"
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "@/lib/features/userSlice";
 
 function Navbar({ sesion }) {
   const [toggleNav, setToggleNav] = useState(false);
-  console.log(sesion);
   const handleToggleNav = () => {
     setToggleNav(!toggleNav);
   };
   // REDUX
   const reduxDispatch = useDispatch()
   const ccUser = useSelector((state) => state.userReducer.data);
-  console.log(ccUser)
   // 
   useEffect(() => {
     // User
@@ -129,8 +127,8 @@ function Navbar({ sesion }) {
           <Link href="/dashboard/profile">
             <Image
               className="rounded-full border-[1px] border-purple-800 m-auto w-[30px]  sm:w-[40px]"
-              src={sesion?.user?.image}
-              alt={`${sesion.user.name} profile account`}
+              src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
+              alt={`${ccUser?.fullName} profile account`}
               width={50}
               height={50}
               objectPosition="center"

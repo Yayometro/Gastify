@@ -10,16 +10,6 @@ function CategoryList({ clCategories ,clUser }) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState({});
 
-  // useEffect(() => {
-  //   if(clCategories){
-  //     console.log(clCategories)
-  //     setCategories(clCategories)
-  //   }
-  //   if(clSubCategory){
-  //     console.log(clSubCategory)
-  //     setSubCategories(clSubCategory)
-  //   }
-  // }, [clCategories, clSubCategory])
   
   return (
     <div className="category-list-component w-full h-full flex gap-2 flex-wrap justify-center items-center">

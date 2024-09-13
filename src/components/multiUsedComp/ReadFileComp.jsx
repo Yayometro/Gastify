@@ -54,7 +54,7 @@ function ReadFileComp({}) {
   };
 
   return (
-    <div className=" bg-slate-50 py-10 my-2 px-[30px] rounded-[60px]">
+    <div className=" bg-slate-50 py-10 my-2 px-[30px] rounded-[60px] w-full min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]">
       <h1 className=" text-2xl font-light">Read Bank States</h1>
       <form action="" className="add-file-form flex flex-col gap-1 justify-center items-center" onSubmit={handleSubmit}>
         <div

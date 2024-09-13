@@ -4,7 +4,7 @@ import DisplayerCategoryCirclePacking from "./DisplayerCategoryCirclePacking";
 import TransactionsResumeCont from "./TransactionsResumeCont";
 import { Tooltip } from "antd";
 
-function TransDetailsGrandContainer({tdgcInc, tdgcBills}) {
+function TransDetailsGrandContainer({ tdgcInc, tdgcBills }) {
   let [isBubble, setIsBubble] = useState(true);
   const handleTab = (budType) => {
     if (budType === "bubble") {
@@ -18,7 +18,7 @@ function TransDetailsGrandContainer({tdgcInc, tdgcBills}) {
       <h1 className="text-2xl text-center font-semibold pt-5">
         Transactions Details
       </h1>
-      <div className="tdgc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 bg-purple-100">
+      <div className="tdgc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 bg-purple-100 ">
         <div
           onClick={() => handleTab("bubble")}
           className={`tab-budget p-4 cursor-pointer hover:text-purple-400 ${
@@ -43,6 +43,9 @@ function TransDetailsGrandContainer({tdgcInc, tdgcBills}) {
             />
           </div>
         </Tooltip>
+      </div>
+      <div className="charts-wrapper w-full h-full flex justify-center items-center">
+        
       </div>
       <div
         className={`trc-container-sub w-full h-full ${

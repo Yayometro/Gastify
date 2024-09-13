@@ -8,7 +8,6 @@ export async function POST(request) {
   try {
     if (!request) throw new Error("No request received from NEW CATEGORY");
     const userMail = await request.json();
-    console.log(userMail);
     //DB
     await dbConnection();
     // User find
@@ -20,8 +19,6 @@ export async function POST(request) {
     const userId = userFound._id;
     const walletId = userFound.wallet;
     userFound.password = null;
-    //
-    // console.log(userFound)
     //FIND CATEGORIES
     const categoriesFounded = await Category.find({
       user: userId,
@@ -31,7 +28,6 @@ export async function POST(request) {
       throw new Error(
         "No categories found, review the user and wallet id on GENERAL-DATA POST"
       );
-    // console.log(categoriesFounded)
     //FIND DEFUALT CATEGORIES
     const defaultCategoriesFounded = await Category.find({
       isDefaultCatego: true,
@@ -40,7 +36,6 @@ export async function POST(request) {
       throw new Error(
         "No default categories found, review the user and wallet id on GENERAL-DATA POST"
       );
-    // console.log(categoriesFounded)
     //FIND CATEGORIES
     const subCategoriesFounded = await SubCategory.find({
       user: userId,
@@ -54,7 +49,6 @@ export async function POST(request) {
       throw new Error(
         "No SubCategories found, review the user and wallet id on GENERAL-DATA POST"
       );
-    // console.log(subCategoriesFounded)
     const dataFull = {
       user: userFound,
       categories: categoriesFounded,

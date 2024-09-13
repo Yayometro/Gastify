@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CategoIcon from "./CategoIcon";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import dayjs from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
@@ -18,11 +18,6 @@ import { updateManyTransactions } from "@/lib/features/transacctionsSlice";
 
 function EditMultipleTransModal({ hidden, trans }) {
   const [active, setActive] = useState(false);
-  // const [defaultDate, setDefaultDate] = useState(new Date());
-  // const [isIncome, setIsIncome] = useState(false);
-  // const [isBill, setIsBill] = useState(false);
-  // const [isReadable, setIsReadable] = useState(false);
-  // const [defAccount, setDefAccount] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   //Get fetcher function
   const toFetch = fetcher();
@@ -34,15 +29,14 @@ function EditMultipleTransModal({ hidden, trans }) {
   const ccAccounts = useSelector((state) => state.accountsReducer)
   
   const seeGeneralData = useSelector((state) => state.generalDataReducer);
-  // console.log(seeGeneralData);
+  
   const accounts = ccAccounts.data;
-  // console.log(accounts);
+  
   const categories = ccategories.data.user.concat(ccategories.data.default)
-  // console.log(categories);
+  
   const subCategories = ccSubCategories.data.subCat;
-  // console.log(subCategories);
+  
 
-  // console.log(trans);
   const [transactionInfo, setTransactionInfo] = useState({
     transactions: [],
     name: "",
@@ -63,21 +57,6 @@ function EditMultipleTransModal({ hidden, trans }) {
         ...transactionInfo,
         transactions: trans,
       });
-      // if(accounts){
-      //   console.log('first')
-      //   let accSelected = accounts.filter(acc => acc._id == trans?.account?._id)
-      //   console.log(accSelected)
-      //   if(accSelected){
-      //     console.log(accSelected)
-      //     setDefAccount(accSelected[0]._id)
-      //   }
-      // }
-      //   const formatRight = dayjs(trans.date || trans.createdAt).format("YYYY-MM-DDTHH:mm");
-      //   console.log(formatRight);
-      //   setDefaultDate(formatRight);
-      //   setIsIncome(trans?.isIncome);
-      //   setIsBill(trans?.isBill);
-      //   setIsReadable(trans?.isReadable);
     }
   }, [trans]);
   //MATERIAL UI
@@ -109,11 +88,8 @@ function EditMultipleTransModal({ hidden, trans }) {
     setIsLoading(true);
     const trimmedName = transactionInfo.name.trim();
     if (transactionInfo.tags.length > 0) {
-      // console.log(transactionInfo.tags);
       var tagsArray = transactionInfo.tags.split(",");
-      // console.log(tagsArray)
       var tagsArrCleaned = tagsArray.map((tag) => tag.trim());
-      // console.log(tagsArrCleaned)
     } else {
       console.log("first");
       var tagsArrCleaned = [];
@@ -123,7 +99,6 @@ function EditMultipleTransModal({ hidden, trans }) {
       name: trimmedName,
       tags: tagsArrCleaned,
     };
-    // console.log(newTrans);
     try {
       const response = await toFetch.post(
         `general-data/transactions/edit-many`,
@@ -135,8 +110,6 @@ function EditMultipleTransModal({ hidden, trans }) {
         runNotify("ok", response.message);
         //UPDATE FRONT END
         dispatch(updateManyTransactions(response.data))
-        // trans = response.data;
-        // console.log(trans);
         setIsLoading(false);
         handleClose();
       }
@@ -175,13 +148,11 @@ function EditMultipleTransModal({ hidden, trans }) {
   };
   const handleDefAccount = (event) => {
     if (event.target.value === "No account") {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         account: null,
       });
     } else {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         account: event.target.value,
@@ -190,13 +161,11 @@ function EditMultipleTransModal({ hidden, trans }) {
   };
   const handleDefCategory = (event) => {
     if (event.target.value === "No category") {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         category: null,
       });
     } else {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         category: event.target.value,
@@ -205,18 +174,15 @@ function EditMultipleTransModal({ hidden, trans }) {
   };
   const handleDefSubCategory = (event) => {
     if (event.target.value === "No subcategory") {
-      // console.log(event.target.value)
       setTransactionInfo({
         ...transactionInfo,
         subCategory: null,
       });
     } else {
-      // console.log(event.target.value);
       const filterSub = subCategories.filter(
         (sub) => sub._id === event.target.value
       );
       const defFather = filterSub[0].fatherCategory._id;
-      // console.log(defFather)
       setTransactionInfo({
         ...transactionInfo,
         subCategory: event.target.value,

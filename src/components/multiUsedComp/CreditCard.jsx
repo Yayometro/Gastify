@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import "@/components/animations.css";
+import "@/components/styles/animations.css";
 import Image from "next/image";
 import randomColor from "randomcolor";
 
@@ -74,10 +74,6 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
       setTotalAmount(finalAmount);
       setTotalBill(finalBill);
       setTotalIncome(finalIncome);
-      //
-      // console.log(allTransactions);
-      // console.log(account);
-      // console.log(selectedDuration);
     }
   }, [allTransactions, account, selectedDuration]);
 

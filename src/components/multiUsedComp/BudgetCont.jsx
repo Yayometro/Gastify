@@ -27,52 +27,37 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   //
   const bcBudget = ccBudget.data;
   const bcTrans = ccTrans.data;
-  // console.log(bcBudget)
-  // console.log(bcTrans)
   // USE EFFECTS
   useEffect(() => {
     if(ccBudget.status == 'idle'){
-      // console.log('first')
       dispatch(fetchBudget(bcSession))
     }
     if(ccTrans.status == 'idle'){
-      // console.log('first')
       dispatch(fetchTrans(bcSession))
     }
   }, [])
   //
   useEffect(() => {
-    // console.log(bWallet);
-    // console.log(bTransactions);
-    // console.log(bBudgets);
     let todey = new Date();
     const dayRange = new Date();
     dayRange.setDate(todey.getDate() - selectedDuration);
-    // console.log(dayRange);
     if ( bcTrans.length > 0 & bcBudget.length > 0) {
       setLoadingComponent(false)
-      // console.log(bcTrans)
-      // console.log(bcBudget)
     //SET TIME TRANSACTIONS
     let total = bcTrans.filter((tra) => tra.isReadable == true);
-    // console.log(total);
     total = bcTrans.filter((tra) => {
       const transactionDate = new Date(tra.date || tra.createdAt);
       return transactionDate >= dayRange;
     });
-    // console.log(total);
     //BILLS
     const tempBills = total.filter((tra) => tra.isBill == true);
     setBills(tempBills);
-    // console.log(tempBills);
     // SAVINGS
     let tempSaving = bcBudget.filter((budg) => budg.isSaving == true);
     setSavings(tempSaving);
-    // console.log(tempSaving);
     // BUDGETS
     let tempBudget = bcBudget.filter((budg) => budg.isSaving !== true);
     setBudgets(tempBudget);
-    // console.log(tempBudget);
     }
   }, [selectedDuration, ccTrans, ccBudget]);
   const handleDurationChange = (event) => {
@@ -89,7 +74,6 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
     setStartDate(sDate);
     setEndDate(eDate);
   };
-  // console.log(budgets);
   return (
     <div className="budget-cont py-4 px-2">
       <div className="wallet-budget-Content">

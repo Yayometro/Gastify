@@ -4,8 +4,7 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import EmptyModule from "./EmptyModule";
-import "@/components/animations.css";
-import { Switch, Spin, ConfigProvider, Space, Input, Tooltip } from "antd";
+import "@/components/styles/animations.css";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import CategoIcon from "./CategoIcon";
@@ -16,7 +15,7 @@ import EditCategoryModal from "./EditCategoryModal";
 import SubCategoryList from "./SubCategoryList";
 
 
-import { fetchCategories, getRedxCategories, getRedxCategoriesEstatus } from '@/lib/features/categoriesSlice';
+import { fetchCategories} from '@/lib/features/categoriesSlice';
 import { fetchUser } from '@/lib/features/userSlice'
 import { fetchSubCat } from "@/lib/features/subCategorySlice";
 
@@ -40,9 +39,7 @@ function CategoriesClient({ccData, ccSession}) {
   const ccUser = useSelector((state) => state.userReducer)
   const ccategories = useSelector((state) => state.categoriesReducer)
   const ccSubCategories = useSelector((state) => state.subCategoryReducer)
-   console.log(ccUser)
-   console.log(ccategories)
-   console.log(ccSubCategories)
+  
   
   // const seeGeneralData = useSelector((state) => state.generalDataReducer);
   const userData = ccUser.data;
@@ -57,48 +54,34 @@ function CategoriesClient({ccData, ccSession}) {
   useEffect(() => {
     // User
     if(ccUser.status == 'idle'){
-      console.log('first')
       dispatch(fetchUser(ccSession))
     }
     //Categories
     if(ccategories.status == 'idle'){
-      console.log('first')
       dispatch(fetchCategories(ccSession))
     }
     //Sub-categories
     if(ccSubCategories.status == 'idle'){
-      console.log('first')
       dispatch(fetchSubCat(ccSession))
     }
   }, []);
 
-  console.log(ccategories)
-  console.log(ccUser)
-  console.log(ccSubCategories)
 
   useEffect(() => {
     if (categoriesData) {
-      console.log('first')
       if (categoriesData.length > 0) {
-        console.log('first')
-        console.log(categoriesData);
         const allCategories = [...categoriesData].sort((a, b) => {
           const firstName = a?.name;
           const secondName = b?.name;
           return firstName.localeCompare(secondName);
         });
-        // console.log(allCategories);
         setCategories(allCategories);
       }
     }
     if(subCategoriesData){
-      console.log(subCategoriesData)
         setSubCategories(subCategoriesData)
     }
   }, [categoriesData, subCategoriesData]);
-
-  // console.log(categories);
-  // console.log(subCategories);
 
   return (
     <div className=" w-full h-full sm:pr-2">

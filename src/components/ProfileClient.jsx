@@ -5,13 +5,14 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./multiUsedComp/EmptyModule";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
-import "@/components/animations.css";
-import { Switch, Spin, ConfigProvider, Space, Input } from "antd";
+import "@/components/styles/animations.css";
+import { Switch, Spin, ConfigProvider, Space, Input, Button } from "antd";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 import { fetchUser, updateUser } from "@/lib/features/userSlice";
+import { CldUploadWidget } from "next-cloudinary";
 
 function ProfileClient({ pcSession }) {
   const [onEdition, setOnEdition] = useState(false);
@@ -25,29 +26,25 @@ function ProfileClient({ pcSession }) {
     image: "",
     phone: "",
   });
+  const [imageUrl, setImageUrl] = useState();
   // Redux
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);
   let userData = ccUser.data;
-  // console.log(ccUser);
-  // console.log(userData);
   //FETCHER
   const toFetch = fetcher();
   //USE EFFECTS
   useEffect(() => {
     // User
     if (ccUser.status == "idle") {
-      // console.log("first");
       dispatch(fetchUser(pcSession));
     }
   }, []);
   useEffect(() => {
     if (ccUser.status == "loading") {
-      console.log("first");
       setIsLoading(true);
     }
     if (ccUser.status == "succeeded") {
-      // console.log("first");
       setIsLoading(false);
     }
     if (userData) {
@@ -60,11 +57,11 @@ function ProfileClient({ pcSession }) {
         image: userData.image || null,
         phone: userData.phone || null,
       });
+      setImageUrl(userData.image);
     }
   }, [userData]);
 
   const onEditPassword = (val) => {
-    console.log(val);
     setOnEditPasswordState(val);
   };
   const handleChange = (e, tp) => {
@@ -72,7 +69,6 @@ function ProfileClient({ pcSession }) {
       setUserInfo({ ...userInfo, phone: e });
     } else {
       const { name, value } = e.target;
-      // console.log(name, value);
       setUserInfo({ ...userInfo, [name]: value });
     }
   };
@@ -81,7 +77,6 @@ function ProfileClient({ pcSession }) {
     try {
       e.preventDefault();
       setIsLoading(true);
-      // console.log(userInfo);
       //   verify double password
       if (onEditPasswordState) {
         const regexCapital = /[A-Z]/;
@@ -128,22 +123,29 @@ function ProfileClient({ pcSession }) {
           setIsLoading(false);
         }
       }
-      // console.log(userInfo);
       const res = await toFetch.post("general-data/user/update-user", userInfo);
       if (res.ok) {
-        // console.log(res);
         runNotify("ok", `${res.message}`);
         //UPDATE REDUX FRONT END
-        dispatch(updateUser(res.data))
-        // userData = res.data;
+        dispatch(updateUser(res.data));
         setIsLoading(false);
       }
     } catch (e) {
-      // console.log(e);
       runNotify("error", String(e));
       setIsLoading(false);
     }
   };
+  //IMAGE PROCESSING
+  const onImgHandling = (res) => {
+    if (res.info.secure_url) {
+      setUserInfo({ ...userInfo, image: res.info.secure_url });
+      runNotify(
+        "ok",
+        "Your new avatar was successfully uploaded into our database, now SAVE THE CHANGES to finally apply changes 🤓"
+      );
+    }
+  };
+  //
   return (
     <div className="profile-component-container w-full h-full sm:pr-2">
       {!userData ? (
@@ -221,11 +223,17 @@ function ProfileClient({ pcSession }) {
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start">
                   <p className="text-[11px]">Image:</p>
-                  <div className="w-full border-2 border-purple-400 rounded-xl truncate px-2">
-                    <p className="text-lg font-light truncate pt-0.5">
-                      {userData.image}
-                    </p>
-                  </div>
+                    <div className="prof-edit-img flex justify-center items-center w-full">
+                      <Image
+                      className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500"
+                        alt="gastify-profile-avatar"
+                        width={100}
+                        height={100}
+                        src={userInfo.image
+                          ? userInfo.image
+                          : "/img/profile/user-non-profile.jpg"}
+                      />
+                    </div>
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start">
                   <p className="text-[11px]">Phone:</p>
@@ -347,13 +355,32 @@ function ProfileClient({ pcSession }) {
                   )}
                   <div className=" w-full cpc-name flex flex-col justify-center items-start">
                     <p className="text-[11px]">Image:</p>
-                    <input
-                      className="w-full border-2 border-purple-400 rounded-xl truncate px-2 text-lg font-light"
-                      type="text"
-                      name="image"
-                      value={userInfo.image || null}
-                      onChange={handleChange}
-                    />
+                    <div className=" w-full h-full flex  flex-col gap-2 justify-center items-center">
+                      <Image
+                      className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500 mb-2 hover:bg-white"
+                        alt="gastify-profile-avatar"
+                        width={100}
+                        height={100}
+                        src={userInfo.image
+                          ? userInfo.image
+                          : "/img/profile/user-non-profile.jpg"}
+                      />
+                      <CldUploadWidget
+                        uploadPreset="Gastify_Cloudinary_Preset"
+                        onSuccess={(success) => onImgHandling(success)}
+                      >
+                        {({ open }) => {
+                          return (
+                            <button
+                              className=" py-1 px-2 bg-purple-600 rounded-2xl text-white hover:bg-purple-500"
+                              onClick={() => open()}
+                            >
+                              Upload an Image
+                            </button>
+                          );
+                        }}
+                      </CldUploadWidget>
+                    </div>
                   </div>
                   <div className=" w-full cpc-name flex flex-col justify-center items-start">
                     <p className="text-[11px]">Phone:</p>

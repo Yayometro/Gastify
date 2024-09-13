@@ -33,7 +33,7 @@ function Top3ContComp({ t3ccTransactions, ist3ccCategory }) {
         >
           Income
         </div>
-        <Tooltip title="Select the top 3 income or bill🤓">
+        <Tooltip title="Select the top 6 income or bill🤓">
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}
