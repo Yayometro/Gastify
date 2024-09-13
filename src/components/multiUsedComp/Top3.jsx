@@ -22,7 +22,7 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
         : incomes.sort((a, b) => a.amount - b.amount);
       if (t3Type === "transactions") {
         setTopList(
-          t3IsTop ? sortedList.reverse().slice(0, 3) : sortedList.slice(0, 3)
+          t3IsTop ? sortedList.reverse().slice(0, 6) : sortedList.slice(0, 6)
         );
       } else if (t3Type === "categories") {
         const transFormater = sortedList.map((tra) => {
@@ -57,11 +57,11 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
         // console.log(catReducer)
         const catArray = Object.values(catReducer);
         const orderedCatArray = catArray.sort((a, b) => a.amount - b.amount);
-        console.log(orderedCatArray);
+        // console.log(orderedCatArray);
         setTopList(
           t3IsTop
-            ? orderedCatArray.reverse().slice(0, 3)
-            : orderedCatArray.slice(0, 3)
+            ? orderedCatArray.reverse().slice(0, 6)
+            : orderedCatArray.slice(0, 6)
         );
       }
     }
@@ -71,21 +71,20 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
     <div className="w-full">
       {t3Type === "transactions" ? (
         topList.lenght > 0 ? (
-          <EmptyModule emMessage={"Nothing on top 3 transactions..."} />
+          <EmptyModule emMessage={"Nothing on top 6 transactions..."} />
         ) : (
           <div className="w-full text-center flex flex-col gap-2 justify-center items-center border-[2px] border-purple-200 px-1 py-2 rounded-2xl ">
             <h1 className="text-center text-lg">
-              Top 3 {t3IsBill ? "Bills" : "Incomes"} transactions
+              Top 6 {t3IsBill ? "Bills" : "Incomes"} transactions
             </h1>
-            <div className="w-full flex flex-col gap-1 min-[352px]:flex-row">
+            <div className="w-full flex flex-col gap-1 min-[352px]:flex-row flex-wrap ">
               {topList.map((trans, index) => (
                 <Tooltip title={`${trans.name}`} key={`t3-trans-${trans.id}`}>
                 <div
-                  className={`tra-cat-cont flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 hover:mix-blend-multiply min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2 min-[352px]:min-h-[130px] min-[352px]:min-w-[100px]`}
+                  className={`tra-cat-cont flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 min-w-[106]s max-w-[120px]s w-fulls hover:mix-blend-multiply min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2 min-[352px]:min-h-[130px] min-[352px]:min-w-[100px]`}
                   style={{
                     backgroundColor: trans?.category?.color || "#DADADA",
                   }}
-                  // key={`t3-trans-${trans.id}`}
                 >
                   <div className="w-full flex gap-2 items-center truncate">
                     <div className=" bg-white flex justify-center items-center border-2 rounded-full min-w-[30px] min-[352px]:w-[25px] min-[352px]:h-[25px] min-[352px]:absolute min-[352px]:top-[6px] min-[352px]:left-[6px] min-[352px]:shadow-lg">
@@ -140,12 +139,12 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
       ) : t3Type === "categories" ? (
         <div className="w-full text-center flex flex-col gap-2 justify-center items-center border-[2px] border-purple-200 px-1 py-2 rounded-2xl ">
           <h1 className="text-center text-lg">
-            Top 3 {t3IsBill ? "Bills" : "Incomes"} categories
+            Top 6 {t3IsBill ? "Bills" : "Incomes"} categories
           </h1>
           {topList.lenght < 0 ? (
-            <EmptyModule emMessage={"Nothing on top 3 categories"} />
+            <EmptyModule emMessage={"Nothing on top 6 categories"} />
           ) : (
-            <div className="w-full flex flex-col gap-1 min-[352px]:flex-row">
+            <div className="w-full flex flex-col gap-1 min-[352px]:flex-row flex-wrap">
               {topList.map((transCat, index) => (
                 <Tooltip title={`${transCat.category}`} key={`t3-trans-${transCat.id}`}>
                 <div

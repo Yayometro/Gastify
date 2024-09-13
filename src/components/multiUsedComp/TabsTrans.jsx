@@ -170,7 +170,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
                     <p className="font-semibold">
                       {ttIsbill ? "Total spent:" : "Total earned:"}
                     </p>
-                    ${totalValueOn}
+                    ${String(totalValueOn).slice(0, 9)}
                   </div>
                   <div className="flex gap-2 underline">
                     <p className="font-semibold">Amount:</p>

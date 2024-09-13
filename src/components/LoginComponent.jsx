@@ -71,17 +71,20 @@ function LoginComponent() {
           "Something went wrong, please verify your username or try again later 🤕"
         );
         router.push("/login");
+        setLoading(false); 
       }
       if (authResponse.error) {
         console.log(authResponse);
         let msg = String(authResponse.error).slice(6);
-        setErrorForm(msg);
+        runNotify("error", msg)
+        // setErrorForm(msg);
+        setLoading(false);
         return;
       }
-      console.log(authResponse);
       router.push("/dashboard");
     } catch (e) {
       console.log(e);
+      setLoading(false);
       throw new Error(e);
     }
   };
