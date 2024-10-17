@@ -456,6 +456,7 @@ function Wallet({ dataServ, session }) {
                     bills={allBills}
                     period={selectedDuration}
                   />
+                   
                 </div>
                 <div className="budget">
                   <BudgetCont bcSession={session} />
