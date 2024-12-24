@@ -24,7 +24,6 @@ function ReadFileComp({}) {
   //REDUX
   const reduxDispatch = useDispatch()
   const ccUser = useSelector((state) => state.userReducer.data);
-  console.log(ccUser)
   //
   const handleFile = (f) => {
     console.log(f);
@@ -54,8 +53,8 @@ function ReadFileComp({}) {
   };
 
   return (
-    <div className=" bg-slate-50 py-10 my-2 px-[30px] rounded-[60px] w-full min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]">
-      <h1 className=" text-2xl font-light">Read Bank States</h1>
+    <div className=" bg-slate-50 py-10 my-2 px-[30px] rounded-[60px] w-full max-w-[900px]">
+      <h1 className=" text-2xl font-light text-center">Read Bank States</h1>
       <form action="" className="add-file-form flex flex-col gap-1 justify-center items-center" onSubmit={handleSubmit}>
         <div
           className="mode-cont-add-file flex justify-start items-center gap-2 text-purple-500 hover:text-purple-400 w-fit cursor-pointer pt-2 pb-2"

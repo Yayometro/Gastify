@@ -15,13 +15,13 @@ import runNotify from "@/helpers/gastifyNotifier";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { addNewTransacction } from "@/lib/features/transacctionsSlice";
+import { fetchUser, setUser } from "@/lib/features/userSlice";
+import { fetchCategories, setCategories } from "@/lib/features/categoriesSlice";
+import { fetchAccounts, setAccounts } from "@/lib/features/accountsSlice";
+import { fetchBudget } from "@/lib/features/budgetSlice";
+import { fetchSubCat, setSubCategories } from "@/lib/features/subCategorySlice";
 
-function AddTransactionComp({
-  atcUser,
-  atcCategories,
-  atcSubCategories,
-  atcAccounts,
-}) {
+function AddTransactionComp({ session }) {
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
   let [transactionInfo, setTransactionInfo] = useState({
@@ -39,26 +39,80 @@ function AddTransactionComp({
     user: "",
     wallet: "",
   });
-  let [isShort, setIsShort] = useState(true);
-
-  const user = atcUser;
-  const categories = atcCategories;
-  const subCategories = atcSubCategories;
-  const accounts = atcAccounts;
+  let [isShort, setIsShort] = useState(false);
 
   //REDUX
   const dispatch = useDispatch();
+  const ccUser = useSelector((state) => state.userReducer);
+  const ccategories = useSelector((state) => state.categoriesReducer);
+  const ccSubCategories = useSelector((state) => state.subCategoryReducer);
+  const ccAccounts = useSelector((state) => state.accountsReducer);
+  const ccBudget = useSelector((state) => state.budgetReducer);
+
+  const user = ccUser.data;
+  const categories = ccategories.data.user.concat(ccategories.data.default);
+  const subCategories = ccSubCategories.data.subCat;
+  const accounts = ccAccounts.data;
+  const budget = ccBudget.data;
+
+  // useEffect(() => {
+
+  // }, []);
+
+  useEffect(() => {
+    // FETCH first
+    // User
+    if (ccUser.status == "idle") {
+      dispatch(fetchUser(session));
+    }
+    //Categories
+    if (ccategories.status == "idle") {
+      dispatch(fetchCategories(session));
+    }
+    //Sub-categories
+    if (ccSubCategories.status == "idle") {
+      dispatch(fetchSubCat(session));
+    }
+    if (ccAccounts.status == "idle") {
+      dispatch(fetchAccounts(session));
+    }
+    if (budget.status == "idle") {
+      dispatch(fetchBudget(session));
+    }
+    // SET IN SYNC
+    // User
+    if (ccUser.status == "succeeded") {
+      setUser(ccUser.data);
+    }
+    // Account
+    if (ccAccounts.status == "succeeded") {
+      setAccounts(ccAccounts.data);
+    }
+    //Categories
+    if (ccategories.status == "succeeded") {
+      setCategories(ccategories.data.user.concat(ccategories.data.default));
+    }
+    if (ccSubCategories.status == "succeeded") {
+      setSubCategories(
+        ccSubCategories.data.subCat.concat(ccSubCategories.data.default)
+      );
+    }
+    //Budgets
+    if (ccBudget.status == "succeeded") {
+      setBudgets(ccBudget.data);
+    }
+  }, [ccUser, ccAccounts, ccategories, ccBudget, ccSubCategories, session]);
 
   //EFFECTS
   useEffect(() => {
-    if (atcUser) {
+    if (user) {
       setTransactionInfo({
         ...transactionInfo,
-        user: atcUser._id,
-        wallet: atcUser.wallet,
+        user: user._id,
+        wallet: user.wallet,
       });
     }
-  }, [atcUser]);
+  }, [user]);
   //Handlers:
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -116,9 +170,9 @@ function AddTransactionComp({
       );
       if (response.data) {
         runNotify("ok", response.message);
-        const addlyData = [response.data]
+        const addlyData = [response.data];
         //UPDATE FRON END
-        dispatch(addNewTransacction(response.data))
+        dispatch(addNewTransacction(response.data));
         setIsLoading(false);
         clearForm();
       }
@@ -146,8 +200,8 @@ function AddTransactionComp({
       category: "",
       subCategory: "",
       tags: "",
-      user: atcUser._id,
-      wallet: atcUser.wallet,
+      user: user._id,
+      wallet: user.wallet,
     });
   };
   //
@@ -184,7 +238,7 @@ function AddTransactionComp({
   };
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full overflow-y-scroll relative bg-slate-50">
       <div
         className={`loader-add-trans absolute w-full h-full bg-white/90  items-center justify-center z-[100] rounded-t-2xl ${
           isLoading ? "flex" : "hidden"
@@ -192,7 +246,7 @@ function AddTransactionComp({
       >
         <Spin size="large" />
       </div>
-      <div className="shortToggle w-full">
+      <div className="shortToggle w-full bg-purple-600 sticky top-0 flex justify-center items-center">
         <ConfigProvider
           theme={{
             token: {
@@ -205,17 +259,18 @@ function AddTransactionComp({
             },
           }}
         >
-          <Space direction="" size={12}>
-            <p className=" text-sm text-purple-500">Short transacction:</p>
+          <Space direction="" size={12} className=" text-slate-200 pb-1 ">
+            <p className=" text-sm ">Short transacction:</p>
             <Switch
               onChange={(value) => setIsShort(!isShort)}
               value={isShort}
+              className="bg-purple-200"
             />
           </Space>
         </ConfigProvider>
       </div>
       {isShort ? (
-        <div className="w-full h-full flex justify-center items-center">
+        <div className="w-full h-full flex justify-center items-center ">
           <form
             onSubmit={handleSubmit}
             className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-10 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
@@ -517,7 +572,7 @@ function AddTransactionComp({
               {isLoading ? <Spin /> : "Submit"}
             </button>
             <div
-              className="clearForm underline text-red-400 cursor-pointer"
+              className="clearForm underline text-red-400 cursor-pointer pb-4"
               onClick={clearForm}
             >
               Clear Form

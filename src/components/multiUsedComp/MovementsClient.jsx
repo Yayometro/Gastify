@@ -24,18 +24,17 @@ function MovementsClient({ mcData, mcSession }) {
   //
   // console.log(ccSubCategories)
   // console.log(mcData);
-  const user = ccUser.data;
+  const user = ccUser.data; //
   const reduxAllTransactions = ccTransactions?.data;
   const categories = ccategories.data.user;
   const defCategories = ccategories.data.default;
-  const allCat = categories.concat(defCategories);
-  const subCat = ccSubCategories.data.subCat;
+  const allCat = categories.concat(defCategories); //
+  const subCat = ccSubCategories.data.subCat; //
   const defSubCat = ccSubCategories.data?.default || [];
   const allSubCat = subCat.concat(defSubCat);
-  const accounts = ccAccounts.data;
+  const accounts = ccAccounts.data; //
 
   useEffect(() => {
-    // console.log(ccategories)
     // User
     if (ccUser.status == "idle") {
       dispatch(fetchUser(mcSession));
@@ -52,10 +51,8 @@ function MovementsClient({ mcData, mcSession }) {
       dispatch(fetchAccounts(mcSession));
     }
   }, []);
-  // console.log(ccUser)
-  // console.log(ccategories)
-  // console.log(ccSubCategories)
-  // console.log(ccAccounts)
+  
+  
 
   return (
     <div className=" w-full h-full sm:pr-2">
@@ -78,14 +75,6 @@ function MovementsClient({ mcData, mcSession }) {
             <h1 className="text-3xl min-[text-[45px]]: py-2">
               Movements details
             </h1>
-          </div>
-          <div className="add-trans-gen-cont w-full h-full">
-            <AddTransactionComp
-              atcUser={user}
-              atcCategories={allCat}
-              atcSubCategories={subCat}
-              atcAccounts={accounts}
-            />
           </div>
           <div className="add-file-trans w-full h-full flex justify-center items-center">
             <ReadFileComp />

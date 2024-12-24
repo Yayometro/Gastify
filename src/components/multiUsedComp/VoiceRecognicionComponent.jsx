@@ -13,12 +13,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { Spin } from "antd";
 import { addNewTransacction } from "@/lib/features/transacctionsSlice";
 
+
 function VoiceRecognicionComponent() {
   const [english, setEnglish] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [transText, setTransText] = useState("");
-  const [askConfirmed, setAskConfirmed] = useState(false);
-  const [isConfirmed, setIsConfirmet] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   // Redux
   const dispatch = useDispatch();
@@ -42,10 +41,21 @@ function VoiceRecognicionComponent() {
         const text = e.results[e.results.length - 1][0].transcript;
         setTransText(text);
       };
+      // recognition.onerror = (error) => {
+      //   console.error("Recognition error:", error);
+      //   runNotify("error", "An error occurred with the speech recognition.");
+      //   setIsRecording(false);
+      // };
     } else {
-      recognition.abort();
+      recognition.stop(); 
+      recognition.onresult = null; 
     }
+  
+    return () => {
+      recognition.abort(); 
+    };
   }, [isRecording]);
+  
   const handleNotConfirmed = () => {
     setIsRecording(true);
     setTransText("");
@@ -88,17 +98,19 @@ function VoiceRecognicionComponent() {
     setTransText(`${event.target.value}`);
   };
 
-  const transaction = {
-    name: "Vacaciones en hawaii",
-    amount: 10000,
-    date: new Date("20/08/2024/12:00"),
-    category: "vacaciones",
-    isBill: true,
-    isIncome: false,
-    account: "Santander",
+  const toggleRecording = () => {
+    if (isRecording) {
+      recognition.stop(); // Detén el reconocimiento si está grabando
+    } else {
+      recognition.lang = english ? "en-US" : "es-ES"; // Configura el idioma antes de iniciar
+      recognition.start(); // Inicia el reconocimiento
+    }
+    setIsRecording(!isRecording);
   };
+
+  
   return (
-    <div className=" w-full h-full bg-slate-50 py-10 my-2 px-[30px] rounded-[60px] min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px] relative">
+    <div className=" w-full h-full bg-slate-50 py-10 my-2 px-[30px] rounded-[60px]  overflow-y-scrolls max-w-[900px]">
       {!isLoading ? (
         ""
       ) : (
@@ -109,7 +121,7 @@ function VoiceRecognicionComponent() {
           </p>
         </div>
       )}
-      <h1 className="text-2xl font-light">Add transactions using your voice <b className="text-purple-400">{"(Beta)"}</b></h1>
+      <h1 className="text-2xl font-ligh text-center">Add transactions using your voice <b className="text-purple-400">{"(Beta)"}</b></h1>
       <div
         className="choose-lang cursor-pointer text-purple-500 hover:text-purple-400 text-ls flex justify-center items-center pb-2"
         onClick={() => setEnglish(!english)}
@@ -122,7 +134,7 @@ function VoiceRecognicionComponent() {
         ) : (
           <div className="flex gap-2">
             <GiMexico size={20} />
-            <p>Mode in Spanish <b className="text-purple-400">{"(Beta)"}</b></p>
+            <p>Mode in Spanish <b className="text-purple-400">{"(Alfa)"}</b></p>
           </div>
         )}
       </div>
@@ -152,7 +164,7 @@ function VoiceRecognicionComponent() {
       </p>
       <div className="transcription-container font-light rounded-lg pt-1 pb-5 my-2 px-2 bg-purple-100 relative">
         <textarea
-          className="border-0 p-0 focus:ring-0 focus:border-0 focus:outline-none bg-transparent w-full h-full text-center"
+          className="border-0 p-0 focus:ring-0 focus:border-0 focus:outline-none bg-transparent w-full h-full min-h-[100px] text-center"
           onChange={handleChangeTextarea}
           name="tText"
           id="tText"
@@ -171,7 +183,7 @@ function VoiceRecognicionComponent() {
       ) : (
         <div className="confirm flex flex-col items-center justify-center micro-bounceInUp">
           <h1>Is this what you wanted to say? 🤔</h1>
-          <div className="btns-confirm flex gap-2 justify-center items-center text-white font-light">
+          <div className="btns-confirm flex gap-2 justify-center items-center text-white font-light pt-2">
             <button
               className=" py-2 px-4 bg-violet-600 hover:bg-violet-500 rounded-3xl"
               onClick={() => handleConfirm()}
@@ -253,7 +265,7 @@ function VoiceRecognicionComponent() {
           <FaDotCircle size={10} />
           <div className=" text-sm font-light">Category</div>
         </div>
-        <div className="flex gap-2 pl-2 items-center">
+        <div className="flex gap-2 pl-2 items-center pb-5">
           <div className="circle-div text-base font-normal flex justify-center items-center">
             <FaDotCircle size={10} />
           </div>
@@ -266,27 +278,3 @@ function VoiceRecognicionComponent() {
 }
 
 export default VoiceRecognicionComponent;
-/*
-   Si usara la opción que mencionaste "Diseña una serie de expresiones regulares o una pequeña gramática para identificar las partes clave de la frase (por ejemplo, "ingreso", "gasto", "título", "valor", "fecha", "hora", "categoría"). Esto será más sencillo si guías al usuario a seguir un formato más o menos fijo para sus comandos."
-   Como debería de ser?
-   Supongamos que los formatos de frase son estos:
-   1) Crea un input(gasto/ingreso), con el titulo input(titulo), con valor de input(valor), para el dia input("de hoy"/O especificar dia/mes/año y opcional la hora), con la categoria input(string de la categoria), en la cuenta de input(cuenta)
-   Requeridos deben de ser el tipo de transacion (gasto/ingreso), el valor de la transaccion y la fecha.
-   Los inputs de categoria y cuenta son opcionales.
-   Ejemplo:
-   Crea un gasto/ingreso con titulo "Vacaciones en hawaii", con valor de 10,000 pesos, para el dia 20 de agosto de 2024/"o este año" a las 12pm, con la categoria de vacaciones, en la cuenta de Santander
-   El procesamiento resultante me debe de dar en este objeto como ejemplo:
-   const transaction = {
-    name: "Vacaciones en hawaii",
-    amount: 10000,
-    date: new Date("20/08/2024/12:00"),
-    category: 'vacaciones',
-    isBill: true,
-    isIncome: false,
-    account: 'Santander'
-  }
-  La idea es que yo mande una peticion post a mi backend en Nextjs y desde mi backend empiece a modificar la logica del string que mande: "Crea un gasto/ingreso con titulo "Vacaciones en hawaii", con valor de 10,000 pesos, para el dia 20 de agosto de 2024/"o este año" a las 12pm, con la categoria de vacaciones, en la cuenta de Santander" para que salga con el resultado esperado del objeto en cuestion y dicho objeto servirá para crear la transacción posteriormente.
-  Pero del frontend solo genero la transcripcion y la mando al backend donde se analiza y se separa para crear este objeto final.
-  Como podría hacerlo?
-  Guiame paso a paso y con codigo.
-  */
