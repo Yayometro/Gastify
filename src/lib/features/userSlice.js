@@ -10,13 +10,13 @@ const user = {
 };
 
 export const fetchUser = createAsyncThunk("user/fetchUser", async (mail) => {
-    // console.log(mail)
+    // console.log("mail ", mail)
   try {
     const response = await toFetch.post(
       "general-data/user/get-user",
       mail
     );
-    // console.log(response)
+    // console.log("response", response)
     if (response.ok) {
       return response.data;
     } else {

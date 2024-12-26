@@ -46,8 +46,10 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
           };
         }
       });
-      // console.log(createNewOrder);
+      // console.log("createNewOrder", createNewOrder);
       const reducedData = createNewOrder.reduce((acc, item) => {
+        // console.log("acc", acc)
+        // console.log("item", item)
         // Si el idCategory ya existe en el acumulador, suma su valor
         if (acc[item.idCategory]) {
           acc[item.idCategory].value += item.value;
@@ -57,10 +59,11 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
         }
         return acc;
       }, {});
+      console.log("reducedData", reducedData)
       const finalArray = Object.values(reducedData);
       const totalValue = finalArray.reduce((acc, item) => acc + item.value, 0);
-      //   console.log(finalArray);
-      // console.log(totalValue);
+        console.log("finalArray", finalArray);
+      // console.log("totalValue", totalValue);
       setNewData(finalArray);
       setTotalValueOn(totalValue);
     }

@@ -5,33 +5,22 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import EmptyModule from "./EmptyModule";
 import "@/components/styles/animations.css";
-import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
-import CategoIcon from "./CategoIcon";
 import UniversalCategoIcon from "./UniversalCategoIcon";
-import Category from "./Category";
 import CategoryList from "./CategoryList";
 import EditCategoryModal from "./EditCategoryModal";
 import SubCategoryList from "./SubCategoryList";
 
 
-import { fetchCategories} from '@/lib/features/categoriesSlice';
+import { fetchCategories, setCategories} from '@/lib/features/categoriesSlice';
 import { fetchUser } from '@/lib/features/userSlice'
-import { fetchSubCat } from "@/lib/features/subCategorySlice";
+import { fetchSubCat, setSubCategories } from "@/lib/features/subCategorySlice";
 
 
 
 function CategoriesClient({ccData, ccSession}) {
   const [onEdition, setOnEdition] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // Data in form
-  const [accountInfo, setAccountInfo] = useState({
-    name: "",
-    amount: "",
-  });
-  // Categories
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
   // 
   const toFetch = fetcher();
   // Redux

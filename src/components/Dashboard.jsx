@@ -40,6 +40,7 @@ import Top3ContComp from "./multiUsedComp/Top3ContComp";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import { quantum } from "ldrs";
 import { IoIosCloseCircleOutline } from "react-icons/io";
+import DashboardLoadingMessage from "./multiUsedComp/loaders/DashboardLoadingMessage";
 
 function Wallet({ dataServ, session }) {
   const [sed, setSed] = useState([]);
@@ -219,29 +220,21 @@ function Wallet({ dataServ, session }) {
     setEndDate(eDate);
   };
 
+  const toggleIsLoading = React.useCallback(() => {
+    setLoading(prev => !prev)
+  },[])
+
   return (
     <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
       <div className="loader">
         {!loading ? (
           ""
         ) : (
-          <div className=" fixed w-full h-full left-0 top-0 flex justify-center items-center z-[1009]">
-            <div className="w-[90%] h-[70%] sm:w-[50%] bg-white/90 flex flex-col justify-center items-center text-center p-4 gap-4 rounded-2xl z-[1010] shadow-2xl relative">
-              <div
-                className="close absolute right-0 top-0 cursor-pointer"
-                onClick={() => setLoading(!loading)}
-              >
-                <IoIosCloseCircleOutline size={40} />
-              </div>
-              <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
-              <p className=" text-xl text-purple-800">
-                We are building up your dashboard and data
-              </p>
-              <p className=" text-xl text-purple-800">
-                Please wait a moment 🤓
-              </p>
-            </div>
-          </div>
+          <DashboardLoadingMessage
+              message={`We are building up your dashboard and data`}
+              subMessage={`Please wait a moment 🤓`}
+              setLoading={toggleIsLoading}
+            />
         )}
       </div>
       {user && wallet ? (

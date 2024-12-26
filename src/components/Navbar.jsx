@@ -22,6 +22,7 @@ import "@/components/styles/NavbarStyle.css"
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "@/lib/features/userSlice";
 import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
+import { FaHistory } from "react-icons/fa";
 
 function Navbar({ sesion }) {
   const [toggleNav, setToggleNav] = useState(false);
@@ -93,12 +94,12 @@ function Navbar({ sesion }) {
           </Link>
         </li>
         
-        {/* <li className="micro-pulse">
-          <Link href="/dashboard/cashflow">
-            <MdAutoGraph size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Cash Flow</p>
+        <li className="micro-pulse">
+          <Link href={`/dashboard/history`}>
+            <FaHistory size={30} className="hidden sm:inline"  />
+            <p className="sm:hidden hoverTooltip">History</p>
           </Link>
-        </li> */}
+        </li>
         <li className="micro-pulse">
           <Link href="/dashboard/categories">
             <BiSolidCategory size={30} className="hidden sm:inline" />
@@ -134,6 +135,11 @@ function Navbar({ sesion }) {
             {
               (isAddTrans && <AddTransactionModal session={sesion} close={toogleAddTrans}/>)
             }
+        </li>
+        <li className="">
+          <Link href={`/dashboard/history`}>
+            <FaHistory size={25} />
+          </Link>
         </li>
         <li className="">
           <Link href={`/dashboard`}>
