@@ -84,7 +84,7 @@ function Navbar({ sesion }) {
               <p className="hidden hoverTooltip">Add a transaction</p>
             </div>
             {
-              (isAddTrans && <AddTransactionModal session={sesion} close={toogleAddTrans}/>)
+              (isAddTrans && <AddTransactionModal  close={toogleAddTrans}/>)
             }
         </li>
         <li className="micro-pulse">
@@ -133,7 +133,7 @@ function Navbar({ sesion }) {
               <IoAddCircle size={50} onClick={toogleAddTrans} className="cursor-pointer"/>
               <p className="hidden hoverTooltip">Add a transaction</p>
             {
-              (isAddTrans && <AddTransactionModal session={sesion} close={toogleAddTrans}/>)
+              (isAddTrans && <AddTransactionModal close={toogleAddTrans}/>)
             }
         </li>
         <li className="">

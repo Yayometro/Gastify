@@ -12,6 +12,8 @@ import { waveform, quantum } from "ldrs";
 import { useDispatch, useSelector } from "react-redux";
 import { Spin } from "antd";
 import { addNewTransacction } from "@/lib/features/transacctionsSlice";
+import useGetUserSession from "@/hooks/useGetUserSession";
+import { fetchUser, setUser } from "@/lib/features/userSlice";
 
 
 function VoiceRecognicionComponent() {
@@ -19,9 +21,22 @@ function VoiceRecognicionComponent() {
   const [isRecording, setIsRecording] = useState(false);
   const [transText, setTransText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  let { email } = useGetUserSession();
   // Redux
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer.data);
+
+  useEffect(() => {
+      // FETCH first
+      if (ccUser.status == "idle") {
+        dispatch(fetchUser(email));
+      }
+      // SET IN SYNC
+      if (ccUser.status == "succeeded") {
+        setUser(ccUser.data);
+      }
+    }, [ccUser, email]);
+
   //Speech
   const recognition = new window.webkitSpeechRecognition();
   recognition.continuous = true;
@@ -61,12 +76,13 @@ function VoiceRecognicionComponent() {
     setTransText("");
   };
   const handleConfirm = async () => {
+    if(!ccUser && ccUser?._id) throw new Error("No user to send voice transaction")
     try {
       setIsLoading(true)
       const transObj = {
         text: transText,
         lang: english ? "English" : "Spanish",
-        user: ccUser?._id,
+        user: ccUser._id,
       };
       console.log(transObj);
       const res = await toFetch.post(

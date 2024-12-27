@@ -18,10 +18,11 @@ import { addNewTransacction } from "@/lib/features/transacctionsSlice";
 import { fetchUser, setUser } from "@/lib/features/userSlice";
 import { fetchCategories, setCategories } from "@/lib/features/categoriesSlice";
 import { fetchAccounts, setAccounts } from "@/lib/features/accountsSlice";
-import { fetchBudget } from "@/lib/features/budgetSlice";
+import { fetchBudget, setBudget } from "@/lib/features/budgetSlice";
 import { fetchSubCat, setSubCategories } from "@/lib/features/subCategorySlice";
+import useGetUserSession from "@/hooks/useGetUserSession";
 
-function AddTransactionComp({ session }) {
+function AddTransactionComp() {
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
   let [transactionInfo, setTransactionInfo] = useState({
@@ -40,6 +41,8 @@ function AddTransactionComp({ session }) {
     wallet: "",
   });
   let [isShort, setIsShort] = useState(false);
+
+  let { email } = useGetUserSession();
 
   //REDUX
   const dispatch = useDispatch();
@@ -63,21 +66,21 @@ function AddTransactionComp({ session }) {
     // FETCH first
     // User
     if (ccUser.status == "idle") {
-      dispatch(fetchUser(session));
+      dispatch(fetchUser(email));
     }
     //Categories
     if (ccategories.status == "idle") {
-      dispatch(fetchCategories(session));
+      dispatch(fetchCategories(email));
     }
     //Sub-categories
     if (ccSubCategories.status == "idle") {
-      dispatch(fetchSubCat(session));
+      dispatch(fetchSubCat(email));
     }
     if (ccAccounts.status == "idle") {
-      dispatch(fetchAccounts(session));
+      dispatch(fetchAccounts(email));
     }
     if (budget.status == "idle") {
-      dispatch(fetchBudget(session));
+      dispatch(fetchBudget(email));
     }
     // SET IN SYNC
     // User
@@ -99,9 +102,9 @@ function AddTransactionComp({ session }) {
     }
     //Budgets
     if (ccBudget.status == "succeeded") {
-      setBudgets(ccBudget.data);
+      setBudget(ccBudget.data);
     }
-  }, [ccUser, ccAccounts, ccategories, ccBudget, ccSubCategories, session]);
+  }, [ccUser, ccAccounts, ccategories, ccBudget, ccSubCategories, email]);
 
   //EFFECTS
   useEffect(() => {
