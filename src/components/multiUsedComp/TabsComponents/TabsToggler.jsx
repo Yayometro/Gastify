@@ -28,7 +28,7 @@ function TabsToggler({ tabs, compontentsArray, tooltip }) {
                     : ""
                 }`}
               >
-                {tab} Resume
+                {tab}
               </div>
             ))}
         <Tooltip title={tooltip}>

@@ -67,7 +67,7 @@ function TabsTogglerMontlyView({
         <Skeleton active className="py-3"/>
       ) : (
         <TabsToggler
-          tabs={["Bills", "Incomes"]}
+          tabs={["Comparative", "Bills", "Incomes"]}
           compontentsArray={components}
           tooltip={"Select the tab that you want to see 😎"}
         />

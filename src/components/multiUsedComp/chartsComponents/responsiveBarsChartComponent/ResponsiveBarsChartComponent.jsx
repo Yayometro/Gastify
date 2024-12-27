@@ -12,7 +12,6 @@ function ResponsiveBarsChartComponent({
   legenedLeft,
 }) {
   const rest = {
-    ...propsPlus,
     data: data,
     indexBy: "type",
     keys: ["value"],
@@ -123,7 +122,9 @@ function ResponsiveBarsChartComponent({
     role: "application",
     label: (d) => d.formattedValue,
     enableTotals: true,
+    ...propsPlus
   };
+  console.log("rest", rest)
   return (
     <div className="responsive-bars-chart-comp w-[100%] h-[400px] min-h-[300px] max-h-[600px]">
       <span className=" text-center text-xs">
