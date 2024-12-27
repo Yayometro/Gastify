@@ -8,7 +8,7 @@ export function filterBillsOrIncomes(trans) {
 
 export function reduceTransactionsToMonthSpentObjects(monTransactions) {
     const newOrder = monTransactions.reduce((acc, transaction) => {
-      if (transaction && acc[transaction.type]) {
+      if (transaction && acc[transaction?.type]) {
         acc[transaction.type].value += transaction.value;
       } else {
         acc[transaction.type] = { ...transaction };

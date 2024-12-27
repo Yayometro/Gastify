@@ -9,14 +9,14 @@ import {
 import useGetUserSession from "@/hooks/useGetUserSession";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  generatePeriodsForSelector,
-  getDateInYearMonthDay,
-  getYearMonthDateRange,
-  normalizeDateToUTC,
   timeperiodRangesArray,
 } from "@/helpers/timeFunctions/timeFunctions";
 import TabsTogglerMontlyView from "./TabsTogglerMontlyView";
-import { filterBillsOrIncomes, getTransactionsFromTimeRange, transactionsToMonths } from "@/helpers/transformers/transactionsChange";
+import {
+  filterBillsOrIncomes,
+  getTransactionsFromTimeRange,
+  transactionsToMonths,
+} from "@/helpers/transformers/transactionsChange";
 
 const today = new Date();
 
@@ -25,7 +25,7 @@ function TabsTogglerMontlyController() {
   const [loading, setLoading] = useState(false);
   const [totalAmount, setTotalAmount] = useState([]);
   const [timePeriod, setTimePeriod] = useState([
-    new Date(`${today.getFullYear()}-01-1`),
+    new Date(today.getFullYear(), 0, 1),
     new Date(today.getFullYear(), 12, 0),
   ]);
 
@@ -38,27 +38,19 @@ function TabsTogglerMontlyController() {
 
   // USE EFFECTS:
   useEffect(() => {
-    setTimePeriod([
-      new Date(
-        getDateInYearMonthDay(
-          new Date(
-            timeperiodRangesArray[timeperiodRangesArray.length - 1].value.split(
+    if(timeperiodRangesArray.length > 0){
+        const startDate = new Date(timeperiodRangesArray[timeperiodRangesArray.length - 1].value.split(
               "*"
-            )[0]
-          )
-        )
-      ),
-      new Date(
-        getDateInYearMonthDay(
-          new Date(
-            timeperiodRangesArray[timeperiodRangesArray.length - 1].value.split(
+            )[0],
+        );
+        const endDate = new Date(timeperiodRangesArray[timeperiodRangesArray.length - 1].value.split(
               "*"
-            )[1]
-          )
-        )
-      ),
-    ]);
+            )[1],
+        );
+        setTimePeriod([startDate, endDate]);
+    }
   }, []);
+
   useEffect(() => {
     // User
     if (ccTransacciones.status == "idle" && email) {
@@ -73,28 +65,30 @@ function TabsTogglerMontlyController() {
 
   useEffect(() => {
     if (allTransactions.length >= 1 && timePeriod[0] && timePeriod[1]) {
-        // First filter by range
+      // First filter by range
       const transactionsFilteredWithDateRange = getTransactionsFromTimeRange(
         allTransactions,
         timePeriod[0],
         timePeriod[1]
       );
-      // filter by incomes or bills
-      const transactionsTemp = filterBillsOrIncomes(transactionsFilteredWithDateRange)
+    //   filter by incomes or bills
+      const transactionsTemp = filterBillsOrIncomes(
+        transactionsFilteredWithDateRange
+      );
       // Transform all transactions to month object to chart
-      const bills = transactionsToMonths(transactionsTemp.bills)
-      const incomes = transactionsToMonths(transactionsTemp.incomes)
+      const bills = transactionsToMonths(transactionsTemp.bills);
+      const incomes = transactionsToMonths(transactionsTemp.incomes);
       // set new values
-      setData([incomes.array, bills.array])
-      setTotalAmount([incomes.totalValue, bills.totalValue])
+      setData([incomes.array, bills.array]);
+      setTotalAmount([incomes.totalValue, bills.totalValue]);
     }
   }, [allTransactions, timePeriod]);
 
   // FUNCTIONS
 
   function getValueFromSelecter(v) {
-    const [start, end] = v.split("*")
-    setTimePeriod([new Date(start), new Date(end)])
+    const [start, end] = v.split("*");
+    setTimePeriod([new Date(start), new Date(end)]);
   }
 
   function handleRangeDate(dateStart, dateEnd) {
@@ -103,26 +97,26 @@ function TabsTogglerMontlyController() {
 
   const components = [
     {
-        tab: "incomes",
-        props: {
-            data: data[0] || [],
-            totalValue: totalAmount[0] || 0,
-            legendBottom: "months",
-            legenedLeft: "Amount",
-        },
-        Component: ResponsiveBarsChartComponent,
+      tab: "incomes",
+      props: {
+        data: data[0] || [],
+        totalValue: totalAmount[0] || 0,
+        legendBottom: "months",
+        legenedLeft: "Amount",
+      },
+      Component: ResponsiveBarsChartComponent,
     },
     {
-        tab: "bills",
-        props: {
-            data: data[1] || [],
-            totalValue: totalAmount[1] || 0,
-            legendBottom: "Months",
-            legenedLeft: "Amount",
-        },
-        Component: ResponsiveBarsChartComponent,
+      tab: "bills",
+      props: {
+        data: data[1] || [],
+        totalValue: totalAmount[1] || 0,
+        legendBottom: "Months",
+        legenedLeft: "Amount",
+      },
+      Component: ResponsiveBarsChartComponent,
     },
-];
+  ];
 
   return (
     <TabsTogglerMontlyView

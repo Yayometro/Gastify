@@ -22,6 +22,7 @@ function TabsTogglerMontlyView({
       setTime([timePeriod[0], timePeriod[1]]);
     }
   }, [timePeriod]);
+
   return (
     <div className="w-full h-full">
       <h1>Transactions History</h1>

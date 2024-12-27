@@ -21,7 +21,7 @@ const periodsForSelecter = [
   {
     value: `${today.getFullYear()}-01-01*${getDateInYearMonthDay(
         getLastDayOfQuarter(today.getFullYear(), 1)
-      )}`,
+      ), "periodsForSelecter Q1"}`,
     name: "Fist quarter (Q1)",
   },
   {

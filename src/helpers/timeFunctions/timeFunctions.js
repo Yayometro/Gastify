@@ -1,6 +1,17 @@
-export function getDateInYearMonthDay(date) {
-  return date.toISOString().split("T")[0];
+export function getDateInYearMonthDay(date, where) {
+  const validDate = 
+    date instanceof Date && !isNaN(date.getTime()) 
+      ? date 
+      : new Date(date);
+
+  if (!isNaN(validDate.getTime())) {
+    return validDate.toISOString().split("T")[0];
+  } else {
+    return "Date invalid to parse"
+  }
+  // throw new Error("Invalid date parameter passed to getDateInYearMonthDay");
 }
+
 export function getLastDayOfQuarter(year, quarter) {
   const quarterEndMonths = {
     1: 2,
@@ -42,7 +53,7 @@ export function getYearMonthDateRange(today) {
   const dateRangeMap = new Map();
 
   monthNames.forEach((month, index) => {
-    const start = new Date(`${year}-${index + 1}-01`);
+    const start = new Date(year, index, 1);
     const end = getLastDayOfMonth(year, index);
     const color = month.color;
     dateRangeMap.set(month.name, { start, end, color});
@@ -54,86 +65,104 @@ export function getYearMonthDateRange(today) {
 export function generatePeriodsForSelector(year) {
   return [
     {
-      value: `${year}-01-01*${getDateInYearMonthDay(
-        getLastDayOfQuarter(year, 1)
-      )}`,
+      value: `${new Date(year, 0, 1)}*${getLastDayOfQuarter(year, 1)}`,
       name: "First quarter (Q1)",
     },
     {
-      value: `${year}-04-01*${getDateInYearMonthDay(
-        getLastDayOfQuarter(year, 2)
-      )}`,
+      value: `${new Date(year, 3, 1)}*${getLastDayOfQuarter(year, 2)}`,
       name: "Second quarter (Q2)",
     },
     {
-      value: `${year}-07-01*${getDateInYearMonthDay(
-        getLastDayOfQuarter(year, 3)
-      )}`,
+      value: `${new Date(year, 6, 1)}*${getLastDayOfQuarter(year, 3)}`,
       name: "Third quarter (Q3)",
     },
     {
-      value: `${year}-10-01*${getDateInYearMonthDay(
-        getLastDayOfQuarter(year, 4)
-      )}`,
+      value: `${new Date(year, 9, 1)}*${getLastDayOfQuarter(year, 4)}`,
       name: "Fourth quarter (Q4)",
     },
     {
-      value: `${year}-01-01*${getDateInYearMonthDay(new Date(year, 5 + 1, 0))}`,
+      value: `${new Date(year, 0, 1)}*${new Date(year, 5 + 1, 0)}`,
       name: "First half of year",
     },
     {
-      value: `${year}-07-01*${getDateInYearMonthDay(
-        new Date(year, 11 + 1, 0)
-      )}`,
+      value: `${new Date(year, 6, 1)}*${new Date(year, 11 + 1, 0)}`,
       name: "Second half of year",
     },
     {
-      value: `${year}-01-01*${getDateInYearMonthDay(
-        new Date(year, 11 + 1, 0)
-      )}`,
+      value: `${new Date(year, 0, 1)}*${new Date(year, 11 + 1, 0)}`,
       name: `All ${year}`,
     },
   ];
 }
 const year = new Date().getFullYear();
 export const timeperiodRangesArray = [
-  {
-    value: `${year}-01-01*${getDateInYearMonthDay(
-      getLastDayOfQuarter(year, 1)
-    )}`,
-    name: "First quarter (Q1)",
-  },
-  {
-    value: `${year}-04-01*${getDateInYearMonthDay(
-      getLastDayOfQuarter(year, 2)
-    )}`,
-    name: "Second quarter (Q2)",
-  },
-  {
-    value: `${year}-07-01*${getDateInYearMonthDay(
-      getLastDayOfQuarter(year, 3)
-    )}`,
-    name: "Third quarter (Q3)",
-  },
-  {
-    value: `${year}-10-01*${getDateInYearMonthDay(
-      getLastDayOfQuarter(year, 4)
-    )}`,
-    name: "Fourth quarter (Q4)",
-  },
-  {
-    value: `${year}-01-01*${getDateInYearMonthDay(new Date(year, 5 + 1, 0))}`,
-    name: "First half of year",
-  },
-  {
-    value: `${year}-07-01*${getDateInYearMonthDay(new Date(year, 11 + 1, 0))}`,
-    name: "Second half of year",
-  },
-  {
-    value: `${year}-01-01*${getDateInYearMonthDay(new Date(year, 11 + 1, 0))}`,
-    name: `All ${year}`,
-  },
-];
+    {
+      value: `${new Date(year, 0, 1)}*${getLastDayOfQuarter(year, 1)}`,
+      name: "First quarter (Q1)",
+    },
+    {
+      value: `${new Date(year, 3, 1)}*${getLastDayOfQuarter(year, 2)}`,
+      name: "Second quarter (Q2)",
+    },
+    {
+      value: `${new Date(year, 6, 1)}*${getLastDayOfQuarter(year, 3)}`,
+      name: "Third quarter (Q3)",
+    },
+    {
+      value: `${new Date(year, 9, 1)}*${getLastDayOfQuarter(year, 4)}`,
+      name: "Fourth quarter (Q4)",
+    },
+    {
+      value: `${new Date(year, 0, 1)}*${new Date(year, 5 + 1, 0)}`,
+      name: "First half of year",
+    },
+    {
+      value: `${new Date(year, 6, 1)}*${new Date(year, 11 + 1, 0)}`,
+      name: "Second half of year",
+    },
+    {
+      value: `${new Date(year, 0, 1)}*${new Date(year, 11 + 1, 0)}`,
+      name: `All ${year}`,
+    },
+  ];
+// export const timeperiodRangesArray = [
+//   {
+//     value: `${year}-01-01*${getDateInYearMonthDay(
+//       getLastDayOfQuarter(year, 1)
+//     )}`,
+//     name: "First quarter (Q1)",
+//   },
+//   {
+//     value: `${year}-04-01*${getDateInYearMonthDay(
+//       getLastDayOfQuarter(year, 2)
+//     )}`,
+//     name: "Second quarter (Q2)",
+//   },
+//   {
+//     value: `${year}-07-01*${getDateInYearMonthDay(
+//       getLastDayOfQuarter(year, 3)
+//     )}`,
+//     name: "Third quarter (Q3)",
+//   },
+//   {
+//     value: `${year}-10-01*${getDateInYearMonthDay(
+//       getLastDayOfQuarter(year, 4)
+//     )}`,
+//     name: "Fourth quarter (Q4)",
+//   },
+//   {
+//     value: `${year}-01-01*${getDateInYearMonthDay(new Date(year, 5 + 1, 0))}`,
+//     name: "First half of year",
+//   },
+//   {
+//     value: `${year}-07-01*${getDateInYearMonthDay(new Date(year, 11 + 1, 0))}`,
+//     name: "Second half of year",
+//   },
+//   {
+//     value: `${year}-01-01*${getDateInYearMonthDay(new Date(year, 11 + 1, 0))}`,
+//     name: `All ${year}`,
+//   },
+// ];
 
 export function normalizeDateToUTC(date) {
   return new Date(
