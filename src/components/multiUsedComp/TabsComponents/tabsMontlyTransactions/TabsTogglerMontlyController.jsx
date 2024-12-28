@@ -19,7 +19,8 @@ import {
 } from "@/helpers/transformers/transactionsChange";
 import ColumnChartAntComparative from "../../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
 import TooltipForChart from "@/components/toltips/tooltipsForCharts/TooltipForChart";
-import currencyFormatter from "currency-formatter"
+import AtomicTop from "../../top3/atomicTop/AtomicTop";
+import UniversalCategoIcon from "../../UniversalCategoIcon";
 
 const today = new Date();
 
@@ -31,6 +32,7 @@ function TabsTogglerMontlyController() {
     new Date(today.getFullYear(), 0, 1),
     new Date(today.getFullYear(), 12, 0),
   ]);
+  const [clickedItems, setClickedItems] = useState([]);
 
   let { email } = useGetUserSession();
 
@@ -83,7 +85,10 @@ function TabsTogglerMontlyController() {
       // Transform all transactions to month object to chart
       const bills = transactionsToMonths(transactionsTemp.bills);
       const incomes = transactionsToMonths(transactionsTemp.incomes);
-      const allTransConvined = mapToAddTypeTransactionAndColor([...bills.array, ...incomes.array])
+      const allTransConvined = mapToAddTypeTransactionAndColor([
+        ...bills.array,
+        ...incomes.array,
+      ]);
       // set new values
       setData([incomes.array, bills.array, allTransConvined]);
       setTotalAmount([
@@ -130,9 +135,69 @@ function TabsTogglerMontlyController() {
       tab: "comparative",
       props: {
         data: data[2],
-        totalValue: <span><p>Total incomes: <b className=" font-extrabold">{usdFormatChanger(totalAmount[0])}</b></p><p>Total bills: <b className=" font-extrabold">{usdFormatChanger(totalAmount[1])}</b></p></span>,
+        totalValue: (
+          <div className="w-full flex flex-col justify-center items-center">
+            {clickedItems.length <= 0 ? (
+              ""
+            ) : (
+              <div className="w-full flex flex-col justify-center items-center">
+                <section className="w-full flex justify-center items-center py-2 gap-4">
+                  <button
+                    className=" py-2 px-2 bg-purple-600 rounded-full hover:bg-purple-800 gap-4 text-white"
+                    onClick={() => setClickedItems([])}
+                  >
+                    Clear
+                  </button>
+                  <p className=" text-xs">Selected: </p>
+                </section>
+                <div className="w-full grid grid-cols-2 items-center gap-2 min-[452px]:flex min-[452px]:justify-start min-[452px]:flex-wrap">
+                  {clickedItems.map((item, index) => (
+                    <AtomicTop
+                      key={item.type + item.value + item.isBill + index}
+                      index={index}
+                      color={item.color}
+                      icon={item.icon}
+                      name={String(item.type).toUpperCase()}
+                      isBill={item.isBill ? true : false}
+                      value={item.value}
+                      fatherStyle={
+                        "flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 hover:mix-blend-multiply min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2"
+                      }
+                      tooltip={
+                        <div className="flex flex-col justify-center items-center">
+                          <b>Type: {item.type}</b>
+                          <b>Value: {usdFormatChanger(item.value)}</b>
+                        </div>
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            <span className="w-full pt-2">
+              <p>
+                Total incomes: <b>{usdFormatChanger(totalAmount[0])}</b>
+              </p>
+              <p>
+                Total bills: <b>{usdFormatChanger(totalAmount[1])}</b>
+              </p>
+            </span>
+          </div>
+        ),
         propPlus: {
+          legend: {
+            color: {
+              itemMarkerFill: (datum, index, data) => {
+                return datum.id === "bill" ? "#ba3a3a" : "#65ba3a";
+              },
+            },
+          },
+          state: {
+            unselected: { opacity: 0.5 },
+            selected: { fill: "orange" },
+          },
           interaction: {
+            elementSelectByX: true,
             tooltip: {
               render: (e, { items, title }) => {
                 return (
@@ -171,6 +236,19 @@ function TabsTogglerMontlyController() {
               }
             },
             textBaseline: "bottom",
+          },
+          style: {
+            fill: ({ color }) => color,
+            inset: 0.2,
+          },
+          onReady: ({ chart }) => {
+            chart.on("interval:click", (evt) => {
+              const { data } = evt;
+              setClickedItems((prev) => {
+                let isRepeated = new Set(prev.map(i => JSON.stringify(i)))
+                return isRepeated.has(JSON.stringify(data?.data)) ? [...prev] : [...prev, data?.data]
+              });
+            });
           },
         },
       },

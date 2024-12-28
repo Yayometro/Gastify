@@ -11,10 +11,6 @@ function ColumnChartAntComparative({
     data: data,
     xField: "type",
     yField: "value",
-    legend: (l) => (l) => {
-            console.log(l)
-
-        },
     colorField: "transactionType",
     colorLabel: "color",
     group: true,
@@ -28,6 +24,10 @@ function ColumnChartAntComparative({
       // insetRight:20,
       // insetBottom:10
       // insetTop:10
+    //   click: (d,e,f) => {
+    //     console.log(d,e,f)
+
+    //   }
     },
     label: {
       text: ({ value }) => {
@@ -43,6 +43,19 @@ function ColumnChartAntComparative({
             value: item.value
         }
         
+    },
+    legend: {
+        color: {
+            itemMarker: (datum, index, data) => {
+                // console.log(datum, index, data)
+            },
+            itemMarkerFill: (datum, index, data) => {
+                // console.log(datum, index, data)
+            },
+            itemValueFill: (datum, index, data) => {
+                // console.log(datum, index, data)
+            },
+        }
     },
     interaction: {
       tooltip:  {
@@ -65,43 +78,12 @@ function ColumnChartAntComparative({
     },
     ...propPlus,
   };
-  //   [
-  //     {
-  //       january: 93.76,
-  //       type: 'january',
-  //       color: '#FF5733',
-  //       value: 26343.120000000003,
-  //       icon: 'md/MdOutlineFilter1',
-  //       index: 1,
-  //       isBill: null,
-  //       isIncome: true
-  //     },]
-
-  //   let temp = [
-  //     { name: 'London', '月份': 'Jan.', '月均降雨量': 18.9 },
-  //     { name: 'London', '月份': 'Feb.', '月均降雨量': 28.8 },
-  //     { name: 'London', '月份': 'Mar.', '月均降雨量': 39.3 },
-  //     { name: 'London', '月份': 'Apr.', '月均降雨量': 81.4 },
-  //     { name: 'London', '月份': 'May', '月均降雨量': 47 },
-  //     { name: 'London', '月份': 'Jun.', '月均降雨量': 20.3 },
-  //     { name: 'London', '月份': 'Jul.', '月均降雨量': 24 },
-  //     { name: 'London', '月份': 'Aug.', '月均降雨量': 35.6 },
-  //     { name: 'Berlin', '月份': 'Jan.', '月均降雨量': 12.4 },
-  //     { name: 'Berlin', '月份': 'Feb.', '月均降雨量': 23.2 },
-  //     { name: 'Berlin', '月份': 'Mar.', '月均降雨量': 34.5 },
-  //     { name: 'Berlin', '月份': 'Apr.', '月均降雨量': 99.7 },
-  //     { name: 'Berlin', '月份': 'May', '月均降雨量': 52.6 },
-  //     { name: 'Berlin', '月份': 'Jun.', '月均降雨量': 35.5 },
-  //     { name: 'Berlin', '月份': 'Jul.', '月均降雨量': 37.4 },
-  //     { name: 'Berlin', '月份': 'Aug.', '月均降雨量': 42.4 }
-  //   ]
-
   return (
     <div className="responsive-bars-chart-comp w-[100%] h-[400px] min-h-[300px] max-h-[600px]">
       <span className=" text-center text-xs">
         {totalValue}
       </span>
-      <Column {...config} />;
+      <Column {...config} />
     </div>
   );
 }
