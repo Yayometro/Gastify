@@ -1,3 +1,4 @@
+"use client"
 import { Column } from "@ant-design/plots";
 
 function ColumnChartAntComparative({
@@ -79,7 +80,7 @@ function ColumnChartAntComparative({
     ...propPlus,
   };
   return (
-    <div className="responsive-bars-chart-comp w-[100%] h-[400px] min-h-[300px] max-h-[600px]">
+    <div className="responsive-bars-chart-comp w-full h-full">
       <span className=" text-center text-xs">
         {totalValue}
       </span>

@@ -11,7 +11,7 @@ function SelecterFilter({ getValue, periodOverride, periodFromFather, styles }) 
     { value: 60, name: "Last 60 days" },
     { value: 30, name: "Last 90 days" },
   ];
-  const [internalPeriod, setInternalPeriod] = useState(periods[0]);
+  const [internalPeriod, setInternalPeriod] = useState(periodFromFather || periods[0]);
   function handleDurationChange(event) {
     setInternalPeriod(event.target.value);
     getValue(event.target.value);
@@ -21,7 +21,7 @@ function SelecterFilter({ getValue, periodOverride, periodFromFather, styles }) 
       <select
         className="bg-transparent w-full pr-4 appearance-none"
         name="DateSelector"
-        value={periodFromFather || internalPeriod}
+        value={internalPeriod}
         onChange={handleDurationChange}
       >
         {periods.length <= 0

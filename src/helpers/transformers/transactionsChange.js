@@ -1,13 +1,20 @@
 import {
+  getMonthOfTransaction,
   getYearMonthDateRange,
+  mapedMonths,
   normalizeDateToUTC,
 } from "../timeFunctions/timeFunctions";
-import currencyFormatter from "currency-formatter"
+import currencyFormatter from "currency-formatter";
 
-export function usdFormatChanger(currency){
+export function usdFormatChanger(currency) {
   return currencyFormatter.format(currency, {
     locale: "en-US",
-  })
+  });
+}
+export function orderByHighestValue(arr) {
+  if (!(arr instanceof Array))
+    throw new Error("arr should be an instance of Array");
+  return arr.sort((a, b) => (b.value || b.amount) - (a.value || a.amount));
 }
 
 export function mapToAddTypeTransactionAndColor(arr) {
@@ -27,7 +34,7 @@ export function mapToAddTypeTransactionAndColor(arr) {
 }
 
 export function filterBillsOrIncomes(trans) {
-  const incomes = trans.filter((tra) => tra.isIncome);
+  const incomes = trans.filter((tra) => !tra.isBill);
   const bills = trans.filter((tra) => tra.isBill);
   return { incomes, bills };
 }
@@ -65,6 +72,83 @@ export function getTransactionsFromTimeRange(trans, start, end) {
   return trans.filter((transaction) => {
     const transactionDate = new Date(transaction.date || transaction.createdAt);
     return transactionDate >= start && transactionDate <= end;
+  });
+}
+export function sortBasedOnValueProperty(numberElemenets, array) {
+  if (!(array instanceof Array))
+    throw new Error("the element shoudl be a instance of Array");
+  return array.sort((a, b) => a.value - b.value).slice(0, numberElemenets);
+}
+export function sortByIndex(arr){
+  if (!(arr instanceof Array))
+    throw new Error("the element shoudl be a instance of Array");
+  return arr.sort((a, b) => a.index - b.index)
+}
+
+export function reduceTransCategoriesSliced(arr, slice) {
+  if (!(arr instanceof Array))
+    throw new Error("the element shoudl be a instance of Array");
+  const reduceObj = arr.reduce((acc, transaction) => {
+    const categoryName = transaction?.category?.name || "No category";
+    const value = transaction.value || transaction.amount || 0;
+    const icon = transaction.category?.icon || "MdFilterNone";
+    if (acc[categoryName]) {
+      if (acc[categoryName].length <= slice) {
+        acc[categoryName].value += value;
+        acc[categoryName].length += 1;
+      }
+    } else {
+      acc[categoryName] = {
+        _id: transaction.category?._id || "No category",
+        type: categoryName,
+        value: value,
+        icon: icon,
+        color: transaction?.category?.color || "#ABABAB",
+        date: transaction.date || transaction.createdAt,
+        isBill: transaction.isBill,
+        length: 1,
+      };
+    }
+    return acc;
+  }, {});
+  return Object.values(reduceObj);
+}
+
+export function reduceTransCategories(array) {
+  if (!(array instanceof Array))
+    throw new Error("the element shoudl be a instance of Array");
+  const reducedObject = array.reduce((acc, item) => {
+    if (acc[item.type]) {
+      acc[item.type].value += item.value;
+    } else {
+      acc[item.type] = { ...item };
+    }
+    return acc;
+  }, {});
+  const objectsToArray = Object.values(reducedObject);
+  const totalValue = objectsToArray.reduce((acc, item) => acc + item.value, 0);
+  return {
+    array: objectsToArray,
+    totalValue,
+  };
+}
+
+export function transactionsToCategories(arr) {
+  if (!(arr instanceof Array))
+    throw new Error(
+      "The paramenter is not an instance of Array and it should be, it's typeof is: " +
+        typeof arr
+    );
+  return arr.map((transaction) => {
+    return {
+      _id: transaction.category?._id || "No category",
+      type: transaction?.category?.name || "No category",
+      value: transaction.amount || 0,
+      icon: transaction.category?.icon || "MdFilterNone",
+      color: transaction.category?.color || "#ABABAB",
+      date: transaction.date || transaction.createdAt,
+      isBill: transaction.isBill,
+    };
   });
 }
 

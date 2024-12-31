@@ -36,7 +36,7 @@ function TabsTogglerMontlyView({
           </b>{" "}
           to :{" "}
           <b>
-            {!time && !time[0]
+            {!time && !time[1]
               ? "No time selected"
               : getDateInYearMonthDay(time[1])}
           </b>

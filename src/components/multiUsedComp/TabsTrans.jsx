@@ -59,11 +59,9 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
         }
         return acc;
       }, {});
-      console.log("reducedData", reducedData)
       const finalArray = Object.values(reducedData);
       const totalValue = finalArray.reduce((acc, item) => acc + item.value, 0);
         console.log("finalArray", finalArray);
-      // console.log("totalValue", totalValue);
       setNewData(finalArray);
       setTotalValueOn(totalValue);
     }

@@ -221,8 +221,8 @@ function Wallet({ dataServ, session }) {
   };
 
   const toggleIsLoading = React.useCallback(() => {
-    setLoading(prev => !prev)
-  },[])
+    setLoading((prev) => !prev);
+  }, []);
 
   return (
     <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
@@ -231,10 +231,10 @@ function Wallet({ dataServ, session }) {
           ""
         ) : (
           <DashboardLoadingMessage
-              message={`We are building up your dashboard and data`}
-              subMessage={`Please wait a moment 🤓`}
-              setLoading={toggleIsLoading}
-            />
+            message={`We are building up your dashboard and data`}
+            subMessage={`Please wait a moment 🤓`}
+            setLoading={toggleIsLoading}
+          />
         )}
       </div>
       {user && wallet ? (
@@ -449,7 +449,6 @@ function Wallet({ dataServ, session }) {
                     bills={allBills}
                     period={selectedDuration}
                   />
-                   
                 </div>
                 <div className="budget">
                   <BudgetCont bcSession={session} />

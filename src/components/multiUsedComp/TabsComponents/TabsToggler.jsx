@@ -1,28 +1,33 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { Tooltip } from "antd";
 import EmptyModule from "../EmptyModule";
 
-function TabsToggler({ tabs, compontentsArray, tooltip }) {
-  const [active, setActive] = useState(tabs?.[0]?.toLowerCase()||"");
+function TabsToggler({ tabs, compontentsArray, tooltip, contentStyle }) {
+  const [active, setActive] = useState(tabs?.[0]?.toLowerCase() || "");
 
   const handleTab = (type) => {
     setActive(type.toLowerCase());
   };
 
-  const activeComponent = compontentsArray.find(({ tab }) => tab.toLowerCase() === active);
+  const activeComponent =
+    !compontentsArray || compontentsArray.length <= 0
+      ? null
+      : compontentsArray
+          .filter(({ tab }) => tab.toLowerCase() === active)
+          .map(({ Component, props }, i) => <Component {...props} key={`tabs-togler-key-${tabs}-${i}`} />);
 
   return (
-    <div className="rtt-cont w-full h-full">
-      <div className="tabs-toggler w-full text-center flex justify-center items-center gap-2">
+    <div className="rtt-cont w-full h-full mt-1">
+      <div className="tabs-toggler w-full text-center flex justify-center items-center gap-2 bg-purple-200 rounded-md">
         {!tabs || tabs.length <= 0
           ? "No tabs in array, set at least one... "
           : tabs.map((tab) => (
               <div
-                key={"tabsToggler-"+tab}
+                key={"tabsToggler-" + tab}
                 onClick={() => handleTab(tab)}
-                className={`tab-rtt-bill p-4 cursor-pointer hover:text-purple-400 ${
+                className={`tab-rtt-bill p-4 cursor-pointer hover:text-purple-700 ${
                   active === tab.toLowerCase()
                     ? "border-b-2 border-purple-600 text-purple-600 "
                     : ""
@@ -40,12 +45,8 @@ function TabsToggler({ tabs, compontentsArray, tooltip }) {
           </div>
         </Tooltip>
       </div>
-      <div className="tabs-toggler-content-cont">
-      {activeComponent ? (
-          <div key={`component-tabs-toggler-key-${activeComponent.tab}`}>
-            <activeComponent.Component {...activeComponent.props} />
-          </div>
-        ) : (
+      <div className={contentStyle || "tabs-toggler-content-cont"}>
+        {activeComponent || (
           <EmptyModule emMessage="Ups... Nothing here 🤔. Component SHOULD have an array of components! 🚨" />
         )}
       </div>

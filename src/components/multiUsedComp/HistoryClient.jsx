@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import DashboardLoadingMessage from "./loaders/DashboardLoadingMessage";
 import TabsToggler from "./TabsComponents/TabsToggler";
 import TabsTogglerMontlyController from "./TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyController";
+import HistoricalMovementsController from "./HistoricalMovementsandCategories/HistoricalMovementsController";
 
 function HistoryClient({ email }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,19 +22,19 @@ function HistoryClient({ email }) {
   useEffect(() => {
     // User
     if (ccUser.status == "idle" && email) {
-        setIsLoading(true)
-        dispatch(fetchUser(email));
+      setIsLoading(true);
+      dispatch(fetchUser(email));
     }
     if (ccUser.status == "succeeded") {
-        setUser(ccUser.data);
-        setIsLoading(false)
+      setUser(ccUser.data);
+      setIsLoading(false);
     }
   }, [ccUser.status, email]);
   return (
-    <div className=" w-full h-screen sm:pr-2 overflow-y-scroll">
-      <div className="w-full h-full relative">
+    <div className=" w-full h-full sm:pr-2">
+      <div className="w-full h-full">
         <div className="loader">
-          {(isLoading && 
+          {isLoading && (
             <DashboardLoadingMessage
               message={`We are building up your dashboard and data`}
               subMessage={`Please wait a moment 🤓`}
@@ -47,12 +48,15 @@ function HistoryClient({ email }) {
           </h1>
         </div>
         <div className="content-profile-cont w-full h-full bg-slate-100 text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl shadow-sm px-2 pt-6 pb-[80px]">
-          <div className="history-client-cont w-full flex flex-col justify-center items-center">
+          <div className="history-client-cont w-full h-fulls flex flex-col justify-center items-center pb-4">
             <h1 className="text-3xl min-[text-[45px]]: py-2">
               History details
             </h1>
             {/*  */}
             <TabsTogglerMontlyController />
+          </div>
+          <div className="w-full h-fulls historical-transactions-container">
+            <HistoricalMovementsController />
           </div>
         </div>
       </div>
