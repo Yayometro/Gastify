@@ -20,7 +20,6 @@ import {
 import ColumnChartAntComparative from "../../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
 import TooltipForChart from "@/components/toltips/tooltipsForCharts/TooltipForChart";
 import AtomicTop from "../../top3/atomicTop/AtomicTop";
-import UniversalCategoIcon from "../../UniversalCategoIcon";
 
 const today = new Date();
 
@@ -29,9 +28,9 @@ function TabsTogglerMontlyController() {
   const [loading, setLoading] = useState(false);
   const [totalAmount, setTotalAmount] = useState([]);
   const [timePeriod, setTimePeriod] = useState([
-    new Date(today.getFullYear(), 0, 1),
-    new Date(today.getFullYear(), 12, 0),
-  ]);
+      new Date(today.getFullYear(), today.getMonth() - 2, 1),
+      today,
+    ]);
   const [clickedItems, setClickedItems] = useState([]);
 
   let { email } = useGetUserSession();
@@ -40,23 +39,6 @@ function TabsTogglerMontlyController() {
   const dispath = useDispatch();
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
   const allTransactions = ccTransacciones.data;
-
-  // USE EFFECTS:
-  useEffect(() => {
-    if (timeperiodRangesArray.length > 0) {
-      const startDate = new Date(
-        timeperiodRangesArray[timeperiodRangesArray.length - 1].value.split(
-          "*"
-        )[0]
-      );
-      const endDate = new Date(
-        timeperiodRangesArray[timeperiodRangesArray.length - 1].value.split(
-          "*"
-        )[1]
-      );
-      setTimePeriod([startDate, endDate]);
-    }
-  }, []);
 
   useEffect(() => {
     // User
@@ -107,7 +89,9 @@ function TabsTogglerMontlyController() {
   }
 
   function handleRangeDate(dateStart, dateEnd) {
-    setTimePeriod([dateStart, dateEnd]);
+    if (dateStart && dateEnd) {
+      setTimePeriod([dateStart, dateEnd]);
+    }
   }
 
   const components = [
@@ -188,7 +172,7 @@ function TabsTogglerMontlyController() {
           legend: {
             color: {
               itemMarkerFill: (datum, index, data) => {
-                return datum.id === "bill" ? "#ba3a3a" : "#65ba3a";
+                return datum.id === "bill" ? "#ff8c8c" : "#88FFE3";
               },
             },
           },
@@ -245,8 +229,10 @@ function TabsTogglerMontlyController() {
             chart.on("interval:click", (evt) => {
               const { data } = evt;
               setClickedItems((prev) => {
-                let isRepeated = new Set(prev.map(i => JSON.stringify(i)))
-                return isRepeated.has(JSON.stringify(data?.data)) ? [...prev] : [...prev, data?.data]
+                let isRepeated = new Set(prev.map((i) => JSON.stringify(i)));
+                return isRepeated.has(JSON.stringify(data?.data))
+                  ? [...prev]
+                  : [...prev, data?.data];
               });
             });
           },
@@ -255,11 +241,22 @@ function TabsTogglerMontlyController() {
       Component: ColumnChartAntComparative,
     },
   ];
+  const timePeriodsForSelecter = [
+    {
+      value: `${new Date(
+        today.getFullYear(),
+        today.getMonth() - 2,
+        1
+      )}*${today}`,
+      name: "Last 3 months",
+    },
+    ...timeperiodRangesArray,
+  ];
 
   return (
     <TabsTogglerMontlyView
       getValueSelecterFilter={getValueFromSelecter}
-      timePeriodsForSelecter={timeperiodRangesArray}
+      timePeriodsForSelecter={timePeriodsForSelecter}
       data={data}
       handleRangeDate={handleRangeDate}
       timePeriod={timePeriod}

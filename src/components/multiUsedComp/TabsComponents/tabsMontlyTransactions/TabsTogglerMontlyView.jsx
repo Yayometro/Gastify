@@ -16,12 +16,6 @@ function TabsTogglerMontlyView({
   data,
   timePeriod,
 }) {
-  const [time, setTime] = useState(timePeriod);
-  useEffect(() => {
-    if (timePeriod[0] && timePeriod[1]) {
-      setTime([timePeriod[0], timePeriod[1]]);
-    }
-  }, [timePeriod]);
 
   return (
     <div className="w-full h-full">
@@ -30,15 +24,15 @@ function TabsTogglerMontlyView({
         <span className="text-xs ">
           From:{" "}
           <b>
-            {!time && !time[0]
+            {!timePeriod && !timePeriod[0]
               ? "No time selected"
-              : getDateInYearMonthDay(time[0])}
+              : getDateInYearMonthDay(timePeriod[0])}
           </b>{" "}
           to :{" "}
           <b>
-            {!time && !time[1]
+            {!timePeriod && !timePeriod[1]
               ? "No time selected"
-              : getDateInYearMonthDay(time[1])}
+              : getDateInYearMonthDay(timePeriod[1])}
           </b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">

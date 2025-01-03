@@ -22,11 +22,11 @@ export function mapToAddTypeTransactionAndColor(arr) {
     throw new Error("arr should be an instance of Array");
   return arr.map((monthTrans) => {
     if (monthTrans.isBill) {
-      return { ...monthTrans, color: "#ba3a3a", transactionType: "bill" };
+      return { ...monthTrans, color: "#ff8c8c", transactionType: "bill" };
     } else {
       return {
         ...monthTrans,
-        color: "#65ba3a",
+        color: "#88FFE3",
         transactionType: "income",
       };
     }
@@ -37,6 +37,29 @@ export function filterBillsOrIncomes(trans) {
   const incomes = trans.filter((tra) => !tra.isBill);
   const bills = trans.filter((tra) => tra.isBill);
   return { incomes, bills };
+}
+
+export function reduceTransToTransMonths(arr){
+  if(!(arr instanceof Array)) throw new Error("arr should be an Array instance")
+    return arr.reduce((acc, transaction) => {
+  const transactionOfMonth = mapedMonths.get(getMonthOfTransaction(new Date(transaction.date).getMonth()).toLowerCase())
+  const month = transactionOfMonth.name
+  if(acc[month]){
+    acc[month].value += transaction.amount
+  } else {
+    acc[month] = {
+      [month]: month,
+      type: month,
+      color: transactionOfMonth.color,
+      value: transaction.amount,
+      icon: transactionOfMonth.icon || "md/MdOutlineFilter1",
+      index: transactionOfMonth.index,
+      isBill: transaction.isBill || null,
+      isIncome: transaction.isIncome || null,
+    };
+  }
+      return acc
+    }, {})
 }
 
 export function reduceTransactionsToMonthSpentObjects(monTransactions) {
@@ -52,13 +75,9 @@ export function reduceTransactionsToMonthSpentObjects(monTransactions) {
   return newOrder;
 }
 export function transactionsToMonths(allTrans) {
-  const transactionsTransformed =
-    transformTransactionsToMonthsChartObject(allTrans);
-  const reducerTransform = reduceTransactionsToMonthSpentObjects(
-    transactionsTransformed
-  );
+  const transformed = reduceTransToTransMonths(allTrans)
   // remove the entry with the name and left only the values
-  const final = Object.values(reducerTransform).sort(
+  const final = Object.values(transformed).sort(
     (a, b) => a.index - b.index
   );
   const totalValue = final.reduce((acc, item) => acc + item.value, 0);
