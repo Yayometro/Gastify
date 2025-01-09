@@ -3,6 +3,7 @@ import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import TopMonthItem from "./TopMonthItem";
 
 function TopMonthContainer({ items, style, title }) {
+  console.log(items)
   return (
     <div
       className={

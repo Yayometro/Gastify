@@ -11,6 +11,7 @@ export function usdFormatChanger(currency) {
     locale: "en-US",
   });
 }
+
 export function orderByHighestValue(arr) {
   if (!(arr instanceof Array))
     throw new Error("arr should be an instance of Array");
@@ -46,7 +47,7 @@ export function reduceAndTransforToCategories(array) {
     const category = trans.category;
     if (acc[category?.name]) {
       acc[category?.name].value += trans.amount || trans.value;
-      acc[category?.name].children = [...acc[category?.name].children, trans]
+      acc[category?.name].children = [...acc[category?.name].children, trans];
     } else {
       acc[category?.name] = {
         name: category?.name || "No category",
@@ -55,23 +56,25 @@ export function reduceAndTransforToCategories(array) {
         color: category?.color || "#ABABAB",
         value: trans.amount || trans.value,
         isBill: trans.isBill,
-        children: [trans]
+        children: [trans],
       };
     }
     return acc;
   }, {});
-  const arrayFinal = Object.values(categoriesFathers).sort((a, b) => b.value - a.value)
-  const totalAmount = arrayFinal.reduce((acc, item) => acc += item.value ,0)
+  const arrayFinal = Object.values(categoriesFathers).sort(
+    (a, b) => b.value - a.value
+  );
+  const totalAmount = arrayFinal.reduce((acc, item) => (acc += item.value), 0);
   return {
     array: arrayFinal,
-    totalAmount
-  }
+    totalAmount,
+  };
 }
 
-export function getTotalValue(arr){
-  if(!(arr instanceof Array))
+export function getTotalValue(arr) {
+  if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
-    return arr.reduce((acc, item) => acc += (item.value || item.amount), 0)
+  return arr.reduce((acc, item) => (acc += item.value || item.amount), 0);
 }
 
 export function reduceTransToTransMonths(arr) {
@@ -149,10 +152,11 @@ export function reduceTransCategoriesSliced(arr, slice) {
     const value = transaction.value || transaction.amount || 0;
     const icon = transaction.category?.icon || "MdFilterNone";
     if (acc[categoryName]) {
-      if (acc[categoryName].length <= slice) {
-        acc[categoryName].value += value;
-        acc[categoryName].length += 1;
-      }
+      acc[categoryName].value += value;
+      acc[categoryName].children = [
+        ...acc[categoryName].children,
+        transaction,
+      ];
     } else {
       acc[categoryName] = {
         _id: transaction.category?._id || "No category",
@@ -162,7 +166,7 @@ export function reduceTransCategoriesSliced(arr, slice) {
         color: transaction?.category?.color || "#ABABAB",
         date: transaction.date || transaction.createdAt,
         isBill: transaction.isBill,
-        length: 1,
+        children: new Array(transaction),
       };
     }
     return acc;

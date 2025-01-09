@@ -4,14 +4,16 @@ import UniversalCategoIcon from "../../UniversalCategoIcon";
 import CategoIcon from "../../CategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
-function AtomicTop({color, index, icon, name, isBill, value, fatherStyle, tooltip}) {
+function AtomicTop({item, color, index, icon, name, isBill, value, fatherStyle, tooltip, getItem}) {
   return (
+    <>
     <Tooltip title={tooltip}>
       <div
-        className={fatherStyle || `tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px]`}
+        className={fatherStyle || `tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px] cursor-pointer`}
         style={{
           backgroundColor: color || "#DADADA",
         }}
+        onClick={() => getItem ? getItem(item) : null}
       >
         <div className="w-full flex gap-2 items-center truncate">
           <div className=" bg-white flex justify-center items-center border-2 rounded-full w-[25px] h-[25px] absolute top-[6px] left-[6px] shadow-lg">
@@ -45,6 +47,7 @@ function AtomicTop({color, index, icon, name, isBill, value, fatherStyle, toolti
         </div>
       </div>
     </Tooltip>
+    </>
   );
 }
 
