@@ -12,10 +12,8 @@ import {
   filterBillsOrIncomes,
   getTransactionsFromTimeRange,
   orderByHighestValue,
-  reduceTransCategories,
   reduceTransCategoriesSliced,
   sortByIndex,
-  transactionsToCategories,
 } from "@/helpers/transformers/transactionsChange";
 import {
   orderItemsInTheirMonth,

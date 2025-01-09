@@ -1,3 +1,4 @@
+const today = new Date()
 export const months = [
   "January",
   "February",
@@ -222,6 +223,10 @@ export const timeperiodRangesArray = [
   {
     value: `${new Date(year, 0, 1)}*${new Date(year, 11 + 1, 0)}`,
     name: `All ${year}`,
+  },
+  {
+    value: `${new Date(year-1, 0, 1)}*${new Date(year-1, 11 + 1, 0)}`,
+    name: `All ${year-1}`,
   },
 ];
 // export const timeperiodRangesArray = [

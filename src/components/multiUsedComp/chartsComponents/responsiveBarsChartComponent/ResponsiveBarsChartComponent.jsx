@@ -10,6 +10,7 @@ function ResponsiveBarsChartComponent({
   propsPlus,
   legendBottom,
   legenedLeft,
+  header
 }) {
   const rest = {
     data: data,
@@ -124,9 +125,9 @@ function ResponsiveBarsChartComponent({
     enableTotals: true,
     ...propsPlus
   };
-  console.log("rest", rest)
   return (
     <div className="responsive-bars-chart-comp w-[100%] h-[400px] min-h-[300px] max-h-[600px]">
+      {header}
       <span className=" text-center text-xs">
         Total:{" "}
         <b>

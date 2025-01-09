@@ -39,27 +39,65 @@ export function filterBillsOrIncomes(trans) {
   return { incomes, bills };
 }
 
-export function reduceTransToTransMonths(arr){
-  if(!(arr instanceof Array)) throw new Error("arr should be an Array instance")
-    return arr.reduce((acc, transaction) => {
-  const transactionOfMonth = mapedMonths.get(getMonthOfTransaction(new Date(transaction.date).getMonth()).toLowerCase())
-  const month = transactionOfMonth.name
-  if(acc[month]){
-    acc[month].value += transaction.amount
-  } else {
-    acc[month] = {
-      [month]: month,
-      type: month,
-      color: transactionOfMonth.color,
-      value: transaction.amount,
-      icon: transactionOfMonth.icon || "md/MdOutlineFilter1",
-      index: transactionOfMonth.index,
-      isBill: transaction.isBill || null,
-      isIncome: transaction.isIncome || null,
-    };
+export function reduceAndTransforToCategories(array) {
+  if (!(array instanceof Array))
+    throw new Error("array should be an Array instance");
+  const categoriesFathers = array.reduce((acc, trans) => {
+    const category = trans.category;
+    if (acc[category?.name]) {
+      acc[category?.name].value += trans.amount || trans.value;
+      acc[category?.name].children = [...acc[category?.name].children, trans]
+    } else {
+      acc[category?.name] = {
+        name: category?.name || "No category",
+        type: category?.name || "No category",
+        icon: category?.icon || "md/MdFilterNone",
+        color: category?.color || "#ABABAB",
+        value: trans.amount || trans.value,
+        isBill: trans.isBill,
+        children: [trans]
+      };
+    }
+    return acc;
+  }, {});
+  const arrayFinal = Object.values(categoriesFathers).sort((a, b) => b.value - a.value)
+  const totalAmount = arrayFinal.reduce((acc, item) => acc += item.value ,0)
+  return {
+    array: arrayFinal,
+    totalAmount
   }
-      return acc
-    }, {})
+}
+
+export function getTotalValue(arr){
+  if(!(arr instanceof Array))
+    throw new Error("arr should be an Array instance");
+    return arr.reduce((acc, item) => acc += (item.value || item.amount), 0)
+}
+
+export function reduceTransToTransMonths(arr) {
+  if (!(arr instanceof Array))
+    throw new Error("arr should be an Array instance");
+  return arr.reduce((acc, transaction) => {
+    const transactionOfMonth = mapedMonths.get(
+      getMonthOfTransaction(new Date(transaction.date).getMonth()).toLowerCase()
+    );
+    const month = transactionOfMonth.name;
+    if (acc[month]) {
+      acc[month].value += transaction.amount;
+    } else {
+      acc[month] = {
+        [month]: month,
+        type: month,
+        color: transactionOfMonth.color,
+        value: transaction.amount,
+        icon: transactionOfMonth.icon || "md/MdOutlineFilter1",
+        index: transactionOfMonth.index,
+        isBill: transaction.isBill || null,
+        isIncome: transaction.isIncome || null,
+      };
+    }
+    return acc;
+  }, {});
 }
 
 export function reduceTransactionsToMonthSpentObjects(monTransactions) {
@@ -75,11 +113,9 @@ export function reduceTransactionsToMonthSpentObjects(monTransactions) {
   return newOrder;
 }
 export function transactionsToMonths(allTrans) {
-  const transformed = reduceTransToTransMonths(allTrans)
+  const transformed = reduceTransToTransMonths(allTrans);
   // remove the entry with the name and left only the values
-  const final = Object.values(transformed).sort(
-    (a, b) => a.index - b.index
-  );
+  const final = Object.values(transformed).sort((a, b) => a.index - b.index);
   const totalValue = final.reduce((acc, item) => acc + item.value, 0);
   return { array: final, totalValue };
 }
@@ -93,15 +129,16 @@ export function getTransactionsFromTimeRange(trans, start, end) {
     return transactionDate >= start && transactionDate <= end;
   });
 }
+
 export function sortBasedOnValueProperty(numberElemenets, array) {
   if (!(array instanceof Array))
     throw new Error("the element shoudl be a instance of Array");
   return array.sort((a, b) => a.value - b.value).slice(0, numberElemenets);
 }
-export function sortByIndex(arr){
+export function sortByIndex(arr) {
   if (!(arr instanceof Array))
     throw new Error("the element shoudl be a instance of Array");
-  return arr.sort((a, b) => a.index - b.index)
+  return arr.sort((a, b) => a.index - b.index);
 }
 
 export function reduceTransCategoriesSliced(arr, slice) {
