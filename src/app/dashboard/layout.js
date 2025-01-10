@@ -1,6 +1,7 @@
 import React from "react";
 import { getServerSession } from "next-auth";
 import Navbar from "@/components/Navbar";
+import AllDataProvider from "@/components/Providers/AllDataProvider";
 
 async function DashboardLayout({ children }) {
   const sesion = await getServerSession();
@@ -13,7 +14,7 @@ async function DashboardLayout({ children }) {
       className={`dashboard-layer-container walllet-bg h-full w-screen flex flex-col flex-nowrap sm:flex-row m-0 p-0`}
     >
       <Navbar sesion={sesion} />
-      {children}
+        {children}
     </div>
   );
 }

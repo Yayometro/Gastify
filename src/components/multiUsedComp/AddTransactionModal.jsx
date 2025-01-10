@@ -3,6 +3,7 @@ import AddTransactionComp from "./AddTransactionComp";
 import CategoIcon from "./CategoIcon";
 import VoiceRecognicionComponent from "./VoiceRecognicionComponent";
 import ReadFileComp from "./ReadFileComp";
+import SelectCategories from "../categories/SelectCategoryProvider/SelectCategories";
 
 function AddTransactionModal({ close }) {
   const [active, setActive] = useState("manual");
@@ -36,9 +37,21 @@ function AddTransactionModal({ close }) {
             Voice
           </button>
         </section>
-        {active === "manual" && <AddTransactionComp/>}
-        {active === "excel" && <div className="w-full h-full bg-slate-50"><ReadFileComp /></div>}
-        {active === "voice" && <div className="w-full h-full overflow-y-scroll bg-slate-50"><VoiceRecognicionComponent/></div>}
+        {active === "manual" && (
+          <SelectCategories>
+            <AddTransactionComp />
+          </SelectCategories>
+        )}
+        {active === "excel" && (
+          <div className="w-full h-full bg-slate-50">
+            <ReadFileComp />
+          </div>
+        )}
+        {active === "voice" && (
+          <div className="w-full h-full overflow-y-scroll bg-slate-50">
+            <VoiceRecognicionComponent />
+          </div>
+        )}
         <button onClick={close}>
           <div className="close-con absolute top-[0%] right-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short">
             <CategoIcon type={"MdClose"} siz={20} />

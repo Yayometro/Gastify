@@ -1,26 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-import { createTheme, ThemeProvider } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { Switch } from "antd";
-import { Button, ConfigProvider, Space, Spin } from "antd";
+import {  ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { addNewTransacction } from "@/lib/features/transacctionsSlice";
-import { fetchUser, setUser } from "@/lib/features/userSlice";
-import { fetchCategories, setCategories } from "@/lib/features/categoriesSlice";
-import { fetchAccounts, setAccounts } from "@/lib/features/accountsSlice";
-import { fetchBudget, setBudget } from "@/lib/features/budgetSlice";
-import { fetchSubCat, setSubCategories } from "@/lib/features/subCategorySlice";
-import useGetUserSession from "@/hooks/useGetUserSession";
+import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
+import useModal from "@/hooks/useModalBasic";
+import BasicModal from "../modals/basicModal/BasicModal";
+import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
+import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
+import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 
 function AddTransactionComp() {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,69 +41,11 @@ function AddTransactionComp() {
   });
   let [isShort, setIsShort] = useState(false);
 
-  let { email } = useGetUserSession();
-
+  const { close, handleClose } = useModal();
   //REDUX
+  const {user, accounts} = useGetDataFromProvider();
   const dispatch = useDispatch();
-  const ccUser = useSelector((state) => state.userReducer);
-  const ccategories = useSelector((state) => state.categoriesReducer);
-  const ccSubCategories = useSelector((state) => state.subCategoryReducer);
-  const ccAccounts = useSelector((state) => state.accountsReducer);
-  const ccBudget = useSelector((state) => state.budgetReducer);
-
-  const user = ccUser.data;
-  const categories = ccategories.data.user.concat(ccategories.data.default);
-  const subCategories = ccSubCategories.data.subCat;
-  const accounts = ccAccounts.data;
-  const budget = ccBudget.data;
-
-  // useEffect(() => {
-
-  // }, []);
-
-  useEffect(() => {
-    // FETCH first
-    // User
-    if (ccUser.status == "idle") {
-      dispatch(fetchUser(email));
-    }
-    //Categories
-    if (ccategories.status == "idle") {
-      dispatch(fetchCategories(email));
-    }
-    //Sub-categories
-    if (ccSubCategories.status == "idle") {
-      dispatch(fetchSubCat(email));
-    }
-    if (ccAccounts.status == "idle") {
-      dispatch(fetchAccounts(email));
-    }
-    if (budget.status == "idle") {
-      dispatch(fetchBudget(email));
-    }
-    // SET IN SYNC
-    // User
-    if (ccUser.status == "succeeded") {
-      setUser(ccUser.data);
-    }
-    // Account
-    if (ccAccounts.status == "succeeded") {
-      setAccounts(ccAccounts.data);
-    }
-    //Categories
-    if (ccategories.status == "succeeded") {
-      setCategories(ccategories.data.user.concat(ccategories.data.default));
-    }
-    if (ccSubCategories.status == "succeeded") {
-      setSubCategories(
-        ccSubCategories.data.subCat.concat(ccSubCategories.data.default)
-      );
-    }
-    //Budgets
-    if (ccBudget.status == "succeeded") {
-      setBudget(ccBudget.data);
-    }
-  }, [ccUser, ccAccounts, ccategories, ccBudget, ccSubCategories, email]);
+    const {handleClean} = useContext(SelectCategoryContext)
 
   //EFFECTS
   useEffect(() => {
@@ -173,15 +114,16 @@ function AddTransactionComp() {
       );
       if (response.data) {
         runNotify("ok", response.message);
-        const addlyData = [response.data];
         //UPDATE FRON END
         dispatch(addNewTransacction(response.data));
         setIsLoading(false);
         clearForm();
+        handleClean()
       }
     } catch (e) {
       runNotify("error", String(e));
       clearForm();
+      handleClean()
       throw new Error(e);
     }
   };
@@ -207,38 +149,23 @@ function AddTransactionComp() {
       wallet: user.wallet,
     });
   };
-  //
-  const handleDefSubCategory = (event) => {
-    if (event.target.value === "No subcategory") {
+  
+
+  function handleCategory(cat) {
+    if (!cat) return;
+    if (cat?.fatherCategory) {
       setTransactionInfo({
         ...transactionInfo,
-        subCategory: null,
-      });
-    } else {
-      const filterSub = subCategories.filter(
-        (sub) => sub._id === event.target.value
-      );
-      const defFather = filterSub[0].fatherCategory._id;
-      setTransactionInfo({
-        ...transactionInfo,
-        subCategory: event.target.value,
-        category: defFather,
-      });
-    }
-  };
-  const handleDefCategory = (event) => {
-    if (event.target.value === "No category") {
-      setTransactionInfo({
-        ...transactionInfo,
-        category: null,
+        subCategory: cat._id,
+        category: cat?.fatherCategory?._id
       });
     } else {
       setTransactionInfo({
         ...transactionInfo,
-        category: event.target.value,
+        category: cat._id,
       });
     }
-  };
+  }
 
   return (
     <div className="w-full h-full overflow-y-scroll relative bg-slate-50">
@@ -477,69 +404,19 @@ function AddTransactionComp() {
               </LocalizationProvider>
             </div>
             <p className="label-tfp ">Category</p>
-            {transactionInfo.subCategory ? (
-              <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center cursor-not-allowed">
-                <select
-                  className=" bg-transparent appearance-none w-full pr-4 cursor-not-allowed"
-                  name="DateSelector"
-                  value={transactionInfo?.category || null}
-                  // onChange={handleDefCategory}
-                  disabled
-                >
-                  <option value={null}>No category</option>
-                  {categories.length > 0 ? (
-                    categories.map((cat) => (
-                      <option value={cat._id} key={`option-cat-${cat._id}`}>
-                        {cat.name}{" "}
-                      </option>
-                    ))
-                  ) : (
-                    <div>No categories loaded...</div>
-                  )}
-                </select>
-              </div>
-            ) : (
-              <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
-                <select
-                  className=" bg-transparent appearance-none w-full pr-4"
-                  name="DateSelector"
-                  value={transactionInfo?.category || null}
-                  onChange={handleDefCategory}
-                >
-                  <option value={null}>No category</option>
-                  {categories.length > 0 ? (
-                    categories.map((cat) => (
-                      <option value={cat._id} key={`option-cat-${cat._id}`}>
-                        {cat.name}{" "}
-                      </option>
-                    ))
-                  ) : (
-                    <div>No categories loaded...</div>
-                  )}
-                </select>
-              </div>
-            )}
-
-            <p className="label-tfp ">Sub Category</p>
-            <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
-              <select
-                className=" bg-transparent appearance-none w-full pr-4"
-                name="DateSelector"
-                value={transactionInfo?.subCategory || null}
-                onChange={handleDefSubCategory}
-              >
-                <option value={null}>No subcategory</option>
-                {subCategories.length > 0 ? (
-                  subCategories.map((sub) => (
-                    <option value={sub._id} key={`option-subCat-${sub._id}`}>
-                      {sub.name}{" "}
-                    </option>
-                  ))
-                ) : (
-                  <div>No sub categories loaded...</div>
-                )}
-              </select>
-            </div>
+              <BtnSelectCategoryContext onClose={handleClose} />
+              {close && (
+                <BasicModal
+                  close={handleClose}
+                  renderContent={
+                    <ModalCategoryContent
+                      close={handleClose}
+                      getSelected={handleCategory}
+                      submit={isLoading}
+                    />
+                  }
+                />
+              )}
             <p className="label-tfp ">Tags</p>
             <input
               type="text"
