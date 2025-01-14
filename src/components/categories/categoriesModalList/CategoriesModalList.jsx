@@ -2,13 +2,16 @@ import React, { useContext } from "react";
 import { SelectCategoryContext } from "../SelectCategoryProvider/SelectCategoryProvider";
 import CategoryCircle from "../categoryCircle/CategoryCircle";
 import CategoryCircleWithChilds from "../categoryCircleWithChilds/CategoryCircleWithChilds";
+import EmptyModule from "@/components/multiUsedComp/EmptyModule";
 
 function CategoriesModalList({ onSelect }) {
   const { newCategories } = useContext(SelectCategoryContext);
   return (
     <>
       {!newCategories || newCategories.length <= 0 ? (
-        <p className="text-3xl text-center p-8">No categories to display 🤔</p>
+        <div className="w-full h-full flex justify-center items-center">
+          <EmptyModule emMessage={`No categories to display 🤔`} />
+        </div>
       ) : (
         <>
           <h1 className="py-3">Categories without sub-categories:</h1>
