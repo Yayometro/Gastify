@@ -412,7 +412,6 @@ function AddTransactionComp() {
                     <ModalCategoryContent
                       close={handleClose}
                       getSelected={handleCategory}
-                      submit={isLoading}
                     />
                   }
                 />
