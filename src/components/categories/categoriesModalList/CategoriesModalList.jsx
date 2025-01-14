@@ -5,7 +5,6 @@ import CategoryCircleWithChilds from "../categoryCircleWithChilds/CategoryCircle
 
 function CategoriesModalList({ onSelect }) {
   const { newCategories } = useContext(SelectCategoryContext);
-  console.log("newCategories in CategoriesModalList", newCategories)
   return (
     <>
       {!newCategories || newCategories.length <= 0 ? (

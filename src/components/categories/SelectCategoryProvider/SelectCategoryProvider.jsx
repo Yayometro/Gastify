@@ -20,11 +20,7 @@ function SelectCategoryProvider({ children }) {
   const [itemSelected, setItemSelected] = useState(null)
   const [searchCat, setSearchCat] = useState([])
   useEffect(() => {
-    console.log("categories IN PROVIDER", categories)
-    console.log("subCategories IN PROVIDER", subCategories)
     if (categories.length >= 1 && subCategories.length >= 1) {
-      console.log("categories IN PROVIDER USE EFFECT", categories)
-      console.log("subCategories IN PROVIDER USE EFFECT", subCategories)
       setNewCategories(organizedCategoriesAndSubCategories([...categories, ...subCategories]));
     }
   }, [categories, subCategories]);
