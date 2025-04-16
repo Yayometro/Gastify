@@ -10,12 +10,14 @@ async function DashboardLayout({ children }) {
   if (!sesion.user.email) throw new Error('No email on session user in General Data')
    
   return (
+    <AllDataProvider>
     <div
       className={`dashboard-layer-container walllet-bg h-full w-screen flex flex-col flex-nowrap sm:flex-row m-0 p-0`}
     >
       <Navbar sesion={sesion} />
         {children}
     </div>
+    </AllDataProvider>
   );
 }
 
