@@ -15,6 +15,7 @@ function SelecterItemsToDisplay({
     { value: 5, name: "5 items" },
     { value: 6, name: "6 items" },
     { value: 12, name: "12 items" },
+    { value: 24, name: "24 items" },
   ];
   const [curentItem, setCurentItem] = useState(itemFromFather || items[0]);
   function handleItemsChange(event) {

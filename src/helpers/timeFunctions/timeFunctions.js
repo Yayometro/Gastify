@@ -1,4 +1,3 @@
-const today = new Date()
 export const months = [
   "January",
   "February",
@@ -32,7 +31,6 @@ export const monthObjects = [
   { color: "#ff9999", name: "november", icon: "md/Md11Mp", index: 11 },
   { color: "#99eaff", name: "december", icon: "md/Md12Mp", index: 12 },
 ];
-
 
 export const mapedMonths = new Map(monthObjects.map((m) => [m.name, m]));
 export function getDateInYearMonthDay(date, where) {
@@ -225,48 +223,53 @@ export const timeperiodRangesArray = [
     name: `All ${year}`,
   },
   {
-    value: `${new Date(year-1, 0, 1)}*${new Date(year-1, 11 + 1, 0)}`,
-    name: `All ${year-1}`,
+    value: `${new Date(year - 1, 0, 1)}*${new Date(year - 1, 11 + 1, 0)}`,
+    name: `All ${year - 1}`,
   },
 ];
-// export const timeperiodRangesArray = [
-//   {
-//     value: `${year}-01-01*${getDateInYearMonthDay(
-//       getLastDayOfQuarter(year, 1)
-//     )}`,
-//     name: "First quarter (Q1)",
-//   },
-//   {
-//     value: `${year}-04-01*${getDateInYearMonthDay(
-//       getLastDayOfQuarter(year, 2)
-//     )}`,
-//     name: "Second quarter (Q2)",
-//   },
-//   {
-//     value: `${year}-07-01*${getDateInYearMonthDay(
-//       getLastDayOfQuarter(year, 3)
-//     )}`,
-//     name: "Third quarter (Q3)",
-//   },
-//   {
-//     value: `${year}-10-01*${getDateInYearMonthDay(
-//       getLastDayOfQuarter(year, 4)
-//     )}`,
-//     name: "Fourth quarter (Q4)",
-//   },
-//   {
-//     value: `${year}-01-01*${getDateInYearMonthDay(new Date(year, 5 + 1, 0))}`,
-//     name: "First half of year",
-//   },
-//   {
-//     value: `${year}-07-01*${getDateInYearMonthDay(new Date(year, 11 + 1, 0))}`,
-//     name: "Second half of year",
-//   },
-//   {
-//     value: `${year}-01-01*${getDateInYearMonthDay(new Date(year, 11 + 1, 0))}`,
-//     name: `All ${year}`,
-//   },
-// ];
+export const generate_timeperiod_ranges_array_for_dashboard = (year) => {
+  const today = new Date();
+  return [
+    {
+      value: `${new Date(year, today.getMonth(), 1)}*${getLastDayOfMonth(
+        year,
+        today.getMonth()
+      )}`, // calcular aqui el mes iniciando por el dia del mes en el que se est'a al dia de hoy
+      name: "This Month",
+    },
+    {
+      value: `${new Date(year, today.getMonth() - 1, 1)}*${getLastDayOfMonth(
+        year,
+        today.getMonth() - 1
+      )}`, // calcular aqui el mes iniciando por el dia del mes en el que se est'a al dia de hoy
+      name: "Last Month",
+    },
+    {
+      value: `${new Date(year, today.getMonth(), 1)}*${new Date(
+        year,
+        today.getMonth(),
+        15
+      )}`, // calcular aqui el mes iniciando por el dia del mes al 15
+      name: "First half of month",
+    },
+    {
+      value: `${new Date(year, today.getMonth(), 15)}*${getLastDayOfMonth(
+        year,
+        today.getMonth()
+      )}`, // calcular aqui el mes actual por el dia del 15 del mes en al fin del mes
+      name: "Second half of month",
+    },
+    {
+      value: `${new Date(
+        today.getFullYear(),
+        today.getMonth() - 2,
+        1
+      )}*${today}`,
+      name: "Last 3 months",
+    },
+    ...timeperiodRangesArray,
+  ];
+};
 
 export function normalizeDateToUTC(date) {
   return new Date(

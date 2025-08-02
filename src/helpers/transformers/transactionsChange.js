@@ -18,6 +18,14 @@ export function orderByHighestValue(arr) {
   return arr.sort((a, b) => (b.value || b.amount) - (a.value || a.amount));
 }
 
+export function get_total_value_of_all_transactions(arr){
+  if (!(arr instanceof Array))
+    throw new Error("arr should be an instance of Array");
+  return arr.reduce((prev, current) => {
+    return prev + current.amount
+  }, 0)
+}
+
 export function mapToAddTypeTransactionAndColor(arr) {
   if (!(arr instanceof Array))
     throw new Error("arr should be an instance of Array");

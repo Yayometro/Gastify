@@ -175,7 +175,6 @@ function HistoricalMovementsController() {
       components={components}
       getValueFromItems={getValueFromItems}
     />
-    // <></>
   );
 }
 

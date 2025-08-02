@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import CategoIcon from "./multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
 
 import "@/components/styles/animations.css";
@@ -13,16 +12,13 @@ import Movements from "./multiUsedComp/Movements";
 import BudgetCont from "./multiUsedComp/BudgetCont";
 //REDUX
 import { useDispatch, useSelector } from "react-redux";
-import { setGeneralData } from "@/lib/features/loadGeneralDataSlice";
 import { fetchUser, setUser } from "@/lib/features/userSlice";
 import { fetchWallet, setWallet } from "@/lib/features/walletSlice";
 import { fetchAccounts, setAccounts } from "@/lib/features/accountsSlice";
 import { fetchCategories, setCategories } from "@/lib/features/categoriesSlice";
 import { fetchSubCat, setSubCategories } from "@/lib/features/subCategorySlice";
-import { setTags } from "@/lib/features/tagsSlice";
 import {
   fetchTrans,
-  setTransacctions,
 } from "@/lib/features/transacctionsSlice";
 //
 import ResumeTabsTrans from "./multiUsedComp/ResumeTabsTrans";
@@ -31,16 +27,21 @@ import {
   MdKeyboardDoubleArrowDown,
 } from "react-icons/md";
 import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
-import RangePicker from "./multiUsedComp/RangePicker";
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
-import Top3 from "./multiUsedComp/Top3";
 import currencyFormatter from "currency-formatter";
-import Top3ContComp from "./multiUsedComp/Top3ContComp";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import { quantum } from "ldrs";
-import { IoIosCloseCircleOutline } from "react-icons/io";
 import DashboardLoadingMessage from "./multiUsedComp/loaders/DashboardLoadingMessage";
+import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
+import {
+  generate_timeperiod_ranges_array_for_dashboard,
+  getLastDayOfMonth,
+} from "@/helpers/timeFunctions/timeFunctions";
+import TimeRange from "./Filters/timeRange/TimeRange";
+import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
+
+const today = new Date();
 
 function Wallet({ dataServ, session }) {
   const [sed, setSed] = useState([]);
@@ -54,8 +55,8 @@ function Wallet({ dataServ, session }) {
   const [subCategories, setSubCategories] = useState([]);
   // DATES
   let [selectedDuration, setSelectedDuration] = useState(30);
-  let [startDate, setStartDate] = useState(null);
-  let [endDate, setEndDate] = useState(null);
+  let [startDate, setStartDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  let [endDate, setEndDate] = useState(getLastDayOfMonth(today.getFullYear(), today.getMonth()));
   //TRANSACTIONS and TYPES OF
   let [allTransactions, setAllTransacctions] = useState([]);
   let [allBills, setAllBills] = useState([]);
@@ -73,7 +74,7 @@ function Wallet({ dataServ, session }) {
   const ccWallet = useSelector((state) => state.walletReducer);
   const ccAccounts = useSelector((state) => state.accountsReducer);
   const ccCategories = useSelector((state) => state.categoriesReducer);
-  // const ccSubCategories = useSelector((state) => state.subCategoryReducer);
+  const ccSubCategories = useSelector((state) => state.subCategoryReducer);
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
   const ccBudgets = useSelector((state) => state.budgetReducer);
 
@@ -96,6 +97,9 @@ function Wallet({ dataServ, session }) {
       dispatch(fetchCategories(session));
     }
     // //Sub-categories
+    if (ccSubCategories.status == "idle") {
+      dispatch(fetchSubCat(session));
+    }
     //Transactions
     if (ccTransacciones.status == "idle" && session) {
       dispatch(fetchTrans(session));
@@ -105,10 +109,10 @@ function Wallet({ dataServ, session }) {
       dispatch(fetchBudget(session));
     }
     //
-    const today = new Date();
-    const start = new Date(today.setDate(today.getDate() - selectedDuration));
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+    const end = getLastDayOfMonth(today.getFullYear(), today.getMonth());
     setStartDate(start);
-    setEndDate(new Date()); //
+    setEndDate(end); //
   }, []);
 
   useEffect(() => {
@@ -128,6 +132,11 @@ function Wallet({ dataServ, session }) {
       setCategories(ccCategories.data.user.concat(ccCategories.data.default));
     }
     // //Sub-categories
+    if (ccSubCategories.status == "succeeded") {
+      setSubCategories(
+        ccSubCategories.data.subCat.concat(ccCategories.data.default)
+      );
+    }
     //Transactions
     if (ccTransacciones.status == "succeeded") {
       setTransacctions(ccTransacciones.data);
@@ -142,14 +151,14 @@ function Wallet({ dataServ, session }) {
     ccWallet,
     ccAccounts,
     ccCategories,
-    // ccSubCategories,
+    ccSubCategories,
     ccTransacciones,
     ccBudgets,
   ]);
 
   useEffect(() => {
     const today = new Date();
-    const start = new Date(today.setDate(today.getDate() - selectedDuration));
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
     setStartDate(start);
   }, [selectedDuration]);
 
@@ -223,6 +232,16 @@ function Wallet({ dataServ, session }) {
   const toggleIsLoading = React.useCallback(() => {
     setLoading((prev) => !prev);
   }, []);
+
+  function getValueFromSelecter(v) {
+    if (!v || !v.includes("*")) return; // Seguridad para evitar errores si el valor no es el esperado
+
+    const [start, end] = v.split("*");
+    setStartDate(new Date(start));
+    setEndDate(new Date(end));
+    // Clear the onther input
+    
+  }
 
   return (
     <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
@@ -306,25 +325,19 @@ function Wallet({ dataServ, session }) {
               </div>
             </div>
             <div className="filters flex items-center justify-center gap-2">
-              <div className=" bg-slate-100 text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]">
-                <select
-                  className="bg-transparent w-full pr-4 appearance-none"
-                  name="DateSelector"
-                  value={selectedDuration}
-                  onChange={handleDurationChange}
-                >
-                  <option value={2}>Yesterday </option>
-                  <option value={7}>Las week</option>
-                  <option value={15}>Las 15 days</option>
-                  <option value={30}>Last 30 days</option>
-                  <option value={60}>Last 60 days</option>
-                  <option value={90}>Last 90 days</option>
-                </select>
-                <div className="filterIconContainer absolute right-[3px] pointer-events-none">
-                  <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
-                </div>
-              </div>
-              <RangePicker rpDate={handleRangeDate} rpResponse={""} />
+              <SelecterFilter
+                getValue={getValueFromSelecter}
+                periodOverride={generate_timeperiod_ranges_array_for_dashboard(
+                  new Date().getFullYear()
+                )}
+                styles={
+                  "bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+                }
+              />
+              <TimeRange
+                rpDate={handleRangeDate}
+                rpResponse={""}
+              />
               <Tooltip title="Filter de date by generic filter or selecting a specific range 🤓">
                 <div className="text-white w-[10px]">
                   <UniversalCategoIcon
@@ -353,31 +366,8 @@ function Wallet({ dataServ, session }) {
               )}
             </div>
             <div className="top-3-general-container w-full">
-              <h1 className="text-center text-black text-2xl font-bold py-4">
-                Top 6 resume
-              </h1>
               <div className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
-                <div className="w-full ">
-                  {allTransactions.length <= 0 ? (
-                    <div className="w-full py-[20px]">
-                      <Skeleton active />
-                    </div>
-                  ) : (
-                    <Top3ContComp t3ccTransactions={allTransactions} />
-                  )}
-                </div>
-                <div className="w-full ">
-                  {allTransactions.length <= 0 ? (
-                    <div className="w-full py-[20px]">
-                      <Skeleton active />
-                    </div>
-                  ) : (
-                    <Top3ContComp
-                      t3ccTransactions={allTransactions}
-                      ist3ccCategory={true}
-                    />
-                  )}
-                </div>
+                <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]}/>
               </div>
             </div>
             <div className="wallet-left-col-container w-full h-full">
