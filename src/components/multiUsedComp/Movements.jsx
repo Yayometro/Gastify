@@ -12,11 +12,12 @@ import Tag from "./Tag";
 import fetcher from "@/helpers/fetcher";
 import EditTransModal from "./EditTransModal";
 import { IoCheckmarkDoneCircleOutline, IoSearchOutline } from "react-icons/io5";
-import { MdOutlineFindInPage } from "react-icons/md";
+import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineSettings } from "react-icons/md";
 import { Tooltip, Button, Modal, Skeleton } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import EditMultipleTransModal from "./EditMultipleTransModal";
+import QuickEditModal from "./QuickEditModal";
 import runNotify from "@/helpers/gastifyNotifier";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -64,6 +65,7 @@ function Movements({ timePeriodFromFather, mail }) {
   const [dupCount, setDupCount] = useState(0);
   const [dupDateTolerance, setDupDateTolerance] = useState(0);
   const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
+  const [quickEditField, setQuickEditField] = useState(null);
 
   const toFetch = fetcher();
   const reduxDispartcher = useDispatch();
@@ -372,24 +374,41 @@ function Movements({ timePeriodFromFather, mail }) {
       <div className={`edit-multi-modal-cont`}>{editMultiModal}</div>
       <div className="remove-modal-container">
         <Modal
-          title="Warning"
+          title={<span className="text-red-500 font-semibold">⚠️ Delete transaction</span>}
           open={isRemoveModal}
           onOk={() => handleOkRemove()}
           onCancel={() => handleCancel()}
           confirmLoading={confirmLoading}
+          okText="Confirm delete"
+          cancelText="Cancel"
+          okButtonProps={{
+            className: confirmLoading
+              ? "!bg-red-300 !border-red-300 !text-white cursor-not-allowed"
+              : "!bg-red-500 !border-red-500 !text-white hover:!bg-red-400 hover:!border-red-400 transition-colors",
+            danger: false,
+          }}
         >
-          <p>Are you sure you want to remove? 🤔</p>
+          <p className="text-slate-600 text-sm">Are you sure you want to permanently delete this transaction? This action cannot be undone.</p>
         </Modal>
         <Modal
-          title="Warning"
+          title={<span className="text-red-500 font-semibold">⚠️ Delete {selectedTrans.length > 0 ? selectedTrans.length : ""} transactions</span>}
           open={isRemoveModalMany}
           onOk={() => handleOkRemove("many")}
           onCancel={() => handleCancel("many")}
           confirmLoading={confirmLoading}
+          okText="Confirm delete"
+          cancelText="Cancel"
+          okButtonProps={{
+            className: confirmLoading
+              ? "!bg-red-300 !border-red-300 !text-white cursor-not-allowed"
+              : "!bg-red-500 !border-red-500 !text-white hover:!bg-red-400 hover:!border-red-400 transition-colors",
+            danger: false,
+          }}
         >
-          <p>
-            Are you sure you want to remove{" "}
-            {selectedTrans.length > 0 ? `"${selectedTrans.length}" items` : ""}? 🤔
+          <p className="text-slate-600 text-sm">
+            Are you sure you want to permanently delete{" "}
+            <b>{selectedTrans.length > 0 ? `${selectedTrans.length} transactions` : "these items"}</b>?{" "}
+            This action cannot be undone.
           </p>
         </Modal>
       </div>
@@ -686,46 +705,72 @@ function Movements({ timePeriodFromFather, mail }) {
               <div>Amount</div>
             </div>
             {isSelectionMode && (
-              <div className="selectionHeader flex gap-2 justify-between items-center py-1.5 bg-purple-50 text-[13px]">
-                <div
-                  className="flex gap-1 left-0 items-center justify-center text-purple-500 cursor-pointer"
-                  onClick={() => handeTransSelection()}
-                >
-                  <HiMiniCursorArrowRipple size={20} />
-                  <div className="w-fit flex items-center justify-start border-2 border-purple-500 rounded-full">
-                    <p className="pr-2">Off</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 sm:gap-4 items-align justify-center">
+              <div className="selectionHeader flex flex-col gap-1 py-1.5 bg-purple-50 text-[13px] rounded-xl px-2">
+                {/* Row 1: selection controls */}
+                <div className="flex gap-2 justify-between items-center">
                   <div
-                    className="text-purple-500 flex gap-1 justify-center items-center cursor-pointer"
-                    onClick={() => handleSelectedAll()}
+                    className="flex gap-1 items-center text-purple-500 cursor-pointer"
+                    onClick={handeTransSelection}
                   >
-                    <p>Select All</p>
-                    <IoCheckmarkDoneCircleOutline size={17} />
-                  </div>
-                  <p>Selected items {`"${selectedTrans.length}"`}</p>
-                  <Tooltip title="The selector mode allows you to select multiple transactions by just clicking on them or selecting all. After selection, you can remove all or edit them 🤓">
-                    <div className="flex items-center justify-center">
-                      <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
+                    <HiMiniCursorArrowRipple size={18} />
+                    <div className="w-fit flex items-center border-2 border-purple-500 rounded-full px-1">
+                      <p className="pr-1 text-[11px]">Off</p>
                     </div>
-                  </Tooltip>
-                </div>
-                <div className="btns flex justify-between gap-2 text-[15px]">
-                  <button
-                    onClick={() => showRemoveModal("many", selectedTrans)}
-                    className="hover:text-red-700 micro-pulse"
-                  >
-                    <CategoIcon type={"MdDelete"} size={20} />
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <div className="text-purple-500 flex gap-1 items-center cursor-pointer" onClick={handleSelectedAll}>
+                      <p className="text-[11px]">Select All</p>
+                      <IoCheckmarkDoneCircleOutline size={15} />
+                    </div>
+                    <p className="text-[11px] text-slate-500">{selectedTrans.length} selected</p>
+                    <Tooltip title="Select transactions then use the action buttons below to edit a specific field for all of them at once, or delete them all.">
+                      <div className="flex items-center"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} /></div>
+                    </Tooltip>
+                  </div>
+                  {/* Delete */}
+                  <button onClick={() => showRemoveModal("many", selectedTrans)} className="hover:text-red-600 micro-pulse text-slate-500">
+                    <CategoIcon type={"MdDelete"} size={18} />
                   </button>
-                  <button
-                    onClick={() => handleMultiTransEdit(selectedTrans)}
-                    className="hover:text-blue-700 micro-pulse"
-                  >
-                    <CategoIcon type={"MdOutlineCreate"} size={20} />
-                  </button>
                 </div>
+
+                {/* Row 2: focused edit actions — only when items selected */}
+                {selectedTrans.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 border-t border-purple-100 pt-1.5">
+                    {[
+                      { field: "name",     icon: <MdOutlineDriveFileRenameOutline size={13} />, label: "Rename" },
+                      { field: "date",     icon: <MdOutlineCalendarMonth size={13} />,           label: "Date" },
+                      { field: "type",     icon: <MdOutlineSwapVert size={13} />,                label: "Type" },
+                      { field: "category", icon: <MdOutlineCategory size={13} />,               label: "Category" },
+                      { field: "account",  icon: <MdOutlineAccountBalance size={13} />,          label: "Account" },
+                    ].map(({ field, icon, label }) => (
+                      <button
+                        key={field}
+                        onClick={() => setQuickEditField(field)}
+                        className="flex items-center gap-1 text-[11px] text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full hover:bg-purple-100 transition-colors"
+                      >
+                        {icon}{label}
+                      </button>
+                    ))}
+                    <Tooltip title="Edit all fields at once — anything you fill in will overwrite all selected transactions">
+                      <button
+                        onClick={() => handleMultiTransEdit(selectedTrans)}
+                        className="flex items-center gap-1 text-[11px] text-slate-400 border border-slate-200 px-2 py-0.5 rounded-full hover:bg-slate-100 transition-colors"
+                      >
+                        <MdOutlineSettings size={13} />General edit
+                      </button>
+                    </Tooltip>
+                  </div>
+                )}
               </div>
+            )}
+
+            {/* Quick edit modal */}
+            {quickEditField && (
+              <QuickEditModal
+                field={quickEditField}
+                transIds={selectedTrans}
+                onClose={() => setQuickEditField(null)}
+              />
             )}
           </div>
           <div className="movements-container flex flex-col gap-2">
