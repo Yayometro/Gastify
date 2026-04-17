@@ -184,10 +184,19 @@ export async function POST(request, { params }) {
     const newTransactions = await Transaction.create(transactions);
     if (!newTransactions) throw new Error("Transactions could not be saved");
 
+    const populatedTransactions = await Transaction.find({
+      _id: { $in: newTransactions.map((t) => t._id) },
+    })
+      .populate("category")
+      .populate("subCategory")
+      .populate("tags")
+      .populate("account")
+      .lean();
+
     await unlink(tmpFilePath);
 
     return NextResponse.json({
-      data: newTransactions,
+      data: populatedTransactions,
       message: "File saved",
       status: 201,
       ok: true,
