@@ -50,6 +50,9 @@
     "utc": "^0.1.0",
     "xlsx-populate": "^1.21.0"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "devDependencies": {
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
