@@ -26,11 +26,12 @@ function ReadFileComp({}) {
   }, [ccUser, email]);
 
   const handleDownloadTemplate = async () => {
-    if (!ccUser.mail) return;
+    const userEmail = ccUser.mail || email;
+    if (!userEmail) return;
     try {
       setIsDownloading(true);
       const response = await fetch(
-        toFetch.getFullPath(`general-data/files/template/${ccUser.mail}`)
+        toFetch.getFullPath(`general-data/files/template/${userEmail}`)
       );
       if (!response.ok) throw new Error("Template generation failed");
       const blob = await response.blob();
@@ -38,7 +39,9 @@ function ReadFileComp({}) {
       const a = document.createElement("a");
       a.href = url;
       a.download = "gastify-template.xlsx";
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (e) {
       runNotify("error", "Could not download template, please try again 🤕");
@@ -82,11 +85,7 @@ function ReadFileComp({}) {
   return (
     <div className="bg-slate-50 py-10 my-2 px-[30px] rounded-[60px] w-full max-w-[900px]">
       <h1 className="text-2xl font-light text-center">Read Bank States</h1>
-      <form
-        action=""
-        className="add-file-form flex flex-col gap-1 justify-center items-center"
-        onSubmit={(e) => e.preventDefault()}
-      >
+      <div className="add-file-form flex flex-col gap-1 justify-center items-center">
         <div
           className="mode-cont-add-file flex justify-start items-center gap-2 text-purple-500 hover:text-purple-400 w-fit cursor-pointer pt-2 pb-2"
           onClick={() => setIsExcel(!isExcel)}
@@ -110,7 +109,7 @@ function ReadFileComp({}) {
           <MdFormatAlignLeft size={20} />
           <span>{isDownloading ? "Generating..." : "Download format"}</span>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
