@@ -1,5 +1,7 @@
 
 export default function fetcher(){
+    // 
+
     const baseUrl = process.env.NEXT_PUBLIC_API_ROUTE
     const apiRoute = "/api/"
     let fullPath = baseUrl.concat(apiRoute);

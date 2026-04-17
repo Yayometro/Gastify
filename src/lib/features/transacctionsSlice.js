@@ -66,11 +66,8 @@ export const transacctionsSlice = createSlice({
       }
     },
     addNewTransacctions: (state, action) => {
-      // console.log(state);
-      // console.log(action);
-      if (action.payload.length > 0) {
+      if (Array.isArray(action.payload) && action.payload.length > 0) {
         action.payload.forEach((element) => {
-          console.log(element);
           state.data.push(element);
         });
       }

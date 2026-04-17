@@ -88,7 +88,7 @@ export const getRedxAccountsError = (state) => state.accounts.error;
 
 
 export const { 
-  setAccount,
+  setAccounts,
   addNewAccount,
   removeAccount,
   updateAccount

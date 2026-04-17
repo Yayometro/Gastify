@@ -1,27 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-import { createTheme, ThemeProvider } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { Switch } from "antd";
-import { Button, ConfigProvider, Space, Spin } from "antd";
+import {  ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { addNewTransacction } from "@/lib/features/transacctionsSlice";
+import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
+import useModal from "@/hooks/useModalBasic";
+import BasicModal from "../modals/basicModal/BasicModal";
+import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
+import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
+import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 
-function AddTransactionComp({
-  atcUser,
-  atcCategories,
-  atcSubCategories,
-  atcAccounts,
-}) {
+function AddTransactionComp() {
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
   let [transactionInfo, setTransactionInfo] = useState({
@@ -39,26 +39,24 @@ function AddTransactionComp({
     user: "",
     wallet: "",
   });
-  let [isShort, setIsShort] = useState(true);
+  let [isShort, setIsShort] = useState(false);
 
-  const user = atcUser;
-  const categories = atcCategories;
-  const subCategories = atcSubCategories;
-  const accounts = atcAccounts;
-
+  const { close, handleClose } = useModal();
   //REDUX
+  const {user, accounts} = useGetDataFromProvider();
   const dispatch = useDispatch();
+    const {handleClean} = useContext(SelectCategoryContext)
 
   //EFFECTS
   useEffect(() => {
-    if (atcUser) {
+    if (user) {
       setTransactionInfo({
         ...transactionInfo,
-        user: atcUser._id,
-        wallet: atcUser.wallet,
+        user: user._id,
+        wallet: user.wallet,
       });
     }
-  }, [atcUser]);
+  }, [user]);
   //Handlers:
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -116,15 +114,16 @@ function AddTransactionComp({
       );
       if (response.data) {
         runNotify("ok", response.message);
-        const addlyData = [response.data]
         //UPDATE FRON END
-        dispatch(addNewTransacction(response.data))
+        dispatch(addNewTransacction(response.data));
         setIsLoading(false);
         clearForm();
+        handleClean()
       }
     } catch (e) {
       runNotify("error", String(e));
       clearForm();
+      handleClean()
       throw new Error(e);
     }
   };
@@ -146,45 +145,30 @@ function AddTransactionComp({
       category: "",
       subCategory: "",
       tags: "",
-      user: atcUser._id,
-      wallet: atcUser.wallet,
+      user: user._id,
+      wallet: user.wallet,
     });
   };
-  //
-  const handleDefSubCategory = (event) => {
-    if (event.target.value === "No subcategory") {
+  
+
+  function handleCategory(cat) {
+    if (!cat) return;
+    if (cat?.fatherCategory) {
       setTransactionInfo({
         ...transactionInfo,
-        subCategory: null,
-      });
-    } else {
-      const filterSub = subCategories.filter(
-        (sub) => sub._id === event.target.value
-      );
-      const defFather = filterSub[0].fatherCategory._id;
-      setTransactionInfo({
-        ...transactionInfo,
-        subCategory: event.target.value,
-        category: defFather,
-      });
-    }
-  };
-  const handleDefCategory = (event) => {
-    if (event.target.value === "No category") {
-      setTransactionInfo({
-        ...transactionInfo,
-        category: null,
+        subCategory: cat._id,
+        category: cat?.fatherCategory?._id
       });
     } else {
       setTransactionInfo({
         ...transactionInfo,
-        category: event.target.value,
+        category: cat._id,
       });
     }
-  };
+  }
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full overflow-y-scroll relative bg-slate-50">
       <div
         className={`loader-add-trans absolute w-full h-full bg-white/90  items-center justify-center z-[100] rounded-t-2xl ${
           isLoading ? "flex" : "hidden"
@@ -192,7 +176,7 @@ function AddTransactionComp({
       >
         <Spin size="large" />
       </div>
-      <div className="shortToggle w-full">
+      <div className="shortToggle w-full bg-purple-600 sticky top-0 flex justify-center items-center">
         <ConfigProvider
           theme={{
             token: {
@@ -205,17 +189,18 @@ function AddTransactionComp({
             },
           }}
         >
-          <Space direction="" size={12}>
-            <p className=" text-sm text-purple-500">Short transacction:</p>
+          <Space direction="" size={12} className=" text-slate-200 pb-1 ">
+            <p className=" text-sm ">Short transacction:</p>
             <Switch
               onChange={(value) => setIsShort(!isShort)}
               value={isShort}
+              className="bg-purple-200"
             />
           </Space>
         </ConfigProvider>
       </div>
       {isShort ? (
-        <div className="w-full h-full flex justify-center items-center">
+        <div className="w-full h-full flex justify-center items-center ">
           <form
             onSubmit={handleSubmit}
             className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-10 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
@@ -419,69 +404,18 @@ function AddTransactionComp({
               </LocalizationProvider>
             </div>
             <p className="label-tfp ">Category</p>
-            {transactionInfo.subCategory ? (
-              <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center cursor-not-allowed">
-                <select
-                  className=" bg-transparent appearance-none w-full pr-4 cursor-not-allowed"
-                  name="DateSelector"
-                  value={transactionInfo?.category || null}
-                  // onChange={handleDefCategory}
-                  disabled
-                >
-                  <option value={null}>No category</option>
-                  {categories.length > 0 ? (
-                    categories.map((cat) => (
-                      <option value={cat._id} key={`option-cat-${cat._id}`}>
-                        {cat.name}{" "}
-                      </option>
-                    ))
-                  ) : (
-                    <div>No categories loaded...</div>
-                  )}
-                </select>
-              </div>
-            ) : (
-              <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
-                <select
-                  className=" bg-transparent appearance-none w-full pr-4"
-                  name="DateSelector"
-                  value={transactionInfo?.category || null}
-                  onChange={handleDefCategory}
-                >
-                  <option value={null}>No category</option>
-                  {categories.length > 0 ? (
-                    categories.map((cat) => (
-                      <option value={cat._id} key={`option-cat-${cat._id}`}>
-                        {cat.name}{" "}
-                      </option>
-                    ))
-                  ) : (
-                    <div>No categories loaded...</div>
-                  )}
-                </select>
-              </div>
-            )}
-
-            <p className="label-tfp ">Sub Category</p>
-            <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
-              <select
-                className=" bg-transparent appearance-none w-full pr-4"
-                name="DateSelector"
-                value={transactionInfo?.subCategory || null}
-                onChange={handleDefSubCategory}
-              >
-                <option value={null}>No subcategory</option>
-                {subCategories.length > 0 ? (
-                  subCategories.map((sub) => (
-                    <option value={sub._id} key={`option-subCat-${sub._id}`}>
-                      {sub.name}{" "}
-                    </option>
-                  ))
-                ) : (
-                  <div>No sub categories loaded...</div>
-                )}
-              </select>
-            </div>
+              <BtnSelectCategoryContext onClose={handleClose} />
+              {close && (
+                <BasicModal
+                  close={handleClose}
+                  renderContent={
+                    <ModalCategoryContent
+                      close={handleClose}
+                      getSelected={handleCategory}
+                    />
+                  }
+                />
+              )}
             <p className="label-tfp ">Tags</p>
             <input
               type="text"
@@ -517,7 +451,7 @@ function AddTransactionComp({
               {isLoading ? <Spin /> : "Submit"}
             </button>
             <div
-              className="clearForm underline text-red-400 cursor-pointer"
+              className="clearForm underline text-red-400 cursor-pointer pb-4"
               onClick={clearForm}
             >
               Clear Form

@@ -3,6 +3,7 @@ import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import Top3 from "./Top3";
 import EmptyModule from "./EmptyModule";
+import TopMonthItem from "./top3/topMonthContainer/TopMonthItem";
 
 function Top3ContComp({ t3ccTransactions, ist3ccCategory }) {
   const [isBill, setIsBill] = useState(true);
@@ -56,7 +57,8 @@ function Top3ContComp({ t3ccTransactions, ist3ccCategory }) {
                   t3Type={"transactions"}
                   t3IsBill={true}
                   t3IsTop={true}
-                />
+                /> 
+
               </div>
               <div
                 className={`w-full top3-unit-displayer ${

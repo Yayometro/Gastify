@@ -21,9 +21,12 @@ import { BiSolidCategory } from "react-icons/bi";
 import "@/components/styles/NavbarStyle.css"
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "@/lib/features/userSlice";
+import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
+import { FaHistory } from "react-icons/fa";
 
 function Navbar({ sesion }) {
   const [toggleNav, setToggleNav] = useState(false);
+  const [isAddTrans, setIsAddTrans] = useState(false);
   const handleToggleNav = () => {
     setToggleNav(!toggleNav);
   };
@@ -37,6 +40,10 @@ function Navbar({ sesion }) {
       reduxDispatch(fetchUser(sesion.user.email));
     }
   }, []);
+
+  const toogleAddTrans = React.useCallback(() => {
+    setIsAddTrans(prev => !prev)
+  }, [])
 
   return (
     <nav className="navbar w-full fixed flex flex-col items-center justify-center bottom-0 md:w-fit md:fixed md:top-0 z-[1000] ">
@@ -71,24 +78,28 @@ function Navbar({ sesion }) {
             <p className="sm:hidden hoverTooltip">Wallet</p>
           </Link>
         </li>
+        <li >
+          <div className="text-purple-600 add-more sm:flex micro-pulse">
+              <IoAddCircle size={50} onClick={toogleAddTrans} className="cursor-pointer"/>
+              <p className="hidden hoverTooltip">Add a transaction</p>
+            </div>
+            {
+              (isAddTrans && <AddTransactionModal  close={toogleAddTrans}/>)
+            }
+        </li>
         <li className="micro-pulse">
           <Link href="/dashboard/accounts">
             <MdAccountBalance size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Accounts</p>
           </Link>
         </li>
-        {/* <li className="text-purple-600 add-more hidden sm:flex micro-pulse">
-          <Link href={`/dashboard/add-transaction`}>
-            <IoAddCircle size={50} />
-            <p className="hidden hoverTooltip">Add a transaction</p>
+        
+        <li className="micro-pulse">
+          <Link href={`/dashboard/history`}>
+            <FaHistory size={30} className="hidden sm:inline"  />
+            <p className="sm:hidden hoverTooltip">History</p>
           </Link>
-        </li> */}
-        {/* <li className="micro-pulse">
-          <Link href="/dashboard/cashflow">
-            <MdAutoGraph size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Cash Flow</p>
-          </Link>
-        </li> */}
+        </li>
         <li className="micro-pulse">
           <Link href="/dashboard/categories">
             <BiSolidCategory size={30} className="hidden sm:inline" />
@@ -116,6 +127,18 @@ function Navbar({ sesion }) {
         <li className="">
           <Link href={`/dashboard/categories`}>
             <BiSolidCategory size={30} />
+          </Link>
+        </li>
+        <li >
+              <IoAddCircle size={50} onClick={toogleAddTrans} className="cursor-pointer"/>
+              <p className="hidden hoverTooltip">Add a transaction</p>
+            {
+              (isAddTrans && <AddTransactionModal close={toogleAddTrans}/>)
+            }
+        </li>
+        <li className="">
+          <Link href={`/dashboard/history`}>
+            <FaHistory size={25} />
           </Link>
         </li>
         <li className="">
