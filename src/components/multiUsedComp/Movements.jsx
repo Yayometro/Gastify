@@ -11,12 +11,12 @@ import dayjs from "dayjs";
 import Tag from "./Tag";
 import fetcher from "@/helpers/fetcher";
 import EditTransModal from "./EditTransModal";
-import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
+import { IoCheckmarkDoneCircleOutline, IoSearchOutline } from "react-icons/io5";
+import { MdOutlineFindInPage } from "react-icons/md";
 import { Tooltip, Button, Modal, Skeleton } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import EditMultipleTransModal from "./EditMultipleTransModal";
-import EmptyModule from "./EmptyModule";
 import runNotify from "@/helpers/gastifyNotifier";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -37,7 +37,7 @@ const today = new Date();
 
 function Movements({ timePeriodFromFather, mail }) {
   const defaultPeriod = timePeriodFromFather || [
-    new Date(today.getFullYear() - 1, 0, 1),
+    new Date(today.getFullYear(), today.getMonth(), 1),
     new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59),
   ];
 
@@ -57,6 +57,11 @@ function Movements({ timePeriodFromFather, mail }) {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [transRemovableId, setTransRemovableId] = useState("");
   const [loadingComponent, setLoadingComponent] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dupFinderOpen, setDupFinderOpen] = useState(false);
+  const [dupCriteria, setDupCriteria] = useState({ name: true, date: true, amount: true, category: false, subcategory: false });
+  const [dupMode, setDupMode] = useState(false);
+  const [dupCount, setDupCount] = useState(0);
 
   const toFetch = fetcher();
   const reduxDispartcher = useDispatch();
@@ -92,9 +97,68 @@ function Movements({ timePeriodFromFather, mail }) {
     if (trastType === "bills") filtered = filtered.filter((t) => t.isBill && !t.isIncome);
     if (readable === "true") filtered = filtered.filter((t) => t.isReadable);
     if (readable === "false") filtered = filtered.filter((t) => !t.isReadable);
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(
+        (t) =>
+          t.name?.toLowerCase().includes(q) ||
+          t.category?.name?.toLowerCase().includes(q) ||
+          t.subCategory?.name?.toLowerCase().includes(q) ||
+          t.tags?.some((tag) => tag.name?.toLowerCase().includes(q))
+      );
+    }
 
-    setAllMovements(filtered);
-  }, [rdxTransactions, timePeriod, trastType, readable]);
+    if (dupMode) {
+      const dups = getDuplicates(filtered, dupCriteria);
+      setDupCount(dups.length);
+      setAllMovements(dups);
+    } else {
+      setDupCount(0);
+      setAllMovements(filtered);
+    }
+  }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, dupMode, dupCriteria]);
+
+  function buildKey(t, criteria) {
+    const parts = [];
+    if (criteria.name) parts.push((t.name || "").toLowerCase().trim());
+    if (criteria.date) {
+      const d = new Date(t.date || t.createdAt);
+      parts.push(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+    }
+    if (criteria.amount) parts.push(String(t.amount ?? 0));
+    if (criteria.category) parts.push(String(t.category?._id || "none"));
+    if (criteria.subcategory) parts.push(String(t.subCategory?._id || "none"));
+    return parts.join("|");
+  }
+
+  function getDuplicates(transactions, criteria) {
+    const groups = {};
+    transactions.forEach((t) => {
+      const key = buildKey(t, criteria);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(t._id);
+    });
+    const dupIds = new Set();
+    Object.values(groups).forEach((ids) => {
+      if (ids.length > 1) ids.forEach((id) => dupIds.add(String(id)));
+    });
+    return transactions.filter((t) => dupIds.has(String(t._id)));
+  }
+
+  // Devuelve IDs a eliminar: todos excepto el primero de cada grupo duplicado
+  function getDuplicatesToDelete(transactions, criteria) {
+    const groups = {};
+    transactions.forEach((t) => {
+      const key = buildKey(t, criteria);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(t._id);
+    });
+    const toDelete = [];
+    Object.values(groups).forEach((ids) => {
+      if (ids.length > 1) ids.slice(1).forEach((id) => toDelete.push(id));
+    });
+    return toDelete;
+  }
 
   function getValueFromSelecter(v) {
     const [start, end] = v.split("*");
@@ -113,6 +177,10 @@ function Movements({ timePeriodFromFather, mail }) {
   const handleCleanFilter = () => {
     setReadable("all");
     setTransType("all");
+    setSearchQuery("");
+    setDupMode(false);
+    setDupFinderOpen(false);
+    setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
     setTimePeriod(timePeriodFromFather || defaultPeriod);
   };
 
@@ -169,6 +237,7 @@ function Movements({ timePeriodFromFather, mail }) {
         runNotify("ok", String(res.message));
         setIsRemoveModalMany(false);
         setConfirmLoading(false);
+        if (dupMode) { setDupMode(false); setDupFinderOpen(false); }
       } else {
         runNotify("error", "Something went wrong removing your items, verify your request and try again 🤕");
         setIsRemoveModalMany(false);
@@ -303,10 +372,6 @@ function Movements({ timePeriodFromFather, mail }) {
         <div className="w-full h-full flex justify-center items-center">
           <Skeleton active />
         </div>
-      ) : !allMovements.length > 0 ? (
-        <div className="w-full h-full flex justify-center items-center">
-          <EmptyModule emMessage={"No transactions here... 🤕"} />
-        </div>
       ) : (
         <div className="table-container w-full h-full overflow-y-scroll relative max-h-[1000px] px-1">
           <div className="bg-slate-50 text-slate-900 sticky z-50 top-0 border-b-2 border-slate-200 px-1 py-2 mb-1 rounded-t-2xl">
@@ -375,6 +440,15 @@ function Movements({ timePeriodFromFather, mail }) {
                     <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
                   </div>
                 </div>
+                <Tooltip title="Find transactions that look like duplicates based on chosen criteria">
+                  <div
+                    className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer ${dupMode ? "text-orange-500 font-medium" : ""}`}
+                    onClick={() => setDupFinderOpen(!dupFinderOpen)}
+                  >
+                    <MdOutlineFindInPage size={15} />
+                    <p>Find duplicates{dupMode ? ` (${dupCount})` : ""}</p>
+                  </div>
+                </Tooltip>
                 <div
                   className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer"
                   onClick={handleCleanFilter}
@@ -383,6 +457,163 @@ function Movements({ timePeriodFromFather, mail }) {
                   <UniversalCategoIcon type={"ai/AiOutlineClear"} siz={13} />
                 </div>
               </div>
+            </div>
+
+            {/* ── Duplicate finder submenu ── */}
+            {dupFinderOpen && (
+              <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-[11px] font-medium text-slate-600">
+                    Match criteria — a duplicate is found when ALL checked fields are identical:
+                  </p>
+                  <Tooltip title={
+                    <div className="text-xs flex flex-col gap-1">
+                      <p><b>Find Duplicates</b> scans transactions within the <b>currently selected time range</b> and groups those that share identical values in the checked fields.</p>
+                      <p><b>Search duplicates</b> — runs the scan with your chosen criteria.</p>
+                      <p><b>Refresh defaults</b> — resets criteria to Name + Date + Amount and re-runs.</p>
+                      <p><b>Select possible duplicates</b> — pre-selects all extras (keeps one original per group).</p>
+                      <p><b>Delete X selected</b> — removes the selected transactions permanently.</p>
+                    </div>
+                  }>
+                    <div className="cursor-pointer text-slate-400 hover:text-slate-600">
+                      <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
+                    </div>
+                  </Tooltip>
+                </div>
+
+                {/* Checkboxes */}
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { key: "name",        label: "Name" },
+                    { key: "date",        label: "Date" },
+                    { key: "amount",      label: "Amount" },
+                    { key: "category",    label: "Category" },
+                    { key: "subcategory", label: "Subcategory" },
+                  ].map(({ key, label }) => (
+                    <label key={key} className="flex items-center gap-1 cursor-pointer text-[11px] text-slate-600 select-none">
+                      <input
+                        type="checkbox"
+                        checked={dupCriteria[key]}
+                        onChange={() => setDupCriteria((prev) => ({ ...prev, [key]: !prev[key] }))}
+                        className="accent-purple-600"
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+
+                {/* Action buttons row */}
+                <div className="flex flex-wrap gap-2 items-center">
+                  {/* Search */}
+                  <button
+                    onClick={() => {
+                      if (!Object.values(dupCriteria).some(Boolean)) return;
+                      setDupMode(true);
+                    }}
+                    className="text-[11px] bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-500 transition-colors"
+                  >
+                    Search duplicates
+                  </button>
+
+                  {/* Refresh with defaults */}
+                  <Tooltip title="Reset to default criteria (Name + Date + Amount) and re-run the search">
+                    <button
+                      onClick={() => {
+                        const defaults = { name: true, date: true, amount: true, category: false, subcategory: false };
+                        setDupCriteria(defaults);
+                        setDupMode(true);
+                      }}
+                      className="text-[11px] text-slate-400 hover:text-purple-500 transition-colors flex items-center gap-1"
+                    >
+                      <UniversalCategoIcon type={"md/MdRefresh"} siz={14} />
+                      Refresh defaults
+                    </button>
+                  </Tooltip>
+
+                  {/* Select possible duplicates — todos menos uno por grupo */}
+                  {dupMode && dupCount > 0 && (
+                    <button
+                      onClick={() => {
+                        const toDelete = getDuplicatesToDelete(allMovements, dupCriteria);
+                        setIsSelectionMode(true);
+                        allMovements.forEach((m) => {
+                          const el = document.getElementById(`trans-${m._id}`);
+                          if (!el) return;
+                          if (toDelete.map(String).includes(String(m._id))) {
+                            el.classList.add("edit-animation", "border-[2px]", "border-purple-400");
+                          } else {
+                            el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+                          }
+                        });
+                        setSelectedTrans(toDelete);
+                      }}
+                      className="text-[11px] text-purple-600 border border-purple-300 px-3 py-1 rounded-full hover:bg-purple-50 transition-colors flex items-center gap-1"
+                    >
+                      <HiMiniCursorArrowRipple size={12} />
+                      Select possible duplicates
+                    </button>
+                  )}
+
+                  {/* Exit */}
+                  {dupMode && (
+                    <button
+                      onClick={() => {
+                        setDupMode(false);
+                        setDupFinderOpen(false);
+                        setIsSelectionMode(false);
+                        setSelectedTrans([]);
+                        allMovements.forEach((m) => {
+                          const el = document.getElementById(`trans-${m._id}`);
+                          if (el) el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+                        });
+                      }}
+                      className="text-[11px] text-orange-500 hover:underline"
+                    >
+                      Exit duplicate view
+                    </button>
+                  )}
+
+                  {/* Delete selected — ml-auto a la derecha */}
+                  {dupMode && isSelectionMode && selectedTrans.length > 0 && (
+                    <button
+                      onClick={() => showRemoveModal("many", selectedTrans)}
+                      className="text-[11px] text-red-500 border border-red-300 px-3 py-1 rounded-full hover:bg-red-50 transition-colors flex items-center gap-1 ml-auto"
+                    >
+                      <UniversalCategoIcon type={"md/MdDelete"} siz={13} />
+                      Delete {selectedTrans.length} selected
+                    </button>
+                  )}
+                </div>
+
+                {/* Results summary */}
+                {dupMode && (
+                  <p className={`text-[11px] font-medium ${dupCount > 0 ? "text-orange-500" : "text-green-600"}`}>
+                    {dupCount > 0 ? `${dupCount} possible duplicate transaction(s) found` : "No duplicates found with current criteria 🎉"}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="relative w-full mt-2 mb-3 px-2">
+              <IoSearchOutline
+                size={15}
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+              <input
+                type="text"
+                placeholder="Search by name, category, subcategory or tag..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-8 py-1.5 text-[11px] bg-white border border-slate-200 rounded-2xl outline-none focus:border-purple-400 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <UniversalCategoIcon type="md/MdClose" siz={15} />
+                </button>
+              )}
             </div>
             <div className="flex flex-row justify-between items-center first-line:font-semibold">
               <div className="flex gap-1">
@@ -435,6 +666,24 @@ function Movements({ timePeriodFromFather, mail }) {
             )}
           </div>
           <div className="movements-container flex flex-col gap-2">
+            {allMovements.length === 0 && (
+              <div className="w-full flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+                {dupMode ? <MdOutlineFindInPage size={32} /> : <IoSearchOutline size={32} />}
+                <p className="text-sm">
+                  {dupMode ? "No duplicates found with the selected criteria 🎉" : "No transactions match your filters"}
+                </p>
+                {dupMode && (
+                  <button onClick={() => { setDupMode(false); setDupFinderOpen(false); }} className="text-xs text-orange-500 hover:underline">
+                    Exit duplicate view
+                  </button>
+                )}
+                {!dupMode && searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="text-xs text-purple-500 hover:underline">
+                    Clear search
+                  </button>
+                )}
+              </div>
+            )}
             {allMovements.map((movement) => (
               <div
                 key={movement._id}
@@ -543,5 +792,7 @@ function Movements({ timePeriodFromFather, mail }) {
     </div>
   );
 }
+
+
 
 export default Movements;
