@@ -1,410 +1,261 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, useContext } from "react";
 import CategoIcon from "./CategoIcon";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import dayjs from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-import { createTheme, ThemeProvider } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { StaticDateTimePicker } from "@mui/x-date-pickers/StaticDateTimePicker";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
-import { Switch } from "antd";
-import { Button, ConfigProvider, Space, Spin } from "antd";
+import { Switch, ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
 import { updateManyTransactions } from "@/lib/features/transacctionsSlice";
+import SelectCategories from "../categories/SelectCategoryProvider/SelectCategories";
+import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
+import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
+import BasicModal from "../modals/basicModal/BasicModal";
+import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
+import useModal from "@/hooks/useModalBasic";
+import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 
-function EditMultipleTransModal({ hidden, trans }) {
-  const [active, setActive] = useState(false);
+function EditMultipleTransModalInner({ trans, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
-  //Get fetcher function
   const toFetch = fetcher();
-  // Redux
-  const dispatch = useDispatch()
-  const ccUser = useSelector((state) => state.userReducer)
-  const ccategories = useSelector((state) => state.categoriesReducer)
-  const ccSubCategories = useSelector((state) => state.subCategoryReducer)
-  const ccAccounts = useSelector((state) => state.accountsReducer)
-  
-  const seeGeneralData = useSelector((state) => state.generalDataReducer);
-  
-  const accounts = ccAccounts.data;
-  
-  const categories = ccategories.data.user.concat(ccategories.data.default)
-  
-  const subCategories = ccSubCategories.data.subCat;
-  
+  const dispatch = useDispatch();
+  const { close, handleClose } = useModal();
+  const { handleClean } = useContext(SelectCategoryContext);
+  const { accounts } = useGetDataFromProvider();
 
   const [transactionInfo, setTransactionInfo] = useState({
     transactions: [],
     name: "",
-    amount: 0,
+    amount: "",
     isIncome: false,
     isBill: false,
     isReadable: false,
     date: "",
     category: "",
     subCategory: "",
-    tags: [],
+    tags: "",
     account: "",
   });
 
   useEffect(() => {
     if (trans) {
-      setTransactionInfo({
-        ...transactionInfo,
-        transactions: trans,
-      });
+      setTransactionInfo((prev) => ({ ...prev, transactions: trans }));
     }
   }, [trans]);
-  //MATERIAL UI
-  const theme = createTheme({
-    components: {
-      MuiTextField: {
-        // Este es el componente interno usado en el DatePicker
-        styleOverrides: {
-          root: {
-            height: "30px", // Establece la altura deseada
-            // Aquí puedes añadir más estilos como el tamaño de la fuente, padding, etc.
-          },
-        },
-      },
-    },
-  });
-
-  const handleClose = () => {
-    setActive(true);
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setTransactionInfo({ ...transactionInfo, [name]: value });
+    setTransactionInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onChangeSwitch = (checked, typeBoolean) => {
+    if (typeBoolean === "income") {
+      setTransactionInfo((prev) => ({ ...prev, isIncome: checked, isBill: !checked }));
+    } else if (typeBoolean === "bill") {
+      setTransactionInfo((prev) => ({ ...prev, isBill: checked, isIncome: !checked }));
+    } else if (typeBoolean === "readable") {
+      setTransactionInfo((prev) => ({ ...prev, isReadable: checked }));
+    }
+  };
+
+  const handleCategory = (cat) => {
+    if (!cat) return;
+    if (cat?.fatherCategory) {
+      setTransactionInfo((prev) => ({
+        ...prev,
+        subCategory: cat._id,
+        category: cat?.fatherCategory?._id,
+      }));
+    } else {
+      setTransactionInfo((prev) => ({ ...prev, category: cat._id, subCategory: "" }));
+    }
+  };
+
+  const handleDefAccount = (e) => {
+    setTransactionInfo((prev) => ({
+      ...prev,
+      account: e.target.value === "No account" ? null : e.target.value,
+    }));
+  };
+
+  const hanleDatePickerChange = (newDate) => {
+    setTransactionInfo((prev) => ({ ...prev, date: new Date(newDate) }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const trimmedName = transactionInfo.name.trim();
-    if (transactionInfo.tags.length > 0) {
-      var tagsArray = transactionInfo.tags.split(",");
-      var tagsArrCleaned = tagsArray.map((tag) => tag.trim());
-    } else {
-      console.log("first");
-      var tagsArrCleaned = [];
-    }
-    const newTrans = {
+    const tagsArr = transactionInfo.tags
+      ? transactionInfo.tags.split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+    const payload = {
       ...transactionInfo,
-      name: trimmedName,
-      tags: tagsArrCleaned,
+      name: transactionInfo.name.trim(),
+      tags: tagsArr,
     };
     try {
-      const response = await toFetch.post(
-        `general-data/transactions/edit-many`,
-        newTrans
-      );
-      console.log(response);
+      const response = await toFetch.post("general-data/transactions/edit-many", payload);
       if (response.data) {
-        console.log(response.data)
         runNotify("ok", response.message);
-        //UPDATE FRONT END
-        dispatch(updateManyTransactions(response.data))
-        setIsLoading(false);
-        handleClose();
+        dispatch(updateManyTransactions(response.data));
+        handleClean();
+        onClose();
       }
     } catch (e) {
-      console.log(e)
       runNotify("error", String(e));
+      handleClean();
+      onClose();
+    } finally {
       setIsLoading(false);
-      handleClose();
-      throw new Error(e);
     }
   };
-  //DATE
-  function hanleDatePickerChange(newDate) {
-    setTransactionInfo({ ...transactionInfo, date: new Date(newDate) });
-  }
-  //SWITCHER:
-  const onChangeSwitch = (checked, typeBoolean) => {
-    if (typeBoolean === "income") {
-      setTransactionInfo({
-        ...transactionInfo,
-        isIncome: checked,
-        isBill: !checked,
-      });
-    } else if (typeBoolean === "bill") {
-      setTransactionInfo({
-        ...transactionInfo,
-        isBill: checked,
-        isIncome: !checked,
-      });
-    } else if (typeBoolean === "readable") {
-      setTransactionInfo({
-        ...transactionInfo,
-        isReadable: checked,
-      });
-    }
-  };
-  const handleDefAccount = (event) => {
-    if (event.target.value === "No account") {
-      setTransactionInfo({
-        ...transactionInfo,
-        account: null,
-      });
-    } else {
-      setTransactionInfo({
-        ...transactionInfo,
-        account: event.target.value,
-      });
-    }
-  };
-  const handleDefCategory = (event) => {
-    if (event.target.value === "No category") {
-      setTransactionInfo({
-        ...transactionInfo,
-        category: null,
-      });
-    } else {
-      setTransactionInfo({
-        ...transactionInfo,
-        category: event.target.value,
-      });
-    }
-  };
-  const handleDefSubCategory = (event) => {
-    if (event.target.value === "No subcategory") {
-      setTransactionInfo({
-        ...transactionInfo,
-        subCategory: null,
-      });
-    } else {
-      const filterSub = subCategories.filter(
-        (sub) => sub._id === event.target.value
-      );
-      const defFather = filterSub[0].fatherCategory._id;
-      setTransactionInfo({
-        ...transactionInfo,
-        subCategory: event.target.value,
-        category: defFather,
-      });
-    }
-  };
-  return !transactionInfo ? (
-    <div>No transaccion passed</div>
-  ) : (
-    <div
-      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[1000] bg-white/10 backdrop-blur-sm ${
-        active ? "hidden" : "flex"
-      } items-center justify-center`}
-    >
-      <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-[350px] h-[650px] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
-        <div
-          className={`${
-            isLoading ? "absolute" : "hidden"
-          } top-0 left-0 bg-white/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] `}
-        >
-          <Spin size="large" />
-        </div>
-        <h1 className="text-center py-[20px] text-2xl text-white">
-          Edit {trans.length} Transactions 🪄
+
+  return (
+    <div className="fixed top-0 left-0 w-full h-full z-[1000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
+      <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
+        {isLoading && (
+          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[1001]">
+            <Spin size="large" />
+          </div>
+        )}
+
+        <h1 className="text-center py-[10px] text-2xl text-white">
+          Edit {Array.isArray(trans) ? trans.length : 0} Transactions 🪄
         </h1>
+        <div className="w-full px-4 pb-2">
+          <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 text-[11px] rounded-xl px-3 py-2 text-center leading-relaxed">
+            ⚠️ Everything you fill in here will overwrite <b>all {Array.isArray(trans) ? trans.length : 0} selected transactions</b>. Fields you leave blank will keep their original values.
+          </div>
+        </div>
+
         <form
           onSubmit={handleSubmit}
-          className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20`}
+          className="form-trans-edit w-full h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20 overflow-y-scroll"
         >
-          <p className="label-tfp ">Name</p>
+          <p className="label-tfp">Name</p>
           <input
             type="text"
             name="name"
             value={transactionInfo.name}
             onChange={handleChange}
-            placeholder="Transaction Name"
+            placeholder="Leave blank to keep original"
           />
-          <p className="label-tfp ">Amount</p>
+
+          <p className="label-tfp">Amount</p>
           <input
             type="number"
             name="amount"
             value={transactionInfo.amount}
             onChange={handleChange}
-            placeholder="Amount"
+            placeholder="Leave blank to keep original"
           />
-          <div className="switchers-cont flex gap-3">
-            <label>
-              <ConfigProvider
-                theme={{
-                  token: {
-                    // Seed Token
-                    colorPrimary: "#9700FF",
-                    borderRadius: 2,
 
-                    // Alias Token
-                    colorBgContainer: "#9700FF",
-                  },
-                }}
-              >
-                <Space direction="" size={12}>
-                  <div className="switch-int-cont">
-                    <p className="label-tfp ">Is Income:</p>
-                    <Switch
-                      onChange={(value) => onChangeSwitch(value, "income")}
-                      value={transactionInfo?.isIncome}
-                    />
-                  </div>
-                  <div className="switch-int-cont">
-                    <p className="label-tfp ">Is Bill:</p>
-                    <Switch
-                      onChange={(value) => onChangeSwitch(value, "bill")}
-                      value={transactionInfo?.isBill}
-                    />
-                  </div>
-                  <div className="switch-int-cont">
-                    <p className="label-tfp ">Is Readable:</p>
-                    <Switch
-                      onChange={(value) => onChangeSwitch(value, "readable")}
-                      value={transactionInfo?.isReadable}
-                    />
-                  </div>
-                </Space>
-              </ConfigProvider>
-            </label>
+          <div className="switchers-cont flex gap-3">
+            <ConfigProvider
+              theme={{
+                token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" },
+              }}
+            >
+              <Space direction="" size={12}>
+                <div className="switch-int-cont">
+                  <p className="label-tfp">Is Income:</p>
+                  <Switch onChange={(v) => onChangeSwitch(v, "income")} value={transactionInfo.isIncome} />
+                </div>
+                <div className="switch-int-cont">
+                  <p className="label-tfp">Is Bill:</p>
+                  <Switch onChange={(v) => onChangeSwitch(v, "bill")} value={transactionInfo.isBill} />
+                </div>
+                <div className="switch-int-cont">
+                  <p className="label-tfp">Is Readable:</p>
+                  <Switch onChange={(v) => onChangeSwitch(v, "readable")} value={transactionInfo.isReadable} />
+                </div>
+              </Space>
+            </ConfigProvider>
           </div>
-          <p className="label-tfp ">Date</p>
-          <div className="date-container w-full h-[100px] ">
+
+          <p className="label-tfp">Date</p>
+          <div className="date-container w-full h-[100px]">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["MobileDateTimePicker"]}>
                 <DemoItem label="">
                   <MobileDateTimePicker
-                    className="text-center flex items-center justify-between border-2"
                     slotProps={{ textField: { size: "small" } }}
-                    onChange={(newValue) =>
-                      hanleDatePickerChange(newValue.format())
-                    }
-                    value={dayjs(transactionInfo?.date)}
+                    onChange={(v) => hanleDatePickerChange(v.format())}
+                    value={transactionInfo.date ? dayjs(transactionInfo.date) : null}
                     sx={{
-                      "& .MuiInputBase-root": {
-                        width: "100%",
-                        height: "100%",
-                        padding: "0px",
-                        border: "none",
-                      },
-                      "& .MuiInputBase-input": {
-                        width: "100%",
-                        height: "100%",
-                        border: "1px solid rgb(176, 23, 176)",
-                      },
+                      "& .MuiInputBase-root": { width: "100%", height: "100%", padding: "0px", border: "none" },
+                      "& .MuiInputBase-input": { width: "100%", height: "100%", border: "1px solid rgb(176, 23, 176)" },
                     }}
                   />
                 </DemoItem>
               </DemoContainer>
             </LocalizationProvider>
           </div>
-          <p className="label-tfp ">Category</p>
-          {transactionInfo.subCategory ? (
-            <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center cursor-not-allowed">
-              <select
-                className=" bg-transparent appearance-none w-full pr-4 cursor-not-allowed"
-                name="DateSelector"
-                value={transactionInfo?.category || null}
-                // onChange={handleDefCategory}
-                disabled
-              >
-                <option value={null}>No category</option>
-                {categories.length > 0 ? (
-                  categories.map((cat) => (
-                    <option value={cat._id} key={`option-cat-${cat._id}`}>
-                      {cat.name}{" "}
-                    </option>
-                  ))
-                ) : (
-                  <div>No categories loaded...</div>
-                )}
-              </select>
-            </div>
-          ) : (
-            <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
-              <select
-                className=" bg-transparent appearance-none w-full pr-4"
-                name="DateSelector"
-                value={transactionInfo?.category || null}
-                onChange={handleDefCategory}
-              >
-                <option value={null}>No category</option>
-                {categories.length > 0 ? (
-                  categories.map((cat) => (
-                    <option value={cat._id} key={`option-cat-${cat._id}`}>
-                      {cat.name}{" "}
-                    </option>
-                  ))
-                ) : (
-                  <div>No categories loaded...</div>
-                )}
-              </select>
-            </div>
+
+          <p className="label-tfp">Category</p>
+          <BtnSelectCategoryContext onClose={handleClose} />
+          {close && (
+            <BasicModal
+              close={handleClose}
+              renderContent={
+                <ModalCategoryContent close={handleClose} getSelected={handleCategory} />
+              }
+            />
           )}
 
-          <p className="label-tfp ">Sub Category</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
-            <select
-              className=" bg-transparent appearance-none w-full pr-4"
-              name="DateSelector"
-              value={transactionInfo?.subCategory || null}
-              onChange={handleDefSubCategory}
-            >
-              <option value={null}>No subcategory</option>
-              {subCategories.length > 0 ? (
-                subCategories.map((sub) => (
-                  <option value={sub._id} key={`option-subCat-${sub._id}`}>
-                    {sub.name}{" "}
-                  </option>
-                ))
-              ) : (
-                <div>No sub categories loaded...</div>
-              )}
-            </select>
-          </div>
-          <p className="label-tfp ">Tags</p>
+          <p className="label-tfp">Tags</p>
           <input
             type="text"
             name="tags"
-            value={transactionInfo.tags || null}
+            value={transactionInfo.tags}
             onChange={handleChange}
             placeholder="Tags (separated by comma)"
           />
-          <p className="label-tfp ">Account</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
+
+          <p className="label-tfp">Account</p>
+          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
-              className=" bg-transparent appearance-none w-full pr-4"
-              name="DateSelector"
-              value={transactionInfo?.account || null}
+              className="bg-transparent appearance-none w-full pr-4"
+              value={transactionInfo.account || ""}
               onChange={handleDefAccount}
             >
-              <option value={null}>No account</option>
-              {accounts.length > 0 ? (
-                accounts.map((acc) => (
-                  <option value={acc._id} key={`option-acc-${acc._id}`}>
-                    {acc.name}{" "}
-                  </option>
-                ))
-              ) : (
-                <div>No accounts loaded...</div>
-              )}
+              <option value="">No account</option>
+              {accounts?.map((acc) => (
+                <option value={acc._id} key={acc._id}>{acc.name}</option>
+              ))}
             </select>
           </div>
+
           <button
             className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
             type="submit"
           >
-            {isLoading ? <Spin /> : "Submit"}
+            {isLoading ? <Spin /> : "Save changes"}
           </button>
         </form>
-        <button onClick={handleClose}>
-          <div className="close-con absolute top-[0%] right-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short">
-            <CategoIcon type={"MdClose"} siz={20} />
-          </div>
+
+        <button onClick={onClose} className="close-con absolute top-0 right-0 border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short">
+          <CategoIcon type={"MdClose"} siz={20} />
         </button>
       </div>
     </div>
+  );
+}
+
+function EditMultipleTransModal({ trans }) {
+  const [active, setActive] = useState(false);
+  if (active) return null;
+  return (
+    <SelectCategories>
+      <EditMultipleTransModalInner trans={trans} onClose={() => setActive(true)} />
+    </SelectCategories>
   );
 }
 
