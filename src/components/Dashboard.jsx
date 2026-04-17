@@ -362,7 +362,7 @@ function Wallet({ dataServ, session }) {
                   <Skeleton active />
                 </div>
               ) : (
-                <ResumeTabsTrans rttTrans={allTransactions} />
+                <ResumeTabsTrans timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
               )}
             </div>
             <div className="top-3-general-container w-full">
@@ -434,10 +434,7 @@ function Wallet({ dataServ, session }) {
               <div className="wallet-right-col-container w-full h-full lg:max-w-[50%]s lg:flex lg:flex-col justify-center items-center">
                 <div className="movements w-full h-full max-h-[500px] lg:max-w-[800px] lg:max-h-[1000px] overflow-scroll flex flex-row justify-center items-center">
                   <Movements
-                    movements={allTransactions}
-                    incomes={allIncomes}
-                    bills={allBills}
-                    period={selectedDuration}
+                    timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
                   />
                 </div>
                 <div className="budget">
