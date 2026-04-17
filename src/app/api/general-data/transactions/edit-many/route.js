@@ -7,8 +7,10 @@ import SubCategory from "@/model/SubCategory";
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on Update Many Trans");
+    const body = await request.json();
     const {
       transactions,
+      fields, // array of field names to update, e.g. ["name"] or ["category","subCategory"]
       name,
       amount,
       isIncome,
@@ -19,106 +21,85 @@ export async function POST(request) {
       category,
       subCategory,
       tags,
-    } = await request.json();
+    } = body;
+
     await dbConnection();
-    //Validators
-    if (!transactions)
-      throw new Error("No transactions IDs passed to edit many 🤕");
+
+    if (!transactions || transactions.length === 0)
+      throw new Error("No transaction IDs passed to edit-many");
+
+    // If no fields array provided fall back to updating all truthy values (legacy behaviour)
+    const targeted = Array.isArray(fields) && fields.length > 0;
+    const shouldUpdate = (field) => !targeted || fields.includes(field);
+
     let savedTrans = [];
+
     for (const transId of transactions) {
       const transaction = await Transaction.findById(transId);
-     
-      if (!transaction) {
-        throw new Error(`Transaction ${transId} not found on update many`);
-        // continue; // jump iteration
-      }
-      //Update
-      transaction.name = name || transaction.name;
-      transaction.amount = amount || transaction.amount;
-      transaction.isIncome = isIncome || transaction.isIncome;
-      transaction.isBill = isBill || transaction.isBill;
-      transaction.isReadable = isReadable || transaction.isReadable;
-      transaction.date = !date ? transaction.date : new Date(date);
-      transaction.account = account || transaction.account;
-      
-      //SUB
-      if (transaction.subCategory !== subCategory && subCategory) {
-        if (!subCategory) return null;
-        const findSubCategory = await SubCategory.findById(subCategory);
-        
-        if (!findSubCategory)
-          throw new Error("No SUB-CATEGORY found at UPDATE TRANSACTION");
-        transaction.category = findSubCategory.fatherCategory;
-        transaction.subCategory = findSubCategory._id;
-      }
-      // CATEGORY UPDATE
-      if (category && !subCategory) {
-       
-        transaction.category = !category ? transaction.category : category;
-      }
-      // TAGS UPATE
-      if (!tags) return null;
-      if (!tags.length < 0) return null;
-      const newTags = [];
-      for (const tag of tags) {
-        const findTag = await Tag.findOne({
-          name: tag,
-          user: transaction.user,
-        });
-        
-        if (!findTag) {
-          const newTag = new Tag({ name: tag, user: transaction.user });
-          if (!newTag)
-            throw new Error("No tag created on UPDATED TRANSACTION POST");
-          newTags.push(newTag._id);
-          await newTag.save();
-        } else {
-          newTags.push(findTag._id);
-        }
-      }
-      transaction.tags = newTags;
+      if (!transaction) throw new Error(`Transaction ${transId} not found`);
 
-      // Guardar la transacción actualizada
-      const updatedTrans = await transaction.save()
-      const transToSend = await Transaction.findById(updatedTrans._id)
-        .populate({
-          path: "tags",
-        })
-        .populate({
-          path: "account",
-        })
-        .populate({
-          path: "category",
-        })
-        .populate({
-          path: "subCategory",
-        });
-      //Push to send data
-      savedTrans.push(transToSend);
+      if (shouldUpdate("name") && name !== undefined && name !== "")
+        transaction.name = name;
+
+      if (shouldUpdate("amount") && amount !== undefined && amount !== "")
+        transaction.amount = amount;
+
+      if (shouldUpdate("isIncome") || shouldUpdate("isBill")) {
+        if (isIncome !== undefined) transaction.isIncome = isIncome;
+        if (isBill !== undefined) transaction.isBill = isBill;
+      }
+
+      if (shouldUpdate("isReadable") && isReadable !== undefined)
+        transaction.isReadable = isReadable;
+
+      if (shouldUpdate("date") && date)
+        transaction.date = new Date(date);
+
+      if (shouldUpdate("account"))
+        transaction.account = account || null;
+
+      // Category / subcategory
+      if (shouldUpdate("subCategory") && subCategory) {
+        const foundSub = await SubCategory.findById(subCategory);
+        if (!foundSub) throw new Error("SubCategory not found at edit-many");
+        transaction.subCategory = foundSub._id;
+        transaction.category = foundSub.fatherCategory;
+      } else if (shouldUpdate("category") && category && !subCategory) {
+        transaction.category = category;
+        if (shouldUpdate("subCategory")) transaction.subCategory = null;
+      }
+
+      // Tags — only update if field is targeted or tags array is provided
+      if (shouldUpdate("tags") && Array.isArray(tags)) {
+        const newTags = [];
+        for (const tagName of tags.filter(Boolean)) {
+          let found = await Tag.findOne({ name: tagName, user: transaction.user });
+          if (!found) {
+            found = await Tag.create({ name: tagName, user: transaction.user });
+          }
+          newTags.push(found._id);
+        }
+        transaction.tags = newTags;
+      }
+
+      const updated = await transaction.save();
+      const populated = await Transaction.findById(updated._id)
+        .populate("tags")
+        .populate("account")
+        .populate("category")
+        .populate("subCategory");
+
+      savedTrans.push(populated);
     }
-    
+
     return NextResponse.json({
-      message: `${savedTrans.length} transactions were updated successfully 😎`,
+      message: `${savedTrans.length} transaction(s) updated successfully 😎`,
       data: savedTrans,
       status: 201,
       ok: true,
     });
   } catch (e) {
-    console.log(e);
-    throw new Error(e);
+    console.error("edit-many error:", e);
+    return NextResponse.json({ ok: false, message: e?.message || "Unexpected error" }, { status: 500 });
   }
 }
-
-//Logers:
-// console.log(
-//      user,
-//      wallet,
-//      name,
-//      amount,
-//      isIncome,
-//      isBill,
-//      isReadable,
-//      date,
-//      categories,
-//      tags,
-//      accounts)
