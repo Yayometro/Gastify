@@ -62,6 +62,8 @@ function Movements({ timePeriodFromFather, mail }) {
   const [dupCriteria, setDupCriteria] = useState({ name: true, date: true, amount: true, category: false, subcategory: false });
   const [dupMode, setDupMode] = useState(false);
   const [dupCount, setDupCount] = useState(0);
+  const [dupDateTolerance, setDupDateTolerance] = useState(0);
+  const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
 
   const toFetch = fetcher();
   const reduxDispartcher = useDispatch();
@@ -109,54 +111,76 @@ function Movements({ timePeriodFromFather, mail }) {
     }
 
     if (dupMode) {
-      const dups = getDuplicates(filtered, dupCriteria);
+      const dups = getDuplicates(filtered, dupCriteria, dupDateTolerance, dupAmountTolerance);
       setDupCount(dups.length);
       setAllMovements(dups);
     } else {
       setDupCount(0);
       setAllMovements(filtered);
     }
-  }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, dupMode, dupCriteria]);
+  }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
 
-  function buildKey(t, criteria) {
-    const parts = [];
-    if (criteria.name) parts.push((t.name || "").toLowerCase().trim());
-    if (criteria.date) {
-      const d = new Date(t.date || t.createdAt);
-      parts.push(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+  function areDuplicates(a, b, criteria, dateTol, amountTol) {
+    if (criteria.name) {
+      const na = (a.name || "").toLowerCase().trim();
+      const nb = (b.name || "").toLowerCase().trim();
+      if (na !== nb) return false;
     }
-    if (criteria.amount) parts.push(String(t.amount ?? 0));
-    if (criteria.category) parts.push(String(t.category?._id || "none"));
-    if (criteria.subcategory) parts.push(String(t.subCategory?._id || "none"));
-    return parts.join("|");
+    if (criteria.date) {
+      const da = new Date(a.date || a.createdAt).getTime();
+      const db = new Date(b.date || b.createdAt).getTime();
+      const diffDays = Math.abs(da - db) / 86400000;
+      if (diffDays > dateTol) return false;
+    }
+    if (criteria.amount) {
+      const diff = Math.abs((a.amount ?? 0) - (b.amount ?? 0));
+      if (diff > amountTol) return false;
+    }
+    if (criteria.category) {
+      if (String(a.category?._id || "none") !== String(b.category?._id || "none")) return false;
+    }
+    if (criteria.subcategory) {
+      if (String(a.subCategory?._id || "none") !== String(b.subCategory?._id || "none")) return false;
+    }
+    return true;
   }
 
-  function getDuplicates(transactions, criteria) {
-    const groups = {};
-    transactions.forEach((t) => {
-      const key = buildKey(t, criteria);
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(t._id);
+  // Encuentra componentes conectados via Union-Find
+  function buildDupGroups(transactions, criteria, dateTol, amountTol) {
+    const n = transactions.length;
+    const parent = transactions.map((_, i) => i);
+    const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+    const union = (i, j) => { parent[find(i)] = find(j); };
+
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (areDuplicates(transactions[i], transactions[j], criteria, dateTol, amountTol)) {
+          union(i, j);
+        }
+      }
+    }
+    // Agrupa índices por componente
+    const comps = {};
+    transactions.forEach((_, i) => {
+      const root = find(i);
+      if (!comps[root]) comps[root] = [];
+      comps[root].push(i);
     });
+    return Object.values(comps).filter((g) => g.length > 1);
+  }
+
+  function getDuplicates(transactions, criteria, dateTol, amountTol) {
+    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
     const dupIds = new Set();
-    Object.values(groups).forEach((ids) => {
-      if (ids.length > 1) ids.forEach((id) => dupIds.add(String(id)));
-    });
+    groups.forEach((g) => g.forEach((i) => dupIds.add(String(transactions[i]._id))));
     return transactions.filter((t) => dupIds.has(String(t._id)));
   }
 
-  // Devuelve IDs a eliminar: todos excepto el primero de cada grupo duplicado
-  function getDuplicatesToDelete(transactions, criteria) {
-    const groups = {};
-    transactions.forEach((t) => {
-      const key = buildKey(t, criteria);
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(t._id);
-    });
+  // Devuelve IDs a eliminar: todos excepto el primero de cada componente
+  function getDuplicatesToDelete(transactions, criteria, dateTol, amountTol) {
+    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
     const toDelete = [];
-    Object.values(groups).forEach((ids) => {
-      if (ids.length > 1) ids.slice(1).forEach((id) => toDelete.push(id));
-    });
+    groups.forEach((g) => g.slice(1).forEach((i) => toDelete.push(transactions[i]._id)));
     return toDelete;
   }
 
@@ -181,6 +205,8 @@ function Movements({ timePeriodFromFather, mail }) {
     setDupMode(false);
     setDupFinderOpen(false);
     setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
+    setDupDateTolerance(0);
+    setDupAmountTolerance(0);
     setTimePeriod(timePeriodFromFather || defaultPeriod);
   };
 
@@ -468,11 +494,13 @@ function Movements({ timePeriodFromFather, mail }) {
                   </p>
                   <Tooltip title={
                     <div className="text-xs flex flex-col gap-1">
-                      <p><b>Find Duplicates</b> scans transactions within the <b>currently selected time range</b> and groups those that share identical values in the checked fields.</p>
+                      <p><b>Find Duplicates</b> scans transactions within the <b>currently selected time range</b> and groups those that match the checked fields.</p>
+                      <p><b>Date tolerance</b> — how many days apart two transactions can be and still count as duplicates.</p>
+                      <p><b>Amount tolerance</b> — max difference in amount (e.g. $0.99 catches bank rounding).</p>
                       <p><b>Search duplicates</b> — runs the scan with your chosen criteria.</p>
-                      <p><b>Refresh defaults</b> — resets criteria to Name + Date + Amount and re-runs.</p>
-                      <p><b>Select possible duplicates</b> — pre-selects all extras (keeps one original per group).</p>
-                      <p><b>Delete X selected</b> — removes the selected transactions permanently.</p>
+                      <p><b>Refresh defaults</b> — resets to Name + Date + Amount, exact match.</p>
+                      <p><b>Select possible duplicates</b> — pre-selects all extras, keeps one original per group.</p>
+                      <p><b>Delete X selected</b> — removes selected transactions permanently.</p>
                     </div>
                   }>
                     <div className="cursor-pointer text-slate-400 hover:text-slate-600">
@@ -502,6 +530,40 @@ function Movements({ timePeriodFromFather, mail }) {
                   ))}
                 </div>
 
+                {/* Tolerance controls */}
+                <div className="flex flex-wrap gap-4 items-center border-t border-slate-100 pt-2">
+                  <div className="flex items-center gap-2">
+                    <Tooltip title="Allow this many days of difference between dates to still count as duplicates">
+                      <label className="text-[11px] text-slate-500 select-none cursor-help">Date tolerance</label>
+                    </Tooltip>
+                    <select
+                      value={dupDateTolerance}
+                      onChange={(e) => setDupDateTolerance(Number(e.target.value))}
+                      className="text-[11px] bg-white border border-slate-200 rounded-lg px-2 py-0.5 outline-none focus:border-purple-400"
+                    >
+                      <option value={0}>Exact (same day)</option>
+                      <option value={1}>±1 day</option>
+                      <option value={3}>±3 days</option>
+                      <option value={7}>±7 days</option>
+                      <option value={30}>±30 days</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Tooltip title="Allow this amount difference (in your currency) between two transactions to still count as duplicates">
+                      <label className="text-[11px] text-slate-500 select-none cursor-help">Amount tolerance</label>
+                    </Tooltip>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={dupAmountTolerance}
+                      onChange={(e) => setDupAmountTolerance(Math.max(0, Number(e.target.value)))}
+                      className="text-[11px] bg-white border border-slate-200 rounded-lg px-2 py-0.5 w-20 outline-none focus:border-purple-400"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
                 {/* Action buttons row */}
                 <div className="flex flex-wrap gap-2 items-center">
                   {/* Search */}
@@ -516,11 +578,12 @@ function Movements({ timePeriodFromFather, mail }) {
                   </button>
 
                   {/* Refresh with defaults */}
-                  <Tooltip title="Reset to default criteria (Name + Date + Amount) and re-run the search">
+                  <Tooltip title="Reset to default criteria (Name + Date + Amount, exact match) and re-run the search">
                     <button
                       onClick={() => {
-                        const defaults = { name: true, date: true, amount: true, category: false, subcategory: false };
-                        setDupCriteria(defaults);
+                        setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
+                        setDupDateTolerance(0);
+                        setDupAmountTolerance(0);
                         setDupMode(true);
                       }}
                       className="text-[11px] text-slate-400 hover:text-purple-500 transition-colors flex items-center gap-1"
@@ -534,7 +597,7 @@ function Movements({ timePeriodFromFather, mail }) {
                   {dupMode && dupCount > 0 && (
                     <button
                       onClick={() => {
-                        const toDelete = getDuplicatesToDelete(allMovements, dupCriteria);
+                        const toDelete = getDuplicatesToDelete(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance);
                         setIsSelectionMode(true);
                         allMovements.forEach((m) => {
                           const el = document.getElementById(`trans-${m._id}`);
