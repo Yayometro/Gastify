@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useContext } from "react";
-import CategoIcon from "./CategoIcon";
-import "@/components/styles/animations.css";
-import "@/components/multiUsedComp/css/muliUsed.css";
+import { useState, useEffect, useContext } from "react";
+import { createPortal } from "react-dom";
+import { Switch, ConfigProvider, Space, Spin } from "antd";
 import dayjs from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
-import { Switch, ConfigProvider, Space, Spin } from "antd";
-import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
+import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import { updateManyTransactions } from "@/lib/features/transacctionsSlice";
+import { updateTransaction } from "@/lib/features/transacctionsSlice";
 import SelectCategories from "../categories/SelectCategoryProvider/SelectCategories";
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
@@ -21,23 +19,24 @@ import BasicModal from "../modals/basicModal/BasicModal";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
 import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
+import CategoIcon from "./CategoIcon";
+import "@/components/multiUsedComp/css/muliUsed.css";
 
-function EditMultipleTransModalInner({ trans, onClose }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const toFetch = fetcher();
+function EditSingleTransModalInner({ trans, onClose }) {
   const dispatch = useDispatch();
+  const toFetch = fetcher();
+  const [isLoading, setIsLoading] = useState(false);
   const { close, handleClose } = useModal();
   const { handleClean } = useContext(SelectCategoryContext);
   const { accounts } = useGetDataFromProvider();
 
-  const [transactionInfo, setTransactionInfo] = useState({
-    transactions: [],
+  const [form, setForm] = useState({
     name: "",
     amount: "",
     isIncome: false,
-    isBill: false,
+    isBill: true,
     isReadable: false,
-    date: "",
+    date: new Date(),
     category: "",
     subCategory: "",
     tags: "",
@@ -46,94 +45,80 @@ function EditMultipleTransModalInner({ trans, onClose }) {
 
   useEffect(() => {
     if (trans) {
-      setTransactionInfo((prev) => ({ ...prev, transactions: trans }));
+      setForm({
+        name: trans.name || "",
+        amount: trans.amount ?? "",
+        isIncome: trans.isIncome ?? false,
+        isBill: trans.isBill ?? true,
+        isReadable: trans.isReadable ?? false,
+        date: trans.date ? new Date(trans.date) : new Date(),
+        category: trans.category?._id || trans.category || "",
+        subCategory: trans.subCategory?._id || trans.subCategory || "",
+        tags: trans.tags?.map((t) => (typeof t === "string" ? t : t.name)).join(", ") || "",
+        account: trans.account?._id || trans.account || "",
+      });
     }
   }, [trans]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setTransactionInfo((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const onChangeSwitch = (checked, typeBoolean) => {
-    if (typeBoolean === "income") {
-      setTransactionInfo((prev) => ({ ...prev, isIncome: checked, isBill: !checked }));
-    } else if (typeBoolean === "bill") {
-      setTransactionInfo((prev) => ({ ...prev, isBill: checked, isIncome: !checked }));
-    } else if (typeBoolean === "readable") {
-      setTransactionInfo((prev) => ({ ...prev, isReadable: checked }));
-    }
+  const onChangeSwitch = (checked, type) => {
+    if (type === "income") setForm((p) => ({ ...p, isIncome: checked, isBill: !checked }));
+    else if (type === "bill") setForm((p) => ({ ...p, isBill: checked, isIncome: !checked }));
+    else if (type === "readable") setForm((p) => ({ ...p, isReadable: checked }));
   };
 
   const handleCategory = (cat) => {
     if (!cat) return;
     if (cat?.fatherCategory) {
-      setTransactionInfo((prev) => ({
-        ...prev,
-        subCategory: cat._id,
-        category: cat?.fatherCategory?._id,
-      }));
+      setForm((p) => ({ ...p, subCategory: cat._id, category: cat.fatherCategory._id }));
     } else {
-      setTransactionInfo((prev) => ({ ...prev, category: cat._id, subCategory: "" }));
+      setForm((p) => ({ ...p, category: cat._id, subCategory: "" }));
     }
-  };
-
-  const handleDefAccount = (e) => {
-    setTransactionInfo((prev) => ({
-      ...prev,
-      account: e.target.value === "No account" ? null : e.target.value,
-    }));
-  };
-
-  const hanleDatePickerChange = (newDate) => {
-    setTransactionInfo((prev) => ({ ...prev, date: new Date(newDate) }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const tagsArr = transactionInfo.tags
-      ? transactionInfo.tags.split(",").map((t) => t.trim()).filter(Boolean)
+    const tagsArr = form.tags
+      ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
       : [];
     const payload = {
-      ...transactionInfo,
-      name: transactionInfo.name.trim(),
+      ...form,
+      name: form.name.trim(),
       tags: tagsArr,
     };
     try {
-      const response = await toFetch.post("general-data/transactions/edit-many", payload);
+      const response = await toFetch.post(`general-data/transactions/${trans._id}`, payload);
       if (response.data) {
         runNotify("ok", response.message);
-        dispatch(updateManyTransactions(response.data));
+        dispatch(updateTransaction(response.data));
         handleClean();
+        setIsLoading(false);
         onClose();
+      } else {
+        runNotify("error", response.message || "Something went wrong");
+        setIsLoading(false);
       }
     } catch (e) {
       runNotify("error", String(e));
-      handleClean();
-      onClose();
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[1000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed top-0 left-0 w-full h-full z-[2000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
       <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         {isLoading && (
-          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[1001]">
+          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[2001]">
             <Spin size="large" />
           </div>
         )}
 
-        <h1 className="text-center py-[10px] text-2xl text-white">
-          Edit {Array.isArray(trans) ? trans.length : 0} Transactions 🪄
-        </h1>
-        <div className="w-full px-4 pb-2">
-          <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 text-[11px] rounded-xl px-3 py-2 text-center leading-relaxed">
-            ⚠️ Everything you fill in here will overwrite <b>all {Array.isArray(trans) ? trans.length : 0} selected transactions</b>. Fields you leave blank will keep their original values.
-          </div>
-        </div>
+        <h1 className="text-center py-[10px] text-2xl text-white">Edit Transaction ✏️</h1>
 
         <form
           onSubmit={handleSubmit}
@@ -143,38 +128,34 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           <input
             type="text"
             name="name"
-            value={transactionInfo.name}
+            value={form.name}
             onChange={handleChange}
-            placeholder="Leave blank to keep original"
+            placeholder="Transaction name"
           />
 
           <p className="label-tfp">Amount</p>
           <input
             type="number"
             name="amount"
-            value={transactionInfo.amount}
+            value={form.amount}
             onChange={handleChange}
-            placeholder="Leave blank to keep original"
+            placeholder="Amount"
           />
 
           <div className="switchers-cont flex gap-3">
-            <ConfigProvider
-              theme={{
-                token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" },
-              }}
-            >
+            <ConfigProvider theme={{ token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" } }}>
               <Space direction="" size={12}>
                 <div className="switch-int-cont">
                   <p className="label-tfp">Is Income:</p>
-                  <Switch onChange={(v) => onChangeSwitch(v, "income")} value={transactionInfo.isIncome} />
+                  <Switch onChange={(v) => onChangeSwitch(v, "income")} value={form.isIncome} />
                 </div>
                 <div className="switch-int-cont">
                   <p className="label-tfp">Is Bill:</p>
-                  <Switch onChange={(v) => onChangeSwitch(v, "bill")} value={transactionInfo.isBill} />
+                  <Switch onChange={(v) => onChangeSwitch(v, "bill")} value={form.isBill} />
                 </div>
                 <div className="switch-int-cont">
                   <p className="label-tfp">Is Readable:</p>
-                  <Switch onChange={(v) => onChangeSwitch(v, "readable")} value={transactionInfo.isReadable} />
+                  <Switch onChange={(v) => onChangeSwitch(v, "readable")} value={form.isReadable} />
                 </div>
               </Space>
             </ConfigProvider>
@@ -186,12 +167,17 @@ function EditMultipleTransModalInner({ trans, onClose }) {
               <DemoContainer components={["MobileDateTimePicker"]}>
                 <DemoItem label="">
                   <MobileDateTimePicker
-                    slotProps={{ textField: { size: "small" } }}
-                    onChange={(v) => hanleDatePickerChange(v.format())}
-                    value={transactionInfo.date ? dayjs(transactionInfo.date) : null}
+                    slotProps={{
+                      textField: { size: "small" },
+                      dialog: { sx: { zIndex: 3000 } },
+                      mobilePaper: { sx: { zIndex: 3000 } },
+                    }}
+                    value={dayjs(form.date)}
+                    onChange={(v) => setForm((p) => ({ ...p, date: new Date(v.format()) }))}
                     sx={{
-                      "& .MuiInputBase-root": { width: "100%", height: "100%", padding: "0px", border: "none" },
-                      "& .MuiInputBase-input": { width: "100%", height: "100%", border: "1px solid rgb(176, 23, 176)" },
+                      "& .MuiInputBase-root": { width: "100%", padding: "0px", border: "none", borderRadius: "12px" },
+                      "& .MuiInputBase-input": { border: "1px solid rgb(176,23,176)", borderRadius: "12px", padding: "8px 12px" },
+                      "& .MuiOutlinedInput-notchedOutline": { borderRadius: "12px" },
                     }}
                   />
                 </DemoItem>
@@ -204,9 +190,7 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           {close && (
             <BasicModal
               close={handleClose}
-              renderContent={
-                <ModalCategoryContent close={handleClose} getSelected={handleCategory} />
-              }
+              renderContent={<ModalCategoryContent close={handleClose} getSelected={handleCategory} />}
             />
           )}
 
@@ -214,7 +198,7 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           <input
             type="text"
             name="tags"
-            value={transactionInfo.tags}
+            value={form.tags}
             onChange={handleChange}
             placeholder="Tags (separated by comma)"
           />
@@ -223,8 +207,8 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
-              value={transactionInfo.account || ""}
-              onChange={handleDefAccount}
+              value={form.account || ""}
+              onChange={(e) => setForm((p) => ({ ...p, account: e.target.value || null }))}
             >
               <option value="">No account</option>
               {accounts?.map((acc) => (
@@ -233,34 +217,38 @@ function EditMultipleTransModalInner({ trans, onClose }) {
             </select>
           </div>
 
-          <button
-            className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
-            type="submit"
-          >
-            {isLoading ? <Spin /> : "Save changes"}
-          </button>
+          <div className="w-full flex gap-2 mt-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 p-2 bg-slate-200 text-slate-700 text-center rounded-full hover:bg-slate-300"
+            >
+              Cancel
+            </button>
+            <button
+              className="flex-1 p-2 bg-purple-600 text-white text-center rounded-full hover:bg-purple-500"
+              type="submit"
+            >
+              {isLoading ? <Spin /> : "Save changes"}
+            </button>
+          </div>
         </form>
 
         <button onClick={onClose} className="close-con absolute top-0 right-0 border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short">
-          <CategoIcon type={"MdClose"} siz={20} />
+          <CategoIcon type="MdClose" siz={20} />
         </button>
       </div>
     </div>
   );
 }
 
-function EditMultipleTransModal({ trans, onClose }) {
-  const [active, setActive] = useState(false);
-  if (active) return null;
-  const handleClose = () => {
-    setActive(true);
-    onClose?.();
-  };
+function EditSingleTransModal({ trans, onClose }) {
+  if (!trans) return null;
   return (
     <SelectCategories>
-      <EditMultipleTransModalInner trans={trans} onClose={handleClose} />
+      <EditSingleTransModalInner trans={trans} onClose={onClose} />
     </SelectCategories>
   );
 }
 
-export default EditMultipleTransModal;
+export default EditSingleTransModal;
