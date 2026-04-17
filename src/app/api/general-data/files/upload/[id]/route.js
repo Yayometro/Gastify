@@ -9,6 +9,8 @@ import Tag from "@/model/Tag";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 
+const CURRENT_TEMPLATE_VERSION = "2.0";
+
 function excelSerialDateToJSDate(serial) {
   const utc_days = Math.floor(serial - 25569);
   const utc_value = utc_days * 86400;
@@ -41,10 +43,7 @@ async function resolveSubCategory(name, userId) {
 
 async function resolveTags(rawTags, userId, walletId) {
   if (!rawTags) return [];
-  const names = rawTags
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
+  const names = rawTags.split(",").map((t) => t.trim()).filter(Boolean);
   const tagIds = [];
   for (const name of names) {
     let tag = await Tag.findOne({
@@ -69,6 +68,27 @@ export async function POST(request, { params }) {
     await writeFile(tmpFilePath, buffer);
 
     const workbook = await xlsxPopulate.fromFileAsync(tmpFilePath);
+
+    // --- Version check ---
+    let fileVersion = null;
+    try {
+      const dataSheet = workbook.sheet("_data");
+      if (dataSheet) {
+        fileVersion = dataSheet.cell(1, 3).value();
+      }
+    } catch (_) {}
+
+    if (!fileVersion || String(fileVersion).trim() !== CURRENT_TEMPLATE_VERSION) {
+      await unlink(tmpFilePath).catch(() => {});
+      return NextResponse.json({
+        ok: false,
+        versionMismatch: true,
+        currentVersion: CURRENT_TEMPLATE_VERSION,
+        message: `Outdated template (v${fileVersion || "unknown"}). Please download the latest template (v${CURRENT_TEMPLATE_VERSION}) and try again.`,
+        status: 400,
+      });
+    }
+
     const sheet = workbook.sheet(0);
 
     if (!params) throw new Error("No params ID received");
@@ -77,17 +97,13 @@ export async function POST(request, { params }) {
     const userFound = await User.findOne({ mail: params.id }).lean();
     if (!userFound) throw new Error("User not found");
 
-    // Data starts at row 3 (row 1 = headers, row 2 = instruction note)
-    // Backward compatible: if old 4-column format detected (no row 2 note), start at row 2
-    const noteCell = sheet.cell("A2").value();
-    const isNewFormat = noteCell && String(noteCell).includes("NOTE");
-    let i = isNewFormat ? 3 : 2;
+    // Data starts at row 3 (row 1 = headers, row 2 = note)
+    let i = 3;
     let isEmpty = false;
     const transactions = [];
 
     while (!isEmpty) {
-      const dateCell = sheet.cell(`A${i}`);
-      const serialDate = dateCell.value();
+      const serialDate = sheet.cell(`A${i}`).value();
 
       if (serialDate !== null && serialDate !== undefined) {
         const date =
@@ -96,29 +112,18 @@ export async function POST(request, { params }) {
             : new Date(serialDate) || new Date();
 
         const concept = sheet.cell(`B${i}`).value() || "no concept";
-        const bill = sheet.cell(`C${i}`).value() || 0;
-        const income = sheet.cell(`D${i}`).value() || 0;
-        const typeCell = sheet.cell(`E${i}`).value();
-        const catName = sheet.cell(`F${i}`).value();
-        const subCatName = sheet.cell(`G${i}`).value();
-        const tagsRaw = sheet.cell(`H${i}`).value();
+        const amount = Number(sheet.cell(`C${i}`).value()) || 0;
+        const typeRaw = sheet.cell(`D${i}`).value();
+        const catName = sheet.cell(`E${i}`).value();
+        const subCatName = sheet.cell(`F${i}`).value();
+        const tagsRaw = sheet.cell(`G${i}`).value();
 
-        // Type column overrides C/D if present
-        let isBill = !!bill;
-        let isIncome = !!income;
-        if (typeCell) {
-          const type = String(typeCell).trim().toLowerCase();
-          isBill = type === "bill";
-          isIncome = type === "income";
-        }
+        // Default to Bill if Type is empty
+        const type = typeRaw ? String(typeRaw).trim().toLowerCase() : "bill";
+        const isBill = type === "bill";
+        const isIncome = type === "income";
 
-        const amount = isBill ? bill || 1 : income || 1;
-
-        // Resolve category/subcategory with 4-case logic:
-        // 1. Both filled → validate subCat belongs to cat, use both
-        // 2. Only cat → use cat only
-        // 3. Only subCat → auto-resolve cat from fatherCategory
-        // 4. Neither → no category
+        // 4-case category/subcategory resolution
         let finalCategoryId = null;
         let finalSubCategoryId = null;
 
@@ -130,7 +135,6 @@ export async function POST(request, { params }) {
           finalSubCategoryId = subCategoryId;
 
           if (catName) {
-            // Both filled: validate they match
             const explicitCatId = await resolveCategory(catName, userFound._id);
             if (
               explicitCatId &&
@@ -139,19 +143,16 @@ export async function POST(request, { params }) {
             ) {
               finalCategoryId = explicitCatId;
             } else {
-              // Mismatch — trust subCat's parent
-              finalCategoryId = categoryId;
+              finalCategoryId = categoryId; // trust subCat's parent on mismatch
             }
           } else {
-            // Only subCat — auto-resolve parent
             finalCategoryId = categoryId;
           }
         } else if (catName) {
-          // Only category, no subCategory
           finalCategoryId = await resolveCategory(catName, userFound._id);
         }
+        // if neither → null (saved uncategorized, same as manual transactions without category)
 
-        // Resolve tags (find or create)
         const tagIds = await resolveTags(
           tagsRaw ? String(tagsRaw) : null,
           userFound._id,

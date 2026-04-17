@@ -57,11 +57,19 @@ function ReadFileComp({}) {
     },
     onChange(info) {
       if (info.file.status === "done") {
+        const res = info.file.response;
+        if (res.versionMismatch) {
+          runNotify(
+            "error",
+            `Your template is outdated (${res.message}). Please click "Download format" to get the latest template and try again 📥`
+          );
+          return;
+        }
         runNotify(
           "ok",
-          `${info.file.response.data.length} transactions have been processed and created from the file 😎`
+          `${res.data.length} transactions have been processed and created from the file 😎`
         );
-        reduxDispatch(addNewTransacctions(info.file.response.data));
+        reduxDispatch(addNewTransacctions(res.data));
       } else if (info.file.status === "error") {
         runNotify(
           "error",
