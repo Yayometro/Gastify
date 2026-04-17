@@ -3,6 +3,7 @@ import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import xlsxPopulate from "xlsx-populate";
 import Transaction from "@/model/Transaction";
+import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
 import dbConnection from "@/app/api/dbConnection";
@@ -14,6 +15,15 @@ function excelSerialDateToJSDate(serial) {
   const date_info = new Date(utc_value * 1000);
   const offset = date_info.getTimezoneOffset() * 60000;
   return new Date(date_info.getTime() + offset);
+}
+
+async function resolveCategory(name, userId) {
+  if (!name) return null;
+  const cat = await Category.findOne({
+    name: { $regex: new RegExp(`^${name.trim()}$`, "i") },
+    $or: [{ user: userId }, { isDefaultCatego: true }],
+  }).lean();
+  return cat ? cat._id : null;
 }
 
 async function resolveSubCategory(name, userId) {
@@ -67,7 +77,11 @@ export async function POST(request, { params }) {
     const userFound = await User.findOne({ mail: params.id }).lean();
     if (!userFound) throw new Error("User not found");
 
-    let i = 2;
+    // Data starts at row 3 (row 1 = headers, row 2 = instruction note)
+    // Backward compatible: if old 4-column format detected (no row 2 note), start at row 2
+    const noteCell = sheet.cell("A2").value();
+    const isNewFormat = noteCell && String(noteCell).includes("NOTE");
+    let i = isNewFormat ? 3 : 2;
     let isEmpty = false;
     const transactions = [];
 
@@ -85,8 +99,9 @@ export async function POST(request, { params }) {
         const bill = sheet.cell(`C${i}`).value() || 0;
         const income = sheet.cell(`D${i}`).value() || 0;
         const typeCell = sheet.cell(`E${i}`).value();
-        const subCatName = sheet.cell(`F${i}`).value();
-        const tagsRaw = sheet.cell(`G${i}`).value();
+        const catName = sheet.cell(`F${i}`).value();
+        const subCatName = sheet.cell(`G${i}`).value();
+        const tagsRaw = sheet.cell(`H${i}`).value();
 
         // Type column overrides C/D if present
         let isBill = !!bill;
@@ -99,11 +114,42 @@ export async function POST(request, { params }) {
 
         const amount = isBill ? bill || 1 : income || 1;
 
-        // Resolve subCategory → auto-resolves category via fatherCategory
-        const { subCategoryId, categoryId } = await resolveSubCategory(
-          subCatName,
-          userFound._id
-        );
+        // Resolve category/subcategory with 4-case logic:
+        // 1. Both filled → validate subCat belongs to cat, use both
+        // 2. Only cat → use cat only
+        // 3. Only subCat → auto-resolve cat from fatherCategory
+        // 4. Neither → no category
+        let finalCategoryId = null;
+        let finalSubCategoryId = null;
+
+        if (subCatName) {
+          const { subCategoryId, categoryId } = await resolveSubCategory(
+            subCatName,
+            userFound._id
+          );
+          finalSubCategoryId = subCategoryId;
+
+          if (catName) {
+            // Both filled: validate they match
+            const explicitCatId = await resolveCategory(catName, userFound._id);
+            if (
+              explicitCatId &&
+              categoryId &&
+              String(explicitCatId) === String(categoryId)
+            ) {
+              finalCategoryId = explicitCatId;
+            } else {
+              // Mismatch — trust subCat's parent
+              finalCategoryId = categoryId;
+            }
+          } else {
+            // Only subCat — auto-resolve parent
+            finalCategoryId = categoryId;
+          }
+        } else if (catName) {
+          // Only category, no subCategory
+          finalCategoryId = await resolveCategory(catName, userFound._id);
+        }
 
         // Resolve tags (find or create)
         const tagIds = await resolveTags(
@@ -123,8 +169,8 @@ export async function POST(request, { params }) {
           wallet: userFound.wallet,
         };
 
-        if (subCategoryId) transaction.subCategory = subCategoryId;
-        if (categoryId) transaction.category = categoryId;
+        if (finalSubCategoryId) transaction.subCategory = finalSubCategoryId;
+        if (finalCategoryId) transaction.category = finalCategoryId;
         if (tagIds.length > 0) transaction.tags = tagIds;
 
         transactions.push(transaction);
