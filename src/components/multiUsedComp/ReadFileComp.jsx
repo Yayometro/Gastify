@@ -7,13 +7,47 @@ import fetcher from "@/helpers/fetcher";
 import { useSelector, useDispatch } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
 import { addNewTransacctions } from "@/lib/features/transacctionsSlice";
-import { MdFormatAlignLeft } from "react-icons/md";
+import { fetchTrans } from "@/lib/features/transacctionsSlice";
+import { MdFormatAlignLeft, MdOutlineCleaningServices } from "react-icons/md";
 import { fetchUser } from "@/lib/features/userSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
+
+const STATUS = {
+  idle: null,
+  uploading: { label: "Uploading file...", color: "text-purple-500", spin: true },
+  processing: { label: "Reading and creating transactions...", color: "text-purple-500", spin: true },
+  done: { label: "Done!", color: "text-green-600", spin: false },
+  error: { label: "Something went wrong", color: "text-red-500", spin: false },
+};
+
+function SpinnerIcon() {
+  return (
+    <svg className="animate-spin h-4 w-4 inline-block mr-1" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
+  );
+}
+
+function StatusBadge({ status }) {
+  const s = STATUS[status];
+  if (!s) return null;
+  return (
+    <p className={`text-xs flex items-center gap-1 ${s.color} transition-all`}>
+      {s.spin && <SpinnerIcon />}
+      {s.label}
+    </p>
+  );
+}
 
 function ReadFileComp({}) {
   const [isExcel, setIsExcel] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("idle");
+  const [showDedup, setShowDedup] = useState(false);
+  const [dedupLoading, setDedupLoading] = useState(false);
+  const [dedupResult, setDedupResult] = useState(null);
+
   let { email } = useGetUserSession();
   const toFetch = fetcher();
   const reduxDispatch = useDispatch();
@@ -50,65 +84,196 @@ function ReadFileComp({}) {
     }
   };
 
-  const props = {
+  const customRequest = async ({ file, onSuccess, onError }) => {
+    const userEmail = ccUser.mail || email;
+    if (!userEmail) {
+      onError(new Error("User not available yet, please try again"));
+      return;
+    }
+    setUploadStatus("uploading");
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      setUploadStatus("processing");
+      const response = await fetch(
+        toFetch.getFullPath(`general-data/files/upload/${userEmail}`),
+        { method: "POST", body: formData }
+      );
+      const res = await response.json();
+      onSuccess(res);
+    } catch (e) {
+      setUploadStatus("error");
+      onError(e);
+    }
+  };
+
+  const uploadProps = {
     name: "file",
-    action: `${toFetch.getFullPath(
-      `general-data/files/upload/${ccUser.mail}`
-    )}`,
-    headers: {
-      authorization: "authorization-text",
-    },
+    customRequest,
+    showUploadList: false,
     onChange(info) {
       if (info.file.status === "done") {
         const res = info.file.response;
-        if (res.versionMismatch) {
-          runNotify(
-            "error",
-            `Your template is outdated (${res.message}). Please click "Download format" to get the latest template and try again 📥`
-          );
+        if (!res?.ok) {
+          setUploadStatus("error");
+          if (res?.versionMismatch) {
+            runNotify("error", `Your template is outdated. Please click "Download format" to get the latest template and try again 📥`);
+          } else {
+            runNotify("error", res?.message || "Something went wrong, please try again 🤕");
+          }
           return;
         }
-        runNotify(
-          "ok",
-          `${res.data.length} transactions have been processed and created from the file 😎`
-        );
-        reduxDispatch(addNewTransacctions(res.data));
+        setUploadStatus("done");
+        runNotify("ok", `${res.data?.length ?? 0} transactions have been processed and created from the file 😎`);
+        if (res.data?.length > 0) reduxDispatch(addNewTransacctions(res.data));
+        setTimeout(() => setUploadStatus("idle"), 3000);
       } else if (info.file.status === "error") {
-        runNotify(
-          "error",
-          `The file transactions couldn't be created, please try again later 🤕`
-        );
+        setUploadStatus("error");
+        const errMsg = info.file.response?.message || info.file.error?.message || "The file couldn't be processed, please try again 🤕";
+        runNotify("error", errMsg);
+        setTimeout(() => setUploadStatus("idle"), 3000);
       }
     },
   };
 
+  const dedupRequest = async ({ file, onSuccess, onError }) => {
+    const userEmail = ccUser.mail || email;
+    if (!userEmail) {
+      onError(new Error("User not available yet, please try again"));
+      return;
+    }
+    setDedupLoading(true);
+    setDedupResult(null);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const response = await fetch(
+        toFetch.getFullPath(`general-data/files/deduplicate/${userEmail}`),
+        { method: "POST", body: formData }
+      );
+      const res = await response.json();
+      onSuccess(res);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setDedupLoading(false);
+    }
+  };
+
+  const dedupProps = {
+    name: "file",
+    customRequest: dedupRequest,
+    showUploadList: false,
+    onChange(info) {
+      if (info.file.status === "done") {
+        const res = info.file.response;
+        if (!res?.ok) {
+          runNotify("error", res?.message || "Could not process deduplication 🤕");
+          return;
+        }
+        setDedupResult(res);
+        runNotify("ok", res.message);
+        // Always reload from DB — avoids ID format mismatch issues between lean() and non-lean() queries
+        const userEmail = ccUser.mail || email;
+        if (userEmail) reduxDispatch(fetchTrans(userEmail));
+      } else if (info.file.status === "error") {
+        runNotify("error", "Deduplication failed, please try again 🤕");
+        setDedupLoading(false);
+      }
+    },
+  };
+
+  const isUploading = uploadStatus === "uploading" || uploadStatus === "processing";
+
   return (
-    <div className="bg-slate-50 py-10 my-2 px-[30px] rounded-[60px] w-full max-w-[900px]">
-      <h1 className="text-2xl font-light text-center">Read Bank States</h1>
-      <div className="add-file-form flex flex-col gap-1 justify-center items-center">
+    <div className="bg-slate-50 py-8 my-2 px-[30px] rounded-[60px] w-full max-w-[900px] flex flex-col gap-4">
+
+      {/* ── Description ── */}
+      <div className="text-center">
+        <h1 className="text-2xl font-light">Import from Excel</h1>
+        <p className="text-xs text-slate-400 mt-1 max-w-[300px] mx-auto leading-relaxed">
+          Download the Gastify template, fill it with your transactions (date, concept, amount, type) and upload it here. Categories and tags are auto-resolved from your existing ones.
+        </p>
+      </div>
+
+      {/* ── Upload section ── */}
+      <div className="flex flex-col items-center gap-2">
         <div
-          className="mode-cont-add-file flex justify-start items-center gap-2 text-purple-500 hover:text-purple-400 w-fit cursor-pointer pt-2 pb-2"
+          className="flex items-center gap-2 text-purple-500 hover:text-purple-400 w-fit cursor-pointer text-sm"
           onClick={() => setIsExcel(!isExcel)}
         >
-          <p>{isExcel ? "Excel file On" : "XML file On"}</p>
-          {isExcel ? (
-            <PiMicrosoftExcelLogoFill size={20} />
-          ) : (
-            <BsFiletypeXml size={20} />
-          )}
+          <p>{isExcel ? "Excel file" : "XML file"}</p>
+          {isExcel ? <PiMicrosoftExcelLogoFill size={18} /> : <BsFiletypeXml size={18} />}
         </div>
-        <div className="file-input-cont">
-          <Upload {...props}>
-            <Button icon={<UploadOutlined />}>Upload</Button>
+
+        <div onClick={(e) => e.stopPropagation()}>
+          <Upload {...uploadProps} disabled={isUploading}>
+            <Button
+              icon={<UploadOutlined />}
+              loading={isUploading}
+              disabled={isUploading}
+              className="!bg-purple-600 !border-purple-600 !text-white hover:!bg-purple-500 hover:!border-purple-500"
+            >
+              {isUploading ? "Processing..." : "Upload file"}
+            </Button>
           </Upload>
         </div>
+
+        <StatusBadge status={uploadStatus} />
+
         <div
-          className="example-file flex justify-start items-center w-fit pt-2 pb-2 cursor-pointer text-purple-400 hover:text-purple-300 hover:underline gap-1"
+          className="flex items-center gap-1 cursor-pointer text-purple-400 hover:text-purple-300 hover:underline text-xs"
           onClick={handleDownloadTemplate}
         >
-          <MdFormatAlignLeft size={20} />
-          <span>{isDownloading ? "Generating..." : "Download format"}</span>
+          <MdFormatAlignLeft size={16} />
+          <span>{isDownloading ? "Generating template..." : "Download format"}</span>
         </div>
+      </div>
+
+      {/* ── Divider ── */}
+      <div className="border-t border-slate-200 w-full" />
+
+      {/* ── Remove Duplicates section ── */}
+      <div className="flex flex-col items-center gap-2">
+        <button
+          onClick={() => { setShowDedup(!showDedup); setDedupResult(null); }}
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-purple-500 transition-colors cursor-pointer"
+        >
+          <MdOutlineCleaningServices size={18} />
+          <span>{showDedup ? "Hide" : "Remove duplicates from Excel"}</span>
+        </button>
+
+        {showDedup && (
+          <div className="flex flex-col items-center gap-3 w-full">
+            <p className="text-xs text-slate-400 text-center max-w-[280px] leading-relaxed">
+              Upload the same Excel you already imported. Transactions that share the exact <b>date</b>, <b>name</b> and <b>amount</b> will have their extra copies removed — one record is always kept.
+            </p>
+            <div onClick={(e) => e.stopPropagation()}>
+              <Upload {...dedupProps}>
+                <Button
+                  icon={<MdOutlineCleaningServices size={14} />}
+                  loading={dedupLoading}
+                  className="text-xs"
+                >
+                  {dedupLoading ? "Scanning for duplicates..." : "Upload & Clean"}
+                </Button>
+              </Upload>
+            </div>
+
+            {dedupResult && (
+              <div className={`text-xs text-center px-4 py-2 rounded-xl w-full ${dedupResult.removed > 0 ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+                {dedupResult.removed > 0 ? (
+                  <>
+                    <p className="font-semibold">Removed {dedupResult.removed} duplicate{dedupResult.removed > 1 ? "s" : ""}</p>
+                    <p>{dedupResult.scanned} rows scanned</p>
+                  </>
+                ) : (
+                  <p>No duplicates found in {dedupResult.scanned} rows</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
