@@ -65,6 +65,7 @@ function Movements({ timePeriodFromFather, mail }) {
   const [dupCount, setDupCount] = useState(0);
   const [dupDateTolerance, setDupDateTolerance] = useState(0);
   const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
+  const [dupDeleteAll, setDupDeleteAll] = useState(false);
   const [quickEditField, setQuickEditField] = useState(null);
 
   const toFetch = fetcher();
@@ -186,6 +187,14 @@ function Movements({ timePeriodFromFather, mail }) {
     return toDelete;
   }
 
+  // Devuelve IDs a eliminar: TODOS los items de cada grupo (ninguno se conserva)
+  function getAllMatchingIds(transactions, criteria, dateTol, amountTol) {
+    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
+    const toDelete = [];
+    groups.forEach((g) => g.forEach((i) => toDelete.push(transactions[i]._id)));
+    return toDelete;
+  }
+
   function getValueFromSelecter(v) {
     const [start, end] = v.split("*");
     setTimePeriod([new Date(start), new Date(end)]);
@@ -209,6 +218,7 @@ function Movements({ timePeriodFromFather, mail }) {
     setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
     setDupDateTolerance(0);
     setDupAmountTolerance(0);
+    setDupDeleteAll(false);
     setTimePeriod(timePeriodFromFather || defaultPeriod);
   };
 
@@ -612,11 +622,30 @@ function Movements({ timePeriodFromFather, mail }) {
                     </button>
                   </Tooltip>
 
+                  {/* Toggle: eliminar solo duplicados vs todos los que coinciden */}
+                  {dupMode && dupCount > 0 && (
+                    <Tooltip title={dupDeleteAll ? "All matching items will be selected (nothing is kept)" : "One original per group is kept — only extras are selected"}>
+                      <button
+                        onClick={() => setDupDeleteAll((v) => !v)}
+                        className={`text-[11px] px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${
+                          dupDeleteAll
+                            ? "text-red-600 border-red-400 bg-red-50 hover:bg-red-100"
+                            : "text-slate-500 border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={12} />
+                        {dupDeleteAll ? "Delete all matches" : "Delete only duplicates"}
+                      </button>
+                    </Tooltip>
+                  )}
+
                   {/* Select possible duplicates — todos menos uno por grupo */}
                   {dupMode && dupCount > 0 && (
                     <button
                       onClick={() => {
-                        const toDelete = getDuplicatesToDelete(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance);
+                        const toDelete = dupDeleteAll
+                          ? getAllMatchingIds(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance)
+                          : getDuplicatesToDelete(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance);
                         setIsSelectionMode(true);
                         allMovements.forEach((m) => {
                           const el = document.getElementById(`trans-${m._id}`);
