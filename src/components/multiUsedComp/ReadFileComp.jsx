@@ -47,6 +47,7 @@ function ReadFileComp({}) {
   const [showDedup, setShowDedup] = useState(false);
   const [dedupLoading, setDedupLoading] = useState(false);
   const [dedupResult, setDedupResult] = useState(null);
+  const [dedupDeleteAll, setDedupDeleteAll] = useState(false);
 
   let { email } = useGetUserSession();
   const toFetch = fetcher();
@@ -146,6 +147,7 @@ function ReadFileComp({}) {
     setDedupResult(null);
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("deleteAll", dedupDeleteAll ? "true" : "false");
     try {
       const response = await fetch(
         toFetch.getFullPath(`general-data/files/deduplicate/${userEmail}`),
@@ -246,14 +248,44 @@ function ReadFileComp({}) {
         {showDedup && (
           <div className="flex flex-col items-center gap-3 w-full">
             <p className="text-xs text-slate-400 text-center max-w-[280px] leading-relaxed">
-              Upload the same Excel you already imported. Transactions that share the exact <b>date</b>, <b>name</b> and <b>amount</b> will have their extra copies removed — one record is always kept.
+              Upload the same Excel you already imported. Transactions that share the exact <b>date</b>, <b>name</b> and <b>amount</b> will be processed according to the mode below.
             </p>
+
+            {/* Toggle delete mode */}
+            <div className="flex items-center gap-2 bg-slate-100 rounded-full p-1 text-xs select-none">
+              <button
+                onClick={() => setDedupDeleteAll(false)}
+                className={`px-3 py-1 rounded-full transition-colors ${
+                  !dedupDeleteAll
+                    ? "bg-white text-purple-600 font-medium shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                Keep one original
+              </button>
+              <button
+                onClick={() => setDedupDeleteAll(true)}
+                className={`px-3 py-1 rounded-full transition-colors ${
+                  dedupDeleteAll
+                    ? "bg-white text-red-600 font-medium shadow-sm"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                Delete all matches
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 text-center max-w-[260px] -mt-1 leading-relaxed">
+              {dedupDeleteAll
+                ? "Every transaction matching a row in the file will be deleted — nothing is kept."
+                : "One record is always kept per group — only the extra copies are removed."}
+            </p>
+
             <div onClick={(e) => e.stopPropagation()}>
               <Upload {...dedupProps}>
                 <Button
                   icon={<MdOutlineCleaningServices size={14} />}
                   loading={dedupLoading}
-                  className="text-xs"
+                  className={`text-xs ${dedupDeleteAll ? "!border-red-400 !text-red-600 hover:!border-red-500" : ""}`}
                 >
                   {dedupLoading ? "Scanning for duplicates..." : "Upload & Clean"}
                 </Button>

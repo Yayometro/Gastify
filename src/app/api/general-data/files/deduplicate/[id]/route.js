@@ -48,6 +48,7 @@ export async function POST(request, { params }) {
   try {
     const data = await request.formData();
     const file = data.get("file");
+    const deleteAll = data.get("deleteAll") === "true";
     if (!file) {
       return NextResponse.json({ ok: false, message: "No file received" }, { status: 400 });
     }
@@ -125,9 +126,11 @@ export async function POST(request, { params }) {
         .select("_id")
         .lean();
 
-      if (matches.length > 1) {
-        // Keep the first one, remove the rest
-        const toDelete = matches.slice(1).map((m) => m._id);
+      if (deleteAll ? matches.length >= 1 : matches.length > 1) {
+        // deleteAll: remove every match; default: keep first, remove the rest
+        const toDelete = deleteAll
+          ? matches.map((m) => m._id)
+          : matches.slice(1).map((m) => m._id);
         await Transaction.deleteMany({ _id: { $in: toDelete } });
         totalRemoved += toDelete.length;
         removedIds.push(...toDelete.map(String));
