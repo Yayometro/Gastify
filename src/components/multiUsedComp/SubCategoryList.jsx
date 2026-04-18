@@ -3,6 +3,7 @@ import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { Spin, Tooltip } from "antd";
 import EditCategoryModal from "./EditCategoryModal";
+import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import runNotify from "@/helpers/gastifyNotifier";
 
 function SubCategoryList({sclSubCategory ,clUser, sclCategories}) {
@@ -11,12 +12,14 @@ function SubCategoryList({sclSubCategory ,clUser, sclCategories}) {
   const [selectedCategory, setSelectedCategory] = useState({});
   return (
     <div className="category-list-component w-full h-full flex gap-2 flex-wrap justify-center items-center">
-      <EditCategoryModal
-        ecmMode={onEdition}
-        ecmCategory={selectedCategory}
-        ecmClose={(e) => setOnEdition(e)}
-        ecmData={{ user: clUser, categories: sclCategories }}
-      />
+      <SelectCategories>
+        <EditCategoryModal
+          ecmMode={onEdition}
+          ecmCategory={selectedCategory}
+          ecmClose={(e) => setOnEdition(e)}
+          ecmData={{ user: clUser, categories: sclCategories }}
+        />
+      </SelectCategories>
       {
         !sclSubCategory ? (
           <div className="w-full h-full flex justify-center items-center">

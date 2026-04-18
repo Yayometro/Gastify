@@ -9,6 +9,7 @@ import fetcher from "@/helpers/fetcher";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import CategoryList from "./CategoryList";
 import EditCategoryModal from "./EditCategoryModal";
+import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import SubCategoryList from "./SubCategoryList";
 
 
@@ -99,14 +100,16 @@ function CategoriesClient({ccData, ccSession}) {
                   className={` w-[15px] min-[400px]:w-[25px]`}
                 />
               </div>
-              <EditCategoryModal
-                ecmMode={onEdition}
-                ecmClose={(e) => setOnEdition(e)}
-                ecmData={{
-                    user: userData,
-                    categories: allCategoriesData
-                }}
-              />
+              <SelectCategories>
+                <EditCategoryModal
+                  ecmMode={onEdition}
+                  ecmClose={(e) => setOnEdition(e)}
+                  ecmData={{
+                      user: userData,
+                      categories: allCategoriesData
+                  }}
+                />
+              </SelectCategories>
               <div className="cc-categoryList-cont-suv flex gap-2 flex-col flex-wrap">
                 <div className="category-list-container">
                   <h1 className="text-2xl font-thin py-2">Your Categories List</h1>

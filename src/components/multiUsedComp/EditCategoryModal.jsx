@@ -286,7 +286,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
   };
 
   const modalContent = (
-    <div className={`content ${!isInline ? 'modal-gradient w-[90%] h-[95%] min-[450px]:w-[80%] min-[450px]:h-[80%] relative rounded-2xl pt-[40px] overflow-hidden' : 'w-full h-full bg-slate-50'}`}>
+    <div className={`content ${!isInline ? 'modal-gradient w-[90%] h-[95%] min-[450px]:w-[80%] min-[450px]:h-[80%] relative rounded-2xl pt-[40px] overflow-hidden flex flex-col' : 'w-full h-full bg-slate-50'}`}>
       <div
         className={`${
           isLoading ? "absolute" : "hidden"
@@ -295,13 +295,13 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
         <Spin size="large" />
       </div>
       {!isInline && (
-        <h1 className="text-center font-thin py-[20px] text-2xl min-[400px]:text-3xl sm:text-[50px] text-white">
+        <h1 className="text-center font-thin py-[20px] text-2xl min-[400px]:text-3xl sm:text-[50px] text-white shrink-0">
           {ecmMode === "edition" ? "Edit" : "Create New"}{" "}
           {`"${ecmCategory?.name || "item"}"`} 🪄
         </h1>
       )}
       <div
-        className={`edit-cat-modal w-[100%] h-full flex flex-col gap-2 items-start justify-start ${!isInline ? 'rounded-t-[60px] pt-[30px]' : ''} overflow-scroll`}
+        className={`edit-cat-modal w-[100%] flex-1 min-h-0 flex flex-col gap-2 items-start justify-start ${!isInline ? 'rounded-t-[60px] pt-[30px]' : ''} overflow-y-auto`}
       >
         {!isInline && (
           <div
