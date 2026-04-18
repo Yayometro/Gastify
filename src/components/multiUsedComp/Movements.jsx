@@ -10,7 +10,7 @@ import UniversalCategoIcon from "./UniversalCategoIcon";
 import dayjs from "dayjs";
 import Tag from "./Tag";
 import fetcher from "@/helpers/fetcher";
-import EditTransModal from "./EditTransModal";
+import EditSingleTransModal from "./EditSingleTransModal";
 import { IoCheckmarkDoneCircleOutline, IoSearchOutline } from "react-icons/io5";
 import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineSettings, MdOutlineFileDownload } from "react-icons/md";
 import { PiFileCsvDuotone, PiMicrosoftExcelLogoFill } from "react-icons/pi";
@@ -49,7 +49,8 @@ function Movements({ timePeriodFromFather, mail }) {
   const [trastType, setTransType] = useState("all");
   const [readable, setReadable] = useState("all");
   const [removedElement, setRemovedElement] = useState(false);
-  const [editModal, setEditModal] = useState([]);
+  const [editingTrans, setEditingTrans] = useState(null);
+  const [editKey, setEditKey] = useState(0);
   const [editMultiModal, setEditMultiModal] = useState([]);
   const [showMultipleTransEdit, setShowMultipleTransEdit] = useState(false);
   const [selectedTrans, setSelectedTrans] = useState([]);
@@ -358,14 +359,8 @@ function Movements({ timePeriodFromFather, mail }) {
   };
 
   const handleTransEdit = (tra) => {
-    const editTransMo = (
-      <EditTransModal
-        hidden={editModal}
-        trans={tra}
-        key={`editModal-${editModal.length + 1}-${tra._id}`}
-      />
-    );
-    setEditModal([...editModal, editTransMo]);
+    setEditingTrans(tra);
+    setEditKey((k) => k + 1);
   };
 
   const handleMultiTransEdit = (ids) => {
@@ -449,7 +444,13 @@ function Movements({ timePeriodFromFather, mail }) {
 
   return (
     <div className="w-full h-full pt-5">
-      <div className={"edit-modal-cont"}>{editModal}</div>
+      {editingTrans && (
+        <EditSingleTransModal
+          key={editKey}
+          trans={editingTrans}
+          onClose={() => setEditingTrans(null)}
+        />
+      )}
       <div className={`edit-multi-modal-cont`}>{editMultiModal}</div>
       {/* ── Export confirmation modal ── */}
       <Modal
