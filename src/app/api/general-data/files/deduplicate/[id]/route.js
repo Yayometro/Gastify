@@ -33,13 +33,13 @@ function parseFlexibleDate(value) {
   return isNaN(fallback.getTime()) ? null : fallback;
 }
 
-// ±14h window around the parsed date — covers any timezone offset without
-// crossing into adjacent calendar days for normal transactions
+// ±30h window — covers a full calendar day in any timezone even if the
+// transaction was created at an arbitrary time (not just midnight).
 function dateWindow(date) {
   const ms = date.getTime();
   return {
-    $gte: new Date(ms - 14 * 60 * 60 * 1000),
-    $lte: new Date(ms + 14 * 60 * 60 * 1000),
+    $gte: new Date(ms - 30 * 60 * 60 * 1000),
+    $lte: new Date(ms + 30 * 60 * 60 * 1000),
   };
 }
 
@@ -49,6 +49,7 @@ export async function POST(request, { params }) {
     const data = await request.formData();
     const file = data.get("file");
     const deleteAll = data.get("deleteAll") === "true";
+    const preview = data.get("preview") === "true";
     if (!file) {
       return NextResponse.json({ ok: false, message: "No file received" }, { status: 400 });
     }
@@ -112,7 +113,54 @@ export async function POST(request, { params }) {
       return NextResponse.json({ ok: false, message: "No valid rows found in the file" }, { status: 400 });
     }
 
-    // For each row, find all DB transactions with same day + name + amount, keep 1, remove rest
+    const POPULATE_OPTIONS = [
+      { path: "category" },
+      { path: "subCategory" },
+      { path: "account" },
+      { path: "tags" },
+    ];
+
+    // Preview mode: scan, build lists, return without deleting
+    if (preview) {
+      const previewToDelete = [];
+      const previewToKeep = [];
+
+      for (const row of excelRows) {
+        const matches = await Transaction.find({
+          user: userFound._id,
+          amount: row.amount,
+          name: { $regex: new RegExp(`^${row.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+          date: dateWindow(row.date),
+        }).populate(POPULATE_OPTIONS);
+
+        const matchInfo = { date: row.date, name: row.name, amount: row.amount };
+        if (deleteAll ? matches.length >= 1 : matches.length > 1) {
+          if (deleteAll) {
+            previewToDelete.push(...matches.map((m) => ({ ...m.toObject(), _match: matchInfo })));
+          } else {
+            previewToKeep.push({ ...matches[0].toObject(), _match: matchInfo });
+            previewToDelete.push(...matches.slice(1).map((m) => ({ ...m.toObject(), _match: matchInfo })));
+          }
+        }
+      }
+
+      // Deduplicate by _id (a row could match the same DB transaction twice)
+      const dedup = (arr) => {
+        const seen = new Set();
+        return arr.filter((t) => { const k = String(t._id); if (seen.has(k)) return false; seen.add(k); return true; });
+      };
+
+      return NextResponse.json({
+        ok: true,
+        preview: true,
+        scanned: excelRows.length,
+        toDelete: dedup(previewToDelete),
+        toKeep: dedup(previewToKeep),
+        message: `Preview ready: ${dedup(previewToDelete).length} transaction(s) would be removed across ${excelRows.length} rows scanned.`,
+      });
+    }
+
+    // Execute mode: scan and delete
     let totalRemoved = 0;
     const removedIds = [];
 
@@ -127,7 +175,6 @@ export async function POST(request, { params }) {
         .lean();
 
       if (deleteAll ? matches.length >= 1 : matches.length > 1) {
-        // deleteAll: remove every match; default: keep first, remove the rest
         const toDelete = deleteAll
           ? matches.map((m) => m._id)
           : matches.slice(1).map((m) => m._id);

@@ -40,7 +40,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
         <div className="center-cont min-w-0 overflow-hidden flex flex-col">
           <div className="tra-text font-medium min-w-0 overflow-hidden">
             <Tooltip title={movement?.name || "No name. Assign one..."} placement="top">
-              <p className="tra-name text-start truncate cursor-default">
+              <p className="tra-name text-start truncate cursor-default text-[15px]">
                 {movement?.name || "No name. Assign one..."}
               </p>
             </Tooltip>
