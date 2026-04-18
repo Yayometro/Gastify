@@ -27,8 +27,8 @@ function EditSingleTransModalInner({ trans, onClose }) {
   const toFetch = fetcher();
   const [isLoading, setIsLoading] = useState(false);
   const { close, handleClose } = useModal();
-  const { handleClean } = useContext(SelectCategoryContext);
-  const { accounts } = useGetDataFromProvider();
+  const { handleClean, setItemSelected } = useContext(SelectCategoryContext);
+  const { accounts, categories, subCategories } = useGetDataFromProvider();
 
   const [form, setForm] = useState({
     name: "",
@@ -57,8 +57,20 @@ function EditSingleTransModalInner({ trans, onClose }) {
         tags: trans.tags?.map((t) => (typeof t === "string" ? t : t.name)).join(", ") || "",
         account: trans.account?._id || trans.account || "",
       });
+
+      const subCatId = trans.subCategory?._id || trans.subCategory;
+      const catId = trans.category?._id || trans.category;
+
+      if (subCatId && subCategories?.length) {
+        const found = subCategories.find((s) => String(s._id) === String(subCatId));
+        if (found) { setItemSelected(found); return; }
+      }
+      if (catId && categories?.length) {
+        const found = categories.find((c) => String(c._id) === String(catId));
+        if (found) setItemSelected(found);
+      }
     }
-  }, [trans]);
+  }, [trans, categories, subCategories]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
