@@ -12,7 +12,9 @@ import Tag from "./Tag";
 import fetcher from "@/helpers/fetcher";
 import EditTransModal from "./EditTransModal";
 import { IoCheckmarkDoneCircleOutline, IoSearchOutline } from "react-icons/io5";
-import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineSettings } from "react-icons/md";
+import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineSettings, MdOutlineFileDownload } from "react-icons/md";
+import { PiFileCsvDuotone, PiMicrosoftExcelLogoFill } from "react-icons/pi";
+import { VscJson } from "react-icons/vsc";
 import { Tooltip, Button, Modal, Skeleton } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -67,6 +69,10 @@ function Movements({ timePeriodFromFather, mail }) {
   const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
   const [dupDeleteAll, setDupDeleteAll] = useState(false);
   const [quickEditField, setQuickEditField] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState(null); // 'excel' | 'json'
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const toFetch = fetcher();
   const reduxDispartcher = useDispatch();
@@ -220,6 +226,69 @@ function Movements({ timePeriodFromFather, mail }) {
     setDupAmountTolerance(0);
     setDupDeleteAll(false);
     setTimePeriod(timePeriodFromFather || defaultPeriod);
+  };
+
+  function buildFilterSummary() {
+    const parts = [];
+    const [start, end] = timePeriod;
+    parts.push(`Period: ${getDateInYearMonthDay(start)} → ${getDateInYearMonthDay(end)}`);
+    if (trastType !== "all") parts.push(`Type: ${trastType === "incomes" ? "Incomes only" : "Bills only"}`);
+    if (readable !== "all") parts.push(`Readable: ${readable === "true" ? "Readable only" : "Not readable"}`);
+    if (searchQuery.trim()) parts.push(`Search: "${searchQuery.trim()}"`);
+    if (dupMode) parts.push(`Mode: Duplicate finder (${dupCount} found)`);
+    return parts;
+  }
+
+  const handleExportConfirm = async () => {
+    if (!exportFormat) return;
+    setExportLoading(true);
+    try {
+      const ids = allMovements.map((t) => String(t._id));
+      const userEmail = mail;
+
+      if (exportFormat === "json") {
+        const data = JSON.stringify(allMovements, null, 2);
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gastify-export-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        runNotify("ok", `Exported ${ids.length} transactions as JSON 📦`);
+      } else {
+        const response = await fetch(
+          toFetch.getFullPath(`general-data/files/export/${userEmail}`),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ transactionIds: ids }),
+          }
+        );
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.message || "Export failed");
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gastify-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        runNotify("ok", `Exported ${ids.length} transactions as Excel 📊`);
+      }
+      setExportModalOpen(false);
+      setExportOpen(false);
+    } catch (e) {
+      runNotify("error", e?.message || "Export failed, please try again 🤕");
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const handleTransactionRemove = async (id) => {
@@ -382,6 +451,48 @@ function Movements({ timePeriodFromFather, mail }) {
     <div className="w-full h-full pt-5">
       <div className={"edit-modal-cont"}>{editModal}</div>
       <div className={`edit-multi-modal-cont`}>{editMultiModal}</div>
+      {/* ── Export confirmation modal ── */}
+      <Modal
+        title={
+          <span className="font-semibold flex items-center gap-2">
+            <MdOutlineFileDownload size={18} className="text-purple-500" />
+            Export {allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""}
+          </span>
+        }
+        open={exportModalOpen}
+        onOk={handleExportConfirm}
+        onCancel={() => { setExportModalOpen(false); }}
+        confirmLoading={exportLoading}
+        okText={exportLoading ? "Exporting…" : `Export as ${exportFormat === "excel" ? "Excel" : "JSON"}`}
+        cancelText="Cancel"
+        okButtonProps={{
+          className: "!bg-purple-600 !border-purple-600 !text-white hover:!bg-purple-500 hover:!border-purple-500 transition-colors",
+        }}
+      >
+        <div className="flex flex-col gap-3 py-1">
+          <div className="bg-slate-50 rounded-xl px-4 py-3 flex flex-col gap-1">
+            <p className="text-xs font-semibold text-slate-600 mb-1">Active filters</p>
+            {buildFilterSummary().map((line, i) => (
+              <p key={i} className="text-xs text-slate-500">• {line}</p>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <span>Format:</span>
+            <span className="font-semibold text-purple-600 flex items-center gap-1">
+              {exportFormat === "excel"
+                ? <><PiMicrosoftExcelLogoFill size={14} className="text-green-600" /> Excel (.xlsx) — re-importable</>
+                : <><VscJson size={14} className="text-amber-500" /> JSON — full populated data</>
+              }
+            </span>
+          </div>
+          <p className="text-xs text-slate-400">
+            {exportFormat === "excel"
+              ? "The file will match the Gastify import template and can be re-uploaded to any Gastify account."
+              : "The JSON file includes all fields: category, subcategory, account, tags, amounts and dates."}
+          </p>
+        </div>
+      </Modal>
+
       <div className="remove-modal-container">
         <Modal
           title={<span className="text-red-500 font-semibold">⚠️ Delete transaction</span>}
@@ -502,6 +613,15 @@ function Movements({ timePeriodFromFather, mail }) {
                   >
                     <MdOutlineFindInPage size={15} />
                     <p>Find duplicates{dupMode ? ` (${dupCount})` : ""}</p>
+                  </div>
+                </Tooltip>
+                <Tooltip title="Export the currently filtered transactions as Excel (re-importable) or JSON">
+                  <div
+                    className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer ${exportOpen ? "text-purple-500 font-medium" : ""}`}
+                    onClick={() => setExportOpen(!exportOpen)}
+                  >
+                    <MdOutlineFileDownload size={15} />
+                    <p>Export data</p>
                   </div>
                 </Tooltip>
                 <div
@@ -702,6 +822,33 @@ function Movements({ timePeriodFromFather, mail }) {
                     {dupCount > 0 ? `${dupCount} possible duplicate transaction(s) found` : "No duplicates found with current criteria 🎉"}
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* ── Export submenu ── */}
+            {exportOpen && (
+              <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-3">
+                <p className="text-[11px] font-medium text-slate-600">
+                  Choose export format — <span className="text-slate-400 font-normal">{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""} with current filters</span>
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setExportFormat("excel"); setExportModalOpen(true); }}
+                    className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-slate-600 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                  >
+                    <PiMicrosoftExcelLogoFill size={22} className="text-green-600" />
+                    <span className="font-medium">Excel</span>
+                    <span className="text-slate-400 text-[10px] text-center leading-tight">Re-importable format<br/>(.xlsx)</span>
+                  </button>
+                  <button
+                    onClick={() => { setExportFormat("json"); setExportModalOpen(true); }}
+                    className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-slate-600 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                  >
+                    <VscJson size={22} className="text-amber-500" />
+                    <span className="font-medium">JSON</span>
+                    <span className="text-slate-400 text-[10px] text-center leading-tight">Full data with all<br/>populated fields</span>
+                  </button>
+                </div>
               </div>
             )}
 
