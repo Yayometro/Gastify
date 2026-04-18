@@ -30,6 +30,9 @@ function EditMultipleTransModalInner({ trans, onClose }) {
   const { handleClean } = useContext(SelectCategoryContext);
   const { accounts } = useGetDataFromProvider();
 
+  const [typeTouched, setTypeTouched] = useState(false);
+  const [readableTouched, setReadableTouched] = useState(false);
+
   const [transactionInfo, setTransactionInfo] = useState({
     transactions: [],
     name: "",
@@ -57,10 +60,13 @@ function EditMultipleTransModalInner({ trans, onClose }) {
 
   const onChangeSwitch = (checked, typeBoolean) => {
     if (typeBoolean === "income") {
+      setTypeTouched(true);
       setTransactionInfo((prev) => ({ ...prev, isIncome: checked, isBill: !checked }));
     } else if (typeBoolean === "bill") {
+      setTypeTouched(true);
       setTransactionInfo((prev) => ({ ...prev, isBill: checked, isIncome: !checked }));
     } else if (typeBoolean === "readable") {
+      setReadableTouched(true);
       setTransactionInfo((prev) => ({ ...prev, isReadable: checked }));
     }
   };
@@ -95,10 +101,22 @@ function EditMultipleTransModalInner({ trans, onClose }) {
     const tagsArr = transactionInfo.tags
       ? transactionInfo.tags.split(",").map((t) => t.trim()).filter(Boolean)
       : [];
+
+    const fields = [];
+    if (transactionInfo.name.trim()) fields.push("name");
+    if (transactionInfo.amount !== "") fields.push("amount");
+    if (typeTouched) { fields.push("isIncome"); fields.push("isBill"); }
+    if (readableTouched) fields.push("isReadable");
+    if (transactionInfo.date) fields.push("date");
+    if (transactionInfo.category || transactionInfo.subCategory) { fields.push("category"); fields.push("subCategory"); }
+    if (tagsArr.length > 0) fields.push("tags");
+    if (transactionInfo.account) fields.push("account");
+
     const payload = {
       ...transactionInfo,
       name: transactionInfo.name.trim(),
       tags: tagsArr,
+      fields,
     };
     try {
       const response = await toFetch.post("general-data/transactions/edit-many", payload);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
@@ -44,6 +44,7 @@ function Movements({ timePeriodFromFather, mail }) {
     new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59),
   ];
 
+  const userHasSelectedPeriod = useRef(false);
   const [allMovements, setAllMovements] = useState([]);
   const [timePeriod, setTimePeriod] = useState(defaultPeriod);
   const [trastType, setTransType] = useState("all");
@@ -88,11 +89,10 @@ function Movements({ timePeriodFromFather, mail }) {
     }
   }, []);
 
-  // Sync with parent date range
+  // Solo sincroniza con el padre si el usuario NO ha seleccionado un período manualmente
   useEffect(() => {
-    if (timePeriodFromFather) {
-      setTimePeriod(timePeriodFromFather);
-    }
+    if (!timePeriodFromFather || userHasSelectedPeriod.current) return;
+    setTimePeriod(timePeriodFromFather);
   }, [timePeriodFromFather]);
 
   // Single consolidated filter effect
@@ -203,12 +203,14 @@ function Movements({ timePeriodFromFather, mail }) {
   }
 
   function getValueFromSelecter(v) {
+    userHasSelectedPeriod.current = true;
     const [start, end] = v.split("*");
     setTimePeriod([new Date(start), new Date(end)]);
   }
 
   function handleRangeDate(dateStart, dateEnd) {
     if (dateStart && dateEnd) {
+      userHasSelectedPeriod.current = true;
       setTimePeriod([dateStart, dateEnd]);
     }
   }
@@ -899,6 +901,21 @@ function Movements({ timePeriodFromFather, mail }) {
                       <p className="text-[11px]">Select All</p>
                       <IoCheckmarkDoneCircleOutline size={15} />
                     </div>
+                    {selectedTrans.length > 0 && (
+                      <div
+                        className="text-slate-400 flex gap-1 items-center cursor-pointer hover:text-slate-600 transition-colors"
+                        onClick={() => {
+                          allMovements.forEach((mov) => {
+                            const el = document.getElementById(`trans-${mov._id}`);
+                            el && el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+                          });
+                          setSelectedTrans([]);
+                        }}
+                      >
+                        <p className="text-[11px]">Deselect All</p>
+                        <PiExcludeSquareDuotone size={15} />
+                      </div>
+                    )}
                     <p className="text-[11px] text-slate-500">{selectedTrans.length} selected</p>
                     <Tooltip title="Select transactions then use the action buttons below to edit a specific field for all of them at once, or delete them all.">
                       <div className="flex items-center"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} /></div>
@@ -1005,12 +1022,12 @@ function Movements({ timePeriodFromFather, mail }) {
                           </div>
                         )}
                       </div>
-                      <div className="tra-acount-cont text-[10px] font-normal">
-                        {!movement.account ? (
-                          <p className="text-start">No account...</p>
-                        ) : (
-                          <p className="text-start">{movement.account?.name}</p>
+                      <div className="tra-acount-cont text-[10px] font-normal flex items-center gap-2 flex-wrap">
+                        <p><span className="text-slate-400 font-light">Categoría: </span><span className="text-slate-600">{movement.category?.name || "—"}</span></p>
+                        {movement.subCategory?.name && (
+                          <p><span className="text-slate-400 font-light">Subcategoría: </span><span className="text-slate-600">{movement.subCategory.name}</span></p>
                         )}
+                        <p><span className="text-slate-400 font-light">Cuenta: </span><span className="text-slate-600">{movement.account?.name || "—"}</span></p>
                       </div>
                       <div className="tra-tag-cont flex flex-wrap gap-1 items-center justify-start text-[10px] font-thin">
                         <p className="font-light">Tags: </p>
