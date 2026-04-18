@@ -5,7 +5,7 @@ function BasicModal({ close, renderContent, renderBodyContent, renderHeader }) {
   return (
     <div className=" fixed w-screen h-screen top-0 left-0 flex justify-center items-center z-[1000] overflow-x-hidden ">
       <div
-        className={`w-screen h-screen bg-white/10 backdrop-blur-sm`}
+        className={`w-screen h-screen bg-black/50 backdrop-blur-md`}
         onClick={close}
       ></div>
       {renderContent || (
