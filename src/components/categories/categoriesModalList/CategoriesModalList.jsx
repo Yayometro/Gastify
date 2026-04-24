@@ -16,7 +16,7 @@ function CategoriesModalList({ onSelect, onlyFathers = false }) {
         <>
           <h1 className="py-3">{onlyFathers ? "Select a Category:" : "Categories without sub-categories:"}</h1>
           <div className="w-full flex justify-center items-center gap-2 flex-wrap">
-            {newCategories.filter(c => c?.isDefaultCatego || (onlyFathers && !c.children)).map((cat) => (
+            {newCategories.filter(c => !c.children).map((cat) => (
               <CategoryCircle
                 size={50}
                 category={cat}
