@@ -3,9 +3,10 @@ import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
+import Account from "@/model/Account";
 import xlsxPopulate from "xlsx-populate";
 
-export const TEMPLATE_VERSION = "2.0";
+export const TEMPLATE_VERSION = "2.1";
 
 export async function GET(request, { params }) {
   try {
@@ -14,17 +15,19 @@ export async function GET(request, { params }) {
     const userFound = await User.findOne({ mail: params.email }).lean();
     if (!userFound) throw new Error("User not found for template generation");
 
-    const [categories, subCategories] = await Promise.all([
+    const [categories, subCategories, accounts] = await Promise.all([
       Category.find({
         $or: [{ user: userFound._id }, { isDefaultCatego: true }],
       }).lean(),
       SubCategory.find({
         $or: [{ user: userFound._id }, { isDefaultSubCatego: true }],
       }).lean(),
+      Account.find({ user: userFound._id, wallet: userFound.wallet }).lean(),
     ]);
 
     const catNames = categories.map((c) => c.name).filter(Boolean);
     const subCatNames = subCategories.map((s) => s.name).filter(Boolean);
+    const accountNames = accounts.map((a) => a.name).filter(Boolean);
 
     const workbook = await xlsxPopulate.fromBlankAsync();
     const mainSheet = workbook.sheet(0);
@@ -39,6 +42,7 @@ export async function GET(request, { params }) {
       "Category",
       "SubCategory",
       "Tags (comma separated)",
+      "Account",
     ];
     headers.forEach((h, i) => {
       const cell = mainSheet.cell(1, i + 1);
@@ -54,7 +58,7 @@ export async function GET(request, { params }) {
     const noteText =
       "📌 REQUIRED: Date, Concept, Amount, Type (* = required). Type defaults to Bill if empty. " +
       "Fill Category OR SubCategory — not both. If SubCategory is filled, Category is auto-resolved. " +
-      "Transactions without Category are saved uncategorized.";
+      "Transactions without Category are saved uncategorized. Account is optional — select one of your existing accounts.";
     const noteCell = mainSheet.cell(2, 1);
     noteCell.value(noteText);
     noteCell.style({
@@ -67,15 +71,16 @@ export async function GET(request, { params }) {
     mainSheet.row(2).height(36);
 
     // --- Column widths ---
-    [18, 25, 14, 18, 22, 22, 28].forEach((w, i) => {
+    [18, 25, 14, 18, 22, 22, 28, 22].forEach((w, i) => {
       mainSheet.column(i + 1).width(w);
     });
 
-    // --- Hidden _data sheet (categories, subcategories, version) ---
+    // --- Hidden _data sheet (categories, subcategories, version, accounts) ---
     const dataSheet = workbook.addSheet("_data");
     catNames.forEach((name, idx) => dataSheet.cell(idx + 1, 1).value(name));
     subCatNames.forEach((name, idx) => dataSheet.cell(idx + 1, 2).value(name));
     dataSheet.cell(1, 3).value(TEMPLATE_VERSION); // version stored here
+    accountNames.forEach((name, idx) => dataSheet.cell(idx + 1, 4).value(name));
     try { dataSheet.hidden(true); } catch (_) {}
 
     // --- Data validation rows 3-202 ---
@@ -110,6 +115,17 @@ export async function GET(request, { params }) {
           formula1: `_data!$B$1:$B$${subCatNames.length}`,
         });
       }
+
+      if (accountNames.length > 0) {
+        mainSheet.cell(row, 8).dataValidation({
+          type: "list",
+          allowBlank: true,
+          showErrorMessage: true,
+          errorTitle: "Invalid Account",
+          error: "Please select an account from the list",
+          formula1: `_data!$D$1:$D$${accountNames.length}`,
+        });
+      }
     }
 
     // --- Example row (row 3) ---
@@ -120,6 +136,7 @@ export async function GET(request, { params }) {
     mainSheet.cell(3, 5).value("");
     mainSheet.cell(3, 6).value(subCatNames[0] || "");
     mainSheet.cell(3, 7).value("tag1, tag2");
+    mainSheet.cell(3, 8).value(accountNames[0] || "");
 
     const buffer = await workbook.outputAsync();
 

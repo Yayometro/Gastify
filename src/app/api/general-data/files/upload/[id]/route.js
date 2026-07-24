@@ -6,10 +6,11 @@ import Transaction from "@/model/Transaction";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
+import Account from "@/model/Account";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 
-const CURRENT_TEMPLATE_VERSION = "2.0";
+const CURRENT_TEMPLATE_VERSION = "2.1";
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -75,6 +76,18 @@ async function resolveSubCategory(name, userId) {
   }).lean();
   if (!subCat) return { subCategoryId: null, categoryId: null };
   return { subCategoryId: subCat._id, categoryId: subCat.fatherCategory || null };
+}
+
+async function resolveAccount(name, userId, walletId) {
+  if (name === null || name === undefined) return null;
+  const safe = escapeRegex(String(name).trim());
+  if (!safe) return null;
+  const acc = await Account.findOne({
+    name: { $regex: new RegExp(`^${safe}$`, "i") },
+    user: userId,
+    wallet: walletId,
+  }).lean();
+  return acc ? acc._id : null;
 }
 
 async function resolveTags(rawTags, userId, walletId) {
@@ -169,6 +182,7 @@ export async function POST(request, { params }) {
       const catName = sheet.cell(`E${i}`).value();
       const subCatName = sheet.cell(`F${i}`).value();
       const tagsRaw = sheet.cell(`G${i}`).value();
+      const accountName = sheet.cell(`H${i}`).value();
 
       const type = typeRaw ? String(typeRaw).trim().toLowerCase() : "bill";
       const isBill = type !== "income";
@@ -199,6 +213,12 @@ export async function POST(request, { params }) {
         userFound.wallet
       );
 
+      const resolvedAccountId = await resolveAccount(
+        accountName,
+        userFound._id,
+        userFound.wallet
+      );
+
       const transaction = {
         date,
         name: concept || "no concept",
@@ -213,6 +233,7 @@ export async function POST(request, { params }) {
       if (finalSubCategoryId) transaction.subCategory = finalSubCategoryId;
       if (finalCategoryId) transaction.category = finalCategoryId;
       if (tagIds.length > 0) transaction.tags = tagIds;
+      if (resolvedAccountId) transaction.account = resolvedAccountId;
 
       transactions.push(transaction);
       i++;

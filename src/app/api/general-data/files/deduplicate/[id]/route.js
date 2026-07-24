@@ -6,7 +6,7 @@ import Transaction from "@/model/Transaction";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 
-const CURRENT_TEMPLATE_VERSION = "2.0";
+const CURRENT_TEMPLATE_VERSION = "2.1";
 
 function excelSerialDateToJSDate(serial) {
   const utc_days = Math.floor(serial - 25569);

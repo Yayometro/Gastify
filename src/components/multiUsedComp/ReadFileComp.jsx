@@ -224,7 +224,7 @@ function ReadFileComp({}) {
       <div className="text-center">
         <h1 className="text-2xl font-light">Import from Excel</h1>
         <p className="text-xs text-slate-400 mt-1 max-w-[300px] mx-auto leading-relaxed">
-          Download the Gastify template, fill it with your transactions (date, concept, amount, type) and upload it here. Categories and tags are auto-resolved from your existing ones.
+          Download the Gastify template, fill it with your transactions (date, concept, amount, type) and upload it here. Categories, tags and accounts are auto-resolved from your existing ones.
         </p>
       </div>
 
