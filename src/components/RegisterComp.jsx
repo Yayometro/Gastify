@@ -7,7 +7,6 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { quantum } from "ldrs";
 
 export default function RegisterComp({ params }) {
   const [formData, setFormData] = useState({
@@ -26,7 +25,9 @@ export default function RegisterComp({ params }) {
   const [loading, setLoading] = useState(false)
 
   //Loader
-  quantum.register()
+  useEffect(() => {
+    import("ldrs").then(({ quantum }) => quantum.register());
+  }, []);
 
   const passString =
     'The password must have at least one special character "!@#$%^&*(),.?":{}|<>".';

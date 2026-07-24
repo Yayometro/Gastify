@@ -1,5 +1,9 @@
 "use client"
-import { Column } from "@ant-design/plots";
+import dynamic from "next/dynamic";
+
+const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
+  ssr: false,
+});
 
 function ColumnChartAntComparative({
   data,

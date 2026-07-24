@@ -1,6 +1,10 @@
 
-import { Tiny } from '@ant-design/plots';
 import React from 'react';
+import dynamic from 'next/dynamic';
+
+const TinyRing = dynamic(() => import('@ant-design/plots').then((m) => m.Tiny.Ring), {
+  ssr: false,
+});
 
 function GoalBudget({budge, color}) {
 
@@ -25,7 +29,7 @@ function GoalBudget({budge, color}) {
   };
   return (
     <div>
-        <Tiny.Ring {...config} />
+        <TinyRing {...config} />
     </div>
   )
 }

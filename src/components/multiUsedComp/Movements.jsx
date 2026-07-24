@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
@@ -10,9 +10,11 @@ import UniversalCategoIcon from "./UniversalCategoIcon";
 import dayjs from "dayjs";
 import Tag from "./Tag";
 import fetcher from "@/helpers/fetcher";
-import EditTransModal from "./EditTransModal";
+import EditSingleTransModal from "./EditSingleTransModal";
 import { IoCheckmarkDoneCircleOutline, IoSearchOutline } from "react-icons/io5";
-import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineSettings } from "react-icons/md";
+import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineSettings, MdOutlineFileDownload } from "react-icons/md";
+import { PiFileCsvDuotone, PiMicrosoftExcelLogoFill } from "react-icons/pi";
+import { VscJson } from "react-icons/vsc";
 import { Tooltip, Button, Modal, Skeleton } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -42,12 +44,14 @@ function Movements({ timePeriodFromFather, mail }) {
     new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59),
   ];
 
+  const userHasSelectedPeriod = useRef(false);
   const [allMovements, setAllMovements] = useState([]);
   const [timePeriod, setTimePeriod] = useState(defaultPeriod);
   const [trastType, setTransType] = useState("all");
   const [readable, setReadable] = useState("all");
   const [removedElement, setRemovedElement] = useState(false);
-  const [editModal, setEditModal] = useState([]);
+  const [editingTrans, setEditingTrans] = useState(null);
+  const [editKey, setEditKey] = useState(0);
   const [editMultiModal, setEditMultiModal] = useState([]);
   const [showMultipleTransEdit, setShowMultipleTransEdit] = useState(false);
   const [selectedTrans, setSelectedTrans] = useState([]);
@@ -65,7 +69,12 @@ function Movements({ timePeriodFromFather, mail }) {
   const [dupCount, setDupCount] = useState(0);
   const [dupDateTolerance, setDupDateTolerance] = useState(0);
   const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
+  const [dupDeleteAll, setDupDeleteAll] = useState(false);
   const [quickEditField, setQuickEditField] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState(null); // 'excel' | 'json'
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const toFetch = fetcher();
   const reduxDispartcher = useDispatch();
@@ -80,11 +89,10 @@ function Movements({ timePeriodFromFather, mail }) {
     }
   }, []);
 
-  // Sync with parent date range
+  // Solo sincroniza con el padre si el usuario NO ha seleccionado un período manualmente
   useEffect(() => {
-    if (timePeriodFromFather) {
-      setTimePeriod(timePeriodFromFather);
-    }
+    if (!timePeriodFromFather || userHasSelectedPeriod.current) return;
+    setTimePeriod(timePeriodFromFather);
   }, [timePeriodFromFather]);
 
   // Single consolidated filter effect
@@ -186,13 +194,23 @@ function Movements({ timePeriodFromFather, mail }) {
     return toDelete;
   }
 
+  // Devuelve IDs a eliminar: TODOS los items de cada grupo (ninguno se conserva)
+  function getAllMatchingIds(transactions, criteria, dateTol, amountTol) {
+    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
+    const toDelete = [];
+    groups.forEach((g) => g.forEach((i) => toDelete.push(transactions[i]._id)));
+    return toDelete;
+  }
+
   function getValueFromSelecter(v) {
+    userHasSelectedPeriod.current = true;
     const [start, end] = v.split("*");
     setTimePeriod([new Date(start), new Date(end)]);
   }
 
   function handleRangeDate(dateStart, dateEnd) {
     if (dateStart && dateEnd) {
+      userHasSelectedPeriod.current = true;
       setTimePeriod([dateStart, dateEnd]);
     }
   }
@@ -209,7 +227,71 @@ function Movements({ timePeriodFromFather, mail }) {
     setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
     setDupDateTolerance(0);
     setDupAmountTolerance(0);
+    setDupDeleteAll(false);
     setTimePeriod(timePeriodFromFather || defaultPeriod);
+  };
+
+  function buildFilterSummary() {
+    const parts = [];
+    const [start, end] = timePeriod;
+    parts.push(`Period: ${getDateInYearMonthDay(start)} → ${getDateInYearMonthDay(end)}`);
+    if (trastType !== "all") parts.push(`Type: ${trastType === "incomes" ? "Incomes only" : "Bills only"}`);
+    if (readable !== "all") parts.push(`Readable: ${readable === "true" ? "Readable only" : "Not readable"}`);
+    if (searchQuery.trim()) parts.push(`Search: "${searchQuery.trim()}"`);
+    if (dupMode) parts.push(`Mode: Duplicate finder (${dupCount} found)`);
+    return parts;
+  }
+
+  const handleExportConfirm = async () => {
+    if (!exportFormat) return;
+    setExportLoading(true);
+    try {
+      const ids = allMovements.map((t) => String(t._id));
+      const userEmail = mail;
+
+      if (exportFormat === "json") {
+        const data = JSON.stringify(allMovements, null, 2);
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gastify-export-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        runNotify("ok", `Exported ${ids.length} transactions as JSON 📦`);
+      } else {
+        const response = await fetch(
+          toFetch.getFullPath(`general-data/files/export/${userEmail}`),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ transactionIds: ids }),
+          }
+        );
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.message || "Export failed");
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gastify-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        runNotify("ok", `Exported ${ids.length} transactions as Excel 📊`);
+      }
+      setExportModalOpen(false);
+      setExportOpen(false);
+    } catch (e) {
+      runNotify("error", e?.message || "Export failed, please try again 🤕");
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const handleTransactionRemove = async (id) => {
@@ -279,14 +361,8 @@ function Movements({ timePeriodFromFather, mail }) {
   };
 
   const handleTransEdit = (tra) => {
-    const editTransMo = (
-      <EditTransModal
-        hidden={editModal}
-        trans={tra}
-        key={`editModal-${editModal.length + 1}-${tra._id}`}
-      />
-    );
-    setEditModal([...editModal, editTransMo]);
+    setEditingTrans(tra);
+    setEditKey((k) => k + 1);
   };
 
   const handleMultiTransEdit = (ids) => {
@@ -370,8 +446,56 @@ function Movements({ timePeriodFromFather, mail }) {
 
   return (
     <div className="w-full h-full pt-5">
-      <div className={"edit-modal-cont"}>{editModal}</div>
+      {editingTrans && (
+        <EditSingleTransModal
+          key={editKey}
+          trans={editingTrans}
+          onClose={() => setEditingTrans(null)}
+        />
+      )}
       <div className={`edit-multi-modal-cont`}>{editMultiModal}</div>
+      {/* ── Export confirmation modal ── */}
+      <Modal
+        title={
+          <span className="font-semibold flex items-center gap-2">
+            <MdOutlineFileDownload size={18} className="text-purple-500" />
+            Export {allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""}
+          </span>
+        }
+        open={exportModalOpen}
+        onOk={handleExportConfirm}
+        onCancel={() => { setExportModalOpen(false); }}
+        confirmLoading={exportLoading}
+        okText={exportLoading ? "Exporting…" : `Export as ${exportFormat === "excel" ? "Excel" : "JSON"}`}
+        cancelText="Cancel"
+        okButtonProps={{
+          className: "!bg-purple-600 !border-purple-600 !text-white hover:!bg-purple-500 hover:!border-purple-500 transition-colors",
+        }}
+      >
+        <div className="flex flex-col gap-3 py-1">
+          <div className="bg-slate-50 rounded-xl px-4 py-3 flex flex-col gap-1">
+            <p className="text-xs font-semibold text-slate-600 mb-1">Active filters</p>
+            {buildFilterSummary().map((line, i) => (
+              <p key={i} className="text-xs text-slate-500">• {line}</p>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <span>Format:</span>
+            <span className="font-semibold text-purple-600 flex items-center gap-1">
+              {exportFormat === "excel"
+                ? <><PiMicrosoftExcelLogoFill size={14} className="text-green-600" /> Excel (.xlsx) — re-importable</>
+                : <><VscJson size={14} className="text-amber-500" /> JSON — full populated data</>
+              }
+            </span>
+          </div>
+          <p className="text-xs text-slate-400">
+            {exportFormat === "excel"
+              ? "The file will match the Gastify import template and can be re-uploaded to any Gastify account."
+              : "The JSON file includes all fields: category, subcategory, account, tags, amounts and dates."}
+          </p>
+        </div>
+      </Modal>
+
       <div className="remove-modal-container">
         <Modal
           title={<span className="text-red-500 font-semibold">⚠️ Delete transaction</span>}
@@ -494,6 +618,15 @@ function Movements({ timePeriodFromFather, mail }) {
                     <p>Find duplicates{dupMode ? ` (${dupCount})` : ""}</p>
                   </div>
                 </Tooltip>
+                <Tooltip title="Export the currently filtered transactions as Excel (re-importable) or JSON">
+                  <div
+                    className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer ${exportOpen ? "text-purple-500 font-medium" : ""}`}
+                    onClick={() => setExportOpen(!exportOpen)}
+                  >
+                    <MdOutlineFileDownload size={15} />
+                    <p>Export data</p>
+                  </div>
+                </Tooltip>
                 <div
                   className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer"
                   onClick={handleCleanFilter}
@@ -612,11 +745,30 @@ function Movements({ timePeriodFromFather, mail }) {
                     </button>
                   </Tooltip>
 
+                  {/* Toggle: eliminar solo duplicados vs todos los que coinciden */}
+                  {dupMode && dupCount > 0 && (
+                    <Tooltip title={dupDeleteAll ? "All matching items will be selected (nothing is kept)" : "One original per group is kept — only extras are selected"}>
+                      <button
+                        onClick={() => setDupDeleteAll((v) => !v)}
+                        className={`text-[11px] px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${
+                          dupDeleteAll
+                            ? "text-red-600 border-red-400 bg-red-50 hover:bg-red-100"
+                            : "text-slate-500 border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={12} />
+                        {dupDeleteAll ? "Delete all matches" : "Delete only duplicates"}
+                      </button>
+                    </Tooltip>
+                  )}
+
                   {/* Select possible duplicates — todos menos uno por grupo */}
                   {dupMode && dupCount > 0 && (
                     <button
                       onClick={() => {
-                        const toDelete = getDuplicatesToDelete(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance);
+                        const toDelete = dupDeleteAll
+                          ? getAllMatchingIds(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance)
+                          : getDuplicatesToDelete(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance);
                         setIsSelectionMode(true);
                         allMovements.forEach((m) => {
                           const el = document.getElementById(`trans-${m._id}`);
@@ -676,6 +828,33 @@ function Movements({ timePeriodFromFather, mail }) {
               </div>
             )}
 
+            {/* ── Export submenu ── */}
+            {exportOpen && (
+              <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-3">
+                <p className="text-[11px] font-medium text-slate-600">
+                  Choose export format — <span className="text-slate-400 font-normal">{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""} with current filters</span>
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setExportFormat("excel"); setExportModalOpen(true); }}
+                    className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-slate-600 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                  >
+                    <PiMicrosoftExcelLogoFill size={22} className="text-green-600" />
+                    <span className="font-medium">Excel</span>
+                    <span className="text-slate-400 text-[10px] text-center leading-tight">Re-importable format<br/>(.xlsx)</span>
+                  </button>
+                  <button
+                    onClick={() => { setExportFormat("json"); setExportModalOpen(true); }}
+                    className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-slate-600 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                  >
+                    <VscJson size={22} className="text-amber-500" />
+                    <span className="font-medium">JSON</span>
+                    <span className="text-slate-400 text-[10px] text-center leading-tight">Full data with all<br/>populated fields</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="relative w-full mt-2 mb-3 px-2">
               <IoSearchOutline
                 size={15}
@@ -722,6 +901,21 @@ function Movements({ timePeriodFromFather, mail }) {
                       <p className="text-[11px]">Select All</p>
                       <IoCheckmarkDoneCircleOutline size={15} />
                     </div>
+                    {selectedTrans.length > 0 && (
+                      <div
+                        className="text-slate-400 flex gap-1 items-center cursor-pointer hover:text-slate-600 transition-colors"
+                        onClick={() => {
+                          allMovements.forEach((mov) => {
+                            const el = document.getElementById(`trans-${mov._id}`);
+                            el && el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+                          });
+                          setSelectedTrans([]);
+                        }}
+                      >
+                        <p className="text-[11px]">Deselect All</p>
+                        <PiExcludeSquareDuotone size={15} />
+                      </div>
+                    )}
                     <p className="text-[11px] text-slate-500">{selectedTrans.length} selected</p>
                     <Tooltip title="Select transactions then use the action buttons below to edit a specific field for all of them at once, or delete them all.">
                       <div className="flex items-center"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} /></div>
@@ -828,12 +1022,12 @@ function Movements({ timePeriodFromFather, mail }) {
                           </div>
                         )}
                       </div>
-                      <div className="tra-acount-cont text-[10px] font-normal">
-                        {!movement.account ? (
-                          <p className="text-start">No account...</p>
-                        ) : (
-                          <p className="text-start">{movement.account?.name}</p>
+                      <div className="tra-acount-cont text-[10px] font-normal flex items-center gap-2 flex-wrap">
+                        <p><span className="text-slate-400 font-light">Categoría: </span><span className="text-slate-600">{movement.category?.name || "—"}</span></p>
+                        {movement.subCategory?.name && (
+                          <p><span className="text-slate-400 font-light">Subcategoría: </span><span className="text-slate-600">{movement.subCategory.name}</span></p>
                         )}
+                        <p><span className="text-slate-400 font-light">Cuenta: </span><span className="text-slate-600">{movement.account?.name || "—"}</span></p>
                       </div>
                       <div className="tra-tag-cont flex flex-wrap gap-1 items-center justify-start text-[10px] font-thin">
                         <p className="font-light">Tags: </p>

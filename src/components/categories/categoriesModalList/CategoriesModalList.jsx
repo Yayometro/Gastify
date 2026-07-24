@@ -4,7 +4,7 @@ import CategoryCircle from "../categoryCircle/CategoryCircle";
 import CategoryCircleWithChilds from "../categoryCircleWithChilds/CategoryCircleWithChilds";
 import EmptyModule from "@/components/multiUsedComp/EmptyModule";
 
-function CategoriesModalList({ onSelect }) {
+function CategoriesModalList({ onSelect, onlyFathers = false }) {
   const { newCategories } = useContext(SelectCategoryContext);
   return (
     <>
@@ -14,9 +14,9 @@ function CategoriesModalList({ onSelect }) {
         </div>
       ) : (
         <>
-          <h1 className="py-3">Categories without sub-categories:</h1>
+          <h1 className="py-3">{onlyFathers ? "Select a Category:" : "Categories without sub-categories:"}</h1>
           <div className="w-full flex justify-center items-center gap-2 flex-wrap">
-            {newCategories.filter(c => c?.isDefaultCatego).map((cat) => (
+            {newCategories.filter(c => !c.children).map((cat) => (
               <CategoryCircle
                 size={50}
                 category={cat}
@@ -28,22 +28,38 @@ function CategoriesModalList({ onSelect }) {
                 key={`catCircle-without-childrens-${cat._id}`}
               />
             ))}
-          </div>
-          <h1 className="py-3">Father categories: </h1>
-          <div className="w-full flex flex-col justify-center items-center gap-2 flex-wraps">
-            {newCategories.filter(c => c?.children).map((cat) => (
-              <CategoryCircleWithChilds
-                category={cat}
+            {onlyFathers && newCategories.filter(c => c.children).map((cat) => (
+              <CategoryCircle
                 size={50}
+                category={cat}
                 color={cat?.color}
-                icon={cat?.icon}
                 name={cat.name}
+                icon={cat?.icon}
+                father={false}
                 onSelect={onSelect}
-                childs={cat.children}
-                key={`catCircle-with-childrens-${cat._id}`}
+                key={`catCircle-as-father-only-${cat._id}`}
               />
             ))}
           </div>
+          {!onlyFathers && (
+            <>
+              <h1 className="py-3">Father categories: </h1>
+              <div className="w-full flex flex-col justify-center items-center gap-2 flex-wraps">
+                {newCategories.filter(c => c?.children).map((cat) => (
+                  <CategoryCircleWithChilds
+                    category={cat}
+                    size={50}
+                    color={cat?.color}
+                    icon={cat?.icon}
+                    name={cat.name}
+                    onSelect={onSelect}
+                    childs={cat.children}
+                    key={`catCircle-with-childrens-${cat._id}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
     </>

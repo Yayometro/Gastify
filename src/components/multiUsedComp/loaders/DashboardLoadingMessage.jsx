@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
-import { quantum } from "ldrs";
 
 function DashboardLoadingMessage({setLoading, message, subMessage}) {
     //Loader
-      quantum.register();
+    useEffect(() => {
+      import("ldrs").then(({ quantum }) => quantum.register());
+    }, []);
   return (
     <div className=" fixed w-full h-full left-0 top-0 flex justify-center items-center z-[1009]">
       <div className="w-[90%] h-[70%] sm:w-[50%] bg-white/90 flex flex-col justify-center items-center text-center p-4 gap-4 rounded-2xl z-[1010] shadow-2xl relative">

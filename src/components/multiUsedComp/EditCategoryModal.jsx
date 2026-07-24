@@ -14,6 +14,9 @@ import {
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import IconDisplayerMenu from "./IconDisplayerMenu";
 import { useDispatch, useSelector } from "react-redux";
+import useModal from "@/hooks/useModalBasic";
+import BasicModal from "../modals/basicModal/BasicModal";
+import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
 import {
   addNewCategory,
   removeOneCategory,
@@ -21,7 +24,7 @@ import {
 } from "@/lib/features/categoriesSlice";
 import { addNewSubCategory, removeSubCategory, updateSubCategory } from "@/lib/features/subCategorySlice";
 
-function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData }) {
+function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline = false }) {
   const [isLoading, setIsLoading] = useState(false);
   const [active, setActive] = useState(false);
   const [formCategory, setFormCategory] = useState({
@@ -37,6 +40,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData }) {
   const [fatherCat, setFatherCat] = useState({});
   const [isCatMenuOpen, setIsCatMenuOpen] = useState(false);
   const toFetch = fetcher();
+  const { close: isSelectorOpen, handleClose: handleSelectorClose, handleOpen: handleSelectorOpen } = useModal();
 
   //REDUX
   const dispatchEcm = useDispatch();
@@ -232,6 +236,15 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData }) {
     // console.log(`#${e}`);
     setFormCategory({ ...formCategory, color: `#${e}` });
   };
+
+  const handleFatherCategory = (cat) => {
+    setFormCategory({
+      ...formCategory,
+      fatherCategory: cat._id,
+    });
+    setFatherCat(cat);
+  };
+
   const handleRemove = async () => {
     try {
       setIsLoading(true)
@@ -271,194 +284,211 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData }) {
       setIsLoading(false)
     }
   };
-  return (
-    <div
-      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[1000] ${
-        !active ? "hidden" : "flex"
-      } items-center justify-center backdrop-blur-[3px]`}
-    >
-      <div className="content modal-gradient w-[90%] h-[95%] min-[450px]:w-[80%] min-[450px]:h-[80%] relative rounded-2xl pt-[40px] overflow-hidden">
-        <div
-          className={`${
-            isLoading ? "absolute" : "hidden"
-          } top-0 left-0 bg-white/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] `}
-        >
-          <Spin size="large" />
-        </div>
-        <h1 className="text-center font-thin py-[20px] text-2xl min-[400px]:text-3xl sm:text-[50px] text-white">
+
+  const modalContent = (
+    <div className={`content ${!isInline ? 'modal-gradient w-[90%] h-[95%] min-[450px]:w-[80%] min-[450px]:h-[80%] relative rounded-2xl pt-[40px] overflow-hidden flex flex-col' : 'w-full h-full bg-slate-50'}`}>
+      <div
+        className={`${
+          isLoading ? "absolute" : "hidden"
+        } top-0 left-0 bg-white/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] `}
+      >
+        <Spin size="large" />
+      </div>
+      {!isInline && (
+        <h1 className="text-center font-thin py-[20px] text-2xl min-[400px]:text-3xl sm:text-[50px] text-white shrink-0">
           {ecmMode === "edition" ? "Edit" : "Create New"}{" "}
           {`"${ecmCategory?.name || "item"}"`} 🪄
         </h1>
-        <div
-          //   onSubmit={handleSubmit}
-          className={`edit-cat-modal w-[100%] h-full flex flex-col gap-2 items-start justify-start rounded-t-[60px] pt-[30px] overflow-scroll`}
-        >
+      )}
+      <div
+        className={`edit-cat-modal w-[100%] flex-1 min-h-0 flex flex-col gap-2 items-start justify-start ${!isInline ? 'rounded-t-[60px] pt-[30px]' : ''} overflow-y-auto`}
+      >
+        {!isInline && (
           <div
             className="close-con absolute top-[0%] right-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short cursor-pointer p-2"
             onClick={handleClose}
           >
             <CategoIcon type={"MdClose"} siz={20} />
           </div>
-          <div className="w-full h-full">
-            <form
-              onSubmit={handlerSubmit}
-              className={`w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20`}
-            >
-              <p className="label-tfp ">Name</p>
-              <input
-                type="text"
-                name="name"
-                className="w-full rounded-3xl border-2 border-purple-400 px-2"
-                value={formCategory.name || null}
-                onChange={handleChange}
-                placeholder="CategoryName"
-              />
-              <p className="label-tfp ">Icon</p>
-              <div className="icon-form-cont flex gap-2">
-                <div
-                  className="selected-icon-form-cont border-2 border-purple-400 rounded-2xl p-2 flex flex-col items-center justify-center cursor-pointer"
-                  onClick={() => setIsCatMenuOpen(true)}
-                >
-                  <p className="label-tfp ">
-                    {formCategory?.icon ? "Selected" : "No icon"}
-                  </p>
+        )}
+        <div className="w-full h-full">
+          <form
+            onSubmit={handlerSubmit}
+            className={`w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 ${!isInline ? 'rounded-t-[60px] pt-[30px]' : 'pt-4'} pb-20`}
+          >
+            {isInline && (
+              <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full pb-4">
+                Create New Category
+              </h1>
+            )}
+            <p className="label-tfp ">Name</p>
+            <input
+              type="text"
+              name="name"
+              className="w-full rounded-3xl border-2 border-purple-400 px-2"
+              value={formCategory.name || null}
+              onChange={handleChange}
+              placeholder="CategoryName"
+            />
+            <p className="label-tfp ">Icon</p>
+            <div className="icon-form-cont flex gap-2">
+              <div
+                className="selected-icon-form-cont border-2 border-purple-400 rounded-2xl p-2 flex flex-col items-center justify-center cursor-pointer"
+                onClick={() => setIsCatMenuOpen(true)}
+              >
+                <p className="label-tfp ">
+                  {formCategory?.icon ? "Selected" : "No icon"}
+                </p>
+                <UniversalCategoIcon
+                  type={`${formCategory?.icon || "md/MdFilterNone"}`}
+                  siz={30}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <IconDisplayerMenu
+                  idmActive={isCatMenuOpen}
+                  idmIcon={(i) =>
+                    setFormCategory({ ...formCategory, icon: i })
+                  }
+                  idmClose={(a) => setIsCatMenuOpen(a)}
+                />
+              </div>
+            </div>
+            <p className="label-tfp ">Color</p>
+            <div className="flex gap-2">
+              <Space direction="vertical">
+                <ColorPicker
+                  value={formCategory?.color || "#ABABAB"}
+                  format="hex"
+                  showText
+                  style={{
+                    border: `2px solid ${formCategory?.color || "#ABABAB"}`,
+                  }}
+                  onChange={(c) => handleColorChange(c.toHex())}
+                />
+              </Space>
+              <Tooltip title="Select the color you want to set for your category or subcategory... 🤓">
+                <div className="text-white w-[10px]">
                   <UniversalCategoIcon
-                    type={`${formCategory?.icon || "md/MdFilterNone"}`}
-                    siz={30}
+                    type={`${"fa/FaRegQuestionCircle"}`}
+                    siz={15}
                   />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <IconDisplayerMenu
-                    idmActive={isCatMenuOpen}
-                    idmIcon={(i) =>
-                      setFormCategory({ ...formCategory, icon: i })
-                    }
-                    idmClose={(a) => setIsCatMenuOpen(a)}
-                  />
-                </div>
-              </div>
-              <p className="label-tfp ">Color</p>
-              <div className="flex gap-2">
-                <Space direction="vertical">
-                  <ColorPicker
-                    //   defaultValue="#1677ff"
-                    //   open={open}
-                    // defaultValue={formCategory?.color}
-                    value={formCategory?.color || "#ABABAB"}
-                    format="hex"
-                    showText
-                    style={{
-                      border: `2px solid ${formCategory?.color || "#ABABAB"}`,
-                    }}
-                    onChange={(c) => handleColorChange(c.toHex())}
-                  />
-                </Space>
-                <Tooltip title="Select the color you want to set for your category or subcategory... 🤓">
-                  <div className="text-white w-[10px]">
-                    <UniversalCategoIcon
-                      type={`${"fa/FaRegQuestionCircle"}`}
-                      siz={15}
+              </Tooltip>
+            </div>
+            {ecmMode === "creation" || (ecmMode === "edition" && isSub) ? (
+              <div className="w-full flex flex-col">
+                <p className="label-tfp text-[10px] text-purple-900 w-full text-start">
+                  Is sub category?
+                </p>
+                <ConfigProvider
+                  theme={{
+                    token: {
+                      colorPrimary: "#9700FF",
+                      borderRadius: 2,
+                      colorBgContainer: "#9700FF",
+                      colorBorder: "#9700FF",
+                    },
+                  }}
+                >
+                  <Space>
+                    <Switch
+                      checked={isSub}
+                      onChange={(checked) => setIsSub(checked)}
+                      style={{ border: "#9700FF" }}
                     />
-                  </div>
-                </Tooltip>
-              </div>
-              {ecmMode === "creation" || (ecmMode === "edition" && isSub) ? (
-                <div className="w-full flex flex-col">
-                  <p className="label-tfp text-[10px] text-purple-900 w-full text-start">
-                    Is sub category?
-                  </p>
-                  <ConfigProvider
-                    theme={{
-                      token: {
-                        // Seed Token
-                        colorPrimary: "#9700FF",
-                        borderRadius: 2,
-
-                        // Alias Token
-                        colorBgContainer: "#9700FF",
-                        colorBorder: "#9700FF",
-                      },
-                    }}
+                  </Space>
+                </ConfigProvider>
+                <div
+                  className={`edm-cat-selector ${
+                    !isSub ? "hidden" : "flex"
+                  } flex-col gap-1 w-full mt-2`}
+                >
+                  <p className="label-tfp !text-[12px] !text-purple-600">Selected Father Category:</p>
+                  <div 
+                    onClick={handleSelectorClose}
+                    className="w-full bg-white border-2 border-purple-400 rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:bg-purple-50 transition-colors"
                   >
-                    <Space>
-                      <Switch
-                        value={isSub}
-                        onClick={() => setIsSub(!isSub)}
-                        style={{ border: "#9700FF" }}
-                      />
-                    </Space>
-                  </ConfigProvider>
-                  <div
-                    style={{
-                      backgroundColor: `${fatherCat?.color || "#9700FF"}`,
-                    }}
-                    className={`edm-cat-selector ${
-                      !isSub ? "hidden" : "flex"
-                    } text-black w-[200px] min-[450px]:w-[250px] font-light items-center justify-center rounded-2xl px-[4px] mt-2 sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative cursor-pointer pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px] `}
-                  >
-                    <div className="filterIconContainer absolute right-[10px] pointer-events-none">
+                    <div className="flex items-center gap-3">
                       <UniversalCategoIcon
-                        type={`${fatherCat?.icon}`}
+                        type={`${fatherCat?.icon || "md/MdFilterNone"}`}
                         siz={30}
+                        color={fatherCat?.color}
                       />
+                      <span className="font-medium text-purple-900">
+                        {fatherCat?.name || "Click to select a father category"}
+                      </span>
                     </div>
-                    <select
-                      className="bg-transparent appearance-none w-full h-full pr-4 pl-4 cursor-pointer"
-                      name="CatFatherSelector"
-                      value={formCategory?.fatherCategory || null}
-                      onChange={(e) => {
-                        // console.log(e.target.value);
-                        setFormCategory({
-                          ...formCategory,
-                          fatherCategory: e.target.value,
-                        });
-                      }}
-                    >
-                      <option value={null}>No category</option>
-                      {categoriesData.length > 0 ? (
-                        categoriesData.map((cat) => (
-                          <option value={cat._id} key={`option-cat-${cat._id}`}>
-                            {cat.name}{" "}
-                          </option>
-                        ))
-                      ) : (
-                        <div>Loading...</div>
-                      )}
-                    </select>
+                    <DownOutlined className="text-purple-600" />
                   </div>
+                </div>
+                {isSelectorOpen && (
+                  <BasicModal
+                    close={handleSelectorClose}
+                    renderContent={
+                      <ModalCategoryContent
+                        close={handleSelectorClose}
+                        getSelected={handleFatherCategory}
+                        onlyFathers={true}
+                      />
+                    }
+                  />
+                )}
+              </div>
+
+            ) : (
+              ""
+            )}
+            <div className="remove-item">
+              {ecmMode === "edition" ? (
+                <div
+                  className="w-full p-2 text-center text-red-500 underline rounded-full mt-3 hover:text-red-700 cursor-pointer"
+                  onClick={handleRemove}
+                >
+                  Remove{" "}
+                  {formCategory?.fatherCategory ? "Subcategory" : "Category"}
                 </div>
               ) : (
                 ""
               )}
-              <div className="remove-item">
-                {ecmMode === "edition" ? (
-                  <div
-                    className="w-full p-2 text-center text-red-500 underline rounded-full mt-3 hover:text-red-700 cursor-pointer"
-                    onClick={handleRemove}
-                  >
-                    Remove{" "}
-                    {formCategory?.fatherCategory ? "Subcategory" : "Category"}
-                  </div>
-                ) : (
-                  ""
-                )}
-              </div>
-              <button
-                className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
-                type="submit"
+            </div>
+            <button
+              className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
+              type="submit"
+            >
+              {isLoading ? (
+                <Spin />
+              ) : ecmMode === "edition" ? (
+                "Edit"
+              ) : (
+                "Create"
+              )}
+            </button>
+            {isInline && (
+              <div
+                className="clearForm underline text-red-400 cursor-pointer w-full text-center mt-2 pb-4"
+                onClick={handleClose}
               >
-                {isLoading ? (
-                  <Spin />
-                ) : ecmMode === "edition" ? (
-                  "Edit"
-                ) : (
-                  "Create"
-                )}
-              </button>
-            </form>
-          </div>
+                Clear Form
+              </div>
+            )}
+          </form>
         </div>
       </div>
+    </div>
+  );
+
+  if (isInline) {
+    return modalContent;
+  }
+
+  return (
+    <div
+      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[1000] ${
+        !active ? "hidden" : "flex"
+      } items-center justify-center backdrop-blur-[3px]`}
+    >
+      {modalContent}
     </div>
   );
 }

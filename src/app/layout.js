@@ -4,6 +4,7 @@ import { AuthProvider } from "./Providers";
 import { getServerSession } from "next-auth";
 import { ToastContainer } from "react-toastify";
 import ReduxProvider from "@/lib/ReduxProvider";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 // import AllDataProvider from "@/components/Providers/AllDataProvider";
 
 
@@ -20,23 +21,25 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider session={session}>
-          <ReduxProvider>
-            <main>{children}</main>
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
-          </ReduxProvider>
-        </AuthProvider>
+        <AntdRegistry>
+          <AuthProvider session={session}>
+            <ReduxProvider>
+              <main>{children}</main>
+              <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
+            </ReduxProvider>
+          </AuthProvider>
+        </AntdRegistry>
       </body>
     </html>
   );

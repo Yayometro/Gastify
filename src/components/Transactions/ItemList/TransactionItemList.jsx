@@ -1,18 +1,31 @@
+"use client";
+
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import Tag from "@/components/multiUsedComp/Tag";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import currencyFormatter from "currency-formatter";
 import dayjs from "dayjs";
+import { Tooltip } from "antd";
 
-function TransactionItemList({ movement, handleDelete, handleEdit, style }) {
+function TransactionItemList({ movement, handleDelete, handleEdit, style, selectable, selected, onSelect }) {
   return (
     <div
       className={
         style ||
-        `w-full flex justify-between items-center bg-slate-50 rounded-2xl py-1 px-2 hover:bg-slate-200 relative`
+        `w-full flex justify-between items-center rounded-2xl py-1 px-2 hover:bg-slate-200 relative transition-colors ${
+          selected ? "bg-purple-50 border border-purple-300" : "bg-slate-50"
+        }`
       }
     >
-      <div className="section-one flex justify-start items-center gap-2">
+      {selectable && (
+        <input
+          type="checkbox"
+          checked={selected || false}
+          onChange={() => onSelect?.(movement._id)}
+          className="mr-2 w-4 h-4 cursor-pointer shrink-0 accent-purple-600"
+        />
+      )}
+      <div className="section-one flex-1 min-w-0 flex justify-start items-center gap-2">
         <div
           style={{
             backgroundColor: movement.category?.color || "#DADADA",
@@ -24,11 +37,13 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style }) {
             size={10}
           />
         </div>
-        <div className="center-cont flex flex-col">
-          <div className="tra-text font-medium">
-            <p className="tra-name text-start">
-              {movement?.name || "No name. Asign one..."}
-            </p>
+        <div className="center-cont min-w-0 overflow-hidden flex flex-col">
+          <div className="tra-text font-medium min-w-0 overflow-hidden">
+            <Tooltip title={movement?.name || "No name. Assign one..."} placement="top">
+              <p className="tra-name text-start truncate cursor-default text-[15px]">
+                {movement?.name || "No name. Assign one..."}
+              </p>
+            </Tooltip>
           </div>
           <div className="tra-acount-cont text-[10px] font-normal">
             <p className=" text-start">
@@ -78,18 +93,22 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style }) {
           </div>
         )}
         <div className="btns flex justify-between gap-2">
-          <button
-            onClick={() => handleDelete(movement._id)}
-            className={`hover:text-blue-700 micro-pulse`}
-          >
-            <CategoIcon type={"MdDelete"} size={15} className="" />
-          </button>
-          <button
-            onClick={() => handleEdit(movement)}
-            className="hover:text-red-700 micro-pulse"
-          >
-            <CategoIcon type={"MdOutlineCreate"} size={15} className="" />
-          </button>
+          {handleDelete && (
+            <button
+              onClick={() => handleDelete(movement._id)}
+              className="hover:text-red-600 micro-pulse"
+            >
+              <CategoIcon type={"MdDelete"} size={15} />
+            </button>
+          )}
+          {handleEdit && (
+            <button
+              onClick={() => handleEdit(movement)}
+              className="hover:text-purple-600 micro-pulse"
+            >
+              <CategoIcon type={"MdOutlineCreate"} size={15} />
+            </button>
+          )}
         </div>
       </div>
     </div>

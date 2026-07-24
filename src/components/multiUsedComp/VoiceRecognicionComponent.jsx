@@ -8,7 +8,6 @@ import {
 import { GiMexico } from "react-icons/gi";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import { waveform, quantum } from "ldrs";
 import { useDispatch, useSelector } from "react-redux";
 import { Spin } from "antd";
 import { addNewTransacction } from "@/lib/features/transacctionsSlice";
@@ -38,16 +37,24 @@ function VoiceRecognicionComponent() {
     }, [ccUser, email]);
 
   //Speech
-  const recognition = new window.webkitSpeechRecognition();
-  recognition.continuous = true;
-  recognition.lang = english ? "en-US" : "es-Es";
-  //To cut the intermiate phrases
-  recognition.interimResult = false;
-  //Microphone animation config
-  waveform.register();
-  quantum.register();
+  const recognition =
+    typeof window !== "undefined" ? new window.webkitSpeechRecognition() : null;
+  if (recognition) {
+    recognition.continuous = true;
+    recognition.lang = english ? "en-US" : "es-Es";
+    //To cut the intermiate phrases
+    recognition.interimResult = false;
+  }
   //Fetch
   const toFetch = fetcher();
+
+  //Microphone animation config
+  useEffect(() => {
+    import("ldrs").then(({ waveform, quantum }) => {
+      waveform.register();
+      quantum.register();
+    });
+  }, []);
 
   useEffect(() => {
     if (isRecording) {

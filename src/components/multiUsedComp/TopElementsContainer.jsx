@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser, setUser } from "@/lib/features/userSlice";
 import {
@@ -46,6 +46,8 @@ function TopElementsContainer({timePeriodFromFather}) {
       getLastDayOfMonth(today.getFullYear(), today.getMonth())
     ),
   ]);
+  // True once the user makes a manual selection — prevents parent re-renders from resetting the period
+  const userHasSelectedPeriod = useRef(false);
   // Redux
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);
@@ -118,10 +120,12 @@ function TopElementsContainer({timePeriodFromFather}) {
     }
   }, [ccUser, ccTransacciones, timePeriod, elementsToDisplay]);
 
-  // Usestate time
+  // Sync father period only if user hasn't manually selected one yet
   useEffect(() => {
-    setTimePeriod(timePeriodFromFather)
-  }, [timePeriodFromFather])
+    if (!userHasSelectedPeriod.current && timePeriodFromFather) {
+      setTimePeriod(timePeriodFromFather);
+    }
+  }, [timePeriodFromFather]);
 
   // COMPONENTS AND VARIABLES
   const styleChildTopMontContainer = "text-3xl text-purple-700 mt-2";
@@ -209,12 +213,14 @@ function TopElementsContainer({timePeriodFromFather}) {
   );
   // FUNCTIONS
   function getValueFromSelecter(v) {
+    userHasSelectedPeriod.current = true;
     const [start, end] = v.split("*");
     setTimePeriod([new Date(start), new Date(end)]);
   }
 
   function handleRangeDate(dateStart, dateEnd) {
     if (dateStart && dateEnd) {
+      userHasSelectedPeriod.current = true;
       setTimePeriod([dateStart, dateEnd]);
     }
   }

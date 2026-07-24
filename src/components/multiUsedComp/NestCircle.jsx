@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { Gauge, CirclePacking } from '@ant-design/plots';
-import { Line } from '@ant-design/charts';
+import dynamic from 'next/dynamic';
+
+const CirclePacking = dynamic(
+  () => import('@ant-design/plots').then((m) => m.CirclePacking),
+  { ssr: false }
+);
 
 const NestCircle = () => {
     // const [data, setData] = useState([]);

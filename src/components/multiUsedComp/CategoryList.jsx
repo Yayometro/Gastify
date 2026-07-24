@@ -3,6 +3,7 @@ import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { Spin, Tooltip } from "antd";
 import EditCategoryModal from "./EditCategoryModal";
+import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import runNotify from "@/helpers/gastifyNotifier";
 
 function CategoryList({ clCategories ,clUser }) {
@@ -13,12 +14,14 @@ function CategoryList({ clCategories ,clUser }) {
   
   return (
     <div className="category-list-component w-full h-full flex gap-2 flex-wrap justify-center items-center">
-      <EditCategoryModal
-        ecmMode={onEdition}
-        ecmCategory={selectedCategory}
-        ecmClose={(e) => setOnEdition(e)}
-        ecmData={{ user: clUser, categories: clCategories }}
-      />
+      <SelectCategories>
+        <EditCategoryModal
+          ecmMode={onEdition}
+          ecmCategory={selectedCategory}
+          ecmClose={(e) => setOnEdition(e)}
+          ecmData={{ user: clUser, categories: clCategories }}
+        />
+      </SelectCategories>
       {
         !clCategories ? (
           <div className="w-full h-full flex justify-center items-center">

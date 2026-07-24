@@ -7,7 +7,6 @@ import { FaGithub } from "react-icons/fa";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import runNotify from "@/helpers/gastifyNotifier";
-import { quantum } from "ldrs";
 
 function LoginComponent() {
   const [formData, setFormData] = useState({
@@ -28,7 +27,9 @@ function LoginComponent() {
   }, []);
 
   //Loader
-  quantum.register()
+  useEffect(() => {
+    import("ldrs").then(({ quantum }) => quantum.register());
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
