@@ -31,7 +31,6 @@ import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
 import currencyFormatter from "currency-formatter";
 import { fetchBudget } from "@/lib/features/budgetSlice";
-import { quantum } from "ldrs";
 import DashboardLoadingMessage from "./multiUsedComp/loaders/DashboardLoadingMessage";
 import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
 import {
@@ -67,7 +66,9 @@ function Wallet({ dataServ, session }) {
   //LOADER
   const [loading, setLoading] = useState(true);
   //Loader
-  quantum.register();
+  useEffect(() => {
+    import("ldrs").then(({ quantum }) => quantum.register());
+  }, []);
   // Redux
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);

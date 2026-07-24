@@ -1,6 +1,10 @@
 
 import React from 'react'
-import { Liquid } from '@ant-design/plots';
+import dynamic from 'next/dynamic';
+
+const Liquid = dynamic(() => import('@ant-design/plots').then((m) => m.Liquid), {
+  ssr: false,
+});
 
 function GoalLiquid({color}) {
     let percent = 0.3;

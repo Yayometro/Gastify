@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { ResponsiveSunburst } from "@nivo/sunburst";
-import { Sunburst } from "@ant-design/plots";
 import { IoMdRefresh } from "react-icons/io";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 

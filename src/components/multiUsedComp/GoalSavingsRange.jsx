@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Gauge } from "@ant-design/plots";
+import dynamic from "next/dynamic";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+
+const Gauge = dynamic(() => import("@ant-design/plots").then((m) => m.Gauge), {
+  ssr: false,
+});
 
 function GoalSavingsRange({ ggrSavings }) {
   //Declare var

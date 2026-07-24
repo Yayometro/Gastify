@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Gauge } from "@ant-design/plots";
+import dynamic from "next/dynamic";
 import CategoIcon from "./CategoIcon";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+
+const Gauge = dynamic(() => import("@ant-design/plots").then((m) => m.Gauge), {
+  ssr: false,
+});
 
 function GoalGaugeRange({ indBud, indBills }) {
   let [selectedDuration, setSelectedDuration] = useState(30);
