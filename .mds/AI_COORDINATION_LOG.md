@@ -193,6 +193,30 @@
 - **Next Steps / Hand-Off Notes**:
   - All future extractions should run against `NAMING_RULES.json` v2.0.
 
+---
+
+### 📅 Entry #7: 2026-07-24 (7:48 PM Local)
+
+- **AI Assistant**: Gemini 3.6 Flash (Google AI / DeepMind)
+- **User Request**: Extract June 2026 transactions from HSBC 2Now, Santander Crédito, and Santander Nómina statements, apply `NAMING_RULES.json` v2.0, assign Accounts, and append to `gastify-template.xlsx` separated by a blank separator row.
+- **Phase**: Bank Statement Extraction & Data Pipeline Automation (June 2026)
+- **Actions Taken**:
+  1. Rendered and extracted all transactions from June 2026 PDFs:
+     - HSBC 2Now (`2026-06-16_Estado_de_cuenta.pdf`): 86 transactions
+     - Santander Crédito (`Estado de cuenta junio 2026.pdf`): 7 transactions
+     - Santander Nómina (`Estado de cuenta junio 2026.pdf`): 20 transactions
+  2. Applied `NAMING_RULES.json` v2.0 normalization to all concepts, categories, and subcategories.
+  3. Added a blank separator row (`--- JUNIO 2026 ---`) at row 132 in [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx) and appended all 113 June transactions starting at row 133.
+  4. Verified total June 2026 balances ($92,866.43 Bills / $196,290.89 Incomes) match 100% with PDF totals.
+  5. Saved updated template to [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx) and copy [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx).
+- **Files Created / Modified**:
+  - Modified: [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx)
+  - Modified: [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - Ready to proceed with May 2026 extraction next.
+
+
 
 
 
