@@ -28,6 +28,17 @@ To ensure Gastify data is clean, consistent, and readable, raw merchant strings 
 | **Holiday Inn Gym** | `HOLIDAY INN BUENAVIS` | `Gimnasio Holiday Inn` | `Coach gym` | `Health` / `Gym` |
 | **Punto Clínico Studies** | `PUNTO CLINICO DOCTORES` (> $700) | `Punto Clínico Doctores - Estudios Médicos` | — | `Health` |
 | **Invictus Store** | `INNVICTUS REFORMA 222` | `Invictus - Reforma 222` | — | `Clothes` |
+| **Lust Masaryk** | `LUST MAZARYK`, `LUST MASARYK` | `Lust Masaryk - Tenis / Ropa` | — | `Clothes` |
+| **BC Masaryk** | `BC MASARYK` | `BC Masaryk - Tenis / Ropa` | — | `Clothes` |
+| **Compra Laptop** | `transfe laptop` | `Compra Laptop` | — | `Electronics 📱` |
+| **Consulta Abogado** | `CONSULTA ABOGADO` | `Consulta Abogado` | — | `Services` |
+| **Naturgy Gas** | `NATURGY` | `Naturgy - Pago de Gas` | `House services` | `House` |
+| **Dr. Raúl Morales** | `DR RAUL MORALES` | `Dr. Raúl Morales - Consulta / Servicios Médicos` | — | `Health` |
+| **Servicios Médicos Cuauhtémoc** | `SERV MED CUAUHTEMOC` | `Servicios Médicos Cuauhtémoc` | — | `Health` |
+| **Farmacia Juárez** | `PHARMA SUC JUAREZ` | `Farmacia Juárez - Medicinas` | `Pills` | `Health` |
+| **Mercado Libre** | `MERPAGO*MERCADOLIBRE` | `Mercado Libre - Compra` | — | `Tienda` |
+| **PlayStation 5** | `PLAY 5 EMI` | `PlayStation 5 - Compra / Consola` | — | `Electronics 📱` |
+| **Corte de Pelo / Cejas** | `CORTE DE PELO CEJAS` | `Corte de Pelo / Cejas` | `Hair cut` | `Aesthetic` |
 | **Walmart Supermarket** | `WALMART`, `NWM 9709244W4` | `Walmart - Despensa` | `Despensa` | `Food` |
 | **La Comer Supermarket** | `LA COMER` | `La Comer - Despensa` | `Despensa` | `Food` |
 | **Sumesa Supermarket** | `SUMESA` | `Sumesa - Despensa` | `Despensa` | `Food` |
