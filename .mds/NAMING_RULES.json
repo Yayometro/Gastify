@@ -116,6 +116,131 @@
       "subCategory": "Despensa"
     },
     {
+      "id": "lust_masaryk",
+      "match": {
+        "regex": "LUST MAZARYK|LUST MASARYK"
+      },
+      "concept": "Lust Masaryk - Tenis / Ropa",
+      "category": "Clothes"
+    },
+    {
+      "id": "bc_masaryk",
+      "match": {
+        "regex": "BC MASARYK"
+      },
+      "concept": "BC Masaryk - Tenis / Ropa",
+      "category": "Clothes"
+    },
+    {
+      "id": "transfe_laptop",
+      "match": {
+        "regex": "transfe laptop"
+      },
+      "concept": "Compra Laptop",
+      "category": "Electronics 📱"
+    },
+    {
+      "id": "consulta_abogado",
+      "match": {
+        "regex": "CONSULTA ABOGADO"
+      },
+      "concept": "Consulta Abogado",
+      "category": "Services"
+    },
+    {
+      "id": "transferencia_hsbc_pago_tarjeta",
+      "match": {
+        "regex": "TRANSFERENCIA A CUENTA HSBC"
+      },
+      "concept": "Pago de Tarjeta de Crédito",
+      "category": "Services"
+    },
+    {
+      "id": "naturgy_gas",
+      "match": {
+        "regex": "NATURGY"
+      },
+      "concept": "Naturgy - Pago de Gas",
+      "category": "House",
+      "subCategory": "House services"
+    },
+    {
+      "id": "dr_raul_morales",
+      "match": {
+        "regex": "DR RAUL MORALES"
+      },
+      "concept": "Dr. Raúl Morales - Consulta / Servicios Médicos",
+      "category": "Health"
+    },
+    {
+      "id": "servicios_medicos_cuauhtemoc",
+      "match": {
+        "regex": "SERV MED CUAUHTEMOC"
+      },
+      "concept": "Servicios Médicos Cuauhtémoc",
+      "category": "Health"
+    },
+    {
+      "id": "pharma_juarez",
+      "match": {
+        "regex": "PHARMA SUC JUAREZ"
+      },
+      "concept": "Farmacia Juárez - Medicinas",
+      "category": "Health",
+      "subCategory": "Pills"
+    },
+    {
+      "id": "mercadolibre_compra",
+      "match": {
+        "regex": "MERPAGO\\*MERCADOLIBRE"
+      },
+      "concept": "Mercado Libre - Compra",
+      "category": "Tienda"
+    },
+    {
+      "id": "playstation5_consola",
+      "match": {
+        "regex": "PLAY 5 EMI"
+      },
+      "concept": "PlayStation 5 - Compra / Consola",
+      "category": "Electronics 📱"
+    },
+    {
+      "id": "playera_te_amo",
+      "match": {
+        "regex": "Playera te amo"
+      },
+      "concept": "Venta / Reembolso Playera",
+      "category": "Incomes"
+    },
+    {
+      "id": "corte_pelo_cejas",
+      "match": {
+        "regex": "CORTE DE PELO CEJAS"
+      },
+      "concept": "Corte de Pelo / Cejas",
+      "category": "Aesthetic",
+      "subCategory": "Hair cut"
+    },
+    {
+      "id": "pago_gas_santander",
+      "match": {
+        "regex": "^GAS$"
+      },
+      "concept": "Pago de Gas",
+      "category": "House",
+      "subCategory": "House services"
+    },
+    {
+      "id": "pago_sat_resico_code",
+      "match": {
+        "regex": "04264Z0E260050486218"
+      },
+      "concept": "Pago SAT - RESICO",
+      "category": "Taxes",
+      "subCategory": "Goverment"
+    },
+    {
       "id": "la_comer_groceries",
       "match": {
         "regex": "LA\\s*COMER"
