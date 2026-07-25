@@ -1,0 +1,287 @@
+{
+  "version": "2.0",
+  "description": "Normalized concept naming and category rules for Gastify bank statement extractions",
+  "rules": [
+    {
+      "id": "credit_card_payment",
+      "match": {
+        "regex": "SU PAGO GRACIAS|PAGO POR TRANSFERENCIA|CARGO PAGO TARJETA CREDITO|PAGO TNOW"
+      },
+      "concept": "Pago de Tarjeta de Crédito",
+      "category": "Services"
+    },
+    {
+      "id": "nomina_octaura",
+      "match": {
+        "regex": "NOMINA TEF PAGO DE NOMINA|Nomina octaura|Octaura nomina"
+      },
+      "concept": "Nómina Octaura",
+      "category": "Salary"
+    },
+    {
+      "id": "sat_resico_tax",
+      "match": {
+        "regex": "IMPTO FED TRANSF ELECT|CGO IMPTO FED"
+      },
+      "concept": "Pago al SAT - RESICO",
+      "category": "Taxes",
+      "subCategory": "Goverment"
+    },
+    {
+      "id": "gaby_contadora",
+      "match": {
+        "regex": "GABY CONTADORA"
+      },
+      "concept": "Pago Mensual - Gaby Contadora",
+      "subCategory": "Contador"
+    },
+    {
+      "id": "rotoplas_purified_water",
+      "match": {
+        "regex": "OPENPAY ROTOPLAS SERVI|ROTOPLAS SERVI"
+      },
+      "concept": "Mensualidad - Agua Purificada",
+      "category": "House",
+      "subCategory": "House services"
+    },
+    {
+      "id": "subscription_anthropic_claude",
+      "match": {
+        "regex": "ANTHROPIC CLAUDE"
+      },
+      "concept": "Subscription - Anthropic Claude",
+      "category": "E-accounts",
+      "subCategory": "IA Tools"
+    },
+    {
+      "id": "subscription_openai_chatgpt",
+      "match": {
+        "regex": "OPENAI|CHATGPT"
+      },
+      "concept": "Subscription - OpenAI ChatGPT",
+      "category": "E-accounts",
+      "subCategory": "IA Tools"
+    },
+    {
+      "id": "subscription_google_gemini",
+      "match": {
+        "regex": "GOOGLE\\s*GOOGLE|GOOGLE\\s*GEMINI"
+      },
+      "concept": "Subscription - Google Gemini",
+      "category": "E-accounts",
+      "subCategory": "IA Tools"
+    },
+    {
+      "id": "hbo_max_subscription",
+      "match": {
+        "regex": "HELPHBOMAX|HBO\\s*MAX"
+      },
+      "concept": "HBO Max Subscription",
+      "category": "E-accounts",
+      "subCategory": "Series-Movies E-Account "
+    },
+    {
+      "id": "holiday_inn_gym",
+      "match": {
+        "regex": "HOLIDAY INN BUENAVIS"
+      },
+      "concept": "Gimnasio Holiday Inn",
+      "category": "Health",
+      "subCategory": "Coach gym"
+    },
+    {
+      "id": "punto_clinico_medical",
+      "match": {
+        "regex": "PUNTO CLINICO DOCTORES",
+        "minAmount": 700.0
+      },
+      "concept": "Punto Clínico Doctores - Estudios Médicos",
+      "category": "Health"
+    },
+    {
+      "id": "invictus_clothing",
+      "match": {
+        "regex": "INNVICTUS REFORMA 222|INVICTUS REFORMA 222"
+      },
+      "concept": "Invictus - Reforma 222",
+      "category": "Clothes"
+    },
+    {
+      "id": "walmart_groceries",
+      "match": {
+        "regex": "WALMART|NWM 9709244W4"
+      },
+      "concept": "Walmart - Despensa",
+      "category": "Food",
+      "subCategory": "Despensa"
+    },
+    {
+      "id": "la_comer_groceries",
+      "match": {
+        "regex": "LA\\s*COMER"
+      },
+      "concept": "La Comer - Despensa",
+      "category": "Food",
+      "subCategory": "Despensa"
+    },
+    {
+      "id": "sumesa_groceries",
+      "match": {
+        "regex": "SUMESA"
+      },
+      "concept": "Sumesa - Despensa",
+      "category": "Food",
+      "subCategory": "Despensa"
+    },
+    {
+      "id": "wild_fork_protein",
+      "match": {
+        "regex": "WILDFORK|WILD FORK"
+      },
+      "concept": "Wild Fork - Proteína",
+      "category": "Food",
+      "subCategory": "Proteina 🍗"
+    },
+    {
+      "id": "farmacias_ahorro",
+      "match": {
+        "regex": "F\\. AHORRO|F AHORRO|FARMACIAS DEL AHORRO"
+      },
+      "concept": "Farmacias del Ahorro - Medicinas",
+      "category": "Health",
+      "subCategory": "Pills"
+    },
+    {
+      "id": "seven_eleven_convenience",
+      "match": {
+        "regex": "7\\s*ELEVEN|7-ELEVEN|7ELEVEN"
+      },
+      "concept": "7-Eleven",
+      "subCategory": "Oxxo"
+    },
+    {
+      "id": "oxxo_convenience",
+      "match": {
+        "regex": "OXXO"
+      },
+      "concept": "OXXO",
+      "subCategory": "Oxxo"
+    },
+    {
+      "id": "telmex_internet",
+      "match": {
+        "regex": "TELMEX"
+      },
+      "concept": "Telmex - Pago de Internet",
+      "category": "House",
+      "subCategory": "House services"
+    },
+    {
+      "id": "amazon_prime_subscription",
+      "match": {
+        "regex": "AMAZON|ANE 140618P37"
+      },
+      "concept": "Amazon Prime - Suscripción",
+      "category": "Electronics 📱"
+    },
+    {
+      "id": "itunes_icloud_subscription",
+      "match": {
+        "regex": "ITUNES|APPLE\\.COM"
+      },
+      "concept": "iTunes - iCloud Subscription",
+      "category": "E-accounts",
+      "subCategory": "Apple"
+    },
+    {
+      "id": "pull_and_bear_clothing",
+      "match": {
+        "regex": "PULL&BEAR|PULL AND BEAR"
+      },
+      "concept": "Pull&Bear - Ropa",
+      "category": "Clothes"
+    },
+    {
+      "id": "movistar_mobile_data",
+      "match": {
+        "regex": "TELEFONICA|TELEFÓNICA|MOVISTAR"
+      },
+      "concept": "Movistar - Pago de Datos Móviles",
+      "category": "House",
+      "subCategory": "Phone rent  "
+    },
+    {
+      "id": "didi_rides",
+      "match": {
+        "regex": "DIDI RIDES|DLO DIDI RIDES|D LOCAL DIDI RIDES"
+      },
+      "concept": "DiDi - Viaje",
+      "category": "Transport",
+      "subCategory": "Uber"
+    },
+    {
+      "id": "melimas_subscription",
+      "match": {
+        "regex": "MELIMAS|MERPAGO\\*MELIMAS",
+        "amount": 299.0
+      },
+      "concept": "Cobro cuenta MeliMás",
+      "category": "E-accounts",
+      "subCategory": "Series-Movies E-Account "
+    },
+    {
+      "id": "segiagua_water",
+      "match": {
+        "regex": "SEGIAGUA|SEGUAGUA"
+      },
+      "concept": "Seguagua - Pago de agua",
+      "category": "House",
+      "subCategory": "House services"
+    },
+    {
+      "id": "cfe_electricity",
+      "match": {
+        "regex": "CFE|MERCADOPAGO\\s*\\*CFE"
+      },
+      "concept": "CFE - Pago de luz",
+      "category": "House",
+      "subCategory": "Electricity ⚡️ "
+    },
+    {
+      "id": "cinepolis_tickets",
+      "match": {
+        "regex": "CINEPOLIS|PPCINEPOLIS"
+      },
+      "concept": "Cinépolis",
+      "category": "Entertainment",
+      "subCategory": "Cine"
+    },
+    {
+      "id": "cinemex_tickets",
+      "match": {
+        "regex": "CINEMEX"
+      },
+      "concept": "Cinemex",
+      "category": "Entertainment",
+      "subCategory": "Cine"
+    },
+    {
+      "id": "uber_ride",
+      "match": {
+        "regex": "UBER\\s*RIDE|UBER\\s*RIDES|DLO\\*UBER|UBER\\s*TRIP|UBER\\*TRIP"
+      },
+      "concept": "Viaje en Uber",
+      "category": "Transport",
+      "subCategory": "Uber"
+    },
+    {
+      "id": "rappi_food",
+      "match": {
+        "regex": "RAPPI|RAPPIPRO|DLO\\*RAPPIPRO"
+      },
+      "concept": "Rappi / Uber Eats",
+      "category": "Restaurant",
+      "subCategory": "Rappi y Diddi"
+    }
+  ]
+}
