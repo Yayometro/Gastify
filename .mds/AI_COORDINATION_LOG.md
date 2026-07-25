@@ -172,5 +172,27 @@
 - **Next Steps / Hand-Off Notes**:
   - The Excel template [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx) is now completely updated to v2.1 format with 100% of July 2026 transactions classified by account and ready for instant upload via the Gastify app interface.
 
+---
+
+### 📅 Entry #6: 2026-07-24 (7:39 PM Local)
+
+- **AI Assistant**: Gemini 3.6 Flash (Google AI / DeepMind)
+- **User Request**: Update naming and categorization rules in `NAMING_RULES.json` and `NAMING_RULES.md`, then re-apply normalization across all 129 Excel transactions.
+- **Phase**: Data Pipeline Standardization & Concept Normalization
+- **Actions Taken**:
+  1. Updated [`NAMING_RULES.json`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/NAMING_RULES.json) version to 2.0 with rules for OXXO/7-Eleven, Walmart, Farmacias del Ahorro, Wild Fork, Amazon Prime, Telmex, iTunes/iCloud, Pull&Bear, Movistar, HBO Max, Gimnasio Holiday Inn, Invictus, Punto Clínico, DiDi, AI Subscriptions (Anthropic/OpenAI/Gemini), OpenPay Rotoplas, Credit Card Payments, Gaby Contadora, Nómina Octaura, and SAT RESICO.
+  2. Updated documentation table in [`NAMING_RULES.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/NAMING_RULES.md).
+  3. Re-normalized 61 transaction rows in [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx) and [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx) to clean up raw merchant codes.
+  4. Verified all 129 rows retain clean categories, subcategories, accounts, and exact monetary balance ($183,178.94 Bills / $185,801.76 Incomes).
+- **Files Created / Modified**:
+  - Modified: [`.mds/NAMING_RULES.json`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/NAMING_RULES.json)
+  - Modified: [`.mds/NAMING_RULES.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/NAMING_RULES.md)
+  - Modified: [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx)
+  - Modified: [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - All future extractions should run against `NAMING_RULES.json` v2.0.
+
+
 
 
