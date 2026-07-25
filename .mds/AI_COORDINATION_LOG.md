@@ -214,7 +214,32 @@
   - Modified: [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx)
   - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
 - **Next Steps / Hand-Off Notes**:
-  - Ready to proceed with May 2026 extraction next.
+  - All future extractions should run against `NAMING_RULES.json` v2.0.
+
+---
+
+### 📅 Entry #8: 2026-07-24 (8:14 PM Local)
+
+- **AI Assistant**: Gemini 3.6 Flash (Google AI / DeepMind)
+- **User Request**: Extract May 2026 transactions from HSBC 2Now, Santander Crédito, and Santander Nómina statements, apply `NAMING_RULES.json` v2.0, assign Accounts, and append to `gastify-template.xlsx` separated by a blank separator row (`--- MAYO 2026 ---`).
+- **Phase**: Bank Statement Extraction & Data Pipeline Automation (May 2026)
+- **Actions Taken**:
+  1. Rendered and extracted all transactions from May 2026 PDFs:
+     - HSBC 2Now (`2026-05-15_Estado_de_cuenta.pdf`): 64 transactions
+     - Santander Crédito (`Estado de cuenta mayo 2026.pdf`): 15 transactions
+     - Santander Nómina (`Estado de cuenta mayo 2026.pdf`): 15 transactions
+  2. Applied `NAMING_RULES.json` v2.0 normalization to all concepts, categories, subcategories, and assigned accounts.
+  3. Added a blank separator row (`--- MAYO 2026 ---`) at row 246 in [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx) and appended all 94 May transactions starting at row 247.
+  4. Verified total May 2026 balances ($145,240.67 Bills / $250,611.52 Incomes) match 100% with PDF totals.
+  5. Accumulated total dataset in template reached **336 transactions** (129 July + 113 June + 94 May).
+  6. Saved updated template to [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx) and copy [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx).
+- **Files Created / Modified**:
+  - Modified: [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx)
+  - Modified: [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - The Excel template contains complete, normalized data for July, June, and May 2026 across all 3 accounts.
+
 
 
 
