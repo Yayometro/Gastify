@@ -146,6 +146,31 @@
   - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
 - **Next Steps / Hand-Off Notes**:
   - All critical vulnerabilities reported by GitHub/Dependabot on `next` and `mongoose` have been completely eliminated.
-  - Changes should be pushed to `origin/develop` and merged into `main` following standard git workflow.
+  - Added `.nvmrc` with Node 20 LTS.
+
+---
+
+### 📅 Entry #5: 2026-07-24 (7:12 PM Local)
+
+- **AI Assistant**: Gemini 3.6 Flash (Google AI / DeepMind)
+- **User Request**: Migrate all 129 extracted July 2026 transactions from the legacy Excel template into the new v2.1 Excel template format (`gastify-template-3.xlsx`), assign the corresponding `Account` to every transaction, and document everything.
+- **Phase**: Template Automation & Data Account Categorization
+- **Actions Taken**:
+  1. Inspected both old template ([`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx)) and new template reference ([`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx)).
+  2. Identified available user accounts in `_data` sheet: `HSBC 2NOW🇨🇭`, `Santander LikeU (credit) 🏳️‍🌈`, `Santander Debito Base 💳`.
+  3. Programmatically mapped all 129 extracted transactions to their source accounts:
+     - 62 transactions (HSBC 2Now) ➔ `HSBC 2NOW🇨🇭`
+     - 46 transactions (Santander Crédito) ➔ `Santander LikeU (credit) 🏳️‍🌈`
+     - 21 transactions (Santander Nómina) ➔ `Santander Debito Base 💳`
+  4. Migrated all 129 rows into the new v2.1 template structure (Column H `Account`, header note, validation rules).
+  5. Saved updated template in place to [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx) and updated reference [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx).
+  6. Verified exact totals preserved ($183,178.94 Bills / $185,801.76 Incomes).
+- **Files Created / Modified**:
+  - Modified: [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx)
+  - Modified: [`gastify-template-3.xlsx`](file:///Users/luisjairvazqueznavarrete/Downloads/gastify-template-3.xlsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - The Excel template [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx) is now completely updated to v2.1 format with 100% of July 2026 transactions classified by account and ready for instant upload via the Gastify app interface.
+
 
 
