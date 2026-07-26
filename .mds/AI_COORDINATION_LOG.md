@@ -355,17 +355,20 @@
      - Created compact `DeletePreviewRow` component rendering category icon circle, name, category/subcategory/account details, amount (color-coded for bills/incomes), and date.
      - Integrated `DeletePreviewRow` into both single-transaction (`isRemoveModal`) and bulk-transaction (`isRemoveModalMany`) delete confirmation modals.
   3. **Part 3 (Duplicate Comparison View)**:
-     - Added **"Comparison in detail"** button to the duplicate finder sub-menu.
-     - Created a 2-column modal (`Keeping` vs `Deleting`) displaying side-by-side transaction preview lists and a live-count delete button (`Delete N elements`).
-  4. **Category & SubCategory Loading Fix**:
-     - Fixed bug in `organizedCategoriesAndSubCategories` (`categoriesTransformers.js`) where root categories occurring in the array wiped out their previously attached subcategory `children`. Replaced with a 2-pass map algorithm that preserves all root categories and attaches all subcategories reliably.
-     - Fixed typo in `useFetchAndGetAllReduxInfo.js` line 88 where subcategory Redux state update was checking `ccCategories.status == "succeeded"` instead of `ccSubCategories.status == "succeeded"`.
+     -   4. **Category & SubCategory Production Vercel Fix**:
+     - Fixed bug in `organizedCategoriesAndSubCategories` (`categoriesTransformers.js`) where root categories occurring in the array wiped out their previously attached subcategory `children`.
+     - Fixed Redux state extraction in `useFetchAndGetAllReduxInfo.js` to safely resolve categories and subcategories regardless of whether Redux holds nested `data.user` / `data.subCat` objects or root arrays after dispatch.
+     - Added null/undefined defensive handling in `SelectCategoryProvider.jsx` (`handleSearch` and `useEffect`) so searching for subcategories (e.g., "Picho") in Vercel production deployment evaluates `[...categories, ...subCategories]` safely without dropping subcategories.
 - **Files Created / Modified**:
   - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
   - Modified: [`src/helpers/transformers/categoriesTransformers.js`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/helpers/transformers/categoriesTransformers.js)
   - Modified: [`src/hooks/getAllInfo/useFetchAndGetAllReduxInfo.js`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/hooks/getAllInfo/useFetchAndGetAllReduxInfo.js)
+  - Modified: [`src/components/categories/SelectCategoryProvider/SelectCategoryProvider.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/categories/SelectCategoryProvider/SelectCategoryProvider.jsx)
   - Modified: [`src/components/categories/categoriesModalList/CategoriesModalList.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/categories/categoriesModalList/CategoriesModalList.jsx)
   - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - All UX features and production category/subcategory search fixes fully implemented and deployed.
+ [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
 - **Next Steps / Hand-Off Notes**:
   - All 3 UX parts + category loading fixes fully implemented and verified.
 
