@@ -85,8 +85,11 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
   const handleCategory = (cat) => {
     if (!cat) return;
-    if (cat?.fatherCategory) {
-      setForm((p) => ({ ...p, subCategory: cat._id, category: cat.fatherCategory._id }));
+    const fatherId = cat?.fatherCategory
+      ? (typeof cat.fatherCategory === "object" ? cat.fatherCategory?._id : cat.fatherCategory)
+      : null;
+    if (fatherId) {
+      setForm((p) => ({ ...p, subCategory: cat._id, category: fatherId }));
     } else {
       setForm((p) => ({ ...p, category: cat._id, subCategory: "" }));
     }

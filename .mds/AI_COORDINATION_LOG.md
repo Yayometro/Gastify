@@ -366,11 +366,18 @@
   - Modified: [`src/components/categories/SelectCategoryProvider/SelectCategoryProvider.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/categories/SelectCategoryProvider/SelectCategoryProvider.jsx)
   - Modified: [`src/components/categories/categoriesModalList/CategoriesModalList.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/categories/categoriesModalList/CategoriesModalList.jsx)
   - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+  5. **Category/SubCategory Link Bug & DB Cleanup**:
+     - Fixed bug in `EditSingleTransModal.jsx`, `QuickEditModal.jsx`, `EditMultipleTransModal.jsx`, and `AddTransactionComp.jsx` where `cat.fatherCategory._id` evaluated to `undefined` when `fatherCategory` was a string ID instead of a populated object, causing saved edits to store mismatched or empty categories in MongoDB.
+     - Repaired 3 mismatched documents directly in MongoDB database (`GastifyDB`), including transaction `"Seven-Eleven comidita"` ($124, 2026-07-25) restoring Category to `"Family"` matching SubCategory `"Picho"`.
+- **Files Created / Modified**:
+  - Modified: [`src/components/multiUsedComp/EditSingleTransModal.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/EditSingleTransModal.jsx)
+  - Modified: [`src/components/multiUsedComp/QuickEditModal.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/QuickEditModal.jsx)
+  - Modified: [`src/components/multiUsedComp/EditMultipleTransModal.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/EditMultipleTransModal.jsx)
+  - Modified: [`src/components/multiUsedComp/AddTransactionComp.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/AddTransactionComp.jsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
 - **Next Steps / Hand-Off Notes**:
-  - All UX features and production category/subcategory search fixes fully implemented and deployed.
- [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
-- **Next Steps / Hand-Off Notes**:
-  - All 3 UX parts + category loading fixes fully implemented and verified.
+  - Frontend modals and MongoDB DB records are fully synchronized and cleaned up.
+
 
 
 

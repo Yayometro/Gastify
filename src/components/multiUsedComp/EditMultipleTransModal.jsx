@@ -73,11 +73,14 @@ function EditMultipleTransModalInner({ trans, onClose }) {
 
   const handleCategory = (cat) => {
     if (!cat) return;
-    if (cat?.fatherCategory) {
+    const fatherId = cat?.fatherCategory
+      ? (typeof cat.fatherCategory === "object" ? cat.fatherCategory?._id : cat.fatherCategory)
+      : null;
+    if (fatherId) {
       setTransactionInfo((prev) => ({
         ...prev,
         subCategory: cat._id,
-        category: cat?.fatherCategory?._id,
+        category: fatherId,
       }));
     } else {
       setTransactionInfo((prev) => ({ ...prev, category: cat._id, subCategory: "" }));
