@@ -1,5 +1,5 @@
 {
-  "version": "2.0",
+  "version": "2.2",
   "description": "Normalized concept naming and category rules for Gastify bank statement extractions",
   "rules": [
     {
@@ -304,10 +304,12 @@
     {
       "id": "amazon_prime_subscription",
       "match": {
-        "regex": "AMAZON|ANE 140618P37"
+        "regex": "AMAZON|ANE 140618P37",
+        "amount": 99.0
       },
-      "concept": "Amazon Prime - Suscripción",
-      "category": "Electronics 📱"
+      "concept": "Amazon Prime Subscription",
+      "category": "E-accounts",
+      "subCategory": "Series-Movies E-Account "
     },
     {
       "id": "itunes_icloud_subscription",
@@ -393,11 +395,20 @@
     {
       "id": "uber_ride",
       "match": {
-        "regex": "UBER\\s*RIDE|UBER\\s*RIDES|DLO\\*UBER|UBER\\s*TRIP|UBER\\*TRIP"
+        "regex": "UBER\\s*RIDE|UBER\\s*RIDES|DLO\\*UBER|UBER\\s*TRIP|UBER\\*TRIP|UBR\\*\\s*PENDING|UBER\\s*PENDING|PENDING\\.UBER\\.COM"
       },
       "concept": "Viaje en Uber",
       "category": "Transport",
       "subCategory": "Uber"
+    },
+    {
+      "id": "netflix_subscription",
+      "match": {
+        "regex": "NETFLIX"
+      },
+      "concept": "Netflix Subscription",
+      "category": "E-accounts",
+      "subCategory": "Series-Movies E-Account "
     },
     {
       "id": "rappi_food",
