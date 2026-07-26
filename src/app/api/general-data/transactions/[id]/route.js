@@ -5,6 +5,7 @@ import Transaction from "@/model/Transaction";
 import Tag from "@/model/Tag";
 import Account from "@/model/Account";
 import SubCategory from "@/model/SubCategory";
+import Category from "@/model/Category";
 
 export async function POST(request, { params }) {
   try {
