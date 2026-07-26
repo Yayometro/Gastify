@@ -17,8 +17,8 @@
 - **Current Phase**: Bank Statement Extraction, Concept Normalization & Template Automation — plus ongoing app feature work (Excel import/export, dashboard) and dev-environment stability
 - **Primary Data Template**: [`gastify-template.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template.xlsx)
 - **Git Branch Structure (IMPORTANT — read before committing anything)**:
-  - `develop` is the **authoritative** branch — Vercel deploys production directly from it.
-  - `main` is kept as a mirror of `develop` (fast-forwarded/merged in, no independent work should land only on `main`).
+  - `develop` is where day-to-day work lands first (feature/fix commits, `git push origin develop`) — pushing here only creates a **preview** deployment on Vercel, not production.
+  - **`main` is the actual production branch** — Vercel's `production` target (and the `gastify.com`/`www.gastify.com` aliases) is bound to `main`, confirmed via Vercel's deployment API (`target: "production"` appears only on `main`-ref deployments, never on `develop`-ref ones — this was wrongly documented as the reverse in an earlier entry, corrected 2026-07-26). Workflow: commit + push to `develop`, verify, then `git merge origin/develop --no-ff` into `main` and push `main` too — production is NOT live until that second push happens.
   - Local dev (`.env`) must point `NEXT_PUBLIC_API_ROUTE` / `NEXTAUTH_URL` at `http://localhost:3000`, never at the production Vercel URL — copying `.env` values straight from Vercel's dashboard breaks local login (NextAuth redirects to prod) and makes the Excel template download silently fetch from prod instead of your local code.
   - Never `git add -A` / `git add .` in this repo — `.env` (with live DB URI, OAuth secrets, JWT secret) is **not** gitignored (only `.env*.local` is) and sits untracked in the working tree. Always stage files by explicit name.
 - **Active Documented Rules**:
