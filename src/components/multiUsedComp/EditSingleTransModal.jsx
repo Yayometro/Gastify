@@ -259,11 +259,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
 function EditSingleTransModal({ trans, onClose }) {
   if (!trans) return null;
-  return (
-    <SelectCategories>
-      <EditSingleTransModalInner trans={trans} onClose={onClose} />
-    </SelectCategories>
-  );
+  return <EditSingleTransModalInner trans={trans} onClose={onClose} />;
 }
 
 export default EditSingleTransModal;

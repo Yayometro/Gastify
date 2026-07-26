@@ -60,10 +60,6 @@ export default function useFetchAndGetAllReduxInfo() {
       if (ccBudgets.status === "idle") {
         dispatch(fetchBudget(email));
       }
-      //Tags
-      if (ccTags.status === "idle") {
-        dispatch(fetchBudget(email));
-      }
     }
   }, [email]);
 
