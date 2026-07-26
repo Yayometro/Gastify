@@ -111,14 +111,20 @@ export default function useFetchAndGetAllReduxInfo() {
     ccBudgets,
     ccTags,
   ]);
+  const userCats = ccCategories?.data?.user || ccCategories?.user || [];
+  const defCats = ccCategories?.data?.default || ccCategories?.default || [];
+  const categoriesList = Array.isArray(userCats) && Array.isArray(defCats) ? userCats.concat(defCats) : (Array.isArray(userCats) ? userCats : (Array.isArray(defCats) ? defCats : []));
+
+  const userSubCats = ccSubCategories?.data?.subCat || ccSubCategories?.subCat || [];
+  const defSubCats = ccSubCategories?.data?.default || ccSubCategories?.default || [];
+  const subCategoriesList = Array.isArray(userSubCats) && Array.isArray(defSubCats) ? userSubCats.concat(defSubCats) : (Array.isArray(userSubCats) ? userSubCats : (Array.isArray(defSubCats) ? defSubCats : []));
+
   return {
     user: ccUser.data,
     wallet: ccWallet.data,
     accounts: ccAccounts.data,
-    categories: ccCategories.data.user.concat(ccCategories.data.default),
-    subCategories: ccSubCategories.data.subCat.concat(
-      ccSubCategories.data.default
-    ),
+    categories: categoriesList,
+    subCategories: subCategoriesList,
     transacciones: ccTransacciones.data,
     budgets: ccBudgets.data,
     tags: ccTags.data,
