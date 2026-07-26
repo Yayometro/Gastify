@@ -18,7 +18,8 @@ function SelectCategoryProvider({ children }) {
   const { categories, subCategories } = useGetDataFromProvider();
   const [newCategories, setNewCategories] = useState([]);
   const [itemSelected, setItemSelected] = useState(null)
-  const [searchCat, setSearchCat] = useState([])
+  const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
     const safeCats = Array.isArray(categories) ? categories : [];
     const safeSubCats = Array.isArray(subCategories) ? subCategories : [];
@@ -28,18 +29,21 @@ function SelectCategoryProvider({ children }) {
     }
   }, [categories, subCategories]);
 
-  function handleSearch(e) {
-    const val = e?.currentTarget?.value ?? e?.target?.value ?? "";
-    if (!val.trim()) {
+  useEffect(() => {
+    if (!searchTerm.trim()) {
       setSearchCat([]);
     } else {
-      const toSearch = val.trim();
-      const regex = new RegExp(toSearch, "i");
       const safeCats = Array.isArray(categories) ? categories : [];
       const safeSubCats = Array.isArray(subCategories) ? subCategories : [];
+      const regex = new RegExp(searchTerm.trim(), "i");
       const searchResults = [...safeCats, ...safeSubCats].filter((c) => c && c.name && regex.test(c.name));
       setSearchCat(searchResults);
     }
+  }, [searchTerm, categories, subCategories]);
+
+  function handleSearch(e) {
+    const val = typeof e === "string" ? e : (e?.target?.value ?? e?.currentTarget?.value ?? "");
+    setSearchTerm(val);
   }
   function handleSelect(category, callBack, close){
     if(!category) return ;
