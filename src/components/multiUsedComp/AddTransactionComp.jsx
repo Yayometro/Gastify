@@ -153,16 +153,20 @@ function AddTransactionComp() {
 
   function handleCategory(cat) {
     if (!cat) return;
-    if (cat?.fatherCategory) {
+    const fatherId = cat?.fatherCategory
+      ? (typeof cat.fatherCategory === "object" ? cat.fatherCategory?._id : cat.fatherCategory)
+      : null;
+    if (fatherId) {
       setTransactionInfo({
         ...transactionInfo,
         subCategory: cat._id,
-        category: cat?.fatherCategory?._id
+        category: fatherId
       });
     } else {
       setTransactionInfo({
         ...transactionInfo,
         category: cat._id,
+        subCategory: ""
       });
     }
   }

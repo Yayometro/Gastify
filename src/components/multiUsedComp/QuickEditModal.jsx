@@ -47,8 +47,11 @@ function QuickEditInner({ field, transIds, onClose }) {
 
   const handleCategory = (cat) => {
     if (!cat) return;
-    if (cat?.fatherCategory) {
-      setValue((v) => ({ ...v, subCategory: cat._id, category: cat.fatherCategory._id }));
+    const fatherId = cat?.fatherCategory
+      ? (typeof cat.fatherCategory === "object" ? cat.fatherCategory?._id : cat.fatherCategory)
+      : null;
+    if (fatherId) {
+      setValue((v) => ({ ...v, subCategory: cat._id, category: fatherId }));
     } else {
       setValue((v) => ({ ...v, category: cat._id, subCategory: "" }));
     }
