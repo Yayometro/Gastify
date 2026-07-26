@@ -357,11 +357,18 @@
   3. **Part 3 (Duplicate Comparison View)**:
      - Added **"Comparison in detail"** button to the duplicate finder sub-menu.
      - Created a 2-column modal (`Keeping` vs `Deleting`) displaying side-by-side transaction preview lists and a live-count delete button (`Delete N elements`).
+  4. **Category & SubCategory Loading Fix**:
+     - Fixed bug in `organizedCategoriesAndSubCategories` (`categoriesTransformers.js`) where root categories occurring in the array wiped out their previously attached subcategory `children`. Replaced with a 2-pass map algorithm that preserves all root categories and attaches all subcategories reliably.
+     - Fixed typo in `useFetchAndGetAllReduxInfo.js` line 88 where subcategory Redux state update was checking `ccCategories.status == "succeeded"` instead of `ccSubCategories.status == "succeeded"`.
 - **Files Created / Modified**:
   - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
+  - Modified: [`src/helpers/transformers/categoriesTransformers.js`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/helpers/transformers/categoriesTransformers.js)
+  - Modified: [`src/hooks/getAllInfo/useFetchAndGetAllReduxInfo.js`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/hooks/getAllInfo/useFetchAndGetAllReduxInfo.js)
+  - Modified: [`src/components/categories/categoriesModalList/CategoriesModalList.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/categories/categoriesModalList/CategoriesModalList.jsx)
   - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
 - **Next Steps / Hand-Off Notes**:
-  - All 3 UX parts fully implemented and verified in `Movements.jsx`.
+  - All 3 UX parts + category loading fixes fully implemented and verified.
+
 
 
 

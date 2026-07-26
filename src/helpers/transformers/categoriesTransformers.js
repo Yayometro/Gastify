@@ -3,25 +3,48 @@ import { sortItemsByName } from "../orderFunctions/orderFunctions";
 export function organizedCategoriesAndSubCategories(arr) {
   if (!(arr instanceof Array))
     throw new Error("the element shoudl be a instance of Array");
-  const organized = arr.reduce((acc, item) => {
-    const father = acc[item?.fatherCategory?.name];
-    if (father) {
-      if (father.children) {
-        father.children = [...father.children, item];
-      } else {
-        father.children = [item];
-      }
-    } else {
-      if (item?.fatherCategory) {
-        acc[item?.fatherCategory?.name] = {
-          ...item?.fatherCategory,
-          children: [item],
-        };
-      } else {
-        acc[item.name] = { ...item };
+
+  const categoryMap = {};
+
+  // First pass: register all root categories
+  arr.forEach((item) => {
+    if (!item) return;
+    if (!item.fatherCategory) {
+      const key = item._id || item.name;
+      if (!categoryMap[key]) {
+        categoryMap[key] = { ...item, children: [] };
       }
     }
-    return acc;
-  }, {});
-  return sortItemsByName(Object.values(organized));
+  });
+
+  // Second pass: attach subcategories to their father category
+  arr.forEach((item) => {
+    if (!item) return;
+    if (item.fatherCategory) {
+      const fatherId = typeof item.fatherCategory === "object" ? item.fatherCategory._id : item.fatherCategory;
+      const fatherName = typeof item.fatherCategory === "object" ? item.fatherCategory.name : null;
+
+      let fatherKey = Object.keys(categoryMap).find((k) => {
+        const c = categoryMap[k];
+        return (fatherId && String(c._id) === String(fatherId)) || (fatherName && c.name === fatherName);
+      });
+
+      if (fatherKey && categoryMap[fatherKey]) {
+        if (!categoryMap[fatherKey].children) categoryMap[fatherKey].children = [];
+        if (!categoryMap[fatherKey].children.some((sub) => String(sub._id) === String(item._id))) {
+          categoryMap[fatherKey].children.push(item);
+        }
+      } else {
+        const newKey = fatherId || fatherName || (item._id + "_father");
+        if (typeof item.fatherCategory === "object" && item.fatherCategory.name) {
+          categoryMap[newKey] = {
+            ...item.fatherCategory,
+            children: [item],
+          };
+        }
+      }
+    }
+  });
+
+  return sortItemsByName(Object.values(categoryMap));
 }

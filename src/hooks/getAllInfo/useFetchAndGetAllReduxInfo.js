@@ -85,7 +85,7 @@ export default function useFetchAndGetAllReduxInfo() {
       setCategories(ccCategories.data);
     }
     // //Sub-categories
-    if (ccCategories.status == "succeeded") {
+    if (ccSubCategories.status == "succeeded") {
       setSubCategories(ccSubCategories.data);
     }
     //Transactions
