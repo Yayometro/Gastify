@@ -18,6 +18,7 @@ function SelectCategoryProvider({ children }) {
   const { categories, subCategories } = useGetDataFromProvider();
   const [newCategories, setNewCategories] = useState([]);
   const [itemSelected, setItemSelected] = useState(null)
+  const [searchCat, setSearchCat] = useState([])
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
