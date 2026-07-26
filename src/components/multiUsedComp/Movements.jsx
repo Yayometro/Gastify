@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
@@ -27,6 +27,8 @@ import {
   removeManyTransactions,
   removeOneTransacction,
 } from "@/lib/features/transacctionsSlice";
+import { fetchCategories } from "@/lib/features/categoriesSlice";
+import { fetchSubCat } from "@/lib/features/subCategorySlice";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
@@ -36,9 +38,55 @@ import { getTransactionsFromTimeRange } from "@/helpers/transformers/transaction
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 
+import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
+import { SelectCategoryContext } from "@/components/categories/SelectCategoryProvider/SelectCategoryProvider";
+import BtnSelectCategoryContext from "@/components/buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
+import BasicModal from "@/components/modals/basicModal/BasicModal";
+import ModalCategoryContent from "@/components/modals/contents/selectCategory/ModalCategoryContent";
+import useModal from "@/hooks/useModalBasic";
+
 const today = new Date();
 
-function Movements({ timePeriodFromFather, mail }) {
+function DeletePreviewRow({ transaction }) {
+  if (!transaction) return null;
+  return (
+    <div className="flex flex-row justify-between items-center bg-slate-100/90 rounded-xl py-1.5 px-2.5 my-1 border border-slate-200 text-xs shadow-sm">
+      <div className="flex gap-2 items-center min-w-0">
+        <div
+          style={{ backgroundColor: transaction.category?.color || "#DADADA" }}
+          className="w-[32px] h-[32px] rounded-full flex-shrink-0 flex items-center justify-center text-white shadow-inner"
+        >
+          {!transaction.category || !transaction.category.icon ? (
+            <UniversalCategoIcon type="md/MdFilterNone" siz={12} />
+          ) : (
+            <UniversalCategoIcon type={transaction.category.icon} siz={12} />
+          )}
+        </div>
+        <div className="min-w-0 flex flex-col">
+          <p className="font-medium text-slate-800 truncate text-xs">{transaction.name || "No name"}</p>
+          <div className="text-[10px] text-slate-500 flex items-center gap-1.5 flex-wrap">
+            <span>Cat: <b className="font-medium text-slate-700">{transaction.category?.name || "—"}</b></span>
+            {transaction.subCategory?.name && (
+              <span>• Sub: <b className="font-medium text-slate-700">{transaction.subCategory.name}</b></span>
+            )}
+            <span>• Acc: <b className="font-medium text-slate-700">{transaction.account?.name || "—"}</b></span>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col items-end flex-shrink-0 ml-2">
+        <span className={`font-semibold text-xs ${transaction.isBill ? "text-red-500" : "text-green-500"}`}>
+          {transaction.isBill ? "-" : "+"}{currencyFormatter.format(transaction.amount ?? 0, { locale: "en-US" })}
+        </span>
+        <span className="text-[10px] text-slate-400 font-light">
+          {dayjs(transaction.date || transaction.createdAt).format("DD/MM/YYYY")}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+
+function MovementsContent({ timePeriodFromFather, mail }) {
   const defaultPeriod = timePeriodFromFather || [
     new Date(today.getFullYear(), today.getMonth(), 1),
     new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59),
@@ -63,6 +111,9 @@ function Movements({ timePeriodFromFather, mail }) {
   const [transRemovableId, setTransRemovableId] = useState("");
   const [loadingComponent, setLoadingComponent] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [exactAmountFilter, setExactAmountFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [subCategoryFilter, setSubCategoryFilter] = useState("");
   const [dupFinderOpen, setDupFinderOpen] = useState(false);
   const [dupCriteria, setDupCriteria] = useState({ name: true, date: true, amount: true, category: false, subcategory: false });
   const [dupMode, setDupMode] = useState(false);
@@ -70,22 +121,65 @@ function Movements({ timePeriodFromFather, mail }) {
   const [dupDateTolerance, setDupDateTolerance] = useState(0);
   const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
   const [dupDeleteAll, setDupDeleteAll] = useState(false);
+  const [dupCompareModalOpen, setDupCompareModalOpen] = useState(false);
   const [quickEditField, setQuickEditField] = useState(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState(null); // 'excel' | 'json'
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
+  const { close, handleClose } = useModal();
+  const selectCategoryCtx = useContext(SelectCategoryContext);
+  const handleClean = selectCategoryCtx?.handleClean;
+  const itemSelected = selectCategoryCtx?.itemSelected;
+
   const toFetch = fetcher();
   const reduxDispartcher = useDispatch();
   const reduxAllTrans = useSelector((state) => state.transacctionsReducer);
   const rdxTransactions = reduxAllTrans?.data;
+  const reduxCategories = useSelector((state) => state.categoriesReducer);
+  const reduxSubCategories = useSelector((state) => state.subCategoryReducer);
+  const allCategories = [...(reduxCategories.data?.user || []), ...(reduxCategories.data?.default || [])];
+  const allSubCategories = [...(reduxSubCategories.data?.subCat || []), ...(reduxSubCategories.data?.default || [])];
+
+  const getTransById = (id) => rdxTransactions?.find((t) => String(t._id) === String(id));
+
+  const handleCategoryFilter = (cat) => {
+    if (!cat) return;
+    if (cat?.fatherCategory) {
+      setSubCategoryFilter(cat._id);
+      setCategoryFilter("");
+    } else {
+      setCategoryFilter(cat._id);
+      setSubCategoryFilter("");
+    }
+  };
+
+  const handleClearCategoryFilter = () => {
+    setCategoryFilter("");
+    setSubCategoryFilter("");
+    if (handleClean) handleClean();
+  };
+
+  const selectedCategoryObj = categoryFilter ? allCategories.find((c) => String(c._id) === String(categoryFilter)) : null;
+  const selectedSubCategoryObj = subCategoryFilter ? allSubCategories.find((s) => String(s._id) === String(subCategoryFilter)) : null;
+
+  const displayCatName = itemSelected?.name || selectedSubCategoryObj?.name || selectedCategoryObj?.name || "Category";
+  const displayCatIcon = itemSelected?.icon || selectedSubCategoryObj?.icon || selectedCategoryObj?.icon || "md/MdOutlineCategory";
+  const displayFatherName = itemSelected?.fatherCategory?.name || (selectedSubCategoryObj ? allCategories.find((c) => String(c._id) === String(selectedSubCategoryObj.fatherCategory))?.name : null);
+
 
   const timePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(today.getFullYear());
 
   useEffect(() => {
     if (reduxAllTrans.status == "idle") {
       reduxDispartcher(fetchTrans(mail));
+    }
+    if (reduxCategories.status == "idle") {
+      reduxDispartcher(fetchCategories(mail));
+    }
+    if (reduxSubCategories.status == "idle") {
+      reduxDispartcher(fetchSubCat(mail));
     }
   }, []);
 
@@ -119,6 +213,16 @@ function Movements({ timePeriodFromFather, mail }) {
           t.tags?.some((tag) => tag.name?.toLowerCase().includes(q))
       );
     }
+    if (exactAmountFilter !== "" && !isNaN(Number(exactAmountFilter))) {
+      const target = Math.round(Number(exactAmountFilter) * 100);
+      filtered = filtered.filter((t) => Math.round((t.amount ?? 0) * 100) === target);
+    }
+    if (categoryFilter) {
+      filtered = filtered.filter((t) => String(t.category?._id) === categoryFilter);
+    }
+    if (subCategoryFilter) {
+      filtered = filtered.filter((t) => String(t.subCategory?._id) === subCategoryFilter);
+    }
 
     if (dupMode) {
       const dups = getDuplicates(filtered, dupCriteria, dupDateTolerance, dupAmountTolerance);
@@ -128,7 +232,7 @@ function Movements({ timePeriodFromFather, mail }) {
       setDupCount(0);
       setAllMovements(filtered);
     }
-  }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
+  }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, exactAmountFilter, categoryFilter, subCategoryFilter, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
 
   function areDuplicates(a, b, criteria, dateTol, amountTol) {
     if (criteria.name) {
@@ -222,12 +326,17 @@ function Movements({ timePeriodFromFather, mail }) {
     setReadable("all");
     setTransType("all");
     setSearchQuery("");
+    setExactAmountFilter("");
+    setCategoryFilter("");
+    setSubCategoryFilter("");
+    if (handleClean) handleClean();
     setDupMode(false);
     setDupFinderOpen(false);
     setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
     setDupDateTolerance(0);
     setDupAmountTolerance(0);
     setDupDeleteAll(false);
+    setDupCompareModalOpen(false);
     setTimePeriod(timePeriodFromFather || defaultPeriod);
   };
 
@@ -238,6 +347,15 @@ function Movements({ timePeriodFromFather, mail }) {
     if (trastType !== "all") parts.push(`Type: ${trastType === "incomes" ? "Incomes only" : "Bills only"}`);
     if (readable !== "all") parts.push(`Readable: ${readable === "true" ? "Readable only" : "Not readable"}`);
     if (searchQuery.trim()) parts.push(`Search: "${searchQuery.trim()}"`);
+    if (exactAmountFilter !== "") parts.push(`Amount: ${currencyFormatter.format(Number(exactAmountFilter), { locale: "en-US" })}`);
+    if (categoryFilter) {
+      const cat = allCategories.find((c) => String(c._id) === categoryFilter);
+      parts.push(`Category: ${cat?.name || categoryFilter}`);
+    }
+    if (subCategoryFilter) {
+      const subCat = allSubCategories.find((c) => String(c._id) === subCategoryFilter);
+      parts.push(`SubCategory: ${subCat?.name || subCategoryFilter}`);
+    }
     if (dupMode) parts.push(`Mode: Duplicate finder (${dupCount} found)`);
     return parts;
   }
@@ -497,8 +615,15 @@ function Movements({ timePeriodFromFather, mail }) {
       </Modal>
 
       <div className="remove-modal-container">
+        {/* ── Category picker modal ── */}
+        {close && (
+          <BasicModal
+            close={handleClose}
+            renderContent={<ModalCategoryContent close={handleClose} getSelected={handleCategoryFilter} />}
+          />
+        )}
         <Modal
-          title={<span className="text-red-500 font-semibold">⚠️ Delete transaction</span>}
+          title={<span className="text-red-500 font-semibold flex items-center gap-1">⚠️ Delete transaction</span>}
           open={isRemoveModal}
           onOk={() => handleOkRemove()}
           onCancel={() => handleCancel()}
@@ -512,10 +637,12 @@ function Movements({ timePeriodFromFather, mail }) {
             danger: false,
           }}
         >
-          <p className="text-slate-600 text-sm">Are you sure you want to permanently delete this transaction? This action cannot be undone.</p>
+          <p className="text-slate-600 text-sm mb-2">Are you sure you want to permanently delete this transaction? This action cannot be undone.</p>
+          <DeletePreviewRow transaction={getTransById(transRemovableId)} />
         </Modal>
+
         <Modal
-          title={<span className="text-red-500 font-semibold">⚠️ Delete {selectedTrans.length > 0 ? selectedTrans.length : ""} transactions</span>}
+          title={<span className="text-red-500 font-semibold flex items-center gap-1">⚠️ Delete {selectedTrans.length > 0 ? selectedTrans.length : ""} transactions</span>}
           open={isRemoveModalMany}
           onOk={() => handleOkRemove("many")}
           onCancel={() => handleCancel("many")}
@@ -529,11 +656,89 @@ function Movements({ timePeriodFromFather, mail }) {
             danger: false,
           }}
         >
-          <p className="text-slate-600 text-sm">
+          <p className="text-slate-600 text-sm mb-2">
             Are you sure you want to permanently delete{" "}
             <b>{selectedTrans.length > 0 ? `${selectedTrans.length} transactions` : "these items"}</b>?{" "}
             This action cannot be undone.
           </p>
+          <div className="max-h-[300px] overflow-y-auto pr-1 flex flex-col gap-1">
+            {selectedTrans.map((id) => (
+              <DeletePreviewRow key={id} transaction={getTransById(id)} />
+            ))}
+          </div>
+        </Modal>
+
+        {/* ── Duplicate comparison modal ── */}
+        <Modal
+          title={
+            <div className="flex items-center gap-2 text-purple-700 font-semibold text-base">
+              <UniversalCategoIcon type="md/MdOutlineCompare" siz={18} />
+              Duplicate Comparison Detail
+            </div>
+          }
+          open={dupCompareModalOpen}
+          onCancel={() => setDupCompareModalOpen(false)}
+          width={750}
+          footer={[
+            <Button key="cancel" onClick={() => setDupCompareModalOpen(false)}>
+              Cancel
+            </Button>,
+            <Button
+              key="delete"
+              danger
+              type="primary"
+              loading={confirmLoading}
+              onClick={() => {
+                setDupCompareModalOpen(false);
+                showRemoveModal("many", selectedTrans);
+              }}
+              disabled={selectedTrans.length === 0}
+            >
+              Delete {selectedTrans.length} elements
+            </Button>,
+          ]}
+        >
+          <p className="text-xs text-slate-500 mb-3">
+            Mode: <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>.
+            Review what will be kept vs deleted before proceeding.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+            {/* Left: Keep List */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-col">
+              <div className="flex justify-between items-center mb-2 pb-1 border-b border-slate-200">
+                <span className="text-xs font-semibold text-green-700 flex items-center gap-1">
+                  <UniversalCategoIcon type="md/MdCheckCircle" siz={14} /> Keeping ({allMovements.filter((m) => !selectedTrans.map(String).includes(String(m._id))).length})
+                </span>
+              </div>
+              <div className="flex flex-col gap-1 overflow-y-auto max-h-[45vh]">
+                {allMovements.filter((m) => !selectedTrans.map(String).includes(String(m._id))).length === 0 ? (
+                  <p className="text-xs text-slate-400 italic text-center py-4">Nothing kept — all matches will be deleted</p>
+                ) : (
+                  allMovements
+                    .filter((m) => !selectedTrans.map(String).includes(String(m._id)))
+                    .map((m) => <DeletePreviewRow key={m._id} transaction={m} />)
+                )}
+              </div>
+            </div>
+
+            {/* Right: Delete List */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-col">
+              <div className="flex justify-between items-center mb-2 pb-1 border-b border-slate-200">
+                <span className="text-xs font-semibold text-red-600 flex items-center gap-1">
+                  <UniversalCategoIcon type="md/MdDelete" siz={14} /> Deleting ({selectedTrans.length})
+                </span>
+              </div>
+              <div className="flex flex-col gap-1 overflow-y-auto max-h-[45vh]">
+                {selectedTrans.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic text-center py-4">No items selected for deletion</p>
+                ) : (
+                  selectedTrans.map((id) => (
+                    <DeletePreviewRow key={id} transaction={getTransById(id)} />
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </Modal>
       </div>
 
@@ -608,6 +813,52 @@ function Movements({ timePeriodFromFather, mail }) {
                   <div className="filterIconContainer absolute right-[0px] pointer-events-none">
                     <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
                   </div>
+                </div>
+                <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center sm:font-base sm:font-extralight relative pulse-animation-short">
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Exact amount"
+                    value={exactAmountFilter}
+                    onChange={(e) => setExactAmountFilter(e.target.value)}
+                    className="bg-white border border-slate-200 rounded-2xl px-2 py-0.5 w-[130px] outline-none focus:border-purple-400 transition-colors"
+                  />
+                  {exactAmountFilter !== "" && (
+                    <button
+                      onClick={() => setExactAmountFilter("")}
+                      className="text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <UniversalCategoIcon type="md/MdClose" siz={13} />
+                    </button>
+                  )}
+                </div>
+                <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center relative pulse-animation-short">
+                  <Tooltip title="Filter by Category or SubCategory — pick either one 🤓">
+                    <div className="text-slate-400 hover:text-purple-600 transition-colors cursor-help">
+                      <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
+                    </div>
+                  </Tooltip>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="bg-white border border-slate-200 hover:border-purple-400 rounded-2xl px-2.5 py-0.5 text-[10px] font-normal flex items-center gap-1 text-slate-700 hover:text-purple-700 hover:bg-purple-50/50 transition-colors cursor-pointer"
+                  >
+                    <UniversalCategoIcon type={displayCatIcon} siz={11} />
+                    <span>{displayCatName}</span>
+                    {displayFatherName && (
+                      <span className="text-[9px] text-purple-400">({displayFatherName})</span>
+                    )}
+                    <UniversalCategoIcon type="md/MdOutlineArrowDownward" siz={10} className="text-slate-400" />
+                  </button>
+                  {(categoryFilter || subCategoryFilter) && (
+                    <button
+                      onClick={handleClearCategoryFilter}
+                      className="text-slate-400 hover:text-slate-600 transition-colors ml-1"
+                      title="Clear category filter"
+                    >
+                      <UniversalCategoIcon type="md/MdClose" siz={13} />
+                    </button>
+                  )}
                 </div>
                 <Tooltip title="Find transactions that look like duplicates based on chosen criteria">
                   <div
@@ -785,6 +1036,17 @@ function Movements({ timePeriodFromFather, mail }) {
                     >
                       <HiMiniCursorArrowRipple size={12} />
                       Select possible duplicates
+                    </button>
+                  )}
+
+                  {/* Comparison in detail modal trigger */}
+                  {dupMode && dupCount > 0 && selectedTrans.length > 0 && (
+                    <button
+                      onClick={() => setDupCompareModalOpen(true)}
+                      className="text-[11px] text-amber-700 bg-amber-50 border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors flex items-center gap-1 font-medium"
+                    >
+                      <UniversalCategoIcon type="md/MdOutlineCompare" siz={13} />
+                      Comparison in detail
                     </button>
                   )}
 
@@ -1095,6 +1357,12 @@ function Movements({ timePeriodFromFather, mail }) {
   );
 }
 
-
+function Movements(props) {
+  return (
+    <SelectCategories>
+      <MovementsContent {...props} />
+    </SelectCategories>
+  );
+}
 
 export default Movements;

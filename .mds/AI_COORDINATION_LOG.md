@@ -299,10 +299,69 @@
 - **Next Steps / Hand-Off Notes**:
   - The Excel template contains complete, normalized data for July, June, May, and April 2026 across all 3 accounts.
 
+---
 
+### 📅 Entry #11: 2026-07-25 (local time)
 
+- **AI Assistant**: Anthropic / Claude Sonnet 5
+- **User Request**: Fix an over-broad "Amazon Prime" naming rule that was mislabeling regular Amazon purchases as a subscription, add Uber-pending and Netflix rules, then add exact-amount / Category / SubCategory filters to the Movements page.
+- **Phase**: Naming Rule Correction + Movements Filter Feature
+- **Actions Taken**:
+  1. **Fixed `amazon_prime_subscription` rule** in `NAMING_RULES.json`/`.md` — it previously matched `AMAZON|ANE 140618P37` with **no amount constraint**, so any Amazon purchase (electronics, groceries, anything) got renamed to "Amazon Prime - Suscripción" and miscategorized as `Electronics 📱`. Added `"amount": 99.0` (the rule now only fires when the regex matches **and** the amount is exactly $99.00 MXN), renamed the concept to `Amazon Prime Subscription`, and moved its category/subcategory to `E-accounts` / `Series-Movies E-Account ` to match the other subscription rules. Bumped rules version to `2.2`.
+  2. Extended the `uber_ride` regex to also match `UBR* PENDING`, `UBER PENDING`, `PENDING.UBER.COM` (e.g. `UBR* PENDING.UBER.COM AMSTERDAM NH`).
+  3. Added a new `netflix_subscription` rule (`NETFLIX` → `Netflix Subscription`, `E-accounts` / `Series-Movies E-Account `) — there was no Netflix rule at all before this.
+  4. **Note**: none of the above rule fixes were retroactively re-applied to the 585 transactions already sitting in `gastify-template.xlsx` — that file still has whatever the previous (buggy) Amazon rule produced. Not in scope this session; flagged for whoever re-runs normalization next.
+  5. **Movements filters**: added 3 new filters to `src/components/multiUsedComp/Movements.jsx`, additive (AND) with all existing filters, each independently clearable — exact-amount match, Category, SubCategory. Implemented as plain client-side `.filter()` added to the existing consolidated filter `useEffect` (no new API calls — all transactions/categories/subcategories were already loaded into Redux, categories/subcategories just weren't being fetched by this component yet, so `fetchCategories`/`fetchSubCat` dispatches were added). Category/SubCategory are currently rendered as plain `<select>` dropdowns — **the user flagged after testing that these should instead open the existing "Select Category" modal system** (see Entry #12 below for the planning doc covering that fix, plus two more UX asks, left for a future session/Gemini to implement).
+- **Files Created / Modified**:
+  - Modified: [`.mds/NAMING_RULES.json`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/NAMING_RULES.json), [`.mds/NAMING_RULES.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/NAMING_RULES.md)
+  - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
+- **Next Steps / Hand-Off Notes**:
+  - Consider re-running `NAMING_RULES.json` v2.2 normalization over the existing 585 rows in `gastify-template.xlsx` to fix any Amazon purchases that were wrongly renamed under the old rule.
+  - See Entry #12 / `.mds/MOVEMENTS_UX_PLAN.md` for the follow-up UX work (category picker modal, delete-confirmation transaction lists, duplicate-finder side-by-side comparison) — researched and documented in detail but **not implemented**, intended as a hand-off to Gemini or a future session.
 
+---
 
+### 📅 Entry #12: 2026-07-25 (local time)
+
+- **AI Assistant**: Anthropic / Claude Sonnet 5
+- **User Request**: After testing the Movements filters from Entry #11, requested 3 UX follow-ups be **researched and documented only** (not implemented, to save tokens) so Gemini can pick up the implementation: (1) replace the Category/SubCategory filter dropdowns with the existing "Select Category" modal used elsewhere in the app, plus widen the exact-amount input; (2) make every delete-confirmation modal (single delete, bulk delete, and the duplicate-finder's bulk delete) list the actual transactions about to be deleted, using a compact version of the existing transaction-row look; (3) add a "Comparison in detail" view to Find Duplicates showing kept-vs-deleted transactions side by side with a live-count delete button.
+- **Phase**: UX Planning Hand-off (no implementation this entry)
+- **Actions Taken**:
+  1. Deep-traced the existing category-picker modal system end to end (`SelectCategoryProvider`/`SelectCategoryContext`, `BtnSelectCategoryContext`, `useModalBasic` open/close toggle hook, `BasicModal`, `ModalCategoryContent`, `CategoriesModalList`, `RenderCategoriesSearch`) — confirmed exact file/line locations of every DOM class string the user found via inspector, the exact selection-callback payload shape (raw Category/SubCategory Mongo doc, distinguished by `cat.fatherCategory` truthiness — no wrapper object), and a real gotcha: the trigger button's displayed label is driven by a separate context state (`itemSelected`) from whatever filter state consumes the selection, so clearing the filter requires clearing both explicitly or the button label goes stale.
+  2. Re-read the current (already-implemented) delete-confirmation modals and the Find Duplicates flow in `Movements.jsx` in full to design both remaining asks against real line numbers rather than a rebuild — found that Find Duplicates' "keep vs. delete" split is nearly free to implement, since `allMovements` while `dupMode` is active is already narrowed to just the flagged duplicate set, and the "to-delete" ID list is already computed by the existing "Select possible duplicates" handler.
+  3. Wrote the full plan to a new file, `.mds/MOVEMENTS_UX_PLAN.md`, with exact file paths, line numbers, code snippets to copy, the identified gotcha, and a verification checklist per part — written so a different AI agent can execute it without re-reading the codebase from scratch.
+- **Files Created / Modified**:
+  - Created: [`.mds/MOVEMENTS_UX_PLAN.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/MOVEMENTS_UX_PLAN.md)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - Whoever implements `.mds/MOVEMENTS_UX_PLAN.md` should do Part 2 (delete-modal transaction previews) before Part 3 (duplicate comparison view), since Part 3 explicitly reuses the `DeletePreviewRow` component Part 2 introduces.
+  - None of this has been implemented or tested — treat every line/file reference in the plan as "verified as of this entry," not as already-working code.
+
+---
+
+### 📅 Entry #13: 2026-07-25 (7:10 PM Local)
+
+- **AI Assistant**: Gemini 3.6 Flash (Google AI / DeepMind)
+- **User Request**: Execute the complete UX implementation plan detailed in `.mds/MOVEMENTS_UX_PLAN.md` (Part 1, Part 2, and Part 3) in `Movements.jsx`.
+- **Phase**: Movements UX Enhancement Implementation (Completed)
+- **Actions Taken**:
+  1. **Part 1 (Category Picker Modal & Filter Styling)**:
+     - Wrapped `Movements` component inside `<SelectCategories>` provider.
+     - Replaced the temporary HTML `<select>` category dropdowns with a sleek horizontal pill button (`text-[10px]`, `rounded-2xl`, `px-2.5 py-0.5`) matching surrounding filter controls.
+     - Moved `<BasicModal>` to the root level of `MovementsContent` (`z-[20000]`), freeing it from container CSS stacking contexts so it opens fixed to full screen above all elements.
+     - Added robust fallback label and icon resolution (`displayCatName`, `displayCatIcon`, `displayFatherName`) and desynced state cleanup via `handleClean()`.
+     - Widened exact amount input from `w-[90px]` to `w-[130px]`.
+  2. **Part 2 (Delete Confirmation Previews)**:
+     - Created compact `DeletePreviewRow` component rendering category icon circle, name, category/subcategory/account details, amount (color-coded for bills/incomes), and date.
+     - Integrated `DeletePreviewRow` into both single-transaction (`isRemoveModal`) and bulk-transaction (`isRemoveModalMany`) delete confirmation modals.
+  3. **Part 3 (Duplicate Comparison View)**:
+     - Added **"Comparison in detail"** button to the duplicate finder sub-menu.
+     - Created a 2-column modal (`Keeping` vs `Deleting`) displaying side-by-side transaction preview lists and a live-count delete button (`Delete N elements`).
+- **Files Created / Modified**:
+  - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - All 3 UX parts fully implemented and verified in `Movements.jsx`.
 
 
 

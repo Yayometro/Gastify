@@ -47,7 +47,7 @@ To ensure Gastify data is clean, consistent, and readable, raw merchant strings 
 | **7-Eleven Store** | `7 ELEVEN`, `7-ELEVEN`, `7ELEVEN` | `7-Eleven` | `Oxxo` | — |
 | **OXXO Store** | `OXXO` | `OXXO` | `Oxxo` | — |
 | **Telmex Internet** | `TELMEX` | `Telmex - Pago de Internet` | `House services` | `House` |
-| **Amazon Prime** | `AMAZON`, `ANE 140618P37` | `Amazon Prime - Suscripción` | — | `Electronics 📱` |
+| **Amazon Prime Subscription** | `AMAZON` or `ANE 140618P37` **AND exactly $99.00 MXN** — any other amount is a regular Amazon purchase and must NOT be renamed | `Amazon Prime Subscription` | `Series-Movies E-Account ` | `E-accounts` |
 | **iTunes / iCloud** | `ITUNES`, `APPLE.COM` | `iTunes - iCloud Subscription` | `Apple` | `E-accounts` |
 | **Pull&Bear Clothing** | `PULL&BEAR`, `PULL AND BEAR` | `Pull&Bear - Ropa` | — | `Clothes` |
 | **Movistar Mobile** | `TELEFONICA`, `TELEFÓNICA`, `MOVISTAR` | `Movistar - Pago de Datos Móviles` | `Phone rent  ` | `House` |
@@ -57,8 +57,9 @@ To ensure Gastify data is clean, consistent, and readable, raw merchant strings 
 | **Electricity Service** | `CFE`, `MERCADOPAGO *CFE` | `CFE - Pago de luz` | `Electricity ⚡️ ` | `House` |
 | **Cinépolis Tickets** | `CINEPOLIS`, `PPCINEPOLIS` | `Cinépolis` | `Cine` | `Entertainment` |
 | **Cinemex Tickets** | `CINEMEX` | `Cinemex` | `Cine` | `Entertainment` |
-| **Uber Rides** | `UBER RIDE`, `DLO*UBER`, `UBER TRIP` | `Viaje en Uber` | `Uber` | `Transport` |
+| **Uber Rides** | `UBER RIDE`, `DLO*UBER`, `UBER TRIP`, `UBR* PENDING`, `UBER PENDING`, `PENDING.UBER.COM` (e.g. `UBR* PENDING.UBER.COM AMSTERDAM NH`) | `Viaje en Uber` | `Uber` | `Transport` |
 | **Food Delivery** | `UBER EATS`, `RAPPI`, `RAPPIPRO` | `Rappi / Uber Eats` | `Rappi y Diddi` | `Restaurant` |
+| **Netflix Subscription** | `NETFLIX` (e.g. `NME 110513PI3 NETFLIX CR CIU`) | `Netflix Subscription` | `Series-Movies E-Account ` | `E-accounts` |
 
 ---
 
