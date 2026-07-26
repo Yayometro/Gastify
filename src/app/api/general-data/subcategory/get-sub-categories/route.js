@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import SubCategory from "@/model/SubCategory";
+import Category from "@/model/Category";
 import User from "@/model/User";
 
 export async function POST(request) {

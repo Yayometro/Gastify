@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import Transaction from "@/model/Transaction";
 import Tag from "@/model/Tag";
 import SubCategory from "@/model/SubCategory";
+import Category from "@/model/Category";
+import Account from "@/model/Account";
 
 export async function POST(request) {
   try {

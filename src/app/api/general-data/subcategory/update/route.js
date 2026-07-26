@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import SubCategory from "@/model/SubCategory";
+import Category from "@/model/Category";
 
 export async function POST(request) {
   try {
