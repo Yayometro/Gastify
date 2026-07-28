@@ -1,7 +1,223 @@
 {
-  "version": "2.2",
+  "version": "2.3",
   "description": "Normalized concept naming and category rules for Gastify bank statement extractions",
   "rules": [
+    {
+      "id": "gasolinera_pemex_marina_nacional",
+      "match": {
+        "regex": "MARIN\\s*NACIONAL|GASOLINERA|PEMEX|LMU\\s*MARIN"
+      },
+      "concept": "Gasolina / Combustible",
+      "category": "Transport",
+      "subCategory": "Gasolina"
+    },
+    {
+      "id": "spotify_subscription",
+      "match": {
+        "regex": "SPOTIFY"
+      },
+      "concept": "Spotify Subscription",
+      "category": "E-accounts",
+      "subCategory": "Series-Movies E-Account "
+    },
+    {
+      "id": "autobuses_etn_viaje",
+      "match": {
+        "regex": "ETN|AUTOB\\s*FOR"
+      },
+      "concept": "Autobuses ETN - Viaje",
+      "category": "Transport",
+      "subCategory": "Uber"
+    },
+    {
+      "id": "peajes_estacionamiento_casetas",
+      "match": {
+        "regex": "SENDEROS|SUPERVOY|LUCERNA|ECA\\s*LEON"
+      },
+      "concept": "Peaje / Estacionamiento / Casetas",
+      "category": "Transport",
+      "subCategory": "Gasolina"
+    },
+    {
+      "id": "paypal_verificacion",
+      "match": {
+        "regex": "PAY\\s*PAL\\*2661CODE"
+      },
+      "concept": "PayPal Verificación",
+      "category": "E-accounts",
+      "subCategory": "Series-Movies E-Account "
+    },
+    {
+      "id": "consumo_tarjeta_generico",
+      "match": {
+        "regex": "CONSUMO\\s*LOCAL\\s*AJENO"
+      },
+      "concept": "Consumo en Establecimiento",
+      "category": "Tienda",
+      "subCategory": "Amazon"
+    },
+    {
+      "id": "mercadopago_restaurantes_tacos_comida",
+      "match": {
+        "regex": "MERCADOPAGO\\s*\\*(TACOSLON|BARBACDO|CREPASLA|BIRRIAPI|ELCHAMA|JAIMERAF|TACTICAL)|TACOS|BIRRIA|BARBACOA|CREPAS|HELADOSCASAMORGANA|COM RAP VIPS|REST LOS TRES|REST FRIES"
+      },
+      "concept": "Restaurante / Comida (MercadoPago / Terminal)",
+      "category": "Restaurant",
+      "subCategory": "Comida fuera"
+    },
+    {
+      "id": "didi_food_rappi",
+      "match": {
+        "regex": "DIDI\\s*FOOD|OPENPAY\\*DIDI\\s*FOOD|RAPPI"
+      },
+      "concept": "DiDi Food / Rappi",
+      "category": "Restaurant",
+      "subCategory": "Rappi y Diddi"
+    },
+    {
+      "id": "didi_rides_general",
+      "match": {
+        "regex": "DIDI\\s*CIU|OPENPAY\\*DIDI\\s*CIU|DIDI\\s*RIDES|OPENPAY\\*DIDI(?!.*FOOD)"
+      },
+      "concept": "Viaje en DiDi",
+      "category": "Transport",
+      "subCategory": "Uber"
+    },
+    {
+      "id": "uber_rides_extended",
+      "match": {
+        "regex": "UBER|UBRPAGOSMEX|PAYPAL\\*UBR|STR\\*UBER"
+      },
+      "concept": "Viaje en Uber",
+      "category": "Transport",
+      "subCategory": "Uber"
+    },
+    {
+      "id": "hd_sport_fitness_gym",
+      "match": {
+        "regex": "HD\\s*SPORT|SPORT\\s*FITNES|BLACK\\s*ENERGY\\s*GYM|HOLIDAY\\s*INN"
+      },
+      "concept": "Equipo / Membresía de Gimnasio & Fitness",
+      "category": "Health",
+      "subCategory": "Coach gym"
+    },
+    {
+      "id": "supermercados_chedraui_walmart",
+      "match": {
+        "regex": "CHEDRAUI|WALMART|LA\\s*COMER|SUMESA"
+      },
+      "concept": "Supermercado / Despensa",
+      "category": "Food",
+      "subCategory": "Despensa"
+    },
+    {
+      "id": "wildfork_protein_fix",
+      "match": {
+        "regex": "WILDFORK|WILD\\s*FORK|WILFORK"
+      },
+      "concept": "Wild Fork - Proteína",
+      "category": "Food",
+      "subCategory": "Proteina 🍗"
+    },
+    {
+      "id": "amazon_shopping_general",
+      "match": {
+        "regex": "STR\\*AMAZON|AMAZON\\s*CIU"
+      },
+      "concept": "Amazon - Compra",
+      "category": "Tienda",
+      "subCategory": "Amazon"
+    },
+    {
+      "id": "tiendas_departamentales_sears",
+      "match": {
+        "regex": "SEARS|LIVERPOOL|PALACIO\\s*DE\\s*HIERRO|IS\\s*BUENAVISTA|INNVICTUS|INVICTUS"
+      },
+      "concept": "Tienda Departamental / Deportes",
+      "category": "Clothes",
+      "subCategory": "Ropa / Calzado"
+    },
+    {
+      "id": "medico_clinicas",
+      "match": {
+        "regex": "GASTROCLIN|PUNTO\\s*CLINICO|SERV\\s*MED"
+      },
+      "concept": "Consulta / Estudios Médicos",
+      "category": "Health",
+      "subCategory": "Consulta médica"
+    },
+    {
+      "id": "boletos_entretenimiento",
+      "match": {
+        "regex": "ETKBOLET|BOLETOS|CINEPOLIS|CINEMEX"
+      },
+      "concept": "Boletos / Entretenimiento",
+      "category": "Entertainment",
+      "subCategory": "Eventos"
+    },
+    {
+      "id": "microsoft_subscription",
+      "match": {
+        "regex": "MICROSOFT"
+      },
+      "concept": "Microsoft Subscription",
+      "category": "E-accounts",
+      "subCategory": "IA Tools"
+    },
+    {
+      "id": "abonos_transferencias_incomes",
+      "match": {
+        "regex": "ABONO\\s*TRANSFERENCIA|ABONO\\s*NOMINA|TRANSFERENCIA\\s*SPEI.*(ABONO|PAGO DE NOMINA)"
+      },
+      "concept": "Transferencia Recibida (SPEI)",
+      "category": "Incomes",
+      "subCategory": "Transferencia recibida"
+    },
+    {
+      "id": "intereses_bancarios_incomes",
+      "match": {
+        "regex": "ABO\\s*POR\\s*INTERESES|INTERESES.*PERIODO"
+      },
+      "concept": "Intereses Bancarios Recibidos",
+      "category": "Incomes",
+      "subCategory": "Intereses bancarios"
+    },
+    {
+      "id": "retencion_isr_taxes",
+      "match": {
+        "regex": "RETENCION\\s*I\\s*S\\s*R|IMPTO\\s*FED|PAGO.*SAT"
+      },
+      "concept": "Retención de Impuestos (ISR / SAT)",
+      "category": "Taxes",
+      "subCategory": "Goverment"
+    },
+    {
+      "id": "retiro_cajero_atm",
+      "match": {
+        "regex": "RETIRO\\s*EFEC|RETIRO.*ATM"
+      },
+      "concept": "Retiro de Efectivo en Cajero (ATM)",
+      "category": "Efectivo",
+      "subCategory": "Retiro cajero ATM"
+    },
+    {
+      "id": "pago_transferencia_spei_general",
+      "match": {
+        "regex": "PAGO\\s*TRANSF|PAGO\\s*TRANSFERENCIA\\s*SPEI"
+      },
+      "concept": "Pago por Transferencia SPEI",
+      "category": "Services",
+      "subCategory": "Transferencia SPEI"
+    },
+    {
+      "id": "oxxo_7eleven_general",
+      "match": {
+        "regex": "OXXO|7\\s*ELEVEN|7-ELEVEN|7ELEVEN"
+      },
+      "concept": "OXXO / 7-Eleven",
+      "category": "Food",
+      "subCategory": "Oxxo"
+    },
     {
       "id": "credit_card_payment",
       "match": {

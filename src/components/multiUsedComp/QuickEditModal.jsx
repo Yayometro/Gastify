@@ -111,7 +111,11 @@ function QuickEditInner({ field, transIds, onClose }) {
         <DemoContainer components={["MobileDateTimePicker"]}>
           <DemoItem label="">
             <MobileDateTimePicker
-              slotProps={{ textField: { size: "small" } }}
+              slotProps={{
+                textField: { size: "small" },
+                dialog: { sx: { zIndex: 35000 } },
+                mobilePaper: { sx: { zIndex: 35000 } },
+              }}
               value={dayjs(value.date)}
               onChange={(v) => setValue((prev) => ({ ...prev, date: new Date(v.format()) }))}
               sx={{
@@ -152,6 +156,7 @@ function QuickEditInner({ field, transIds, onClose }) {
         {close && (
           <BasicModal
             close={handleClose}
+            zIndexClass="z-[20000]"
             renderContent={<ModalCategoryContent close={handleClose} getSelected={handleCategory} />}
           />
         )}
@@ -160,13 +165,13 @@ function QuickEditInner({ field, transIds, onClose }) {
 
     if (field === "account") return (
       <select
-        value={value.account}
-        onChange={(e) => setValue((v) => ({ ...v, account: e.target.value }))}
         className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-purple-400"
+        value={value.account || ""}
+        onChange={(e) => setValue((v) => ({ ...v, account: e.target.value || null }))}
       >
         <option value="">No account</option>
         {accounts?.map((acc) => (
-          <option value={acc._id} key={acc._id}>{acc.name}</option>
+          <option key={acc._id} value={acc._id}>{acc.name}</option>
         ))}
       </select>
     );
@@ -175,6 +180,7 @@ function QuickEditInner({ field, transIds, onClose }) {
   return (
     <Modal
       open
+      zIndex={10000}
       onCancel={onClose}
       onOk={handleSubmit}
       confirmLoading={isLoading}

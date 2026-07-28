@@ -125,10 +125,10 @@ function EditSingleTransModalInner({ trans, onClose }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[2000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
       <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         {isLoading && (
-          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[2001]">
+          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[10001]">
             <Spin size="large" />
           </div>
         )}
@@ -184,8 +184,8 @@ function EditSingleTransModalInner({ trans, onClose }) {
                   <MobileDateTimePicker
                     slotProps={{
                       textField: { size: "small" },
-                      dialog: { sx: { zIndex: 3000 } },
-                      mobilePaper: { sx: { zIndex: 3000 } },
+                      dialog: { sx: { zIndex: 35000 } },
+                      mobilePaper: { sx: { zIndex: 35000 } },
                     }}
                     value={dayjs(form.date)}
                     onChange={(v) => setForm((p) => ({ ...p, date: new Date(v.format()) }))}
@@ -205,6 +205,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
           {close && (
             <BasicModal
               close={handleClose}
+              zIndexClass="z-[20000]"
               renderContent={<ModalCategoryContent close={handleClose} getSelected={handleCategory} />}
             />
           )}
@@ -259,7 +260,11 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
 function EditSingleTransModal({ trans, onClose }) {
   if (!trans) return null;
-  return <EditSingleTransModalInner trans={trans} onClose={onClose} />;
+  return (
+    <SelectCategories>
+      <EditSingleTransModalInner trans={trans} onClose={onClose} />
+    </SelectCategories>
+  );
 }
 
 export default EditSingleTransModal;

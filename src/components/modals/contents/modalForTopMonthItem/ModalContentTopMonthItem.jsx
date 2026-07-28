@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Modal, Tooltip } from "antd";
+import { Tooltip } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
@@ -54,6 +54,7 @@ function ModalContentTopMonthItem({ item, close }) {
   const [editKey, setEditKey] = useState(0);
   const [quickEditField, setQuickEditField] = useState(null);
   const [generalEditOpen, setGeneralEditOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const toggleSelect = (id) =>
     setSelected((prev) => {
@@ -88,65 +89,50 @@ function ModalContentTopMonthItem({ item, close }) {
     setEditKey((k) => k + 1);
   };
 
+  const executeDeleteSingle = async (id) => {
+    try {
+      const res = await toFetch.post(
+        `general-data/transactions/remove-transaction/${id}`,
+        {}
+      );
+      if (res.ok !== false) {
+        dispatch(removeOneTransacction(id));
+        runNotify("ok", res.message || "Transaction deleted");
+        removeLocal([id]);
+      } else {
+        runNotify("error", res.message || "Error deleting transaction");
+      }
+    } catch (e) {
+      runNotify("error", String(e));
+    }
+  };
+
+  const executeDeleteMany = async (ids) => {
+    try {
+      const res = await toFetch.post(
+        "general-data/transactions/remove-many",
+        { manyTrans: ids }
+      );
+      if (res.ok !== false) {
+        dispatch(removeManyTransactions(ids));
+        runNotify("ok", res.message || `${ids.length} transaction(s) deleted`);
+        removeLocal(ids);
+      } else {
+        runNotify("error", res.message || "Error deleting transactions");
+      }
+    } catch (e) {
+      runNotify("error", String(e));
+    }
+  };
+
   const handleDelete = (id) => {
-    Modal.confirm({
-      title: "Delete transaction",
-      content: "This action cannot be undone.",
-      okText: "Confirm delete",
-      cancelText: "Cancel",
-      okButtonProps: {
-        danger: false,
-        className: "!bg-red-600 !border-red-600 !text-white hover:!bg-red-500",
-      },
-      onOk: async () => {
-        try {
-          const res = await toFetch.post(
-            `general-data/transactions/remove-transaction/${id}`,
-            {}
-          );
-          if (res.ok !== false) {
-            dispatch(removeOneTransacction(id));
-            runNotify("ok", res.message || "Transaction deleted");
-            removeLocal([id]);
-          } else {
-            runNotify("error", res.message || "Error deleting transaction");
-          }
-        } catch (e) {
-          runNotify("error", String(e));
-        }
-      },
-    });
+    setConfirmDelete({ type: "single", id });
   };
 
   const handleDeleteSelected = () => {
     const ids = [...selected];
-    Modal.confirm({
-      title: `Delete ${ids.length} transaction${ids.length !== 1 ? "s" : ""}`,
-      content: "This action cannot be undone.",
-      okText: "Confirm delete",
-      cancelText: "Cancel",
-      okButtonProps: {
-        danger: false,
-        className: "!bg-red-600 !border-red-600 !text-white hover:!bg-red-500",
-      },
-      onOk: async () => {
-        try {
-          const res = await toFetch.post(
-            "general-data/transactions/remove-many",
-            { manyTrans: ids }
-          );
-          if (res.ok !== false) {
-            dispatch(removeManyTransactions(ids));
-            runNotify("ok", res.message || `${ids.length} transaction(s) deleted`);
-            removeLocal(ids);
-          } else {
-            runNotify("error", res.message || "Error deleting transactions");
-          }
-        } catch (e) {
-          runNotify("error", String(e));
-        }
-      },
-    });
+    if (!ids.length) return;
+    setConfirmDelete({ type: "many", ids });
   };
 
   const selectionCount = selected.size;
@@ -285,6 +271,50 @@ function ModalContentTopMonthItem({ item, close }) {
           transIds={[...selected]}
           onClose={() => setQuickEditField(null)}
         />,
+        document.body
+      )}
+
+      {/* Declarative confirmation modal — avoids Ant Design static Modal.confirm minified chunk issues in Vercel */}
+      {confirmDelete && createPortal(
+        <div className="fixed inset-0 z-[30000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 flex flex-col gap-4 border border-slate-200">
+            <div className="flex items-center gap-3 text-red-600">
+              <CategoIcon type="MdWarning" siz={24} />
+              <h3 className="font-bold text-lg text-slate-800">
+                {confirmDelete.type === "many"
+                  ? `Delete ${confirmDelete.ids.length} transaction${confirmDelete.ids.length !== 1 ? "s" : ""}?`
+                  : "Delete transaction?"}
+              </h3>
+            </div>
+            <p className="text-sm text-slate-600">
+              This action cannot be undone. Are you sure you want to permanently delete {confirmDelete.type === "many" ? "these items" : "this item"}?
+            </p>
+            <div className="flex justify-end gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const target = confirmDelete;
+                  setConfirmDelete(null);
+                  if (target.type === "single") {
+                    executeDeleteSingle(target.id);
+                  } else {
+                    executeDeleteMany(target.ids);
+                  }
+                }}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-500 text-white shadow-md transition-colors"
+              >
+                Confirm delete
+              </button>
+            </div>
+          </div>
+        </div>,
         document.body
       )}
     </>

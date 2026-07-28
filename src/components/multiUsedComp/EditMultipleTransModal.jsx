@@ -139,10 +139,10 @@ function EditMultipleTransModalInner({ trans, onClose }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[1000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
       <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         {isLoading && (
-          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[1001]">
+          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[10001]">
             <Spin size="large" />
           </div>
         )}
@@ -207,7 +207,11 @@ function EditMultipleTransModalInner({ trans, onClose }) {
               <DemoContainer components={["MobileDateTimePicker"]}>
                 <DemoItem label="">
                   <MobileDateTimePicker
-                    slotProps={{ textField: { size: "small" } }}
+                    slotProps={{
+                      textField: { size: "small" },
+                      dialog: { sx: { zIndex: 35000 } },
+                      mobilePaper: { sx: { zIndex: 35000 } },
+                    }}
                     onChange={(v) => hanleDatePickerChange(v.format())}
                     value={transactionInfo.date ? dayjs(transactionInfo.date) : null}
                     sx={{
@@ -225,6 +229,7 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           {close && (
             <BasicModal
               close={handleClose}
+              zIndexClass="z-[20000]"
               renderContent={
                 <ModalCategoryContent close={handleClose} getSelected={handleCategory} />
               }

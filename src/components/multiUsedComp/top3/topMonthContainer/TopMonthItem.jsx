@@ -64,7 +64,7 @@ function TopMonthItem({
                   isBill={item.isBill}
                   value={item.value || item.amount}
                   getItem={renderModalContent}
-                  fatherStyle={`tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px] ${
+                  fatherStyle={`tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px] cursor-pointer ${
                     item?.color ? "" : "brightness-90"
                   }`}
                   tooltip={

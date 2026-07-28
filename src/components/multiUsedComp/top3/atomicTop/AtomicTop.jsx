@@ -9,7 +9,7 @@ function AtomicTop({item, color, index, icon, name, isBill, value, fatherStyle, 
     <>
     <Tooltip title={tooltip}>
       <div
-        className={fatherStyle || `tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px] cursor-pointer`}
+        className={`${fatherStyle || "tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px]"} cursor-pointer`}
         style={{
           backgroundColor: color || "#DADADA",
         }}
