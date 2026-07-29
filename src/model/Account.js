@@ -3,6 +3,7 @@ import mongoose, {Schema, model} from 'mongoose'
 const accountSchema = new Schema({
     name: {type: String},
     amount: {type: Number},
+    accountType: {type: String, enum: ["debit", "credit", "cash", "savings"], default: "debit"},
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

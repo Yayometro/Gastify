@@ -693,7 +693,46 @@ When taking over this task, Claude should perform the following steps:
 - **Next Steps / Hand-Off Notes**:
   - All category and time-range chart modals in Gastify now consistently provide the full `ModalContentTopMonthItem` experience.
 
+---
 
+## [Entry #11] — 2026-07-29
 
+- **Agent Name / ID**: Claude Sonnet 5 (Anthropic) / this session
+- **Summary of Goals**:
+  1. Build a brand-new **Projections** feature (`/dashboard/projections`) — a 12-month income/expense forecast table, blending `Budget`-based estimates with real transactions for the current month.
+  2. Build a brand-new **Budgets management** section (`/dashboard/budgets`) — Gastify never had UI to create/edit/delete a `Budget`; they were only ever created by hand in the database.
+- **Key Changes & Findings**:
+  1. **Projections** (see `.mds` note: no dedicated plan file was kept for this one, design reasoning lives in this entry and in code comments):
+     - New models: `IncomeSource` (recurring income streams — job(s)/freelance, with `recurrence: monthly|semimonthly|biweekly|weekly` and `history[]` versioning) and `ProjectionSettings` (per wallet+year, just `unexpectedBuffer`).
+     - `Budget` model gained `archived: Boolean` (soft-delete) and `history: [{goalAmount, savingAmount, effectiveFrom, effectiveTo}]` (versioning) — **this is the change every other agent needs to know about**, see gotcha below.
+     - New route `src/app/dashboard/projections/page.jsx` + `src/components/multiUsedComp/Projections/*` (Client/View/MonthDetailModal/IncomeSourcesPanel).
+     - New aggregation helpers: `src/helpers/transformers/projectionsChange.js` (`buildYearProjectionTable`, `getExpectedOccurrencesInMonth`, `matchBillToBudget` — exported, reused by the Budgets feature too) and `src/helpers/transformers/budgetHistory.js` (`getValueActiveInMonth`, `getBudgetBarColor`).
+     - Current-month blending rule: `MAX(shadow estimate, real transactions so far)` per Budget bucket — chosen because it needs no day-of-month pro-rating and degrades gracefully (a month that never exceeds its budget just shows the budgeted number at month-end, which is correct).
+     - Past months use the **historical** Budget/IncomeSource value active at that time (via the new `history[]`/`getValueActiveInMonth`), not the current live value.
+  2. **Budgets management** (full design rationale in `.mds/BUDGETS_MANAGEMENT_PLAN.md` — read that file before touching this area again):
+     - New route `src/app/dashboard/budgets/page.jsx` + `src/components/multiUsedComp/Budgets/*` (`BudgetsClient`, `BudgetBarRow`, `BudgetEditModal`).
+     - List view uses lightweight colored `<div>` progress bars (not the old `GoalGaugeRange`/`GoalSavingsRange` Ant Design gauges — those are left untouched on the main dashboard `BudgetCont`). Color thresholds documented in `getBudgetBarColor()`; spending budgets go green→red as they approach/exceed the ceiling, saving budgets are mirrored (red→green as they approach/exceed the target).
+     - Create/Edit modal reuses the app's existing category picker (`SelectCategories` + `BtnSelectCategoryContext` + `ModalCategoryContent`) exactly as `AddTransactionComp.jsx` does — no new picker was built.
+     - No new API routes needed for this piece — `budget/{new,update,remove,get}` already existed and (after the fixes below) already do everything needed.
+  3. **Bugs found and fixed in the existing `budget` API routes** (found while building the Budgets UI, since nothing had ever exercised these code paths before):
+     - `budget/new` and `budget/update` were returning the saved document **without populating `category`/`subCategory`** — any component reading the response right after create/update (not from a fresh `get`) would see raw ObjectIds instead of `{name, icon, color}`, breaking the category badge until a manual refresh. Fixed by adding `await savedBudget.populate([{path:"category"},{path:"subCategory"}])` before returning, in both routes.
+     - `budget/update`: `isSaving` used a falsy-check (`!isSaving ? old : isSaving`) which meant **explicitly turning a savings budget back into a spending budget (`isSaving: false`) silently did nothing** — `false` is falsy, so it kept the old value. Fixed to check `isSaving === undefined` instead.
+     - `budget/update`: `category`/`subCategory` had the same falsy-check bug — sending `subCategory: null` (e.g., switching from a subcategory-tied budget to a parent-category-only one) was silently ignored, leaving the stale subCategory in place. Fixed to check `=== undefined` instead of falsy, so `null` now correctly clears the field.
+  4. **Important gotcha for whoever restarts the dev server / deploys next**: `Budget` and `Account` are pre-existing models. If the local `npm run dev` process was already running *before* the `archived`/`history` fields were added to `Budget.js` (or `accountType` to `Account.js`), **Mongoose's `mongoose.models.Budget` singleton cache means the running process keeps using the OLD compiled schema** — new fields silently fail to persist (verified directly against MongoDB: newly "deleted" test budgets had no `archived` field written at all). This is a dev-server-restart issue, not a code bug — **restart `npm run dev`** after pulling these changes for the new Budget/Account fields to actually take effect. Brand-new models (`IncomeSource`, `ProjectionSettings`) aren't affected since they get compiled fresh on first import.
+- **Files Created / Modified**:
+  - Created: `src/model/IncomeSource.js`, `src/model/ProjectionSettings.js`
+  - Modified: `src/model/Budget.js` (+ `archived`, `history[]`), `src/model/Account.js` (+ `accountType`)
+  - Created: `src/app/api/general-data/income-sources/{get,new,update,remove}/route.js`, `src/app/api/general-data/projections/{get,update}/route.js`
+  - Modified: `src/app/api/general-data/budget/{new,update,remove,get}/route.js` (history versioning, soft-delete, populate fix, falsy-check fixes), `src/app/api/general-data/accounts/{new-account,update-account}/route.js` (+ `accountType`)
+  - Created: `src/app/dashboard/projections/page.jsx`, `src/components/multiUsedComp/Projections/{ProjectionsClient,ProjectionsView,ProjectionMonthDetailModal,IncomeSourcesPanel}.jsx`
+  - Created: `src/app/dashboard/budgets/page.jsx`, `src/components/multiUsedComp/Budgets/{BudgetsClient,BudgetBarRow,BudgetEditModal}.jsx`
+  - Created: `src/helpers/transformers/projectionsChange.js`, `src/helpers/transformers/budgetHistory.js`
+  - Modified: `src/components/Navbar.jsx` (+Projections, +Budgets nav items), `src/components/multiUsedComp/EditAccountModal.jsx` (+ accountType selector)
+  - Created: `.mds/BUDGETS_MANAGEMENT_PLAN.md`
+  - Modified: `.mds/AI_COORDINATION_LOG.md`
+- **Next Steps / Hand-Off Notes**:
+  - Both new sections were verified live via a logged-in Chrome session: nav placement, create/edit/delete, color thresholds, and the Projections↔Budgets integration (a Budget created on `/dashboard/budgets` immediately raises the matching future month's expense estimate on `/dashboard/projections`, with no extra glue code — both read the same Redux `budgetReducer`).
+  - User restarted the dev server after this entry was first written; re-verified directly against MongoDB that Budget soft-delete now correctly persists `archived: true` plus a closed `history[]` entry (`effectiveTo` set). Account `accountType` follows the identical code path and is expected to behave the same, though it wasn't independently re-checked against Mongo — flag this specifically if `accountType` ever looks like it isn't saving.
+  - Navbar order (top to bottom in the shared `nav-full` list) is now: Profile, Movements, Wallet, Budgets, Projections, Add-transaction, Accounts, History, Categories, Sign Out — per explicit user request to place Budgets between Wallet and Projections.
 
 

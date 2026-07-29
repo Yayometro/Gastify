@@ -6,14 +6,15 @@ import { NextResponse } from "next/server";
 export async function POST(request){
     try{
         if(!request) throw new Error("No data in request on NEW-ACCOUNT POST") 
-        const {userId, walletId, name, amount, } = await request.json()
+        const {userId, walletId, name, amount, accountType, } = await request.json()
         await dbConnection();
         //
         const newAccount = new Account({
             user: userId,
             wallet: walletId,
             name: !name ? "Account nameless" : name,
-            amount: !amount ? 0 : amount
+            amount: !amount ? 0 : amount,
+            accountType: !accountType ? "debit" : accountType
         })
         const savedAccount = await newAccount.save();
             if(!savedAccount) throw new Error(`No Account: ${newAccount.name} was saved`)

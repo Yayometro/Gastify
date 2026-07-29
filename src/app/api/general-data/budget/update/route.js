@@ -18,6 +18,22 @@ export async function POST(request) {
     const updateBudget = await Budget.findById(id);
     //IF ERROR
     if (!updateBudget) throw new Error(`No Budget was identified to update 🤕`);
+    // VERSION HISTORY if goalAmount/savingAmount is actually changing
+    const amountIsChanging =
+      (!!goalAmount && goalAmount !== updateBudget.goalAmount) ||
+      (!!savingAmount && savingAmount !== updateBudget.savingAmount);
+    if (amountIsChanging) {
+      const now = new Date();
+      const openEntry = updateBudget.history?.find((h) => !h.effectiveTo);
+      if (openEntry) openEntry.effectiveTo = now;
+      updateBudget.history = updateBudget.history || [];
+      updateBudget.history.push({
+        goalAmount: !goalAmount ? updateBudget.goalAmount : goalAmount,
+        savingAmount: !savingAmount ? updateBudget.savingAmount : savingAmount,
+        effectiveFrom: now,
+        effectiveTo: null,
+      });
+    }
     //UPDATE:
     //name
     updateBudget.name = !name ? updateBudget.name : name;
@@ -29,18 +45,19 @@ export async function POST(request) {
     updateBudget.isSurpassed = !isSurpassed
       ? updateBudget.isSurpassed
       : isSurpassed;
-    //category
-    updateBudget.category = !category ? updateBudget.category : category;
-    //subCategory
-    updateBudget.subCategory = !subCategory ? updateBudget.subCategory : subCategory;
-    //isSaving
-    updateBudget.isSaving = !isSaving ? updateBudget.isSaving : isSaving;
+    //category (undefined = don't touch; null/id = set it, including explicitly clearing it)
+    updateBudget.category = category === undefined ? updateBudget.category : category;
+    //subCategory (same as category - null explicitly clears it, e.g. switching to a parent-only category)
+    updateBudget.subCategory = subCategory === undefined ? updateBudget.subCategory : subCategory;
+    //isSaving (boolean, so check for undefined rather than falsy - false is a valid value)
+    updateBudget.isSaving = isSaving === undefined ? updateBudget.isSaving : isSaving;
     //savingAmount
     updateBudget.savingAmount = !savingAmount ? updateBudget.savingAmount : savingAmount;
     // SAVE
     const savedBudget = await updateBudget.save();
     //IF ERROR
     if (!savedBudget) throw new Error("Updated Budget was not saved 🤕");
+    await savedBudget.populate([{ path: "category" }, { path: "subCategory" }]);
     return NextResponse.json({
       message: `${savedBudget.name} was updated successfully 🤓`,
       data: savedBudget,
