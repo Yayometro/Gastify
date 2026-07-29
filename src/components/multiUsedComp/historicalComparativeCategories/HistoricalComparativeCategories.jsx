@@ -150,7 +150,7 @@ function HistoricalComparativeCategories() {
     <>
       <HistoricalComparativeCategoriesView {...props} />;
       {close && (
-        <BasicModal close={handleClose} renderBodyContent={modalContent} />
+        <BasicModal close={handleClose} renderContent={modalContent} />
       )}
     </>
   );
