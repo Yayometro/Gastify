@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ResponsiveBarsChartComponent from "../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
 import HistoricalComparativeCategoriesView from "./view/HistoricalComparativeCategoriesView";
 import useModal from "@/hooks/useModalBasic";
+import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 
 const today = new Date();
