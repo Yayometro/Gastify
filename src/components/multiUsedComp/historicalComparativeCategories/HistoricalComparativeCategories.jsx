@@ -17,7 +17,7 @@ import ResponsiveBarsChartComponent from "../chartsComponents/responsiveBarsChar
 import HistoricalComparativeCategoriesView from "./view/HistoricalComparativeCategoriesView";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
-import RenderTransactionsInModal from "@/components/renderTransactionsInModal/RenderTransactionsInModal";
+import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 
 const today = new Date();
 
@@ -89,7 +89,7 @@ function HistoricalComparativeCategories() {
         legenedLeft: "Amount",
         propsPlus: {
           onClick: (a, e) => {
-            renderModal(<RenderTransactionsInModal data={a} />);
+            renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />);
           },
         },
       },
@@ -102,6 +102,11 @@ function HistoricalComparativeCategories() {
         totalValue: totalAmount[1] || 0,
         legendBottom: "Months",
         legenedLeft: "Amount",
+        propsPlus: {
+          onClick: (a, e) => {
+            renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />);
+          },
+        },
       },
       Component: ResponsiveBarsChartComponent,
     },
@@ -145,7 +150,7 @@ function HistoricalComparativeCategories() {
     <>
       <HistoricalComparativeCategoriesView {...props} />;
       {close && (
-        <BasicModal close={handleClose} renderBodyContent={modalContent} />
+        <BasicModal close={handleClose} renderContent={modalContent} />
       )}
     </>
   );

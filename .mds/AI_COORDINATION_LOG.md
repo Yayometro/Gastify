@@ -579,7 +579,160 @@ When taking over this task, Claude should perform the following steps:
   - `gastify-template.xlsx` now contains exactly the 109 missing transactions for December 2025 and January 2026 with 100% clean categories, subcategories, and account labels, ready for immediate upload into the app.
   - Future AI assistants processing bank statements MUST follow the PaddleOCR section in `.mds/BANK_STATEMENT_EXTRACTION_GUIDE.md`.
 
+---
 
+### 📅 Entry #7: 2026-07-29 (01:59 AM Local)
 
+- **AI Assistant**: Google Antigravity / Gemini 3.6 Pro
+- **User Request**: Add intelligent time-range month navigation arrows, deselect all button in Top-6 modal, full duplicate finder features in Top-6 modal, tag editing in modals, red/green income/bill totals in Movements, sort Dashboard Transaction Resume bars from highest to lowest, and fix Quick Edit category modal z-index/open bug.
+- **Phase**: UX/UI Enhancements, Duplicate Management, and Modal Stabilization
+- **Actions Taken**:
+  1. **Intelligent Time Range Month Navigation (`TimeRange.jsx`)**: Added intelligent "Previous Month" `[<]` and "Next Month" `[>]` arrow buttons with hover tooltips. Automatically computes exact start and end timestamps for the target month using `dayjs` and synchronizes with the `DatePicker` start/end inputs across the app.
+  2. **Top-6 Modal Enhancements & Full Duplicate Finder (`ModalContentTopMonthItem.jsx`)**:
+     - Added "Deselect all" button when items are selected.
+     - Integrated the complete duplicate finder toolbar from `Movements.jsx`: match criteria checkboxes (`name`, `date`, `amount`, `category`, `subcategory`), `Date tolerance` and `Amount tolerance` controls, `Refresh defaults` button, `Select possible duplicates` button, `Delete only duplicates / Delete all matches` toggle (`dupDeleteAll`), `Clear selection` button, `Compare in detail` table modal, and red `Delete X selected` button.
+     - Created standalone reusable component `src/components/multiUsedComp/DuplicateComparisonTable.jsx` and refactored both `Movements.jsx` and `ModalContentTopMonthItem.jsx` to import it cleanly. Fixed `DeletePreviewRow` prop to `transaction={trans}`.
+  3. **Movements Component Enhancements (`Movements.jsx`)**: Added real-time financial metric computations below the "Amount" header showing total Bills (in red) and total Incomes (in green) calculated dynamically via `useMemo` from current filters and duplicate views.
+  4. **Tags Quick Edit Support**: Added `tags` to `FIELD_META` and quick actions in `QuickEditModal.jsx` and `ModalContentTopMonthItem.jsx`.
+  5. **Dashboard Transaction Resume Bar Ordering (`TabsTrans.jsx`)**: Sorted `finalArray` descending by amount (`.sort((a, b) => b.value - a.value)`) so bars in the Dashboard's "Transactions Resume" chart render ordered from largest on the left to smallest on the right.
+  6. **Quick Edit Category Modal Fix (`QuickEditModal.jsx`)**: Fixed a bug where clicking "Change category" in Quick Edit modal didn't open the category selector. Connected `BtnSelectCategoryContext` with `onClose={handleClose}` and wrapped `BasicModal` with `zIndexClass="z-[50000]"` so it renders above `QuickEditModal` (`z-[40000]`).
+- **Files Created / Modified**:
+  - Created: [`src/components/multiUsedComp/DuplicateComparisonTable.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/DuplicateComparisonTable.jsx)
+  - Modified: [`src/components/Filters/timeRange/TimeRange.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/Filters/timeRange/TimeRange.jsx)
+  - Modified: [`src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx)
+  - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
+  - Modified: [`src/components/multiUsedComp/QuickEditModal.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/QuickEditModal.jsx)
+  - Modified: [`src/components/multiUsedComp/TabsTrans.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/TabsTrans.jsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - All new UI features are tested and verified. Remember to commit changes to `develop` first and merge into `main` for Vercel production deployment.
+
+---
+
+### 📅 Entry #8: 2026-07-29 (03:24 AM Local)
+
+- **AI Assistant**: Google Antigravity / Gemini 3.6 Pro
+- **User Request**: Refine naming rules to remove all dates, pipe characters, and merchant codes from concept titles, ensure specific rules (e.g., Airbnb -> "Airbnb", Amazon $99 -> "Amazon Prime Membresía", McDonald's -> "McDonald's Lima"), assign 100% of transactions both a Category and SubCategory from the existing `_data` sheet without leaving any empty categories, and populate into `gastify-template-ACTUALIZADO.xlsx`.
+- **Phase**: Bank Statement Reconciliation & Advanced Data Pipeline (Febrero 2026)
+- **Actions Taken**:
+  1. **App JSON Audit (`Febrero-2026-all-trans-gastify.json`)**:
+     - Discovered only 52 transactions existed in the app for February 2026.
+     - Found zero transactions from `2026-02-01` to `2026-02-16`, confirming that the February 16 statement for HSBC 2Now (`2026-02-16_Estado_de_cuenta.pdf`) and Santander Débito Nómina (`Estado de cuenta febrero 2026.pdf`) were never uploaded to Gastify.
+  2. **Multi-Statement Extraction & Audit (`PaddleOCR PP-OCRv6`)**:
+     - Rendered and extracted all candidate February 2026 transactions across both February and March statement PDFs:
+       - **HSBC 2Now** (`2026-02-16_Estado_de_cuenta.pdf` and `2026-03-13_Estado_de_cuenta.pdf`).
+       - **Santander Débito Nómina** (February & March statements).
+       - **Santander LikeU Credit** (February & March statements).
+  3. **Advanced Naming Rules & Concept Stripping**:
+     - Stripped 100% of dates, pipe characters (`|`), country/city abbreviations, and trailing OCR amount signs from transaction titles.
+     - Enforced clean standardized titles: `"Airbnb"`, `"Amazon Prime Membresía"` ($99), `"McDonald's Lima"`, `"Chakana Nacional Lima"`, `"Hotel Lobby Santa Catalina"`, `"Kallpa Outdoor Cusco (Tour)"`, `"D. R. Agraria (Tour)"`, `"La Herradura Calafate"`, `"Restaurante La Cocina Calafate"`, `"SafetyWing Seguro de Viaje"`, etc.
+  4. **100% Categorization from `_data` Sheet**:
+     - Mapped every single transaction to an existing valid `Category` and `SubCategory` in `_data` (zero empty categories).
+     - Accurate distinction between `Bill` (all card purchases/debits) and `Income` (payroll deposits `$24,248.29` / `$24,761.51` and received SPEI transfers).
+  5. **Template Generation (`gastify-template-ACTUALIZADO.xlsx`)**:
+     - Sanitized `gastify-template-ACTUALIZADO.xlsx` XML (`<fill/>` tags from `xlsx-populate`) so openpyxl works reliably.
+     - **Critical Compatibility Fix (`xlsx-populate` TypeError reading 'children')**: Identified that writing empty strings (`""`) to cells in `openpyxl` causes `openpyxl` to emit empty `<inlineStr>` XML tags (`<is><t/></is>` or `<is/>`). When Gastify's backend reads these with `xlsx-populate` (`Cell.js:608`), it crashes with `Cannot read properties of undefined (reading 'children')`. Fixed by strictly assigning `None` instead of `""` to all empty/blank cells.
+     - Wrote exactly 80 clean transactions starting at Row 3 ($66,462.31 Bills / $82,007.80 Incomes) and verified in Node.js that `xlsx-populate` parses all 80 rows without errors.
+- **Files Created / Modified**:
+  - Modified: [`/Users/luisjairvazqueznavarrete/Documents/Estados de cuenta /gastify-template-ACTUALIZADO.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template-ACTUALIZADO.xlsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - Template `/Users/luisjairvazqueznavarrete/Documents/Estados de cuenta /gastify-template-ACTUALIZADO.xlsx` is ready to be imported into Gastify to backfill all missing February 2026 transactions with zero-date concepts and 100% categorization.
+
+---
+
+## [Entry #9] — 2026-07-29
+
+- **Agent Name / ID**: Antigravity — DeepMind AAC / `6abc80d0-3db1-4fdb-8f32-0c9bc90b0d88`
+- **Summary of Goals**:
+  1. Fix missing delete confirmation buttons in `"Compare in detail"` modal inside Top 6 category/month modal (`ModalContentTopMonthItem.jsx`).
+  2. Implement 1-to-1 comparative table (`<DuplicateComparisonTable>`) inside the Top 6 modal deletion flow when duplicate mode (`dupMode`) is active, matching `Movements.jsx`.
+  3. Simplify the Top 6 duplicate deletion workflow by removing redundant intermediate confirmation modals.
+  4. Fix duplicate matching failure when filtering by `"Date"` with default tolerance (`dateTol = 0`).
+- **Key Changes & Findings**:
+  1. **Top 6 Modal Duplicate Comparison & Deletion UX Refactor (`ModalContentTopMonthItem.jsx`)**:
+     - Added action footer (`"Cancel"` and `"Delete X elements"` primary red button) to `"Duplicate Comparison Detail"` modal (`comparing`), which was previously set to `footer={null}`.
+     - Declared missing `deleting` state variable (`const [deleting, setDeleting] = useState(false)`) and connected it to `executeDeleteSingle` and `executeDeleteMany` to control loading spinners and prevent `ReferenceError`.
+     - Eliminated redundant intermediate modal (`deletePreviewOpen`): routing `"Delete X elements"` from compare-in-detail and `"Delete X selected"` from the toolbar directly to the final `confirmDelete` modal.
+     - Enhanced `confirmDelete` modal so that when `dupMode === true` and deleting multiple items (`type === "many"`), it expands to `max-w-3xl` and renders **`<DuplicateComparisonTable>`** inside the confirmation modal, allowing side-by-side original vs. duplicate review and item toggling before final deletion.
+  2. **Duplicate Date Comparison Fix (`areDuplicates` in `ModalContentTopMonthItem.jsx` and `Movements.jsx`)**:
+     - Investigated why checking `"Date"` filter failed to group transactions created on the same calendar day with identical name/amount.
+     - Discovered that `new Date(a.date || a.createdAt).getTime()` included hours, minutes, seconds, and milliseconds. For transactions created 1 minute apart on the same day, `diffDays` was `0.000694 > 0`, causing `areDuplicates` to return `false` when `dateTol = 0`.
+     - Fixed by normalizing both dates to their calendar day string (`YYYY-MM-DD`, via `.slice(0, 10)`) before calling `new Date(daStr).getTime()`. Same-day transactions now produce `diffDays = 0`, matching reliably under `dateTol = 0`.
+- **Files Created / Modified**:
+  - Modified: [`src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx)
+  - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+  - Both `Movements.jsx` and `ModalContentTopMonthItem.jsx` now share unified, calendar-day-accurate duplicate detection and an interactive 1-to-1 comparison UX during duplicate deletion.
+
+---
+
+## [Entry #10] — 2026-07-29
+
+- **Agent Name / ID**: Antigravity — DeepMind AAC / `6abc80d0-3db1-4fdb-8f32-0c9bc90b0d88`
+- **Summary of Goals**:
+  1. Add explicit **Balance (Incomes - Bills)** calculation and display to the History Details comparative summary.
+  2. Replace basic transaction list modal (`RenderTransactionsInModal`) in **Categories Comparative** (`HistoricalComparativeCategories`) with the full-featured Top 6 modal (`ModalContentTopMonthItem`) for both *Bills* and *Incomes* chart columns.
+- **Key Changes & Findings**:
+  1. **History Details Net Balance Display (`propsColTabsToggler.js`)**:
+     - Added an explicit third summary line below `Total incomes` and `Total bills` displaying `Balance (Incomes - Bills): $XXX.XX`.
+     - Added dynamic color formatting (`text-emerald-600` for net surplus/positive savings, `text-red-600` for net deficit) to clearly communicate financial status for the selected time range.
+  2. **Categories Comparative Full-Powered Top 6 Modal Upgrade (`HistoricalComparativeCategories.jsx`)**:
+     - Replaced import of `RenderTransactionsInModal` (a basic 34-line read-only transaction list) with `ModalContentTopMonthItem`.
+     - Configured both `bills` and `incomes` tab chart components so that clicking any column invokes `renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />)`.
+     - Fixed nested double-modal display bug by changing `<BasicModal renderBodyContent={modalContent} />` to `<BasicModal renderContent={modalContent} />`.
+     - Users now have access to real-time search, multi-field sorting, subcategory/price filtering, Quick Edit batch categorization, interactive checkbox multi-selection, and calendar-day-accurate Find Duplicates with 1-to-1 comparative tables directly from any chart column in History.
+  3. **Repository Cleanup (`.mds/MOVEMENTS_UX_PLAN.md`)**:
+     - Confirmed that all 3 UX follow-up tasks originally planned in `.mds/MOVEMENTS_UX_PLAN.md` (category modal selector, delete confirmation preview lists, and duplicate comparison view) were fully implemented in Entry #13.
+     - Deleted obsolete `.mds/MOVEMENTS_UX_PLAN.md` from repository.
+- **Files Created / Modified**:
+  - Modified: [`src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js)
+  - Modified: [`src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.jsx)
+  - Deleted: `.mds/MOVEMENTS_UX_PLAN.md`
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - All category and time-range chart modals in Gastify now consistently provide the full `ModalContentTopMonthItem` experience.
+
+---
+
+## [Entry #11] — 2026-07-29
+
+- **Agent Name / ID**: Claude Sonnet 5 (Anthropic) / this session
+- **Summary of Goals**:
+  1. Build a brand-new **Projections** feature (`/dashboard/projections`) — a 12-month income/expense forecast table, blending `Budget`-based estimates with real transactions for the current month.
+  2. Build a brand-new **Budgets management** section (`/dashboard/budgets`) — Gastify never had UI to create/edit/delete a `Budget`; they were only ever created by hand in the database.
+- **Key Changes & Findings**:
+  1. **Projections** (see `.mds` note: no dedicated plan file was kept for this one, design reasoning lives in this entry and in code comments):
+     - New models: `IncomeSource` (recurring income streams — job(s)/freelance, with `recurrence: monthly|semimonthly|biweekly|weekly` and `history[]` versioning) and `ProjectionSettings` (per wallet+year, just `unexpectedBuffer`).
+     - `Budget` model gained `archived: Boolean` (soft-delete) and `history: [{goalAmount, savingAmount, effectiveFrom, effectiveTo}]` (versioning) — **this is the change every other agent needs to know about**, see gotcha below.
+     - New route `src/app/dashboard/projections/page.jsx` + `src/components/multiUsedComp/Projections/*` (Client/View/MonthDetailModal/IncomeSourcesPanel).
+     - New aggregation helpers: `src/helpers/transformers/projectionsChange.js` (`buildYearProjectionTable`, `getExpectedOccurrencesInMonth`, `matchBillToBudget` — exported, reused by the Budgets feature too) and `src/helpers/transformers/budgetHistory.js` (`getValueActiveInMonth`, `getBudgetBarColor`).
+     - Current-month blending rule: `MAX(shadow estimate, real transactions so far)` per Budget bucket — chosen because it needs no day-of-month pro-rating and degrades gracefully (a month that never exceeds its budget just shows the budgeted number at month-end, which is correct).
+     - Past months use the **historical** Budget/IncomeSource value active at that time (via the new `history[]`/`getValueActiveInMonth`), not the current live value.
+  2. **Budgets management** (full design rationale in `.mds/BUDGETS_MANAGEMENT_PLAN.md` — read that file before touching this area again):
+     - New route `src/app/dashboard/budgets/page.jsx` + `src/components/multiUsedComp/Budgets/*` (`BudgetsClient`, `BudgetBarRow`, `BudgetEditModal`).
+     - List view uses lightweight colored `<div>` progress bars (not the old `GoalGaugeRange`/`GoalSavingsRange` Ant Design gauges — those are left untouched on the main dashboard `BudgetCont`). Color thresholds documented in `getBudgetBarColor()`; spending budgets go green→red as they approach/exceed the ceiling, saving budgets are mirrored (red→green as they approach/exceed the target).
+     - Create/Edit modal reuses the app's existing category picker (`SelectCategories` + `BtnSelectCategoryContext` + `ModalCategoryContent`) exactly as `AddTransactionComp.jsx` does — no new picker was built.
+     - No new API routes needed for this piece — `budget/{new,update,remove,get}` already existed and (after the fixes below) already do everything needed.
+  3. **Bugs found and fixed in the existing `budget` API routes** (found while building the Budgets UI, since nothing had ever exercised these code paths before):
+     - `budget/new` and `budget/update` were returning the saved document **without populating `category`/`subCategory`** — any component reading the response right after create/update (not from a fresh `get`) would see raw ObjectIds instead of `{name, icon, color}`, breaking the category badge until a manual refresh. Fixed by adding `await savedBudget.populate([{path:"category"},{path:"subCategory"}])` before returning, in both routes.
+     - `budget/update`: `isSaving` used a falsy-check (`!isSaving ? old : isSaving`) which meant **explicitly turning a savings budget back into a spending budget (`isSaving: false`) silently did nothing** — `false` is falsy, so it kept the old value. Fixed to check `isSaving === undefined` instead.
+     - `budget/update`: `category`/`subCategory` had the same falsy-check bug — sending `subCategory: null` (e.g., switching from a subcategory-tied budget to a parent-category-only one) was silently ignored, leaving the stale subCategory in place. Fixed to check `=== undefined` instead of falsy, so `null` now correctly clears the field.
+  4. **Important gotcha for whoever restarts the dev server / deploys next**: `Budget` and `Account` are pre-existing models. If the local `npm run dev` process was already running *before* the `archived`/`history` fields were added to `Budget.js` (or `accountType` to `Account.js`), **Mongoose's `mongoose.models.Budget` singleton cache means the running process keeps using the OLD compiled schema** — new fields silently fail to persist (verified directly against MongoDB: newly "deleted" test budgets had no `archived` field written at all). This is a dev-server-restart issue, not a code bug — **restart `npm run dev`** after pulling these changes for the new Budget/Account fields to actually take effect. Brand-new models (`IncomeSource`, `ProjectionSettings`) aren't affected since they get compiled fresh on first import.
+- **Files Created / Modified**:
+  - Created: `src/model/IncomeSource.js`, `src/model/ProjectionSettings.js`
+  - Modified: `src/model/Budget.js` (+ `archived`, `history[]`), `src/model/Account.js` (+ `accountType`)
+  - Created: `src/app/api/general-data/income-sources/{get,new,update,remove}/route.js`, `src/app/api/general-data/projections/{get,update}/route.js`
+  - Modified: `src/app/api/general-data/budget/{new,update,remove,get}/route.js` (history versioning, soft-delete, populate fix, falsy-check fixes), `src/app/api/general-data/accounts/{new-account,update-account}/route.js` (+ `accountType`)
+  - Created: `src/app/dashboard/projections/page.jsx`, `src/components/multiUsedComp/Projections/{ProjectionsClient,ProjectionsView,ProjectionMonthDetailModal,IncomeSourcesPanel}.jsx`
+  - Created: `src/app/dashboard/budgets/page.jsx`, `src/components/multiUsedComp/Budgets/{BudgetsClient,BudgetBarRow,BudgetEditModal}.jsx`
+  - Created: `src/helpers/transformers/projectionsChange.js`, `src/helpers/transformers/budgetHistory.js`
+  - Modified: `src/components/Navbar.jsx` (+Projections, +Budgets nav items), `src/components/multiUsedComp/EditAccountModal.jsx` (+ accountType selector)
+  - Created: `.mds/BUDGETS_MANAGEMENT_PLAN.md`
+  - Modified: `.mds/AI_COORDINATION_LOG.md`
+- **Next Steps / Hand-Off Notes**:
+  - Both new sections were verified live via a logged-in Chrome session: nav placement, create/edit/delete, color thresholds, and the Projections↔Budgets integration (a Budget created on `/dashboard/budgets` immediately raises the matching future month's expense estimate on `/dashboard/projections`, with no extra glue code — both read the same Redux `budgetReducer`).
+  - User restarted the dev server after this entry was first written; re-verified directly against MongoDB that Budget soft-delete now correctly persists `archived: true` plus a closed `history[]` entry (`effectiveTo` set). Account `accountType` follows the identical code path and is expected to behave the same, though it wasn't independently re-checked against Mongo — flag this specifically if `accountType` ever looks like it isn't saving.
+  - Navbar order (top to bottom in the shared `nav-full` list) is now: Profile, Movements, Wallet, Budgets, Projections, Add-transaction, Accounts, History, Categories, Sign Out — per explicit user request to place Budgets between Wallet and Projections.
 
 

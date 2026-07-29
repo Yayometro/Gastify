@@ -44,14 +44,19 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
             </div>
           </div>
         )}
-        <span className="w-full pt-2">
-          <p>
-            Total incomes: <b>{usdFormatChanger(totalAmount[0])}</b>
+        <div className="w-full pt-2 flex flex-col items-center gap-0.5 text-sm">
+          <p className="text-emerald-600">
+            Total incomes: <b>{usdFormatChanger(totalAmount[0] || 0)}</b>
           </p>
-          <p>
-            Total bills: <b>{usdFormatChanger(totalAmount[1])}</b>
+          <p className="text-red-500">
+            Total bills: <b>{usdFormatChanger(totalAmount[1] || 0)}</b>
           </p>
-        </span>
+          <div className="border-t border-slate-300 w-48 my-1"></div>
+          <p className={`font-semibold ${(totalAmount[0] || 0) - (totalAmount[1] || 0) >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+            Balance (Incomes - Bills):{" "}
+            <b>{usdFormatChanger((totalAmount[0] || 0) - (totalAmount[1] || 0))}</b>
+          </p>
+        </div>
       </div>
     ),
     propPlus: {

@@ -24,6 +24,13 @@ const budgetSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "SubCategory",
     },
+    archived: { type: Boolean, default: false },
+    history: [{
+        goalAmount: Number,
+        savingAmount: Number,
+        effectiveFrom: Date,
+        effectiveTo: Date,
+    }],
   },{ timestamps: true }
 );
 

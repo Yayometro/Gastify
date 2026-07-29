@@ -14,6 +14,7 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
     accountId: "",
     name: "",
     amount: 0,
+    accountType: "debit",
   });
   const toFetch = fetcher();
   //REDUX
@@ -27,6 +28,7 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
           accountId: eamAccount._id,
           name: eamAccount?.name || "",
           amount: eamAccount.amount || 0,
+          accountType: eamAccount.accountType || "debit",
         });
       } else if (eamMode === "creation") {
         console.log(eamMode);
@@ -34,6 +36,7 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
           accountId: "",
           name: "",
           amount: 0,
+          accountType: "debit",
           userId: eamAccount.user,
           walletId: eamAccount.wallet,
         });
@@ -161,6 +164,17 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
             onChange={handleChange}
             placeholder="Account Name"
           />
+          <p className="label-tfp ">Account Type</p>
+          <select
+            name="accountType"
+            value={formAccount.accountType}
+            onChange={handleChange}
+          >
+            <option value="debit">Debit</option>
+            <option value="credit">Credit</option>
+            <option value="cash">Cash</option>
+            <option value="savings">Savings</option>
+          </select>
           {eamMode === "edition" ? (
             <div
               className="w-full text-red-500 flex justify-center items-center p-1 underline cursor-pointer hover:text-red-800"

@@ -33,7 +33,13 @@ export async function POST(request) {
       user: user,
       wallet: wallet,
       isSaving: isSaving || false,
-      savingAmount: savingAmount || 0
+      savingAmount: savingAmount || 0,
+      history: [{
+        goalAmount: goalAmount || 1,
+        savingAmount: savingAmount || 0,
+        effectiveFrom: new Date(),
+        effectiveTo: null,
+      }],
     });
     newBudget.category = category || null;
     newBudget.subCategory = subCategory || null;
@@ -43,6 +49,7 @@ export async function POST(request) {
     const savedBudget = await newBudget.save();
     //IF ERROR
     if (!savedBudget) throw new Error("New Budget was not saved 🤕");
+    await savedBudget.populate([{ path: "category" }, { path: "subCategory" }]);
     return NextResponse.json({
       message: `${savedBudget.name} was created successfully 🤓`,
       data: savedBudget,

@@ -1,7 +1,5 @@
-import Budget from "@/model/Budget";
+import IncomeSource from "@/model/IncomeSource";
 import User from "@/model/User";
-import Category from "@/model/Category";
-import SubCategory from "@/model/SubCategory";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
 
@@ -11,10 +9,10 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    if (!request) throw new Error("No data in request on NEW BUDGET POST");
+    if (!request) throw new Error("No data in request on GET INCOME SOURCE POST");
     const id = await request.json();
     // NO ID FILTER
-    if (!id) throw new Error(`No ID  was provided to update budget 🤕`);
+    if (!id) throw new Error(`No mail was provided to get income sources 🤕`);
     await dbConnection();
     // User find
     const userFound = await User.findOne({ mail: id }).lean();
@@ -24,25 +22,16 @@ export async function POST(request) {
       });
     const userId = userFound._id;
     const walletId = userFound.wallet;
-    
-    // FIND WALLET and UPDATE
-    const findBudgets = await Budget.find({
-        user: userId,
-        wallet: walletId,
-        archived: { $ne: true },
-      })
-      .lean()
-      .populate({
-        path: "category",
-      })
-      .populate({
-        path: "subCategory",
-      })
-    // console.log(findBudgets)
-    if (!findBudgets) throw new Error("Updated Budget was not saved 🤕");
+
+    const findIncomeSources = await IncomeSource.find({
+      user: userId,
+      wallet: walletId,
+      archived: { $ne: true },
+    }).lean();
+    if (!findIncomeSources) throw new Error("Income Sources were not found 🤕");
     return NextResponse.json({
-      message: `Budgest were found successfully 🤓`,
-      data: findBudgets,
+      message: `Income Sources were found successfully 🤓`,
+      data: findIncomeSources,
       status: 201,
       ok: true,
     });

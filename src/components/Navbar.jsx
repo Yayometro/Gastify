@@ -12,6 +12,7 @@ import { IoIosArrowUp } from "react-icons/io";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { FaWallet } from "react-icons/fa6";
 import { MdAutoGraph } from "react-icons/md";
+import { MdSavings } from "react-icons/md";
 import { IoAddCircle } from "react-icons/io5";
 import { MdAccountBalance } from "react-icons/md";
 import { IoPricetags } from "react-icons/io5";
@@ -76,6 +77,18 @@ function Navbar({ sesion }) {
           <Link href="/dashboard">
             <FaWallet size={27} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Wallet</p>
+          </Link>
+        </li>
+        <li className="micro-pulse">
+          <Link href="/dashboard/budgets">
+            <MdSavings size={30} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Budgets</p>
+          </Link>
+        </li>
+        <li className="micro-pulse">
+          <Link href="/dashboard/projections">
+            <MdAutoGraph size={30} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Projections</p>
           </Link>
         </li>
         <li >
