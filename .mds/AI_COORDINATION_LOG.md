@@ -680,10 +680,15 @@ When taking over this task, Claude should perform the following steps:
   2. **Categories Comparative Full-Powered Top 6 Modal Upgrade (`HistoricalComparativeCategories.jsx`)**:
      - Replaced import of `RenderTransactionsInModal` (a basic 34-line read-only transaction list) with `ModalContentTopMonthItem`.
      - Configured both `bills` and `incomes` tab chart components so that clicking any column invokes `renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />)`.
+     - Fixed nested double-modal display bug by changing `<BasicModal renderBodyContent={modalContent} />` to `<BasicModal renderContent={modalContent} />`.
      - Users now have access to real-time search, multi-field sorting, subcategory/price filtering, Quick Edit batch categorization, interactive checkbox multi-selection, and calendar-day-accurate Find Duplicates with 1-to-1 comparative tables directly from any chart column in History.
+  3. **Repository Cleanup (`.mds/MOVEMENTS_UX_PLAN.md`)**:
+     - Confirmed that all 3 UX follow-up tasks originally planned in `.mds/MOVEMENTS_UX_PLAN.md` (category modal selector, delete confirmation preview lists, and duplicate comparison view) were fully implemented in Entry #13.
+     - Deleted obsolete `.mds/MOVEMENTS_UX_PLAN.md` from repository.
 - **Files Created / Modified**:
   - Modified: [`src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js)
   - Modified: [`src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.jsx)
+  - Deleted: `.mds/MOVEMENTS_UX_PLAN.md`
   - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
 - **Next Steps / Hand-Off Notes**:
   - All category and time-range chart modals in Gastify now consistently provide the full `ModalContentTopMonthItem` experience.
