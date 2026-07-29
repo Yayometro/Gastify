@@ -218,9 +218,11 @@ function MovementsContent({ timePeriodFromFather, mail }) {
       if (na !== nb) return false;
     }
     if (criteria.date) {
-      const da = new Date(a.date || a.createdAt).getTime();
-      const db = new Date(b.date || b.createdAt).getTime();
-      const diffDays = Math.abs(da - db) / 86400000;
+      const daStr = String(a.date || a.createdAt || "").slice(0, 10);
+      const dbStr = String(b.date || b.createdAt || "").slice(0, 10);
+      const da = new Date(daStr).getTime();
+      const db = new Date(dbStr).getTime();
+      const diffDays = Math.round(Math.abs(da - db) / 86400000);
       if (diffDays > dateTol) return false;
     }
     if (criteria.amount) {

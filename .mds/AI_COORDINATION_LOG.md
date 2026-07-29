@@ -607,6 +607,66 @@ When taking over this task, Claude should perform the following steps:
 - **Next Steps / Hand-Off Notes**:
   - All new UI features are tested and verified. Remember to commit changes to `develop` first and merge into `main` for Vercel production deployment.
 
+---
+
+### 📅 Entry #8: 2026-07-29 (03:24 AM Local)
+
+- **AI Assistant**: Google Antigravity / Gemini 3.6 Pro
+- **User Request**: Refine naming rules to remove all dates, pipe characters, and merchant codes from concept titles, ensure specific rules (e.g., Airbnb -> "Airbnb", Amazon $99 -> "Amazon Prime Membresía", McDonald's -> "McDonald's Lima"), assign 100% of transactions both a Category and SubCategory from the existing `_data` sheet without leaving any empty categories, and populate into `gastify-template-ACTUALIZADO.xlsx`.
+- **Phase**: Bank Statement Reconciliation & Advanced Data Pipeline (Febrero 2026)
+- **Actions Taken**:
+  1. **App JSON Audit (`Febrero-2026-all-trans-gastify.json`)**:
+     - Discovered only 52 transactions existed in the app for February 2026.
+     - Found zero transactions from `2026-02-01` to `2026-02-16`, confirming that the February 16 statement for HSBC 2Now (`2026-02-16_Estado_de_cuenta.pdf`) and Santander Débito Nómina (`Estado de cuenta febrero 2026.pdf`) were never uploaded to Gastify.
+  2. **Multi-Statement Extraction & Audit (`PaddleOCR PP-OCRv6`)**:
+     - Rendered and extracted all candidate February 2026 transactions across both February and March statement PDFs:
+       - **HSBC 2Now** (`2026-02-16_Estado_de_cuenta.pdf` and `2026-03-13_Estado_de_cuenta.pdf`).
+       - **Santander Débito Nómina** (February & March statements).
+       - **Santander LikeU Credit** (February & March statements).
+  3. **Advanced Naming Rules & Concept Stripping**:
+     - Stripped 100% of dates, pipe characters (`|`), country/city abbreviations, and trailing OCR amount signs from transaction titles.
+     - Enforced clean standardized titles: `"Airbnb"`, `"Amazon Prime Membresía"` ($99), `"McDonald's Lima"`, `"Chakana Nacional Lima"`, `"Hotel Lobby Santa Catalina"`, `"Kallpa Outdoor Cusco (Tour)"`, `"D. R. Agraria (Tour)"`, `"La Herradura Calafate"`, `"Restaurante La Cocina Calafate"`, `"SafetyWing Seguro de Viaje"`, etc.
+  4. **100% Categorization from `_data` Sheet**:
+     - Mapped every single transaction to an existing valid `Category` and `SubCategory` in `_data` (zero empty categories).
+     - Accurate distinction between `Bill` (all card purchases/debits) and `Income` (payroll deposits `$24,248.29` / `$24,761.51` and received SPEI transfers).
+  5. **Template Generation (`gastify-template-ACTUALIZADO.xlsx`)**:
+     - Sanitized `gastify-template-ACTUALIZADO.xlsx` XML (`<fill/>` tags from `xlsx-populate`) so openpyxl works reliably.
+     - **Critical Compatibility Fix (`xlsx-populate` TypeError reading 'children')**: Identified that writing empty strings (`""`) to cells in `openpyxl` causes `openpyxl` to emit empty `<inlineStr>` XML tags (`<is><t/></is>` or `<is/>`). When Gastify's backend reads these with `xlsx-populate` (`Cell.js:608`), it crashes with `Cannot read properties of undefined (reading 'children')`. Fixed by strictly assigning `None` instead of `""` to all empty/blank cells.
+     - Wrote exactly 80 clean transactions starting at Row 3 ($66,462.31 Bills / $82,007.80 Incomes) and verified in Node.js that `xlsx-populate` parses all 80 rows without errors.
+- **Files Created / Modified**:
+  - Modified: [`/Users/luisjairvazqueznavarrete/Documents/Estados de cuenta /gastify-template-ACTUALIZADO.xlsx`](file:///Users/luisjairvazqueznavarrete/Documents/Estados%20de%20cuenta%20/gastify-template-ACTUALIZADO.xlsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - Template `/Users/luisjairvazqueznavarrete/Documents/Estados de cuenta /gastify-template-ACTUALIZADO.xlsx` is ready to be imported into Gastify to backfill all missing February 2026 transactions with zero-date concepts and 100% categorization.
+
+---
+
+## [Entry #9] — 2026-07-29
+
+- **Agent Name / ID**: Antigravity — DeepMind AAC / `6abc80d0-3db1-4fdb-8f32-0c9bc90b0d88`
+- **Summary of Goals**:
+  1. Fix missing delete confirmation buttons in `"Compare in detail"` modal inside Top 6 category/month modal (`ModalContentTopMonthItem.jsx`).
+  2. Implement 1-to-1 comparative table (`<DuplicateComparisonTable>`) inside the Top 6 modal deletion flow when duplicate mode (`dupMode`) is active, matching `Movements.jsx`.
+  3. Simplify the Top 6 duplicate deletion workflow by removing redundant intermediate confirmation modals.
+  4. Fix duplicate matching failure when filtering by `"Date"` with default tolerance (`dateTol = 0`).
+- **Key Changes & Findings**:
+  1. **Top 6 Modal Duplicate Comparison & Deletion UX Refactor (`ModalContentTopMonthItem.jsx`)**:
+     - Added action footer (`"Cancel"` and `"Delete X elements"` primary red button) to `"Duplicate Comparison Detail"` modal (`comparing`), which was previously set to `footer={null}`.
+     - Declared missing `deleting` state variable (`const [deleting, setDeleting] = useState(false)`) and connected it to `executeDeleteSingle` and `executeDeleteMany` to control loading spinners and prevent `ReferenceError`.
+     - Eliminated redundant intermediate modal (`deletePreviewOpen`): routing `"Delete X elements"` from compare-in-detail and `"Delete X selected"` from the toolbar directly to the final `confirmDelete` modal.
+     - Enhanced `confirmDelete` modal so that when `dupMode === true` and deleting multiple items (`type === "many"`), it expands to `max-w-3xl` and renders **`<DuplicateComparisonTable>`** inside the confirmation modal, allowing side-by-side original vs. duplicate review and item toggling before final deletion.
+  2. **Duplicate Date Comparison Fix (`areDuplicates` in `ModalContentTopMonthItem.jsx` and `Movements.jsx`)**:
+     - Investigated why checking `"Date"` filter failed to group transactions created on the same calendar day with identical name/amount.
+     - Discovered that `new Date(a.date || a.createdAt).getTime()` included hours, minutes, seconds, and milliseconds. For transactions created 1 minute apart on the same day, `diffDays` was `0.000694 > 0`, causing `areDuplicates` to return `false` when `dateTol = 0`.
+     - Fixed by normalizing both dates to their calendar day string (`YYYY-MM-DD`, via `.slice(0, 10)`) before calling `new Date(daStr).getTime()`. Same-day transactions now produce `diffDays = 0`, matching reliably under `dateTol = 0`.
+- **Files Created / Modified**:
+  - Modified: [`src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx)
+  - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - Both `Movements.jsx` and `ModalContentTopMonthItem.jsx` now share unified, calendar-day-accurate duplicate detection and an interactive 1-to-1 comparison UX during duplicate deletion.
+
+
 
 
 

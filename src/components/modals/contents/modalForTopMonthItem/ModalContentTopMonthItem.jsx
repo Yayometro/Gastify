@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Tooltip, Modal } from "antd";
+import { Tooltip, Modal, Button } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
@@ -36,9 +36,11 @@ function areDuplicates(a, b, criteria, dateTol, amountTol) {
     if (na !== nb) return false;
   }
   if (criteria.date) {
-    const da = new Date(a.date || a.createdAt).getTime();
-    const db = new Date(b.date || b.createdAt).getTime();
-    const diffDays = Math.abs(da - db) / 86400000;
+    const daStr = String(a.date || a.createdAt || "").slice(0, 10);
+    const dbStr = String(b.date || b.createdAt || "").slice(0, 10);
+    const da = new Date(daStr).getTime();
+    const db = new Date(dbStr).getTime();
+    const diffDays = Math.round(Math.abs(da - db) / 86400000);
     if (diffDays > dateTol) return false;
   }
   if (criteria.amount) {
@@ -155,13 +157,13 @@ function ModalContentTopMonthItem({ item, close }) {
   const [quickEditField, setQuickEditField] = useState(null);
   const [generalEditOpen, setGeneralEditOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [dupMode, setDupMode] = useState(false);
   const [dupCriteria, setDupCriteria] = useState({ name: true, date: true, amount: true, category: false, subcategory: false });
   const [dupDateTolerance, setDupDateTolerance] = useState(0);
   const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
   const [comparing, setComparing] = useState(false);
-  const [deletePreviewOpen, setDeletePreviewOpen] = useState(false);
   const [dupDeleteAll, setDupDeleteAll] = useState(false);
 
   const displayItems = useMemo(() => {
@@ -206,6 +208,7 @@ function ModalContentTopMonthItem({ item, close }) {
 
   const executeDeleteSingle = async (id) => {
     try {
+      setDeleting(true);
       const res = await toFetch.post(
         `general-data/transactions/remove-transaction/${id}`,
         {}
@@ -219,11 +222,14 @@ function ModalContentTopMonthItem({ item, close }) {
       }
     } catch (e) {
       runNotify("error", String(e));
+    } finally {
+      setDeleting(false);
     }
   };
 
   const executeDeleteMany = async (ids) => {
     try {
+      setDeleting(true);
       const res = await toFetch.post(
         "general-data/transactions/remove-many",
         { manyTrans: ids }
@@ -237,6 +243,8 @@ function ModalContentTopMonthItem({ item, close }) {
       }
     } catch (e) {
       runNotify("error", String(e));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -482,7 +490,7 @@ function ModalContentTopMonthItem({ item, close }) {
 
                     {selectionCount > 0 && (
                       <button
-                        onClick={() => setDeletePreviewOpen(true)}
+                        onClick={handleDeleteSelected}
                         className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-lg font-medium transition-colors shadow-2xs border border-red-400/50"
                       >
                         Delete {selectionCount} selected
@@ -560,7 +568,7 @@ function ModalContentTopMonthItem({ item, close }) {
       {/* Declarative confirmation modal — avoids Ant Design static Modal.confirm minified chunk issues in Vercel */}
       {confirmDelete && createPortal(
         <div className="fixed inset-0 z-[30000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col gap-4 border border-slate-200">
+          <div className={`bg-white rounded-2xl shadow-xl ${dupMode && confirmDelete.type === "many" ? "max-w-3xl" : "max-w-lg"} w-full p-6 flex flex-col gap-4 border border-slate-200`}>
             <div className="flex items-center gap-3 text-red-600">
               <CategoIcon type="MdWarning" siz={24} />
               <h3 className="font-bold text-lg text-slate-800">
@@ -573,13 +581,26 @@ function ModalContentTopMonthItem({ item, close }) {
               This action cannot be undone. Are you sure you want to permanently delete{" "}
               <b>{confirmDelete.type === "many" ? `${confirmDelete.ids.length} transactions` : "this transaction"}</b>?
             </p>
-            <div className="max-h-[260px] overflow-y-auto pr-1 flex flex-col gap-1 my-1">
+            <div className="max-h-[360px] overflow-y-auto pr-1 flex flex-col gap-1 my-1">
               {confirmDelete.type === "single" ? (
                 <DeletePreviewRow
                   transaction={
                     allTransactions.find((t) => t._id === confirmDelete.id) ||
                     localItems.find((t) => t._id === confirmDelete.id)
                   }
+                />
+              ) : dupMode ? (
+                <DuplicateComparisonTable
+                  pairs={getDuplicatePairs(localItems, confirmDelete.ids, dupCriteria, dupDateTolerance, dupAmountTolerance)}
+                  selectedIds={selected}
+                  onToggleSelect={(id) => {
+                    setSelected((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(id)) next.delete(id);
+                      else next.add(id);
+                      return next;
+                    });
+                  }}
                 />
               ) : (
                 confirmDelete.ids.map((id) => (
@@ -596,6 +617,7 @@ function ModalContentTopMonthItem({ item, close }) {
             <div className="flex justify-end gap-3 mt-2">
               <button
                 type="button"
+                disabled={deleting}
                 onClick={() => setConfirmDelete(null)}
                 className="px-4 py-2 rounded-xl text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
               >
@@ -603,6 +625,7 @@ function ModalContentTopMonthItem({ item, close }) {
               </button>
               <button
                 type="button"
+                disabled={deleting}
                 onClick={() => {
                   const target = confirmDelete;
                   setConfirmDelete(null);
@@ -614,37 +637,11 @@ function ModalContentTopMonthItem({ item, close }) {
                 }}
                 className="px-4 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-500 text-white shadow-md transition-colors"
               >
-                Confirm delete
+                {deleting ? "Deleting..." : "Confirm delete"}
               </button>
             </div>
           </div>
         </div>,
-        document.body
-      )}
-
-      {deletePreviewOpen && createPortal(
-        <Modal
-          open
-          zIndex={20000}
-          onCancel={() => setDeletePreviewOpen(false)}
-          onOk={() => {
-            setDeletePreviewOpen(false);
-            handleDeleteSelected();
-          }}
-          title="Confirm Duplicate Deletion"
-          okText="Delete Selected"
-          okButtonProps={{ danger: true }}
-        >
-          <p className="text-sm text-slate-600 mb-3">
-            You are about to permanently delete {selectionCount} transaction(s). Below is a preview:
-          </p>
-          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-1.5 border border-slate-200 rounded-xl p-2 bg-slate-50">
-            {Array.from(selected).map((id) => {
-              const trans = localItems.find((t) => t._id === id);
-              return trans ? <DeletePreviewRow key={id} transaction={trans} /> : null;
-            })}
-          </div>
-        </Modal>,
         document.body
       )}
 
@@ -654,9 +651,35 @@ function ModalContentTopMonthItem({ item, close }) {
           zIndex={20000}
           width={750}
           onCancel={() => setComparing(false)}
-          footer={null}
-          title="Duplicate Comparison Detail"
+          title={
+            <div className="flex items-center gap-2 text-purple-700 font-semibold text-base">
+              <UniversalCategoIcon type="md/MdOutlineCompare" siz={18} />
+              Duplicate Comparison Detail
+            </div>
+          }
+          footer={[
+            <Button key="cancel" onClick={() => setComparing(false)}>
+              Cancel
+            </Button>,
+            <Button
+              key="delete"
+              danger
+              type="primary"
+              loading={deleting}
+              onClick={() => {
+                setComparing(false);
+                setConfirmDelete({ type: "many", ids: [...selected] });
+              }}
+              disabled={selected.size === 0}
+            >
+              Delete {selected.size} elements
+            </Button>,
+          ]}
         >
+          <p className="text-xs text-slate-500 mb-3">
+            Mode: <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>.
+            Review what will be kept vs deleted before proceeding.
+          </p>
           <div className="max-h-[60vh] overflow-y-auto pr-1">
             <DuplicateComparisonTable
               pairs={getDuplicatePairs(localItems, Array.from(selected), dupCriteria, dupDateTolerance, dupAmountTolerance)}
