@@ -160,14 +160,17 @@ function QuickEditInner({ field, transIds, onClose }) {
     if (field === "category") return (
       <SelectCategories defaultCategoryId={value.category}>
         <div className="flex flex-col gap-2">
-          <BtnSelectCategoryContext
-            defaultCategory={null}
-            onSelectCategory={handleCategory}
-          />
+          <BtnSelectCategoryContext onClose={handleClose} />
         </div>
-        <BasicModal customClose={close}>
-          <ModalCategoryContent onClose={handleClose} />
-        </BasicModal>
+        {close && (
+          <BasicModal
+            close={handleClose}
+            zIndexClass="z-[50000]"
+            renderContent={
+              <ModalCategoryContent close={handleClose} getSelected={handleCategory} />
+            }
+          />
+        )}
       </SelectCategories>
     );
 

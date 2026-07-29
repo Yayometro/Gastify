@@ -579,6 +579,33 @@ When taking over this task, Claude should perform the following steps:
   - `gastify-template.xlsx` now contains exactly the 109 missing transactions for December 2025 and January 2026 with 100% clean categories, subcategories, and account labels, ready for immediate upload into the app.
   - Future AI assistants processing bank statements MUST follow the PaddleOCR section in `.mds/BANK_STATEMENT_EXTRACTION_GUIDE.md`.
 
+---
+
+### 📅 Entry #7: 2026-07-29 (01:59 AM Local)
+
+- **AI Assistant**: Google Antigravity / Gemini 3.6 Pro
+- **User Request**: Add intelligent time-range month navigation arrows, deselect all button in Top-6 modal, full duplicate finder features in Top-6 modal, tag editing in modals, red/green income/bill totals in Movements, sort Dashboard Transaction Resume bars from highest to lowest, and fix Quick Edit category modal z-index/open bug.
+- **Phase**: UX/UI Enhancements, Duplicate Management, and Modal Stabilization
+- **Actions Taken**:
+  1. **Intelligent Time Range Month Navigation (`TimeRange.jsx`)**: Added intelligent "Previous Month" `[<]` and "Next Month" `[>]` arrow buttons with hover tooltips. Automatically computes exact start and end timestamps for the target month using `dayjs` and synchronizes with the `DatePicker` start/end inputs across the app.
+  2. **Top-6 Modal Enhancements & Full Duplicate Finder (`ModalContentTopMonthItem.jsx`)**:
+     - Added "Deselect all" button when items are selected.
+     - Integrated the complete duplicate finder toolbar from `Movements.jsx`: match criteria checkboxes (`name`, `date`, `amount`, `category`, `subcategory`), `Date tolerance` and `Amount tolerance` controls, `Refresh defaults` button, `Select possible duplicates` button, `Delete only duplicates / Delete all matches` toggle (`dupDeleteAll`), `Clear selection` button, `Compare in detail` table modal, and red `Delete X selected` button.
+     - Created standalone reusable component `src/components/multiUsedComp/DuplicateComparisonTable.jsx` and refactored both `Movements.jsx` and `ModalContentTopMonthItem.jsx` to import it cleanly. Fixed `DeletePreviewRow` prop to `transaction={trans}`.
+  3. **Movements Component Enhancements (`Movements.jsx`)**: Added real-time financial metric computations below the "Amount" header showing total Bills (in red) and total Incomes (in green) calculated dynamically via `useMemo` from current filters and duplicate views.
+  4. **Tags Quick Edit Support**: Added `tags` to `FIELD_META` and quick actions in `QuickEditModal.jsx` and `ModalContentTopMonthItem.jsx`.
+  5. **Dashboard Transaction Resume Bar Ordering (`TabsTrans.jsx`)**: Sorted `finalArray` descending by amount (`.sort((a, b) => b.value - a.value)`) so bars in the Dashboard's "Transactions Resume" chart render ordered from largest on the left to smallest on the right.
+  6. **Quick Edit Category Modal Fix (`QuickEditModal.jsx`)**: Fixed a bug where clicking "Change category" in Quick Edit modal didn't open the category selector. Connected `BtnSelectCategoryContext` with `onClose={handleClose}` and wrapped `BasicModal` with `zIndexClass="z-[50000]"` so it renders above `QuickEditModal` (`z-[40000]`).
+- **Files Created / Modified**:
+  - Created: [`src/components/multiUsedComp/DuplicateComparisonTable.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/DuplicateComparisonTable.jsx)
+  - Modified: [`src/components/Filters/timeRange/TimeRange.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/Filters/timeRange/TimeRange.jsx)
+  - Modified: [`src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx)
+  - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
+  - Modified: [`src/components/multiUsedComp/QuickEditModal.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/QuickEditModal.jsx)
+  - Modified: [`src/components/multiUsedComp/TabsTrans.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/TabsTrans.jsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - All new UI features are tested and verified. Remember to commit changes to `develop` first and merge into `main` for Vercel production deployment.
 
 
 
