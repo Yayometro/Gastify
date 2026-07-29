@@ -25,6 +25,7 @@ const FIELD_META = {
   type:     { label: "Change type",   description: "Set Bill or Income for all selected transactions." },
   category: { label: "Change category", description: "Assign a category (and subcategory) to all selected transactions." },
   account:  { label: "Change account", description: "Assign an account to all selected transactions." },
+  tags:     { label: "Change tags",    description: "Set tags (separated by comma) for all selected transactions." },
 };
 
 function QuickEditInner({ field, transIds, onClose }) {
@@ -43,6 +44,7 @@ function QuickEditInner({ field, transIds, onClose }) {
     category: "",
     subCategory: "",
     account: "",
+    tags: "",
   });
 
   const handleCategory = (cat) => {
@@ -72,6 +74,11 @@ function QuickEditInner({ field, transIds, onClose }) {
       payload = { ...payload, fields: ["category", "subCategory"], category: value.category, subCategory: value.subCategory || null };
     } else if (field === "account") {
       payload = { ...payload, fields: ["account"], account: value.account || null };
+    } else if (field === "tags") {
+      const tagsArr = typeof value.tags === "string"
+        ? value.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : (value.tags || []);
+      payload = { ...payload, fields: ["tags"], tags: tagsArr };
     }
 
     try {
@@ -151,16 +158,17 @@ function QuickEditInner({ field, transIds, onClose }) {
     );
 
     if (field === "category") return (
-      <div className="w-full">
-        <BtnSelectCategoryContext onClose={handleClose} />
-        {close && (
-          <BasicModal
-            close={handleClose}
-            zIndexClass="z-[20000]"
-            renderContent={<ModalCategoryContent close={handleClose} getSelected={handleCategory} />}
+      <SelectCategories defaultCategoryId={value.category}>
+        <div className="flex flex-col gap-2">
+          <BtnSelectCategoryContext
+            defaultCategory={null}
+            onSelectCategory={handleCategory}
           />
-        )}
-      </div>
+        </div>
+        <BasicModal customClose={close}>
+          <ModalCategoryContent onClose={handleClose} />
+        </BasicModal>
+      </SelectCategories>
     );
 
     if (field === "account") return (
@@ -174,6 +182,17 @@ function QuickEditInner({ field, transIds, onClose }) {
           <option key={acc._id} value={acc._id}>{acc.name}</option>
         ))}
       </select>
+    );
+
+    if (field === "tags") return (
+      <input
+        autoFocus
+        type="text"
+        value={value.tags || ""}
+        onChange={(e) => setValue((v) => ({ ...v, tags: e.target.value }))}
+        placeholder="Tags separated by comma (e.g. food, vacation, monthly)"
+        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
+      />
     );
   };
 

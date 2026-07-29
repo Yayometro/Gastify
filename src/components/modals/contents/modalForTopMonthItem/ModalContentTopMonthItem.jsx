@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Tooltip } from "antd";
+import { Tooltip, Modal } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
@@ -14,6 +14,7 @@ import QuickEditModal from "@/components/multiUsedComp/QuickEditModal";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
+import DuplicateComparisonTable from "@/components/multiUsedComp/DuplicateComparisonTable";
 import {
   removeOneTransacction,
   removeManyTransactions,
@@ -25,7 +26,88 @@ const QUICK_ACTIONS = [
   { key: "type",     label: "Type",     icon: "MdSwapVert" },
   { key: "category", label: "Category", icon: "MdCategory" },
   { key: "account",  label: "Account",  icon: "MdAccountBalance" },
+  { key: "tags",     label: "Tags",     icon: "MdLocalOffer" },
 ];
+
+function areDuplicates(a, b, criteria, dateTol, amountTol) {
+  if (criteria.name) {
+    const na = (a.name || "").toLowerCase().trim();
+    const nb = (b.name || "").toLowerCase().trim();
+    if (na !== nb) return false;
+  }
+  if (criteria.date) {
+    const da = new Date(a.date || a.createdAt).getTime();
+    const db = new Date(b.date || b.createdAt).getTime();
+    const diffDays = Math.abs(da - db) / 86400000;
+    if (diffDays > dateTol) return false;
+  }
+  if (criteria.amount) {
+    const diff = Math.abs((a.amount ?? 0) - (b.amount ?? 0));
+    if (diff > amountTol) return false;
+  }
+  return true;
+}
+
+function buildDupGroups(transactions, criteria, dateTol, amountTol) {
+  const n = transactions.length;
+  const parent = transactions.map((_, i) => i);
+  const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  const union = (i, j) => { parent[find(i)] = find(j); };
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (areDuplicates(transactions[i], transactions[j], criteria, dateTol, amountTol)) {
+        union(i, j);
+      }
+    }
+  }
+
+  const groups = new Map();
+  for (let i = 0; i < n; i++) {
+    const root = find(i);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(transactions[i]);
+  }
+  return Array.from(groups.values()).filter((g) => g.length > 1);
+}
+
+function getDuplicates(transactions, criteria, dateTol, amountTol) {
+  const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
+  return groups.flat();
+}
+
+function getDuplicatesToDelete(transactions, criteria, dateTol, amountTol) {
+  const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
+  const toDelete = [];
+  groups.forEach((group) => {
+    group.slice(1).forEach((trans) => toDelete.push(trans._id));
+  });
+  return toDelete;
+}
+
+function getAllMatchingIds(transactions, criteria, dateTol, amountTol) {
+  const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
+  const toDelete = [];
+  groups.forEach((group) => {
+    group.forEach((trans) => toDelete.push(trans._id));
+  });
+  return toDelete;
+}
+
+function getDuplicatePairs(transactions, selectedIds, criteria, dateTol, amountTol) {
+  const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
+  const selectedSet = new Set(selectedIds);
+  const pairs = [];
+  groups.forEach((group) => {
+    const orig = group[0];
+    group.slice(1).forEach((dup) => {
+      if (selectedSet.has(orig._id) || selectedSet.has(dup._id)) {
+        pairs.push({ original: orig, duplicate: dup });
+      }
+    });
+  });
+  return pairs;
+}
 
 function ModalContentTopMonthItem({ item, close }) {
   const dispatch = useDispatch();
@@ -74,6 +156,21 @@ function ModalContentTopMonthItem({ item, close }) {
   const [generalEditOpen, setGeneralEditOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
+  const [dupMode, setDupMode] = useState(false);
+  const [dupCriteria, setDupCriteria] = useState({ name: true, date: true, amount: true, category: false, subcategory: false });
+  const [dupDateTolerance, setDupDateTolerance] = useState(0);
+  const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
+  const [comparing, setComparing] = useState(false);
+  const [deletePreviewOpen, setDeletePreviewOpen] = useState(false);
+  const [dupDeleteAll, setDupDeleteAll] = useState(false);
+
+  const displayItems = useMemo(() => {
+    if (!dupMode) return localItems;
+    const dups = getDuplicates(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance);
+    const dupIds = new Set(dups.map((d) => d._id));
+    return localItems.filter((t) => dupIds.has(t._id));
+  }, [localItems, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
+
   const toggleSelect = (id) =>
     setSelected((prev) => {
       const next = new Set(prev);
@@ -83,9 +180,9 @@ function ModalContentTopMonthItem({ item, close }) {
 
   const toggleAll = () =>
     setSelected(
-      selected.size === localItems.length
+      selected.size === displayItems.length && displayItems.length > 0
         ? new Set()
-        : new Set(localItems.map((t) => t._id))
+        : new Set(displayItems.map((t) => t._id))
     );
 
   const removeLocal = (ids) => {
@@ -182,10 +279,10 @@ function ModalContentTopMonthItem({ item, close }) {
           {isMulti && (
             <div className="w-full px-3 pb-1 mt-1 flex flex-col gap-1">
               {/* Row 1: select-all, count, delete */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={toggleAll}
-                  className="flex items-center gap-1 text-xs text-white/80 hover:text-white border border-white/30 rounded-lg px-2 py-0.5"
+                  className="flex items-center gap-1 text-xs text-white/80 hover:text-white border border-white/30 rounded-lg px-2 py-0.5 transition-colors"
                 >
                   <CategoIcon
                     type={allSelected ? "MdCheckBox" : "MdCheckBoxOutlineBlank"}
@@ -193,6 +290,15 @@ function ModalContentTopMonthItem({ item, close }) {
                   />
                   {allSelected ? "Deselect all" : "Select all"}
                 </button>
+                {selectionCount > 0 && !allSelected && (
+                  <button
+                    onClick={() => setSelected(new Set())}
+                    className="flex items-center gap-1 text-xs text-white/80 hover:text-white border border-white/30 rounded-lg px-2 py-0.5 transition-colors"
+                  >
+                    <CategoIcon type="MdCheckBoxOutlineBlank" siz={14} />
+                    Deselect all
+                  </button>
+                )}
                 {selectionCount > 0 && (
                   <span className="text-xs text-white/70">{selectionCount} selected</span>
                 )}
@@ -205,6 +311,20 @@ function ModalContentTopMonthItem({ item, close }) {
                     Delete
                   </button>
                 )}
+                <button
+                  onClick={() => {
+                    setDupMode(!dupMode);
+                    setSelected(new Set());
+                  }}
+                  className={`ml-auto flex items-center gap-1 text-xs border rounded-lg px-2 py-0.5 transition-colors ${
+                    dupMode
+                      ? "bg-purple-600 text-white border-purple-400 font-medium shadow-2xs"
+                      : "text-white/80 hover:text-white border-white/30"
+                  }`}
+                >
+                  <CategoIcon type="MdOutlineFindInPage" siz={14} />
+                  {dupMode ? "Exit duplicates" : "Find duplicates"}
+                </button>
               </div>
 
               {/* Row 2: quick-edit + general edit — only when ≥1 selected */}
@@ -231,6 +351,146 @@ function ModalContentTopMonthItem({ item, close }) {
                   </Tooltip>
                 </div>
               )}
+
+              {dupMode && (
+                <div className="flex flex-col gap-2.5 w-full bg-purple-950/80 border border-purple-400/50 rounded-2xl p-3 my-1 text-xs text-white shadow-md">
+                  {/* Row 1: Criteria Checkboxes */}
+                  <div className="flex flex-wrap items-center gap-3 border-b border-purple-400/20 pb-2">
+                    <span className="text-white/70 font-medium">Match criteria:</span>
+                    {[
+                      { key: "name",        label: "Name" },
+                      { key: "date",        label: "Date" },
+                      { key: "amount",      label: "Amount" },
+                      { key: "category",    label: "Category" },
+                      { key: "subcategory", label: "Subcategory" },
+                    ].map(({ key, label }) => (
+                      <label key={key} className="flex items-center gap-1 cursor-pointer text-white/90 hover:text-white select-none">
+                        <input
+                          type="checkbox"
+                          checked={dupCriteria[key]}
+                          onChange={() => setDupCriteria((prev) => ({ ...prev, [key]: !prev[key] }))}
+                          className="accent-purple-400 rounded cursor-pointer"
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Row 2: Tolerance Controls */}
+                  <div className="flex flex-wrap items-center gap-4 border-b border-purple-400/20 pb-2">
+                    <div className="flex items-center gap-2">
+                      <Tooltip title="Allow this many days of difference between dates to still count as duplicates">
+                        <label className="text-white/80 select-none cursor-help">Date tolerance:</label>
+                      </Tooltip>
+                      <select
+                        value={dupDateTolerance}
+                        onChange={(e) => setDupDateTolerance(Number(e.target.value))}
+                        className="bg-purple-900 border border-purple-400/60 text-white rounded-lg px-2 py-0.5 outline-none focus:border-purple-300"
+                      >
+                        <option value={0}>Exact (same day)</option>
+                        <option value={1}>±1 day</option>
+                        <option value={3}>±3 days</option>
+                        <option value={7}>±7 days</option>
+                        <option value={30}>±30 days</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Tooltip title="Allow this amount difference (in your currency) between two transactions to still count as duplicates">
+                        <label className="text-white/80 select-none cursor-help">Amount tolerance:</label>
+                      </Tooltip>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={dupAmountTolerance}
+                        onChange={(e) => setDupAmountTolerance(Math.max(0, Number(e.target.value)))}
+                        className="bg-purple-900 border border-purple-400/60 text-white rounded-lg px-2 py-0.5 w-20 outline-none focus:border-purple-300"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <Tooltip title="Reset to default criteria (Name + Date + Amount, exact match)">
+                      <button
+                        onClick={() => {
+                          setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
+                          setDupDateTolerance(0);
+                          setDupAmountTolerance(0);
+                        }}
+                        className="ml-auto text-white/80 hover:text-white border border-white/20 hover:border-white/40 px-2.5 py-0.5 rounded-lg transition-colors flex items-center gap-1"
+                      >
+                        <UniversalCategoIcon type="md/MdRefresh" siz={13} />
+                        Refresh defaults
+                      </button>
+                    </Tooltip>
+                  </div>
+
+                  {/* Row 3: Selection Tools & Action Buttons */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const idsToDelete = dupDeleteAll
+                            ? getAllMatchingIds(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance)
+                            : getDuplicatesToDelete(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance);
+                          setSelected(new Set(idsToDelete));
+                        }}
+                        className="bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1 rounded-lg font-medium transition-colors border border-purple-400/50 shadow-2xs"
+                      >
+                        Select possible duplicates ({
+                          dupDeleteAll
+                            ? getAllMatchingIds(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance).length
+                            : getDuplicatesToDelete(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance).length
+                        })
+                      </button>
+
+                      <Tooltip
+                        title={
+                          dupDeleteAll
+                            ? "All matching items will be selected (nothing is kept)"
+                            : "One original per group is kept — only extras are selected"
+                        }
+                      >
+                        <button
+                          onClick={() => setDupDeleteAll((v) => !v)}
+                          className={`px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1 ${
+                            dupDeleteAll
+                              ? "text-red-300 border-red-400/80 bg-red-950/60 hover:bg-red-900/60 font-medium"
+                              : "text-white/80 border-white/30 hover:bg-white/10"
+                          }`}
+                        >
+                          <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={13} />
+                          {dupDeleteAll ? "Delete all matches" : "Delete only duplicates"}
+                        </button>
+                      </Tooltip>
+
+                      {selectionCount > 0 && (
+                        <>
+                          <button
+                            onClick={() => setSelected(new Set())}
+                            className="bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded-lg transition-colors border border-slate-500/50"
+                          >
+                            Clear selection
+                          </button>
+                          <button
+                            onClick={() => setComparing(true)}
+                            className="bg-purple-600/80 hover:bg-purple-500 text-white px-2 py-1 rounded-lg transition-colors border border-purple-400/50"
+                          >
+                            Compare in detail
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {selectionCount > 0 && (
+                      <button
+                        onClick={() => setDeletePreviewOpen(true)}
+                        className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-lg font-medium transition-colors shadow-2xs border border-red-400/50"
+                      >
+                        Delete {selectionCount} selected
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -240,7 +500,12 @@ function ModalContentTopMonthItem({ item, close }) {
         {/* Transaction list */}
         <div className="w-full h-full overflow-y-scroll bg-slate-100 mb-[10px]">
           <section className="w-full h-full bg-slate-100 flex flex-col items-center gap-1 p-1">
-            {localItems.map((transaction) => (
+            {dupMode && displayItems.length === 0 && (
+              <div className="w-full text-center py-4 text-slate-500 text-sm font-light">
+                No duplicates found among these transactions.
+              </div>
+            )}
+            {displayItems.map((transaction) => (
               <TransactionItemList
                 movement={transaction}
                 key={`top-modal-${transaction._id}`}
@@ -354,6 +619,59 @@ function ModalContentTopMonthItem({ item, close }) {
             </div>
           </div>
         </div>,
+        document.body
+      )}
+
+      {deletePreviewOpen && createPortal(
+        <Modal
+          open
+          zIndex={20000}
+          onCancel={() => setDeletePreviewOpen(false)}
+          onOk={() => {
+            setDeletePreviewOpen(false);
+            handleDeleteSelected();
+          }}
+          title="Confirm Duplicate Deletion"
+          okText="Delete Selected"
+          okButtonProps={{ danger: true }}
+        >
+          <p className="text-sm text-slate-600 mb-3">
+            You are about to permanently delete {selectionCount} transaction(s). Below is a preview:
+          </p>
+          <div className="max-h-[300px] overflow-y-auto flex flex-col gap-1.5 border border-slate-200 rounded-xl p-2 bg-slate-50">
+            {Array.from(selected).map((id) => {
+              const trans = localItems.find((t) => t._id === id);
+              return trans ? <DeletePreviewRow key={id} transaction={trans} /> : null;
+            })}
+          </div>
+        </Modal>,
+        document.body
+      )}
+
+      {comparing && createPortal(
+        <Modal
+          open
+          zIndex={20000}
+          width={750}
+          onCancel={() => setComparing(false)}
+          footer={null}
+          title="Duplicate Comparison Detail"
+        >
+          <div className="max-h-[60vh] overflow-y-auto pr-1">
+            <DuplicateComparisonTable
+              pairs={getDuplicatePairs(localItems, Array.from(selected), dupCriteria, dupDateTolerance, dupAmountTolerance)}
+              selectedIds={selected}
+              onToggleSelect={(id) => {
+                setSelected((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+              }}
+            />
+          </div>
+        </Modal>,
         document.body
       )}
     </>

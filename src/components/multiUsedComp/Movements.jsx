@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useContext } from "react";
+import React, { useEffect, useRef, useState, useContext, useMemo } from "react";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
@@ -45,77 +45,9 @@ import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalCategoryContent from "@/components/modals/contents/selectCategory/ModalCategoryContent";
 import useModal from "@/hooks/useModalBasic";
 import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
+import DuplicateComparisonTable from "./DuplicateComparisonTable";
 
 const today = new Date();
-
-function DuplicateComparisonTable({ pairs, selectedTrans = [], onToggleSelect }) {
-  if (!pairs || pairs.length === 0) {
-    return <p className="text-xs text-slate-400 italic text-center py-4">No duplicate pairs to compare</p>;
-  }
-  const selectedSet = new Set(selectedTrans.map(String));
-
-  return (
-    <div className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
-      <div className="bg-amber-50 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-800 flex items-center gap-2">
-        <span className="text-sm">☑️</span>
-        <span>
-          <b>Checked items</b> will be permanently deleted when you confirm. Uncheck any duplicate you want to keep, or check an original if you want to delete it too.
-        </span>
-      </div>
-      <div className="grid grid-cols-2 bg-slate-100 border-b border-slate-200 py-2 px-3 font-semibold text-xs text-slate-700">
-        <div className="flex items-center gap-1.5 text-green-700 truncate">
-          <UniversalCategoIcon type="md/MdCheckCircle" siz={15} />
-          <span>ORIGINAL (TO KEEP)</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-red-600 truncate">
-          <UniversalCategoIcon type="md/MdDelete" siz={15} />
-          <span>DUPLICATE (TO DELETE)</span>
-        </div>
-      </div>
-      <div className="max-h-[50vh] overflow-y-auto divide-y divide-slate-200">
-        {pairs.map((pair, index) => {
-          const isOrigChecked = pair.original ? selectedSet.has(String(pair.original._id)) : false;
-          const isDupChecked = pair.duplicate ? selectedSet.has(String(pair.duplicate._id)) : false;
-
-          return (
-            <div
-              key={`dup-pair-${index}-${pair.duplicate?._id}`}
-              className="grid grid-cols-2 gap-3 p-2 items-center hover:bg-slate-100/50 transition-colors"
-            >
-              {/* Left Column: Original */}
-              <div className="min-w-0 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={isOrigChecked}
-                  onChange={() => pair.original && onToggleSelect && onToggleSelect(pair.original._id)}
-                  className="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer flex-shrink-0"
-                  title="Check to also delete this original transaction"
-                />
-                <div className={`min-w-0 flex-1 transition-all ${isOrigChecked ? "opacity-40 line-through grayscale" : ""}`}>
-                  <DeletePreviewRow transaction={pair.original} />
-                </div>
-              </div>
-
-              {/* Right Column: Duplicate */}
-              <div className="min-w-0 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={isDupChecked}
-                  onChange={() => pair.duplicate && onToggleSelect && onToggleSelect(pair.duplicate._id)}
-                  className="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer flex-shrink-0"
-                  title="Uncheck to keep this transaction instead of deleting it"
-                />
-                <div className={`min-w-0 flex-1 transition-all ${!isDupChecked ? "opacity-60 border-2 border-green-500/30 rounded-xl" : ""}`}>
-                  <DeletePreviewRow transaction={pair.duplicate} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 function MovementsContent({ timePeriodFromFather, mail }) {
   const defaultPeriod = timePeriodFromFather || [
@@ -264,6 +196,20 @@ function MovementsContent({ timePeriodFromFather, mail }) {
       setAllMovements(filtered);
     }
   }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, exactAmountFilter, categoryFilter, subCategoryFilter, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
+
+  const { totalBills, totalIncomes } = useMemo(() => {
+    let bills = 0;
+    let incomes = 0;
+    for (const m of allMovements) {
+      const amt = Number(m.amount) || 0;
+      if (m.isIncome) {
+        incomes += amt;
+      } else {
+        bills += amt;
+      }
+    }
+    return { totalBills: bills, totalIncomes: incomes };
+  }, [allMovements]);
 
   function areDuplicates(a, b, criteria, dateTol, amountTol) {
     if (criteria.name) {
@@ -1213,6 +1159,23 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 <div>Name</div>
               </div>
               <div>Amount</div>
+            </div>
+
+            {/* Computed Bills (Red) & Incomes (Green) Summary Bar according to applied filters */}
+            <div className="flex flex-wrap items-center justify-between gap-2 py-1.5 px-3 bg-slate-100/90 border border-slate-200 rounded-xl text-xs my-1 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-slate-500 font-medium">
+                <span>{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-red-600 font-semibold bg-red-50 px-2.5 py-0.5 rounded-full border border-red-200">
+                  <span className="text-[10px] font-bold tracking-wide">BILLS:</span>
+                  <span>-{currencyFormatter.format(totalBills, { locale: "en-US" })}</span>
+                </div>
+                <div className="flex items-center gap-1 text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  <span className="text-[10px] font-bold tracking-wide">INCOMES:</span>
+                  <span>+{currencyFormatter.format(totalIncomes, { locale: "en-US" })}</span>
+                </div>
+              </div>
             </div>
             {isSelectionMode && (
               <div className="selectionHeader flex flex-col gap-1 py-1.5 bg-purple-50 text-[13px] rounded-xl px-2">
