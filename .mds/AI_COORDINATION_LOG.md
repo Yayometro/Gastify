@@ -663,8 +663,30 @@ When taking over this task, Claude should perform the following steps:
   - Modified: [`src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx)
   - Modified: [`src/components/multiUsedComp/Movements.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/Movements.jsx)
   - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
-- **Next Steps / Hand-Off Notes**:
   - Both `Movements.jsx` and `ModalContentTopMonthItem.jsx` now share unified, calendar-day-accurate duplicate detection and an interactive 1-to-1 comparison UX during duplicate deletion.
+
+---
+
+## [Entry #10] — 2026-07-29
+
+- **Agent Name / ID**: Antigravity — DeepMind AAC / `6abc80d0-3db1-4fdb-8f32-0c9bc90b0d88`
+- **Summary of Goals**:
+  1. Add explicit **Balance (Incomes - Bills)** calculation and display to the History Details comparative summary.
+  2. Replace basic transaction list modal (`RenderTransactionsInModal`) in **Categories Comparative** (`HistoricalComparativeCategories`) with the full-featured Top 6 modal (`ModalContentTopMonthItem`) for both *Bills* and *Incomes* chart columns.
+- **Key Changes & Findings**:
+  1. **History Details Net Balance Display (`propsColTabsToggler.js`)**:
+     - Added an explicit third summary line below `Total incomes` and `Total bills` displaying `Balance (Incomes - Bills): $XXX.XX`.
+     - Added dynamic color formatting (`text-emerald-600` for net surplus/positive savings, `text-red-600` for net deficit) to clearly communicate financial status for the selected time range.
+  2. **Categories Comparative Full-Powered Top 6 Modal Upgrade (`HistoricalComparativeCategories.jsx`)**:
+     - Replaced import of `RenderTransactionsInModal` (a basic 34-line read-only transaction list) with `ModalContentTopMonthItem`.
+     - Configured both `bills` and `incomes` tab chart components so that clicking any column invokes `renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />)`.
+     - Users now have access to real-time search, multi-field sorting, subcategory/price filtering, Quick Edit batch categorization, interactive checkbox multi-selection, and calendar-day-accurate Find Duplicates with 1-to-1 comparative tables directly from any chart column in History.
+- **Files Created / Modified**:
+  - Modified: [`src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js)
+  - Modified: [`src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.jsx`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.jsx)
+  - Modified: [`.mds/AI_COORDINATION_LOG.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/AI_COORDINATION_LOG.md)
+- **Next Steps / Hand-Off Notes**:
+  - All category and time-range chart modals in Gastify now consistently provide the full `ModalContentTopMonthItem` experience.
 
 
 

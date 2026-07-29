@@ -16,8 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ResponsiveBarsChartComponent from "../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
 import HistoricalComparativeCategoriesView from "./view/HistoricalComparativeCategoriesView";
 import useModal from "@/hooks/useModalBasic";
-import BasicModal from "@/components/modals/basicModal/BasicModal";
-import RenderTransactionsInModal from "@/components/renderTransactionsInModal/RenderTransactionsInModal";
+import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 
 const today = new Date();
 
@@ -89,7 +88,7 @@ function HistoricalComparativeCategories() {
         legenedLeft: "Amount",
         propsPlus: {
           onClick: (a, e) => {
-            renderModal(<RenderTransactionsInModal data={a} />);
+            renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />);
           },
         },
       },
@@ -102,6 +101,11 @@ function HistoricalComparativeCategories() {
         totalValue: totalAmount[1] || 0,
         legendBottom: "Months",
         legenedLeft: "Amount",
+        propsPlus: {
+          onClick: (a, e) => {
+            renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />);
+          },
+        },
       },
       Component: ResponsiveBarsChartComponent,
     },
