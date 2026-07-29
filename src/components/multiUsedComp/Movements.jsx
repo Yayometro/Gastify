@@ -44,47 +44,78 @@ import BtnSelectCategoryContext from "@/components/buttons/buttonWrappers/select
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalCategoryContent from "@/components/modals/contents/selectCategory/ModalCategoryContent";
 import useModal from "@/hooks/useModalBasic";
+import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
 
 const today = new Date();
 
-function DeletePreviewRow({ transaction }) {
-  if (!transaction) return null;
+function DuplicateComparisonTable({ pairs, selectedTrans = [], onToggleSelect }) {
+  if (!pairs || pairs.length === 0) {
+    return <p className="text-xs text-slate-400 italic text-center py-4">No duplicate pairs to compare</p>;
+  }
+  const selectedSet = new Set(selectedTrans.map(String));
+
   return (
-    <div className="flex flex-row justify-between items-center bg-slate-100/90 rounded-xl py-1.5 px-2.5 my-1 border border-slate-200 text-xs shadow-sm">
-      <div className="flex gap-2 items-center min-w-0">
-        <div
-          style={{ backgroundColor: transaction.category?.color || "#DADADA" }}
-          className="w-[32px] h-[32px] rounded-full flex-shrink-0 flex items-center justify-center text-white shadow-inner"
-        >
-          {!transaction.category || !transaction.category.icon ? (
-            <UniversalCategoIcon type="md/MdFilterNone" siz={12} />
-          ) : (
-            <UniversalCategoIcon type={transaction.category.icon} siz={12} />
-          )}
+    <div className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+      <div className="bg-amber-50 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-800 flex items-center gap-2">
+        <span className="text-sm">☑️</span>
+        <span>
+          <b>Checked items</b> will be permanently deleted when you confirm. Uncheck any duplicate you want to keep, or check an original if you want to delete it too.
+        </span>
+      </div>
+      <div className="grid grid-cols-2 bg-slate-100 border-b border-slate-200 py-2 px-3 font-semibold text-xs text-slate-700">
+        <div className="flex items-center gap-1.5 text-green-700 truncate">
+          <UniversalCategoIcon type="md/MdCheckCircle" siz={15} />
+          <span>ORIGINAL (TO KEEP)</span>
         </div>
-        <div className="min-w-0 flex flex-col">
-          <p className="font-medium text-slate-800 truncate text-xs">{transaction.name || "No name"}</p>
-          <div className="text-[10px] text-slate-500 flex items-center gap-1.5 flex-wrap">
-            <span>Cat: <b className="font-medium text-slate-700">{transaction.category?.name || "—"}</b></span>
-            {transaction.subCategory?.name && (
-              <span>• Sub: <b className="font-medium text-slate-700">{transaction.subCategory.name}</b></span>
-            )}
-            <span>• Acc: <b className="font-medium text-slate-700">{transaction.account?.name || "—"}</b></span>
-          </div>
+        <div className="flex items-center gap-1.5 text-red-600 truncate">
+          <UniversalCategoIcon type="md/MdDelete" siz={15} />
+          <span>DUPLICATE (TO DELETE)</span>
         </div>
       </div>
-      <div className="flex flex-col items-end flex-shrink-0 ml-2">
-        <span className={`font-semibold text-xs ${transaction.isBill ? "text-red-500" : "text-green-500"}`}>
-          {transaction.isBill ? "-" : "+"}{currencyFormatter.format(transaction.amount ?? 0, { locale: "en-US" })}
-        </span>
-        <span className="text-[10px] text-slate-400 font-light">
-          {dayjs(transaction.date || transaction.createdAt).format("DD/MM/YYYY")}
-        </span>
+      <div className="max-h-[50vh] overflow-y-auto divide-y divide-slate-200">
+        {pairs.map((pair, index) => {
+          const isOrigChecked = pair.original ? selectedSet.has(String(pair.original._id)) : false;
+          const isDupChecked = pair.duplicate ? selectedSet.has(String(pair.duplicate._id)) : false;
+
+          return (
+            <div
+              key={`dup-pair-${index}-${pair.duplicate?._id}`}
+              className="grid grid-cols-2 gap-3 p-2 items-center hover:bg-slate-100/50 transition-colors"
+            >
+              {/* Left Column: Original */}
+              <div className="min-w-0 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={isOrigChecked}
+                  onChange={() => pair.original && onToggleSelect && onToggleSelect(pair.original._id)}
+                  className="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer flex-shrink-0"
+                  title="Check to also delete this original transaction"
+                />
+                <div className={`min-w-0 flex-1 transition-all ${isOrigChecked ? "opacity-40 line-through grayscale" : ""}`}>
+                  <DeletePreviewRow transaction={pair.original} />
+                </div>
+              </div>
+
+              {/* Right Column: Duplicate */}
+              <div className="min-w-0 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={isDupChecked}
+                  onChange={() => pair.duplicate && onToggleSelect && onToggleSelect(pair.duplicate._id)}
+                  className="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer flex-shrink-0"
+                  title="Uncheck to keep this transaction instead of deleting it"
+                />
+                <div className={`min-w-0 flex-1 transition-all ${!isDupChecked ? "opacity-60 border-2 border-green-500/30 rounded-xl" : ""}`}>
+                  <DeletePreviewRow transaction={pair.duplicate} />
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
-
 
 function MovementsContent({ timePeriodFromFather, mail }) {
   const defaultPeriod = timePeriodFromFather || [
@@ -304,6 +335,35 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     const toDelete = [];
     groups.forEach((g) => g.forEach((i) => toDelete.push(transactions[i]._id)));
     return toDelete;
+  }
+
+  // Construye pares estrictos 1 a 1 de { original, duplicate } para mostrar comparación lado a lado
+  function getDuplicatePairs(transactions, selectedIds, criteria, dateTol, amountTol) {
+    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
+    const selectedSet = new Set((selectedIds || []).map(String));
+    const pairs = [];
+    groups.forEach((g) => {
+      if (!g || g.length === 0) return;
+      const original = transactions[g[0]];
+      g.slice(1).forEach((idx) => {
+        const dupItem = transactions[idx];
+        if (dupItem && selectedSet.has(String(dupItem._id))) {
+          pairs.push({ original, duplicate: dupItem });
+        }
+      });
+      if (original && selectedSet.has(String(original._id)) && !pairs.some((p) => String(p.duplicate._id) === String(original._id))) {
+        const refItem = transactions[g[1]] || original;
+        pairs.push({ original: refItem, duplicate: original });
+      }
+    });
+    const pairedDupIds = new Set(pairs.map((p) => String(p.duplicate._id)));
+    (selectedIds || []).forEach((id) => {
+      if (!pairedDupIds.has(String(id))) {
+        const t = transactions.find((tr) => String(tr._id) === String(id));
+        if (t) pairs.push({ original: t, duplicate: t });
+      }
+    });
+    return pairs;
   }
 
   function getValueFromSelecter(v) {
@@ -649,6 +709,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
           confirmLoading={confirmLoading}
           okText="Confirm delete"
           cancelText="Cancel"
+          width={dupMode ? 750 : 520}
           okButtonProps={{
             className: confirmLoading
               ? "!bg-red-300 !border-red-300 !text-white cursor-not-allowed"
@@ -661,11 +722,19 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             <b>{selectedTrans.length > 0 ? `${selectedTrans.length} transactions` : "these items"}</b>?{" "}
             This action cannot be undone.
           </p>
-          <div className="max-h-[300px] overflow-y-auto pr-1 flex flex-col gap-1">
-            {selectedTrans.map((id) => (
-              <DeletePreviewRow key={id} transaction={getTransById(id)} />
-            ))}
-          </div>
+          {dupMode ? (
+            <DuplicateComparisonTable
+              pairs={getDuplicatePairs(allMovements, selectedTrans, dupCriteria, dupDateTolerance, dupAmountTolerance)}
+              selectedTrans={selectedTrans}
+              onToggleSelect={handleSelectedItem}
+            />
+          ) : (
+            <div className="max-h-[300px] overflow-y-auto pr-1 flex flex-col gap-1">
+              {selectedTrans.map((id) => (
+                <DeletePreviewRow key={id} transaction={getTransById(id)} />
+              ))}
+            </div>
+          )}
         </Modal>
 
         {/* ── Duplicate comparison modal ── */}
@@ -702,43 +771,11 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             Mode: <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>.
             Review what will be kept vs deleted before proceeding.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
-            {/* Left: Keep List */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-col">
-              <div className="flex justify-between items-center mb-2 pb-1 border-b border-slate-200">
-                <span className="text-xs font-semibold text-green-700 flex items-center gap-1">
-                  <UniversalCategoIcon type="md/MdCheckCircle" siz={14} /> Keeping ({allMovements.filter((m) => !selectedTrans.map(String).includes(String(m._id))).length})
-                </span>
-              </div>
-              <div className="flex flex-col gap-1 overflow-y-auto max-h-[45vh]">
-                {allMovements.filter((m) => !selectedTrans.map(String).includes(String(m._id))).length === 0 ? (
-                  <p className="text-xs text-slate-400 italic text-center py-4">Nothing kept — all matches will be deleted</p>
-                ) : (
-                  allMovements
-                    .filter((m) => !selectedTrans.map(String).includes(String(m._id)))
-                    .map((m) => <DeletePreviewRow key={m._id} transaction={m} />)
-                )}
-              </div>
-            </div>
-
-            {/* Right: Delete List */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-col">
-              <div className="flex justify-between items-center mb-2 pb-1 border-b border-slate-200">
-                <span className="text-xs font-semibold text-red-600 flex items-center gap-1">
-                  <UniversalCategoIcon type="md/MdDelete" siz={14} /> Deleting ({selectedTrans.length})
-                </span>
-              </div>
-              <div className="flex flex-col gap-1 overflow-y-auto max-h-[45vh]">
-                {selectedTrans.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic text-center py-4">No items selected for deletion</p>
-                ) : (
-                  selectedTrans.map((id) => (
-                    <DeletePreviewRow key={id} transaction={getTransById(id)} />
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
+          <DuplicateComparisonTable
+            pairs={getDuplicatePairs(allMovements, selectedTrans, dupCriteria, dupDateTolerance, dupAmountTolerance)}
+            selectedTrans={selectedTrans}
+            onToggleSelect={handleSelectedItem}
+          />
         </Modal>
       </div>
 
@@ -967,117 +1004,149 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   </div>
                 </div>
 
-                {/* Action buttons row */}
-                <div className="flex flex-wrap gap-2 items-center">
-                  {/* Search */}
-                  <button
-                    onClick={() => {
-                      if (!Object.values(dupCriteria).some(Boolean)) return;
-                      setDupMode(true);
-                    }}
-                    className="text-[11px] bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-500 transition-colors"
-                  >
-                    Search duplicates
-                  </button>
-
-                  {/* Refresh with defaults */}
-                  <Tooltip title="Reset to default criteria (Name + Date + Amount, exact match) and re-run the search">
-                    <button
-                      onClick={() => {
-                        setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
-                        setDupDateTolerance(0);
-                        setDupAmountTolerance(0);
-                        setDupMode(true);
-                      }}
-                      className="text-[11px] text-slate-400 hover:text-purple-500 transition-colors flex items-center gap-1"
-                    >
-                      <UniversalCategoIcon type={"md/MdRefresh"} siz={14} />
-                      Refresh defaults
-                    </button>
-                  </Tooltip>
-
-                  {/* Toggle: eliminar solo duplicados vs todos los que coinciden */}
-                  {dupMode && dupCount > 0 && (
-                    <Tooltip title={dupDeleteAll ? "All matching items will be selected (nothing is kept)" : "One original per group is kept — only extras are selected"}>
+                {/* Action buttons — Organized in 2 Justified Rows */}
+                <div className="flex flex-col gap-2 border-t border-slate-100 pt-2.5 w-full">
+                  {/* ROW 1: Search/Refresh on Left, Exit duplicate view on Right */}
+                  <div className="flex items-center justify-between w-full flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() => setDupDeleteAll((v) => !v)}
-                        className={`text-[11px] px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${
-                          dupDeleteAll
-                            ? "text-red-600 border-red-400 bg-red-50 hover:bg-red-100"
-                            : "text-slate-500 border-slate-300 hover:bg-slate-50"
-                        }`}
+                        onClick={() => {
+                          if (!Object.values(dupCriteria).some(Boolean)) return;
+                          setDupMode(true);
+                        }}
+                        className="text-[11px] bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-500 shadow-sm transition-colors font-medium"
                       >
-                        <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={12} />
-                        {dupDeleteAll ? "Delete all matches" : "Delete only duplicates"}
+                        Search duplicates
                       </button>
-                    </Tooltip>
-                  )}
+                      <Tooltip title="Reset to default criteria (Name + Date + Amount, exact match) and re-run the search">
+                        <button
+                          onClick={() => {
+                            setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
+                            setDupDateTolerance(0);
+                            setDupAmountTolerance(0);
+                            setDupMode(true);
+                          }}
+                          className="text-[11px] text-slate-500 hover:text-purple-600 border border-slate-200 px-2.5 py-1 rounded-full transition-colors flex items-center gap-1"
+                        >
+                          <UniversalCategoIcon type={"md/MdRefresh"} siz={14} />
+                          Refresh defaults
+                        </button>
+                      </Tooltip>
+                    </div>
 
-                  {/* Select possible duplicates — todos menos uno por grupo */}
+                    {/* Top Right: Exit duplicate view (with border rounded pill) */}
+                    {dupMode && (
+                      <button
+                        onClick={() => {
+                          setDupMode(false);
+                          setDupFinderOpen(false);
+                          setIsSelectionMode(false);
+                          setSelectedTrans([]);
+                          allMovements.forEach((m) => {
+                            const el = document.getElementById(`trans-${m._id}`);
+                            if (el) el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+                          });
+                        }}
+                        className="text-[11px] text-orange-600 border border-orange-300 px-3 py-1 rounded-full hover:bg-orange-50 transition-colors font-medium"
+                      >
+                        Exit duplicate view
+                      </button>
+                    )}
+                  </div>
+
+                  {/* ROW 2: Selection tools on Left, Delete X selected on Right */}
                   {dupMode && dupCount > 0 && (
-                    <button
-                      onClick={() => {
-                        const toDelete = dupDeleteAll
-                          ? getAllMatchingIds(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance)
-                          : getDuplicatesToDelete(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance);
-                        setIsSelectionMode(true);
-                        allMovements.forEach((m) => {
-                          const el = document.getElementById(`trans-${m._id}`);
-                          if (!el) return;
-                          if (toDelete.map(String).includes(String(m._id))) {
-                            el.classList.add("edit-animation", "border-[2px]", "border-purple-400");
-                          } else {
-                            el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
-                          }
-                        });
-                        setSelectedTrans(toDelete);
-                      }}
-                      className="text-[11px] text-purple-600 border border-purple-300 px-3 py-1 rounded-full hover:bg-purple-50 transition-colors flex items-center gap-1"
-                    >
-                      <HiMiniCursorArrowRipple size={12} />
-                      Select possible duplicates
-                    </button>
-                  )}
+                    <div className="flex items-start justify-between w-full pt-2 border-t border-slate-100/80 flex-wrap gap-3">
+                      {/* Left column: Selection actions + Comparison in detail below */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => {
+                              const toDelete = dupDeleteAll
+                                ? getAllMatchingIds(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance)
+                                : getDuplicatesToDelete(allMovements, dupCriteria, dupDateTolerance, dupAmountTolerance);
+                              setIsSelectionMode(true);
+                              allMovements.forEach((m) => {
+                                const el = document.getElementById(`trans-${m._id}`);
+                                if (!el) return;
+                                if (toDelete.map(String).includes(String(m._id))) {
+                                  el.classList.add("edit-animation", "border-[2px]", "border-purple-400");
+                                } else {
+                                  el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+                                }
+                              });
+                              setSelectedTrans(toDelete);
+                            }}
+                            className="text-[11px] text-purple-700 bg-purple-50 border border-purple-300 px-3 py-1 rounded-full hover:bg-purple-100 transition-colors flex items-center gap-1 font-medium"
+                          >
+                            <HiMiniCursorArrowRipple size={12} />
+                            Select possible duplicates
+                          </button>
 
-                  {/* Comparison in detail modal trigger */}
-                  {dupMode && dupCount > 0 && selectedTrans.length > 0 && (
-                    <button
-                      onClick={() => setDupCompareModalOpen(true)}
-                      className="text-[11px] text-amber-700 bg-amber-50 border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors flex items-center gap-1 font-medium"
-                    >
-                      <UniversalCategoIcon type="md/MdOutlineCompare" siz={13} />
-                      Comparison in detail
-                    </button>
-                  )}
+                          {selectedTrans.length > 0 && (
+                            <button
+                              onClick={() => {
+                                setSelectedTrans([]);
+                                allMovements.forEach((m) => {
+                                  const el = document.getElementById(`trans-${m._id}`);
+                                  if (el) el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+                                });
+                              }}
+                              className="text-[11px] text-slate-600 bg-slate-100 border border-slate-300 px-2.5 py-1 rounded-full hover:bg-slate-200 transition-colors flex items-center gap-1 font-medium"
+                            >
+                              <UniversalCategoIcon type="md/MdClear" siz={13} />
+                              Clear selection ({selectedTrans.length})
+                            </button>
+                          )}
 
-                  {/* Exit */}
-                  {dupMode && (
-                    <button
-                      onClick={() => {
-                        setDupMode(false);
-                        setDupFinderOpen(false);
-                        setIsSelectionMode(false);
-                        setSelectedTrans([]);
-                        allMovements.forEach((m) => {
-                          const el = document.getElementById(`trans-${m._id}`);
-                          if (el) el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
-                        });
-                      }}
-                      className="text-[11px] text-orange-500 hover:underline"
-                    >
-                      Exit duplicate view
-                    </button>
-                  )}
+                          <Tooltip
+                            title={
+                              dupDeleteAll
+                                ? "All matching items will be selected (nothing is kept)"
+                                : "One original per group is kept — only extras are selected"
+                            }
+                          >
+                            <button
+                              onClick={() => setDupDeleteAll((v) => !v)}
+                              className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors flex items-center gap-1 ${
+                                dupDeleteAll
+                                  ? "text-red-600 border-red-400 bg-red-50 hover:bg-red-100"
+                                  : "text-slate-500 border-slate-300 hover:bg-slate-50"
+                              }`}
+                            >
+                              <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={12} />
+                              {dupDeleteAll ? "Delete all matches" : "Delete only duplicates"}
+                            </button>
+                          </Tooltip>
+                        </div>
 
-                  {/* Delete selected — ml-auto a la derecha */}
-                  {dupMode && isSelectionMode && selectedTrans.length > 0 && (
-                    <button
-                      onClick={() => showRemoveModal("many", selectedTrans)}
-                      className="text-[11px] text-red-500 border border-red-300 px-3 py-1 rounded-full hover:bg-red-50 transition-colors flex items-center gap-1 ml-auto"
-                    >
-                      <UniversalCategoIcon type={"md/MdDelete"} siz={13} />
-                      Delete {selectedTrans.length} selected
-                    </button>
+                        {/* Comparison in detail right below Select possible duplicates */}
+                        {selectedTrans.length > 0 && (
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => setDupCompareModalOpen(true)}
+                              className="text-[11px] text-amber-800 bg-amber-50 border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                            >
+                              <UniversalCategoIcon type="md/MdOutlineCompare" siz={13} />
+                              Comparison in detail ({selectedTrans.length})
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right column: Delete X selected aligned right below Exit duplicate view */}
+                      {isSelectionMode && selectedTrans.length > 0 && (
+                        <div className="flex items-center ml-auto">
+                          <button
+                            onClick={() => showRemoveModal("many", selectedTrans)}
+                            className="text-[11px] text-white bg-red-600 border border-red-600 px-3.5 py-1 rounded-full hover:bg-red-500 transition-colors flex items-center gap-1.5 font-semibold shadow-sm"
+                          >
+                            <UniversalCategoIcon type={"md/MdDelete"} siz={13} />
+                            Delete {selectedTrans.length} selected
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 

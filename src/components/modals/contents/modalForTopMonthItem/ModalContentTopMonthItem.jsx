@@ -13,6 +13,7 @@ import EditMultipleTransModal from "@/components/multiUsedComp/EditMultipleTrans
 import QuickEditModal from "@/components/multiUsedComp/QuickEditModal";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
+import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
 import {
   removeOneTransacction,
   removeManyTransactions,
@@ -40,14 +41,31 @@ function ModalContentTopMonthItem({ item, close }) {
   // Track deletions locally
   const [deletedIds, setDeletedIds] = useState(new Set());
 
-  // Derive localItems live from Redux so edits reflect immediately
+  // Derive localItems live from Redux so edits reflect immediately,
+  // and dynamically remove items if their category or isBill type changed away from this modal's item!
   const allTransactions = useSelector((state) => state.transacctionsReducer.data);
   const localItems = useMemo(() => {
     return originalIds
       .filter((id) => !deletedIds.has(id))
       .map((id) => allTransactions.find((t) => t._id === id))
-      .filter(Boolean);
-  }, [allTransactions, originalIds, deletedIds]);
+      .filter(Boolean)
+      .filter((t) => {
+        if (item.isBill !== undefined && t.isBill !== item.isBill) {
+          return false;
+        }
+        if (item.children?.length > 0 || item.childrens?.length > 0) {
+          const catId = item._id;
+          const catName = item.type || item.name;
+          const tCatId = t.category?._id;
+          const tCatName = t.category?.name || "No category";
+          if (catId && catId !== "No category" && tCatId) {
+            return String(tCatId) === String(catId);
+          }
+          return tCatName === catName;
+        }
+        return true;
+      });
+  }, [allTransactions, originalIds, deletedIds, item]);
 
   const [selected, setSelected] = useState(new Set());
   const [editTrans, setEditTrans] = useState(null);
@@ -277,7 +295,7 @@ function ModalContentTopMonthItem({ item, close }) {
       {/* Declarative confirmation modal — avoids Ant Design static Modal.confirm minified chunk issues in Vercel */}
       {confirmDelete && createPortal(
         <div className="fixed inset-0 z-[30000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 flex flex-col gap-4 border border-slate-200">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 flex flex-col gap-4 border border-slate-200">
             <div className="flex items-center gap-3 text-red-600">
               <CategoIcon type="MdWarning" siz={24} />
               <h3 className="font-bold text-lg text-slate-800">
@@ -287,8 +305,29 @@ function ModalContentTopMonthItem({ item, close }) {
               </h3>
             </div>
             <p className="text-sm text-slate-600">
-              This action cannot be undone. Are you sure you want to permanently delete {confirmDelete.type === "many" ? "these items" : "this item"}?
+              This action cannot be undone. Are you sure you want to permanently delete{" "}
+              <b>{confirmDelete.type === "many" ? `${confirmDelete.ids.length} transactions` : "this transaction"}</b>?
             </p>
+            <div className="max-h-[260px] overflow-y-auto pr-1 flex flex-col gap-1 my-1">
+              {confirmDelete.type === "single" ? (
+                <DeletePreviewRow
+                  transaction={
+                    allTransactions.find((t) => t._id === confirmDelete.id) ||
+                    localItems.find((t) => t._id === confirmDelete.id)
+                  }
+                />
+              ) : (
+                confirmDelete.ids.map((id) => (
+                  <DeletePreviewRow
+                    key={id}
+                    transaction={
+                      allTransactions.find((t) => t._id === id) ||
+                      localItems.find((t) => t._id === id)
+                    }
+                  />
+                ))
+              )}
+            </div>
             <div className="flex justify-end gap-3 mt-2">
               <button
                 type="button"
