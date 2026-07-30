@@ -2,20 +2,38 @@
 
 import React from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
-import { getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
+import { getBudgetBarGradient } from "@/helpers/transformers/budgetHistory";
+import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
 function BudgetBarRow({ budget, actual, onClick }) {
   const goalAmount = budget.goalAmount || 0;
   const isSaving = budget.isSaving === true;
   const value = isSaving ? budget.savingAmount || 0 : actual || 0;
   const ratio = goalAmount > 0 ? value / goalAmount : 0;
-  const color = getBudgetBarColor(ratio, isSaving);
+  const exceeded = !isSaving && value > goalAmount;
+  const gradient = getBudgetBarGradient(ratio, isSaving);
   const widthPct = Math.min(ratio, 1) * 100;
+  const balance = goalAmount - value; // spending: positive = remaining, negative = exceeded
 
   let defaultCate = budget.category;
   if (budget.subCategory) {
     defaultCate = { ...budget.subCategory, isSub: true };
   }
+
+  const balanceText = isSaving
+    ? balance <= 0
+      ? `Goal reached${balance < 0 ? `, exceeded by ${usdFormatChanger(Math.abs(balance))}` : ""} 🎉`
+      : `${usdFormatChanger(balance)} to go`
+    : exceeded
+      ? `Exceeded by ${usdFormatChanger(Math.abs(balance))}`
+      : `${usdFormatChanger(balance)} remaining`;
+  const balanceColor = isSaving
+    ? balance <= 0
+      ? "text-blue-600"
+      : "text-gray-400"
+    : exceeded
+      ? "text-red-600"
+      : "text-green-600";
 
   return (
     <div
@@ -35,6 +53,8 @@ function BudgetBarRow({ budget, actual, onClick }) {
             <p className="text-[10px] text-gray-500">
               {defaultCate.isSub ? "SubCategory: " : "Category: "}
               {defaultCate.name}
+              {" — "}
+              <span className={balanceColor}>{balanceText}</span>
             </p>
           )}
         </div>
@@ -42,12 +62,12 @@ function BudgetBarRow({ budget, actual, onClick }) {
       <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all"
-          style={{ width: `${widthPct}%`, backgroundColor: color }}
+          style={{ width: `${widthPct}%`, background: gradient }}
         />
       </div>
       <div className="flex justify-between text-xs text-gray-500 mt-1">
-        <span>${Number(value).toFixed(2)}</span>
-        <span>of ${Number(goalAmount).toFixed(2)}</span>
+        <span>{usdFormatChanger(value)}</span>
+        <span>of {usdFormatChanger(goalAmount)}</span>
       </div>
     </div>
   );

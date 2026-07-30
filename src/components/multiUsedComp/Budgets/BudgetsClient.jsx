@@ -1,17 +1,25 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Skeleton } from "antd";
+import { Skeleton, Tooltip } from "antd";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import { matchBillToBudget } from "@/helpers/transformers/projectionsChange";
+import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { getLastDayOfMonth, generate_timeperiod_ranges_array_for_dashboard } from "@/helpers/timeFunctions/timeFunctions";
 import CategoIcon from "../CategoIcon";
+import UniversalCategoIcon from "../UniversalCategoIcon";
 import EmptyModule from "../EmptyModule";
+import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
+import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import BudgetBarRow from "./BudgetBarRow";
 import BudgetEditModal from "./BudgetEditModal";
 
+const today = new Date();
+
 function BudgetsClient({ mcSession }) {
   const { transacciones, budgets, user, wallet, loading } = useGetDataFromProvider();
-  const [selectedDuration, setSelectedDuration] = useState(30);
+  const [startDate, setStartDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [endDate, setEndDate] = useState(getLastDayOfMonth(today.getFullYear(), today.getMonth()));
   const [editingBudget, setEditingBudget] = useState(null);
   const [modalMode, setModalMode] = useState(null); // "creation" | "edition" | null
 
@@ -29,14 +37,13 @@ function BudgetsClient({ mcSession }) {
   );
 
   const recentBills = useMemo(() => {
-    const dayRange = new Date();
-    dayRange.setDate(dayRange.getDate() - selectedDuration);
+    if (!startDate || !endDate) return [];
     return (transacciones || []).filter((tra) => {
       if (!tra.isBill) return false;
       const transactionDate = new Date(tra.date || tra.createdAt);
-      return transactionDate >= dayRange;
+      return transactionDate >= startDate && transactionDate <= endDate;
     });
-  }, [transacciones, selectedDuration]);
+  }, [transacciones, startDate, endDate]);
 
   const actualByBudgetId = useMemo(() => {
     const map = {};
@@ -47,9 +54,23 @@ function BudgetsClient({ mcSession }) {
     return map;
   }, [spendingBudgets, recentBills]);
 
-  const handleDurationChange = (e) => {
-    setSelectedDuration(parseInt(e.target.value, 10));
+  const spendingTotals = useMemo(() => {
+    const fixed = spendingBudgets.reduce((acc, b) => acc + (b.goalAmount || 0), 0);
+    const real = spendingBudgets.reduce((acc, b) => acc + (actualByBudgetId[b._id] || 0), 0);
+    return { fixed, real };
+  }, [spendingBudgets, actualByBudgetId]);
+
+  const handleRangeDate = (sDate, eDate) => {
+    if (sDate) setStartDate(sDate);
+    if (eDate) setEndDate(eDate);
   };
+
+  function getValueFromSelecter(v) {
+    if (!v || !v.includes("*")) return;
+    const [start, end] = v.split("*");
+    setStartDate(new Date(start));
+    setEndDate(new Date(end));
+  }
 
   const openCreate = () => {
     setEditingBudget({ user: user?._id, wallet: wallet?._id });
@@ -73,23 +94,18 @@ function BudgetsClient({ mcSession }) {
       </div>
       <div className="content-profile-cont w-full h-full bg-slate-100 items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl shadow-sm px-4 sm:px-8 py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
-          <div className="w-fit text-[10px] font-light flex items-center justify-center bg-white rounded-2xl px-3 py-1 relative">
-            <select
-              className="bg-transparent appearance-none w-full pr-4"
-              name="DateSelector"
-              value={selectedDuration}
-              onChange={handleDurationChange}
-            >
-              <option value={2}>Yesterday</option>
-              <option value={7}>Last week</option>
-              <option value={15}>Last 15 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={60}>Last 60 days</option>
-              <option value={90}>Last 90 days</option>
-            </select>
-            <div className="filterIconContainer absolute right-[8px] pointer-events-none">
-              <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
-            </div>
+          <div className="flex items-center gap-2">
+            <SelecterFilter
+              getValue={getValueFromSelecter}
+              periodOverride={generate_timeperiod_ranges_array_for_dashboard(today.getFullYear())}
+              styles="bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+            />
+            <TimeRange rpDate={handleRangeDate} rpResponse={""} />
+            <Tooltip title="Filter by a preset period or pick a specific range; the left/right arrows jump to the previous/next month. 🤓">
+              <div className="text-purple-500">
+                <UniversalCategoIcon type={"fa/FaRegQuestionCircle"} siz={15} />
+              </div>
+            </Tooltip>
           </div>
           <div
             className="flex items-center gap-2 bg-purple-600 text-white rounded-full px-4 py-2 cursor-pointer hover:bg-purple-500"
@@ -105,6 +121,18 @@ function BudgetsClient({ mcSession }) {
         ) : (
           <>
             <h2 className="text-xl text-purple-800 mb-2">Spending budgets</h2>
+            {spendingBudgets.length > 0 && (
+              <div className="flex gap-2 mb-3">
+                <div className="flex-1 bg-purple-100 rounded-2xl p-3 text-center">
+                  <p className="text-xs text-gray-500">Total fixed (budgeted)</p>
+                  <p className="text-lg text-purple-800 font-bold">{usdFormatChanger(spendingTotals.fixed)}</p>
+                </div>
+                <div className="flex-1 bg-purple-100 rounded-2xl p-3 text-center">
+                  <p className="text-xs text-gray-500">Total real (spent)</p>
+                  <p className="text-lg text-purple-800 font-bold">{usdFormatChanger(spendingTotals.real)}</p>
+                </div>
+              </div>
+            )}
             {spendingBudgets.length <= 0 ? (
               <EmptyModule emMessage="No spending budgets yet. Create one 🤓" />
             ) : (

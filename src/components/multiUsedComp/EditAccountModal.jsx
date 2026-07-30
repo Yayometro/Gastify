@@ -164,6 +164,14 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
             onChange={handleChange}
             placeholder="Account Name"
           />
+          <p className="label-tfp ">Current Balance</p>
+          <input
+            type="number"
+            name="amount"
+            value={formAccount.amount}
+            onChange={handleChange}
+            placeholder="0.00"
+          />
           <p className="label-tfp ">Account Type</p>
           <select
             name="accountType"

@@ -2,9 +2,15 @@
 
 import React, { useState } from "react";
 import { Spin } from "antd";
+import dayjs from "dayjs";
+import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
+import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
 const RECURRENCE_LABELS = {
   monthly: "Monthly",
@@ -13,7 +19,7 @@ const RECURRENCE_LABELS = {
   weekly: "Weekly",
 };
 
-const emptyForm = { name: "", amount: "", recurrence: "monthly", anchorDate: "" };
+const emptyForm = { name: "", amount: "", recurrence: "monthly", anchorDate: new Date() };
 
 function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,15 +33,17 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
     setForm({ ...form, [name]: value });
   };
 
+  const handleDateChange = (newValue) => {
+    setForm({ ...form, anchorDate: new Date(newValue.format()) });
+  };
+
   const startEdit = (source) => {
     setEditingId(source._id);
     setForm({
       name: source.name || "",
       amount: source.amount || "",
       recurrence: source.recurrence || "monthly",
-      anchorDate: source.anchorDate
-        ? new Date(source.anchorDate).toISOString().slice(0, 10)
-        : "",
+      anchorDate: source.anchorDate ? new Date(source.anchorDate) : new Date(),
     });
   };
 
@@ -116,7 +124,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
                 <div className="flex flex-col">
                   <p className="text-purple-800">{source.name}</p>
                   <p className="text-xs text-gray-500">
-                    ${source.amount} · {RECURRENCE_LABELS[source.recurrence]}
+                    {usdFormatChanger(source.amount)} · {RECURRENCE_LABELS[source.recurrence]}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -135,7 +143,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
           </ul>
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-white rounded-2xl p-3"
+            className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-white rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">
               <label className="text-xs text-gray-500">Name</label>
@@ -160,7 +168,12 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
             </div>
             <div className="flex flex-col">
               <label className="text-xs text-gray-500">Recurrence</label>
-              <select name="recurrence" value={form.recurrence} onChange={handleChange}>
+              <select
+                className="etm-selector"
+                name="recurrence"
+                value={form.recurrence}
+                onChange={handleChange}
+              >
                 {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
@@ -170,12 +183,33 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
             </div>
             <div className="flex flex-col">
               <label className="text-xs text-gray-500">First payment date</label>
-              <input
-                type="date"
-                name="anchorDate"
-                value={form.anchorDate}
-                onChange={handleChange}
-              />
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DemoContainer components={["MobileDateTimePicker"]}>
+                  <DemoItem label="">
+                    <MobileDateTimePicker
+                      className="text-center flex items-center justify-between border-2"
+                      slotProps={{ textField: { size: "small" } }}
+                      onChange={handleDateChange}
+                      value={dayjs(form.anchorDate)}
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          width: "100%",
+                          height: "100%",
+                          padding: "0px",
+                          border: "none",
+                          borderRadius: "1000px",
+                        },
+                        "& .MuiInputBase-input": {
+                          width: "100%",
+                          height: "100%",
+                          border: "1px solid rgb(176, 23, 176)",
+                          borderRadius: "1000px",
+                        },
+                      }}
+                    />
+                  </DemoItem>
+                </DemoContainer>
+              </LocalizationProvider>
             </div>
             <button
               type="submit"

@@ -13,6 +13,11 @@ const projectionSettingsSchema = new Schema({
     },
     year: { type: Number, require: true },
     unexpectedBuffer: { type: Number, default: 0 },
+    unexpectedIncomeBuffer: { type: Number, default: 0 },
+    monthlyBalances: [{
+      month: Number, // 0-11
+      balance: Number,
+    }],
   },{ timestamps: true }
 );
 
