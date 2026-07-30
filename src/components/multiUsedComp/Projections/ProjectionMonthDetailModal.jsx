@@ -2,24 +2,42 @@
 
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
-import { Spin } from "antd";
+import { Spin, Tooltip } from "antd";
+import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "../CategoIcon";
+import UniversalCategoIcon from "../UniversalCategoIcon";
 import runNotify from "@/helpers/gastifyNotifier";
+import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
 const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
   ssr: false,
 });
+
+function QuestionTooltip({ title }) {
+  return (
+    <Tooltip title={title}>
+      <div className="inline-block ml-1 align-middle text-purple-400">
+        <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={12} />
+      </div>
+    </Tooltip>
+  );
+}
 
 function ProjectionMonthDetailModal({
   monthRow,
   bucketBreakdown,
   incomeOccurrences,
   unexpectedBuffer,
-  onSaveBuffer,
+  unexpectedIncomeBuffer,
+  onSaveBuffers,
+  onSaveMonthBalance,
   onClose,
 }) {
   const [bufferValue, setBufferValue] = useState(unexpectedBuffer ?? 0);
+  const [incomeBufferValue, setIncomeBufferValue] = useState(unexpectedIncomeBuffer ?? 0);
+  const [balanceValue, setBalanceValue] = useState(monthRow?.manualBalance ?? "");
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingBalance, setIsSavingBalance] = useState(false);
 
   if (!monthRow) return null;
 
@@ -38,11 +56,14 @@ function ProjectionMonthDetailModal({
     height: 260,
   };
 
-  const handleSaveBuffer = async () => {
+  const handleSaveBuffers = async () => {
     try {
       setIsSaving(true);
-      await onSaveBuffer(Number(bufferValue));
-      runNotify("ok", "Unexpected buffer updated");
+      await onSaveBuffers({
+        unexpectedBuffer: Number(bufferValue),
+        unexpectedIncomeBuffer: Number(incomeBufferValue),
+      });
+      runNotify("ok", "Unexpected buffers updated");
     } catch (e) {
       runNotify("error", String(e));
     } finally {
@@ -50,83 +71,169 @@ function ProjectionMonthDetailModal({
     }
   };
 
+  const handleSaveBalance = async () => {
+    try {
+      setIsSavingBalance(true);
+      await onSaveMonthBalance(Number(balanceValue));
+      runNotify("ok", "Balance saved for this month");
+    } catch (e) {
+      runNotify("error", String(e));
+    } finally {
+      setIsSavingBalance(false);
+    }
+  };
+
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[1000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
-      <div className="content bg-white border-2 border-purple-400 flex flex-col w-[95%] max-w-[650px] max-h-[85vh] overflow-y-auto relative rounded-2xl px-6 pt-8 pb-6">
-        <div
-          className="absolute top-3 right-3 border-2 rounded-full text-purple-700 p-1 cursor-pointer"
-          onClick={onClose}
-        >
-          <CategoIcon type="MdClose" siz={20} />
-        </div>
-        <h1 className="text-2xl text-purple-800 capitalize mb-1">
-          {monthRow.monthName} {monthRow.year}
-        </h1>
-        <p className="text-xs text-gray-500 mb-4">
-          {monthRow.type === "actual" && "Closed month — showing real transactions."}
-          {monthRow.type === "estimate" && "Future month — pure estimate from your Budgets and Income Sources."}
-          {monthRow.type === "current" && "Current month — projected value climbs from your estimate to your real spend as it happens."}
-        </p>
-
-        {monthRow.type === "current" && (
-          <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
-            <div className="bg-purple-50 rounded-xl p-2">
-              <p className="text-gray-500">Income</p>
-              <p className="text-lg text-purple-800">${monthRow.projectedIncome?.toFixed(2)}</p>
-              <p className="text-xs text-gray-400">
-                real so far: ${monthRow.actualIncome?.toFixed(2)} / expected: ${monthRow.shadowIncome?.toFixed(2)}
-              </p>
-            </div>
-            <div className="bg-purple-50 rounded-xl p-2">
-              <p className="text-gray-500">Expense</p>
-              <p className="text-lg text-purple-800">${monthRow.projectedExpense?.toFixed(2)}</p>
-              <p className="text-xs text-gray-400">
-                real so far: ${monthRow.actualExpense?.toFixed(2)} / budgeted: ${monthRow.shadowExpense?.toFixed(2)}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {bucketBreakdown && bucketBreakdown.length > 0 && (
-          <div className="w-full mb-4">
-            <Column {...config} />
-          </div>
-        )}
-
-        {incomeOccurrences && incomeOccurrences.length > 0 && (
-          <div className="w-full mb-4">
-            <h2 className="text-purple-800 mb-1">Expected income this month</h2>
-            <ul className="flex flex-col gap-1">
-              {incomeOccurrences.map((row, i) => (
-                <li key={i} className="flex justify-between text-sm bg-purple-50 rounded-xl px-3 py-1">
-                  <span>{row.name}</span>
-                  <span>
-                    {row.occurrences} × ${row.amount} = ${(row.occurrences * row.amount).toFixed(2)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="w-full flex items-end gap-2 mt-2">
-          <div className="flex flex-col flex-1">
-            <label className="text-xs text-gray-500">Unexpected / other buffer</label>
-            <input
-              type="number"
-              value={bufferValue}
-              onChange={(e) => setBufferValue(e.target.value)}
-            />
-          </div>
-          <button
-            className="bg-purple-600 text-white rounded-full px-4 py-2 hover:bg-purple-500"
-            onClick={handleSaveBuffer}
+    <BasicModal
+      close={onClose}
+      renderContent={
+        <div className="content absolute bg-white border-2 border-purple-400 flex flex-col w-[95%] max-w-[650px] max-h-[85vh] overflow-y-auto rounded-2xl px-6 pt-8 pb-6 z-[1001]">
+          <div
+            className="absolute top-3 right-3 border-2 rounded-full text-purple-700 p-1 cursor-pointer"
+            onClick={onClose}
           >
-            {isSaving ? <Spin /> : "Save"}
-          </button>
+            <CategoIcon type="MdClose" siz={20} />
+          </div>
+          <h1 className="text-2xl text-purple-800 capitalize mb-1">
+            {monthRow.monthName} {monthRow.year}
+          </h1>
+          <p className="text-xs text-gray-500 mb-4">
+            {monthRow.type === "actual" && "Closed month — showing real transactions."}
+            {monthRow.type === "estimate" && "Future month — pure estimate from your Budgets and Income Sources."}
+            {monthRow.type === "current" && "Current month — projected value climbs from your estimate to your real spend as it happens."}
+          </p>
+
+          {monthRow.type === "current" && (
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+              <div className="bg-purple-50 rounded-xl p-2">
+                <p className="text-gray-500">Income</p>
+                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.projectedIncome || 0)}</p>
+                <p className="text-xs text-gray-400">
+                  real so far: {usdFormatChanger(monthRow.actualIncome || 0)} / expected: {usdFormatChanger(monthRow.shadowIncome || 0)}
+                </p>
+              </div>
+              <div className="bg-purple-50 rounded-xl p-2">
+                <p className="text-gray-500">Expense</p>
+                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.projectedExpense || 0)}</p>
+                <p className="text-xs text-gray-400">
+                  real so far: {usdFormatChanger(monthRow.actualExpense || 0)} / budgeted: {usdFormatChanger(monthRow.shadowExpense || 0)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {monthRow.type === "estimate" && (
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+              <div className="bg-purple-50 rounded-xl p-2">
+                <p className="text-gray-500">Estimated income</p>
+                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.income || 0)}</p>
+              </div>
+              <div className="bg-purple-50 rounded-xl p-2">
+                <p className="text-gray-500">Estimated expense</p>
+                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.expense || 0)}</p>
+              </div>
+            </div>
+          )}
+
+          {monthRow.type === "actual" && (
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+              <div className="bg-purple-50 rounded-xl p-2">
+                <p className="text-gray-500">Real income</p>
+                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.income || 0)}</p>
+                {monthRow.historicalIncome !== undefined && (
+                  <p className="text-xs text-gray-400">expected back then: {usdFormatChanger(monthRow.historicalIncome || 0)}</p>
+                )}
+              </div>
+              <div className="bg-purple-50 rounded-xl p-2">
+                <p className="text-gray-500">Real expense</p>
+                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.expense || 0)}</p>
+                {monthRow.historicalExpense !== undefined && (
+                  <p className="text-xs text-gray-400">budgeted back then: {usdFormatChanger(monthRow.historicalExpense || 0)}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {bucketBreakdown && bucketBreakdown.length > 0 && (
+            <div className="w-full mb-4">
+              <Column {...config} />
+            </div>
+          )}
+
+          {incomeOccurrences && incomeOccurrences.length > 0 && (
+            <div className="w-full mb-4">
+              <h2 className="text-purple-800 mb-1">Expected income this month</h2>
+              <ul className="flex flex-col gap-1">
+                {incomeOccurrences.map((row, i) => (
+                  <li key={i} className="flex justify-between text-sm bg-purple-50 rounded-xl px-3 py-1">
+                    <span>{row.name}</span>
+                    <span>
+                      {row.occurrences} × {usdFormatChanger(row.amount)} = {usdFormatChanger(row.occurrences * row.amount)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {monthRow.type === "actual" && (
+            <div className="w-full flex items-end gap-2 mb-4">
+              <div className="flex flex-col flex-1">
+                <label className="text-xs text-gray-500 flex items-center">
+                  Set actual balance for this month
+                  <QuestionTooltip title="The app can't compute past balances automatically. If you know what your real account balance was at the end of this month, record it here." />
+                </label>
+                <input
+                  type="number"
+                  value={balanceValue}
+                  onChange={(e) => setBalanceValue(e.target.value)}
+                  placeholder="e.g. 45000"
+                />
+              </div>
+              <button
+                className="bg-purple-600 text-white rounded-full px-4 py-2 hover:bg-purple-500"
+                onClick={handleSaveBalance}
+              >
+                {isSavingBalance ? <Spin /> : "Save"}
+              </button>
+            </div>
+          )}
+
+          <div className="w-full flex flex-col gap-2 mt-2">
+            <div className="flex items-end gap-2">
+              <div className="flex flex-col flex-1">
+                <label className="text-xs text-gray-500 flex items-center">
+                  Unexpected expense buffer
+                  <QuestionTooltip title="A manual amount added to your expense estimate, for spending that doesn't have its own Budget." />
+                </label>
+                <input
+                  type="number"
+                  value={bufferValue}
+                  onChange={(e) => setBufferValue(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col flex-1">
+                <label className="text-xs text-gray-500 flex items-center">
+                  Unexpected income buffer
+                  <QuestionTooltip title="A manual amount added to your income estimate, for money coming in that isn't tied to a recurring Income Source." />
+                </label>
+                <input
+                  type="number"
+                  value={incomeBufferValue}
+                  onChange={(e) => setIncomeBufferValue(e.target.value)}
+                />
+              </div>
+            </div>
+            <button
+              className="w-full bg-purple-600 text-white rounded-full px-4 py-2 hover:bg-purple-500"
+              onClick={handleSaveBuffers}
+            >
+              {isSaving ? <Spin /> : "Save buffers"}
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
+      }
+    />
   );
 }
 

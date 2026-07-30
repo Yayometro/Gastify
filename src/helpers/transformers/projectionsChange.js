@@ -19,7 +19,10 @@ function endOfMonth(date) {
 function countIntervalOccurrences(anchorDate, intervalDays, monthStart, monthEnd) {
   const anchor = new Date(anchorDate);
   const diffDays = Math.floor((monthStart - anchor) / MS_PER_DAY);
-  let k = Math.max(0, Math.floor(diffDays / intervalDays));
+  // No clamping to 0: months before the anchor date must walk the periodic
+  // sequence backward (negative k) too, otherwise every month before the
+  // anchor incorrectly shows 0 expected occurrences.
+  let k = Math.floor(diffDays / intervalDays);
   let current = new Date(anchor.getTime() + k * intervalDays * MS_PER_DAY);
   while (current < monthStart) {
     k += 1;
@@ -115,6 +118,7 @@ export function buildYearProjectionTable({ transactions, budgets, incomeSources,
   const monthRanges = getYearMonthDateRange(new Date(year, 0, 1));
   const nonSavingBudgets = (budgets || []).filter((b) => !b.isSaving);
   const unexpectedBuffer = projectionSettings?.unexpectedBuffer || 0;
+  const unexpectedIncomeBuffer = projectionSettings?.unexpectedIncomeBuffer || 0;
   const todayMonthStart = startOfMonth(today);
   const todayMonthEnd = endOfMonth(today);
 
@@ -141,7 +145,7 @@ export function buildYearProjectionTable({ transactions, budgets, incomeSources,
             end
           );
         })
-      );
+      ) + unexpectedIncomeBuffer;
       return {
         monthName, year, type: "actual",
         income: actualIncome, expense: actualExpense,
@@ -154,7 +158,7 @@ export function buildYearProjectionTable({ transactions, budgets, incomeSources,
     const shadowExpense = sum(activeBudgets.map((b) => b.goalAmount)) + unexpectedBuffer;
     const shadowIncome = sum(
       activeIncomeSources.map((s) => (s.amount || 0) * getExpectedOccurrencesInMonth(s, start, end))
-    );
+    ) + unexpectedIncomeBuffer;
 
     if (start > todayMonthEnd) {
       // future month: pure estimate

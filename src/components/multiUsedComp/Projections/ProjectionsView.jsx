@@ -1,6 +1,9 @@
 "use client";
 
 import React from "react";
+import { Tooltip } from "antd";
+import UniversalCategoIcon from "../UniversalCategoIcon";
+import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
 const TYPE_LABEL = {
   actual: "Closed",
@@ -10,7 +13,17 @@ const TYPE_LABEL = {
 
 function formatMoney(value) {
   if (value === null || value === undefined) return "—";
-  return `$${Number(value).toFixed(2)}`;
+  return usdFormatChanger(value);
+}
+
+function HeaderTooltip({ title }) {
+  return (
+    <Tooltip title={title}>
+      <div className="inline-block ml-1 align-middle">
+        <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={12} />
+      </div>
+    </Tooltip>
+  );
 }
 
 function ProjectionsView({ rows, onRowClick }) {
@@ -22,8 +35,14 @@ function ProjectionsView({ rows, onRowClick }) {
             <th className="py-2 px-3">Month</th>
             <th className="py-2 px-3">Income</th>
             <th className="py-2 px-3">Expense</th>
-            <th className="py-2 px-3">Net</th>
-            <th className="py-2 px-3">Balance</th>
+            <th className="py-2 px-3">
+              Net
+              <HeaderTooltip title="Income minus expense for that single month." />
+            </th>
+            <th className="py-2 px-3">
+              Balance
+              <HeaderTooltip title="Running account total from today forward. Past months show a dash unless you set one manually by clicking that month." />
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -49,7 +68,12 @@ function ProjectionsView({ rows, onRowClick }) {
                 <td className={`py-2 px-3 ${row.net >= 0 ? "text-green-700" : "text-red-700"}`}>
                   {formatMoney(row.net)}
                 </td>
-                <td className="py-2 px-3">{formatMoney(row.balance)}</td>
+                <td className="py-2 px-3">
+                  {formatMoney(row.balance)}
+                  {row.type === "actual" && row.manualBalance !== undefined && (
+                    <span className="block text-[9px] text-gray-400 normal-case">manually set</span>
+                  )}
+                </td>
               </tr>
             );
           })}

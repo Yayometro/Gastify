@@ -10,7 +10,8 @@ export async function GET() {
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on UPDATE PROJECTION SETTINGS POST");
-    const { mail, year, unexpectedBuffer } = await request.json();
+    const { mail, year, unexpectedBuffer, unexpectedIncomeBuffer, monthBalance } =
+      await request.json();
     if (!mail || !year)
       throw new Error(`No mail/year was provided to update projection settings 🤕`);
     await dbConnection();
@@ -23,18 +24,25 @@ export async function POST(request) {
     const walletId = userFound.wallet;
 
     // GET-OR-CREATE: one settings document per wallet+year
-    const savedSettings = await ProjectionSettings.findOneAndUpdate(
-      { wallet: walletId, year },
-      {
-        $set: {
-          unexpectedBuffer: unexpectedBuffer ?? 0,
-          user: userId,
-          wallet: walletId,
-          year,
-        },
-      },
-      { upsert: true, new: true }
-    );
+    let settings = await ProjectionSettings.findOne({ wallet: walletId, year });
+    if (!settings) {
+      settings = new ProjectionSettings({ user: userId, wallet: walletId, year });
+    }
+    // only touch fields that were actually sent, so one field's update
+    // (e.g. monthBalance) doesn't silently reset the others to their default
+    if (unexpectedBuffer !== undefined) settings.unexpectedBuffer = unexpectedBuffer;
+    if (unexpectedIncomeBuffer !== undefined)
+      settings.unexpectedIncomeBuffer = unexpectedIncomeBuffer;
+    if (monthBalance && monthBalance.month !== undefined) {
+      settings.monthlyBalances = settings.monthlyBalances || [];
+      const existing = settings.monthlyBalances.find((m) => m.month === monthBalance.month);
+      if (existing) {
+        existing.balance = monthBalance.balance;
+      } else {
+        settings.monthlyBalances.push({ month: monthBalance.month, balance: monthBalance.balance });
+      }
+    }
+    const savedSettings = await settings.save();
 
     if (!savedSettings) throw new Error("Projection Settings were not saved 🤕");
     return NextResponse.json({
