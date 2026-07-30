@@ -22,7 +22,7 @@ function ProjectionsInfoModal({ onClose }) {
             <div>
               <p className="font-bold text-purple-700">Net</p>
               <p className="text-sm text-gray-600">
-                Income minus expense for that one month. It's the "result" of that specific
+                Income minus expense for that one month. It&apos;s the &quot;result&quot; of that specific
                 month — positive means you came out ahead, negative means you spent more than
                 you earned that month.
               </p>
@@ -31,22 +31,22 @@ function ProjectionsInfoModal({ onClose }) {
               <p className="font-bold text-purple-700">Balance</p>
               <p className="text-sm text-gray-600">
                 Your running account total, carried forward month by month starting from
-                today's real balance. Past months show a dash because the app never
-                auto-adjusts your account balance when you add a transaction — there's no
+                today&apos;s real balance. Past months show a dash because the app never
+                auto-adjusts your account balance when you add a transaction — there&apos;s no
                 reliable way to know what it actually was back then, so instead of guessing,
                 you can set it yourself by clicking a past month and entering it manually.
               </p>
             </div>
             <div>
-              <p className="font-bold text-purple-700">Why the current month can look "too high"</p>
+              <p className="font-bold text-purple-700">Why the current month can look &quot;too high&quot;</p>
               <p className="text-sm text-gray-600">
                 For the month in progress, each Budget shows whichever is bigger: what you
-                budgeted, or what you've actually spent so far. So if you budgeted $20,000 for
+                budgeted, or what you&apos;ve actually spent so far. So if you budgeted $20,000 for
                 a category but have only spent $17,000 so far this month, Projections still
-                shows $20,000 for it — because the month isn't over, and that's what you
+                shows $20,000 for it — because the month isn&apos;t over, and that&apos;s what you
                 planned to spend. Once your real spending passes the budget, the real number
-                takes over automatically. This is why the current month's total can be a bit
-                higher than what you've actually spent up to today — it's a forecast for the
+                takes over automatically. This is why the current month&apos;s total can be a bit
+                higher than what you&apos;ve actually spent up to today — it&apos;s a forecast for the
                 whole month, not a running total of what already happened.
               </p>
             </div>
@@ -54,8 +54,8 @@ function ProjectionsInfoModal({ onClose }) {
               <p className="font-bold text-purple-700">Unexpected buffers</p>
               <p className="text-sm text-gray-600">
                 Two manual amounts (one for expenses, one for income) that cover anything that
-                doesn't have its own Budget or Income source — your "just in case" cushion.
-                Edit them from any month's detail view.
+                doesn&apos;t have its own Budget or Income source — your &quot;just in case&quot; cushion.
+                Edit them from any month&apos;s detail view.
               </p>
             </div>
           </div>

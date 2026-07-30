@@ -80,7 +80,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
     setEndDate(new Date(end));
   }
   return (
-    <div className="budget-cont py-4 px-2 w-full lg:w-screen lg:max-w-[1200px] lg:relative lg:left-1/2 lg:-translate-x-1/2">
+    <div className="budget-cont py-4 px-2 w-full max-w-[1200px] mx-auto">
       <div className="wallet-budget-Content">
         <h1 className="wallet-budget-title text-2xl text-center font-bold">
           Wallet Budgets
@@ -133,7 +133,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
       ) : (
         <div className={`savings-cont ${!isBudget ? "" : "hidden"}`}>
           <p className="text-xl font-norma text-center">Savings</p>
-          <div className="ind-budget-cont-slide flex flex-col gap-2 max-h-[400px] overflow-y-auto pb-2 px-1">
+          <div className="ind-budget-cont-slide flex flex-col gap-2 max-h-[700px] overflow-y-auto pb-2 px-1">
             {savings.map((saving, index) => (
               <BudgetBarRow
                 budget={saving}
@@ -157,7 +157,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
       ) : (
         <div className={`individual-budget-cont ${!isBudget ? "hidden" : ""}`}>
           <p className="text-xl font-norma text-center">Budget Bills</p>
-          <div className="ind-budget-cont-slide flex flex-col gap-2 max-h-[400px] overflow-y-auto pb-2 px-1">
+          <div className="ind-budget-cont-slide flex flex-col gap-2 max-h-[700px] overflow-y-auto pb-2 px-1">
             {budgets.map((budget, index) => (
               <BudgetBarRow
                 budget={budget}
