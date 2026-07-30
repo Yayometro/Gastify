@@ -45,3 +45,20 @@ export function getBudgetBarGradient(ratio, isSaving) {
   const color = getBudgetBarColor(ratio, isSaving);
   return `linear-gradient(90deg, ${lightenHex(color, 0.55)}, ${color})`;
 }
+
+// A small mood indicator matching how close the budget is to its limit (or,
+// for savings, its goal). Spending: barely-spent is delighted, over budget
+// is panicked. Saving: mirrored - close to/past the goal is delighted.
+export function getBudgetMoodEmoji(ratio, isSaving) {
+  const safeRatio = Number.isFinite(ratio) ? ratio : 0;
+  if (isSaving) {
+    if (safeRatio >= 0.85) return "🤩";
+    if (safeRatio >= 0.35) return "🙂";
+    return "😟";
+  }
+  if (safeRatio > 1) return "🔥";
+  if (safeRatio >= 0.85) return "😰";
+  if (safeRatio >= 0.6) return "😐";
+  if (safeRatio >= 0.3) return "🙂";
+  return "🤩";
+}

@@ -2,7 +2,7 @@
 
 import React from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
-import { getBudgetBarGradient } from "@/helpers/transformers/budgetHistory";
+import { getBudgetBarGradient, getBudgetMoodEmoji } from "@/helpers/transformers/budgetHistory";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
 function BudgetBarRow({ budget, actual, onClick }) {
@@ -12,6 +12,7 @@ function BudgetBarRow({ budget, actual, onClick }) {
   const ratio = goalAmount > 0 ? value / goalAmount : 0;
   const exceeded = !isSaving && value > goalAmount;
   const gradient = getBudgetBarGradient(ratio, isSaving);
+  const moodEmoji = getBudgetMoodEmoji(ratio, isSaving);
   const widthPct = Math.min(ratio, 1) * 100;
   const balance = goalAmount - value; // spending: positive = remaining, negative = exceeded
 
@@ -40,23 +41,29 @@ function BudgetBarRow({ budget, actual, onClick }) {
       className="budget-bar-row w-full bg-white rounded-2xl p-3 cursor-pointer hover:shadow-md transition-shadow"
       onClick={() => onClick(budget)}
     >
-      <div className="flex items-center gap-2 mb-2">
-        <div
-          style={{ backgroundColor: defaultCate?.color || "#DADADA" }}
-          className="rounded-full min-w-[36px] min-h-[36px] flex items-center justify-center shrink"
-        >
-          <UniversalCategoIcon type={defaultCate?.icon || "md/MdFilterNone"} siz={18} />
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2">
+          <div
+            style={{ backgroundColor: defaultCate?.color || "#DADADA" }}
+            className="rounded-full min-w-[36px] min-h-[36px] flex items-center justify-center shrink"
+          >
+            <UniversalCategoIcon type={defaultCate?.icon || "md/MdFilterNone"} siz={18} />
+          </div>
+          <div className="flex flex-col">
+            <p className="text-purple-800">{budget.name || "Unnamed budget"}</p>
+            {defaultCate?.name && (
+              <p className="text-[10px] text-gray-500">
+                {defaultCate.isSub ? "SubCategory: " : "Category: "}
+                {defaultCate.name}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col">
-          <p className="text-purple-800">{budget.name || "Unnamed budget"}</p>
-          {defaultCate?.name && (
-            <p className="text-[10px] text-gray-500">
-              {defaultCate.isSub ? "SubCategory: " : "Category: "}
-              {defaultCate.name}
-              {" — "}
-              <span className={balanceColor}>{balanceText}</span>
-            </p>
-          )}
+        <div className="flex items-center gap-2 shrink-0">
+          <p className={`text-sm font-bold ${balanceColor}`}>{balanceText}</p>
+          <span className="text-4xl leading-none" title="How this budget is doing">
+            {moodEmoji}
+          </span>
         </div>
       </div>
       <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden">
