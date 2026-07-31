@@ -48,9 +48,22 @@ export async function POST(request){
         const budgetsFounded = await Budget.find({user: userId, wallet: walletId })
             .populate({
                 path: "category",
+                strictPopulate: false,
             })
             .populate({
                 path: "subCategory",
+                strictPopulate: false,
+            })
+            .populate({
+                path: "categories.category",
+                strictPopulate: false,
+            .populate({
+                path: "categories.subCategory",
+                strictPopulate: false,
+            })
+            .populate({
+                path: "linkedAccounts",
+                strictPopulate: false,
             })
             if(!budgetsFounded) throw new Error("No Budgets found, review the user and wallet id on GENERAL-DATA POST");
         //FIND TRANSACTIONS

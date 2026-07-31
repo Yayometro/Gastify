@@ -36,7 +36,13 @@ export async function GET(request, {params}){
         const accountsFounded = await Account.find({ user: userId, wallet: walletId }).lean()
             if(!accountsFounded) throw new Error("Accounts no found, review the user id on GENERAL-DATA POST");
         //FIND BUDGETS
-        const budgetsFounded = await Budget.find({user: userId, wallet: walletId })
+        const budgetsFounded = await Budget.find({user: userId, wallet: walletId }).populate([
+            { path: "category", strictPopulate: false },
+            { path: "subCategory", strictPopulate: false },
+            { path: "categories.category", strictPopulate: false },
+            { path: "categories.subCategory", strictPopulate: false },
+            { path: "linkedAccounts", strictPopulate: false },
+        ]);
             if(!budgetsFounded) throw new Error("No Budgets found, review the user and wallet id on GENERAL-DATA POST");
         //FIND TRANSACTIONS
         const transactionsFounded = await Transaction.find({ user: userId, wallet: walletId}).lean()

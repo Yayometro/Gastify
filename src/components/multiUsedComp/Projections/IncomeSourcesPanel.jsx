@@ -146,7 +146,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
             className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-white rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">
-              <label className="text-xs text-gray-500">Name</label>
+              <p className="label-tfp mb-1">Name</p>
               <input
                 type="text"
                 name="name"
@@ -157,7 +157,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-xs text-gray-500">Amount / occurrence</label>
+              <p className="label-tfp mb-1">Amount / occurrence</p>
               <input
                 type="number"
                 name="amount"
@@ -167,7 +167,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-xs text-gray-500">Recurrence</label>
+              <p className="label-tfp mb-1">Recurrence</p>
               <select
                 className="etm-selector"
                 name="recurrence"

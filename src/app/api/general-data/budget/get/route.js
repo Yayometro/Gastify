@@ -34,10 +34,24 @@ export async function POST(request) {
       .lean()
       .populate({
         path: "category",
+        strictPopulate: false,
       })
       .populate({
         path: "subCategory",
+        strictPopulate: false,
       })
+      .populate({
+        path: "categories.category",
+        strictPopulate: false,
+      })
+      .populate({
+        path: "categories.subCategory",
+        strictPopulate: false,
+      })
+      .populate({
+        path: "linkedAccounts",
+        strictPopulate: false,
+      });
     // console.log(findBudgets)
     if (!findBudgets) throw new Error("Updated Budget was not saved 🤕");
     return NextResponse.json({

@@ -2,6 +2,10 @@
 
 > **Protocol for AI Assistants (Gemini, Claude, ChatGPT, Qwen, Local LLMs)**
 > 
+> 📍 **MANDATORY RULES ON TESTING, COMMITS & BUILD (CRITICAL)**:
+> 1. **NEVER execute `npm run build`** proactively unless the user explicitly requests a production build command.
+> 2. **NEVER run `git commit` or `git push`** until the user has tested and approved the interface/changes in local development (`npm run dev`). Always wait for explicit user verification before committing!
+> 
 > 📍 **Mandatory Step Before Starting Any Task**:
 > 1. Read the **Current Project State** block below to know the current phase and progress.
 > 2. Read the latest entries in the **Activity Audit Log** to understand recent modifications.
@@ -819,4 +823,68 @@ When taking over this task, Claude should perform the following steps:
   - **Before merging to `main` again, consider running a local production-mode lint/build check** (`npx next lint` or `npm run build`) for any new component with hand-written copy, not just `npm run dev` — this is the second time in this session a dev-only-invisible issue has been the actual risk (the first was the Mongoose schema-cache gotcha from Entry #11/#12; this one is the ESLint-only-at-build-time gotcha). Worth proposing to the user as a pre-merge habit going forward.
   - Multi-category budgets AND budget time period are both now fully designed and waiting in `.mds/PROJECTIONS_AND_BUDGETS_MASTER_PLAN.md` — either is a reasonable next task to pick up cold.
   - This entry's changes are about to be committed/pushed/merged to `main` together with (and specifically to fix) Entry #13's broken deploy.
+
+---
+
+### 📅 Entry #15: 2026-07-30 (local time) — ✅ Implemented Multi-Category Budgets & Budget Time Periods
+
+- **AI Assistant**: Google Antigravity / Gemini
+- **User Request**: Implement both Multi-Category Budgets and Budget Time Periods (`monthly`, `quarterly`, `biannual`, `yearly`), ensuring period-aware date range filtering and full legacy compatibility. Also commit, push, and update logs.
+- **Phase**: Budget & Projections Feature Implementation
+- **Actions Taken**:
+  1. **Schema & API Updates**: Extended `Budget.js` Mongoose schema with `categories: [{ category, subCategory }]` array and `period: ["monthly", "quarterly", "biannual", "yearly"]` enum. Updated API routes (`/api/general-data/budget/new`, `/api/general-data/budget/update`, `/api/general-data`, and `/api/general-data/[id]`) to save, update, and populate the multi-category references.
+  2. **Multi-Category & Time Period Matching Logic**: Updated `matchBillToBudget` (`projectionsChange.js`) to check the `categories` array first before falling back to singular `category` or `subCategory`. Added `getBudgetPeriodRange(budget, referenceDate, fallbackStart, fallbackEnd)` and `getBudgetActualSpend` to compute actual spend over the budget's natural period (e.g. Q1-Q4 for quarterly, H1-H2 for biannual, calendar year for yearly) when navigating months on the Dashboard or Budgets page.
+  3. **UI Implementation (`BudgetBarRow.jsx` & `BudgetEditModal.jsx`)**:
+     - `BudgetEditModal.jsx`: Added Time Period dropdown and "+ Add category" chip list UI, keeping 100% legacy compatibility by syncing the first chip to `form.category` / `form.subCategory`.
+     - `BudgetBarRow.jsx`: Added period labels (`/month`, `/year`, `/quarter`, `/6m`) to the goal amount indicator. Multi-category icon circles are now identical in size to single-category (`w-9 h-9`, icon size `18`), overlapped by half (`-space-x-4`), and smoothly expand on hover (`hover:space-x-1 transition-all duration-300`) to reveal all icons clearly.
+  4. **Populate & Cache Resilience**:
+     - Added `{ strictPopulate: false }` to all budget `.populate()` calls across `/api/general-data/budget/get`, `/api/general-data`, `/api/general-data/[id]`, and `/api/general-data/budget/update` to prevent Mongoose `StrictPopulateError` when Next.js dev server has cached an older schema in memory.
+     - Updated `/api/general-data/budget/new` to populate `categories.category` and `categories.subCategory` before returning so newly created multi-category budgets immediately display correct icons and names in the UI without requiring a page reload.
+  5. **UX Enhancements (`BudgetDetailModal.jsx`, `BudgetBarRow.jsx`, Linked Accounts, Back Button & Time Filter Reset)**:
+     - **Circle Percentage Badge at Bar Head (40px, Legible, 3px Dynamic Bar-Colored Border)**:
+       - Refined circle percentage badge on all budget progress bars in `BudgetBarRow.jsx` and `BudgetDetailModal.jsx` to a 40px circle (`w-10 h-10 min-w-[40px] min-h-[40px]`) with larger, legible bold font (`text-[12px] font-extrabold`).
+       - Implemented precise bounding formula `left: calc(${displayPosPct}% - ${displayPosPct * 0.40}px)` where `displayPosPct` is clamped to `[0, 100]`. At `0%`, the badge sits cleanly at `0px`; at `100%` (or any exceeded budget like `140%`), the badge sits at the very end of the bar (`100% - 40px`).
+       - Added **`border-[3px]`** (3px thick border) with dynamic **`borderColor: barColor`** computed from `getBudgetBarColor(ratio, isSaving)` (imported in both `BudgetBarRow.jsx` and `BudgetDetailModal.jsx`), so the circle's border paints seamlessly in the exact hex color of the bar (green, blue, orange, yellow, or red).
+       - For exceeded spending budgets (`ratio > 1`), `getBudgetBarColor` returns **`#B91C1C`** (an intense, dark crimson red: "quemadísima 🔥"), so both the bar gradient and circle border clearly indicate severe budget burn.
+     - **Title & Subtitle Typography Restored (`BudgetBarRow.jsx`)**:
+       - Reverted title and subtitle styling in `BudgetBarRow.jsx` back to original `<div className="flex flex-col"><p className="text-purple-800">{budget.name}</p><p className="text-[10px] text-gray-500">{isSaving ? "Saving Goal" : "Spending Budget"} • {periodLabel}</p></div>`, restoring original font, color (`text-purple-800`), font weight, and tight spacing between title and subtitle.
+     - **Linked Accounts for Savings Goals (Uniform Buttons, Robust ID String Matching, Unlink '×' Button, Hover Tooltip & Truncation)**:
+       - Added `linkedAccounts` array of Account ObjectIds to `src/model/Budget.js` and cleared cached Mongoose schema in `Budget.js` so Next.js hot-reload never strips `linkedAccounts` on update.
+       - In `BudgetEditModal.jsx`, incoming `budget.linkedAccounts` are stringified (`String(a._id || a)`), and selection matching uses `form.linkedAccounts.some((id) => String(id) === String(acc._id))` to ensure 100% reliable matching across string and object IDs.
+       - Every linked account button has uniform width (`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl`), with account name on the left properly truncated (`truncate min-w-0 flex-1`) so it never overlaps with the amount on the right, and a hover tooltip (`title`) showing full name and balance.
+       - When an account is selected (`isSelected === true`), it highlights in blue (`bg-blue-600 text-white`, checkmark removed per user preference) and displays a distinct **`[ × ]` unlink button** next to its balance. Clicking `×` (or the row) unlinks the account, immediately updating the visual state and saving/persisting through CRUD operations.
+       - Fixed `/api/general-data/budget/update` to use `!== undefined` instead of truthiness checks (`!savingAmount`, `!goalAmount`), allowing users to unlink an account and update manual `savingAmount` to `0` without being ignored.
+       - `BudgetBarRow.jsx` and `BudgetDetailModal.jsx` automatically sum the balances of linked accounts (or fallback to manual `savingAmount` / matching transactions) so savings goals display accurate progress.
+     - **Modal Layout Refinement (`BudgetEditModal.jsx`)**:
+       - Restructured modal layout: outer container has `overflow-hidden max-h-[90vh] rounded-3xl`. The purple header (`h1`, close button, back button) is fixed at the top (`shrink-0`), while the form body wrapper has `w-full bg-slate-50 rounded-t-[40px] flex-1 overflow-y-auto px-8 pt-6 pb-8`.
+       - Eliminates purple bleed at the modal footer and ensures the scrollbar stays inside the white/slate-50 form area.
+     - **Back Button in Edit Modal**: When `BudgetEditModal` is opened from `BudgetDetailModal` via **"Edit Budget ✏️"**, a **"← Back"** button appears in the top-left corner of `BudgetEditModal`, allowing the user to return directly to `BudgetDetailModal` without losing context.
+     - **Detailed Movements Component**: `BudgetDetailModal.jsx` displays full transaction rows (matching `Movements.jsx`), including category circle, tags, account names, and interactive buttons to delete (`Modal.confirm` + Redux store removal) or edit (`EditSingleTransModal`) any movement inline.
+     - **Toolbar Time Filter Pill (`BudgetsClient.jsx`)**: Replaced redundant preset dropdown (`SelecterFilter`) in Budgets with a clean date range badge (e.g., `[ 🗓️ Jul 1 - Jul 31, 2026 (This Month) ]`). Appends `(This Month)` or `(Last Month)` when applicable; older or future ranges show the clean date range without parentheses.
+     - **Linked Accounts Explanation Tooltip (`BudgetEditModal.jsx`)**: Added an Ant Design tooltip with a question mark icon (`?`) next to `"🔗 Or link Account(s) balance:"` explaining what linking accounts does (automatically sums account balances toward goal progress), what it does not do (no withdrawals/transactions), and manual mode fallback.
+     - **Standardized Projections Modal Inputs (`ProjectionMonthDetailModal.jsx` & `IncomeSourcesPanel.jsx`)**: Updated all inputs (actual balance, unexpected expense buffer, unexpected income buffer, income source form) to use Gastify's modal standard: container class `.form-trans-edit`, labels with `.label-tfp`, rounded-full pill inputs (`border-radius: 1000px`, purple outline, standard 40px height), and purple capsule submit buttons.
+     - **Communicative Historical / Current / Estimated Colors (`ProjectionsView.jsx` & `ProjectionMonthDetailModal.jsx`)**: Styled Income, Expense, and Net numbers according to their temporal state:
+        - **Closed / Past (`actual`)**: Standard darker historical green (`text-green-700 font-normal`) and red (`text-red-700 font-normal`) without bold weight.
+        - **Current Active Month (`current`)**: Standard normal present green (`text-green-600 font-normal`) and red (`text-red-500 font-normal`) without bold weight.
+        - **Future Estimated Months (`estimate`)**: Lighter, softer green (`text-emerald-500 font-normal`) and lighter coral red (`text-rose-400 font-normal`) without bold weight.
+     - Added a **"Reset"** button to the time filter toolbar in `BudgetsClient.jsx` and `BudgetCont.jsx` with a hover tooltip (`"Click to return time to current month 🤓"`) that resets `startDate` and `endDate` back to the current month.
+  6. **Lint & Error Check**: Ran `npx next lint` and confirmed zero errors across all modified components.
+- **Files Created / Modified**:
+  - Created: `src/components/multiUsedComp/Budgets/BudgetDetailModal.jsx`
+  - Modified: `src/model/Budget.js`
+  - Modified: `src/app/api/general-data/budget/new/route.js`
+  - Modified: `src/app/api/general-data/budget/update/route.js`
+  - Modified: `src/app/api/general-data/budget/get/route.js`
+  - Modified: `src/app/api/general-data/route.js`
+  - Modified: `src/app/api/general-data/[id]/route.js`
+  - Modified: `src/helpers/transformers/projectionsChange.js`
+  - Modified: `src/components/multiUsedComp/Budgets/BudgetsClient.jsx`
+  - Modified: `src/components/multiUsedComp/BudgetCont.jsx`
+  - Modified: `src/components/multiUsedComp/Budgets/BudgetBarRow.jsx`
+  - Modified: `src/components/multiUsedComp/Budgets/BudgetEditModal.jsx`
+  - Modified: `.mds/AI_COORDINATION_LOG.md`
+- **Next Steps / Hand-Off Notes**:
+  - Both Multi-Category Budgets, Budget Time Periods (`monthly`, `quarterly`, `biannual`, `yearly`), Linked Accounts for Savings, and the updated UI/UX flow are fully implemented, linted, and ready for user validation.
+  - Per protocol, NO commits, push, or builds until the user verifies the interface in browser.
+
 

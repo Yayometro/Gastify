@@ -26,6 +26,30 @@ function HeaderTooltip({ title }) {
   );
 }
 
+const getIncomeColorClass = (type) => {
+  switch (type) {
+    case "actual":
+      return "text-green-700 font-normal"; // Closed/past months - historical green, normal weight
+    case "current":
+      return "text-green-600 font-normal"; // Current active month - present green, normal weight
+    case "estimate":
+    default:
+      return "text-emerald-500 font-normal"; // Future estimated months - lighter green, normal weight
+  }
+};
+
+const getExpenseColorClass = (type) => {
+  switch (type) {
+    case "actual":
+      return "text-red-700 font-normal"; // Closed/past months - historical red, normal weight
+    case "current":
+      return "text-red-500 font-normal"; // Current active month - present red, normal weight
+    case "estimate":
+    default:
+      return "text-rose-400 font-normal"; // Future estimated months - lighter coral red, normal weight
+  }
+};
+
 function ProjectionsView({ rows, onRowClick }) {
   return (
     <div className="w-full overflow-x-auto">
@@ -63,9 +87,19 @@ function ProjectionsView({ rows, onRowClick }) {
                     {TYPE_LABEL[row.type]}
                   </span>
                 </td>
-                <td className="py-2 px-3 text-green-600">{formatMoney(income)}</td>
-                <td className="py-2 px-3 text-red-500">{formatMoney(expense)}</td>
-                <td className={`py-2 px-3 ${row.net >= 0 ? "text-green-700" : "text-red-700"}`}>
+                <td className={`py-2 px-3 ${getIncomeColorClass(row.type)}`}>
+                  {formatMoney(income)}
+                </td>
+                <td className={`py-2 px-3 ${getExpenseColorClass(row.type)}`}>
+                  {formatMoney(expense)}
+                </td>
+                <td
+                  className={`py-2 px-3 ${
+                    row.net >= 0
+                      ? getIncomeColorClass(row.type)
+                      : getExpenseColorClass(row.type)
+                  }`}
+                >
                   {formatMoney(row.net)}
                 </td>
                 <td className="py-2 px-3">
