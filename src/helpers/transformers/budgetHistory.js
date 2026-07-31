@@ -25,8 +25,8 @@ export function getBudgetBarColor(ratio, isSaving) {
     if (safeRatio >= 0.35) return "#4CAF50"; // green - getting close
     return "#F4664A"; // red - far from goal
   }
-  if (safeRatio > 1) return "#F4664A"; // red
-  if (safeRatio >= 0.85) return "#FF9800"; // orange
+  if (safeRatio > 1) return "#B91C1C"; // intense dark red - burned / quemadísima 🔥
+  if (safeRatio >= 0.85) return "#F4664A"; // coral red/orange
   if (safeRatio >= 0.6) return "#FFD633"; // yellow
   return "#4CAF50"; // green
 }

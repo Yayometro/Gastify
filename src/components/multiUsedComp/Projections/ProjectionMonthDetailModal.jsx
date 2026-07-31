@@ -107,14 +107,14 @@ function ProjectionMonthDetailModal({
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
               <div className="bg-purple-50 rounded-xl p-2">
                 <p className="text-gray-500">Income</p>
-                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.projectedIncome || 0)}</p>
+                <p className="text-lg text-green-600">{usdFormatChanger(monthRow.projectedIncome || 0)}</p>
                 <p className="text-xs text-gray-400">
                   real so far: {usdFormatChanger(monthRow.actualIncome || 0)} / expected: {usdFormatChanger(monthRow.shadowIncome || 0)}
                 </p>
               </div>
               <div className="bg-purple-50 rounded-xl p-2">
                 <p className="text-gray-500">Expense</p>
-                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.projectedExpense || 0)}</p>
+                <p className="text-lg text-red-500">{usdFormatChanger(monthRow.projectedExpense || 0)}</p>
                 <p className="text-xs text-gray-400">
                   real so far: {usdFormatChanger(monthRow.actualExpense || 0)} / budgeted: {usdFormatChanger(monthRow.shadowExpense || 0)}
                 </p>
@@ -126,11 +126,11 @@ function ProjectionMonthDetailModal({
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
               <div className="bg-purple-50 rounded-xl p-2">
                 <p className="text-gray-500">Estimated income</p>
-                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.income || 0)}</p>
+                <p className="text-lg text-emerald-500">{usdFormatChanger(monthRow.income || 0)}</p>
               </div>
               <div className="bg-purple-50 rounded-xl p-2">
                 <p className="text-gray-500">Estimated expense</p>
-                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.expense || 0)}</p>
+                <p className="text-lg text-rose-400">{usdFormatChanger(monthRow.expense || 0)}</p>
               </div>
             </div>
           )}
@@ -139,14 +139,14 @@ function ProjectionMonthDetailModal({
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
               <div className="bg-purple-50 rounded-xl p-2">
                 <p className="text-gray-500">Real income</p>
-                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.income || 0)}</p>
+                <p className="text-lg text-green-700">{usdFormatChanger(monthRow.income || 0)}</p>
                 {monthRow.historicalIncome !== undefined && (
                   <p className="text-xs text-gray-400">expected back then: {usdFormatChanger(monthRow.historicalIncome || 0)}</p>
                 )}
               </div>
               <div className="bg-purple-50 rounded-xl p-2">
                 <p className="text-gray-500">Real expense</p>
-                <p className="text-lg text-purple-800">{usdFormatChanger(monthRow.expense || 0)}</p>
+                <p className="text-lg text-red-700">{usdFormatChanger(monthRow.expense || 0)}</p>
                 {monthRow.historicalExpense !== undefined && (
                   <p className="text-xs text-gray-400">budgeted back then: {usdFormatChanger(monthRow.historicalExpense || 0)}</p>
                 )}
@@ -177,58 +177,67 @@ function ProjectionMonthDetailModal({
           )}
 
           {monthRow.type === "actual" && (
-            <div className="w-full flex items-end gap-2 mb-4">
-              <div className="flex flex-col flex-1">
-                <label className="text-xs text-gray-500 flex items-center">
-                  Set actual balance for this month
+            <div className="form-trans-edit w-full flex flex-col gap-2 mb-6 pt-3 border-t border-purple-100">
+              <div className="w-full">
+                <p className="label-tfp flex items-center mb-1">
+                  <span>Set actual balance for this month</span>
                   <QuestionTooltip title="The app can't compute past balances automatically. If you know what your real account balance was at the end of this month, record it here." />
-                </label>
-                <input
-                  type="number"
-                  value={balanceValue}
-                  onChange={(e) => setBalanceValue(e.target.value)}
-                  placeholder="e.g. 45000"
-                />
+                </p>
+                <div className="flex items-center gap-2 w-full">
+                  <input
+                    type="number"
+                    value={balanceValue}
+                    onChange={(e) => setBalanceValue(e.target.value)}
+                    placeholder="e.g. 45000"
+                    className="w-full"
+                  />
+                  <button
+                    type="button"
+                    className="h-10 px-6 bg-purple-600 text-white font-semibold text-xs rounded-full hover:bg-purple-500 transition-colors shrink-0 shadow-sm cursor-pointer flex items-center justify-center"
+                    onClick={handleSaveBalance}
+                  >
+                    {isSavingBalance ? <Spin size="small" /> : "Save"}
+                  </button>
+                </div>
               </div>
-              <button
-                className="bg-purple-600 text-white rounded-full px-4 py-2 hover:bg-purple-500"
-                onClick={handleSaveBalance}
-              >
-                {isSavingBalance ? <Spin /> : "Save"}
-              </button>
             </div>
           )}
 
-          <div className="w-full flex flex-col gap-2 mt-2">
-            <div className="flex items-end gap-2">
-              <div className="flex flex-col flex-1">
-                <label className="text-xs text-gray-500 flex items-center">
-                  Unexpected expense buffer
+          <div className="form-trans-edit w-full flex flex-col gap-4 mt-2 pt-4 border-t border-purple-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+              <div className="w-full">
+                <p className="label-tfp flex items-center mb-1">
+                  <span>Unexpected expense buffer</span>
                   <QuestionTooltip title="A manual amount added to your expense estimate, for spending that doesn't have its own Budget." />
-                </label>
+                </p>
                 <input
                   type="number"
                   value={bufferValue}
                   onChange={(e) => setBufferValue(e.target.value)}
+                  placeholder="0"
+                  className="w-full"
                 />
               </div>
-              <div className="flex flex-col flex-1">
-                <label className="text-xs text-gray-500 flex items-center">
-                  Unexpected income buffer
+              <div className="w-full">
+                <p className="label-tfp flex items-center mb-1">
+                  <span>Unexpected income buffer</span>
                   <QuestionTooltip title="A manual amount added to your income estimate, for money coming in that isn't tied to a recurring Income Source." />
-                </label>
+                </p>
                 <input
                   type="number"
                   value={incomeBufferValue}
                   onChange={(e) => setIncomeBufferValue(e.target.value)}
+                  placeholder="0"
+                  className="w-full"
                 />
               </div>
             </div>
             <button
-              className="w-full bg-purple-600 text-white rounded-full px-4 py-2 hover:bg-purple-500"
+              type="button"
+              className="w-full h-10 bg-purple-600 text-white font-semibold text-xs rounded-full hover:bg-purple-500 transition-colors shadow-sm cursor-pointer flex items-center justify-center"
               onClick={handleSaveBuffers}
             >
-              {isSaving ? <Spin /> : "Save buffers"}
+              {isSaving ? <Spin size="small" /> : "Save buffers"}
             </button>
           </div>
         </div>

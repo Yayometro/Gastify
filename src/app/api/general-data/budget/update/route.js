@@ -9,7 +9,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on NEW BUDGET POST");
-    const { id, name, goalAmount, category, subCategory, isSurpassed, isSaving, savingAmount } =
+    const { id, name, goalAmount, category, subCategory, isSurpassed, isSaving, savingAmount, categories, period, linkedAccounts } =
       await request.json();
     await dbConnection();
     // NO ID FILTER
@@ -20,16 +20,16 @@ export async function POST(request) {
     if (!updateBudget) throw new Error(`No Budget was identified to update 🤕`);
     // VERSION HISTORY if goalAmount/savingAmount is actually changing
     const amountIsChanging =
-      (!!goalAmount && goalAmount !== updateBudget.goalAmount) ||
-      (!!savingAmount && savingAmount !== updateBudget.savingAmount);
+      (goalAmount !== undefined && Number(goalAmount) !== Number(updateBudget.goalAmount)) ||
+      (savingAmount !== undefined && Number(savingAmount) !== Number(updateBudget.savingAmount));
     if (amountIsChanging) {
       const now = new Date();
       const openEntry = updateBudget.history?.find((h) => !h.effectiveTo);
       if (openEntry) openEntry.effectiveTo = now;
       updateBudget.history = updateBudget.history || [];
       updateBudget.history.push({
-        goalAmount: !goalAmount ? updateBudget.goalAmount : goalAmount,
-        savingAmount: !savingAmount ? updateBudget.savingAmount : savingAmount,
+        goalAmount: goalAmount !== undefined ? Number(goalAmount) : updateBudget.goalAmount,
+        savingAmount: savingAmount !== undefined ? Number(savingAmount) : updateBudget.savingAmount,
         effectiveFrom: now,
         effectiveTo: null,
       });
@@ -38,9 +38,8 @@ export async function POST(request) {
     //name
     updateBudget.name = !name ? updateBudget.name : name;
     //goalAmount
-    updateBudget.goalAmount = !goalAmount
-      ? updateBudget.goalAmount
-      : goalAmount;
+    updateBudget.goalAmount =
+      goalAmount !== undefined ? Number(goalAmount) : updateBudget.goalAmount;
     //isSurpassed
     updateBudget.isSurpassed = !isSurpassed
       ? updateBudget.isSurpassed
@@ -52,12 +51,25 @@ export async function POST(request) {
     //isSaving (boolean, so check for undefined rather than falsy - false is a valid value)
     updateBudget.isSaving = isSaving === undefined ? updateBudget.isSaving : isSaving;
     //savingAmount
-    updateBudget.savingAmount = !savingAmount ? updateBudget.savingAmount : savingAmount;
+    updateBudget.savingAmount =
+      savingAmount !== undefined ? Number(savingAmount) : updateBudget.savingAmount;
+    //period
+    if (period !== undefined) updateBudget.period = period;
+    //categories array
+    if (categories !== undefined) updateBudget.categories = categories;
+    //linkedAccounts array
+    if (linkedAccounts !== undefined) updateBudget.linkedAccounts = linkedAccounts;
     // SAVE
     const savedBudget = await updateBudget.save();
     //IF ERROR
     if (!savedBudget) throw new Error("Updated Budget was not saved 🤕");
-    await savedBudget.populate([{ path: "category" }, { path: "subCategory" }]);
+    await savedBudget.populate([
+      { path: "category", strictPopulate: false },
+      { path: "subCategory", strictPopulate: false },
+      { path: "categories.category", strictPopulate: false },
+      { path: "categories.subCategory", strictPopulate: false },
+      { path: "linkedAccounts", strictPopulate: false },
+    ]);
     return NextResponse.json({
       message: `${savedBudget.name} was updated successfully 🤓`,
       data: savedBudget,

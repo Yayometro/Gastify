@@ -24,6 +24,25 @@ const budgetSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "SubCategory",
     },
+    categories: [{
+        category: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Category",
+        },
+        subCategory: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "SubCategory",
+        },
+    }],
+    period: {
+        type: String,
+        enum: ["monthly", "quarterly", "biannual", "yearly"],
+        default: "monthly",
+    },
+    linkedAccounts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Account",
+    }],
     archived: { type: Boolean, default: false },
     history: [{
         goalAmount: Number,
@@ -34,6 +53,9 @@ const budgetSchema = new Schema({
   },{ timestamps: true }
 );
 
-const Budget = mongoose.models.Budget || mongoose.model("Budget", budgetSchema);
+if (mongoose.models && mongoose.models.Budget) {
+  delete mongoose.models.Budget;
+}
+const Budget = mongoose.model("Budget", budgetSchema);
 
 export default Budget;

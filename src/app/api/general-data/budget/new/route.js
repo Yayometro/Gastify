@@ -17,7 +17,10 @@ export async function POST(request) {
       category,
       subCategory,
       savingAmount,
-      isSaving
+      isSaving,
+      categories,
+      period,
+      linkedAccounts
     } = await request.json();
     await dbConnection();
     // NO USER/WALLET FILTER
@@ -34,6 +37,8 @@ export async function POST(request) {
       wallet: wallet,
       isSaving: isSaving || false,
       savingAmount: savingAmount || 0,
+      period: period || "monthly",
+      linkedAccounts: linkedAccounts || [],
       history: [{
         goalAmount: goalAmount || 1,
         savingAmount: savingAmount || 0,
@@ -43,13 +48,22 @@ export async function POST(request) {
     });
     newBudget.category = category || null;
     newBudget.subCategory = subCategory || null;
+    if (categories && Array.isArray(categories) && categories.length > 0) {
+      newBudget.categories = categories;
+    }
     //IF ERROR
     if (!newBudget) throw new Error(`No Budget was identified 🤕`);
     // SAVE
     const savedBudget = await newBudget.save();
     //IF ERROR
     if (!savedBudget) throw new Error("New Budget was not saved 🤕");
-    await savedBudget.populate([{ path: "category" }, { path: "subCategory" }]);
+    await savedBudget.populate([
+      { path: "category", strictPopulate: false },
+      { path: "subCategory", strictPopulate: false },
+      { path: "categories.category", strictPopulate: false },
+      { path: "categories.subCategory", strictPopulate: false },
+      { path: "linkedAccounts", strictPopulate: false },
+    ]);
     return NextResponse.json({
       message: `${savedBudget.name} was created successfully 🤓`,
       data: savedBudget,

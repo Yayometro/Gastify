@@ -7,7 +7,8 @@ import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import BudgetBarRow from "./Budgets/BudgetBarRow";
 import BudgetEditModal from "./Budgets/BudgetEditModal";
-import { matchBillToBudget } from "@/helpers/transformers/projectionsChange";
+import BudgetDetailModal from "./Budgets/BudgetDetailModal";
+import { matchBillToBudget, getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
 import { getLastDayOfMonth, generate_timeperiod_ranges_array_for_dashboard } from "@/helpers/timeFunctions/timeFunctions";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
@@ -24,6 +25,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   let [isBudget, setIsBudget] = useState(true);
   const [loadingComponent, setLoadingComponent] = useState(true);
   const [editingBudget, setEditingBudget] = useState(null);
+  const [selectedDetailBudget, setSelectedDetailBudget] = useState(null);
   //REDUX
   const dispatch = useDispatch();
   const ccBudget = useSelector((state) => state.budgetReducer)
@@ -79,6 +81,37 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
     setStartDate(new Date(start));
     setEndDate(new Date(end));
   }
+  const openDetail = (budget) => {
+    setSelectedDetailBudget(budget);
+  };
+  const openEdit = (budget) => {
+    setSelectedDetailBudget(null);
+    setReturnToDetailBudget(null);
+    setEditingBudget(budget);
+  };
+  const openEditFromDetail = (budget) => {
+    setSelectedDetailBudget(null);
+    setReturnToDetailBudget(budget);
+    setEditingBudget(budget);
+  };
+  const closeModal = () => {
+    setEditingBudget(null);
+    setReturnToDetailBudget(null);
+  };
+  const handleBackToDetail = () => {
+    const b = returnToDetailBudget;
+    closeModal();
+    if (b) {
+      setSelectedDetailBudget(b);
+    }
+  };
+  const handleResetFilters = () => {
+    const y = initialToday.getFullYear();
+    const m = initialToday.getMonth();
+    setStartDate(new Date(y, m, 1));
+    setEndDate(getLastDayOfMonth(y, m));
+  };
+
   return (
     <div className="budget-cont py-4 px-2 w-full max-w-[1200px] mx-auto">
       <div className="wallet-budget-Content">
@@ -86,13 +119,23 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
           Wallet Budgets
         </h1>
       </div>
-      <div className="filters flex items-center justify-center gap-2">
+      <div className="filters flex items-center justify-center gap-2 flex-wrap my-2">
         <SelecterFilter
           getValue={getValueFromSelecter}
           periodOverride={generate_timeperiod_ranges_array_for_dashboard(initialToday.getFullYear())}
           styles="bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
         />
         <TimeRange rpDate={handleRangeDate} rpResponse={""} />
+        <Tooltip title="Click to return time to current month 🤓">
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="flex items-center gap-1 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-full px-3 py-1 text-xs font-medium shadow-sm transition-colors cursor-pointer"
+          >
+            <UniversalCategoIcon type="md/MdRefresh" siz={15} />
+            <span>Reset</span>
+          </button>
+        </Tooltip>
       </div>
       <div className="bc-tab-headers-cont w-full text-center flex justify-center items-center gap-2">
         <div
@@ -137,7 +180,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
             {savings.map((saving, index) => (
               <BudgetBarRow
                 budget={saving}
-                onClick={setEditingBudget}
+                onClick={openDetail}
                 key={`saving-goal-key-${index}`}
               />
             ))}
@@ -161,21 +204,30 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
             {budgets.map((budget, index) => (
               <BudgetBarRow
                 budget={budget}
-                actual={bills
-                  .filter((bill) => matchBillToBudget(bill, budget))
-                  .reduce((acc, bill) => acc + (bill.amount || 0), 0)}
-                onClick={setEditingBudget}
+                actual={getBudgetActualSpend(budget, bcTrans, startDate, endDate)}
+                onClick={openDetail}
                 key={`budget-goal-key-${index}`}
               />
             ))}
           </div>
         </div>
       )}
+      {selectedDetailBudget && (
+        <BudgetDetailModal
+          budget={selectedDetailBudget}
+          transacciones={bcTrans}
+          startDate={startDate}
+          endDate={endDate}
+          onClose={() => setSelectedDetailBudget(null)}
+          onEdit={openEditFromDetail}
+        />
+      )}
       {editingBudget && (
         <BudgetEditModal
           mode="edition"
           budget={editingBudget}
-          onClose={() => setEditingBudget(null)}
+          onClose={closeModal}
+          onBack={returnToDetailBudget ? handleBackToDetail : null}
         />
       )}
     </div>

@@ -60,6 +60,19 @@ export function getExpectedOccurrencesInMonth(incomeSource, monthStart, monthEnd
 }
 
 export function matchBillToBudget(bill, budget) {
+  if (budget.categories && Array.isArray(budget.categories) && budget.categories.length > 0) {
+    return budget.categories.some((entry) => {
+      if (entry.subCategory) {
+        const subCategoryId = entry.subCategory?._id || entry.subCategory;
+        return String(bill.subCategory?._id) === String(subCategoryId);
+      }
+      if (entry.category) {
+        const categoryId = entry.category?._id || entry.category;
+        return String(bill.category?._id) === String(categoryId);
+      }
+      return false;
+    });
+  }
   if (budget.subCategory) {
     const subCategoryId = budget.subCategory?._id || budget.subCategory;
     return String(bill.subCategory?._id) === String(subCategoryId);
@@ -70,6 +83,54 @@ export function matchBillToBudget(bill, budget) {
   }
   return false;
 }
+
+export function getBudgetPeriodRange(budget, referenceDate = new Date(), fallbackStartDate = null, fallbackEndDate = null) {
+  const period = budget.period || "monthly";
+  if (period === "monthly") {
+    if (fallbackStartDate && fallbackEndDate) {
+      return { startDate: fallbackStartDate, endDate: fallbackEndDate };
+    }
+    const d = new Date(referenceDate || new Date());
+    const startDate = new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0);
+    const endDate = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { startDate, endDate };
+  }
+  const d = new Date(referenceDate || fallbackStartDate || new Date());
+  const year = d.getFullYear();
+  const month = d.getMonth();
+
+  if (period === "quarterly") {
+    const quarterStartMonth = Math.floor(month / 3) * 3;
+    const startDate = new Date(year, quarterStartMonth, 1, 0, 0, 0, 0);
+    const endDate = new Date(year, quarterStartMonth + 3, 0, 23, 59, 59, 999);
+    return { startDate, endDate };
+  }
+
+  if (period === "biannual") {
+    const halfStartMonth = month < 6 ? 0 : 6;
+    const startDate = new Date(year, halfStartMonth, 1, 0, 0, 0, 0);
+    const endDate = new Date(year, halfStartMonth + 6, 0, 23, 59, 59, 999);
+    return { startDate, endDate };
+  }
+
+  // default / yearly
+  const startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+  const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+  return { startDate, endDate };
+}
+
+export function getBudgetActualSpend(budget, allTransactions, fallbackStartDate = null, fallbackEndDate = null) {
+  const refDate = fallbackStartDate || new Date();
+  const { startDate, endDate } = getBudgetPeriodRange(budget, refDate, fallbackStartDate, fallbackEndDate);
+  const matched = (allTransactions || []).filter((tra) => {
+    if (!tra.isBill) return false;
+    const tDate = new Date(tra.date || tra.createdAt);
+    if (tDate < startDate || tDate > endDate) return false;
+    return matchBillToBudget(tra, budget);
+  });
+  return matched.reduce((acc, bill) => acc + (bill.amount || 0), 0);
+}
+
 
 // Per Budget bucket: MAX(budgeted goal, real spend this month). Bills matching no
 // Budget fall into the "unexpected" bucket, compared the same way against the buffer.
