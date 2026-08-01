@@ -26,6 +26,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   const [loadingComponent, setLoadingComponent] = useState(true);
   const [editingBudget, setEditingBudget] = useState(null);
   const [selectedDetailBudget, setSelectedDetailBudget] = useState(null);
+  const [returnToDetailBudget, setReturnToDetailBudget] = useState(null);
   //REDUX
   const dispatch = useDispatch();
   const ccBudget = useSelector((state) => state.budgetReducer)
