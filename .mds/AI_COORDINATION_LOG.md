@@ -868,6 +868,7 @@ When taking over this task, Claude should perform the following steps:
         - **Current Active Month (`current`)**: Standard normal present green (`text-green-600 font-normal`) and red (`text-red-500 font-normal`) without bold weight.
         - **Future Estimated Months (`estimate`)**: Lighter, softer green (`text-emerald-500 font-normal`) and lighter coral red (`text-rose-400 font-normal`) without bold weight.
      - Added a **"Reset"** button to the time filter toolbar in `BudgetsClient.jsx` and `BudgetCont.jsx` with a hover tooltip (`"Click to return time to current month 🤓"`) that resets `startDate` and `endDate` back to the current month.
+     - **Dashboard Budgets Modal Fix (`BudgetCont.jsx`)**: Declared missing `const [returnToDetailBudget, setReturnToDetailBudget] = useState(null);` state in `BudgetCont.jsx` so that clicking on a budget or saving in the main dashboard (`Dashboard.jsx`) correctly opens `BudgetDetailModal` without throwing a `ReferenceError`.
   6. **Lint & Error Check**: Ran `npx next lint` and confirmed zero errors across all modified components.
 - **Files Created / Modified**:
   - Created: `src/components/multiUsedComp/Budgets/BudgetDetailModal.jsx`
