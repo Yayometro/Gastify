@@ -170,6 +170,17 @@ export function getMonthBucketBreakdown(bills, budgets, bufferAmount) {
   return rows;
 }
 
+// Each month's unexpected buffers are set independently (see monthlyBuffers on
+// ProjectionSettings) - a value entered while looking at August must not leak
+// into any other month, so this always looks up that specific month's entry.
+function getMonthBuffer(monthlyBuffers, monthIndex) {
+  const entry = (monthlyBuffers || []).find((m) => m.month === monthIndex);
+  return {
+    unexpectedBuffer: entry?.unexpectedBuffer || 0,
+    unexpectedIncomeBuffer: entry?.unexpectedIncomeBuffer || 0,
+  };
+}
+
 // Builds the 12-month projection table for a given year:
 // - past months: pure actual (real transactions), plus the historical Budget/IncomeSource
 //   values that were active back then (for the detail-modal chart, not the headline number).
@@ -178,12 +189,12 @@ export function getMonthBucketBreakdown(bills, budgets, bufferAmount) {
 export function buildYearProjectionTable({ transactions, budgets, incomeSources, projectionSettings, year, today }) {
   const monthRanges = getYearMonthDateRange(new Date(year, 0, 1));
   const nonSavingBudgets = (budgets || []).filter((b) => !b.isSaving);
-  const unexpectedBuffer = projectionSettings?.unexpectedBuffer || 0;
-  const unexpectedIncomeBuffer = projectionSettings?.unexpectedIncomeBuffer || 0;
+  const monthlyBuffers = projectionSettings?.monthlyBuffers || [];
   const todayMonthStart = startOfMonth(today);
   const todayMonthEnd = endOfMonth(today);
 
-  return [...monthRanges.entries()].map(([monthName, { start, end }]) => {
+  return [...monthRanges.entries()].map(([monthName, { start, end }], monthIndex) => {
+    const { unexpectedBuffer, unexpectedIncomeBuffer } = getMonthBuffer(monthlyBuffers, monthIndex);
     const monthTx = getTransactionsFromTimeRange(transactions, start, end);
     const { incomes, bills } = filterBillsOrIncomes(monthTx);
     const actualIncome = sum(incomes.map((tx) => tx.amount));
