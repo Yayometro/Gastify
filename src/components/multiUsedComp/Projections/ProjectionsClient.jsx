@@ -52,9 +52,8 @@ function ProjectionsClient({ mcSession }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year]);
 
-  const unexpectedBuffer = projectionSettings?.unexpectedBuffer || 0;
-  const unexpectedIncomeBuffer = projectionSettings?.unexpectedIncomeBuffer || 0;
   const monthlyBalances = projectionSettings?.monthlyBalances || [];
+  const monthlyBuffers = projectionSettings?.monthlyBuffers || [];
 
   const rows = useMemo(() => {
     if (!transacciones || !budgets) return [];
@@ -62,11 +61,11 @@ function ProjectionsClient({ mcSession }) {
       transactions: transacciones,
       budgets,
       incomeSources,
-      projectionSettings: { unexpectedBuffer, unexpectedIncomeBuffer },
+      projectionSettings: { monthlyBuffers },
       year,
       today: new Date(),
     });
-  }, [transacciones, budgets, incomeSources, unexpectedBuffer, unexpectedIncomeBuffer, year]);
+  }, [transacciones, budgets, incomeSources, monthlyBuffers, year]);
 
   const today = new Date();
   const startingBalance = useMemo(() => {
@@ -103,6 +102,9 @@ function ProjectionsClient({ mcSession }) {
   const monthRanges = useMemo(() => getYearMonthDateRange(new Date(year, 0, 1)), [year]);
   const selectedRow = rowsWithBalance.find((r) => r.monthName === selectedMonthName) || null;
   const selectedMonthIndex = rowsWithBalance.findIndex((r) => r.monthName === selectedMonthName);
+  const selectedMonthBufferEntry = monthlyBuffers.find((m) => m.month === selectedMonthIndex);
+  const selectedUnexpectedBuffer = selectedMonthBufferEntry?.unexpectedBuffer || 0;
+  const selectedUnexpectedIncomeBuffer = selectedMonthBufferEntry?.unexpectedIncomeBuffer || 0;
 
   const selectedMonthDetails = useMemo(() => {
     if (!selectedRow) return { bucketBreakdown: [], incomeOccurrences: [] };
@@ -122,7 +124,7 @@ function ProjectionsClient({ mcSession }) {
             })
             .filter(Boolean)
         : nonSavingBudgets.filter((b) => !b.archived);
-    const bucketBreakdown = getMonthBucketBreakdown(bills, budgetsForChart, unexpectedBuffer);
+    const bucketBreakdown = getMonthBucketBreakdown(bills, budgetsForChart, selectedUnexpectedBuffer);
     const incomeOccurrences =
       selectedRow.type === "actual"
         ? []
@@ -134,14 +136,17 @@ function ProjectionsClient({ mcSession }) {
               occurrences: getExpectedOccurrencesInMonth(s, start, end),
             }));
     return { bucketBreakdown, incomeOccurrences };
-  }, [selectedRow, monthRanges, transacciones, budgets, incomeSources, unexpectedBuffer]);
+  }, [selectedRow, monthRanges, transacciones, budgets, incomeSources, selectedUnexpectedBuffer]);
 
   const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }) => {
     const res = await toFetch.post("general-data/projections/update", {
       mail: mcSession,
       year,
-      unexpectedBuffer: newBuffer,
-      unexpectedIncomeBuffer: newIncomeBuffer,
+      monthBuffer: {
+        month: selectedMonthIndex,
+        unexpectedBuffer: newBuffer,
+        unexpectedIncomeBuffer: newIncomeBuffer,
+      },
     });
     if (res.ok) setProjectionSettings(res.data);
   };
@@ -210,8 +215,8 @@ function ProjectionsClient({ mcSession }) {
             monthRow={selectedRow}
             bucketBreakdown={selectedMonthDetails.bucketBreakdown}
             incomeOccurrences={selectedMonthDetails.incomeOccurrences}
-            unexpectedBuffer={unexpectedBuffer}
-            unexpectedIncomeBuffer={unexpectedIncomeBuffer}
+            unexpectedBuffer={selectedUnexpectedBuffer}
+            unexpectedIncomeBuffer={selectedUnexpectedIncomeBuffer}
             onSaveBuffers={handleSaveBuffers}
             onSaveMonthBalance={handleSaveMonthBalance}
             onClose={() => setSelectedMonthName(null)}

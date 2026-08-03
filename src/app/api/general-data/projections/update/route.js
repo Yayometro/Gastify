@@ -10,7 +10,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on UPDATE PROJECTION SETTINGS POST");
-    const { mail, year, unexpectedBuffer, unexpectedIncomeBuffer, monthBalance } =
+    const { mail, year, monthBuffer, monthBalance } =
       await request.json();
     if (!mail || !year)
       throw new Error(`No mail/year was provided to update projection settings 🤕`);
@@ -30,9 +30,20 @@ export async function POST(request) {
     }
     // only touch fields that were actually sent, so one field's update
     // (e.g. monthBalance) doesn't silently reset the others to their default
-    if (unexpectedBuffer !== undefined) settings.unexpectedBuffer = unexpectedBuffer;
-    if (unexpectedIncomeBuffer !== undefined)
-      settings.unexpectedIncomeBuffer = unexpectedIncomeBuffer;
+    if (monthBuffer && monthBuffer.month !== undefined) {
+      settings.monthlyBuffers = settings.monthlyBuffers || [];
+      const existing = settings.monthlyBuffers.find((m) => m.month === monthBuffer.month);
+      if (existing) {
+        existing.unexpectedBuffer = monthBuffer.unexpectedBuffer;
+        existing.unexpectedIncomeBuffer = monthBuffer.unexpectedIncomeBuffer;
+      } else {
+        settings.monthlyBuffers.push({
+          month: monthBuffer.month,
+          unexpectedBuffer: monthBuffer.unexpectedBuffer,
+          unexpectedIncomeBuffer: monthBuffer.unexpectedIncomeBuffer,
+        });
+      }
+    }
     if (monthBalance && monthBalance.month !== undefined) {
       settings.monthlyBalances = settings.monthlyBalances || [];
       const existing = settings.monthlyBalances.find((m) => m.month === monthBalance.month);
