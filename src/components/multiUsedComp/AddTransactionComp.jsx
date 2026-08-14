@@ -20,8 +20,9 @@ import BasicModal from "../modals/basicModal/BasicModal";
 import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
+import { isProjectBudget } from "@/helpers/transformers/budgetTypes";
 
-function AddTransactionComp() {
+function AddTransactionComp({ initialBudgetId = "", onCreated }) {
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
   let [transactionInfo, setTransactionInfo] = useState({
@@ -36,6 +37,7 @@ function AddTransactionComp() {
     category: "",
     subCategory: "",
     tags: "",
+    budget: initialBudgetId || "",
     user: "",
     wallet: "",
   });
@@ -43,20 +45,22 @@ function AddTransactionComp() {
 
   const { close, handleClose } = useModal();
   //REDUX
-  const {user, accounts} = useGetDataFromProvider();
+  const {user, accounts, budgets = []} = useGetDataFromProvider();
+  const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
   const dispatch = useDispatch();
     const {handleClean} = useContext(SelectCategoryContext)
 
   //EFFECTS
   useEffect(() => {
     if (user) {
-      setTransactionInfo({
-        ...transactionInfo,
+      setTransactionInfo((current) => ({
+        ...current,
         user: user._id,
         wallet: user.wallet,
-      });
+        budget: initialBudgetId || "",
+      }));
     }
-  }, [user]);
+  }, [user, initialBudgetId]);
   //Handlers:
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -116,6 +120,7 @@ function AddTransactionComp() {
         runNotify("ok", response.message);
         //UPDATE FRON END
         dispatch(addNewTransacction(response.data));
+        onCreated?.(response.data);
         setIsLoading(false);
         clearForm();
         handleClean()
@@ -145,6 +150,7 @@ function AddTransactionComp() {
       category: "",
       subCategory: "",
       tags: "",
+      budget: initialBudgetId || "",
       user: user._id,
       wallet: user.wallet,
     });
@@ -170,6 +176,23 @@ function AddTransactionComp() {
       });
     }
   }
+
+  const projectSelector = (
+    <>
+      <p className="label-tfp">Project (optional)</p>
+      <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
+        <select
+          className="bg-transparent appearance-none w-full pr-4"
+          name="budget"
+          value={transactionInfo.budget || ""}
+          onChange={handleChange}
+        >
+          <option value="">No project</option>
+          {projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}
+        </select>
+      </div>
+    </>
+  );
 
   return (
     <div className="w-full h-full overflow-y-scroll relative bg-slate-50">
@@ -298,6 +321,7 @@ function AddTransactionComp() {
                 </DemoContainer>
               </LocalizationProvider>
             </div>
+            {projectSelector}
             <button
               className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
               type="submit"
@@ -448,6 +472,7 @@ function AddTransactionComp() {
                 )}
               </select>
             </div>
+            {projectSelector}
             <button
               className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
               type="submit"

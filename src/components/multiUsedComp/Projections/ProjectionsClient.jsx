@@ -20,6 +20,7 @@ import {
   getExpectedOccurrencesInMonth,
 } from "@/helpers/transformers/projectionsChange";
 import { getValueActiveInMonth } from "@/helpers/transformers/budgetHistory";
+import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 
 function ProjectionsClient({ mcSession }) {
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
@@ -118,7 +119,7 @@ function ProjectionsClient({ mcSession }) {
     // Past months compare against the goalAmount that was actually active back
     // then (via history[]), not today's value - otherwise the chart would show
     // a budget you only set recently as if it applied to a much older month.
-    const nonSavingBudgets = (budgets || []).filter((b) => !b.isSaving);
+    const nonSavingBudgets = (budgets || []).filter(isSpendingBudget);
     const budgetsForChart =
       selectedRow.type === "actual"
         ? nonSavingBudgets

@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { Skeleton, Tooltip } from "antd";
+import { useDispatch } from "react-redux";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import { getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
 import {
@@ -17,10 +18,15 @@ import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import BudgetBarRow from "./BudgetBarRow";
 import BudgetEditModal from "./BudgetEditModal";
 import BudgetDetailModal from "./BudgetDetailModal";
+import ProjectBudgetDetailModal from "./ProjectBudgetDetailModal";
 import {
   UnbudgetedSpendingCard,
   UnbudgetedSpendingModal,
 } from "./UnbudgetedSpending";
+import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget, BUDGET_TYPES } from "@/helpers/transformers/budgetTypes";
+import fetcher from "@/helpers/fetcher";
+import runNotify from "@/helpers/gastifyNotifier";
+import { updateTransaction } from "@/lib/features/transacctionsSlice";
 
 const today = new Date();
 
@@ -34,23 +40,26 @@ function BudgetsClient({ mcSession }) {
   const [modalMode, setModalMode] = useState(null); // "creation" | "edition" | null
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [returnToUnbudgeted, setReturnToUnbudgeted] = useState(false);
+  const dispatch = useDispatch();
+  const toFetch = fetcher();
 
   const activeBudgets = useMemo(
     () => (budgets || []).filter((b) => !b.archived),
     [budgets]
   );
   const spendingBudgets = useMemo(
-    () => activeBudgets.filter((b) => b.isSaving !== true),
+    () => activeBudgets.filter(isSpendingBudget),
     [activeBudgets]
   );
   const savingBudgets = useMemo(
-    () => activeBudgets.filter((b) => b.isSaving === true),
+    () => activeBudgets.filter(isSavingBudget),
     [activeBudgets]
   );
+  const projectBudgets = useMemo(() => activeBudgets.filter(isProjectBudget), [activeBudgets]);
 
   const coverage = useMemo(
-    () => getBudgetCoverage({ transactions: transacciones, budgets: spendingBudgets, startDate, endDate }),
-    [transacciones, spendingBudgets, startDate, endDate]
+    () => getBudgetCoverage({ transactions: transacciones, budgets: [...spendingBudgets, ...projectBudgets], startDate, endDate }),
+    [transacciones, spendingBudgets, projectBudgets, startDate, endDate]
   );
 
   const uncoveredCatalogCategories = useMemo(
@@ -65,6 +74,18 @@ function BudgetsClient({ mcSession }) {
     });
     return map;
   }, [spendingBudgets, transacciones, startDate, endDate]);
+
+  const projectActualById = useMemo(() => {
+    const map = {};
+    projectBudgets.forEach((project) => { map[project._id] = 0; });
+    (transacciones || []).forEach((transaction) => {
+      const id = getExplicitBudgetId(transaction);
+      if (Object.prototype.hasOwnProperty.call(map, id) && transaction.isBill && !transaction.isIncome) {
+        map[id] += Number(transaction.amount) || 0;
+      }
+    });
+    return map;
+  }, [projectBudgets, transacciones]);
 
   const spendingTotals = useMemo(() => {
     const fixed = spendingBudgets.reduce((acc, b) => acc + (b.goalAmount || 0), 0);
@@ -174,6 +195,37 @@ function BudgetsClient({ mcSession }) {
     setModalMode("creation");
   };
 
+  const openCreateProjectFromUnbudgeted = (group) => {
+    const linkedTags = new Map();
+    group.movements.forEach((movement) => (movement.tags || []).forEach((tag) => {
+      if (tag?._id) linkedTags.set(String(tag._id), tag);
+    }));
+    setShowUnbudgeted(false);
+    setReturnToUnbudgeted(true);
+    setReturnToDetailBudget(null);
+    setEditingBudget({
+      user: user?._id, wallet: wallet?._id,
+      draftName: group.name,
+      draftBudgetType: BUDGET_TYPES.PROJECT,
+      draftTransactions: group.movements,
+      draftLinkedTags: [...linkedTags.values()],
+      referenceSpent: group.amount || 0,
+    });
+    setModalMode("creation");
+  };
+
+  const addGroupToProject = async (group, project) => {
+    try {
+      const results = await Promise.all(group.movements.map((transaction) =>
+        toFetch.post("general-data/transactions/link-budget", { transactionId: transaction._id, budgetId: project._id })
+      ));
+      const failed = results.find((result) => !result.ok);
+      if (failed) throw new Error(failed.message || "Could not link all movements");
+      results.forEach((result) => result.data && dispatch(updateTransaction(result.data)));
+      runNotify("ok", `${group.movements.length} movement${group.movements.length === 1 ? "" : "s"} added to ${project.name}`);
+    } catch (error) { runNotify("error", error?.message || String(error)); }
+  };
+
   const openAddToBudget = (group, budget) => {
     setShowUnbudgeted(false);
     setReturnToUnbudgeted(true);
@@ -279,6 +331,16 @@ function BudgetsClient({ mcSession }) {
               </div>
             )}
 
+            <h2 className="text-xl text-purple-800 mb-2">Projects</h2>
+            <p className="text-xs text-gray-500 mb-3">One-time plans made from specific movements. Their dates and details can be changed at any time.</p>
+            {projectBudgets.length <= 0 ? (
+              <div className="mb-6"><EmptyModule emMessage="No project budgets yet. Create one for a trip, renovation, or event ✈️" /></div>
+            ) : (
+              <div className="flex flex-col gap-2 mb-6">
+                {projectBudgets.map((budget) => <BudgetBarRow key={budget._id} budget={budget} actual={projectActualById[budget._id] || 0} onClick={openDetail} />)}
+              </div>
+            )}
+
             <h2 className="text-xl text-purple-800 mb-2">Savings</h2>
             {savingBudgets.length <= 0 ? (
               <EmptyModule emMessage="No savings budgets yet. Create one 🤓" />
@@ -292,7 +354,14 @@ function BudgetsClient({ mcSession }) {
           </>
         )}
 
-        {selectedDetailBudget && (
+        {selectedDetailBudget && isProjectBudget(selectedDetailBudget) ? (
+          <ProjectBudgetDetailModal
+            budget={selectedDetailBudget}
+            transacciones={transacciones}
+            onClose={() => setSelectedDetailBudget(null)}
+            onEdit={openEditFromDetail}
+          />
+        ) : selectedDetailBudget && (
           <BudgetDetailModal
             budget={selectedDetailBudget}
             transacciones={transacciones}
@@ -316,11 +385,14 @@ function BudgetsClient({ mcSession }) {
           <UnbudgetedSpendingModal
             coverage={coverage}
             budgets={spendingBudgets}
+            projectBudgets={projectBudgets}
             uncoveredCatalogCategories={uncoveredCatalogCategories}
             rangeLabel={getBudgetRangeLabel(startDate, endDate)}
             onClose={() => setShowUnbudgeted(false)}
             onCreateBudget={openCreateFromUnbudgeted}
             onAddToBudget={openAddToBudget}
+            onCreateProject={openCreateProjectFromUnbudgeted}
+            onAddToProject={addGroupToProject}
           />
         )}
       </div>

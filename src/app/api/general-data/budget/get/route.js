@@ -3,6 +3,7 @@ import User from "@/model/User";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
+import Tag from "@/model/Tag";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
 
@@ -51,6 +52,10 @@ export async function POST(request) {
       })
       .populate({
         path: "linkedAccounts",
+        strictPopulate: false,
+      })
+      .populate({
+        path: "linkedTags",
         strictPopulate: false,
       });
     // console.log(findBudgets)

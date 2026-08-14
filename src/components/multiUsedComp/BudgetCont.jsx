@@ -8,6 +8,7 @@ import { fetchBudget } from "@/lib/features/budgetSlice";
 import BudgetBarRow from "./Budgets/BudgetBarRow";
 import BudgetEditModal from "./Budgets/BudgetEditModal";
 import BudgetDetailModal from "./Budgets/BudgetDetailModal";
+import ProjectBudgetDetailModal from "./Budgets/ProjectBudgetDetailModal";
 import { getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
 import { getLastDayOfMonth, generate_timeperiod_ranges_array_for_dashboard } from "@/helpers/timeFunctions/timeFunctions";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
@@ -15,6 +16,7 @@ import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import { getBudgetCoverage } from "@/helpers/transformers/budgetCoverage";
 import { UnbudgetedSpendingCard } from "./Budgets/UnbudgetedSpending";
 import { useRouter } from "next/navigation";
+import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 
 const initialToday = new Date();
 
@@ -25,6 +27,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   let [bills, setBills] = useState([]);
   let [savings, setSavings] = useState([]);
   let [budgets, setBudgets] = useState([]);
+  let [projects, setProjects] = useState([]);
   let [today, setToday] = useState(new Date());
   let [isBudget, setIsBudget] = useState(true);
   const [loadingComponent, setLoadingComponent] = useState(true);
@@ -39,8 +42,8 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   const bcBudget = ccBudget.data;
   const bcTrans = ccTrans.data;
   const coverage = useMemo(
-    () => getBudgetCoverage({ transactions: bcTrans, budgets, startDate, endDate }),
-    [bcTrans, budgets, startDate, endDate]
+    () => getBudgetCoverage({ transactions: bcTrans, budgets: [...budgets, ...projects], startDate, endDate }),
+    [bcTrans, budgets, projects, startDate, endDate]
   );
   // USE EFFECTS
   useEffect(() => {
@@ -66,11 +69,12 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
     const tempBills = total.filter((tra) => tra.isBill == true);
     setBills(tempBills);
     // SAVINGS
-    let tempSaving = bcBudget.filter((budg) => budg.isSaving == true && !budg.archived);
+    let tempSaving = bcBudget.filter((budg) => isSavingBudget(budg) && !budg.archived);
     setSavings(tempSaving);
     // BUDGETS
-    let tempBudget = bcBudget.filter((budg) => budg.isSaving !== true && !budg.archived);
+    let tempBudget = bcBudget.filter((budg) => isSpendingBudget(budg) && !budg.archived);
     setBudgets(tempBudget);
+    setProjects(bcBudget.filter((budg) => isProjectBudget(budg) && !budg.archived));
     }
   }, [startDate, endDate, ccTrans, ccBudget]);
   const handleTab = (budType) => {
@@ -223,10 +227,21 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
               compact
               onClick={() => router.push("/dashboard/budgets")}
             />
+            {projects.length > 0 && <><p className="text-lg text-purple-800 text-center mt-4">Projects</p>{projects.map((project) => {
+              const actual = bcTrans.filter((transaction) => getExplicitBudgetId(transaction) === String(project._id) && transaction.isBill && !transaction.isIncome).reduce((sum, transaction) => sum + (Number(transaction.amount) || 0), 0);
+              return <BudgetBarRow key={`project-${project._id}`} budget={project} actual={actual} onClick={openDetail} />;
+            })}</>}
           </div>
         </div>
       )}
-      {selectedDetailBudget && (
+      {selectedDetailBudget && isProjectBudget(selectedDetailBudget) ? (
+        <ProjectBudgetDetailModal
+          budget={selectedDetailBudget}
+          transacciones={bcTrans}
+          onClose={() => setSelectedDetailBudget(null)}
+          onEdit={openEditFromDetail}
+        />
+      ) : selectedDetailBudget && (
         <BudgetDetailModal
           budget={selectedDetailBudget}
           transacciones={bcTrans}

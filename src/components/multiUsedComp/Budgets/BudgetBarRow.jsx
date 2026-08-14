@@ -4,10 +4,12 @@ import React from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { getBudgetBarGradient, getBudgetMoodEmoji, getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { isProjectBudget, isSavingBudget } from "@/helpers/transformers/budgetTypes";
 
 function BudgetBarRow({ budget, actual, onClick }) {
   const goalAmount = budget.goalAmount || 0;
-  const isSaving = budget.isSaving === true;
+  const isSaving = isSavingBudget(budget);
+  const isProject = isProjectBudget(budget);
 
   let value = 0;
   if (isSaving) {
@@ -53,7 +55,9 @@ function BudgetBarRow({ budget, actual, onClick }) {
       ? "text-red-600"
       : "text-green-600";
 
-  const periodLabel =
+  const periodLabel = isProject
+    ? "one-time"
+    :
     budget.period === "yearly"
       ? "/year"
       : budget.period === "quarterly"
@@ -69,7 +73,11 @@ function BudgetBarRow({ budget, actual, onClick }) {
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
-          {budget.categories && budget.categories.length > 0 ? (
+          {isProject ? (
+            <div className="rounded-full w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-purple-100 text-purple-700 border-2 border-white shadow-sm shrink-0">
+              <UniversalCategoIcon type={budget.icon || "md/MdFlightTakeoff"} siz={18} />
+            </div>
+          ) : budget.categories && budget.categories.length > 0 ? (
             <div className="flex items-center -space-x-2">
               {budget.categories.slice(0, 3).map((catItem, idx) => {
                 const catObj = catItem.subCategory || catItem.category;
@@ -104,7 +112,7 @@ function BudgetBarRow({ budget, actual, onClick }) {
           <div className="flex flex-col">
             <p className="text-purple-800">{budget.name || "Unnamed budget"}</p>
             <p className="text-[10px] text-gray-500">
-              {isSaving ? "Saving Goal" : "Spending Budget"} • {periodLabel}
+              {isSaving ? "Saving Goal" : isProject ? "Project Budget" : "Spending Budget"} • {periodLabel}
             </p>
           </div>
         </div>
@@ -139,7 +147,7 @@ function BudgetBarRow({ budget, actual, onClick }) {
         <span>{usdFormatChanger(value)}</span>
         <span>
           of {usdFormatChanger(goalAmount)}
-          {periodLabel}
+          {isProject ? " total" : periodLabel}
         </span>
       </div>
     </div>

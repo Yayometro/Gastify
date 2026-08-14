@@ -1,4 +1,8 @@
 import { matchBillToBudget } from "./projectionsChange";
+import {
+  getExplicitBudgetId,
+  isSpendingBudget,
+} from "./budgetTypes";
 
 const asId = (value) => String(value?._id || value || "");
 const asAmount = (value) => Number(value) || 0;
@@ -31,7 +35,7 @@ export function categoryEntriesOverlap(first, second) {
 export function findCoverageConflicts(entries, budgets, excludedBudgetId = null) {
   const conflicts = [];
   for (const budget of budgets || []) {
-    if (budget?.archived || budget?.isSaving === true || asId(budget?._id) === asId(excludedBudgetId)) {
+    if (budget?.archived || !isSpendingBudget(budget) || asId(budget?._id) === asId(excludedBudgetId)) {
       continue;
     }
     const overlap = (entries || []).some((entry) =>
@@ -60,7 +64,8 @@ function transactionGroup(transaction) {
 }
 
 export function getBudgetCoverage({ transactions, budgets, startDate, endDate }) {
-  const activeBudgets = (budgets || []).filter((budget) => !budget.archived && budget.isSaving !== true);
+  const activeBudgets = (budgets || []).filter((budget) => !budget.archived);
+  const categoryBudgets = activeBudgets.filter(isSpendingBudget);
   const bills = (transactions || []).filter((transaction) => {
     if (!transaction?.isBill) return false;
     const date = new Date(transaction.date || transaction.createdAt);
@@ -72,7 +77,13 @@ export function getBudgetCoverage({ transactions, budgets, startDate, endDate })
   const conflicts = [];
 
   for (const transaction of bills) {
-    const matchingBudgets = activeBudgets.filter((budget) => matchBillToBudget(transaction, budget));
+    const explicitBudgetId = getExplicitBudgetId(transaction);
+    const explicitBudget = explicitBudgetId
+      ? activeBudgets.find((budget) => asId(budget?._id) === explicitBudgetId)
+      : null;
+    const matchingBudgets = explicitBudget
+      ? [explicitBudget]
+      : categoryBudgets.filter((budget) => matchBillToBudget(transaction, budget));
     if (matchingBudgets.length === 0) uncovered.push(transaction);
     else covered.push(transaction);
     if (matchingBudgets.length > 1) conflicts.push({ transaction, budgets: matchingBudgets });

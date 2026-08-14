@@ -12,6 +12,7 @@ import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { removeOneTransacction } from "@/lib/features/transacctionsSlice";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
+import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 
 function MovementRow({ movement, onEdit, onDelete }) {
   return (
@@ -101,19 +102,23 @@ export function UnbudgetedSpendingCard({ coverage, onClick, compact = false }) {
 export function UnbudgetedSpendingModal({
   coverage,
   budgets,
+  projectBudgets = [],
   uncoveredCatalogCategories = [],
   rangeLabel,
   onClose,
   onCreateBudget,
   onAddToBudget,
+  onCreateProject,
+  onAddToProject,
 }) {
   const [expandedKey, setExpandedKey] = useState(null);
   const [selectedBudgets, setSelectedBudgets] = useState({});
+  const [selectedProjects, setSelectedProjects] = useState({});
   const [showCatalog, setShowCatalog] = useState(false);
   const [editingMovement, setEditingMovement] = useState(null);
   const dispatch = useDispatch();
   const toFetch = fetcher();
-  const spendingBudgets = (budgets || []).filter((budget) => !budget.archived && budget.isSaving !== true);
+  const spendingBudgets = (budgets || []).filter((budget) => !budget.archived && isSpendingBudget(budget));
 
   const handleDelete = (movementId) => {
     Modal.confirm({
@@ -184,6 +189,7 @@ export function UnbudgetedSpendingModal({
                   {coverage.groups.map((group) => {
                     const isExpanded = expandedKey === group.key;
                     const selectedBudgetId = selectedBudgets[group.key] || "";
+                    const selectedProjectId = selectedProjects[group.key] || "";
                     return (
                       <div key={group.key} className="bg-white border border-amber-200 rounded-2xl overflow-hidden">
                         <button
@@ -225,6 +231,18 @@ export function UnbudgetedSpendingModal({
                                   onDelete={handleDelete}
                                 />
                               ))}
+                            </div>
+
+                            <div className="bg-purple-50 border border-purple-100 rounded-2xl p-3 mb-3">
+                              <p className="text-xs font-bold text-purple-900 mb-1">Treat these expenses as part of a project</p>
+                              <p className="text-[10px] text-gray-500 mb-2">Projects group specific movements, independently of their categories or purchase dates.</p>
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <button type="button" onClick={() => onCreateProject(group)} className="rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-4 py-2 shrink-0">Create project</button>
+                                {projectBudgets.length > 0 && <div className="flex flex-1 gap-2 min-w-0">
+                                  <select value={selectedProjectId} onChange={(event) => setSelectedProjects((current) => ({ ...current, [group.key]: event.target.value }))} className="min-w-0 flex-1 rounded-full border border-purple-200 bg-white px-3 text-xs"><option value="">Add to project…</option>{projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}</select>
+                                  <button type="button" disabled={!selectedProjectId} onClick={() => { const selected = projectBudgets.find((project) => String(project._id) === String(selectedProjectId)); if (selected) onAddToProject(group, selected); }} className="rounded-full border border-purple-300 text-purple-700 text-xs font-bold px-3 py-2 disabled:opacity-40">Add</button>
+                                </div>}
+                              </div>
                             </div>
 
                             {group.type === "uncategorized" ? (

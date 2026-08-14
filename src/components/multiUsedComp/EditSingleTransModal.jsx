@@ -20,6 +20,7 @@ import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategor
 import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import CategoIcon from "./CategoIcon";
+import { isProjectBudget } from "@/helpers/transformers/budgetTypes";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
 function EditSingleTransModalInner({ trans, onClose }) {
@@ -28,7 +29,8 @@ function EditSingleTransModalInner({ trans, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const { close, handleClose } = useModal();
   const { handleClean, setItemSelected } = useContext(SelectCategoryContext);
-  const { accounts, categories, subCategories } = useGetDataFromProvider();
+  const { accounts, categories, subCategories, budgets = [] } = useGetDataFromProvider();
+  const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
 
   const [form, setForm] = useState({
     name: "",
@@ -41,6 +43,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
     subCategory: "",
     tags: "",
     account: "",
+    budget: "",
   });
 
   useEffect(() => {
@@ -56,6 +59,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
         subCategory: trans.subCategory?._id || trans.subCategory || "",
         tags: trans.tags?.map((t) => (typeof t === "string" ? t : t.name)).join(", ") || "",
         account: trans.account?._id || trans.account || "",
+        budget: trans.budget?._id || trans.budget || "",
       });
 
       const subCatId = trans.subCategory?._id || trans.subCategory;
@@ -230,6 +234,18 @@ function EditSingleTransModalInner({ trans, onClose }) {
               {accounts?.map((acc) => (
                 <option value={acc._id} key={acc._id}>{acc.name}</option>
               ))}
+            </select>
+          </div>
+
+          <p className="label-tfp">Project (optional)</p>
+          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
+            <select
+              className="bg-transparent appearance-none w-full pr-4"
+              value={form.budget || ""}
+              onChange={(e) => setForm((p) => ({ ...p, budget: e.target.value || null }))}
+            >
+              <option value="">No project</option>
+              {projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}
             </select>
           </div>
 

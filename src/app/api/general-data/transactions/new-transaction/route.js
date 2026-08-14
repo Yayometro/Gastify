@@ -5,6 +5,7 @@ import Tag from "@/model/Tag";
 import SubCategory from "@/model/SubCategory";
 import Category from "@/model/Category";
 import Account from "@/model/Account";
+import Budget from "@/model/Budget";
 
 export async function GET() {
   try {
@@ -34,6 +35,7 @@ export async function POST(request) {
       category,
       subCategory,
       tags,
+      budget,
     } = await request.json();
     //Validators
     if (!user) throw new Error("No User ID finded to create a new Transaction");
@@ -74,13 +76,20 @@ export async function POST(request) {
       console.log(category);
       newTransacction.category = category;
     }
+    if (budget) {
+      const linkedBudget = await Budget.findOne({ _id: budget, user, wallet, archived: { $ne: true } });
+      if (!linkedBudget || (linkedBudget.budgetType || (linkedBudget.isSaving ? "saving" : "spending")) !== "project") {
+        throw new Error("Project budget was not found for this transaction");
+      }
+      newTransacction.budget = linkedBudget._id;
+    }
     if (tags) {
       if (tags.length > 0) {
         for (const tag of tags) {
           //Use "for of", because it handles async rather than map or foreach
           const findTag = await Tag.findOne({ name: tag });
           if (!findTag) {
-            const newTag = new Tag({ name: tag, user: user });
+            const newTag = new Tag({ name: tag, user, wallet });
             if (!newTag)
               throw new Error("No tag created on NEW TRANSACTION POST");
             newTransacction.tags.push(newTag._id);
@@ -108,6 +117,9 @@ export async function POST(request) {
       })
       .populate({
         path: "subCategory",
+      })
+      .populate({
+        path: "budget",
       });
       if (!finalTransaction)
       throw new Error("NEW TRANSACTIONS could not be loaded on POST");
