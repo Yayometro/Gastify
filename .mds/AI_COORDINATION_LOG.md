@@ -975,3 +975,88 @@ When taking over this task, Claude should perform the following steps:
   - The cross-user "general rules for everyone" tier is explicitly deferred until the per-user `CategoryRule` system has real usage to learn from.
   - **Multi-agent coordination risk (new, important for future sessions)**: this session confirmed at least one other AI agent (Codex, on `codex/budget-out`) is editing files in this exact same working directory concurrently, not an isolated worktree. Any future session should `git status`/`git branch --show-current` before assuming the working tree only reflects their own changes, and should always `git add` specific paths rather than `-A`/`.` to avoid committing another agent's uncommitted, possibly-incomplete work.
   - Per protocol, this round's changes are NOT yet committed/pushed — holding until the user confirms, given the concurrent-agent situation adds some risk to timing a push right now.
+
+---
+
+### 📅 Entry #19: 2026-08-14 (local time) — ✅ Unbudgeted Spending & One-Time Project Budgets
+
+- **AI Assistant**: OpenAI / Codex (GPT-5)
+- **User Request**: Work independently from the concurrent agent on a separate `budget-out` branch; audit how existing Budgets cover real transactions; surface spending that is not covered by any recurring Budget; then design and implement editable one-time Project Budgets (for example, a Japan trip) whose progress comes from explicitly linked transactions rather than recurring category matching. Reuse the application's existing date-range, input, modal, and icon-picker components; let the user test locally before committing or pushing; finally push and merge to production if there are no conflicts.
+- **Phase**: Budgets — coverage transparency, unbudgeted spending, and one-time project tracking
+- **Actions Taken**:
+  1. **Isolated concurrent work safely**: created and used the dedicated `codex/budget-out` branch and `/private/tmp/gastify-budget-out-worktree` worktree so the implementation did not overwrite or stage Claude's concurrent CategoryRule work on `develop`. Staged only explicit files and never used `git add .` or `git add -A`.
+  2. **Audited Budget coverage against real transactions**: traced the category/subcategory matching and projection aggregation logic, confirmed that closed projection months already use all real transactions, and left the separate projection-period behavior intentionally paused at the user's request. Added reusable coverage helpers that distinguish covered transactions, uncovered transactions, and category-overlap conflicts.
+  3. **Implemented Unbudgeted Spending** (commit `4aa4b75`):
+     - Added an `Unbudgeted Spending` summary card to the Budgets page and compact dashboard Budgets widget.
+     - Added a detailed modal grouped by category/subcategory, showing uncovered totals and the underlying movements.
+     - Included catalog categories that currently have no Budget, even when they have no spending in the selected range, so users can proactively see and cover missing areas.
+     - Added a direct create-Budget flow from an uncovered group, preselecting the relevant category/subcategory and preserving return navigation between nested views.
+     - Added overlap/conflict detection so the UI can prevent or explain category coverage that would count the same transaction in more than one recurring spending Budget.
+  4. **Implemented one-time Project Budgets** (commit `14ab2b8`):
+     - Extended `Budget` with `budgetType: spending|saving|project`, project icon, editable event start/end dates, linked tags, linked accounts, archive/history compatibility, and legacy `isSaving` fallback behavior.
+     - Extended `Transaction` with an optional explicit `budget` reference. Explicit linking is restricted to active Project Budgets belonging to the same user/wallet.
+     - Added Project Budget creation both from the normal New Budget flow and from Unbudgeted Spending.
+     - Added a Projects section with its own progress bars and a dedicated detail modal showing accumulated spend and linked transactions across the project's lifetime, independent of monthly/yearly recurring periods.
+     - Added transaction-to-project selection to manual transaction creation and transaction editing, plus a dedicated API route for linking an existing transaction from the Project Budget flow.
+     - Supported optional tag/account associations as matching aids while retaining explicit transaction linkage as the authoritative project assignment.
+  5. **Made every Project field editable**: name, spending limit, start date, end date, icon, tags, accounts, and linked transactions can be changed after creation. Removing a Project Budget unlinks its transactions instead of deleting those transactions.
+  6. **Reused the established Gastify UI system after user review**:
+     - Replaced native date inputs with the application's complete `TimeRange`/MUI range-selection experience, including previous/next controls, and enhanced `TimeRange` so controlled start/end values can be supplied without breaking existing callers.
+     - Reused the same rounded Gastify form/input styling used elsewhere in the app.
+     - Reused the existing category/subcategory icon picker for Project icons, with the airplane icon as the default.
+     - Corrected the reused icon-picker modal's label alignment so icon names are centered as expected.
+  7. **Updated all relevant data-loading/population paths** so Project Budget references, tags, accounts, categories, and subcategories are available consistently in the dashboard, Budgets page, transaction lists, and edit flows.
+  8. **User verification and Git workflow**: ran the feature on a separate local dev port (`http://localhost:3001`) while the user's other server remained on port 3000. The user tested the logged-in Budgets interface through several feedback rounds and explicitly approved the final UI before commits/push. Pushed `codex/budget-out` to origin, checked the merge with `main`, found no blocking conflict, merged via `4c21bfa` (`merge: add unbudgeted and project budgets`), and pushed production. The work was subsequently incorporated into `develop` and the later combined production merge `50dbec6`.
+  9. **Post-implementation architecture analysis only (no code change)**: evaluated future Budget threshold notifications over Telegram and WhatsApp. Recommended a channel-independent server-side alert engine, Telegram as a free pilot, WhatsApp Cloud API later using approved utility templates, idempotent delivery records, event-driven evaluation after transaction mutations, and a Vercel cron only for reconciliation/retries. The user deferred this feature; no notification branch, model, provider, or route was created.
+- **Files Created / Modified**:
+  - Created: `src/components/multiUsedComp/Budgets/UnbudgetedSpending.jsx`
+  - Created: `src/components/multiUsedComp/Budgets/ProjectBudgetDetailModal.jsx`
+  - Created: `src/helpers/transformers/budgetCoverage.js`
+  - Created: `src/helpers/transformers/budgetTypes.js`
+  - Created: `src/app/api/general-data/transactions/link-budget/route.js`
+  - Modified: `src/model/Budget.js`, `src/model/Transaction.js`
+  - Modified: `src/app/api/general-data/budget/{get,new,update,remove}/route.js`
+  - Modified: `src/app/api/general-data/transactions/{new-transaction,[id],get-all,get-transactions}/route.js`
+  - Modified: `src/app/api/general-data/{route.js,[id]/route.js}`
+  - Modified: `src/components/multiUsedComp/Budgets/{BudgetsClient,BudgetEditModal,BudgetDetailModal,BudgetBarRow}.jsx`
+  - Modified: `src/components/multiUsedComp/{BudgetCont,AddTransactionComp,EditSingleTransModal,IconDisplayerMenu}.jsx`
+  - Modified: `src/components/Filters/timeRange/TimeRange.jsx`
+  - Modified: `src/components/multiUsedComp/Projections/ProjectionsClient.jsx`
+  - Modified: `src/helpers/transformers/projectionsChange.js`
+  - Modified: `src/lib/features/budgetSlice.js`
+  - Modified retroactively: `.mds/AI_COORDINATION_LOG.md` (this entry was omitted during the original completion and added after the user requested a rules-compliance audit).
+- **Commits / Merge**:
+  - `4aa4b75` — `feat(budgets): surface unbudgeted spending`
+  - `14ab2b8` — `feat(budgets): add one-time project budgets`
+  - `4c21bfa` — `merge: add unbudgeted and project budgets`
+  - `50dbec6` — later combined `develop` → `main` merge containing both agents' completed work
+- **Next Steps / Hand-Off Notes**:
+  - Project Budget progress must continue to use explicit `Transaction.budget` linkage across the project's lifetime; recurring spending Budgets continue to use category/subcategory matching within their natural period.
+  - Do not fold Project Budgets into Projections without a separate product decision. Projection-period changes and Project projection semantics were explicitly deferred.
+  - Any new transaction mutation path (new import type, automation, bulk operation, etc.) must preserve/populate the optional `budget` reference or Project totals can become incomplete.
+  - If threshold notifications are resumed, first move Budget usage calculation into a server-safe shared service; do not depend on the current client-side aggregation or send provider messages synchronously as a required part of saving a transaction.
+
+---
+
+### 📅 Entry #20: 2026-08-14 (local time) — Project Planning / Prospective Expenses Design (Analysis Only)
+
+- **AI Assistant**: OpenAI / Codex (GPT-5)
+- **User Request**: Explore how Gastify Project Budgets could support detailed prospective expenses like the user's existing Viaje a Asia workbook: planned versus real prices, currencies, dates, statuses, notes, sources, quotes, and eventual linkage to real transactions, without bloating normal transactions. Leave the previously discussed WhatsApp/Telegram feature aside and propose the architecture before implementation.
+- **Phase**: Product and architecture design — Project financial planning
+- **Actions Taken**:
+  1. Inspected the current `Budget`, `Transaction`, `ProjectBudgetDetailModal`, and Project aggregation logic. Confirmed that Project progress currently comes only from real expense transactions explicitly linked through `Transaction.budget`, and that most Project totals are calculated client-side.
+  2. Read the current `/Users/luisjairvazqueznavarrete/Coding Proyects/Viaje a Asia/PRESUPUESTO_Y_RUTA_ASIA.xlsx` workbook as a read-only source. Identified three distinct financial layers: selected/planned cost items in `Costos`, research/quote candidates in sheets such as `Hospedajes` and `Actividades`, and real paid amounts that replace or reconcile the planned value. Also identified supporting metadata: original currency, FX assumptions, date ranges, traveler quantity, decision/payment status, notes, sources, itinerary context, and pending decisions.
+  3. Rejected storing prospective items as normal `Transaction` documents with an `isProspected` flag. That approach would require every existing account balance, report, projection, import/export, duplicate check, and transaction query to remember to exclude them; one missed filter would make fictional spending appear as real financial history.
+  4. Recommended a separate `ProjectExpense` / `ProjectPlanItem` collection linked to a Project Budget. Normal transactions remain the source of truth for actual money; planned items hold estimates, quotes, sources, dates, location/context, and lifecycle status.
+  5. Recommended linking real transactions to a planned item with an optional `Transaction.projectExpense` reference while retaining `Transaction.budget` for the parent Project. Multiple real transactions may fulfill one planned item (for example, hotel deposit plus final payment). A future allocation/junction model can support splitting one real transaction across multiple plan items if real usage demonstrates that need.
+  6. Defined the Project's separate headline values: user limit (`Budget.goalAmount`), current forecast (effective total of plan items plus unassigned actual spending), actual paid (all real linked expenses), expected amount still to pay, and unallocated buffer. For partially paid items, effective forecast should be `max(planned amount, actual linked amount)` rather than planned + actual, preventing deposits from being double-counted.
+  7. Recommended replacing the increasingly dense Project modal with a dedicated Project page containing Overview, Planned expenses, and Actual movements. The overview should use a stacked progress bar distinguishing paid, selected/committed, estimated, remaining buffer, and over-budget amounts.
+  8. Recommended keeping travel-specific richness optional: `projectKind`, base currency, participants and locations can customize the form, but the core planning item remains generic enough for a trip, major purchase, event, or small business project. Full itinerary, activity catalog, diet planning, and task management should not be copied into Gastify's first version; Gastify should remain focused on financial planning.
+  9. Recommended deferring global `/dashboard/projections` integration until the Project planning ledger works independently. Later, only plan items with an expected payment date and an explicit `includeInCashflow` setting should enter monthly cash-flow projections, where linked actuals replace the forecast to prevent double-counting.
+- **Files Created / Modified**:
+  - Modified: `.mds/AI_COORDINATION_LOG.md` (analysis record only)
+  - No application code, model, API route, branch, database record, or source workbook was changed.
+- **Next Steps / Hand-Off Notes**:
+  - If approved, create a new isolated feature branch/worktree before implementation.
+  - Suggested first implementation slice: `ProjectExpense` model + CRUD API + dedicated Project page + plan-vs-actual summary + linking existing real transactions.
+  - Add embedded quote/source candidates and an import assistant for the `Costos` sheet only after the core flow is verified. The other workbook sheets are richer research/planning domains and should not automatically become financial commitments.
