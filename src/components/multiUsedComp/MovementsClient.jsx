@@ -12,6 +12,7 @@ import { fetchAccounts } from "@/lib/features/accountsSlice";
 import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import ReadFileComp from "./ReadFileComp";
 import VoiceRecognicionComponent from "./VoiceRecognicionComponent";
+import CategorySuggestionsSection from "./CategorySuggestions/CategorySuggestionsSection";
 
 function MovementsClient({ mcData, mcSession }) {
   // Redux
@@ -78,6 +79,9 @@ function MovementsClient({ mcData, mcSession }) {
           </div>
           <div className="add-file-trans w-full h-full flex justify-center items-center">
             <ReadFileComp />
+          </div>
+          <div className="category-suggestions w-full h-full flex justify-center items-center">
+            <CategorySuggestionsSection mail={mcSession} />
           </div>
           <div className="voice w-full h-full flex justify-center items-center">
             <VoiceRecognicionComponent />
