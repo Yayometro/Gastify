@@ -51,13 +51,12 @@ export const budgetsSlice = createSlice({
       }
     },
     addNewBudget: (state, action) => {
-      console.log(state);
-      console.log(action);
-      if (action.payload.length > 0) {
+      if (Array.isArray(action.payload)) {
         action.payload.forEach((element) => {
-          console.log(element);
           state.data.push(element);
         });
+      } else if (action.payload) {
+        state.data.push(action.payload);
       }
     },
     updateBudget: (state, action) => {

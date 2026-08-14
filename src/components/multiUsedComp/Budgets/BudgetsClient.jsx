@@ -3,7 +3,11 @@
 import React, { useMemo, useState } from "react";
 import { Skeleton, Tooltip } from "antd";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
-import { matchBillToBudget, getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
+import { getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
+import {
+  getBudgetCoverage,
+  getUncoveredCatalogCategories,
+} from "@/helpers/transformers/budgetCoverage";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { getLastDayOfMonth } from "@/helpers/timeFunctions/timeFunctions";
 import CategoIcon from "../CategoIcon";
@@ -13,17 +17,23 @@ import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import BudgetBarRow from "./BudgetBarRow";
 import BudgetEditModal from "./BudgetEditModal";
 import BudgetDetailModal from "./BudgetDetailModal";
+import {
+  UnbudgetedSpendingCard,
+  UnbudgetedSpendingModal,
+} from "./UnbudgetedSpending";
 
 const today = new Date();
 
 function BudgetsClient({ mcSession }) {
-  const { transacciones, budgets, user, wallet, loading } = useGetDataFromProvider();
+  const { transacciones, budgets, categories, user, wallet, loading } = useGetDataFromProvider();
   const [startDate, setStartDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [endDate, setEndDate] = useState(getLastDayOfMonth(today.getFullYear(), today.getMonth()));
   const [editingBudget, setEditingBudget] = useState(null);
   const [selectedDetailBudget, setSelectedDetailBudget] = useState(null);
   const [returnToDetailBudget, setReturnToDetailBudget] = useState(null);
   const [modalMode, setModalMode] = useState(null); // "creation" | "edition" | null
+  const [showUnbudgeted, setShowUnbudgeted] = useState(false);
+  const [returnToUnbudgeted, setReturnToUnbudgeted] = useState(false);
 
   const activeBudgets = useMemo(
     () => (budgets || []).filter((b) => !b.archived),
@@ -38,14 +48,15 @@ function BudgetsClient({ mcSession }) {
     [activeBudgets]
   );
 
-  const recentBills = useMemo(() => {
-    if (!startDate || !endDate) return [];
-    return (transacciones || []).filter((tra) => {
-      if (!tra.isBill) return false;
-      const transactionDate = new Date(tra.date || tra.createdAt);
-      return transactionDate >= startDate && transactionDate <= endDate;
-    });
-  }, [transacciones, startDate, endDate]);
+  const coverage = useMemo(
+    () => getBudgetCoverage({ transactions: transacciones, budgets: spendingBudgets, startDate, endDate }),
+    [transacciones, spendingBudgets, startDate, endDate]
+  );
+
+  const uncoveredCatalogCategories = useMemo(
+    () => getUncoveredCatalogCategories(categories, spendingBudgets),
+    [categories, spendingBudgets]
+  );
 
   const actualByBudgetId = useMemo(() => {
     const map = {};
@@ -57,9 +68,8 @@ function BudgetsClient({ mcSession }) {
 
   const spendingTotals = useMemo(() => {
     const fixed = spendingBudgets.reduce((acc, b) => acc + (b.goalAmount || 0), 0);
-    const real = spendingBudgets.reduce((acc, b) => acc + (actualByBudgetId[b._id] || 0), 0);
-    return { fixed, real };
-  }, [spendingBudgets, actualByBudgetId]);
+    return { fixed };
+  }, [spendingBudgets]);
 
   const handleDateChange = (sDate, eDate) => {
     if (sDate) setStartDate(sDate);
@@ -103,6 +113,7 @@ function BudgetsClient({ mcSession }) {
   const openCreate = () => {
     setEditingBudget({ user: user?._id, wallet: wallet?._id });
     setReturnToDetailBudget(null);
+    setReturnToUnbudgeted(false);
     setModalMode("creation");
   };
   const openDetail = (budget) => {
@@ -124,6 +135,8 @@ function BudgetsClient({ mcSession }) {
     setEditingBudget(null);
     setModalMode(null);
     setReturnToDetailBudget(null);
+    if (returnToUnbudgeted) setShowUnbudgeted(true);
+    setReturnToUnbudgeted(false);
   };
   const handleBackToDetail = () => {
     const b = returnToDetailBudget;
@@ -137,6 +150,36 @@ function BudgetsClient({ mcSession }) {
     const m = today.getMonth();
     setStartDate(new Date(y, m, 1));
     setEndDate(getLastDayOfMonth(y, m));
+  };
+
+  const categoryEntryFromGroup = (group) => ({
+    category: group.category?._id || group.category || "",
+    subCategory: group.subCategory?._id || group.subCategory || "",
+    name: group.name,
+    color: group.color || "#DADADA",
+    icon: group.icon || null,
+  });
+
+  const openCreateFromUnbudgeted = (group) => {
+    setShowUnbudgeted(false);
+    setReturnToUnbudgeted(true);
+    setReturnToDetailBudget(null);
+    setEditingBudget({
+      user: user?._id,
+      wallet: wallet?._id,
+      draftName: group.name,
+      draftCategories: [categoryEntryFromGroup(group)],
+      referenceSpent: group.amount || 0,
+    });
+    setModalMode("creation");
+  };
+
+  const openAddToBudget = (group, budget) => {
+    setShowUnbudgeted(false);
+    setReturnToUnbudgeted(true);
+    setReturnToDetailBudget(null);
+    setEditingBudget({ ...budget, pendingCategory: categoryEntryFromGroup(group) });
+    setModalMode("edition");
   };
 
   return (
@@ -187,15 +230,24 @@ function BudgetsClient({ mcSession }) {
         ) : (
           <>
             <h2 className="text-xl text-purple-800 mb-2">Spending budgets</h2>
-            {spendingBudgets.length > 0 && (
-              <div className="flex gap-2 mb-3">
+            {(spendingBudgets.length > 0 || coverage.totalSpent > 0) && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                 <div className="flex-1 bg-purple-100 rounded-2xl p-3 text-center">
-                  <p className="text-xs text-gray-500">Total fixed (budgeted)</p>
+                  <p className="text-xs text-gray-500">Planned</p>
                   <p className="text-lg text-purple-800 font-bold">{usdFormatChanger(spendingTotals.fixed)}</p>
                 </div>
                 <div className="flex-1 bg-purple-100 rounded-2xl p-3 text-center">
-                  <p className="text-xs text-gray-500">Total real (spent)</p>
-                  <p className="text-lg text-purple-800 font-bold">{usdFormatChanger(spendingTotals.real)}</p>
+                  <p className="text-xs text-gray-500">Total spent</p>
+                  <p className="text-lg text-purple-800 font-bold">{usdFormatChanger(coverage.totalSpent)}</p>
+                </div>
+                <div className="flex-1 bg-amber-100 rounded-2xl p-3 text-center">
+                  <p className="text-xs text-amber-700">Unbudgeted</p>
+                  <p className="text-lg text-amber-900 font-bold">
+                    {usdFormatChanger(coverage.unbudgetedSpent)}
+                    <span className="text-xs font-normal ml-1">
+                      · {Math.round(coverage.unbudgetedPercentage)}%
+                    </span>
+                  </p>
                 </div>
               </div>
             )}
@@ -211,6 +263,19 @@ function BudgetsClient({ mcSession }) {
                     onClick={openDetail}
                   />
                 ))}
+                <UnbudgetedSpendingCard
+                  coverage={coverage}
+                  onClick={() => setShowUnbudgeted(true)}
+                />
+              </div>
+            )}
+
+            {spendingBudgets.length <= 0 && coverage.totalSpent > 0 && (
+              <div className="mb-6">
+                <UnbudgetedSpendingCard
+                  coverage={coverage}
+                  onClick={() => setShowUnbudgeted(true)}
+                />
               </div>
             )}
 
@@ -244,6 +309,18 @@ function BudgetsClient({ mcSession }) {
             budget={editingBudget}
             onClose={closeModal}
             onBack={returnToDetailBudget ? handleBackToDetail : null}
+          />
+        )}
+
+        {showUnbudgeted && (
+          <UnbudgetedSpendingModal
+            coverage={coverage}
+            budgets={spendingBudgets}
+            uncoveredCatalogCategories={uncoveredCatalogCategories}
+            rangeLabel={getBudgetRangeLabel(startDate, endDate)}
+            onClose={() => setShowUnbudgeted(false)}
+            onCreateBudget={openCreateFromUnbudgeted}
+            onAddToBudget={openAddToBudget}
           />
         )}
       </div>

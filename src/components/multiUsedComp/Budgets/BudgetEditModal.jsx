@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Spin, Switch, Tooltip } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import fetcher from "@/helpers/fetcher";
@@ -15,6 +15,7 @@ import ModalCategoryContent from "@/components/modals/contents/selectCategory/Mo
 import useModal from "@/hooks/useModalBasic";
 import { addNewBudget, updateBudget, removeBudget } from "@/lib/features/budgetSlice";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { findCoverageConflicts } from "@/helpers/transformers/budgetCoverage";
 
 function BudgetEditForm({ mode, budget, onClose, onBack }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +35,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
   const { close, handleClose } = useModal();
   const { setItemSelected } = useContext(SelectCategoryContext);
   const ccAccounts = useSelector((state) => state.accountsReducer?.data || []);
+  const ccBudgets = useSelector((state) => state.budgetReducer?.data || []);
 
   useEffect(() => {
     if (mode === "edition" && budget) {
@@ -58,6 +60,14 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
           },
         ];
       }
+      if (budget.pendingCategory) {
+        const pendingExists = initialCategories.some((entry) =>
+          budget.pendingCategory.subCategory
+            ? String(entry.subCategory) === String(budget.pendingCategory.subCategory)
+            : String(entry.category) === String(budget.pendingCategory.category) && !entry.subCategory
+        );
+        if (!pendingExists) initialCategories.push(budget.pendingCategory);
+      }
       setForm({
         name: budget.name || "",
         goalAmount: budget.goalAmount || "",
@@ -72,8 +82,39 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
           : [],
       });
       setItemSelected(budget.subCategory || budget.category || null);
+    } else if (mode === "creation") {
+      const draftCategories = Array.isArray(budget?.draftCategories) ? budget.draftCategories : [];
+      setForm({
+        name: budget?.draftName || "",
+        goalAmount: "",
+        savingAmount: "",
+        isSaving: false,
+        category: draftCategories[0]?.category || "",
+        subCategory: draftCategories[0]?.subCategory || "",
+        period: "monthly",
+        categories: draftCategories,
+        linkedAccounts: [],
+      });
+      const firstDraft = draftCategories[0];
+      setItemSelected(
+        firstDraft
+          ? {
+              _id: firstDraft.subCategory || firstDraft.category,
+              name: firstDraft.name,
+              color: firstDraft.color,
+              icon: firstDraft.icon,
+              isSub: Boolean(firstDraft.subCategory),
+              fatherCategory: firstDraft.category,
+            }
+          : null
+      );
     }
   }, [mode, budget, setItemSelected]);
+
+  const categoryConflicts = useMemo(
+    () => findCoverageConflicts(form.categories, ccBudgets, mode === "edition" ? budget?._id : null),
+    [form.categories, ccBudgets, mode, budget?._id]
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -245,6 +286,11 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
                 required
                 className="w-full"
               />
+              {mode === "creation" && Number(budget?.referenceSpent) > 0 && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 w-full">
+                  You spent <strong>{usdFormatChanger(budget.referenceSpent)}</strong> in this category during the selected period. Use it as a reference; your spending limit is still your choice.
+                </p>
+              )}
               <div className="flex items-center gap-2 w-full mt-1">
                 <Switch checked={form.isSaving} onChange={handleIsSavingToggle} />
                 <p className="label-tfp">This is a savings goal</p>
@@ -390,6 +436,14 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+              {categoryConflicts.length > 0 && (
+                <div className="w-full bg-amber-50 border border-amber-300 text-amber-900 rounded-2xl px-3 py-2 text-xs">
+                  <p className="font-bold">This coverage already exists</p>
+                  <p className="mt-0.5">
+                    Also covered by {categoryConflicts.map((item) => item.name || "Unnamed budget").join(", ")}. Keeping it in both budgets could count the same movement twice.
+                  </p>
                 </div>
               )}
               <BtnSelectCategoryContext onClose={handleClose} />

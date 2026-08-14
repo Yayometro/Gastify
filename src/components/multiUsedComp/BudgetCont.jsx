@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Skeleton, Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import EmptyModule from "./EmptyModule";
@@ -8,14 +8,18 @@ import { fetchBudget } from "@/lib/features/budgetSlice";
 import BudgetBarRow from "./Budgets/BudgetBarRow";
 import BudgetEditModal from "./Budgets/BudgetEditModal";
 import BudgetDetailModal from "./Budgets/BudgetDetailModal";
-import { matchBillToBudget, getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
+import { getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
 import { getLastDayOfMonth, generate_timeperiod_ranges_array_for_dashboard } from "@/helpers/timeFunctions/timeFunctions";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
+import { getBudgetCoverage } from "@/helpers/transformers/budgetCoverage";
+import { UnbudgetedSpendingCard } from "./Budgets/UnbudgetedSpending";
+import { useRouter } from "next/navigation";
 
 const initialToday = new Date();
 
 function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
+  const router = useRouter();
   let [startDate, setStartDate] = useState(new Date(initialToday.getFullYear(), initialToday.getMonth(), 1));
   let [endDate, setEndDate] = useState(getLastDayOfMonth(initialToday.getFullYear(), initialToday.getMonth()));
   let [bills, setBills] = useState([]);
@@ -34,6 +38,10 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   //
   const bcBudget = ccBudget.data;
   const bcTrans = ccTrans.data;
+  const coverage = useMemo(
+    () => getBudgetCoverage({ transactions: bcTrans, budgets, startDate, endDate }),
+    [bcTrans, budgets, startDate, endDate]
+  );
   // USE EFFECTS
   useEffect(() => {
     if(ccBudget.status == 'idle'){
@@ -210,6 +218,11 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
                 key={`budget-goal-key-${index}`}
               />
             ))}
+            <UnbudgetedSpendingCard
+              coverage={coverage}
+              compact
+              onClick={() => router.push("/dashboard/budgets")}
+            />
           </div>
         </div>
       )}
