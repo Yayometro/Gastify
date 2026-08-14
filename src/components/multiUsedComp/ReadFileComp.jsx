@@ -11,6 +11,8 @@ import runNotify from "@/helpers/gastifyNotifier";
 import { addNewTransacctions, removeManyTransactions } from "@/lib/features/transacctionsSlice";
 import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import DedupPreviewModal from "@/components/multiUsedComp/DedupPreviewModal";
+import CategorySuggestionsModal from "@/components/multiUsedComp/CategorySuggestionsModal";
+import { updateManyTransactions } from "@/lib/features/transacctionsSlice";
 import { MdFormatAlignLeft, MdOutlineCleaningServices } from "react-icons/md";
 import { fetchUser } from "@/lib/features/userSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
@@ -54,6 +56,8 @@ function ReadFileComp({}) {
   const [dedupPreview, setDedupPreview] = useState(null);
   const [dedupConfirming, setDedupConfirming] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
+  const [suggestions, setSuggestions] = useState(null);
+  const [suggestionsApplying, setSuggestionsApplying] = useState(false);
 
   let { email } = useGetUserSession();
   const toFetch = fetcher();
@@ -133,7 +137,10 @@ function ReadFileComp({}) {
         setUploadStatus("done");
         const created = res.data?.length ?? 0;
         runNotify("ok", `${created} transactions have been processed and created from the file 😎`);
-        if (created > 0) reduxDispatch(addNewTransacctions(res.data));
+        if (created > 0) {
+          reduxDispatch(addNewTransacctions(res.data));
+          fetchSuggestionsFor(res.data.filter((t) => !t.category && !t.subCategory).map((t) => t._id));
+        }
         setUploadResult({ count: created });
         setTimeout(() => setUploadStatus("idle"), 3000);
       } else if (info.file.status === "error") {
@@ -212,6 +219,39 @@ function ReadFileComp({}) {
     } finally {
       setDedupConfirming(false);
       setDedupPreview(null);
+    }
+  };
+
+  const fetchSuggestionsFor = async (transactionIds) => {
+    if (!transactionIds?.length) return;
+    const userEmail = ccUser.mail || email;
+    try {
+      const res = await toFetch.post("general-data/category-rules/suggest", {
+        mail: userEmail,
+        transactionIds,
+      });
+      if (res.ok && res.data?.length > 0) setSuggestions(res.data);
+    } catch (e) {
+      // suggestions are a nice-to-have, never block the upload flow on failure
+    }
+  };
+
+  const handleApplySuggestions = async (applications) => {
+    setSuggestionsApplying(true);
+    try {
+      const res = await toFetch.post("general-data/category-rules/apply-suggestions", { applications });
+      if (res.ok) {
+        reduxDispatch(updateManyTransactions(res.data));
+        runNotify("ok", `${res.data.length} transaction(s) categorized 🏷️`);
+        return true;
+      }
+      runNotify("error", res?.message || "Could not apply suggestions 🤕");
+      return false;
+    } catch (e) {
+      runNotify("error", "Could not apply suggestions 🤕");
+      return false;
+    } finally {
+      setSuggestionsApplying(false);
     }
   };
 
@@ -374,6 +414,15 @@ function ReadFileComp({}) {
           onConfirm={handleDedupConfirm}
           onCancel={() => setDedupPreview(null)}
           confirming={dedupConfirming}
+        />
+      )}
+
+      {suggestions && (
+        <CategorySuggestionsModal
+          suggestions={suggestions}
+          onConfirm={handleApplySuggestions}
+          onCancel={() => setSuggestions(null)}
+          confirming={suggestionsApplying}
         />
       )}
     </div>
