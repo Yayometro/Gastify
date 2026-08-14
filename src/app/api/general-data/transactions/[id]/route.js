@@ -6,6 +6,7 @@ import Tag from "@/model/Tag";
 import Account from "@/model/Account";
 import SubCategory from "@/model/SubCategory";
 import Category from "@/model/Category";
+import Budget from "@/model/Budget";
 
 export async function POST(request, { params }) {
   try {
@@ -21,6 +22,7 @@ export async function POST(request, { params }) {
       category,
       subCategory,
       tags,
+      budget,
     } = await request.json();
     //Validators
     if (!params)
@@ -40,6 +42,22 @@ export async function POST(request, { params }) {
     findTrans.isReadable = !isReadable ? findTrans.isReadable : isReadable;
     findTrans.date = !date ? findTrans.date : new Date(date);
     findTrans.account = !account ? findTrans.account : account;
+    if (budget !== undefined) {
+      if (!budget) {
+        findTrans.budget = null;
+      } else {
+        const linkedBudget = await Budget.findOne({
+          _id: budget,
+          user: findTrans.user,
+          wallet: findTrans.wallet,
+          archived: { $ne: true },
+        });
+        if (!linkedBudget || (linkedBudget.budgetType || (linkedBudget.isSaving ? "saving" : "spending")) !== "project") {
+          throw new Error("Project budget was not found for this transaction");
+        }
+        findTrans.budget = linkedBudget._id;
+      }
+    }
     // SUB CCATEGORY UPD
     if (subCategory) {
       if (findTrans.subCategory !== subCategory) {
@@ -57,25 +75,22 @@ export async function POST(request, { params }) {
       findTrans.category = !category ? findTrans.category : category;
     }
     // TAGS UPDATE
-    if (!tags) return null;
-    if (!tags.length < 0) return null;
-    const newTags = [];
-    
-    for (const tag of tags) {
-      const findTag = await Tag.findOne({ name: tag, user: findTrans.user });
-      
-      if (!findTag) {
-        const newTag = new Tag({ name: tag, user: findTrans.user });
-        if (!newTag)
-          throw new Error("No tag created on UPDATED TRANSACTION POST");
-        newTags.push(newTag._id);
-        await newTag.save();
-      } else {
-        newTags.push(findTag._id);
+    if (Array.isArray(tags)) {
+      const newTags = [];
+      for (const tag of tags) {
+        const findTag = await Tag.findOne({ name: tag, user: findTrans.user });
+        if (!findTag) {
+          const newTag = new Tag({ name: tag, user: findTrans.user, wallet: findTrans.wallet });
+          if (!newTag)
+            throw new Error("No tag created on UPDATED TRANSACTION POST");
+          newTags.push(newTag._id);
+          await newTag.save();
+        } else {
+          newTags.push(findTag._id);
+        }
       }
+      findTrans.tags = newTags;
     }
-    
-    findTrans.tags = newTags;
     
     //SAVE
     const updatedTrans = await findTrans.save()
@@ -94,6 +109,9 @@ export async function POST(request, { params }) {
         })
         .populate({
           path: "subCategory",
+        })
+        .populate({
+          path: "budget",
         });
     
     if (!transToSend)

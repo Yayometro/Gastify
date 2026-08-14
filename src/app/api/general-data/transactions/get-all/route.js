@@ -6,6 +6,7 @@ import SubCategory from "@/model/SubCategory";
 import User from "@/model/User";
 import Account from "@/model/Account";
 import Tag from "@/model/Tag";
+import Budget from "@/model/Budget";
 
 export async function POST(request) {
   try {
@@ -39,6 +40,9 @@ export async function POST(request) {
       })
       .populate({
         path: "subCategory",
+      })
+      .populate({
+        path: "budget",
       });
     if (!movementsFounded)
       throw new Error(

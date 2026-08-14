@@ -2,6 +2,7 @@ import Budget from "@/model/Budget";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
+import Tag from "@/model/Tag";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
 
@@ -12,7 +13,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on NEW BUDGET POST");
-    const { id, name, goalAmount, category, subCategory, isSurpassed, isSaving, savingAmount, categories, period, linkedAccounts } =
+    const { id, name, goalAmount, category, subCategory, isSurpassed, isSaving, savingAmount, categories, period, linkedAccounts, budgetType, eventStartDate, eventEndDate, linkedTags, icon } =
       await request.json();
     await dbConnection();
     // NO ID FILTER
@@ -53,6 +54,10 @@ export async function POST(request) {
     updateBudget.subCategory = subCategory === undefined ? updateBudget.subCategory : subCategory;
     //isSaving (boolean, so check for undefined rather than falsy - false is a valid value)
     updateBudget.isSaving = isSaving === undefined ? updateBudget.isSaving : isSaving;
+    if (budgetType !== undefined) {
+      updateBudget.budgetType = budgetType;
+      updateBudget.isSaving = budgetType === "saving";
+    }
     //savingAmount
     updateBudget.savingAmount =
       savingAmount !== undefined ? Number(savingAmount) : updateBudget.savingAmount;
@@ -62,6 +67,14 @@ export async function POST(request) {
     if (categories !== undefined) updateBudget.categories = categories;
     //linkedAccounts array
     if (linkedAccounts !== undefined) updateBudget.linkedAccounts = linkedAccounts;
+    if (linkedTags !== undefined) updateBudget.linkedTags = linkedTags;
+    if (icon !== undefined) updateBudget.icon = icon || "md/MdFlightTakeoff";
+    if (eventStartDate !== undefined) {
+      updateBudget.eventStartDate = eventStartDate ? new Date(eventStartDate) : null;
+    }
+    if (eventEndDate !== undefined) {
+      updateBudget.eventEndDate = eventEndDate ? new Date(eventEndDate) : null;
+    }
     // SAVE
     const savedBudget = await updateBudget.save();
     //IF ERROR
@@ -72,6 +85,7 @@ export async function POST(request) {
       { path: "categories.category", strictPopulate: false },
       { path: "categories.subCategory", strictPopulate: false },
       { path: "linkedAccounts", strictPopulate: false },
+      { path: "linkedTags", strictPopulate: false },
     ]);
     return NextResponse.json({
       message: `${savedBudget.name} was updated successfully 🤓`,

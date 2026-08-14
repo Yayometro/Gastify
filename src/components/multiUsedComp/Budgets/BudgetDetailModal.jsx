@@ -37,8 +37,8 @@ function BudgetDetailModal({
     if (budget.period && budget.period !== "monthly") {
       const refDate = startDate || new Date();
       const range = getBudgetPeriodRange(budget, refDate, startDate, endDate);
-      effectiveStart = range.start;
-      effectiveEnd = range.end;
+      effectiveStart = range.startDate;
+      effectiveEnd = range.endDate;
     }
 
     const startMs = effectiveStart ? new Date(effectiveStart).getTime() : 0;
