@@ -98,7 +98,7 @@ function ProjectionMonthDetailModal({
       renderContent={
         <div
           className={`content absolute bg-white border-2 border-purple-400 rounded-2xl overflow-hidden z-[1001] w-[95%] max-h-[85vh] ${
-            showTransactions ? "sm:max-w-[1100px]" : "max-w-[650px]"
+            showTransactions ? "sm:max-w-[1500px]" : "max-w-[650px]"
           }`}
         >
           <div
@@ -273,7 +273,7 @@ function ProjectionMonthDetailModal({
             </div>
 
             {showTransactions && monthDateRange && (
-              <div className="sm:w-[420px] shrink-0 border-t sm:border-t-0 sm:border-l border-purple-100 sm:overflow-y-auto px-4 py-6">
+              <div className="sm:w-[46%] sm:min-w-[420px] sm:max-w-[820px] shrink-0 border-t sm:border-t-0 sm:border-l border-purple-100 sm:overflow-y-auto px-4 py-6">
                 <Movements
                   mail={mail}
                   timePeriodFromFather={[monthDateRange.start, monthDateRange.end]}
