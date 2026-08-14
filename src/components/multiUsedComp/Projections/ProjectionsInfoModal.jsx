@@ -53,7 +53,7 @@ function ProjectionsInfoModal({ onClose }) {
             <div>
               <p className="font-bold text-purple-700">Current Month Balance</p>
               <p className="text-sm text-gray-600">
-                To estimate your balance at the end of the current month, Gastify takes the money you have today and adds the "remainder" of your projection (what's left to earn minus what's left to spend, including buffers). As you record real transactions, this estimate automatically calibrates itself so it never counts money twice.
+                To estimate your balance at the end of the current month, Gastify takes the money you have today and adds the &quot;remainder&quot; of your projection (what&apos;s left to earn minus what&apos;s left to spend, including buffers). As you record real transactions, this estimate automatically calibrates itself so it never counts money twice.
               </p>
             </div>
             <div>
