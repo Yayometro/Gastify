@@ -39,6 +39,18 @@ const budgetSchema = new Schema({
         enum: ["monthly", "quarterly", "biannual", "yearly"],
         default: "monthly",
     },
+    budgetType: {
+        type: String,
+        enum: ["spending", "saving", "project"],
+        default: "spending",
+    },
+    icon: { type: String },
+    eventStartDate: { type: Date },
+    eventEndDate: { type: Date },
+    linkedTags: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Tag",
+    }],
     linkedAccounts: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Account",

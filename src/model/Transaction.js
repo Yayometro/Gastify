@@ -28,6 +28,10 @@ const transactionsSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "SubCategory",
     },
+    budget: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Budget",
+    },
     tags: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Tag",

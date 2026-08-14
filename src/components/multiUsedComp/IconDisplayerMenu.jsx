@@ -81,7 +81,7 @@ function IconDisplayerMenu({ idmActive, idmIcon, idmClose }) {
                 className="w-full  my-4 py-1 rounded-3xl  "
                 key={`icdm-icon-gen-sec-${index}`}
               >
-                <h1 className="text-2xl pb-1 text-purple-800">
+                <h1 className="text-2xl pb-1 text-purple-800 text-center">
                   {icon.name || "No name"}
                 </h1>
                 <ul className="flex flex-wrap justify-center items-center gap-2 pt-3 ">

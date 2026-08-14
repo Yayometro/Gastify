@@ -51,6 +51,7 @@ export async function POST(request){
             { path: "categories.category", strictPopulate: false },
             { path: "categories.subCategory", strictPopulate: false },
             { path: "linkedAccounts", strictPopulate: false },
+            { path: "linkedTags", strictPopulate: false },
         ]);
             if(!budgetsFounded) throw new Error("No Budgets found, review the user and wallet id on GENERAL-DATA POST");
         //FIND TRANSACTIONS
@@ -66,6 +67,9 @@ export async function POST(request){
             })
             .populate({
                 path: "subCategory",
+            })
+            .populate({
+                path: "budget",
             })
             
             if(!transactionsFounded) throw new Error("No transactions found, review the user and wallet id on GENERAL-DATA POST");

@@ -1,6 +1,7 @@
 import { getYearMonthDateRange } from "../timeFunctions/timeFunctions";
 import { getTransactionsFromTimeRange, filterBillsOrIncomes } from "./transactionsChange";
 import { getValueActiveInMonth } from "./budgetHistory";
+import { isSpendingBudget } from "./budgetTypes";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -188,7 +189,7 @@ function getMonthBuffer(monthlyBuffers, monthIndex) {
 // - the current month: MAX(estimate, real-so-far) per bucket, see sumPerBucketMax.
 export function buildYearProjectionTable({ transactions, budgets, incomeSources, projectionSettings, year, today }) {
   const monthRanges = getYearMonthDateRange(new Date(year, 0, 1));
-  const nonSavingBudgets = (budgets || []).filter((b) => !b.isSaving);
+  const nonSavingBudgets = (budgets || []).filter(isSpendingBudget);
   const monthlyBuffers = projectionSettings?.monthlyBuffers || [];
   const todayMonthStart = startOfMonth(today);
   const todayMonthEnd = endOfMonth(today);

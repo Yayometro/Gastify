@@ -2,6 +2,7 @@ import Budget from "@/model/Budget";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
+import Tag from "@/model/Tag";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
 
@@ -23,7 +24,12 @@ export async function POST(request) {
       isSaving,
       categories,
       period,
-      linkedAccounts
+      linkedAccounts,
+      budgetType,
+      eventStartDate,
+      eventEndDate,
+      linkedTags,
+      icon,
     } = await request.json();
     await dbConnection();
     // NO USER/WALLET FILTER
@@ -32,16 +38,22 @@ export async function POST(request) {
         `No User and Wallet was provided to create a new Budget 🤕`
       );
     // FIND WALLET
+    const resolvedBudgetType = budgetType || (isSaving ? "saving" : "spending");
     const newBudget = new Budget({
       name: name || null,
       goalAmount: goalAmount || 1,
       isSurpassed: false,
       user: user,
       wallet: wallet,
-      isSaving: isSaving || false,
+      isSaving: resolvedBudgetType === "saving",
+      budgetType: resolvedBudgetType,
+      icon: resolvedBudgetType === "project" ? icon || "md/MdFlightTakeoff" : null,
       savingAmount: savingAmount || 0,
       period: period || "monthly",
       linkedAccounts: linkedAccounts || [],
+      linkedTags: linkedTags || [],
+      eventStartDate: eventStartDate ? new Date(eventStartDate) : null,
+      eventEndDate: eventEndDate ? new Date(eventEndDate) : null,
       history: [{
         goalAmount: goalAmount || 1,
         savingAmount: savingAmount || 0,
@@ -66,6 +78,7 @@ export async function POST(request) {
       { path: "categories.category", strictPopulate: false },
       { path: "categories.subCategory", strictPopulate: false },
       { path: "linkedAccounts", strictPopulate: false },
+      { path: "linkedTags", strictPopulate: false },
     ]);
     return NextResponse.json({
       message: `${savedBudget.name} was created successfully 🤓`,

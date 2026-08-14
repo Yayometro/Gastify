@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { DatePicker, Space, Tooltip } from "antd";
@@ -7,35 +7,52 @@ import dayjs from "dayjs";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { months } from "@/helpers/timeFunctions/timeFunctions";
 
-function TimeRange({ rpDate, rpResponse, styles }) {
+function TimeRange({ rpDate, rpResponse, styles, startDateValue, endDateValue }) {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const isControlled = startDateValue !== undefined || endDateValue !== undefined;
+  const selectedStartDate = isControlled ? startDateValue || null : startDate;
+  const selectedEndDate = isControlled ? endDateValue || null : endDate;
+  const rpDateRef = useRef(rpDate);
 
   useEffect(() => {
-    rpDate(startDate, endDate);
-  }, [startDate, endDate]);
+    rpDateRef.current = rpDate;
+  }, [rpDate]);
+
+  useEffect(() => {
+    if (!isControlled) rpDateRef.current(startDate, endDate);
+  }, [startDate, endDate, isControlled]);
+
+  const updateRange = (nextStart, nextEnd) => {
+    if (isControlled) {
+      rpDate(nextStart, nextEnd);
+      return;
+    }
+    setStartDate(nextStart);
+    setEndDate(nextEnd);
+  };
 
   const onChangeStart = (date) => {
     if (!date) {
-      setStartDate(null);
+      updateRange(null, selectedEndDate);
       return;
     }
     const d = date.toDate ? date.toDate() : date.$d;
-    if (d && !isNaN(d)) setStartDate(d);
+    if (d && !isNaN(d)) updateRange(d, selectedEndDate);
   };
 
   const onChangeEnd = (date) => {
     if (!date) {
-      setEndDate(null);
+      updateRange(selectedStartDate, null);
       return;
     }
     const d = date.toDate ? date.toDate() : date.$d;
-    if (d && !isNaN(d)) setEndDate(d);
+    if (d && !isNaN(d)) updateRange(selectedStartDate, d);
   };
 
   const getRefDate = () => {
-    if (startDate instanceof Date && !isNaN(startDate)) return startDate;
-    if (endDate instanceof Date && !isNaN(endDate)) return endDate;
+    if (selectedStartDate instanceof Date && !isNaN(selectedStartDate)) return selectedStartDate;
+    if (selectedEndDate instanceof Date && !isNaN(selectedEndDate)) return selectedEndDate;
     return new Date();
   };
 
@@ -75,14 +92,12 @@ function TimeRange({ rpDate, rpResponse, styles }) {
 
   const handlePrevMonth = () => {
     const prev = getPrevMonthInfo();
-    setStartDate(prev.start);
-    setEndDate(prev.end);
+    updateRange(prev.start, prev.end);
   };
 
   const handleNextMonth = () => {
     const next = getNextMonthInfo();
-    setStartDate(next.start);
-    setEndDate(next.end);
+    updateRange(next.start, next.end);
   };
 
   const prevInfo = getPrevMonthInfo();
@@ -109,7 +124,7 @@ function TimeRange({ rpDate, rpResponse, styles }) {
         <div className="unit-date-enc3">
           <DatePicker
             size="small"
-            value={startDate ? dayjs(startDate) : null}
+            value={selectedStartDate ? dayjs(selectedStartDate) : null}
             onChange={onChangeStart}
             className="ant-date-picker-range3"
             format={dateFormat}
@@ -119,7 +134,7 @@ function TimeRange({ rpDate, rpResponse, styles }) {
         <div className="unit-date-enc3">
           <DatePicker
             size="small"
-            value={endDate ? dayjs(endDate) : null}
+            value={selectedEndDate ? dayjs(selectedEndDate) : null}
             onChange={onChangeEnd}
             format={dateFormat}
             className="ant-date-picker-range3"

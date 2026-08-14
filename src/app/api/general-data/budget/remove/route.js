@@ -1,4 +1,5 @@
 import Budget from "@/model/Budget";
+import Transaction from "@/model/Transaction";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
 
@@ -24,6 +25,11 @@ export async function POST(request) {
     const openEntry = removedBudget.history?.find((h) => !h.effectiveTo);
     if (openEntry) openEntry.effectiveTo = new Date();
     await removedBudget.save();
+    if ((removedBudget.budgetType || (removedBudget.isSaving ? "saving" : "spending")) === "project") {
+      // Removing a project never removes its movements; they simply become
+      // available for another project (and visible as unbudgeted again).
+      await Transaction.updateMany({ budget: removedBudget._id }, { $unset: { budget: 1 } });
+    }
     console.log(removedBudget)
     return NextResponse.json({
       message: `Budget ${removedBudget?.name} was removed 🤓`,
