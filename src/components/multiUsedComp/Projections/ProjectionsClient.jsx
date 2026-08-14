@@ -225,6 +225,7 @@ function ProjectionsClient({ mcSession }) {
             onSaveBuffers={handleSaveBuffers}
             onSaveMonthBalance={handleSaveMonthBalance}
             onClose={() => setSelectedMonthName(null)}
+            mail={mcSession}
           />
         )}
 
