@@ -6,8 +6,10 @@ import { Spin, Tooltip } from "antd";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
+import Movements from "../Movements";
 import runNotify from "@/helpers/gastifyNotifier";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
 
 const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
   ssr: false,
@@ -32,14 +34,21 @@ function ProjectionMonthDetailModal({
   onSaveBuffers,
   onSaveMonthBalance,
   onClose,
+  mail,
 }) {
   const [bufferValue, setBufferValue] = useState(unexpectedBuffer ?? 0);
   const [incomeBufferValue, setIncomeBufferValue] = useState(unexpectedIncomeBuffer ?? 0);
   const [balanceValue, setBalanceValue] = useState(monthRow?.manualBalance ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingBalance, setIsSavingBalance] = useState(false);
+  const [showTransactions, setShowTransactions] = useState(false);
 
   if (!monthRow) return null;
+
+  // Same [start, end] shape Movements already accepts via timePeriodFromFather
+  // elsewhere in the app (e.g. Dashboard.jsx) - reusing the real Movements UI
+  // here instead of building a second transaction list from scratch.
+  const monthDateRange = getYearMonthDateRange(new Date(monthRow.year, 0, 1)).get(monthRow.monthName);
 
   const chartData = (bucketBreakdown || []).flatMap((row) => [
     { label: row.label, type: "Budgeted", value: row.budgeted },
@@ -87,7 +96,17 @@ function ProjectionMonthDetailModal({
     <BasicModal
       close={onClose}
       renderContent={
-        <div className="content absolute bg-white border-2 border-purple-400 flex flex-col w-[95%] max-w-[650px] max-h-[85vh] overflow-y-auto rounded-2xl px-6 pt-8 pb-6 z-[1001]">
+        <div
+          className={`content absolute bg-white border-2 border-purple-400 rounded-2xl overflow-hidden z-[1001] w-[95%] max-h-[85vh] ${
+            showTransactions ? "sm:max-w-[1500px]" : "max-w-[650px]"
+          }`}
+        >
+          <div
+            className={`flex max-h-[85vh] overflow-y-auto sm:overflow-hidden ${
+              showTransactions ? "flex-col sm:flex-row" : "flex-col"
+            }`}
+          >
+            <div className="relative flex-1 min-w-0 px-6 pt-8 pb-6 sm:overflow-y-auto">
           <div
             className="absolute top-3 right-3 border-2 rounded-full text-purple-700 p-1 cursor-pointer"
             onClick={onClose}
@@ -102,6 +121,17 @@ function ProjectionMonthDetailModal({
             {monthRow.type === "estimate" && "Future month — pure estimate from your Budgets and Income Sources."}
             {monthRow.type === "current" && "Current month — projected value climbs from your estimate to your real spend as it happens."}
           </p>
+
+          {monthDateRange && (
+            <button
+              type="button"
+              onClick={() => setShowTransactions((v) => !v)}
+              className="mb-4 flex items-center gap-1.5 text-xs font-medium text-purple-600 hover:text-purple-500 transition-colors w-fit"
+            >
+              <CategoIcon type="MdList" siz={14} />
+              {showTransactions ? "Hide transactions" : "See transactions"}
+            </button>
+          )}
 
           {monthRow.type === "current" && (
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
@@ -239,6 +269,17 @@ function ProjectionMonthDetailModal({
             >
               {isSaving ? <Spin size="small" /> : "Save buffers"}
             </button>
+          </div>
+            </div>
+
+            {showTransactions && monthDateRange && (
+              <div className="sm:w-[46%] sm:min-w-[420px] sm:max-w-[820px] shrink-0 border-t sm:border-t-0 sm:border-l border-purple-100 sm:overflow-y-auto px-4 py-6">
+                <Movements
+                  mail={mail}
+                  timePeriodFromFather={[monthDateRange.start, monthDateRange.end]}
+                />
+              </div>
+            )}
           </div>
         </div>
       }

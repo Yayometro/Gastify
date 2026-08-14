@@ -1035,3 +1035,28 @@ When taking over this task, Claude should perform the following steps:
   - Do not fold Project Budgets into Projections without a separate product decision. Projection-period changes and Project projection semantics were explicitly deferred.
   - Any new transaction mutation path (new import type, automation, bulk operation, etc.) must preserve/populate the optional `budget` reference or Project totals can become incomplete.
   - If threshold notifications are resumed, first move Budget usage calculation into a server-safe shared service; do not depend on the current client-side aggregation or send provider messages synchronously as a required part of saving a transaction.
+
+---
+
+### 📅 Entry #20: 2026-08-14 (local time) — Project Planning / Prospective Expenses Design (Analysis Only)
+
+- **AI Assistant**: OpenAI / Codex (GPT-5)
+- **User Request**: Explore how Gastify Project Budgets could support detailed prospective expenses like the user's existing Viaje a Asia workbook: planned versus real prices, currencies, dates, statuses, notes, sources, quotes, and eventual linkage to real transactions, without bloating normal transactions. Leave the previously discussed WhatsApp/Telegram feature aside and propose the architecture before implementation.
+- **Phase**: Product and architecture design — Project financial planning
+- **Actions Taken**:
+  1. Inspected the current `Budget`, `Transaction`, `ProjectBudgetDetailModal`, and Project aggregation logic. Confirmed that Project progress currently comes only from real expense transactions explicitly linked through `Transaction.budget`, and that most Project totals are calculated client-side.
+  2. Read the current `/Users/luisjairvazqueznavarrete/Coding Proyects/Viaje a Asia/PRESUPUESTO_Y_RUTA_ASIA.xlsx` workbook as a read-only source. Identified three distinct financial layers: selected/planned cost items in `Costos`, research/quote candidates in sheets such as `Hospedajes` and `Actividades`, and real paid amounts that replace or reconcile the planned value. Also identified supporting metadata: original currency, FX assumptions, date ranges, traveler quantity, decision/payment status, notes, sources, itinerary context, and pending decisions.
+  3. Rejected storing prospective items as normal `Transaction` documents with an `isProspected` flag. That approach would require every existing account balance, report, projection, import/export, duplicate check, and transaction query to remember to exclude them; one missed filter would make fictional spending appear as real financial history.
+  4. Recommended a separate `ProjectExpense` / `ProjectPlanItem` collection linked to a Project Budget. Normal transactions remain the source of truth for actual money; planned items hold estimates, quotes, sources, dates, location/context, and lifecycle status.
+  5. Recommended linking real transactions to a planned item with an optional `Transaction.projectExpense` reference while retaining `Transaction.budget` for the parent Project. Multiple real transactions may fulfill one planned item (for example, hotel deposit plus final payment). A future allocation/junction model can support splitting one real transaction across multiple plan items if real usage demonstrates that need.
+  6. Defined the Project's separate headline values: user limit (`Budget.goalAmount`), current forecast (effective total of plan items plus unassigned actual spending), actual paid (all real linked expenses), expected amount still to pay, and unallocated buffer. For partially paid items, effective forecast should be `max(planned amount, actual linked amount)` rather than planned + actual, preventing deposits from being double-counted.
+  7. Recommended replacing the increasingly dense Project modal with a dedicated Project page containing Overview, Planned expenses, and Actual movements. The overview should use a stacked progress bar distinguishing paid, selected/committed, estimated, remaining buffer, and over-budget amounts.
+  8. Recommended keeping travel-specific richness optional: `projectKind`, base currency, participants and locations can customize the form, but the core planning item remains generic enough for a trip, major purchase, event, or small business project. Full itinerary, activity catalog, diet planning, and task management should not be copied into Gastify's first version; Gastify should remain focused on financial planning.
+  9. Recommended deferring global `/dashboard/projections` integration until the Project planning ledger works independently. Later, only plan items with an expected payment date and an explicit `includeInCashflow` setting should enter monthly cash-flow projections, where linked actuals replace the forecast to prevent double-counting.
+- **Files Created / Modified**:
+  - Modified: `.mds/AI_COORDINATION_LOG.md` (analysis record only)
+  - No application code, model, API route, branch, database record, or source workbook was changed.
+- **Next Steps / Hand-Off Notes**:
+  - If approved, create a new isolated feature branch/worktree before implementation.
+  - Suggested first implementation slice: `ProjectExpense` model + CRUD API + dedicated Project page + plan-vs-actual summary + linking existing real transactions.
+  - Add embedded quote/source candidates and an import assistant for the `Costos` sheet only after the core flow is verified. The other workbook sheets are richer research/planning domains and should not automatically become financial commitments.
