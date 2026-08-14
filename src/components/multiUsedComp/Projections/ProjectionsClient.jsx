@@ -89,6 +89,10 @@ function ProjectionsClient({ mcSession }) {
       }
       if (row.type === "current") {
         reachedCurrent = true;
+        // Calcular lo que falta por ingresar y gastar en el resto del mes actual
+        const remainingNet = (row.projectedIncome - row.actualIncome) - (row.projectedExpense - row.actualExpense);
+        // El balance final de este mes incluirá el dinero de hoy más el remanente
+        runningBalance += remainingNet;
         return { ...row, net, balance: runningBalance };
       }
       if (reachedCurrent || row.type === "estimate") {

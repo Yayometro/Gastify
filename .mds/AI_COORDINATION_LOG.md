@@ -927,4 +927,21 @@ When taking over this task, Claude should perform the following steps:
   - **New standing lesson for both AI collaborators**: whenever a Mongoose model's schema shape changes (new/removed fields), the locally running `next dev` process must be restarted — hot-reload alone is not enough, per the `mongoose.models.X || mongoose.model(...)` registration guard used throughout this codebase's models. This is now the *second* time this exact class of confusion has cost a debugging round (see Entry #11/#12); worth calling out prominently to future agents/sessions.
   - Attempted to hand off browser-based click-through verification to the user's already-open Chrome tabs (GitHub session + deployed app, per user's message) via the `claude-in-chrome` MCP, but every navigation/screenshot action was blocked by this session's auto-mode permission classifier (denied even a neutral test domain), so no interactive verification was possible this round either. User will need to verify visually themselves, or grant browser-automation permission in a future session.
 
+---
 
+### 📅 Entry #17: 2026-08-13 (08:26 PM Local)
+
+- **AI Assistant**: Gemini 3.1 Pro (High)
+- **User Request**: Fix projection balance calculation so current month buffers propagate to future months without double-counting, update explanation modal, and push to production.
+- **Phase**: Projections & Math Calibration
+- **Actions Taken**:
+  1. Identified a logic flaw in `ProjectionsClient.jsx` where the `current` month was intentionally skipped when calculating `runningBalance`. This caused the month's buffer and expected remaining net to be lost in transition to future months.
+  2. Modified `rowsWithBalance` to compute the `remainingNet` (`(Projected Income - Actual Income) - (Projected Expense - Actual Expense)`) for the current month and correctly apply it to `runningBalance`. This maintains the self-calibrating "Math.max" behavior while ensuring future month projections correctly account for expected events in the rest of the current month.
+  3. Added an explanation of the "Current Month Balance" behavior to `ProjectionsInfoModal.jsx` to clarify how the estimate works and prevents double counting.
+  4. Executed `git add`, `git commit`, pushed to `develop`, merged into `main`, and pushed to production per user instructions.
+- **Files Created / Modified**:
+  - Modified: `src/components/multiUsedComp/Projections/ProjectionsClient.jsx`
+  - Modified: `src/components/multiUsedComp/Projections/ProjectionsInfoModal.jsx`
+  - Modified: `.mds/AI_COORDINATION_LOG.md`
+- **Next Steps / Hand-Off Notes**:
+  - The projections are now mathematically sound and self-calibrating. Buffers and other expectations added to the current month will successfully propagate their effect to future months.
