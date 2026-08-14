@@ -194,14 +194,13 @@ export async function POST(request, { params }) {
       if (subCatName) {
         const { subCategoryId, categoryId } = await resolveSubCategory(subCatName, userFound._id);
         finalSubCategoryId = subCategoryId;
-        if (catName) {
-          const explicitCatId = await resolveCategory(catName, userFound._id);
-          finalCategoryId =
-            explicitCatId && categoryId && String(explicitCatId) === String(categoryId)
-              ? explicitCatId
-              : categoryId;
-        } else {
+        // Prefer the subCategory's real parent for consistency. If the subCategory
+        // name didn't resolve (e.g. a stale naming-rule reference), fall back to the
+        // explicit category name instead of silently discarding a valid category.
+        if (categoryId) {
           finalCategoryId = categoryId;
+        } else if (catName) {
+          finalCategoryId = await resolveCategory(catName, userFound._id);
         }
       } else if (catName) {
         finalCategoryId = await resolveCategory(catName, userFound._id);
