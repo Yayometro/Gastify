@@ -10,6 +10,7 @@ import Budget from "@/model/Budget";
 import Wallet from "@/model/Wallet";
 import { minorToMajor } from "@/lib/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
+import { buildMerchantMoney } from "@/lib/money/transactionMoney";
 import { convert } from "@/lib/money/server/fxRateService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
@@ -50,8 +51,12 @@ export async function POST(request, { params }) {
 
     const parentWallet = await Wallet.findById(findTrans.wallet).lean();
     if (!parentWallet) throw new Error("No Wallet found for this Transaction");
+    // .lean() never applies schema defaults - a real Wallet/Account document
+    // that predates the multi-currency migration has no primaryCurrency/
+    // currency field in its stored BSON at all.
+    const walletPrimaryCurrency = parentWallet.primaryCurrency || "MXN";
 
-    const currentAccountCurrency = findTrans.money?.account?.currency || parentWallet.primaryCurrency;
+    const currentAccountCurrency = findTrans.money?.account?.currency || walletPrimaryCurrency;
     const accountChanged = account !== undefined && String(account || "") !== String(findTrans.account || "");
     const amountProvided = amount !== undefined && amount !== "";
 
@@ -66,7 +71,7 @@ export async function POST(request, { params }) {
     if (accountChanged) {
       nextAccount = account || null;
       const newAccountDoc = nextAccount ? await Account.findById(nextAccount).lean() : null;
-      nextAccountCurrency = newAccountDoc?.currency || parentWallet.primaryCurrency;
+      nextAccountCurrency = newAccountDoc?.currency || walletPrimaryCurrency;
 
       if (nextAccountCurrency !== currentAccountCurrency) {
         if (!currencyStrategy) {
@@ -131,15 +136,20 @@ export async function POST(request, { params }) {
         accountCurrency: nextAccountCurrency,
         merchantAmount,
         merchantCurrency,
-        walletPrimaryCurrency: parentWallet.primaryCurrency,
+        walletPrimaryCurrency,
         date: parsedDate,
         manualReportingAmount,
       });
     }
-    // A merchant field left untouched in this edit keeps its existing value
-    // rather than being wiped by an absent merchantAmount/merchantCurrency.
-    if (merchantAmount === undefined && merchantCurrency === undefined && findTrans.money?.merchant) {
-      money.merchant = findTrans.money.merchant;
+    // merchantAmount undefined = the client never sent this field at all
+    // (e.g. every other edit form) - keep whatever merchant money already
+    // existed. merchantAmount present (a real value, or explicit null/""
+    // to clear it) always wins and is recomputed, even when the reporting
+    // snapshot above was otherwise preserved untouched.
+    if (merchantAmount === undefined) {
+      if (findTrans.money?.merchant) money.merchant = findTrans.money.merchant;
+    } else {
+      money.merchant = buildMerchantMoney({ amount: merchantAmount, currency: merchantCurrency });
     }
 
     // UPDATES:
@@ -230,7 +240,7 @@ export async function POST(request, { params }) {
       throw new Error("Updated transaction -transToSend- could not be loaded to send");
     const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
       [transToSend],
-      parentWallet.primaryCurrency
+      walletPrimaryCurrency
     );
     return NextResponse.json({
       message: `${

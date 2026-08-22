@@ -82,8 +82,15 @@ export async function POST(request) {
     }
     if (!parentWallet) throw new Error("Wallet not found for transfer/exchange");
 
+    // .lean() never applies schema defaults - a real Account/Wallet document
+    // that predates the multi-currency migration has no currency/
+    // primaryCurrency field in its stored BSON at all.
+    const sourceCurrency = sourceAccount.currency || "MXN";
+    const destinationCurrency = destinationAccount.currency || "MXN";
+    const walletPrimaryCurrency = parentWallet.primaryCurrency || "MXN";
+
     const resolvedKind = kind === "exchange" ? "exchange" : "transfer";
-    if (resolvedKind === "transfer" && sourceAccount.currency !== destinationAccount.currency) {
+    if (resolvedKind === "transfer" && sourceCurrency !== destinationCurrency) {
       throw new Error(
         "A transfer requires both Accounts to share the same currency - use an exchange for cross-currency moves"
       );
@@ -97,16 +104,16 @@ export async function POST(request) {
     // entered (not looked up) - stored for audit even though it isn't
     // written onto either leg's reporting money directly.
     const effectiveRate =
-      sourceAccount.currency === destinationAccount.currency
+      sourceCurrency === destinationCurrency
         ? "1"
         : deriveEffectiveRate({
-            sourceMoney: { amountMinor: sourceAmountMinor, currency: sourceAccount.currency },
-            targetMoney: { amountMinor: destinationAmountMinor, currency: destinationAccount.currency },
+            sourceMoney: { amountMinor: sourceAmountMinor, currency: sourceCurrency },
+            targetMoney: { amountMinor: destinationAmountMinor, currency: destinationCurrency },
           });
 
     const [sourceReporting, destinationReporting] = await Promise.all([
-      buildLegReporting(sourceAccount.currency, sourceAmountMinor, parentWallet.primaryCurrency, parsedDate),
-      buildLegReporting(destinationAccount.currency, destinationAmountMinor, parentWallet.primaryCurrency, parsedDate),
+      buildLegReporting(sourceCurrency, sourceAmountMinor, walletPrimaryCurrency, parsedDate),
+      buildLegReporting(destinationCurrency, destinationAmountMinor, walletPrimaryCurrency, parsedDate),
     ]);
 
     const session = await mongoose.startSession();
@@ -118,7 +125,7 @@ export async function POST(request) {
           user,
           wallet,
           name: legName,
-          amount: minorToMajor(sourceAmountMinor, sourceAccount.currency),
+          amount: minorToMajor(sourceAmountMinor, sourceCurrency),
           isBill: false,
           isIncome: false,
           isReadable: true,
@@ -129,7 +136,7 @@ export async function POST(request) {
           transferGroupId,
           transferDirection: "out",
           money: {
-            account: { amountMinor: sourceAmountMinor, currency: sourceAccount.currency },
+            account: { amountMinor: sourceAmountMinor, currency: sourceCurrency },
             merchant: null,
             reporting: sourceReporting,
           },
@@ -138,7 +145,7 @@ export async function POST(request) {
           user,
           wallet,
           name: legName,
-          amount: minorToMajor(destinationAmountMinor, destinationAccount.currency),
+          amount: minorToMajor(destinationAmountMinor, destinationCurrency),
           isBill: false,
           isIncome: false,
           isReadable: true,
@@ -149,7 +156,7 @@ export async function POST(request) {
           transferGroupId,
           transferDirection: "in",
           money: {
-            account: { amountMinor: destinationAmountMinor, currency: destinationAccount.currency },
+            account: { amountMinor: destinationAmountMinor, currency: destinationCurrency },
             merchant: null,
             reporting: destinationReporting,
           },
@@ -169,7 +176,7 @@ export async function POST(request) {
     ]);
     const [outgoingWithDisplayMoney, incomingWithDisplayMoney] = await attachDisplayMoneyToList(
       [outgoingLoaded, incomingLoaded],
-      parentWallet.primaryCurrency
+      walletPrimaryCurrency
     );
 
     return NextResponse.json({

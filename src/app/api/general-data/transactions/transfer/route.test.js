@@ -161,3 +161,32 @@ describe("transfer POST - happy paths", () => {
     expect(TransactionMock).not.toHaveBeenCalled();
   });
 });
+
+describe("transfer POST - legacy (unmigrated) Account/Wallet documents", () => {
+  // Regression coverage: a real Account/Wallet document that predates the
+  // multi-currency migration has no currency/primaryCurrency field in its
+  // stored BSON at all - .lean() never applies the schema default, so this
+  // reads back as `undefined`, not "MXN". A live transfer between two real,
+  // unmigrated MXN accounts crashed with "Unsupported currency: undefined"
+  // before this was fixed to default explicitly wherever Account.currency/
+  // Wallet.primaryCurrency is read.
+  it("defaults both legs to MXN when neither the Wallet nor either Account has a currency field", async () => {
+    Wallet.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ _id: "w1" }) }); // no primaryCurrency
+    Account.findById
+      .mockReturnValueOnce({ lean: vi.fn().mockResolvedValue({ _id: "acc-mxn", user: "u1", wallet: "w1" }) }) // no currency
+      .mockReturnValueOnce({ lean: vi.fn().mockResolvedValue({ _id: "acc-mxn-2", user: "u1", wallet: "w1" }) }); // no currency
+
+    const res = await POST(mockRequest({
+      user: "u1", wallet: "w1", kind: "transfer",
+      sourceAccountId: "acc-mxn", sourceAmountMinor: 10000,
+      destinationAccountId: "acc-mxn-2", destinationAmountMinor: 10000,
+    }));
+    const body = await res.json();
+
+    expect(body.ok).toBe(true);
+    const [outgoingDoc, incomingDoc] = TransactionMock.mock.calls.map((c) => c[0]);
+    expect(outgoingDoc.money.account.currency).toBe("MXN");
+    expect(incomingDoc.money.account.currency).toBe("MXN");
+    expect(outgoingDoc.money.reporting.currency).toBe("MXN");
+  });
+});

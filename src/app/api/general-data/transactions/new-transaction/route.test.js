@@ -87,4 +87,19 @@ describe("new-transaction currency resolution", () => {
     expect(constructedDoc.direction).toBe("credit");
     expect(constructedDoc.money).toBeDefined();
   });
+
+  // Regression: a real Wallet document that predates the multi-currency
+  // migration has no primaryCurrency field in its stored BSON at all -
+  // .lean() never applies the schema default, so this reads back as
+  // `undefined`, not "MXN". Creating a transaction against a real,
+  // unmigrated Wallet crashed before this defaulted explicitly.
+  it("defaults to MXN when the Wallet has no primaryCurrency field (unmigrated document)", async () => {
+    Wallet.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ _id: "w1" }) });
+
+    await POST(mockRequest({ user: "u1", wallet: "w1", name: "Cash tip", amount: 50, isBill: true }));
+
+    expect(buildTransactionMoney).toHaveBeenCalledWith(
+      expect.objectContaining({ accountCurrency: "MXN", walletPrimaryCurrency: "MXN" })
+    );
+  });
 });

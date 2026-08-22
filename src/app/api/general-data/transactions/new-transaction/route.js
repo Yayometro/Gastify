@@ -68,13 +68,18 @@ export async function POST(request) {
     const selectedAccount = account ? await Account.findById(account).lean() : null;
     const parentWallet = await Wallet.findById(wallet).lean();
     if (!parentWallet) throw new Error("No Wallet found to create a new Transaction");
-    const accountCurrency = selectedAccount?.currency || parentWallet.primaryCurrency;
+    // .lean() never applies schema defaults - a real Account/Wallet document
+    // that predates the multi-currency migration has no currency/
+    // primaryCurrency field in its stored BSON at all, so this must default
+    // explicitly rather than silently reading `undefined`.
+    const walletPrimaryCurrency = parentWallet.primaryCurrency || "MXN";
+    const accountCurrency = selectedAccount?.currency || walletPrimaryCurrency;
     const money = await buildTransactionMoney({
       accountAmount: amount,
       accountCurrency,
       merchantAmount,
       merchantCurrency,
-      walletPrimaryCurrency: parentWallet.primaryCurrency,
+      walletPrimaryCurrency,
       date: parsedDate,
       manualReportingAmount,
     });
@@ -155,7 +160,7 @@ export async function POST(request) {
       throw new Error("NEW TRANSACTIONS could not be loaded on POST");
     const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
       [finalTransaction],
-      parentWallet.primaryCurrency
+      walletPrimaryCurrency
     );
     return NextResponse.json({
       message: `${

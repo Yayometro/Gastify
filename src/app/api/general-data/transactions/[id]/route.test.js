@@ -174,3 +174,51 @@ describe("update-transaction preserves exact manual reporting", () => {
     expect(buildTransactionMoney).toHaveBeenCalledWith(expect.objectContaining({ accountAmount: 40 }));
   });
 });
+
+describe("update-transaction merchant field (Charged in another currency)", () => {
+  it("preserves the existing merchant when the client never sends the field at all", async () => {
+    const findTrans = makeFindTrans({
+      money: {
+        account: { amountMinor: 10000, currency: "MXN" },
+        merchant: { amountMinor: 5000, currency: "USD" },
+        reporting: { amountMinor: 10000, currency: "MXN", rate: "1", source: "same_currency", effectiveDate: new Date("2026-08-01"), estimated: false },
+      },
+    });
+    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+
+    await POST(mockRequest({ name: "Renamed only" }), { params: { id: "t1" } });
+
+    expect(findTrans.money.merchant).toEqual({ amountMinor: 5000, currency: "USD" });
+  });
+
+  it("clears the merchant when the client explicitly sends null (user turned the toggle off)", async () => {
+    const findTrans = makeFindTrans({
+      money: {
+        account: { amountMinor: 10000, currency: "MXN" },
+        merchant: { amountMinor: 5000, currency: "USD" },
+        reporting: { amountMinor: 10000, currency: "MXN", rate: "1", source: "same_currency", effectiveDate: new Date("2026-08-01"), estimated: false },
+      },
+    });
+    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+
+    await POST(mockRequest({ merchantAmount: null, merchantCurrency: null }), { params: { id: "t1" } });
+
+    expect(findTrans.money.merchant).toBeNull();
+  });
+
+  it("updates the merchant to a newly-provided value even when reporting is otherwise preserved", async () => {
+    const findTrans = makeFindTrans({
+      money: {
+        account: { amountMinor: 10000, currency: "MXN" },
+        merchant: null,
+        reporting: { amountMinor: 10000, currency: "MXN", rate: "1", source: "manual", effectiveDate: new Date("2026-08-01"), estimated: false },
+      },
+    });
+    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+
+    await POST(mockRequest({ merchantAmount: 50, merchantCurrency: "USD" }), { params: { id: "t1" } });
+
+    expect(buildTransactionMoney).not.toHaveBeenCalled(); // reporting still preserved
+    expect(findTrans.money.merchant).toEqual({ amountMinor: 5000, currency: "USD" });
+  });
+});
