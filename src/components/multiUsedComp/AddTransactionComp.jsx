@@ -21,6 +21,8 @@ import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategor
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import { isProjectBudget } from "@/helpers/transformers/budgetTypes";
+import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEquivalent";
+import AmountEquivalentPreview from "./AmountEquivalentPreview";
 
 function AddTransactionComp({ initialBudgetId = "", onCreated }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -45,9 +47,21 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
 
   const { close, handleClose } = useModal();
   //REDUX
-  const {user, accounts, budgets = []} = useGetDataFromProvider();
+  const {user, wallet, accounts, budgets = []} = useGetDataFromProvider();
   const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
   const dispatch = useDispatch();
+  // Multi-currency: the Amount field is always in the selected Account's
+  // native currency (or the Wallet's primary currency when no Account is
+  // chosen) - never a second, separately-tracked currency.
+  const accountCurrency =
+    accounts?.find((acc) => acc._id === transactionInfo.account)?.currency ||
+    wallet?.primaryCurrency ||
+    "MXN";
+  const amountEquivalent = useTransactionAmountEquivalent({
+    amount: transactionInfo.amount,
+    accountCurrency,
+    walletPrimaryCurrency: wallet?.primaryCurrency,
+  });
     const {handleClean} = useContext(SelectCategoryContext)
 
   //EFFECTS
@@ -243,7 +257,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               onChange={handleChange}
               placeholder="Transaction Name"
             />
-            <p className="label-tfp ">Amount</p>
+            <p className="label-tfp ">Amount ({accountCurrency})</p>
             <input
               type="number"
               name="amount"
@@ -251,6 +265,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               onChange={handleChange}
               placeholder="Amount"
             />
+            <AmountEquivalentPreview quote={amountEquivalent} />
             <div className="switchers-cont flex gap-3">
               <label>
                 <ConfigProvider
@@ -353,7 +368,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               onChange={handleChange}
               placeholder="Transaction Name"
             />
-            <p className="label-tfp ">Amount</p>
+            <p className="label-tfp ">Amount ({accountCurrency})</p>
             <input
               type="number"
               name="amount"
@@ -361,6 +376,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               onChange={handleChange}
               placeholder="Amount"
             />
+            <AmountEquivalentPreview quote={amountEquivalent} />
             <div className="switchers-cont flex gap-3">
               <label>
                 <ConfigProvider

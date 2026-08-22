@@ -6,6 +6,8 @@ import SubCategory from "@/model/SubCategory";
 import Category from "@/model/Category";
 import Account from "@/model/Account";
 import Budget from "@/model/Budget";
+import Wallet from "@/model/Wallet";
+import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 
 export async function GET() {
   try {
@@ -36,6 +38,9 @@ export async function POST(request) {
       subCategory,
       tags,
       budget,
+      merchantAmount,
+      merchantCurrency,
+      manualReportingAmount,
     } = await request.json();
     //Validators
     if (!user) throw new Error("No User ID finded to create a new Transaction");
@@ -53,6 +58,26 @@ export async function POST(request) {
     if (!isReadable) isReadable = true;
     // //
     await dbConnection();
+
+    // Multi-currency: resolve the Account's native currency (or the
+    // Wallet's primary currency when no Account is selected) and build the
+    // full money object here, rather than leaving it to the Transaction
+    // model's MXN-only pre-validate fallback.
+    const parsedDate = !date ? new Date() : new Date(date);
+    const selectedAccount = account ? await Account.findById(account).lean() : null;
+    const parentWallet = await Wallet.findById(wallet).lean();
+    if (!parentWallet) throw new Error("No Wallet found to create a new Transaction");
+    const accountCurrency = selectedAccount?.currency || parentWallet.primaryCurrency;
+    const money = await buildTransactionMoney({
+      accountAmount: amount,
+      accountCurrency,
+      merchantAmount,
+      merchantCurrency,
+      walletPrimaryCurrency: parentWallet.primaryCurrency,
+      date: parsedDate,
+      manualReportingAmount,
+    });
+
     const newTransacction = new Transaction({
       user,
       wallet,
@@ -61,8 +86,11 @@ export async function POST(request) {
       isIncome,
       isBill,
       isReadable,
-      date: !date ? new Date() : new Date(date),
+      date: parsedDate,
       account: !account ? null : account,
+      kind: isIncome ? "income" : "expense",
+      direction: isIncome ? "credit" : "debit",
+      money,
     });
     if (subCategory) {
       console.log(subCategory);

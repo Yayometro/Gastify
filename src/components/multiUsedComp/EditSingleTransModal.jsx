@@ -22,6 +22,14 @@ import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import CategoIcon from "./CategoIcon";
 import { isProjectBudget } from "@/helpers/transformers/budgetTypes";
 import "@/components/multiUsedComp/css/muliUsed.css";
+import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEquivalent";
+import AmountEquivalentPreview from "./AmountEquivalentPreview";
+
+const CURRENCY_STRATEGIES = [
+  { value: "convert", label: "Convert", description: "Recalculate the amount to preserve the same reported value." },
+  { value: "reinterpret", label: "Keep number", description: "Keep the same number, just relabel the currency." },
+  { value: "manual", label: "Enter manually", description: "Type the exact amount in the new currency." },
+];
 
 function EditSingleTransModalInner({ trans, onClose }) {
   const dispatch = useDispatch();
@@ -29,8 +37,9 @@ function EditSingleTransModalInner({ trans, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const { close, handleClose } = useModal();
   const { handleClean, setItemSelected } = useContext(SelectCategoryContext);
-  const { accounts, categories, subCategories, budgets = [] } = useGetDataFromProvider();
+  const { wallet, accounts, categories, subCategories, budgets = [] } = useGetDataFromProvider();
   const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
+  const [currencyStrategy, setCurrencyStrategy] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -81,6 +90,23 @@ function EditSingleTransModalInner({ trans, onClose }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Multi-currency: an Account reassignment that crosses currencies needs an
+  // explicit, user-chosen strategy - the server refuses to infer one.
+  const originalAccountCurrency = trans?.money?.account?.currency || wallet?.primaryCurrency || "MXN";
+  const selectedAccountCurrency =
+    accounts?.find((acc) => acc._id === form.account)?.currency || wallet?.primaryCurrency || "MXN";
+  const needsCurrencyStrategy = Boolean(form.account) && selectedAccountCurrency !== originalAccountCurrency;
+
+  useEffect(() => {
+    setCurrencyStrategy(null);
+  }, [form.account]);
+
+  const amountEquivalent = useTransactionAmountEquivalent({
+    amount: form.amount,
+    accountCurrency: selectedAccountCurrency,
+    walletPrimaryCurrency: wallet?.primaryCurrency,
+  });
+
   const onChangeSwitch = (checked, type) => {
     if (type === "income") setForm((p) => ({ ...p, isIncome: checked, isBill: !checked }));
     else if (type === "bill") setForm((p) => ({ ...p, isBill: checked, isIncome: !checked }));
@@ -101,6 +127,10 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (needsCurrencyStrategy && !currencyStrategy) {
+      runNotify("error", "Choose how to handle the currency change before saving");
+      return;
+    }
     setIsLoading(true);
     const tagsArr = form.tags
       ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
@@ -109,6 +139,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
       ...form,
       name: form.name.trim(),
       tags: tagsArr,
+      ...(needsCurrencyStrategy ? { currencyStrategy } : {}),
     };
     try {
       const response = await toFetch.post(`general-data/transactions/${trans._id}`, payload);
@@ -152,7 +183,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
             placeholder="Transaction name"
           />
 
-          <p className="label-tfp">Amount</p>
+          <p className="label-tfp">Amount ({needsCurrencyStrategy ? selectedAccountCurrency : originalAccountCurrency})</p>
           <input
             type="number"
             name="amount"
@@ -160,6 +191,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
             onChange={handleChange}
             placeholder="Amount"
           />
+          <AmountEquivalentPreview quote={amountEquivalent} />
 
           <div className="switchers-cont flex gap-3">
             <ConfigProvider theme={{ token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" } }}>
@@ -237,6 +269,29 @@ function EditSingleTransModalInner({ trans, onClose }) {
             </select>
           </div>
 
+          {needsCurrencyStrategy && (
+            <div className="w-full bg-yellow-50 border border-yellow-300 rounded-xl p-2 flex flex-col gap-1">
+              <p className="text-[11px] text-yellow-800">
+                This account is in {selectedAccountCurrency}, different from {originalAccountCurrency}. Choose how to handle it:
+              </p>
+              {CURRENCY_STRATEGIES.map((strategy) => (
+                <label key={strategy.value} className="flex items-start gap-2 text-[11px] cursor-pointer">
+                  <input
+                    type="radio"
+                    name="currencyStrategy"
+                    value={strategy.value}
+                    checked={currencyStrategy === strategy.value}
+                    onChange={() => setCurrencyStrategy(strategy.value)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    <b>{strategy.label}</b> — {strategy.description}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+
           <p className="label-tfp">Project (optional)</p>
           <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
@@ -258,8 +313,13 @@ function EditSingleTransModalInner({ trans, onClose }) {
               Cancel
             </button>
             <button
-              className="flex-1 p-2 bg-purple-600 text-white text-center rounded-full hover:bg-purple-500"
+              className={`flex-1 p-2 text-white text-center rounded-full ${
+                needsCurrencyStrategy && !currencyStrategy
+                  ? "bg-purple-300 cursor-not-allowed"
+                  : "bg-purple-600 hover:bg-purple-500"
+              }`}
               type="submit"
+              disabled={needsCurrencyStrategy && !currencyStrategy}
             >
               {isLoading ? <Spin /> : "Save changes"}
             </button>

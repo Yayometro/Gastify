@@ -6,6 +6,8 @@ import User from "@/model/User";
 import Account from "@/model/Account";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
+import Wallet from "@/model/Wallet";
+import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 
 export async function POST(request) {
   try {
@@ -162,6 +164,20 @@ export async function POST(request) {
         newTransacction.account = accountFound._id;
       }
     }
+    const parentWallet = await Wallet.findById(findUser.wallet).lean();
+    if (!parentWallet) throw new Error("No Wallet found to create a new Transaction");
+    const accountCurrency = newTransacction.account
+      ? (await Account.findById(newTransacction.account).lean())?.currency || parentWallet.primaryCurrency
+      : parentWallet.primaryCurrency;
+    newTransacction.kind = newTransacction.isIncome ? "income" : "expense";
+    newTransacction.direction = newTransacction.isIncome ? "credit" : "debit";
+    newTransacction.money = await buildTransactionMoney({
+      accountAmount: newTransacction.amount,
+      accountCurrency,
+      walletPrimaryCurrency: parentWallet.primaryCurrency,
+      date: newTransacction.date,
+    });
+
     const savedTransacction = await newTransacction.save();
     if (!savedTransacction)
       throw new Error(
