@@ -1158,3 +1158,29 @@ When taking over this task, Claude should perform the following steps:
   - After approval, start with Phase 0 in an isolated `codex/multicurrency` branch/worktree; do not implement this in the shared `develop` worktree while other agents are active.
   - Never run the migration write path without showing its dry-run audit to the user and receiving explicit authorization.
   - Keep Project prospective-expense planning and Revolut Business/Open Banking automation out of this branch; both are separate future features.
+
+---
+
+### 📅 Entry #25: 2026-08-21 (local time) — Multi-Currency Implementation Started: Phases 0-2 (Primitives + FX Cache)
+
+- **AI Assistant**: Claude (Sonnet 5)
+- **User Request**: Study Codex's `MULTI_CURRENCY_IMPLEMENTATION_PLAN.md` fully, report understanding for review, then execute the plan in an isolated `claude/multicurrency` branch (renamed from the plan's own `codex/multicurrency` reference, since Claude is executing it). Full autonomy granted for code; explicit permission required before any MongoDB document write.
+- **Phase**: Multi-currency implementation — Phases 0, 1, 2 of 12
+- **Actions Taken**:
+  1. Read the full plan (1,776 lines) plus Entries #21-24 for design context, then reported a structured understanding back to the user for review before writing any code.
+  2. **Phase 0**: created and pushed `claude/multicurrency` off `develop`. Ran a read-only baseline audit (`.mds/MULTICURRENCY_BASELINE_AUDIT.json`): 12 wallets, 17 accounts, 3,130 transactions (sum bills MXN 2,519,316.50 / incomes MXN 3,521,213.18), 30 budgets — all implicitly MXN today. No writes.
+  3. **Phase 1**: added `src/lib/money/currencies.js` (metadata, major/minor conversion, Intl-based formatting; JPY=0 decimals, MXN/USD/EUR=2) and `src/lib/money/conversion.js` (decimal.js cross-rate math: `rate(from->to) = rates[to]/rates[from]` since ECB publishes per-EUR rates; single final rounding at the target minor unit, never on intermediate cross rates). Added `src/model/schemas/moneySchemas.js` (embedded `moneyAmountSchema`/`reportingMoneySchema`, not new collections). Installed `decimal.js` (runtime) and `vitest` (dev, `npm test`). 24 unit tests, all passing, zero existing app behavior touched.
+  4. **Phase 2**: added `src/model/FxRateSnapshot.js` (new collection, unique index on `source+baseCurrency+effectiveDate`), `src/lib/money/server/ecbClient.js` (fetches/parses the ECB SDMX CSV endpoint for USD/MXN/JPY vs EUR), `src/lib/money/server/fxRateService.js` (cache-aside: Mongo first, ECB only on miss, weekend/holiday fallback to the most recent earlier snapshot, ECB failure falls back to newest cache marked stale, no cache + no ECB returns `available:false` — never a fake rate of 1), and `src/app/api/general-data/fx/quote/route.js`.
+  5. Validated `ecbClient.js` against the **live** ECB API (read-only external GET, no DB write) before writing its unit test fixture: returned `USD 1.1699` / `MXN 19.7690` for 2026-08-21, an exact match to the values Codex documented in Entry #23. 13 more tests (7 fxRateService scenarios against a mocked Mongoose model + mocked ECB client, 6 ecbClient CSV-parsing edge cases against a captured real fixture) — all offline/deterministic. 37/37 total passing.
+  6. Committed and pushed Phase 0+1 and Phase 2 as two separate commits (per repo convention), holding before any live database write and explicitly telling the user what the next write would be.
+  7. **After explicit user go-ahead**, exercised `/api/general-data/fx/quote` against the real local dev server (port 3000, already running per the user - reused rather than starting a second one) and the real MongoDB: `$100 USD -> $1,689.80 MXN` at rate `16.898025...`, matching the plan's documented value exactly. Confirmed via a read-only check that exactly one `FxRateSnapshot` document was cached. Called the route a second time with a different pair (`$5,000 MXN -> €252.92`) and confirmed via timing (0.134s vs. the first call's ECB round-trip) and a document-count check (still 1) that it reused the cache instead of re-fetching ECB.
+- **Files Created / Modified**:
+  - Created: `src/lib/money/currencies.js`, `src/lib/money/currencies.test.js`, `src/lib/money/conversion.js`, `src/lib/money/conversion.test.js`, `src/model/schemas/moneySchemas.js`
+  - Created: `src/model/FxRateSnapshot.js`, `src/lib/money/server/ecbClient.js`, `src/lib/money/server/ecbClient.test.js`, `src/lib/money/server/fxRateService.js`, `src/lib/money/server/fxRateService.test.js`, `src/app/api/general-data/fx/quote/route.js`
+  - Created: `vitest.config.mjs`, `.mds/MULTICURRENCY_BASELINE_AUDIT.json`
+  - Modified: `package.json`, `package-lock.json` (added `decimal.js`, `vitest`), `.mds/AI_COORDINATION_LOG.md`
+  - Database: one real `FxRateSnapshot` document cached for `2026-08-21` (infrastructure cache only, not user financial data) - created with explicit user permission.
+- **Next Steps / Hand-Off Notes**:
+  - Proceeding to Phase 3 (additive schema changes to Wallet/Account/Transaction/Budget/IncomeSource/ProjectionSettings/CategoryRule + migration dry-run scripts). Per the plan and the user's standing instruction, the migration script will default to dry-run and will not write to any user financial document without a separate, explicit approval.
+  - The user has granted broad autonomy for code changes on this branch; the one standing exception is any MongoDB write, which must be flagged and approved first (as done for the FxRateSnapshot cache write above).
+  - `claude/multicurrency` is not yet merged anywhere; nothing here has reached `develop` or `main`.
