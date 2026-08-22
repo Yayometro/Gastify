@@ -5,6 +5,7 @@ import VoiceRecognicionComponent from "./VoiceRecognicionComponent";
 import ReadFileComp from "./ReadFileComp";
 import SelectCategories from "../categories/SelectCategoryProvider/SelectCategories";
 import EditCategoryModal from "./EditCategoryModal";
+import TransferExchangeModal from "./TransferExchangeModal";
 
 function AddTransactionModal({ close }) {
   const [active, setActive] = useState("manual");
@@ -43,6 +44,12 @@ function AddTransactionModal({ close }) {
           >
             Categories
           </button>
+          <button
+            className={`w-full h-full py-1 rounded-md text-white hover:bg-purple-800 whitespace-nowrap ${active === "transfer" ? "bg-purple-800" : ""}`}
+            onClick={() => setActive("transfer")}
+          >
+            Transfer
+          </button>
         </section>
         {active === "manual" && (
           <SelectCategories>
@@ -62,15 +69,16 @@ function AddTransactionModal({ close }) {
         {active === "categories" && (
           <div className="w-full h-full overflow-y-scroll bg-slate-50">
             <SelectCategories>
-              <EditCategoryModal 
-                ecmMode="creation" 
-                isInline={true} 
+              <EditCategoryModal
+                ecmMode="creation"
+                isInline={true}
                 ecmClose={() => {}}
-                ecmData={{}} 
+                ecmData={{}}
               />
             </SelectCategories>
           </div>
         )}
+        {active === "transfer" && <TransferExchangeModal />}
         <button onClick={close}>
           <div className="close-con absolute top-[0%] right-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short">
             <CategoIcon type={"MdClose"} siz={20} />

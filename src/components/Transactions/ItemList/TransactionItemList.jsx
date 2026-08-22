@@ -13,6 +13,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
   // read route this component's data comes through. Fall back to the plain
   // legacy amount for any caller that hasn't been updated yet, rather than
   // crashing on a missing field.
+  const isTransferLeg = movement.kind === "transfer" || movement.kind === "exchange";
   const native = movement.displayMoney?.native;
   const primary = movement.displayMoney?.primary;
   const merchant = movement.displayMoney?.merchant;
@@ -94,8 +95,12 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
       </div>
       <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end">
         <div className="flex flex-col items-end">
-          <div className={`tra-amount-cont ${movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
-            <CategoIcon type={movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
+          <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-500" : movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
+            <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? "Currency exchange" : "Transfer"} — not counted as income or spending` : ""}>
+              <span className="flex items-center">
+                <CategoIcon type={isTransferLeg ? "MdSwapHoriz" : movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
+              </span>
+            </Tooltip>
             <p className="tra-amount ">{amountLabel}</p>
             {hasFxDetail && (
               <Tooltip title={fxTooltipTitle}>

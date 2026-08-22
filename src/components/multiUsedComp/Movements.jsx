@@ -232,6 +232,10 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     const bills = {};
     const incomes = {};
     for (const m of allMovements) {
+      // Internal transfers/exchanges are not income or spending (plan
+      // section 2.6) - both legs stay visible in the list but never count
+      // toward these totals.
+      if (m.kind === "transfer" || m.kind === "exchange") continue;
       const native = m.displayMoney?.native;
       const currency = native?.currency || "MXN";
       const amountMinor = native ? native.amountMinor : Math.round(Math.abs(Number(m.amount) || 0) * 100);
@@ -361,7 +365,44 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     }
   };
 
+  // A transfer/exchange leg deleted alone would leave its counterpart
+  // Account misrepresenting a real gain/loss - both linked legs are always
+  // removed together (plan section 13).
+  const handleTransferRemove = async (transferGroupId) => {
+    try {
+      const linkedIds = (rdxTransactions || [])
+        .filter((t) => t.transferGroupId === transferGroupId)
+        .map((t) => t._id);
+      for (const linkedId of linkedIds) {
+        const element = document.getElementById(`trans-${linkedId}`);
+        if (element) element.classList.add("backOutDown-5seg");
+      }
+      await new Promise((resolve) => setTimeout(resolve, 251));
+      linkedIds.forEach((linkedId) => {
+        const element = document.getElementById(`trans-${linkedId}`);
+        if (element) element.classList.add("hidden");
+      });
+      reduxDispartcher(removeManyTransactions(linkedIds));
+      const res = await toFetch.post("general-data/transactions/transfer/remove", { transferGroupId });
+      if (res.ok) {
+        runNotify("ok", String(res.message));
+      } else {
+        runNotify("error", res.message || "Something went wrong removing this transfer, please try again 🤕");
+      }
+    } catch (e) {
+      runNotify("error", String(e));
+    } finally {
+      setIsRemoveModal(false);
+      setConfirmLoading(false);
+    }
+  };
+
   const handleTransactionRemove = async (id) => {
+    const trans = getTransById(id);
+    if (trans?.transferGroupId) {
+      await handleTransferRemove(trans.transferGroupId);
+      return;
+    }
     try {
       const element = document.getElementById(`trans-${id}`);
       element.classList.add("backOutDown-5seg");
@@ -428,6 +469,16 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   };
 
   const handleTransEdit = (tra) => {
+    if (tra?.transferGroupId) {
+      // Editing a transfer/exchange leg would silently desync it from its
+      // counterpart leg - point the user at delete + recreate instead of
+      // opening the normal expense/income form (plan section 13).
+      runNotify(
+        "info",
+        "This is one leg of a transfer/exchange and can't be edited directly - delete it (both linked legs are removed together) and create a new transfer instead."
+      );
+      return;
+    }
     setEditingTrans(tra);
     setEditKey((k) => k + 1);
   };
@@ -586,7 +637,11 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             danger: false,
           }}
         >
-          <p className="text-slate-600 text-sm mb-2">Are you sure you want to permanently delete this transaction? This action cannot be undone.</p>
+          <p className="text-slate-600 text-sm mb-2">
+            {getTransById(transRemovableId)?.transferGroupId
+              ? "This is one leg of a transfer/exchange - both linked transactions will be deleted together. This action cannot be undone."
+              : "Are you sure you want to permanently delete this transaction? This action cannot be undone."}
+          </p>
           <DeletePreviewRow transaction={getTransById(transRemovableId)} />
         </Modal>
 
@@ -1263,6 +1318,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
               </div>
             )}
             {allMovements.map((movement) => {
+              const isTransferLeg = movement.kind === "transfer" || movement.kind === "exchange";
               const native = movement.displayMoney?.native;
               const primary = movement.displayMoney?.primary;
               const merchant = movement.displayMoney?.merchant;
@@ -1346,8 +1402,12 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 <div>
                   <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end">
                       <div className="flex flex-col items-end">
-                        <div className={`tra-amount-cont ${movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
-                          <CategoIcon type={movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
+                        <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-500" : movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
+                          <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? "Currency exchange" : "Transfer"} — not counted as income or spending` : ""}>
+                            <span className="flex items-center">
+                              <CategoIcon type={isTransferLeg ? "MdSwapHoriz" : movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
+                            </span>
+                          </Tooltip>
                           <p className="tra-amount">{amountLabel}</p>
                           {hasFxDetail && (
                             <Tooltip title={fxTooltipTitle}>
