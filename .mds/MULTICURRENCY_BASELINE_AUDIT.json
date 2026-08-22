@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-08-22T00:02:08.875Z",
+  "branch": "claude/multicurrency",
+  "documentCounts": {
+    "users": 12,
+    "wallets": 12,
+    "accounts": 17,
+    "transactions": 3130,
+    "budgets": 30,
+    "incomesources": 2,
+    "projectionsettings": 2,
+    "categoryrules": 59,
+    "categories": 51,
+    "subcategories": 87,
+    "tags": 97
+  },
+  "transactionSanity": {
+    "totalTransactions": 3130,
+    "missingOrInvalidAmount": 0,
+    "sumOfBillAmounts_MXN": 2519316.5,
+    "sumOfIncomeAmounts_MXN": 3521213.18
+  },
+  "accountSanity": {
+    "totalAccounts": 17,
+    "sumOfAccountBalances_MXN": 905607
+  }
+}

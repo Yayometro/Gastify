@@ -31,6 +31,7 @@
   - Concept Naming Guide: [`NAMING_RULES.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/NAMING_RULES.md)
   - Local Ollama Offloading: [`LOCAL_AI_MODELS_GUIDE.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/LOCAL_AI_MODELS_GUIDE.md)
   - Local Model Benchmark Results: [`LOCAL_MODEL_BENCHMARK.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/LOCAL_MODEL_BENCHMARK.md)
+  - Multi-Currency Implementation Plan: [`MULTI_CURRENCY_IMPLEMENTATION_PLAN.md`](file:///Users/luisjairvazqueznavarrete/Coding%20Proyects/Gastify/.mds/MULTI_CURRENCY_IMPLEMENTATION_PLAN.md)
 
 ---
 
@@ -1060,3 +1061,100 @@ When taking over this task, Claude should perform the following steps:
   - If approved, create a new isolated feature branch/worktree before implementation.
   - Suggested first implementation slice: `ProjectExpense` model + CRUD API + dedicated Project page + plan-vs-actual summary + linking existing real transactions.
   - Add embedded quote/source candidates and an import assistant for the `Costos` sheet only after the core flow is verified. The other workbook sheets are richer research/planning domains and should not automatically become financial commitments.
+
+---
+
+### 📅 Entry #21: 2026-08-21 (12:26 PM Local) — Revolut Mexico & Multi-Currency Architecture (Analysis Only)
+
+- **AI Assistant**: OpenAI / Codex (GPT-5)
+- **User Request**: Investigate whether a personal Revolut Mexico account can connect directly to Gastify for automatic expense syncing and, independently of that availability, design multi-currency Accounts and Transactions focused first on MXN and USD.
+- **Phase**: Product and architecture design — bank connectivity and multi-currency ledger foundation
+- **Actions Taken**:
+  1. Reviewed current official Revolut Mexico, Revolut Developer, Revolut Open Banking, and Banco de México documentation. Confirmed that Revolut Mexico personal accounts support holding, exchanging, and spending 30+ currencies and can export a statement per currency in PDF or Excel.
+  2. Confirmed that Revolut's documented self-service account/transaction synchronization API is the **Business API**, available only to Revolut Business account holders. It can retrieve currency-specific accounts/balances and card payments, exchanges, transfers, transaction states, cross-currency billing amounts, and webhooks.
+  3. Confirmed that Revolut Open Banking access is intended for regulated TPP/AISP/PISP organizations or approved partners; the current official customer-access matrix does not list Mexico. Therefore no documented, direct personal-account API path for a Revolut Mexico retail account was identified.
+  4. Audited Gastify's current models and calculation paths. `Account`, `Transaction`, and `Wallet` contain no currency/reporting-currency fields; generic formatters imply a single currency; transaction/category totals and Projections sum raw `amount` values; and the Excel v2.1 template has no currency column. Mixing USD and MXN today would therefore produce mathematically invalid totals.
+  5. Recommended implementing the multi-currency foundation before any connector: wallet reporting currency (initially MXN), one currency per Account balance, native and reporting amounts on Transactions, provider/manual FX provenance and timestamp, explicit transaction kinds for expense/income/transfer/exchange/refund/fee, provider IDs/states for idempotent syncing, and currency-aware formatting and aggregation.
+  6. Recommended preserving both the amount actually charged to the account and the merchant/billing amount for cross-currency card purchases, following Revolut's documented `amount/currency` plus `bill_amount/bill_currency` structure. Currency exchanges and transfers between the user's own accounts must be linked ledger legs and excluded from expense/income totals to prevent double counting.
+  7. Proposed a phased delivery: (1) MXN/USD data model, migration, UI, calculations, and Excel v3; (2) a dedicated Revolut per-currency Excel statement importer after obtaining a real user export to map its columns safely; (3) a provider-neutral automated connector only if the user later has an eligible Revolut Business account/API, or an officially supported Mexican retail aggregator becomes available.
+- **Files Created / Modified**:
+  - Modified: `.mds/AI_COORDINATION_LOG.md` (analysis record only)
+  - No application code, schema, route, branch, database record, or deployment was changed.
+- **Next Steps / Hand-Off Notes**:
+  - Treat the user's present Revolut account as personal unless they explicitly confirm it is Revolut Business; do not build against the Business API for a retail account.
+  - Before implementing, create an isolated `codex/multicurrency` feature branch/worktree and keep all legacy records defaulted to MXN with reporting amount equal to native amount and FX rate 1.
+  - The first implementation must update every financial aggregation to use reporting amounts; adding only `currency` to Account/Transaction is insufficient and would leave Budgets, dashboards, exports, and Projections incorrect.
+  - For a Revolut statement importer, request one sanitized Excel export for an MXN balance and, ideally, one for a USD balance. Never infer or hard-code the live statement layout from generic screenshots or non-Mexico examples.
+
+---
+
+### 📅 Entry #22: 2026-08-21 (12:45 PM Local) — Primary Currency, Neutral FX Source & MongoDB Shape (Analysis Only)
+
+- **AI Assistant**: OpenAI / Codex (GPT-5)
+- **User Request**: Refine the multi-currency proposal so each Wallet has a user-selectable primary currency (MXN, USD, EUR, or JPY), evaluate Google as the neutral exchange-rate source, keep Revolut automation deferred, simplify manual transaction entry, and explain exactly which MongoDB documents should be expanded versus added.
+- **Phase**: Product and data architecture design — multi-currency foundation refinement
+- **Actions Taken**:
+  1. Confirmed that Google does not publish a supported general-purpose Google Finance exchange-rate API for a web application backend. The official `GOOGLEFINANCE` capability is a Google Sheets function; Google documents delays of up to 20 minutes, informational-only data, incomplete market coverage, and restrictions on retrieving historical results through the Sheets API or Apps Script. Rejected scraping Google Search/Finance as an unstable production dependency.
+  2. Recommended the European Central Bank's official SDMX REST API as the initial neutral valuation source. It offers programmatic reference-rate data and currently covers MXN, USD, EUR, and JPY. Rates are normally published once per working day around 16:00 CET and are explicitly reference/informational values rather than the rate executed by a bank.
+  3. Separated two FX concepts: an Account's **current valuation rate**, used for today's equivalent in the Wallet's primary currency, and a Transaction's **historical conversion snapshot**, which is frozen for reproducible historical reports. Current account valuations may move daily; past transaction totals must not move when today's market rate changes.
+  4. Refined the MongoDB plan to expand the existing `Wallet`, `Account`, `Transaction`, `Budget`, `IncomeSource`, and `ProjectionSettings` documents instead of creating parallel money-detail collections. Native/account amount, optional merchant amount, reporting amount, and FX provenance belong as embedded subdocuments on the same Transaction so each financial event remains atomic and queryable without joins.
+  5. Recommended one new infrastructure collection, `FxRateSnapshot`, caching a source/date/base/rates map for all four supported currencies. This avoids requesting an external API for every account card or report render and provides the historical reference needed when the user changes the Wallet's primary currency.
+  6. Recommended retaining one Transaction document for each normal expense/income. An internal transfer or currency exchange should create two Transaction ledger legs (outgoing and incoming) linked by a shared `transferGroupId`; no separate Transfer collection is necessary for the first implementation. Both legs update account history but are excluded from expense/income/Budget totals.
+  7. Identified a required migration rule for all monetary documents: every existing value defaults to MXN, including Budget goal/history, IncomeSource amount/history, and ProjectionSettings balances/buffers. Changing the Wallet's primary currency must convert display/report values; it must never reinterpret an old `10,000 MXN` goal as `10,000 USD`.
+  8. Proposed a progressive manual-entry UI: the selected Account supplies the transaction currency; reporting amount in the Wallet's primary currency is calculated automatically. An optional “charged in another currency” disclosure reveals merchant amount/currency and effective-rate comparison only when useful, preserving a simple default form.
+- **Files Created / Modified**:
+  - Modified: `.mds/AI_COORDINATION_LOG.md` (analysis record only)
+  - No application code, schema, route, branch, database record, or deployment was changed.
+- **Next Steps / Hand-Off Notes**:
+  - If the user approves implementation, create an isolated `codex/multicurrency` branch/worktree first.
+  - Initial supported currencies: `MXN`, `USD`, `EUR`, `JPY`; call the Wallet field `primaryCurrency` in product and schema language.
+  - Use provider/executed rates when known (for example, a Revolut import), a user-entered rate when manually supplied, and the neutral ECB reference snapshot only as fallback/valuation. Tooltips must disclose source, effective date, and whether the value is exact or estimated.
+  - Revolut Business API, webhooks, credentials, and automated bank connections remain explicitly deferred and out of the implementation scope.
+
+---
+
+### 📅 Entry #23: 2026-08-21 (01:14 PM Local) — Live ECB vs Google FX Check & Movements UX Audit (Analysis Only)
+
+- **AI Assistant**: OpenAI / Codex (GPT-5)
+- **User Request**: Perform a live USD/MXN comparison between the European Central Bank reference rate and Google Finance, then audit the existing Movements transaction list so the final implementation plan includes multi-currency display, conversions, and additional FX information.
+- **Phase**: Final validation before multi-currency implementation planning
+- **Actions Taken**:
+  1. Read the ECB's official rates published for 2026-08-21: `1 EUR = 1.1699 USD` and `1 EUR = 19.7690 MXN`. Calculated the USD/MXN cross rate as `19.7690 / 1.1699 = 16.898025 MXN per USD`.
+  2. Verified the dynamic Google Finance USD/MXN page directly in the in-app browser because ordinary web-search results were serving stale July snapshots. Google displayed `1 USD = 16.9128 MXN` at `2026-08-21 19:08 UTC`.
+  3. Compared both values: Google was `0.014775 MXN` per USD higher than the ECB reference, a difference of approximately `0.0874%`. At USD 60,000, Google valued the balance at MXN 1,014,768.00 versus the ECB cross-rate value of MXN 1,013,881.53, a difference of MXN 886.47.
+  4. Concluded that the values are extremely close for portfolio/reporting purposes. The small gap is expected because Google is an intraday market indication while the ECB publishes one daily reference snapshot. This validates ECB as the initial neutral valuation source while continuing to disclose source/date and distinguish estimates from executed bank rates.
+  5. Audited `Movements.jsx`. Confirmed that each row currently formats only `movement.amount` with an implicit currency; the Bills/Incomes summary totals raw amounts; exact-amount and duplicate checks compare raw numeric values; Account metadata contains no currency; and editing uses a single generic Amount field.
+  6. Defined the required Movements changes for the future plan: show the native/account amount as the primary row value, show the Wallet-primary equivalent beneath it when currencies differ, expose optional merchant amount/effective rate/source/date through a compact FX detail control, display Account currency, calculate summary totals solely in Wallet primary currency, and make formatting currency-aware.
+  7. Identified adjacent correctness changes: duplicate detection must compare currency plus native amount; exact-amount filtering must distinguish native versus primary-currency values; changing Account in single/bulk edit must recalculate or explicitly confirm currency conversion; export/import must preserve all monetary layers and FX provenance.
+- **Files Created / Modified**:
+  - Modified: `.mds/AI_COORDINATION_LOG.md` (analysis record only)
+  - No `plan.md`, application code, schema, route, branch, database record, or deployment was created or changed.
+- **Next Steps / Hand-Off Notes**:
+  - Await the user's final design approval. Only then create `plan.md` with the complete phased specification and acceptance criteria, followed by an isolated `codex/multicurrency` branch/worktree if the user authorizes implementation.
+  - Use the ECB reference rate for neutral account valuation and fallback historical conversion; retain exact Revolut/manual executed rates when known.
+  - Treat the Movements list, totals, filters, duplicate tooling, single/bulk edit, and Excel/JSON export as required scope, not optional UI polish.
+
+---
+
+### 📅 Entry #24: 2026-08-21 (01:29 PM Local) — Multi-Currency Implementation Plan (Documentation Only)
+
+- **AI Assistant**: OpenAI / Codex (GPT-5)
+- **User Request**: Create the authoritative, highly detailed implementation plan for Gastify multi-currency support so a future AI assistant or engineer can continue safely without reinterpreting the approved design.
+- **Phase**: Technical planning and implementation hand-off — multi-currency foundation
+- **Actions Taken**:
+  1. Created `.mds/MULTI_CURRENCY_IMPLEMENTATION_PLAN.md` as the source-of-truth specification for MXN, USD, EUR, and JPY support. The document records the approved Wallet primary-currency behavior, one native currency per Account, embedded Transaction money layers, neutral ECB reference valuations, exact provider/manual rate priority, two-leg transfers/exchanges, and the explicit deferral of Revolut automation.
+  2. Documented additive MongoDB changes for `Wallet`, `Account`, `Transaction`, `Budget`, `IncomeSource`, `ProjectionSettings`, and `CategoryRule`, plus the single new `FxRateSnapshot` infrastructure collection and reusable embedded money schemas. Legacy values remain during the compatibility release and migrate as MXN without reinterpretation.
+  3. Specified shared decimal/minor-unit primitives, historical versus current valuation rules, FX cache/service behavior, source/date/stale disclosure, API request/response DTOs, ownership validation, and the exact behavior required when the Wallet primary currency or a Transaction Account/date changes.
+  4. Audited and listed affected backend routes, state/providers, Account and Transaction forms, `Movements`, duplicate/filter/sort behavior, Dashboard/charts, Budgets, unbudgeted/Project Budget views, Projections, recurring income, category rules, and all known implicit-currency formatters.
+  5. Defined Gastify Excel template v3, re-importable export and currency-aware deduplication. A provider name from a generic user spreadsheet is not trusted as an executed rate; Revolut/provider provenance is reserved for a future dedicated server-controlled adapter based on sanitized real statements.
+  6. Defined an idempotent dry-run-first migration and audit procedure, 12 gated implementation phases, automated/unit/API/UI test matrices, acceptance criteria, error copy, security/ownership constraints, observability, risks, non-goals, an exact file inventory, a hand-off checklist, and definition of done.
+  7. Verified that all paths listed as existing files are present in the repository. The only currently missing paths in the inventory are explicitly marked planned/new files.
+- **Files Created / Modified**:
+  - Created: `.mds/MULTI_CURRENCY_IMPLEMENTATION_PLAN.md`
+  - Modified: `.mds/AI_COORDINATION_LOG.md`
+  - No application source code, Mongoose schema, API route, branch, worktree, database record, dependency, deployment, commit, or push was created or changed.
+- **Next Steps / Hand-Off Notes**:
+  - The user should review and approve the plan before implementation begins.
+  - After approval, start with Phase 0 in an isolated `codex/multicurrency` branch/worktree; do not implement this in the shared `develop` worktree while other agents are active.
+  - Never run the migration write path without showing its dry-run audit to the user and receiving explicit authorization.
+  - Keep Project prospective-expense planning and Revolut Business/Open Banking automation out of this branch; both are separate future features.
