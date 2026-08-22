@@ -1,7 +1,11 @@
 import mongoose, {Schema, model} from 'mongoose'
+import { SUPPORTED_CURRENCIES } from '@/lib/money/currencies'
 
 const accountSchema = new Schema({
     name: {type: String},
+    // Legacy major-unit balance. Kept as the source of truth until the
+    // migration populates balanceMinor; new money-aware code should prefer
+    // balanceMinor once it has been migrated.
     amount: {type: Number},
     accountType: {type: String, enum: ["debit", "credit", "cash", "savings"], default: "debit"},
     user: {
@@ -13,7 +17,20 @@ const accountSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Wallet",
         require: true
-    }
+    },
+    // Multi-currency: each Account has exactly one native currency. A
+    // Revolut-style multi-currency relationship maps to multiple Accounts,
+    // not one Account holding several currencies.
+    currency: {
+        type: String,
+        enum: SUPPORTED_CURRENCIES,
+        default: "MXN",
+        required: true,
+    },
+    balanceMinor: { type: Number, default: null },
+    institution: { type: String, default: null },
+    balanceUpdatedAt: { type: Date, default: null },
+    schemaVersion: { type: Number, default: 1 },
 
 }, {timestamps: true})
 

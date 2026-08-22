@@ -1,7 +1,10 @@
 import mongoose, { Schema } from "mongoose";
+import { moneyAmountSchema } from "./schemas/moneySchemas";
 
 const incomeSourceSchema = new Schema({
     name: { type: String },
+    // Legacy major-unit amount. Preserved until Phase 9 (Projections/
+    // IncomeSources) migrates consumers to `money`.
     amount: { type: Number },
     recurrence: {
       type: String,
@@ -23,10 +26,13 @@ const incomeSourceSchema = new Schema({
     archived: { type: Boolean, default: false },
     history: [{
         amount: Number,
+        money: moneyAmountSchema,
         recurrence: String,
         effectiveFrom: Date,
         effectiveTo: Date,
     }],
+    // Multi-currency addition. Optional/additive.
+    money: moneyAmountSchema,
   },{ timestamps: true }
 );
 

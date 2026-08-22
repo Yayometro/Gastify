@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 
 const categoryRuleSchema = new Schema(
   {
@@ -13,8 +14,14 @@ const categoryRuleSchema = new Schema(
       require: true,
     },
     pattern: { type: String, require: true },
+    // Legacy major-unit thresholds, implicitly MXN. Preserved until Phase 8
+    // migrates categoryRuleMatcher to compare against minAmountMinor/
+    // maxAmountMinor in amountCurrency instead.
     minAmount: { type: Number },
     maxAmount: { type: Number },
+    minAmountMinor: { type: Number, default: null },
+    maxAmountMinor: { type: Number, default: null },
+    amountCurrency: { type: String, enum: SUPPORTED_CURRENCIES, default: "MXN" },
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
