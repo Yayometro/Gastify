@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import TransactionItemList from "@/components/Transactions/ItemList/TransactionItemList";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 import EditSingleTransModal from "@/components/multiUsedComp/EditSingleTransModal";
 import EditMultipleTransModal from "@/components/multiUsedComp/EditMultipleTransModal";
 import QuickEditModal from "@/components/multiUsedComp/QuickEditModal";
@@ -37,6 +37,7 @@ const QUICK_ACTIONS = [
 
 function ModalContentTopMonthItem({ item, close }) {
   const dispatch = useDispatch();
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const toFetch = fetcher();
 
   // Capture original IDs at mount — never changes
@@ -204,7 +205,7 @@ function ModalContentTopMonthItem({ item, close }) {
             </Tooltip>
           </span>
           <p className="font-semibold">
-            <b>{usdFormatChanger(item?.value || item?.amount) || "No total info..."}</b>
+            <b>{formatMoneyMajor(item?.value || item?.amount, walletPrimaryCurrency) || "No total info..."}</b>
           </p>
 
           {/* Selection controls — only when multiple items */}

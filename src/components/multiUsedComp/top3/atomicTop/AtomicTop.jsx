@@ -1,10 +1,12 @@
 import { Tooltip } from "antd";
 import React from "react";
+import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
 import CategoIcon from "../../CategoIcon";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 
 function AtomicTop({item, color, index, icon, name, isBill, value, fatherStyle, tooltip, getItem}) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   return (
     <>
     <Tooltip title={tooltip}>
@@ -42,7 +44,7 @@ function AtomicTop({item, color, index, icon, name, isBill, value, fatherStyle, 
             </div>
           )}
           <p className="tra-amount ">
-            {usdFormatChanger(value)}
+            {formatMoneyMajor(value, walletPrimaryCurrency)}
           </p>
         </div>
       </div>

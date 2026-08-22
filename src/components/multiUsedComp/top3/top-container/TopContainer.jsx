@@ -1,5 +1,6 @@
 "use client";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { useSelector } from "react-redux";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 import TopItemContainer from "../topMonthContainer/TopItemContainer";
 import AtomicTop from "../atomicTop/AtomicTop";
 import useModal from "@/hooks/useModalBasic";
@@ -8,6 +9,7 @@ import BasicModal from "@/components/modals/basicModal/BasicModal";
 
 function TopContainer({ items, style, title }) {
     console.log("items -> ", items)
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const { close, handleClose, renderModal, modalContent } = useModal();
   function renderModalContent(item) {
     renderModal(<ModalContentTopMonthItem item={item} close={handleClose} />);
@@ -42,7 +44,7 @@ function TopContainer({ items, style, title }) {
                       <p>{item.name || item.type}</p>
                       <p>
                         Value:{" "}
-                        <b>{usdFormatChanger(item.value || item.amount)}</b>
+                        <b>{formatMoneyMajor(item.value || item.amount, walletPrimaryCurrency)}</b>
                       </p>
                     </div>
                   }

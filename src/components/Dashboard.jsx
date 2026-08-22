@@ -29,7 +29,7 @@ import {
 import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
-import currencyFormatter from "currency-formatter";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import DashboardLoadingMessage from "./multiUsedComp/loaders/DashboardLoadingMessage";
 import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
@@ -78,6 +78,7 @@ function Wallet({ dataServ, session }) {
   const ccSubCategories = useSelector((state) => state.subCategoryReducer);
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
   const ccBudgets = useSelector((state) => state.budgetReducer);
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
 
   //
   useEffect(() => {
@@ -275,9 +276,7 @@ function Wallet({ dataServ, session }) {
                     <p className={`text-xl flash text-green-400`}>
                       {!totalIncome
                         ? "No amount..."
-                        : currencyFormatter.format(totalIncome, {
-                            locale: "en-US",
-                          })}
+                        : formatMoneyMajor(totalIncome, walletPrimaryCurrency)}
                     </p>
                   </div>
                 </div>
@@ -288,9 +287,7 @@ function Wallet({ dataServ, session }) {
                     <p className={`text-xl flash text-red-400`}>
                       {!totalBill
                         ? "No amount..."
-                        : currencyFormatter.format(totalBill, {
-                            locale: "en-US",
-                          })}
+                        : formatMoneyMajor(totalBill, walletPrimaryCurrency)}
                     </p>
                   </div>
                 </div>
@@ -312,9 +309,7 @@ function Wallet({ dataServ, session }) {
                       >
                         {!totalAmountBalance
                           ? "No amount..."
-                          : currencyFormatter.format(totalAmountBalance, {
-                              locale: "en-US",
-                            })}
+                          : formatMoneyMajor(totalAmountBalance, walletPrimaryCurrency)}
                       </p>
                     </div>
                     <p className="text-[10px]  pt-1">

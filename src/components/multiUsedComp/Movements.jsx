@@ -4,7 +4,6 @@ import "@/components/multiUsedComp/css/muliUsed.css";
 
 import { PiExcludeSquareDuotone } from "react-icons/pi";
 import { HiMiniCursorArrowRipple } from "react-icons/hi2";
-import currencyFormatter from "currency-formatter";
 import CategoIcon from "./CategoIcon";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import dayjs from "dayjs";
@@ -35,7 +34,7 @@ import {
   getDateInYearMonthDay,
 } from "@/helpers/timeFunctions/timeFunctions";
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
-import { formatMoneyMinor, majorToMinor, SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { formatMoneyMajor, formatMoneyMinor, majorToMinor, SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 import {
   getDuplicates as sharedGetDuplicates,
   getDuplicatesToDelete as sharedGetDuplicatesToDelete,
@@ -1326,7 +1325,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
               const hasFxDetail = Boolean(merchant) || showEquivalent;
               const amountLabel = native
                 ? formatMoneyMinor(native.amountMinor, native.currency)
-                : currencyFormatter.format(movement.amount, { locale: "en-US" });
+                : formatMoneyMajor(movement.amount, wallet?.primaryCurrency || "MXN");
               const fxTooltipTitle = hasFxDetail ? (
                 <div className="flex flex-col gap-0.5 text-[11px]">
                   {merchant && <div>Merchant: {formatMoneyMinor(merchant.amountMinor, merchant.currency)}</div>}

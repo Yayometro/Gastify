@@ -15,9 +15,12 @@ import { FaRegQuestionCircle } from "react-icons/fa";
 import { Tooltip } from "antd";
 import { TbLetterCaseToggle } from "react-icons/tb";
 import fetcher from "@/helpers/fetcher";
+import { useSelector } from "react-redux";
 import { formatMoneyMajor, formatMoneyMinor, majorToMinor } from "@/lib/money/currencies";
 
-function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrency }) {
+function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrency: walletPrimaryCurrencyProp }) {
+  const reduxWalletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency);
+  const walletPrimaryCurrency = walletPrimaryCurrencyProp || reduxWalletPrimaryCurrency || "MXN";
   let [userName, setUserName] = useState("");
   let [allTransactions, setAllTransacctions] = useState([]);
   let [account, setAccount] = useState([]);
@@ -216,13 +219,13 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
         <div className="z-[1] flex gap-2.5 mt-3 self-end items-start sm:mt-5">
           <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1 " />
           <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-            $ {!totalIncome ? "No incomes... 🤕" : totalIncome.toFixed(2)}
+            {!totalIncome ? "No incomes... 🤕" : formatMoneyMajor(totalIncome, walletPrimaryCurrency)}
           </div>
         </div>
         <div className="flex gap-2.5 self-end items-start sm:mt-2">
           <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1" />
           <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-            $ {!totalBill ? "No bills..." : totalBill.toFixed(2)}
+            {!totalBill ? "No bills..." : formatMoneyMajor(totalBill, walletPrimaryCurrency)}
           </div>
         </div>
         <div className="w-full flex justify-between items-center gap-3 mt-3 sm:mt-5">
@@ -240,7 +243,7 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
               {!totalAmount ? (
                 <p className="text-xl sm:text-xl">No transactions... 🤕</p>
               ) : (
-                `$ ${(totalIncome - totalBill).toFixed(2)}`
+                formatMoneyMajor(totalIncome - totalBill, walletPrimaryCurrency)
               )}
             </div>
           </div>

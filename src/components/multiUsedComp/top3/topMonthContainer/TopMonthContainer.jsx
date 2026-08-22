@@ -1,8 +1,10 @@
 "use client";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { useSelector } from "react-redux";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 import TopMonthItem from "./TopMonthItem";
 
 function TopMonthContainer({ items, style, title }) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   return (
     <div
       className={
@@ -23,7 +25,7 @@ function TopMonthContainer({ items, style, title }) {
                   name={String(
                     item.name || item.type || item.month
                   ).toUpperCase()}
-                  value={usdFormatChanger(item.value || item.amount)}
+                  value={formatMoneyMajor(item.value || item.amount, walletPrimaryCurrency)}
                   index={index}
                 />
               );

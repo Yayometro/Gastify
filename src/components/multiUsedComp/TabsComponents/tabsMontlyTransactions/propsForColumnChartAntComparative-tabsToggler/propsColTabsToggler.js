@@ -1,8 +1,8 @@
 import AtomicTop from "@/components/multiUsedComp/top3/atomicTop/AtomicTop";
 import TooltipForChart from "@/components/toltips/tooltipsForCharts/TooltipForChart";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 
-export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setClickedItems, totalAmount  }) => {
+export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setClickedItems, totalAmount, walletPrimaryCurrency = "MXN" }) => {
   return {
     data: data[2],
     totalValue: (
@@ -36,7 +36,7 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
                   tooltip={
                     <div className="flex flex-col justify-center items-center">
                       <b>Type: {item.type}</b>
-                      <b>Value: {usdFormatChanger(item.value)}</b>
+                      <b>Value: {formatMoneyMajor(item.value, walletPrimaryCurrency)}</b>
                     </div>
                   }
                 />
@@ -46,15 +46,15 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
         )}
         <div className="w-full pt-2 flex flex-col items-center gap-0.5 text-sm">
           <p className="text-emerald-600">
-            Total incomes: <b>{usdFormatChanger(totalAmount[0] || 0)}</b>
+            Total incomes: <b>{formatMoneyMajor(totalAmount[0] || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className="text-red-500">
-            Total bills: <b>{usdFormatChanger(totalAmount[1] || 0)}</b>
+            Total bills: <b>{formatMoneyMajor(totalAmount[1] || 0, walletPrimaryCurrency)}</b>
           </p>
           <div className="border-t border-slate-300 w-48 my-1"></div>
           <p className={`font-semibold ${(totalAmount[0] || 0) - (totalAmount[1] || 0) >= 0 ? "text-emerald-600" : "text-red-600"}`}>
             Balance (Incomes - Bills):{" "}
-            <b>{usdFormatChanger((totalAmount[0] || 0) - (totalAmount[1] || 0))}</b>
+            <b>{formatMoneyMajor((totalAmount[0] || 0) - (totalAmount[1] || 0), walletPrimaryCurrency)}</b>
           </p>
         </div>
       </div>
