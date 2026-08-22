@@ -1,14 +1,16 @@
 # Gastify Multi-Currency Implementation Plan
 
-> **Status:** Product design approved; implementation has not started.
+> **Status:** In progress, on branch `claude/multicurrency`. Phases 0-7 complete and pushed; Phase 8 partially complete (CategoryRule matcher done; Dashboard/Top3/Budgets/Projections formatter migration mapped but not yet built — bigger than this doc's original file list, see Entry #26 in `.mds/AI_COORDINATION_LOG.md` for the full 25-file map and rationale before continuing). Phases 9-11 not started. Real migration write (`--confirm`) never run — dry-run only.
 >
-> **Last updated:** 2026-08-21
+> **Last updated:** 2026-08-21 (by Claude Sonnet 5, end of session — handing off, likely to Codex next)
 >
 > **Initial supported currencies:** MXN, USD, EUR, JPY
 >
 > **Neutral FX source:** European Central Bank (ECB) reference rates
 >
 > **Explicitly deferred:** Revolut Business API, Open Banking, webhooks, credentials, and automatic bank synchronization
+>
+> **Read `.mds/AI_COORDINATION_LOG.md` Entry #26 before touching Phase 8+** — it has the exact file list, the target architecture for the formatter migration (sum in Wallet-primary-currency minor units first, format once), two small pre-existing bugs found along the way, and the standing rule for this branch: full autonomy for code changes, but explicit user permission is required before any write to a real MongoDB document (schema/test/route code changes do not need permission; an actual `Transaction`/`Account`/`Wallet` document write does).
 
 ---
 
