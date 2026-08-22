@@ -40,7 +40,7 @@ export async function POST(request) {
 
     const suggestions = uncategorized
       .map((t) => {
-        const match = suggestCategory(t.name, t.amount, rules);
+        const match = suggestCategory(t.name, t.displayMoney?.native, rules);
         if (!match) return null;
         return {
           transaction: t,
