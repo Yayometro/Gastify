@@ -16,7 +16,9 @@ import ResumeTabsTrans from "./ResumeTabsTrans";
 import TransDetailsGrandContainer from "./TransDetailsGrandContainer";
 import DisplayerCategoryCirclePacking from "./DisplayerCategoryCirclePacking";
 import EditAccountModal from "./EditAccountModal";
+import PrimaryCurrencySelector from "./PrimaryCurrencySelector";
 import { fetchUser } from "@/lib/features/userSlice";
+import { fetchWallet } from "@/lib/features/walletSlice";
 import { fetchCategories } from "@/lib/features/categoriesSlice";
 import { fetchSubCat } from "@/lib/features/subCategorySlice";
 import { fetchAccounts } from "@/lib/features/accountsSlice";
@@ -35,12 +37,14 @@ function AccountClient({acSession}) {
   // Redux
   const dispatch = useDispatch()
   const ccUser = useSelector((state) => state.userReducer)
+  const ccWallet = useSelector((state) => state.walletReducer)
   const ccAccounts = useSelector((state) => state.accountsReducer)
   const ccCategories = useSelector((state) => state.categoriesReducer)
   const ccSubCategories = useSelector((state) => state.subCategoryReducer)
   const ccTransacciones = useSelector((state) => state.transacctionsReducer)
 
   const userData = ccUser.data;
+  const walletData = ccWallet.data;
   const accountData = ccAccounts.data;
   const transactionData = ccTransacciones.data;
   
@@ -54,8 +58,12 @@ function AccountClient({acSession}) {
     if(ccUser.status == 'idle'){
       dispatch(fetchUser(acSession))
     }
+    // Wallet
+    if(ccWallet.status == 'idle'){
+      dispatch(fetchWallet(acSession))
+    }
     // Account
-    if(ccAccounts.status == 'idle'){ 
+    if(ccAccounts.status == 'idle'){
       dispatch(fetchAccounts(acSession))
     }
     //Transactions
@@ -208,6 +216,9 @@ function AccountClient({acSession}) {
               </div>
             </Tooltip>
           </div>
+          <div className="filters flex items-center justify-center pt-2">
+            <PrimaryCurrencySelector pcsWallet={walletData} />
+          </div>
           <div className="content-profile-cont w-full h-full bg-slate-100 text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl shadow-sm px-2">
             <h1 className="3xl w-full "></h1>
             <div className="account-multi-cc-container w-full py-4">
@@ -215,6 +226,7 @@ function AccountClient({acSession}) {
                   acc={accountData}
                   user={userData}
                   trans={transactionData}
+                  walletPrimaryCurrency={walletData?.primaryCurrency}
                 />
             </div>
             <div className="bg-purple-100 w-full flex justify-between items-center border-2 border-purple-400 rounded-3xl">
@@ -259,7 +271,7 @@ function AccountClient({acSession}) {
                 </div>
               ) : (
                 <div className="general-content-acc-ac w-full">
-                    <EditAccountModal eamMode={onEdition} eamAccount={finalAccounts[carruselCurrent] || null}  eamClose={e => setOnEdition(e)}
+                    <EditAccountModal eamMode={onEdition} eamAccount={finalAccounts[carruselCurrent] || null} eamWallet={walletData} eamClose={e => setOnEdition(e)}
                     />
                   <h1 className="text-[30px] min-[350px]:text-[40px] sm:text-[60px] font-light">
                     {finalAccounts[carruselCurrent]?.name || "No name data..."}

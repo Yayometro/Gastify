@@ -14,8 +14,10 @@ import { IoColorPalette } from "react-icons/io5";
 import { FaRegQuestionCircle } from "react-icons/fa";
 import { Tooltip } from "antd";
 import { TbLetterCaseToggle } from "react-icons/tb";
+import fetcher from "@/helpers/fetcher";
+import { formatMoneyMajor, formatMoneyMinor, majorToMinor } from "@/lib/money/currencies";
 
-function CreditCard({ acc, user, trans, cardColor, current }) {
+function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrency }) {
   let [userName, setUserName] = useState("");
   let [allTransactions, setAllTransacctions] = useState([]);
   let [account, setAccount] = useState([]);
@@ -29,6 +31,8 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
   let [lastDayRange, setLastDayRange] = useState(new Date());
   let [cardColore, setCardColore] = useState("");
   let [manualColor, setManualColor] = useState(false);
+  let [equivalentQuote, setEquivalentQuote] = useState(null);
+  const accountCurrency = account?.currency || "MXN";
 
   useEffect(() => {
     if (acc && user && trans) {
@@ -80,6 +84,36 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
   const handleDurationChange = (event) => {
     setSelectedDuration(parseInt(event.target.value, 10));
   };
+
+  // Current-equivalent: a live valuation of this Account's native balance in
+  // the Wallet's primary currency, not a second bank balance. Never shown
+  // when a quote isn't available - no fake rate-1 fallback.
+  useEffect(() => {
+    setEquivalentQuote(null);
+    if (!account?._id || !walletPrimaryCurrency) return;
+    if (accountCurrency === walletPrimaryCurrency) return;
+
+    let cancelled = false;
+    const toFetch = fetcher();
+    (async () => {
+      try {
+        const amountMinor = majorToMinor(account.amount || 0, accountCurrency);
+        const res = await toFetch.post("general-data/fx/quote", {
+          amountMinor,
+          fromCurrency: accountCurrency,
+          toCurrency: walletPrimaryCurrency,
+        });
+        if (!cancelled && res.ok) {
+          setEquivalentQuote(res.data);
+        }
+      } catch (e) {
+        // Silently unavailable - the card just omits the equivalent line.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [account?._id, account?.amount, accountCurrency, walletPrimaryCurrency]);
 
   const generateRandomColor = () => {
     const color1 = randomColor();
@@ -159,13 +193,24 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
         {!current ? (
           ""
         ) : (
-          <div className="z-[1] flex gap-2.5 mt-3 self-end items-start sm:mt-5">
-            <div className="text-white text-sm font-thin sm:font-base sm:font-extralight ">
-              Current:
+          <div className="z-[1] flex flex-col gap-1 mt-3 self-end items-end sm:mt-5">
+            <div className="flex gap-2.5 items-start">
+              <div className="text-white text-sm font-thin sm:font-base sm:font-extralight ">
+                Current:
+              </div>
+              <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
+                {formatMoneyMajor(account.amount || 0, accountCurrency, { showCode: false })}
+              </div>
             </div>
-            <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-              $ {account.amount ? account.amount.toFixed(2) : 0}
-            </div>
+            {equivalentQuote ? (
+              <Tooltip
+                title={`Valued at ${equivalentQuote.rate} (${equivalentQuote.source}${equivalentQuote.stale ? ", stale" : ""}) on ${new Date(equivalentQuote.effectiveDate).toLocaleDateString()}. This is a valuation, not a second balance.`}
+              >
+                <div className="text-white/80 text-xs font-thin whitespace-nowrap">
+                  ≈ {formatMoneyMinor(equivalentQuote.amountMinor, equivalentQuote.currency, { showCode: false })} {equivalentQuote.currency}
+                </div>
+              </Tooltip>
+            ) : null}
           </div>
         )}
         <div className="z-[1] flex gap-2.5 mt-3 self-end items-start sm:mt-5">
