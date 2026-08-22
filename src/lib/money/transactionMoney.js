@@ -50,3 +50,25 @@ export function buildSameCurrencyReportingMoney({ accountMoney, effectiveDate })
     estimated: false,
   };
 }
+
+// The MXN-rate-1 fallback for documents that predate money-aware writes and
+// have never been re-saved since (`.lean()` reads never run Mongoose hooks
+// or apply schema defaults for a missing subdocument, so a document written
+// before Phase 5 - or not yet touched by the real migration - has no
+// `money` field in the actual stored BSON at all). Shared between
+// Transaction.js's pre-validate write-time hook and the read-side DTO
+// builder so both derive an identical value for the same legacy document.
+export function buildLegacyMoney({ amount, date }) {
+  const legacyAmountMinor = Math.round(Math.abs(amount || 0) * 100);
+  return {
+    account: { amountMinor: legacyAmountMinor, currency: "MXN" },
+    reporting: {
+      amountMinor: legacyAmountMinor,
+      currency: "MXN",
+      rate: "1",
+      source: "legacy_migration",
+      effectiveDate: date || new Date(),
+      estimated: false,
+    },
+  };
+}

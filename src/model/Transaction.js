@@ -1,5 +1,6 @@
 import mongoose, {Schema, model} from 'mongoose'
 import { moneyAmountSchema, reportingMoneySchema } from './schemas/moneySchemas'
+import { buildLegacyMoney } from '@/lib/money/transactionMoney'
 
 const transactionsSchema = new Schema({
     name: {type: String},
@@ -85,20 +86,13 @@ transactionsSchema.pre('validate', function (next) {
         this.direction = this.kind === 'income' ? 'credit' : 'debit';
     }
     if (!this.money || !this.money.account || !this.money.reporting) {
-        const legacyAmountMinor = Math.round(Math.abs(this.amount || 0) * 100);
+        const legacy = buildLegacyMoney({ amount: this.amount, date: this.date });
         this.money = this.money || {};
         if (!this.money.account) {
-            this.money.account = { amountMinor: legacyAmountMinor, currency: 'MXN' };
+            this.money.account = legacy.account;
         }
         if (!this.money.reporting) {
-            this.money.reporting = {
-                amountMinor: legacyAmountMinor,
-                currency: 'MXN',
-                rate: '1',
-                source: 'legacy_migration',
-                effectiveDate: this.date || new Date(),
-                estimated: false,
-            };
+            this.money.reporting = legacy.reporting;
         }
     }
     next();

@@ -11,6 +11,7 @@ import Wallet from "@/model/Wallet";
 import { minorToMajor } from "@/lib/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { convert } from "@/lib/money/server/fxRateService";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
 export async function POST(request, { params }) {
   try {
@@ -222,15 +223,20 @@ export async function POST(request, { params }) {
         })
         .populate({
           path: "budget",
-        });
-    
+        })
+        .lean();
+
     if (!transToSend)
       throw new Error("Updated transaction -transToSend- could not be loaded to send");
+    const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
+      [transToSend],
+      parentWallet.primaryCurrency
+    );
     return NextResponse.json({
       message: `${
         updatedTrans.name ? updatedTrans.name : "Transacion"
       } was updated successfully 😎`,
-      data: transToSend,
+      data: transactionWithDisplayMoney,
       status: 201,
       ok: true,
     });

@@ -35,6 +35,7 @@ import {
   getDateInYearMonthDay,
 } from "@/helpers/timeFunctions/timeFunctions";
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMinor } from "@/lib/money/currencies";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 
@@ -1282,7 +1283,31 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 )}
               </div>
             )}
-            {allMovements.map((movement) => (
+            {allMovements.map((movement) => {
+              const native = movement.displayMoney?.native;
+              const primary = movement.displayMoney?.primary;
+              const merchant = movement.displayMoney?.merchant;
+              const showEquivalent = Boolean(native && primary && native.currency !== primary.currency);
+              const hasFxDetail = Boolean(merchant) || showEquivalent;
+              const amountLabel = native
+                ? formatMoneyMinor(native.amountMinor, native.currency)
+                : currencyFormatter.format(movement.amount, { locale: "en-US" });
+              const fxTooltipTitle = hasFxDetail ? (
+                <div className="flex flex-col gap-0.5 text-[11px]">
+                  {merchant && <div>Merchant: {formatMoneyMinor(merchant.amountMinor, merchant.currency)}</div>}
+                  {native && <div>Account: {formatMoneyMinor(native.amountMinor, native.currency)}</div>}
+                  {primary ? (
+                    <>
+                      <div>Reported ({primary.currency}): {formatMoneyMinor(primary.amountMinor, primary.currency)}</div>
+                      <div>Rate: {primary.rate} ({primary.source})</div>
+                      <div>{new Date(primary.effectiveDate).toLocaleDateString()} — {primary.estimated ? "estimated" : "exact"}{primary.stale ? ", stale" : ""}</div>
+                    </>
+                  ) : (
+                    <div>Exchange-rate estimate unavailable</div>
+                  )}
+                </div>
+              ) : null;
+              return (
               <div
                 key={movement._id}
                 id={`trans-${movement._id}`}
@@ -1341,31 +1366,27 @@ function MovementsContent({ timePeriodFromFather, mail }) {
 
                 <div>
                   <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end">
-                    {movement.isBill ? (
                       <div className="flex flex-col items-end">
-                        <div className="tra-amount-cont text-red-500 flex gap-1 items-center font-medium">
-                          <CategoIcon type={"MdKeyboardDoubleArrowDown"} />
-                          <p className="tra-amount">
-                            {currencyFormatter.format(movement.amount, { locale: "en-US" })}
-                          </p>
+                        <div className={`tra-amount-cont ${movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
+                          <CategoIcon type={movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
+                          <p className="tra-amount">{amountLabel}</p>
+                          {hasFxDetail && (
+                            <Tooltip title={fxTooltipTitle}>
+                              <span className="ml-1 text-[9px] font-bold text-purple-500 border border-purple-300 rounded px-1 cursor-default">
+                                FX
+                              </span>
+                            </Tooltip>
+                          )}
                         </div>
+                        {showEquivalent && (
+                          <p className="text-[11px] text-slate-500 cursor-default">
+                            ≈ {formatMoneyMinor(primary.amountMinor, primary.currency)}
+                          </p>
+                        )}
                         <div className="date-container text-[12px] font-light">
                           {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-end">
-                        <div className="tra-amount-cont text-green-500 flex gap-1 items-center font-medium">
-                          <CategoIcon type={"MdKeyboardDoubleArrowUp"} />
-                          <p className="tra-amount">
-                            {currencyFormatter.format(movement.amount, { locale: "en-US" })}
-                          </p>
-                        </div>
-                        <div className="date-container text-[12px] font-light">
-                          {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
-                        </div>
-                      </div>
-                    )}
                     <div className="btns flex justify-between gap-2">
                       <button
                         onClick={() => showRemoveModal("", movement._id)}
@@ -1383,7 +1404,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

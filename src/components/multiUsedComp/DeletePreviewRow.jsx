@@ -2,9 +2,14 @@ import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import currencyFormatter from "currency-formatter";
 import dayjs from "dayjs";
+import { formatMoneyMinor } from "@/lib/money/currencies";
 
 function DeletePreviewRow({ transaction }) {
   if (!transaction) return null;
+  const native = transaction.displayMoney?.native;
+  const amountLabel = native
+    ? formatMoneyMinor(native.amountMinor, native.currency)
+    : currencyFormatter.format(transaction.amount ?? 0, { locale: "en-US" });
   return (
     <div className="flex flex-row justify-between items-center bg-slate-100/90 rounded-xl py-1.5 px-2.5 my-1 border border-slate-200 text-xs shadow-sm">
       <div className="flex gap-2 items-center min-w-0">
@@ -31,7 +36,7 @@ function DeletePreviewRow({ transaction }) {
       </div>
       <div className="flex flex-col items-end flex-shrink-0 ml-2">
         <span className={`font-semibold text-xs ${transaction.isBill ? "text-red-500" : "text-green-500"}`}>
-          {transaction.isBill ? "-" : "+"}{currencyFormatter.format(transaction.amount ?? 0, { locale: "en-US" })}
+          {transaction.isBill ? "-" : "+"}{amountLabel}
         </span>
         <span className="text-[10px] text-slate-400 font-light">
           {dayjs(transaction.date || transaction.createdAt).format("DD/MM/YYYY")}

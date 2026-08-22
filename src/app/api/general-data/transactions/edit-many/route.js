@@ -8,6 +8,7 @@ import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
 import { minorToMajor } from "@/lib/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
+import { attachDisplayMoney } from "@/lib/money/server/transactionReadService";
 
 export async function POST(request) {
   try {
@@ -153,9 +154,11 @@ export async function POST(request) {
         .populate("tags")
         .populate("account")
         .populate("category")
-        .populate("subCategory");
+        .populate("subCategory")
+        .lean();
 
-      savedTrans.push(populated);
+      const withDisplayMoney = await attachDisplayMoney(populated, parentWallet?.primaryCurrency || "MXN");
+      savedTrans.push(withDisplayMoney);
     }
 
     return NextResponse.json({

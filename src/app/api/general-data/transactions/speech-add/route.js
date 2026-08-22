@@ -8,6 +8,7 @@ import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
 import Wallet from "@/model/Wallet";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
 export async function POST(request) {
   try {
@@ -196,15 +197,19 @@ export async function POST(request) {
       })
       .populate({
         path: "subCategory",
-      });
+      })
+      .lean();
     if (!finalTransaction)
       throw new Error("NEW TRANSACTIONS could not be loaded on POST");
-    console.log(finalTransaction);
+    const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
+      [finalTransaction],
+      parentWallet.primaryCurrency
+    );
     return NextResponse.json({
       message: `${
         savedTransacction.name || "Transaction"
       } using voice was created successfully 😎`,
-      data: finalTransaction,
+      data: transactionWithDisplayMoney,
       status: 201,
       ok: true,
     });

@@ -7,7 +7,9 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
 import Account from "@/model/Account";
+import Wallet from "@/model/Wallet";
 import { suggestCategory } from "@/helpers/transformers/categoryRuleMatcher";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
 export async function POST(request) {
   try {
@@ -24,15 +26,17 @@ export async function POST(request) {
       ? { _id: { $in: transactionIds }, wallet: walletId }
       : { wallet: walletId, category: null, subCategory: null };
 
-    const [transactions, rules] = await Promise.all([
+    const [transactions, rules, parentWallet] = await Promise.all([
       Transaction.find(transactionQuery)
         .populate("account")
         .populate("tags")
         .lean(),
       CategoryRule.find({ wallet: walletId }).populate("category").populate("subCategory").lean(),
+      Wallet.findById(walletId).lean(),
     ]);
 
-    const uncategorized = transactions.filter((t) => !t.category && !t.subCategory);
+    const uncategorizedRaw = transactions.filter((t) => !t.category && !t.subCategory);
+    const uncategorized = await attachDisplayMoneyToList(uncategorizedRaw, parentWallet?.primaryCurrency || "MXN");
 
     const suggestions = uncategorized
       .map((t) => {

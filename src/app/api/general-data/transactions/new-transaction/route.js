@@ -8,6 +8,7 @@ import Account from "@/model/Account";
 import Budget from "@/model/Budget";
 import Wallet from "@/model/Wallet";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
 export async function GET() {
   try {
@@ -148,14 +149,19 @@ export async function POST(request) {
       })
       .populate({
         path: "budget",
-      });
+      })
+      .lean();
       if (!finalTransaction)
       throw new Error("NEW TRANSACTIONS could not be loaded on POST");
+    const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
+      [finalTransaction],
+      parentWallet.primaryCurrency
+    );
     return NextResponse.json({
       message: `${
         savedTransacction.name || "Transaction"
       } was created successfully`,
-      data: finalTransaction,
+      data: transactionWithDisplayMoney,
       status: 201,
       ok: true,
     });

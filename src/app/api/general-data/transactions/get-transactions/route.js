@@ -7,6 +7,8 @@ import User from "@/model/User";
 import Account from "@/model/Account";
 import Tag from "@/model/Tag";
 import Budget from "@/model/Budget";
+import Wallet from "@/model/Wallet";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
 export async function POST(request) {
   try {
@@ -23,6 +25,7 @@ export async function POST(request) {
       });
     const userId = userFound._id;
     const walletId = userFound.wallet;
+    const parentWallet = await Wallet.findById(walletId).lean();
     //FIND TRANSACTIONS
     const movementsFounded = await Transaction.find({
       user: userId,
@@ -42,13 +45,18 @@ export async function POST(request) {
       })
       .populate({
         path: "budget",
-      });
+      })
+      .lean();
     if (!movementsFounded)
       throw new Error(
         "No movements found, review the user and wallet id on get-all/transactions in POST"
       );
+    const withDisplayMoney = await attachDisplayMoneyToList(
+      movementsFounded,
+      parentWallet?.primaryCurrency || "MXN"
+    );
     return NextResponse.json({
-      data: movementsFounded,
+      data: withDisplayMoney,
       message: "Transactions founded",
       status: 201,
       ok: true,

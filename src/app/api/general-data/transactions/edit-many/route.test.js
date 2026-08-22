@@ -20,7 +20,11 @@ function mockRequest(body) {
 }
 
 function chainablePopulate(result) {
-  const chain = { populate: vi.fn(() => chain), then: (resolve) => resolve(result) };
+  const chain = {
+    populate: vi.fn(() => chain),
+    lean: vi.fn(() => Promise.resolve(result)),
+    then: (resolve) => resolve(result),
+  };
   return chain;
 }
 
