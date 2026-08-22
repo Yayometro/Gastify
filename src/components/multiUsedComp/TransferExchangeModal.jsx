@@ -39,9 +39,13 @@ function TransferExchangeModal() {
 
   const sourceAccount = accounts.find((a) => a._id === form.sourceAccountId);
   const destinationAccount = accounts.find((a) => a._id === form.destinationAccountId);
-  const isCrossCurrency = Boolean(
-    sourceAccount && destinationAccount && sourceAccount.currency !== destinationAccount.currency
-  );
+  // A real Account document that predates the multi-currency migration has
+  // no currency field in its stored BSON at all (the API never applies the
+  // schema default on a .lean() read) - default to MXN explicitly rather
+  // than passing `undefined` on to the FX/amount math below.
+  const sourceCurrency = sourceAccount?.currency || "MXN";
+  const destinationCurrency = destinationAccount?.currency || "MXN";
+  const isCrossCurrency = Boolean(sourceAccount && destinationAccount && sourceCurrency !== destinationCurrency);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,14 +70,14 @@ function TransferExchangeModal() {
     const timer = setTimeout(async () => {
       try {
         setQuoting(true);
-        const amountMinor = majorToMinor(numericAmount, sourceAccount.currency);
+        const amountMinor = majorToMinor(numericAmount, sourceCurrency);
         const res = await toFetch.post("general-data/fx/quote", {
           amountMinor,
-          fromCurrency: sourceAccount.currency,
-          toCurrency: destinationAccount.currency,
+          fromCurrency: sourceCurrency,
+          toCurrency: destinationCurrency,
         });
         if (!cancelled && res.ok && !destinationTouched) {
-          setForm((f) => ({ ...f, destinationAmount: String(minorToMajor(res.data.amountMinor, destinationAccount.currency)) }));
+          setForm((f) => ({ ...f, destinationAmount: String(minorToMajor(res.data.amountMinor, destinationCurrency)) }));
         }
       } catch (e) {
         // Silently unavailable - the user can still enter it manually.
@@ -103,8 +107,8 @@ function TransferExchangeModal() {
       runNotify("error", "Source and destination accounts must be different");
       return;
     }
-    const sourceAmountMinor = majorToMinor(Number(form.sourceAmount) || 0, sourceAccount.currency);
-    const destinationAmountMinor = majorToMinor(Number(form.destinationAmount) || 0, destinationAccount.currency);
+    const sourceAmountMinor = majorToMinor(Number(form.sourceAmount) || 0, sourceCurrency);
+    const destinationAmountMinor = majorToMinor(Number(form.destinationAmount) || 0, destinationCurrency);
     if (!(sourceAmountMinor > 0) || !(destinationAmountMinor > 0)) {
       runNotify("error", "Enter both amounts");
       return;
@@ -179,7 +183,7 @@ function TransferExchangeModal() {
               ))}
             </select>
           </div>
-          <p className="label-tfp">Amount ({sourceAccount?.currency || "—"})</p>
+          <p className="label-tfp">Amount ({sourceAccount ? sourceCurrency : "—"})</p>
           <input
             type="number"
             step="0.01"
@@ -206,7 +210,7 @@ function TransferExchangeModal() {
             </select>
           </div>
           <p className="label-tfp">
-            Amount received ({destinationAccount?.currency || "—"}){" "}
+            Amount received ({destinationAccount ? destinationCurrency : "—"}){" "}
             {isCrossCurrency && (
               <Tooltip title="Pre-filled from a live exchange-rate estimate - overwrite it with the exact amount your bank actually gave you.">
                 <span className="text-purple-500 cursor-help">{quoting ? "estimating…" : "(estimate, editable)"}</span>

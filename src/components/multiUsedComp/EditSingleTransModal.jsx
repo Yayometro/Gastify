@@ -24,6 +24,8 @@ import { isProjectBudget } from "@/helpers/transformers/budgetTypes";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEquivalent";
 import AmountEquivalentPreview from "./AmountEquivalentPreview";
+import ChargedElsewhereSection from "./ChargedElsewhereSection";
+import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 
 const CURRENCY_STRATEGIES = [
   { value: "convert", label: "Convert", description: "Recalculate the amount to preserve the same reported value." },
@@ -40,6 +42,17 @@ function EditSingleTransModalInner({ trans, onClose }) {
   const { wallet, accounts, categories, subCategories, budgets = [] } = useGetDataFromProvider();
   const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
   const [currencyStrategy, setCurrencyStrategy] = useState(null);
+  // Advanced "Charged in another currency" disclosure (plan section 12.2) -
+  // see ChargedElsewhereSection for the shared UI/behavior with AddTransactionComp.
+  const [chargedElsewhere, setChargedElsewhere] = useState(false);
+  const [merchantAmount, setMerchantAmount] = useState("");
+  const [merchantCurrency, setMerchantCurrency] = useState("USD");
+  const [amountTouchedManually, setAmountTouchedManually] = useState(false);
+  const [merchantQuoting, setMerchantQuoting] = useState(false);
+  // Distinguishes "user never touched this section" (preserve whatever
+  // merchant money already existed) from "user turned it off on purpose"
+  // (clear it) - both look identical as chargedElsewhere=false otherwise.
+  const [merchantSectionTouched, setMerchantSectionTouched] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -70,6 +83,18 @@ function EditSingleTransModalInner({ trans, onClose }) {
         account: trans.account?._id || trans.account || "",
         budget: trans.budget?._id || trans.budget || "",
       });
+      const existingMerchant = trans.displayMoney?.merchant || trans.money?.merchant;
+      if (existingMerchant) {
+        setChargedElsewhere(true);
+        setMerchantAmount(String(minorToMajor(existingMerchant.amountMinor, existingMerchant.currency)));
+        setMerchantCurrency(existingMerchant.currency);
+      } else {
+        setChargedElsewhere(false);
+        setMerchantAmount("");
+        setMerchantCurrency("USD");
+      }
+      setAmountTouchedManually(false);
+      setMerchantSectionTouched(false);
 
       const subCatId = trans.subCategory?._id || trans.subCategory;
       const catId = trans.category?._id || trans.category;
@@ -87,6 +112,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "amount") setAmountTouchedManually(true);
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -104,8 +130,47 @@ function EditSingleTransModalInner({ trans, onClose }) {
   const amountEquivalent = useTransactionAmountEquivalent({
     amount: form.amount,
     accountCurrency: selectedAccountCurrency,
-    walletPrimaryCurrency: wallet?.primaryCurrency,
+    walletPrimaryCurrency: wallet?.primaryCurrency || "MXN",
   });
+
+  // Auto-suggest the Account Amount from the merchant amount whenever they
+  // differ in currency - debounced, and only while the user hasn't typed
+  // into the Amount field directly.
+  useEffect(() => {
+    if (!chargedElsewhere) return;
+    const numericMerchant = Number(merchantAmount);
+    if (!Number.isFinite(numericMerchant) || numericMerchant <= 0) return;
+
+    if (merchantCurrency === selectedAccountCurrency) {
+      if (!amountTouchedManually) setForm((f) => ({ ...f, amount: merchantAmount }));
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        setMerchantQuoting(true);
+        const amountMinor = majorToMinor(numericMerchant, merchantCurrency);
+        const res = await toFetch.post("general-data/fx/quote", {
+          amountMinor,
+          fromCurrency: merchantCurrency,
+          toCurrency: selectedAccountCurrency,
+        });
+        if (!cancelled && res.ok && !amountTouchedManually) {
+          setForm((f) => ({ ...f, amount: String(minorToMajor(res.data.amountMinor, selectedAccountCurrency)) }));
+        }
+      } catch (e) {
+        // Silently unavailable - the user can still enter the Account Amount manually.
+      } finally {
+        if (!cancelled) setMerchantQuoting(false);
+      }
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chargedElsewhere, merchantAmount, merchantCurrency, selectedAccountCurrency]);
 
   const onChangeSwitch = (checked, type) => {
     if (type === "income") setForm((p) => ({ ...p, isIncome: checked, isBill: !checked }));
@@ -140,6 +205,14 @@ function EditSingleTransModalInner({ trans, onClose }) {
       name: form.name.trim(),
       tags: tagsArr,
       ...(needsCurrencyStrategy ? { currencyStrategy } : {}),
+      // Only send merchantAmount/merchantCurrency at all if the user
+      // actually touched this section - an absent field means "preserve
+      // whatever was there", while an explicit null means "clear it".
+      ...(merchantSectionTouched
+        ? chargedElsewhere && merchantAmount !== ""
+          ? { merchantAmount, merchantCurrency }
+          : { merchantAmount: null, merchantCurrency: null }
+        : {}),
     };
     try {
       const response = await toFetch.post(`general-data/transactions/${trans._id}`, payload);
@@ -192,6 +265,24 @@ function EditSingleTransModalInner({ trans, onClose }) {
             placeholder="Amount"
           />
           <AmountEquivalentPreview quote={amountEquivalent} />
+          <ChargedElsewhereSection
+            enabled={chargedElsewhere}
+            onToggle={(checked) => {
+              setMerchantSectionTouched(true);
+              setChargedElsewhere(checked);
+            }}
+            merchantAmount={merchantAmount}
+            merchantCurrency={merchantCurrency}
+            onMerchantAmountChange={(v) => {
+              setMerchantSectionTouched(true);
+              setMerchantAmount(v);
+            }}
+            onMerchantCurrencyChange={(v) => {
+              setMerchantSectionTouched(true);
+              setMerchantCurrency(v);
+            }}
+            quoting={merchantQuoting}
+          />
 
           <div className="switchers-cont flex gap-3">
             <ConfigProvider theme={{ token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" } }}>
