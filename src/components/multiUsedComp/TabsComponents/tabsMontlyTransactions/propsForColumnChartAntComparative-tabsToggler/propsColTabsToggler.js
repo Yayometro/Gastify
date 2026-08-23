@@ -94,6 +94,7 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
                       totalValue={
                         name === "bill" ? totalAmount[1] : totalAmount[0]
                       }
+                      walletPrimaryCurrency={walletPrimaryCurrency}
                     />
                   );
                 })}

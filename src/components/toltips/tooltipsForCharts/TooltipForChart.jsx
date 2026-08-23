@@ -1,10 +1,8 @@
 import React from "react";
-import { useSelector } from "react-redux";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 
-function TooltipForChart({item, name, value, totalValue, color}) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+function TooltipForChart({item, name, value, totalValue, color, walletPrimaryCurrency = "MXN"}) {
   return (
     <div className="w-full h-full flex gap-2" key={name + value}>
       <div
