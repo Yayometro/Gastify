@@ -1,6 +1,7 @@
 "use client";
 import { useSelector } from "react-redux";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import TopItemContainer from "../topMonthContainer/TopItemContainer";
 import AtomicTop from "../atomicTop/AtomicTop";
 import useModal from "@/hooks/useModalBasic";
@@ -34,7 +35,7 @@ function TopContainer({ items, style, title }) {
                   color={item?.color || item.category?.color || "#DADADA"}
                   icon={item.icon || item.category?.icon}
                   isBill={item.isBill}
-                  value={item.value || item.amount}
+                  value={getPrimaryAmount(item)}
                   getItem={renderModalContent}
                   fatherStyle={`tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px] cursor-pointer ${
                     item?.color ? "" : "brightness-90"
@@ -44,7 +45,7 @@ function TopContainer({ items, style, title }) {
                       <p>{item.name || item.type}</p>
                       <p>
                         Value:{" "}
-                        <b>{formatMoneyMajor(item.value || item.amount, walletPrimaryCurrency)}</b>
+                        <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency)}</b>
                       </p>
                     </div>
                   }

@@ -17,6 +17,7 @@ import { TbLetterCaseToggle } from "react-icons/tb";
 import fetcher from "@/helpers/fetcher";
 import { useSelector } from "react-redux";
 import { formatMoneyMajor, formatMoneyMinor, majorToMinor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 
 function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrency: walletPrimaryCurrencyProp }) {
   const reduxWalletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency);
@@ -63,16 +64,21 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
       });
       const accBills = total.filter((bill) => bill.isBill);
       const accIncomes = total.filter((bill) => bill.isIncome);
+      // These totals are displayed labeled as the Wallet's primary currency
+      // (formatMoneyMajor(..., walletPrimaryCurrency) below), so they must
+      // be summed in that currency too - raw tra.amount is in the
+      // transaction's own native currency, which only happens to equal the
+      // Wallet primary for an all-MXN wallet.
       const finalAmount = total.reduce(
-        (current, tra) => current + tra.amount,
+        (current, tra) => current + getPrimaryAmount(tra),
         0
       );
       const finalBill = accBills.reduce(
-        (current, bill) => current + bill.amount,
+        (current, bill) => current + getPrimaryAmount(bill),
         0
       );
       const finalIncome = accIncomes.reduce(
-        (current, income) => current + income.amount,
+        (current, income) => current + getPrimaryAmount(income),
         0
       );
       setTotalReadTransactions(total);

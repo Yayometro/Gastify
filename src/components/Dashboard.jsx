@@ -30,6 +30,7 @@ import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContain
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import DashboardLoadingMessage from "./multiUsedComp/loaders/DashboardLoadingMessage";
 import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
@@ -195,11 +196,11 @@ function Wallet({ dataServ, session }) {
       const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
       const accIncomes = total.filter((bill) => bill.isIncome && !bill.isBill);
       const finalBill = accBills.reduce(
-        (current, bill) => current + bill.amount,
+        (current, bill) => current + getPrimaryAmount(bill),
         0
       );
       const finalIncome = accIncomes.reduce(
-        (current, income) => current + income.amount,
+        (current, income) => current + getPrimaryAmount(income),
         0
       );
       let finalAmount = finalIncome - finalBill;

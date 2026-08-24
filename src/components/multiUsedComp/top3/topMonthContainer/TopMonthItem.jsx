@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import AtomicTop from "../atomicTop/AtomicTop";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import BasicTooltip from "../../Tooltips/BasicTooltip";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import useModal from "@/hooks/useModalBasic";
@@ -64,7 +65,7 @@ function TopMonthItem({
                   color={item.color || color}
                   icon={item.icon}
                   isBill={item.isBill}
-                  value={item.value || item.amount}
+                  value={getPrimaryAmount(item)}
                   getItem={renderModalContent}
                   fatherStyle={`tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px] cursor-pointer ${
                     item?.color ? "" : "brightness-90"
@@ -74,7 +75,7 @@ function TopMonthItem({
                       <p>{item.name || item.type}</p>
                       <p>
                         Value:{" "}
-                        <b>{formatMoneyMajor(item.value || item.amount, walletPrimaryCurrency)}</b>
+                        <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency)}</b>
                       </p>
                     </div>
                   }

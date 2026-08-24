@@ -1,6 +1,7 @@
 "use client";
 import { useSelector } from "react-redux";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import TopMonthItem from "./TopMonthItem";
 
 function TopMonthContainer({ items, style, title }) {
@@ -25,7 +26,7 @@ function TopMonthContainer({ items, style, title }) {
                   name={String(
                     item.name || item.type || item.month
                   ).toUpperCase()}
-                  value={formatMoneyMajor(item.value || item.amount, walletPrimaryCurrency)}
+                  value={formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency)}
                   index={index}
                 />
               );

@@ -1,3 +1,14 @@
+import { minorToMajor } from "@/lib/money/currencies";
+
+// Duplicated from transactionsChange.js's getPrimaryAmount rather than
+// imported - transactionsChange.js itself imports from this file, so
+// importing back would create a circular dependency.
+function getPrimaryAmount(item) {
+  const primary = item?.displayMoney?.primary;
+  if (primary) return minorToMajor(primary.amountMinor, primary.currency);
+  return Number(item?.value ?? item?.amount) || 0;
+}
+
 export const months = [
   "January",
   "February",
@@ -53,12 +64,12 @@ export function orderItemsInTheirMonth(arr) {
     const monthNumber = new Date(item.date).getMonth();
     const month = getMonthOfTransaction(monthNumber).toLowerCase();
     if (acc[month]) {
-      (acc[month].value += item.value || item.amount),
+      (acc[month].value += getPrimaryAmount(item)),
         (acc[month].childrens = [...acc[month].childrens, item]);
     } else {
       acc[month] = {
         month: month,
-        value: item.value || item.amount,
+        value: getPrimaryAmount(item),
         childrens: [item],
         icon: mapedMonths.get(month).icon,
         color: mapedMonths.get(month).color,
@@ -75,7 +86,7 @@ export function slicedAndReduceNewValuesForMonths(arr, slice) {
   return arr.map((monthTrans) => {
     const monthsSliced = monthTrans.childrens.slice(0, slice);
     const newValue = monthsSliced.reduce(
-      (acc, item) => (acc += item.value || item.amount),
+      (acc, item) => (acc += getPrimaryAmount(item)),
       0
     );
     return {

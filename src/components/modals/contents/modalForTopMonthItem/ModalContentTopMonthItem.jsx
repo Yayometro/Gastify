@@ -8,6 +8,7 @@ import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import TransactionItemList from "@/components/Transactions/ItemList/TransactionItemList";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import EditSingleTransModal from "@/components/multiUsedComp/EditSingleTransModal";
 import EditMultipleTransModal from "@/components/multiUsedComp/EditMultipleTransModal";
 import QuickEditModal from "@/components/multiUsedComp/QuickEditModal";
@@ -205,7 +206,7 @@ function ModalContentTopMonthItem({ item, close }) {
             </Tooltip>
           </span>
           <p className="font-semibold">
-            <b>{formatMoneyMajor(item?.value || item?.amount, walletPrimaryCurrency) || "No total info..."}</b>
+            <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency) || "No total info..."}</b>
           </p>
 
           {/* Selection controls — only when multiple items */}
