@@ -24,6 +24,7 @@ import {
   UnbudgetedSpendingModal,
 } from "./UnbudgetedSpending";
 import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget, BUDGET_TYPES } from "@/helpers/transformers/budgetTypes";
+import PrimaryCurrencySelector from "../PrimaryCurrencySelector";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { updateTransaction } from "@/lib/features/transacctionsSlice";
@@ -240,6 +241,13 @@ function BudgetsClient({ mcSession }) {
         <h1 className="text-3xl min-[400px]:text-[40px] sm:text-[40px] md:text-[60px] font-thin">
           Budgets
         </h1>
+      </div>
+      <div className="w-full flex items-center justify-center pt-2">
+        <Tooltip title="Every amount on this page is shown in this currency unless a budget sets its own.">
+          <div>
+            <PrimaryCurrencySelector pcsWallet={wallet} />
+          </div>
+        </Tooltip>
       </div>
       <div className="content-profile-cont w-full h-full bg-slate-100 items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl shadow-sm px-4 sm:px-8 py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
