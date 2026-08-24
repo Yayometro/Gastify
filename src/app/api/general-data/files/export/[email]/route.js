@@ -7,21 +7,10 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
 import dbConnection from "@/app/api/dbConnection";
-import { TEMPLATE_VERSION } from "@/app/api/general-data/files/template/[email]/route";
+import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, EXPORT_NOTE_PREFIX } from "@/lib/files/gastifyTemplate";
+import { getTransactionNativeMoney } from "@/lib/money/currencies";
+import { buildLegacyMoney } from "@/lib/money/transactionMoney";
 import dayjs from "dayjs";
-
-const HEADERS = [
-  "Date *",
-  "Concept *",
-  "Amount *",
-  "Type (Bill/Income) *",
-  "Category",
-  "SubCategory",
-  "Tags (comma separated)",
-  "Account",
-];
-
-const COL_WIDTHS = [18, 28, 14, 18, 22, 22, 28, 22];
 
 export async function POST(request, { params }) {
   try {
@@ -60,7 +49,7 @@ export async function POST(request, { params }) {
 
     // Row 2 — note
     const noteCell = sheet.cell(2, 1);
-    noteCell.value(`Gastify export — ${transactions.length} transaction(s) — ${dayjs().format("DD/MM/YYYY HH:mm")}. Columns A–G are re-importable. Column H (Account) is informational.`);
+    noteCell.value(`Gastify export — ${transactions.length} transaction(s) — ${dayjs().format("DD/MM/YYYY HH:mm")}. ${EXPORT_NOTE_PREFIX}`);
     noteCell.style({
       italic: true,
       fill: { type: "solid", color: "FEF9C3" },
@@ -71,7 +60,7 @@ export async function POST(request, { params }) {
     sheet.row(2).height(36);
 
     // Column widths
-    COL_WIDTHS.forEach((w, i) => sheet.column(i + 1).width(w));
+    COLUMN_WIDTHS.forEach((w, i) => sheet.column(i + 1).width(w));
 
     // Data rows starting at row 3
     transactions.forEach((t, idx) => {
@@ -83,14 +72,35 @@ export async function POST(request, { params }) {
       const tagsStr = (t.tags || []).map((tag) => tag.name).filter(Boolean).join(", ");
       const accountName = t.account?.name || "";
 
-      sheet.cell(row, 1).value(dateStr);
-      sheet.cell(row, 2).value(t.name || "");
-      sheet.cell(row, 3).value(t.amount ?? 0);
-      sheet.cell(row, 4).value(typeStr);
-      sheet.cell(row, 5).value(catName);
-      sheet.cell(row, 6).value(subCatName);
-      sheet.cell(row, 7).value(tagsStr);
-      sheet.cell(row, 8).value(accountName);
+      // .lean() never applies schema defaults - a Transaction written before
+      // Phase 5's money-aware writes has no `money` field in its stored BSON
+      // at all, so it needs the same legacy MXN-rate-1 fallback used
+      // everywhere else in this migration rather than exporting a blank cell.
+      const native = getTransactionNativeMoney(t) || buildLegacyMoney({ amount: t.amount, date: t.date }).account;
+      const reporting = t.money?.reporting || buildLegacyMoney({ amount: t.amount, date: t.date }).reporting;
+      const merchant = t.money?.merchant || null;
+
+      sheet.cell(row, COLUMNS.DATE).value(dateStr);
+      sheet.cell(row, COLUMNS.CONCEPT).value(t.name || "");
+      sheet.cell(row, COLUMNS.ACCOUNT_AMOUNT).value(native.amountMinor / 100);
+      sheet.cell(row, COLUMNS.ACCOUNT_CURRENCY).value(native.currency);
+      sheet.cell(row, COLUMNS.TYPE).value(typeStr);
+      sheet.cell(row, COLUMNS.CATEGORY).value(catName);
+      sheet.cell(row, COLUMNS.SUB_CATEGORY).value(subCatName);
+      sheet.cell(row, COLUMNS.TAGS).value(tagsStr);
+      sheet.cell(row, COLUMNS.ACCOUNT).value(accountName);
+      if (merchant) {
+        sheet.cell(row, COLUMNS.MERCHANT_AMOUNT).value(merchant.amountMinor / 100);
+        sheet.cell(row, COLUMNS.MERCHANT_CURRENCY).value(merchant.currency);
+      }
+      if (reporting) {
+        sheet.cell(row, COLUMNS.REPORTING_AMOUNT).value(reporting.amountMinor / 100);
+        sheet.cell(row, COLUMNS.REPORTING_CURRENCY).value(reporting.currency);
+        // Exporting the exact stored reporting snapshot as "manual" on
+        // re-import preserves it exactly, rather than letting a re-import
+        // re-derive a possibly different ECB rate for the same date.
+        sheet.cell(row, COLUMNS.FX_SOURCE).value("manual");
+      }
     });
 
     // _data sheet with version so file can be re-imported

@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { useState } from "react";
 import TransactionItemList from "@/components/Transactions/ItemList/TransactionItemList";
 import dayjs from "dayjs";
-import currencyFormatter from "currency-formatter";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 
 function ExcelRowChip({ match }) {
   if (!match) return null;
@@ -18,7 +18,7 @@ function ExcelRowChip({ match }) {
           {dayjs(match.date).format("DD/MM/YYYY")}
         </p>
         <p className="text-[11px] font-semibold text-amber-700 whitespace-nowrap">
-          {currencyFormatter.format(match.amount ?? 0, { locale: "en-US" })}
+          {formatMoneyMajor(match.amount ?? 0, match.currency || "MXN")}
         </p>
       </div>
     </div>
