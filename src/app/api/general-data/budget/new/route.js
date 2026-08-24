@@ -30,6 +30,7 @@ export async function POST(request) {
       eventEndDate,
       linkedTags,
       icon,
+      currency,
     } = await request.json();
     await dbConnection();
     // NO USER/WALLET FILTER
@@ -49,6 +50,7 @@ export async function POST(request) {
       budgetType: resolvedBudgetType,
       icon: resolvedBudgetType === "project" ? icon || "md/MdFlightTakeoff" : null,
       savingAmount: savingAmount || 0,
+      currency: currency || "MXN",
       period: period || "monthly",
       linkedAccounts: linkedAccounts || [],
       linkedTags: linkedTags || [],

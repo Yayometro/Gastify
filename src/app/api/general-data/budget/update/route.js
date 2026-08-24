@@ -13,7 +13,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on NEW BUDGET POST");
-    const { id, name, goalAmount, category, subCategory, isSurpassed, isSaving, savingAmount, categories, period, linkedAccounts, budgetType, eventStartDate, eventEndDate, linkedTags, icon } =
+    const { id, name, goalAmount, category, subCategory, isSurpassed, isSaving, savingAmount, categories, period, linkedAccounts, budgetType, eventStartDate, eventEndDate, linkedTags, icon, currency } =
       await request.json();
     await dbConnection();
     // NO ID FILTER
@@ -69,6 +69,7 @@ export async function POST(request) {
     if (linkedAccounts !== undefined) updateBudget.linkedAccounts = linkedAccounts;
     if (linkedTags !== undefined) updateBudget.linkedTags = linkedTags;
     if (icon !== undefined) updateBudget.icon = icon || "md/MdFlightTakeoff";
+    if (currency !== undefined) updateBudget.currency = currency;
     if (eventStartDate !== undefined) {
       updateBudget.eventStartDate = eventStartDate ? new Date(eventStartDate) : null;
     }

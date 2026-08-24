@@ -7,7 +7,7 @@ import { matchBillToBudget, getBudgetPeriodRange } from "@/helpers/transformers/
 import { getBudgetBarGradient, getBudgetMoodEmoji, getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import EmptyModule from "@/components/multiUsedComp/EmptyModule";
 import { Tooltip, Modal } from "antd";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { removeOneTransacction } from "@/lib/features/transacctionsSlice";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
@@ -26,6 +26,8 @@ function BudgetDetailModal({
   onEdit,
 }) {
   const dispatch = useDispatch();
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const budgetCurrency = budget?.currency || walletPrimaryCurrency;
   const [editingTrans, setEditingTrans] = useState(null);
   const [editKey, setEditKey] = useState(0);
 
@@ -188,7 +190,7 @@ function BudgetDetailModal({
                     {budget.name || "Unnamed Budget"}
                   </h2>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {isSaving ? "Savings goal" : "Spending budget"} ({budget.period || "monthly"})
+                    {isSaving ? "Savings goal" : "Spending budget"} ({budget.period || "monthly"}) • {budgetCurrency} based
                   </p>
                 </div>
                 <Tooltip title={emojiTooltip} placement="left">
