@@ -59,8 +59,13 @@ export function mapToAddTypeTransactionAndColor(arr) {
 }
 
 export function filterBillsOrIncomes(trans) {
-  const incomes = trans.filter((tra) => !tra.isBill);
-  const bills = trans.filter((tra) => tra.isBill);
+  // A transfer/exchange leg has isBill=false AND isIncome=false by design
+  // (plan section 13) - without this exclusion, `!tra.isBill` alone
+  // silently counted every transfer leg as income everywhere this function
+  // is used (Dashboard, Top3, History, Projections).
+  const nonTransfers = trans.filter((tra) => tra.kind !== "transfer" && tra.kind !== "exchange");
+  const incomes = nonTransfers.filter((tra) => !tra.isBill);
+  const bills = nonTransfers.filter((tra) => tra.isBill);
   return { incomes, bills };
 }
 

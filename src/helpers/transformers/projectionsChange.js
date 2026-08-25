@@ -1,5 +1,5 @@
 import { getYearMonthDateRange } from "../timeFunctions/timeFunctions";
-import { getTransactionsFromTimeRange, filterBillsOrIncomes } from "./transactionsChange";
+import { getTransactionsFromTimeRange, filterBillsOrIncomes, getPrimaryAmount } from "./transactionsChange";
 import { getValueActiveInMonth } from "./budgetHistory";
 import { isSpendingBudget } from "./budgetTypes";
 
@@ -141,11 +141,11 @@ function sumPerBucketMax(bills, budgets, bufferAmount) {
   budgets.forEach((budget) => {
     const matched = bills.filter((bill) => matchBillToBudget(bill, budget));
     matched.forEach((bill) => matchedBillIds.add(String(bill._id)));
-    const actual = sum(matched.map((bill) => bill.amount));
+    const actual = sum(matched.map(getPrimaryAmount));
     total += Math.max(budget.goalAmount || 0, actual);
   });
   const unmatched = bills.filter((bill) => !matchedBillIds.has(String(bill._id)));
-  const unmatchedActual = sum(unmatched.map((bill) => bill.amount));
+  const unmatchedActual = sum(unmatched.map(getPrimaryAmount));
   total += Math.max(bufferAmount || 0, unmatchedActual);
   return total;
 }
@@ -159,14 +159,14 @@ export function getMonthBucketBreakdown(bills, budgets, bufferAmount) {
     return {
       label: budget.name || budget.subCategory?.name || budget.category?.name || "Budget",
       budgeted: budget.goalAmount || 0,
-      actual: sum(matched.map((bill) => bill.amount)),
+      actual: sum(matched.map(getPrimaryAmount)),
     };
   });
   const unmatched = bills.filter((bill) => !matchedBillIds.has(String(bill._id)));
   rows.push({
     label: "Unexpected/Other",
     budgeted: bufferAmount || 0,
-    actual: sum(unmatched.map((bill) => bill.amount)),
+    actual: sum(unmatched.map(getPrimaryAmount)),
   });
   return rows;
 }
@@ -198,8 +198,8 @@ export function buildYearProjectionTable({ transactions, budgets, incomeSources,
     const { unexpectedBuffer, unexpectedIncomeBuffer } = getMonthBuffer(monthlyBuffers, monthIndex);
     const monthTx = getTransactionsFromTimeRange(transactions, start, end);
     const { incomes, bills } = filterBillsOrIncomes(monthTx);
-    const actualIncome = sum(incomes.map((tx) => tx.amount));
-    const actualExpense = sum(bills.map((tx) => tx.amount));
+    const actualIncome = sum(incomes.map(getPrimaryAmount));
+    const actualExpense = sum(bills.map(getPrimaryAmount));
 
     if (end < todayMonthStart) {
       // past month: headline is pure actual; also resolve what was budgeted/expected

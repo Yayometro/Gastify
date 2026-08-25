@@ -6,6 +6,7 @@ import {
   reduceAndTransforToCategories,
   reduceTransCategoriesSliced,
   transactionsToCategories,
+  filterBillsOrIncomes,
 } from "./transactionsChange";
 
 function tx({ amountMinor, currency = "MXN", legacyAmount, category = null, isBill = true }) {
@@ -88,5 +89,30 @@ describe("reducers now sum the Wallet-primary equivalent instead of raw .amount"
     const transactions = [tx({ legacyAmount: 40, category: cat })];
     const { totalAmount } = reduceAndTransforToCategories(transactions);
     expect(totalAmount).toBe(40);
+  });
+});
+
+describe("filterBillsOrIncomes", () => {
+  it("excludes transfer/exchange legs from both incomes and bills", () => {
+    const transactions = [
+      { isBill: true, isIncome: false, kind: "expense", amount: 100 },
+      { isBill: false, isIncome: true, kind: "income", amount: 200 },
+      { isBill: false, isIncome: false, kind: "transfer", amount: 50 },
+      { isBill: false, isIncome: false, kind: "exchange", amount: 75 },
+    ];
+    const { incomes, bills } = filterBillsOrIncomes(transactions);
+    expect(bills).toHaveLength(1);
+    expect(incomes).toHaveLength(1);
+    expect(incomes[0].kind).toBe("income");
+  });
+
+  it("still classifies a real income/bill correctly when kind is absent (legacy pre-migration shape)", () => {
+    const transactions = [
+      { isBill: true, isIncome: false, amount: 100 },
+      { isBill: false, isIncome: true, amount: 200 },
+    ];
+    const { incomes, bills } = filterBillsOrIncomes(transactions);
+    expect(bills).toHaveLength(1);
+    expect(incomes).toHaveLength(1);
   });
 });

@@ -22,6 +22,7 @@ import {
 import { getValueActiveInMonth } from "@/helpers/transformers/budgetHistory";
 import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 import PrimaryCurrencySelector from "../PrimaryCurrencySelector";
+import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 
 function ProjectionsClient({ mcSession }) {
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
@@ -70,11 +71,44 @@ function ProjectionsClient({ mcSession }) {
   }, [transacciones, budgets, incomeSources, monthlyBuffers, year]);
 
   const today = new Date();
-  const startingBalance = useMemo(() => {
-    return (accounts || [])
-      .filter((acc) => acc.accountType !== "credit")
-      .reduce((acc, item) => acc + (item.amount || 0), 0);
-  }, [accounts]);
+  const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
+
+  // Converts every non-credit Account's own native balance into the Wallet's
+  // primary currency using the latest reference rate (plan section 17:
+  // "Starting balance converts every non-credit Account from native
+  // currency to Wallet primary using the latest reference snapshot") -
+  // this is a live, right-now valuation, not a historical one, so it can't
+  // reuse a stored per-transaction snapshot the way closed months do.
+  const [startingBalance, setStartingBalance] = useState(0);
+  useEffect(() => {
+    const nonCreditAccounts = (accounts || []).filter((acc) => acc.accountType !== "credit");
+    let cancelled = false;
+    (async () => {
+      const toFetch = fetcher();
+      let total = 0;
+      for (const acc of nonCreditAccounts) {
+        const accountCurrency = acc.currency || walletPrimaryCurrency;
+        if (accountCurrency === walletPrimaryCurrency) {
+          total += acc.amount || 0;
+          continue;
+        }
+        try {
+          const res = await toFetch.post("general-data/fx/quote", {
+            amountMinor: majorToMinor(acc.amount || 0, accountCurrency),
+            fromCurrency: accountCurrency,
+            toCurrency: walletPrimaryCurrency,
+          });
+          // No cached/live rate available - never fake one. This Account's
+          // balance is simply left out of the total rather than guessed.
+          if (res.ok) total += minorToMajor(res.data.amountMinor, walletPrimaryCurrency);
+        } catch (e) {
+          // Same as above - skip rather than guess.
+        }
+      }
+      if (!cancelled) setStartingBalance(total);
+    })();
+    return () => { cancelled = true; };
+  }, [accounts, walletPrimaryCurrency]);
 
   const rowsWithBalance = useMemo(() => {
     let runningBalance = startingBalance;

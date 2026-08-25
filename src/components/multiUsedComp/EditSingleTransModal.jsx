@@ -53,6 +53,14 @@ function EditSingleTransModalInner({ trans, onClose }) {
   // merchant money already existed) from "user turned it off on purpose"
   // (clear it) - both look identical as chargedElsewhere=false otherwise.
   const [merchantSectionTouched, setMerchantSectionTouched] = useState(false);
+  // Lets the user correct the reported (Wallet-primary-currency) equivalent
+  // by hand when the automatic ECB estimate doesn't match their bank's
+  // actual rate - buildTransactionMoney() already supports this via
+  // manualReportingAmount (used elsewhere for Account-currency reassignment
+  // and Excel import), this just exposes it directly on every foreign-
+  // currency transaction instead of only those two narrower paths.
+  const [reportedOverrideOpen, setReportedOverrideOpen] = useState(false);
+  const [reportedOverrideAmount, setReportedOverrideAmount] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -213,6 +221,9 @@ function EditSingleTransModalInner({ trans, onClose }) {
           ? { merchantAmount, merchantCurrency }
           : { merchantAmount: null, merchantCurrency: null }
         : {}),
+      ...(reportedOverrideOpen && reportedOverrideAmount !== ""
+        ? { manualReportingAmount: Number(reportedOverrideAmount) }
+        : {}),
     };
     try {
       const response = await toFetch.post(`general-data/transactions/${trans._id}`, payload);
@@ -265,6 +276,54 @@ function EditSingleTransModalInner({ trans, onClose }) {
             placeholder="Amount"
           />
           <AmountEquivalentPreview quote={amountEquivalent} />
+          {selectedAccountCurrency !== (wallet?.primaryCurrency || "MXN") && (
+            <div className="-mt-1">
+              {!reportedOverrideOpen ? (
+                <button
+                  type="button"
+                  className="text-[11px] text-purple-500 hover:underline cursor-pointer"
+                  onClick={() => {
+                    const prefill =
+                      amountEquivalent?.amountMinor !== undefined
+                        ? minorToMajor(amountEquivalent.amountMinor, amountEquivalent.currency)
+                        : trans?.displayMoney?.primary
+                        ? minorToMajor(trans.displayMoney.primary.amountMinor, trans.displayMoney.primary.currency)
+                        : "";
+                    setReportedOverrideAmount(String(prefill));
+                    setReportedOverrideOpen(true);
+                  }}
+                >
+                  Doesn&apos;t look right? Correct it
+                </button>
+              ) : (
+                <div className="flex flex-col gap-1 bg-purple-50 border border-purple-200 rounded-xl p-2">
+                  <p className="label-tfp !mb-0">
+                    Exact reported amount ({wallet?.primaryCurrency || "MXN"})
+                  </p>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={reportedOverrideAmount}
+                      onChange={(e) => setReportedOverrideAmount(e.target.value)}
+                      placeholder="Exact amount"
+                      className="flex-1"
+                    />
+                    <button
+                      type="button"
+                      className="text-[11px] text-slate-400 hover:text-slate-600 cursor-pointer"
+                      onClick={() => {
+                        setReportedOverrideOpen(false);
+                        setReportedOverrideAmount("");
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <ChargedElsewhereSection
             enabled={chargedElsewhere}
             onToggle={(checked) => {
