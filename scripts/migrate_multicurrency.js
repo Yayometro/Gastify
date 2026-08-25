@@ -7,13 +7,30 @@
 // Never deletes or overwrites legacy fields - purely additive writes.
 //
 // Usage:
-//   node --env-file=.env scripts/migrate_multicurrency.js                (dry run)
-//   node --env-file=.env scripts/migrate_multicurrency.js --confirm      (writes)
+//   node --env-file=.env scripts/migrate_multicurrency.js                          (dry run, everything)
+//   node --env-file=.env scripts/migrate_multicurrency.js --confirm                (writes, everything)
+//   node --env-file=.env scripts/migrate_multicurrency.js --only=transactions --limit=10           (dry run, scoped)
+//   node --env-file=.env scripts/migrate_multicurrency.js --only=transactions --limit=10 --confirm (writes, scoped)
+//
+// --only restricts which collection(s) run (comma-separated: wallets,
+// accounts, transactions, budgets, incomeSources, projectionSettings,
+// categoryRules). --limit caps how many documents each targeted collection's
+// cursor pulls, for a small real-write trial before running unbounded.
 
 const mongoose = require('mongoose');
 
 const CONFIRM = process.argv.includes('--confirm');
 const BATCH_SIZE = 200;
+
+const onlyArg = process.argv.find((a) => a.startsWith('--only='));
+const ONLY = onlyArg ? new Set(onlyArg.slice('--only='.length).split(',').map((s) => s.trim())) : null;
+
+const limitArg = process.argv.find((a) => a.startsWith('--limit='));
+const LIMIT = limitArg ? Number(limitArg.slice('--limit='.length)) : null;
+
+function applyLimit(cursor) {
+  return LIMIT ? cursor.limit(LIMIT) : cursor;
+}
 
 function toMinor(amount) {
   const n = Number(amount);
@@ -33,7 +50,7 @@ function legacyReportingMoney(amountMinor, effectiveDate) {
 }
 
 async function migrateWallets(db, counters) {
-  const cursor = db.collection('wallets').find({ primaryCurrency: { $exists: false } });
+  const cursor = applyLimit(db.collection('wallets').find({ primaryCurrency: { $exists: false } }));
   let batch = [];
   const flush = async () => {
     if (batch.length === 0) return;
@@ -57,9 +74,9 @@ async function migrateWallets(db, counters) {
 }
 
 async function migrateAccounts(db, counters) {
-  const cursor = db.collection('accounts').find({
+  const cursor = applyLimit(db.collection('accounts').find({
     $or: [{ currency: { $exists: false } }, { balanceMinor: { $exists: false } }, { balanceMinor: null }],
-  });
+  }));
   let batch = [];
   const flush = async () => {
     if (batch.length === 0) return;
@@ -90,9 +107,9 @@ async function migrateAccounts(db, counters) {
 }
 
 async function migrateTransactions(db, counters) {
-  const cursor = db.collection('transactions').find({
+  const cursor = applyLimit(db.collection('transactions').find({
     $or: [{ kind: { $exists: false } }, { 'money.account': { $exists: false } }],
-  });
+  }));
   let batch = [];
   const flush = async () => {
     if (batch.length === 0) return;
@@ -134,9 +151,9 @@ async function migrateTransactions(db, counters) {
 }
 
 async function migrateBudgets(db, counters) {
-  const cursor = db.collection('budgets').find({
+  const cursor = applyLimit(db.collection('budgets').find({
     $or: [{ goalMoney: { $exists: false } }, { goalMoney: null }],
-  });
+  }));
   let batch = [];
   const flush = async () => {
     if (batch.length === 0) return;
@@ -175,7 +192,7 @@ async function migrateBudgets(db, counters) {
 }
 
 async function migrateIncomeSources(db, counters) {
-  const cursor = db.collection('incomesources').find({ money: { $exists: false } });
+  const cursor = applyLimit(db.collection('incomesources').find({ money: { $exists: false } }));
   let batch = [];
   const flush = async () => {
     if (batch.length === 0) return;
@@ -210,7 +227,7 @@ async function migrateIncomeSources(db, counters) {
 }
 
 async function migrateProjectionSettings(db, counters) {
-  const cursor = db.collection('projectionsettings').find({});
+  const cursor = applyLimit(db.collection('projectionsettings').find({}));
   let batch = [];
   const flush = async () => {
     if (batch.length === 0) return;
@@ -258,9 +275,9 @@ async function migrateProjectionSettings(db, counters) {
 }
 
 async function migrateCategoryRules(db, counters) {
-  const cursor = db.collection('categoryrules').find({
+  const cursor = applyLimit(db.collection('categoryrules').find({
     $or: [{ amountCurrency: { $exists: false } }, { minAmountMinor: { $exists: false } }],
-  });
+  }));
   let batch = [];
   const flush = async () => {
     if (batch.length === 0) return;
@@ -291,6 +308,8 @@ async function migrateCategoryRules(db, counters) {
 
 async function main() {
   console.log(CONFIRM ? '*** WRITE MODE (--confirm) ***' : 'DRY RUN (pass --confirm to write)');
+  if (ONLY) console.log('Scoped to:', [...ONLY].join(', '));
+  if (LIMIT) console.log('Limit per collection:', LIMIT);
   await mongoose.connect(process.env.MONGODB_URI);
   const db = mongoose.connection.db;
 
@@ -304,13 +323,19 @@ async function main() {
     categoryRules: { wouldWrite: 0 },
   };
 
-  await migrateWallets(db, counters);
-  await migrateAccounts(db, counters);
-  await migrateTransactions(db, counters);
-  await migrateBudgets(db, counters);
-  await migrateIncomeSources(db, counters);
-  await migrateProjectionSettings(db, counters);
-  await migrateCategoryRules(db, counters);
+  const runs = [
+    ['wallets', migrateWallets],
+    ['accounts', migrateAccounts],
+    ['transactions', migrateTransactions],
+    ['budgets', migrateBudgets],
+    ['incomeSources', migrateIncomeSources],
+    ['projectionSettings', migrateProjectionSettings],
+    ['categoryRules', migrateCategoryRules],
+  ];
+  for (const [name, fn] of runs) {
+    if (ONLY && !ONLY.has(name)) continue;
+    await fn(db, counters);
+  }
 
   console.log(JSON.stringify({ mode: CONFIRM ? 'write' : 'dry-run', counters }, null, 2));
 
