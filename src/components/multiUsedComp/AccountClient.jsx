@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./EmptyModule";
@@ -34,6 +35,8 @@ function AccountClient({acSession}) {
   let [allTransactions, setAllTransacctions] = useState([]);
   let [finalAccounts, setFinalAccounts] = useState([]);
   let [carruselCurrent, setCarruselCurrent] = useState(0);
+  const searchParams = useSearchParams();
+  const targetAccountId = searchParams.get("accountId");
   // Redux
   const dispatch = useDispatch()
   const ccUser = useSelector((state) => state.userReducer)
@@ -174,6 +177,15 @@ function AccountClient({acSession}) {
       }
     }
   }, [carruselCurrent, finalAccounts]);
+
+  // Deep-link support: a CreditCard's title links here as
+  // /dashboard/accounts?accountId=<id>, jumping the carousel straight to it.
+  useEffect(() => {
+    if (targetAccountId && finalAccounts.length > 0) {
+      const idx = finalAccounts.findIndex((a) => String(a._id) === String(targetAccountId));
+      if (idx >= 0) setCarruselCurrent(idx);
+    }
+  }, [targetAccountId, finalAccounts]);
 
   return (
     <div className=" w-full h-full sm:pr-2">
