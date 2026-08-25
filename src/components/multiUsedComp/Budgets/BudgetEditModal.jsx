@@ -21,7 +21,7 @@ import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { findCoverageConflicts } from "@/helpers/transformers/budgetCoverage";
 import { BUDGET_TYPES, getBudgetType } from "@/helpers/transformers/budgetTypes";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
-import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@/lib/money/currencies";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
 const typeOptions = [
@@ -66,6 +66,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
   const { setItemSelected } = useContext(SelectCategoryContext);
   const { transacciones = [], wallet } = useGetDataFromProvider();
   const ccAccounts = useSelector((state) => state.accountsReducer?.data || []);
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const ccBudgets = useSelector((state) => state.budgetReducer?.data || []);
 
   const availableTags = useMemo(() => {
@@ -263,7 +264,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
             <div className="flex items-center gap-1"><p className="label-tfp">🔗 Or link account balances</p><Tooltip title="The selected balances track progress; no money is moved."><span className="text-purple-500"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} /></span></Tooltip></div>
             <div className="flex flex-col gap-2">{ccAccounts.length ? ccAccounts.map((acc) => {
               const selected = form.linkedAccounts.includes(String(acc._id));
-              return <button key={acc._id} type="button" onClick={() => toggleListValue("linkedAccounts", acc._id)} className={`flex justify-between rounded-xl border px-3 py-2 text-xs ${selected ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-200"}`}><span>{acc.name}</span><strong>{usdFormatChanger(acc.amount || 0)}</strong></button>;
+              return <button key={acc._id} type="button" onClick={() => toggleListValue("linkedAccounts", acc._id)} className={`flex justify-between rounded-xl border px-3 py-2 text-xs ${selected ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-200"}`}><span>{acc.name}</span><strong>{formatMoneyMajor(acc.amount || 0, acc.currency || walletPrimaryCurrency, { showCode: true })}</strong></button>;
             }) : <p className="text-xs text-gray-400 italic">No accounts available</p>}</div>
           </>}
 

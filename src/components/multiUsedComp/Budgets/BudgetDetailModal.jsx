@@ -16,6 +16,8 @@ import Tag from "@/components/multiUsedComp/Tag";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import dayjs from "dayjs";
 import currencyFormatter from "currency-formatter";
+import { formatMoneyMajor } from "@/lib/money/currencies";
+import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 
 function BudgetDetailModal({
   budget,
@@ -27,6 +29,7 @@ function BudgetDetailModal({
 }) {
   const dispatch = useDispatch();
   const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const linkedAccountsTotal = useLinkedAccountsTotal(budget?.linkedAccounts, walletPrimaryCurrency);
   const budgetCurrency = budget?.currency || walletPrimaryCurrency;
   const [editingTrans, setEditingTrans] = useState(null);
   const [editKey, setEditKey] = useState(0);
@@ -91,10 +94,7 @@ function BudgetDetailModal({
   let effectiveAmount = totalSpent;
   if (isSaving) {
     if (budget.linkedAccounts && budget.linkedAccounts.length > 0) {
-      effectiveAmount = budget.linkedAccounts.reduce(
-        (acc, a) => acc + (Number(a.amount) || 0),
-        0
-      );
+      effectiveAmount = linkedAccountsTotal;
     } else {
       effectiveAmount = Math.max(Number(budget.savingAmount) || 0, totalSpent);
     }
@@ -307,10 +307,14 @@ function BudgetDetailModal({
                       <span className="text-base">🔗</span>
                       <span>
                         Linked to {budget.linkedAccounts.length} account{budget.linkedAccounts.length !== 1 ? "s" : ""}:{" "}
-                        <strong>{budget.linkedAccounts.map(a => `${a.name || "Account"} (${usdFormatChanger(a.amount || 0)})`).join(", ")}</strong>
+                        <strong>
+                          {budget.linkedAccounts
+                            .map((a) => `${a.name || "Account"} (${formatMoneyMajor(a.amount || 0, a.currency || walletPrimaryCurrency, { showCode: true })})`)
+                            .join(", ")}
+                        </strong>
                       </span>
                     </div>
-                    <span className="font-bold text-blue-700">{usdFormatChanger(effectiveAmount)}</span>
+                    <span className="font-bold text-blue-700">{formatMoneyMajor(effectiveAmount, walletPrimaryCurrency, { showCode: true })}</span>
                   </div>
                 )}
 

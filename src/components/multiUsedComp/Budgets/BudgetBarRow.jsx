@@ -6,6 +6,7 @@ import UniversalCategoIcon from "../UniversalCategoIcon";
 import { getBudgetBarGradient, getBudgetMoodEmoji, getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { isProjectBudget, isSavingBudget } from "@/helpers/transformers/budgetTypes";
+import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 
 function BudgetBarRow({ budget, actual, onClick }) {
   const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
@@ -13,14 +14,15 @@ function BudgetBarRow({ budget, actual, onClick }) {
   const goalAmount = budget.goalAmount || 0;
   const isSaving = isSavingBudget(budget);
   const isProject = isProjectBudget(budget);
+  const linkedAccountsTotal = useLinkedAccountsTotal(
+    isSaving ? budget.linkedAccounts : null,
+    walletPrimaryCurrency
+  );
 
   let value = 0;
   if (isSaving) {
     if (budget.linkedAccounts && budget.linkedAccounts.length > 0) {
-      value = budget.linkedAccounts.reduce(
-        (acc, a) => acc + (Number(a.amount) || 0),
-        0
-      );
+      value = linkedAccountsTotal;
     } else {
       value = Math.max(Number(budget.savingAmount) || 0, Number(actual) || 0);
     }
@@ -109,7 +111,7 @@ function BudgetBarRow({ budget, actual, onClick }) {
               style={{ backgroundColor: defaultCate?.color || "#DADADA" }}
               className="rounded-full w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center border-2 border-white shadow-sm shrink-0"
             >
-              <UniversalCategoIcon type={defaultCate?.icon} siz={18} />
+              <UniversalCategoIcon type={defaultCate?.icon || (isSaving ? "md/MdSavings" : "md/MdCategory")} siz={18} />
             </div>
           )}
           <div className="flex flex-col">
