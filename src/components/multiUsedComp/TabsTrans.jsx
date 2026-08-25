@@ -1,67 +1,44 @@
 import React, { useEffect, useState } from "react";
 import { ResponsiveBar } from "@nivo/bar";
+import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import { getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
+import { formatMoneyMinor } from "@/lib/money/currencies";
 
 function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
   const [newData, setNewData] = useState([]);
   const [totalValueOn, setTotalValueOn] = useState(0);
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
 
   useEffect(() => {
     if (ttTrans) {
-      // console.log(ttTrans);
-      let transWithoutCategory = ttTrans.filter((trans) => !trans.category);
-      let transWithCategory = ttTrans.filter(
-        (trans) => trans?.category && !trans?.subCategory
-      );
-      let transWithSubCat = ttTrans.filter((trans) => trans?.subCategory);
+      // These bars are labeled in the Wallet's primary currency, so each
+      // transaction must be converted before summing - raw trans.amount is
+      // in that transaction's own native currency, which only happens to
+      // match the Wallet primary when every transaction shares one currency.
       let createNewOrder = ttTrans.map((trans) => {
-        if (!trans.category) {
-          return {
-            "No category": trans.amount,
-            type: `No category`,
-            value: trans.amount,
-            idCategory: "ID-nocategory",
-            color: "#ABABAB",
-            icon: "MdFilterNone",
-          };
-        }
-        if (trans.category) {
-          return {
-            [trans.category.name]: trans.amount,
-            type: trans.category.name,
-            value: trans.amount,
-            idCategory: trans.category._id,
-            color: trans.category.color || "#ABABAB",
-            icon: trans.category.icon || "MdFilterNone",
-          };
-        }
-        if (trans.subCategory) {
-          return {
-            [trans.category.name]: trans.amount,
-            type: trans.category.name,
-            value: trans.amount,
-            idCategory: trans.category._id,
-            color: trans.category.color || "#ABABAB",
-            icon: trans.category.icon || "MdFilterNone",
-          };
-        }
+        const category = trans.category;
+        return {
+          type: category ? category.name : "No category",
+          value: getPrimaryAmount(trans),
+          idCategory: category ? category._id : "ID-nocategory",
+          color: (category && category.color) || "#ABABAB",
+          icon: (category && category.icon) || "MdFilterNone",
+          transaction: trans,
+        };
       });
-      // console.log("createNewOrder", createNewOrder);
       const reducedData = createNewOrder.reduce((acc, item) => {
-        // console.log("acc", acc)
-        // console.log("item", item)
-        // Si el idCategory ya existe en el acumulador, suma su valor
         if (acc[item.idCategory]) {
           acc[item.idCategory].value += item.value;
+          acc[item.idCategory].transactions.push(item.transaction);
         } else {
-          // Si no, crea una nueva entrada en el acumulador
-          acc[item.idCategory] = { ...item };
+          acc[item.idCategory] = { ...item, transactions: [item.transaction] };
         }
         return acc;
       }, {});
       const finalArray = Object.values(reducedData).sort((a, b) => b.value - a.value);
       const totalValue = finalArray.reduce((acc, item) => acc + item.value, 0);
-        console.log("finalArray", finalArray);
       setNewData(finalArray);
       setTotalValueOn(totalValue);
     }
@@ -183,6 +160,28 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
                   </div>
                 </div>
               </div>
+              {(() => {
+                const { breakdown, isMultiCurrency } = getMonthCurrencyBreakdown(
+                  dataa.data.transactions,
+                  walletPrimaryCurrency
+                );
+                if (!isMultiCurrency) return null;
+                return (
+                  <div className="flex flex-wrap gap-1 justify-center w-full font-normal">
+                    {breakdown.map((g) => (
+                      <div
+                        key={g.currency}
+                        className="bg-white rounded-full px-2 py-0.5 text-[10px] border border-gray-200"
+                      >
+                        {formatMoneyMinor(g.nativeAmountMinor, g.currency, { showCode: true })}
+                        {g.currency !== walletPrimaryCurrency && (
+                          <> → {formatMoneyMinor(g.primaryAmountMinor, walletPrimaryCurrency, { showCode: true })}</>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           );
         }}
