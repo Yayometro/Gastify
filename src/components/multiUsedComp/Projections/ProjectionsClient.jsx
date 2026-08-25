@@ -18,6 +18,7 @@ import {
   buildYearProjectionTable,
   getMonthBucketBreakdown,
   getExpectedOccurrencesInMonth,
+  getMonthCurrencyBreakdown,
 } from "@/helpers/transformers/projectionsChange";
 import { getValueActiveInMonth } from "@/helpers/transformers/budgetHistory";
 import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
@@ -58,20 +59,53 @@ function ProjectionsClient({ mcSession }) {
   const monthlyBalances = projectionSettings?.monthlyBalances || [];
   const monthlyBuffers = projectionSettings?.monthlyBuffers || [];
 
+  const today = new Date();
+  const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
+
+  // Income sources are entered in their own currency (e.g. a USD paycheck),
+  // but the projection math needs every source in the Wallet's primary
+  // currency to sum them meaningfully. Same-currency sources pass through
+  // untouched; foreign ones are converted via a live quote, never faked.
+  const [incomeSourcesConverted, setIncomeSourcesConverted] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const toFetch = fetcher();
+      const converted = await Promise.all(
+        (incomeSources || []).map(async (s) => {
+          const sourceCurrency = s.currency || walletPrimaryCurrency;
+          if (sourceCurrency === walletPrimaryCurrency) return s;
+          try {
+            const res = await toFetch.post("general-data/fx/quote", {
+              amountMinor: majorToMinor(s.amount || 0, sourceCurrency),
+              fromCurrency: sourceCurrency,
+              toCurrency: walletPrimaryCurrency,
+            });
+            if (res.ok) return { ...s, amount: minorToMajor(res.data.amountMinor, walletPrimaryCurrency) };
+          } catch (e) {
+            // No rate available - fall through to the raw (unconverted) source.
+          }
+          return s;
+        })
+      );
+      if (!cancelled) setIncomeSourcesConverted(converted);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [incomeSources, walletPrimaryCurrency]);
+
   const rows = useMemo(() => {
     if (!transacciones || !budgets) return [];
     return buildYearProjectionTable({
       transactions: transacciones,
       budgets,
-      incomeSources,
+      incomeSources: incomeSourcesConverted,
       projectionSettings: { monthlyBuffers },
       year,
       today: new Date(),
     });
-  }, [transacciones, budgets, incomeSources, monthlyBuffers, year]);
-
-  const today = new Date();
-  const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
+  }, [transacciones, budgets, incomeSourcesConverted, monthlyBuffers, year]);
 
   // Converts every non-credit Account's own native balance into the Wallet's
   // primary currency using the latest reference rate (plan section 17:
@@ -147,10 +181,12 @@ function ProjectionsClient({ mcSession }) {
   const selectedUnexpectedIncomeBuffer = selectedMonthBufferEntry?.unexpectedIncomeBuffer || 0;
 
   const selectedMonthDetails = useMemo(() => {
-    if (!selectedRow) return { bucketBreakdown: [], incomeOccurrences: [] };
+    if (!selectedRow) return { bucketBreakdown: [], incomeOccurrences: [], incomeCurrencyBreakdown: null, expenseCurrencyBreakdown: null };
     const { start, end } = monthRanges.get(selectedRow.monthName);
     const monthTx = getTransactionsFromTimeRange(transacciones || [], start, end);
-    const { bills } = filterBillsOrIncomes(monthTx);
+    const { bills, incomes } = filterBillsOrIncomes(monthTx);
+    const expenseCurrencyBreakdown = getMonthCurrencyBreakdown(bills, walletPrimaryCurrency);
+    const incomeCurrencyBreakdown = getMonthCurrencyBreakdown(incomes, walletPrimaryCurrency);
     // Past months compare against the goalAmount that was actually active back
     // then (via history[]), not today's value - otherwise the chart would show
     // a budget you only set recently as if it applied to a much older month.
@@ -168,15 +204,15 @@ function ProjectionsClient({ mcSession }) {
     const incomeOccurrences =
       selectedRow.type === "actual"
         ? []
-        : (incomeSources || [])
+        : (incomeSourcesConverted || [])
             .filter((s) => s.active && !s.archived)
             .map((s) => ({
               name: s.name,
               amount: s.amount,
               occurrences: getExpectedOccurrencesInMonth(s, start, end),
             }));
-    return { bucketBreakdown, incomeOccurrences };
-  }, [selectedRow, monthRanges, transacciones, budgets, incomeSources, selectedUnexpectedBuffer]);
+    return { bucketBreakdown, incomeOccurrences, incomeCurrencyBreakdown, expenseCurrencyBreakdown };
+  }, [selectedRow, monthRanges, transacciones, budgets, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency]);
 
   const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }) => {
     const res = await toFetch.post("general-data/projections/update", {
@@ -245,6 +281,7 @@ function ProjectionsClient({ mcSession }) {
           incomeSources={incomeSources}
           userId={user?._id}
           walletId={wallet?._id}
+          walletPrimaryCurrency={walletPrimaryCurrency}
           onChange={loadSettings}
         />
 
@@ -262,6 +299,9 @@ function ProjectionsClient({ mcSession }) {
             monthRow={selectedRow}
             bucketBreakdown={selectedMonthDetails.bucketBreakdown}
             incomeOccurrences={selectedMonthDetails.incomeOccurrences}
+            incomeCurrencyBreakdown={selectedMonthDetails.incomeCurrencyBreakdown}
+            expenseCurrencyBreakdown={selectedMonthDetails.expenseCurrencyBreakdown}
+            walletPrimaryCurrency={walletPrimaryCurrency}
             unexpectedBuffer={selectedUnexpectedBuffer}
             unexpectedIncomeBuffer={selectedUnexpectedIncomeBuffer}
             onSaveBuffers={handleSaveBuffers}

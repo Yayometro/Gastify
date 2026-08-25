@@ -6,6 +6,9 @@ const incomeSourceSchema = new Schema({
     // Legacy major-unit amount. Preserved until Phase 9 (Projections/
     // IncomeSources) migrates consumers to `money`.
     amount: { type: Number },
+    // The currency `amount` is denominated in. Projections converts this to
+    // the Wallet's primary currency at build time when they differ.
+    currency: { type: String },
     recurrence: {
       type: String,
       enum: ["monthly", "semimonthly", "biweekly", "weekly"],

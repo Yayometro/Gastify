@@ -171,6 +171,44 @@ export function getMonthBucketBreakdown(bills, budgets, bufferAmount) {
   return rows;
 }
 
+// Groups a set of transactions by their own native currency, summing both
+// the native amount and its Wallet-primary equivalent per currency - so a
+// month's income/expense total can be shown broken down by "how much of
+// this actually came in pesos vs. dollars", plus the rate used for each
+// foreign currency. Transactions with no displayMoney (never migrated) are
+// skipped rather than guessed. `isMultiCurrency` is false when everything
+// is already in the wallet's own currency, so callers can hide the
+// breakdown UI entirely in the common single-currency case.
+export function getMonthCurrencyBreakdown(transactions, walletPrimaryCurrency) {
+  const groups = {};
+  for (const t of transactions || []) {
+    const native = t?.displayMoney?.native;
+    const primary = t?.displayMoney?.primary;
+    if (!native || !primary) continue;
+    const currency = native.currency;
+    if (!groups[currency]) {
+      groups[currency] = {
+        currency,
+        nativeAmountMinor: 0,
+        primaryAmountMinor: 0,
+        rate: null,
+        effectiveDate: null,
+      };
+    }
+    const g = groups[currency];
+    g.nativeAmountMinor += native.amountMinor;
+    g.primaryAmountMinor += primary.amountMinor;
+    if (!g.effectiveDate || new Date(primary.effectiveDate) > new Date(g.effectiveDate)) {
+      g.rate = primary.rate;
+      g.effectiveDate = primary.effectiveDate;
+    }
+  }
+  const breakdown = Object.values(groups);
+  const isMultiCurrency =
+    breakdown.length > 1 || (breakdown.length === 1 && breakdown[0].currency !== walletPrimaryCurrency);
+  return { breakdown, isMultiCurrency };
+}
+
 // Each month's unexpected buffers are set independently (see monthlyBuffers on
 // ProjectionSettings) - a value entered while looking at August must not leak
 // into any other month, so this always looks up that specific month's entry.

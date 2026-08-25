@@ -9,7 +9,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on UPDATE INCOME SOURCE POST");
-    const { id, name, amount, recurrence, anchorDate, active } =
+    const { id, name, amount, currency, recurrence, anchorDate, active } =
       await request.json();
     await dbConnection();
     // NO ID FILTER
@@ -37,6 +37,7 @@ export async function POST(request) {
     //UPDATE:
     updateIncomeSource.name = !name ? updateIncomeSource.name : name;
     updateIncomeSource.amount = !amount ? updateIncomeSource.amount : amount;
+    updateIncomeSource.currency = !currency ? updateIncomeSource.currency : currency;
     updateIncomeSource.recurrence = !recurrence
       ? updateIncomeSource.recurrence
       : recurrence;
