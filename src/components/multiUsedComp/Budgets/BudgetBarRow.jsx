@@ -14,7 +14,7 @@ function BudgetBarRow({ budget, actual, onClick }) {
   const goalAmount = budget.goalAmount || 0;
   const isSaving = isSavingBudget(budget);
   const isProject = isProjectBudget(budget);
-  const linkedAccountsTotal = useLinkedAccountsTotal(
+  const { total: linkedAccountsTotal } = useLinkedAccountsTotal(
     isSaving ? budget.linkedAccounts : null,
     walletPrimaryCurrency
   );

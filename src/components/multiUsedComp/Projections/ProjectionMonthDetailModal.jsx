@@ -10,7 +10,7 @@ import Movements from "../Movements";
 import runNotify from "@/helpers/gastifyNotifier";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
-import { formatMoneyMinor } from "@/lib/money/currencies";
+import CurrencyBreakdownChips from "../CurrencyBreakdownChips";
 
 const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
   ssr: false,
@@ -23,36 +23,6 @@ function QuestionTooltip({ title }) {
         <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={12} />
       </div>
     </Tooltip>
-  );
-}
-
-// A per-currency chip row shown below a month's income/expense figure -
-// only rendered when more than one currency (or a single non-primary one)
-// actually contributed, per getMonthCurrencyBreakdown. Each foreign-currency
-// chip shows the native amount, its converted equivalent, and the rate
-// applied so the number isn't a mystery.
-function CurrencyBreakdownChips({ breakdown, walletPrimaryCurrency }) {
-  if (!breakdown?.isMultiCurrency) return null;
-  return (
-    <div className="flex flex-wrap gap-1 mt-1.5">
-      {breakdown.breakdown.map((g) => (
-        <Tooltip
-          key={g.currency}
-          title={
-            g.currency === walletPrimaryCurrency
-              ? "Already in your wallet's currency - no conversion needed."
-              : `Converted at ${g.rate} (${walletPrimaryCurrency} per ${g.currency}) as of ${g.effectiveDate ? new Date(g.effectiveDate).toLocaleDateString() : "n/a"}.`
-          }
-        >
-          <div className="bg-white border border-purple-200 rounded-full px-2 py-0.5 text-[11px] text-purple-700">
-            {formatMoneyMinor(g.nativeAmountMinor, g.currency, { showCode: true })}
-            {g.currency !== walletPrimaryCurrency && (
-              <> → {formatMoneyMinor(g.primaryAmountMinor, walletPrimaryCurrency, { showCode: true })}</>
-            )}
-          </div>
-        </Tooltip>
-      ))}
-    </div>
   );
 }
 

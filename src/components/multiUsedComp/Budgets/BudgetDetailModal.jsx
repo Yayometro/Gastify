@@ -2,8 +2,8 @@
 import React, { useMemo, useState } from "react";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
-import { matchBillToBudget, getBudgetPeriodRange } from "@/helpers/transformers/projectionsChange";
+import { usdFormatChanger, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import { matchBillToBudget, getBudgetPeriodRange, getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
 import { getBudgetBarGradient, getBudgetMoodEmoji, getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import EmptyModule from "@/components/multiUsedComp/EmptyModule";
 import { Tooltip, Modal } from "antd";
@@ -18,6 +18,7 @@ import dayjs from "dayjs";
 import currencyFormatter from "currency-formatter";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
+import CurrencyBreakdownChips from "@/components/multiUsedComp/CurrencyBreakdownChips";
 
 function BudgetDetailModal({
   budget,
@@ -29,13 +30,16 @@ function BudgetDetailModal({
 }) {
   const dispatch = useDispatch();
   const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
-  const linkedAccountsTotal = useLinkedAccountsTotal(budget?.linkedAccounts, walletPrimaryCurrency);
+  const { total: linkedAccountsTotal, breakdown: linkedAccountsBreakdown } = useLinkedAccountsTotal(
+    budget?.linkedAccounts,
+    walletPrimaryCurrency
+  );
   const budgetCurrency = budget?.currency || walletPrimaryCurrency;
   const [editingTrans, setEditingTrans] = useState(null);
   const [editKey, setEditKey] = useState(0);
 
-  const { matchingTransactions, totalSpent, categoryBreakdown } = useMemo(() => {
-    if (!budget) return { matchingTransactions: [], totalSpent: 0, categoryBreakdown: [] };
+  const { matchingTransactions, totalSpent, categoryBreakdown, expenseCurrencyBreakdown } = useMemo(() => {
+    if (!budget) return { matchingTransactions: [], totalSpent: 0, categoryBreakdown: [], expenseCurrencyBreakdown: null };
 
     let effectiveStart = startDate;
     let effectiveEnd = endDate;
@@ -60,7 +64,7 @@ function BudgetDetailModal({
       if (tMs >= startMs && tMs <= endMs) {
         if (matchBillToBudget(t, budget)) {
           matched.push(t);
-          const amount = Number(t.amount) || 0;
+          const amount = getPrimaryAmount(t);
           spent += amount;
 
           const catName = t.subCategory?.name || t.category?.name || "Other";
@@ -83,8 +87,9 @@ function BudgetDetailModal({
       matchingTransactions: matched,
       totalSpent: spent,
       categoryBreakdown: breakdown,
+      expenseCurrencyBreakdown: getMonthCurrencyBreakdown(matched, walletPrimaryCurrency),
     };
-  }, [budget, transacciones, startDate, endDate]);
+  }, [budget, transacciones, startDate, endDate, walletPrimaryCurrency]);
 
   if (!budget) return null;
 
@@ -215,6 +220,10 @@ function BudgetDetailModal({
                     {periodLabel}
                   </span>
                 </div>
+                <CurrencyBreakdownChips
+                  breakdown={isSaving ? linkedAccountsBreakdown : expenseCurrencyBreakdown}
+                  walletPrimaryCurrency={walletPrimaryCurrency}
+                />
                 <div className="w-full h-5 bg-gray-200 rounded-full relative my-3">
                   <div
                     className="h-full rounded-full transition-all"
