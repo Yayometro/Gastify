@@ -5,6 +5,7 @@ import * as ai from "react-icons/ai";
 import * as gi from "react-icons/gi";
 
 function UniversalCategoIcon({ type, siz, colore, className }) {
+  if (!type) return null;
   // if (type.includes("/")) {
     // console.log(type);
     const [collectionName, iconName] = type.split("/");

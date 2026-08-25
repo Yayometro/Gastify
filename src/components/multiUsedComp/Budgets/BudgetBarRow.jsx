@@ -106,7 +106,7 @@ function BudgetBarRow({ budget, actual, onClick }) {
               style={{ backgroundColor: defaultCate?.color || "#DADADA" }}
               className="rounded-full w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center border-2 border-white shadow-sm shrink-0"
             >
-              <UniversalCategoIcon type={defaultCate?.icon} siz={18} />
+              <UniversalCategoIcon type={defaultCate?.icon || (isSaving ? "md/MdSavings" : "md/MdCategory")} siz={18} />
             </div>
           )}
           <div className="flex flex-col">
