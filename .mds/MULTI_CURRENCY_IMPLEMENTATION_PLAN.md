@@ -1,8 +1,8 @@
 # Gastify Multi-Currency Implementation Plan
 
-> **Status:** In progress, on branch `claude/multicurrency`. Phases 0-8 and 10 complete and pushed (Phase 8's Budgets/Projections work deliberately shipped as a lighter "single currency legend + optional per-Budget label" scope instead of this doc's original full FX-aware Budget-currency architecture — see Entry #27 in `.mds/AI_COORDINATION_LOG.md` for the explicit user decision and what's still a known limitation as a result). Phase 9 (Projections/IncomeSources real currency conversion) got the same lighter treatment, not the full spec. Phase 11 (the real `--confirm` migration write) never run — dry-run only.
+> **Status:** In progress, on branch `claude/multicurrency`. Phases 0-8, 9 (Projections transaction-level conversion; Budget-currency math still deferred, see section 16), 10, and 11 (full `--confirm` migration run, complete) are done and pushed. Budgets (section 16, "Budget-domain currency calculations") remains the one deliberately-deferred piece — see Entry #27/#29 in `.mds/AI_COORDINATION_LOG.md` for the explicit user decision and scope boundary.
 >
-> **Last updated:** 2026-08-24 (by Claude Sonnet 5)
+> **Last updated:** 2026-08-25 (by Claude Sonnet 5)
 >
 > **Initial supported currencies:** MXN, USD, EUR, JPY
 >
