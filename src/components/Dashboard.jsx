@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
 
 import "@/components/styles/animations.css";
@@ -64,6 +64,22 @@ function Wallet({ dataServ, session }) {
   let [totalAmountBalance, setTotalAmountBalance] = useState(0);
   let [totalBill, setTotalBill] = useState(0);
   let [totalIncome, setTotalIncome] = useState(0);
+  let [prevTotalBill, setPrevTotalBill] = useState(0);
+  let [prevTotalIncome, setPrevTotalIncome] = useState(0);
+  // Mobile header carousel: accounts / summary / vs-last-month, one at a
+  // time. Starts centered on the summary panel (today's default view).
+  const headerCarouselRef = useRef(null);
+  const [headerActiveSlide, setHeaderActiveSlide] = useState(1);
+  useEffect(() => {
+    if (headerCarouselRef.current) {
+      headerCarouselRef.current.scrollLeft = headerCarouselRef.current.clientWidth;
+    }
+  }, []);
+  const handleHeaderCarouselScroll = (e) => {
+    const el = e.target;
+    if (!el.clientWidth) return;
+    setHeaderActiveSlide(Math.round(el.scrollLeft / el.clientWidth));
+  };
   //LOADER
   const [loading, setLoading] = useState(true);
   //Loader
@@ -210,6 +226,22 @@ function Wallet({ dataServ, session }) {
       setTotalAmountBalance(finalAmount);
       setTotalBill(finalBill);
       setTotalIncome(finalIncome);
+
+      // "Vs. last month" comparison - always the calendar month right
+      // before the current view's start date, regardless of what range is
+      // currently selected. Same conversion (getPrimaryAmount) as the
+      // current-period totals above, so the comparison is apples-to-apples.
+      const prevMonthDate = new Date(startFilterDate.getFullYear(), startFilterDate.getMonth() - 1, 1);
+      const prevMonthStart = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), 1);
+      const prevMonthEnd = getLastDayOfMonth(prevMonthDate.getFullYear(), prevMonthDate.getMonth());
+      const prevMonthTx = transactions.filter((tra) => {
+        const transactionDate = new Date(tra.date || tra.createdAt);
+        return transactionDate >= prevMonthStart && transactionDate <= prevMonthEnd;
+      });
+      const prevBills = prevMonthTx.filter((bill) => bill.isBill && !bill.isIncome);
+      const prevIncomes = prevMonthTx.filter((bill) => bill.isIncome && !bill.isBill);
+      setPrevTotalBill(prevBills.reduce((current, bill) => current + getPrimaryAmount(bill), 0));
+      setPrevTotalIncome(prevIncomes.reduce((current, income) => current + getPrimaryAmount(income), 0));
       //
       setLoading(false);
     }
@@ -246,6 +278,109 @@ function Wallet({ dataServ, session }) {
     
   }
 
+  // Category color (not sign-based): Incomes always green-tinted,
+  // Expenses always red-tinted, Balance always blue-tinted - very light,
+  // near-white tones so they stay legible on the purple gradient without
+  // competing with it.
+  const INCOME_COLOR = "#E3F7EC";
+  const EXPENSE_COLOR = "#FCEBEB";
+  const BALANCE_COLOR = "#E6F1FB";
+
+  function renderDeltaRow(label, current, previous, colorHex) {
+    const delta = current - previous;
+    const pct = previous ? (delta / Math.abs(previous)) * 100 : null;
+    const sign = delta > 0 ? "+" : delta < 0 ? "-" : "";
+    const arrow = delta > 0 ? "▲" : delta < 0 ? "▼" : "";
+    return (
+      <div key={label} className="flex flex-col bg-black/15 rounded-lg px-2.5 py-1.5 w-full">
+        <span className="text-white/70 text-[10px]">{label}</span>
+        <span className="text-xs font-medium" style={{ color: colorHex }}>
+          {sign}
+          {formatMoneyMajor(Math.abs(delta), walletPrimaryCurrency, { showCode: false })}
+          {pct !== null ? ` (${arrow} ${Math.abs(Math.round(pct))}%)` : ""}
+        </span>
+      </div>
+    );
+  }
+
+  const accountsPanel = (
+    <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full max-h-[170px] overflow-y-auto">
+      <span className="text-white/70 text-[10px] uppercase tracking-wide">Tus cuentas</span>
+      {!accounts || accounts.length === 0 ? (
+        <span className="text-white/60 text-xs">No accounts yet</span>
+      ) : (
+        [...accounts]
+          .sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0))
+          .map((acc) => (
+            <div
+              key={acc._id}
+              className="flex justify-between items-center gap-2 bg-black/15 rounded-lg px-2.5 py-1.5 text-white text-xs"
+            >
+              <span className="truncate">{acc.name || "Account"}</span>
+              <span className="shrink-0 font-medium">
+                {formatMoneyMajor(acc.amount || 0, acc.currency || walletPrimaryCurrency, { showCode: false })}
+                {acc.currency && acc.currency !== walletPrimaryCurrency ? ` ${acc.currency}` : ""}
+              </span>
+            </div>
+          ))
+      )}
+    </div>
+  );
+
+  const summaryPanel = (
+    <div className="flex flex-col gap-2 items-center w-full">
+      <div className="flex items-center gap-3 w-full justify-center">
+        <span className="text-white text-sm w-20 text-right shrink-0">Incomes:</span>
+        <MdKeyboardDoubleArrowUp className="w-4 h-4 text-green-400 shrink-0" />
+        {!totalIncome ? (
+          <span className="text-green-400 text-sm">No amount...</span>
+        ) : (
+          <span className="text-sm font-medium rounded-full px-3 py-1 bg-black/30" style={{ color: INCOME_COLOR }}>
+            {formatMoneyMajor(totalIncome, walletPrimaryCurrency)}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-3 w-full justify-center">
+        <span className="text-white text-sm w-20 text-right shrink-0">Expenses:</span>
+        <MdKeyboardDoubleArrowDown className="w-4 h-4 text-red-400 shrink-0" />
+        {!totalBill ? (
+          <span className="text-red-400 text-sm">No amount...</span>
+        ) : (
+          <span className="text-sm font-medium rounded-full px-3 py-1 bg-black/30" style={{ color: EXPENSE_COLOR }}>
+            {formatMoneyMajor(totalBill, walletPrimaryCurrency)}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-3 w-full justify-center">
+        <span className="text-white text-sm w-20 text-right shrink-0">Balance:</span>
+        {totalAmountBalance < 0 ? (
+          <MdKeyboardDoubleArrowDown className="w-4 h-4 text-red-400 shrink-0" />
+        ) : (
+          <MdKeyboardDoubleArrowUp className="w-4 h-4 text-green-400 shrink-0" />
+        )}
+        {!totalAmountBalance ? (
+          <span className="text-green-400 text-sm">No amount...</span>
+        ) : (
+          <span className="text-sm font-medium rounded-full px-3 py-1 bg-black/30" style={{ color: BALANCE_COLOR }}>
+            {formatMoneyMajor(totalAmountBalance, walletPrimaryCurrency)}
+          </span>
+        )}
+      </div>
+      <p className="text-white/70 text-[10px] pt-1">
+        From {dayjs(startDate).format("DD-MM-YYYY")} to {dayjs(endDate).format("DD-MM-YYYY")}.
+      </p>
+    </div>
+  );
+
+  const comparisonPanel = (
+    <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full">
+      <span className="text-white/70 text-[10px] uppercase tracking-wide text-right">Vs. mes anterior</span>
+      {renderDeltaRow("Ingresos", totalIncome, prevTotalIncome, INCOME_COLOR)}
+      {renderDeltaRow("Gastos", totalBill, prevTotalBill, EXPENSE_COLOR)}
+      {renderDeltaRow("Balance", totalAmountBalance, prevTotalIncome - prevTotalBill, BALANCE_COLOR)}
+    </div>
+  );
+
   return (
     <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
       <div className="loader">
@@ -262,66 +397,35 @@ function Wallet({ dataServ, session }) {
       {user && wallet ? (
         <div className="walllet-header ">
           <div className="wallet-header pt-5 pb-2 px-3 flex flex-col gap-4 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
-            <div className="w-credentials max-w-[620px]">
-              <h2 className="text-white text-3xl sm:text-6xl font-thin text-center sm:text-start">
+            <div className="w-full max-w-[900px]">
+              <h2 className="text-white text-3xl sm:text-6xl font-thin text-center">
                 {!user.fullName ? <Spin size="large" /> : `${user.fullName} `}{" "}
                 Wallet
               </h2>
-              <div
-                className={`text-white flex flex-col gap-2 text-center items-center justify-center sm:justify-between pt-4 sm:pt-6`}
-              >
-                <div className="expense-header-cont w-full flex flex-row text-center items-center justify-between px-4">
-                  <p className="current-money text-lg font-thin">Incomes:</p>
-                  <div className="flex flex-row gap-4 items-center">
-                    <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6 sm:mt-1" />
-                    {!totalIncome ? (
-                      <p className="text-xl flash text-green-400">No amount...</p>
-                    ) : (
-                      <p className="text-xl flash text-green-300 bg-black/30 rounded-full px-3 py-0.5 leading-tight">
-                        {formatMoneyMajor(totalIncome, walletPrimaryCurrency)}
-                      </p>
-                    )}
-                  </div>
+
+              <div className="hidden sm:grid sm:grid-cols-[1fr_1.6fr_1fr] sm:gap-4 sm:items-start pt-6">
+                {accountsPanel}
+                {summaryPanel}
+                {comparisonPanel}
+              </div>
+
+              <div className="sm:hidden pt-4">
+                <div
+                  ref={headerCarouselRef}
+                  onScroll={handleHeaderCarouselScroll}
+                  className="flex overflow-x-auto snap-x snap-mandatory"
+                >
+                  <div className="snap-center shrink-0 w-full px-1">{accountsPanel}</div>
+                  <div className="snap-center shrink-0 w-full px-1">{summaryPanel}</div>
+                  <div className="snap-center shrink-0 w-full px-1">{comparisonPanel}</div>
                 </div>
-                <div className="expense-header-cont w-full flex flex-row text-center items-center justify-between px-4">
-                  <p className="current-money text-lg font-thin">Expenses:</p>
-                  <div className="flex flex-row gap-4 items-center">
-                    <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6 sm:mt-1" />
-                    {!totalBill ? (
-                      <p className="text-xl flash text-red-400">No amount...</p>
-                    ) : (
-                      <p className="text-xl flash text-red-300 bg-black/30 rounded-full px-3 py-0.5 leading-tight">
-                        {formatMoneyMajor(totalBill, walletPrimaryCurrency)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="balance-header-cont w-full flex flex-row text-center items-center justify-between px-4">
-                  <p className="current-money text-lg font-thin">Balance:</p>
-                  <div className="flex flex-col items-end">
-                    <div className="flex gap-2 items-center">
-                      {totalAmountBalance < 0 ? (
-                        <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6" />
-                      ) : (
-                        <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7" />
-                      )}
-                      {!totalAmountBalance ? (
-                        <p className="text-2xl flash text-green-400">No amount...</p>
-                      ) : (
-                        <p
-                          className={`text-2xl flash rounded-full px-3 py-1 leading-tight bg-black/30 ${
-                            totalAmountBalance < 0 ? "text-red-300" : "text-green-300"
-                          }`}
-                        >
-                          {formatMoneyMajor(totalAmountBalance, walletPrimaryCurrency)}
-                        </p>
-                      )}
-                    </div>
-                    <p className="text-[10px]  pt-1">
-                      From {dayjs(startDate).format("DD-MM-YYYY")} to{" "}
-                      {dayjs(endDate).format("DD-MM-YYYY")}.
-                    </p>
-                  </div>
+                <div className="flex justify-center gap-1.5 mt-2">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className={`w-1.5 h-1.5 rounded-full ${headerActiveSlide === i ? "bg-white" : "bg-white/40"}`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
@@ -355,6 +459,7 @@ function Wallet({ dataServ, session }) {
                 acc={accounts}
                 user={user.fullName}
                 trans={transactions}
+                mail={session}
               />
             </div>
             <div className="resume-transactions-cont-tabs w-full h-full">

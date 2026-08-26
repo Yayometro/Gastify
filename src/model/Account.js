@@ -31,6 +31,10 @@ const accountSchema = new Schema({
     institution: { type: String, default: null },
     balanceUpdatedAt: { type: Date, default: null },
     schemaVersion: { type: Number, default: 1 },
+    // User-controlled display order for the Accounts resume cards. Accounts
+    // without one yet (legacy) fall back to creation order via the
+    // secondary sort in the get-account route.
+    order: { type: Number, default: 0 },
 
 }, {timestamps: true})
 

@@ -22,7 +22,9 @@ export async function POST(request) {
     const accountFounded = await Account.find({
       user: userId,
       wallet: walletId,
-    }).lean();
+    })
+      .sort({ order: 1, createdAt: 1 })
+      .lean();
     if (!accountFounded)
       throw new Error(
         "No accounts found, review the user and wallet id on GET-ACCOUNT POST"

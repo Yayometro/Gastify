@@ -4,12 +4,35 @@ import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
-import { formatMoneyMinor } from "@/lib/money/currencies";
+import { formatMoneyMajor, formatMoneyMinor } from "@/lib/money/currencies";
 
 function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
   const [newData, setNewData] = useState([]);
-  const [totalValueOn, setTotalValueOn] = useState(0);
+  // Categories hidden by clicking their legend dot. Kept as native amount-0
+  // in the chart data (rather than filtered out) so the axis/legend don't
+  // reflow - clicking again brings the bar right back where it was.
+  const [hiddenIds, setHiddenIds] = useState(() => new Set());
   const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+
+  const toggleCategory = (datum) => {
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(datum.id)) next.delete(datum.id);
+      else next.add(datum.id);
+      return next;
+    });
+  };
+
+  const chartData = newData.map((d) => (hiddenIds.has(d.idCategory) ? { ...d, value: 0 } : d));
+  // The tooltip's "Total spent/earned" should reflect only what's currently
+  // shown - hiding a category via the legend discounts it from this total
+  // too, not just from its own bar.
+  const visibleTotal = chartData.reduce((sum, d) => sum + d.value, 0);
+  const legendData = newData.map((d) => ({
+    id: d.idCategory,
+    label: d.type,
+    color: hiddenIds.has(d.idCategory) ? "#D3D1C7" : d.color,
+  }));
 
   useEffect(() => {
     if (ttTrans) {
@@ -38,22 +61,24 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
         return acc;
       }, {});
       const finalArray = Object.values(reducedData).sort((a, b) => b.value - a.value);
-      const totalValue = finalArray.reduce((acc, item) => acc + item.value, 0);
       setNewData(finalArray);
-      setTotalValueOn(totalValue);
     }
   }, [ttTrans]);
   return (
-    <div className="tt-tabs-cont w-[100%] h-[400px] min-h-[300px] max-h-[600px]">
+    <div className="tt-tabs-cont w-[100%] h-[400px] min-h-[300px] max-h-[600px] flex flex-col">
+      <span className="text-center text-xs shrink-0 pb-1">
+        {ttIsbill ? "Total spent" : "Total earned"}:{" "}
+        <b>{formatMoneyMajor(visibleTotal, walletPrimaryCurrency)}</b>
+      </span>
+      <div className="flex-1 min-h-0">
       <ResponsiveBar
-        data={newData}
+        data={chartData}
         indexBy="type"
         keys={["value"]}
         margin={{ top: 10, right: 100, bottom: 50, left: 60 }}
         padding={0.15}
         valueScale={{ type: "linear" }}
         indexScale={{ type: "band", round: true }}
-        // valueFormat={v => `${v/totalValueOn}%`}
         valueFormat=" >-$0,~r"
         colors={(cData) => {
           return String(cData.data[`color`]);
@@ -91,7 +116,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
         }}
         legends={[
           {
-            dataFrom: "indexes",
+            data: legendData,
             anchor: "right",
             direction: "column",
             justify: false,
@@ -102,11 +127,13 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
             itemsSpacing: 2,
             symbolSize: 20,
             itemDirection: "left-to-right",
+            onClick: toggleCategory,
+            itemOpacity: 1,
             effects: [
               {
                 on: "hover",
                 style: {
-                  itemOpacity: 3,
+                  itemBackground: "rgba(0, 0, 0, .03)",
                 },
               },
             ],
@@ -148,7 +175,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
                     <p className="font-semibold">
                       {ttIsbill ? "Total spent:" : "Total earned:"}
                     </p>
-                    ${String(totalValueOn).slice(0, 9)}
+                    ${String(visibleTotal).slice(0, 9)}
                   </div>
                   <div className="flex gap-2 underline">
                     <p className="font-semibold">Amount:</p>
@@ -156,7 +183,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
                   </div>
                   <div className="flex gap-2">
                     <p className="font-semibold">Percentage:</p>
-                    {String((dataa.value / totalValueOn) * 100).slice(0, 4)}%
+                    {String((dataa.value / visibleTotal) * 100).slice(0, 4)}%
                   </div>
                 </div>
               </div>
@@ -192,6 +219,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
           return d.formattedValue;
         }}
       />
+      </div>
     </div>
   );
 }

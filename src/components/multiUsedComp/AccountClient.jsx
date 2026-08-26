@@ -239,6 +239,7 @@ function AccountClient({acSession}) {
                   user={userData}
                   trans={transactionData}
                   walletPrimaryCurrency={walletData?.primaryCurrency}
+                  mail={acSession}
                 />
             </div>
             <div className="bg-purple-100 w-full flex justify-between items-center border-2 border-purple-400 rounded-3xl">
