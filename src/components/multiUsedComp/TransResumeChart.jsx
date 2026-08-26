@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { ResponsiveSunburst } from "@nivo/sunburst";
 import { IoMdRefresh } from "react-icons/io";
+import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 
 
 function TransResumeChart({ trchTransactions, trchIsBill }) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const [dataCat, setDataCat] = useState({});
   const [drilldownData, setDrilldownData] = useState(null);
   const [totalValueOn, setTotalValueOn] = useState(0);
-  
+
   useEffect(() => {
     if (trchTransactions) {
       // SET THE TOTAL AMOUNT
-      let totalAmount = trchTransactions.reduce((acc, trans) => acc += trans.amount , 0)
+      let totalAmount = trchTransactions.reduce((acc, trans) => acc += getPrimaryAmount(trans) , 0)
       if(totalAmount) setTotalValueOn(totalAmount)
       //
       let transWithoutCategory = trchTransactions.filter(
@@ -28,11 +32,12 @@ function TransResumeChart({ trchTransactions, trchIsBill }) {
       console.log(transWithSubCat);
       // Save with no category
       let cateFaseOne = transWithoutCategory.map((traWCat) => {
+        const amount = getPrimaryAmount(traWCat);
         return {
           fatherId: "Generic-1",
           name: "With no category",
-          loc: traWCat?.amount,
-          value: traWCat?.amount,
+          loc: amount,
+          value: amount,
           color: "#ABABAB",
           icon: "MdFilterNone",
           children: [],
@@ -40,11 +45,12 @@ function TransResumeChart({ trchTransactions, trchIsBill }) {
       });
       console.log(cateFaseOne);
       let cateFaseDos = transWithCategory.map((traCat) => {
+        const amount = getPrimaryAmount(traCat);
         return {
           fatherId: traCat.category._id,
           name: traCat?.category.name,
-          loc: traCat?.amount,
-          value: traCat?.amount,
+          loc: amount,
+          value: amount,
           color: traCat?.category?.color ? traCat?.category?.color : "#ABABAB",
           icon: traCat?.category?.icon || "MdFilterNone",
           children: [],
@@ -53,6 +59,7 @@ function TransResumeChart({ trchTransactions, trchIsBill }) {
       console.log(cateFaseDos);
       if (transWithSubCat) {
         transWithSubCat.forEach((traSub) => {
+          const amount = getPrimaryAmount(traSub);
           cateFaseDos.push({
             fatherId: traSub.category._id,
             name: traSub.category?.name,
@@ -62,8 +69,8 @@ function TransResumeChart({ trchTransactions, trchIsBill }) {
               {
                 childId: traSub.subCategory._id,
                 name: traSub.subCategory?.name,
-                loc: traSub?.amount,
-                value: traSub?.amount,
+                loc: amount,
+                value: amount,
                 color: traSub.subCategory?.color
                   ? traSub?.subCategory?.color
                   : "#ABABAB",
@@ -199,11 +206,11 @@ const resetDrilldown = () => {
                         <p className="font-semibold">
                           {trchIsBill ? "Total spent:" : "Total earned:"}
                         </p>
-                        ${totalValueOn.toFixed(2)}
+                        {formatMoneyMajor(totalValueOn, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
                         <p className="font-semibold">Amount:</p>
-                        {dataa.formattedValue}
+                        {formatMoneyMajor(dataa.value, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
                         <p className="font-semibold">Percentage:</p>

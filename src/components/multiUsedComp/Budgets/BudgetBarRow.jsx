@@ -1,23 +1,28 @@
 "use client";
 
 import React from "react";
+import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { getBudgetBarGradient, getBudgetMoodEmoji, getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { isProjectBudget, isSavingBudget } from "@/helpers/transformers/budgetTypes";
+import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 
 function BudgetBarRow({ budget, actual, onClick }) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const budgetCurrency = budget.currency || walletPrimaryCurrency;
   const goalAmount = budget.goalAmount || 0;
   const isSaving = isSavingBudget(budget);
   const isProject = isProjectBudget(budget);
+  const { total: linkedAccountsTotal } = useLinkedAccountsTotal(
+    isSaving ? budget.linkedAccounts : null,
+    walletPrimaryCurrency
+  );
 
   let value = 0;
   if (isSaving) {
     if (budget.linkedAccounts && budget.linkedAccounts.length > 0) {
-      value = budget.linkedAccounts.reduce(
-        (acc, a) => acc + (Number(a.amount) || 0),
-        0
-      );
+      value = linkedAccountsTotal;
     } else {
       value = Math.max(Number(budget.savingAmount) || 0, Number(actual) || 0);
     }
@@ -112,7 +117,7 @@ function BudgetBarRow({ budget, actual, onClick }) {
           <div className="flex flex-col">
             <p className="text-purple-800">{budget.name || "Unnamed budget"}</p>
             <p className="text-[10px] text-gray-500">
-              {isSaving ? "Saving Goal" : isProject ? "Project Budget" : "Spending Budget"} • {periodLabel}
+              {isSaving ? "Saving Goal" : isProject ? "Project Budget" : "Spending Budget"} • {periodLabel} • {budgetCurrency} based
             </p>
           </div>
         </div>

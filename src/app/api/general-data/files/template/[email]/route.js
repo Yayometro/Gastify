@@ -4,9 +4,10 @@ import User from "@/model/User";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
+import Wallet from "@/model/Wallet";
 import xlsxPopulate from "xlsx-populate";
-
-export const TEMPLATE_VERSION = "2.1";
+import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, TEMPLATE_NOTE } from "@/lib/files/gastifyTemplate";
 
 export async function GET(request, { params }) {
   try {
@@ -15,7 +16,7 @@ export async function GET(request, { params }) {
     const userFound = await User.findOne({ mail: params.email }).lean();
     if (!userFound) throw new Error("User not found for template generation");
 
-    const [categories, subCategories, accounts] = await Promise.all([
+    const [categories, subCategories, accounts, wallet] = await Promise.all([
       Category.find({
         $or: [{ user: userFound._id }, { isDefaultCatego: true }],
       }).lean(),
@@ -23,28 +24,20 @@ export async function GET(request, { params }) {
         $or: [{ user: userFound._id }, { isDefaultSubCatego: true }],
       }).lean(),
       Account.find({ user: userFound._id, wallet: userFound.wallet }).lean(),
+      Wallet.findById(userFound.wallet).lean(),
     ]);
 
     const catNames = categories.map((c) => c.name).filter(Boolean);
     const subCatNames = subCategories.map((s) => s.name).filter(Boolean);
     const accountNames = accounts.map((a) => a.name).filter(Boolean);
+    const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
 
     const workbook = await xlsxPopulate.fromBlankAsync();
     const mainSheet = workbook.sheet(0);
     mainSheet.name("Transactions");
 
     // --- Headers (row 1) ---
-    const headers = [
-      "Date *",
-      "Concept *",
-      "Amount *",
-      "Type (Bill/Income) *",
-      "Category",
-      "SubCategory",
-      "Tags (comma separated)",
-      "Account",
-    ];
-    headers.forEach((h, i) => {
+    HEADERS.forEach((h, i) => {
       const cell = mainSheet.cell(1, i + 1);
       cell.value(h);
       cell.style({
@@ -55,37 +48,34 @@ export async function GET(request, { params }) {
     });
 
     // --- Instruction note (row 2) ---
-    const noteText =
-      "📌 REQUIRED: Date, Concept, Amount, Type (* = required). Type defaults to Bill if empty. " +
-      "Fill Category OR SubCategory — not both. If SubCategory is filled, Category is auto-resolved. " +
-      "Transactions without Category are saved uncategorized. Account is optional — select one of your existing accounts.";
     const noteCell = mainSheet.cell(2, 1);
-    noteCell.value(noteText);
+    noteCell.value(TEMPLATE_NOTE);
     noteCell.style({
       italic: true,
       fill: { type: "solid", color: "FEF9C3" },
       fontColor: "92400E",
       wrapText: true,
     });
-    mainSheet.range(2, 1, 2, headers.length).merged(true);
-    mainSheet.row(2).height(36);
+    mainSheet.range(2, 1, 2, HEADERS.length).merged(true);
+    mainSheet.row(2).height(48);
 
     // --- Column widths ---
-    [18, 25, 14, 18, 22, 22, 28, 22].forEach((w, i) => {
+    COLUMN_WIDTHS.forEach((w, i) => {
       mainSheet.column(i + 1).width(w);
     });
 
-    // --- Hidden _data sheet (categories, subcategories, version, accounts) ---
+    // --- Hidden _data sheet (categories, subcategories, version, accounts, currencies) ---
     const dataSheet = workbook.addSheet("_data");
     catNames.forEach((name, idx) => dataSheet.cell(idx + 1, 1).value(name));
     subCatNames.forEach((name, idx) => dataSheet.cell(idx + 1, 2).value(name));
     dataSheet.cell(1, 3).value(TEMPLATE_VERSION); // version stored here
     accountNames.forEach((name, idx) => dataSheet.cell(idx + 1, 4).value(name));
+    SUPPORTED_CURRENCIES.forEach((code, idx) => dataSheet.cell(idx + 1, 5).value(code));
     try { dataSheet.hidden(true); } catch (_) {}
 
     // --- Data validation rows 3-202 ---
     for (let row = 3; row <= 202; row++) {
-      mainSheet.cell(row, 4).dataValidation({
+      mainSheet.cell(row, COLUMNS.TYPE).dataValidation({
         type: "list",
         allowBlank: true,
         showErrorMessage: true,
@@ -94,8 +84,19 @@ export async function GET(request, { params }) {
         formula1: '"Bill,Income"',
       });
 
+      [COLUMNS.ACCOUNT_CURRENCY, COLUMNS.MERCHANT_CURRENCY, COLUMNS.REPORTING_CURRENCY].forEach((col) => {
+        mainSheet.cell(row, col).dataValidation({
+          type: "list",
+          allowBlank: true,
+          showErrorMessage: true,
+          errorTitle: "Invalid Currency",
+          error: `Please select one of: ${SUPPORTED_CURRENCIES.join(", ")}`,
+          formula1: `_data!$E$1:$E$${SUPPORTED_CURRENCIES.length}`,
+        });
+      });
+
       if (catNames.length > 0) {
-        mainSheet.cell(row, 5).dataValidation({
+        mainSheet.cell(row, COLUMNS.CATEGORY).dataValidation({
           type: "list",
           allowBlank: true,
           showErrorMessage: true,
@@ -106,7 +107,7 @@ export async function GET(request, { params }) {
       }
 
       if (subCatNames.length > 0) {
-        mainSheet.cell(row, 6).dataValidation({
+        mainSheet.cell(row, COLUMNS.SUB_CATEGORY).dataValidation({
           type: "list",
           allowBlank: true,
           showErrorMessage: true,
@@ -117,7 +118,7 @@ export async function GET(request, { params }) {
       }
 
       if (accountNames.length > 0) {
-        mainSheet.cell(row, 8).dataValidation({
+        mainSheet.cell(row, COLUMNS.ACCOUNT).dataValidation({
           type: "list",
           allowBlank: true,
           showErrorMessage: true,
@@ -129,14 +130,20 @@ export async function GET(request, { params }) {
     }
 
     // --- Example row (row 3) ---
-    mainSheet.cell(3, 1).value(new Date()).style("numberFormat", "DD/MM/YYYY");
-    mainSheet.cell(3, 2).value("Example transaction");
-    mainSheet.cell(3, 3).value(100);
-    mainSheet.cell(3, 4).value("Bill");
-    mainSheet.cell(3, 5).value("");
-    mainSheet.cell(3, 6).value(subCatNames[0] || "");
-    mainSheet.cell(3, 7).value("tag1, tag2");
-    mainSheet.cell(3, 8).value(accountNames[0] || "");
+    mainSheet.cell(3, COLUMNS.DATE).value(new Date()).style("numberFormat", "DD/MM/YYYY");
+    mainSheet.cell(3, COLUMNS.CONCEPT).value("Example transaction");
+    mainSheet.cell(3, COLUMNS.ACCOUNT_AMOUNT).value(100);
+    mainSheet.cell(3, COLUMNS.ACCOUNT_CURRENCY).value(walletPrimaryCurrency);
+    mainSheet.cell(3, COLUMNS.TYPE).value("Bill");
+    mainSheet.cell(3, COLUMNS.CATEGORY).value("");
+    mainSheet.cell(3, COLUMNS.SUB_CATEGORY).value(subCatNames[0] || "");
+    mainSheet.cell(3, COLUMNS.TAGS).value("tag1, tag2");
+    mainSheet.cell(3, COLUMNS.ACCOUNT).value(accountNames[0] || "");
+    mainSheet.cell(3, COLUMNS.MERCHANT_AMOUNT).value("");
+    mainSheet.cell(3, COLUMNS.MERCHANT_CURRENCY).value("");
+    mainSheet.cell(3, COLUMNS.REPORTING_AMOUNT).value("");
+    mainSheet.cell(3, COLUMNS.REPORTING_CURRENCY).value("");
+    mainSheet.cell(3, COLUMNS.FX_SOURCE).value("");
 
     const buffer = await workbook.outputAsync();
 

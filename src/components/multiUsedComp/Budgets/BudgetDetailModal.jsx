@@ -2,12 +2,12 @@
 import React, { useMemo, useState } from "react";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
-import { matchBillToBudget, getBudgetPeriodRange } from "@/helpers/transformers/projectionsChange";
+import { usdFormatChanger, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import { matchBillToBudget, getBudgetPeriodRange, getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
 import { getBudgetBarGradient, getBudgetMoodEmoji, getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import EmptyModule from "@/components/multiUsedComp/EmptyModule";
 import { Tooltip, Modal } from "antd";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { removeOneTransacction } from "@/lib/features/transacctionsSlice";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
@@ -16,6 +16,9 @@ import Tag from "@/components/multiUsedComp/Tag";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import dayjs from "dayjs";
 import currencyFormatter from "currency-formatter";
+import { formatMoneyMajor } from "@/lib/money/currencies";
+import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
+import CurrencyBreakdownChips from "@/components/multiUsedComp/CurrencyBreakdownChips";
 
 function BudgetDetailModal({
   budget,
@@ -26,11 +29,17 @@ function BudgetDetailModal({
   onEdit,
 }) {
   const dispatch = useDispatch();
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const { total: linkedAccountsTotal, breakdown: linkedAccountsBreakdown } = useLinkedAccountsTotal(
+    budget?.linkedAccounts,
+    walletPrimaryCurrency
+  );
+  const budgetCurrency = budget?.currency || walletPrimaryCurrency;
   const [editingTrans, setEditingTrans] = useState(null);
   const [editKey, setEditKey] = useState(0);
 
-  const { matchingTransactions, totalSpent, categoryBreakdown } = useMemo(() => {
-    if (!budget) return { matchingTransactions: [], totalSpent: 0, categoryBreakdown: [] };
+  const { matchingTransactions, totalSpent, categoryBreakdown, expenseCurrencyBreakdown } = useMemo(() => {
+    if (!budget) return { matchingTransactions: [], totalSpent: 0, categoryBreakdown: [], expenseCurrencyBreakdown: null };
 
     let effectiveStart = startDate;
     let effectiveEnd = endDate;
@@ -55,7 +64,7 @@ function BudgetDetailModal({
       if (tMs >= startMs && tMs <= endMs) {
         if (matchBillToBudget(t, budget)) {
           matched.push(t);
-          const amount = Number(t.amount) || 0;
+          const amount = getPrimaryAmount(t);
           spent += amount;
 
           const catName = t.subCategory?.name || t.category?.name || "Other";
@@ -78,8 +87,9 @@ function BudgetDetailModal({
       matchingTransactions: matched,
       totalSpent: spent,
       categoryBreakdown: breakdown,
+      expenseCurrencyBreakdown: getMonthCurrencyBreakdown(matched, walletPrimaryCurrency),
     };
-  }, [budget, transacciones, startDate, endDate]);
+  }, [budget, transacciones, startDate, endDate, walletPrimaryCurrency]);
 
   if (!budget) return null;
 
@@ -89,10 +99,7 @@ function BudgetDetailModal({
   let effectiveAmount = totalSpent;
   if (isSaving) {
     if (budget.linkedAccounts && budget.linkedAccounts.length > 0) {
-      effectiveAmount = budget.linkedAccounts.reduce(
-        (acc, a) => acc + (Number(a.amount) || 0),
-        0
-      );
+      effectiveAmount = linkedAccountsTotal;
     } else {
       effectiveAmount = Math.max(Number(budget.savingAmount) || 0, totalSpent);
     }
@@ -188,7 +195,7 @@ function BudgetDetailModal({
                     {budget.name || "Unnamed Budget"}
                   </h2>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {isSaving ? "Savings goal" : "Spending budget"} ({budget.period || "monthly"})
+                    {isSaving ? "Savings goal" : "Spending budget"} ({budget.period || "monthly"}) • {budgetCurrency} based
                   </p>
                 </div>
                 <Tooltip title={emojiTooltip} placement="left">
@@ -213,6 +220,10 @@ function BudgetDetailModal({
                     {periodLabel}
                   </span>
                 </div>
+                <CurrencyBreakdownChips
+                  breakdown={isSaving ? linkedAccountsBreakdown : expenseCurrencyBreakdown}
+                  walletPrimaryCurrency={walletPrimaryCurrency}
+                />
                 <div className="w-full h-5 bg-gray-200 rounded-full relative my-3">
                   <div
                     className="h-full rounded-full transition-all"
@@ -305,10 +316,14 @@ function BudgetDetailModal({
                       <span className="text-base">🔗</span>
                       <span>
                         Linked to {budget.linkedAccounts.length} account{budget.linkedAccounts.length !== 1 ? "s" : ""}:{" "}
-                        <strong>{budget.linkedAccounts.map(a => `${a.name || "Account"} (${usdFormatChanger(a.amount || 0)})`).join(", ")}</strong>
+                        <strong>
+                          {budget.linkedAccounts
+                            .map((a) => `${a.name || "Account"} (${formatMoneyMajor(a.amount || 0, a.currency || walletPrimaryCurrency, { showCode: true })})`)
+                            .join(", ")}
+                        </strong>
                       </span>
                     </div>
-                    <span className="font-bold text-blue-700">{usdFormatChanger(effectiveAmount)}</span>
+                    <span className="font-bold text-blue-700">{formatMoneyMajor(effectiveAmount, walletPrimaryCurrency, { showCode: true })}</span>
                   </div>
                 )}
 

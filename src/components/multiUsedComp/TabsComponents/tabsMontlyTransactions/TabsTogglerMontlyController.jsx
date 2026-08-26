@@ -15,7 +15,6 @@ import {
   getTransactionsFromTimeRange,
   mapToAddTypeTransactionAndColor,
   transactionsToMonths,
-  usdFormatChanger,
 } from "@/helpers/transformers/transactionsChange";
 import ColumnChartAntComparative from "../../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
 import TooltipForChart from "@/components/toltips/tooltipsForCharts/TooltipForChart";
@@ -39,6 +38,7 @@ function TabsTogglerMontlyController() {
   // REDUX
   const dispath = useDispatch();
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const allTransactions = ccTransacciones.data;
 
   useEffect(() => {
@@ -118,7 +118,7 @@ function TabsTogglerMontlyController() {
     },
     {
       tab: "comparative",
-      props: generatePropForChartColAntTogglerTabs({data, clickedItems, setClickedItems, totalAmount  }),
+      props: generatePropForChartColAntTogglerTabs({data, clickedItems, setClickedItems, totalAmount, walletPrimaryCurrency }),
       Component: ColumnChartAntComparative,
     },
   ];

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import dayjs from "dayjs";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
@@ -23,6 +23,8 @@ export default function ProjectBudgetDetailModal({ budget, transacciones = [], o
   const [showCreate, setShowCreate] = useState(false);
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const budgetCurrency = budget.currency || walletPrimaryCurrency;
   const toFetch = fetcher();
   const budgetId = String(budget._id);
   const tagIds = useMemo(
@@ -74,7 +76,7 @@ export default function ProjectBudgetDetailModal({ budget, transacciones = [], o
           <button type="button" onClick={onClose} className="absolute top-4 right-4 bg-white text-purple-700 rounded-full p-1.5"><CategoIcon type="MdClose" siz={18} /></button>
           <div className="flex items-center gap-3 pr-10">
             <span className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center shrink-0"><UniversalCategoIcon type={budget.icon || "md/MdFlightTakeoff"} siz={24} /></span>
-            <div><p className="text-xs text-purple-200 font-bold uppercase tracking-wide">Project budget</p><h2 className="text-2xl font-bold">{budget.name}</h2></div>
+            <div><p className="text-xs text-purple-200 font-bold uppercase tracking-wide">Project budget • {budgetCurrency} based</p><h2 className="text-2xl font-bold">{budget.name}</h2></div>
           </div>
           <p className="text-xs text-purple-100 mt-1">{range} · dates are editable</p>
         </div>

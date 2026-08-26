@@ -21,6 +21,10 @@ import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategor
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import { isProjectBudget } from "@/helpers/transformers/budgetTypes";
+import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEquivalent";
+import AmountEquivalentPreview from "./AmountEquivalentPreview";
+import ChargedElsewhereSection from "./ChargedElsewhereSection";
+import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 
 function AddTransactionComp({ initialBudgetId = "", onCreated }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,13 +46,74 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
     wallet: "",
   });
   let [isShort, setIsShort] = useState(false);
+  // Advanced "Charged in another currency" disclosure (plan section 12.2):
+  // the Amount field above stays in the Account's own currency (what
+  // actually left the account); this optionally records what the merchant
+  // charged in a different currency, and auto-suggests the Account Amount
+  // via a live FX estimate so the user doesn't have to compute it by hand.
+  const [chargedElsewhere, setChargedElsewhere] = useState(false);
+  const [merchantAmount, setMerchantAmount] = useState("");
+  const [merchantCurrency, setMerchantCurrency] = useState("USD");
+  const [amountTouchedManually, setAmountTouchedManually] = useState(false);
+  const [merchantQuoting, setMerchantQuoting] = useState(false);
 
   const { close, handleClose } = useModal();
   //REDUX
-  const {user, accounts, budgets = []} = useGetDataFromProvider();
+  const {user, wallet, accounts, budgets = []} = useGetDataFromProvider();
   const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
   const dispatch = useDispatch();
+  // Multi-currency: the Amount field is always in the selected Account's
+  // native currency (or the Wallet's primary currency when no Account is
+  // chosen) - never a second, separately-tracked currency.
+  const accountCurrency =
+    accounts?.find((acc) => acc._id === transactionInfo.account)?.currency ||
+    wallet?.primaryCurrency ||
+    "MXN";
+  const amountEquivalent = useTransactionAmountEquivalent({
+    amount: transactionInfo.amount,
+    accountCurrency,
+    walletPrimaryCurrency: wallet?.primaryCurrency || "MXN",
+  });
     const {handleClean} = useContext(SelectCategoryContext)
+
+  // Auto-suggest the Account Amount from the merchant amount whenever they
+  // differ in currency - debounced, and only while the user hasn't typed
+  // into the Amount field directly (so their manual correction always wins).
+  useEffect(() => {
+    if (!chargedElsewhere) return;
+    const numericMerchant = Number(merchantAmount);
+    if (!Number.isFinite(numericMerchant) || numericMerchant <= 0) return;
+
+    if (merchantCurrency === accountCurrency) {
+      if (!amountTouchedManually) setTransactionInfo((t) => ({ ...t, amount: merchantAmount }));
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        setMerchantQuoting(true);
+        const amountMinor = majorToMinor(numericMerchant, merchantCurrency);
+        const res = await toFetch.post("general-data/fx/quote", {
+          amountMinor,
+          fromCurrency: merchantCurrency,
+          toCurrency: accountCurrency,
+        });
+        if (!cancelled && res.ok && !amountTouchedManually) {
+          setTransactionInfo((t) => ({ ...t, amount: String(minorToMajor(res.data.amountMinor, accountCurrency)) }));
+        }
+      } catch (e) {
+        // Silently unavailable - the user can still enter the Account Amount manually.
+      } finally {
+        if (!cancelled) setMerchantQuoting(false);
+      }
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chargedElsewhere, merchantAmount, merchantCurrency, accountCurrency]);
 
   //EFFECTS
   useEffect(() => {
@@ -64,6 +129,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
   //Handlers:
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "amount") setAmountTouchedManually(true);
     setTransactionInfo({ ...transactionInfo, [name]: value });
   };
 
@@ -110,6 +176,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
       ...transactionInfo,
       name: trimmedName,
       tags: tagsArrCleaned,
+      ...(chargedElsewhere && merchantAmount !== "" ? { merchantAmount, merchantCurrency } : {}),
     };
     try {
       const response = await toFetch.post(
@@ -154,8 +221,12 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
       user: user._id,
       wallet: user.wallet,
     });
+    setChargedElsewhere(false);
+    setMerchantAmount("");
+    setMerchantCurrency("USD");
+    setAmountTouchedManually(false);
   };
-  
+
 
   function handleCategory(cat) {
     if (!cat) return;
@@ -243,13 +314,23 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               onChange={handleChange}
               placeholder="Transaction Name"
             />
-            <p className="label-tfp ">Amount</p>
+            <p className="label-tfp ">Amount ({accountCurrency})</p>
             <input
               type="number"
               name="amount"
               value={transactionInfo.amount}
               onChange={handleChange}
               placeholder="Amount"
+            />
+            <AmountEquivalentPreview quote={amountEquivalent} />
+            <ChargedElsewhereSection
+              enabled={chargedElsewhere}
+              onToggle={setChargedElsewhere}
+              merchantAmount={merchantAmount}
+              merchantCurrency={merchantCurrency}
+              onMerchantAmountChange={setMerchantAmount}
+              onMerchantCurrencyChange={setMerchantCurrency}
+              quoting={merchantQuoting}
             />
             <div className="switchers-cont flex gap-3">
               <label>
@@ -353,13 +434,23 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               onChange={handleChange}
               placeholder="Transaction Name"
             />
-            <p className="label-tfp ">Amount</p>
+            <p className="label-tfp ">Amount ({accountCurrency})</p>
             <input
               type="number"
               name="amount"
               value={transactionInfo.amount}
               onChange={handleChange}
               placeholder="Amount"
+            />
+            <AmountEquivalentPreview quote={amountEquivalent} />
+            <ChargedElsewhereSection
+              enabled={chargedElsewhere}
+              onToggle={setChargedElsewhere}
+              merchantAmount={merchantAmount}
+              merchantCurrency={merchantCurrency}
+              onMerchantAmountChange={setMerchantAmount}
+              onMerchantCurrencyChange={setMerchantCurrency}
+              quoting={merchantQuoting}
             />
             <div className="switchers-cont flex gap-3">
               <label>

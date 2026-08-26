@@ -264,7 +264,7 @@ function ReadFileComp({}) {
       <div className="text-center">
         <h1 className="text-2xl font-light">Import from Excel</h1>
         <p className="text-xs text-slate-400 mt-1 max-w-[300px] mx-auto leading-relaxed">
-          Download the Gastify template, fill it with your transactions (date, concept, amount, type) and upload it here. Categories, tags and accounts are auto-resolved from your existing ones.
+          Download the Gastify template, fill it with your transactions (date, concept, amount, currency, type) and upload it here. Categories, tags, accounts and account currencies are auto-resolved from your existing ones.
         </p>
       </div>
 
@@ -338,7 +338,7 @@ function ReadFileComp({}) {
         {showDedup && (
           <div className="flex flex-col items-center gap-3 w-full">
             <p className="text-xs text-slate-400 text-center max-w-[280px] leading-relaxed">
-              Upload the same Excel you already imported. Transactions that share the exact <b>date</b>, <b>name</b> and <b>amount</b> will be processed according to the mode below.
+              Upload the same Excel you already imported. Transactions that share the exact <b>date</b>, <b>name</b>, <b>amount</b> and <b>currency</b> will be processed according to the mode below.
             </p>
 
             {/* Toggle delete mode */}

@@ -1,4 +1,4 @@
-import { Spin } from "antd";
+import { Spin, Tooltip } from "antd";
 import React, { useEffect, useState } from "react";
 import CategoIcon from "./CategoIcon";
 import runNotify from "@/helpers/gastifyNotifier";
@@ -6,8 +6,9 @@ import fetcher from "@/helpers/fetcher";
 import { set } from "mongoose";
 import { useDispatch } from "react-redux";
 import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/accountsSlice";
+import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
 
-function EditAccountModal({ eamMode, eamAccount, eamClose }) {
+function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [active, setActive] = useState(false);
   const [formAccount, setFormAccount] = useState({
@@ -15,10 +16,14 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
     name: "",
     amount: 0,
     accountType: "debit",
+    currency: "MXN",
   });
   const toFetch = fetcher();
   //REDUX
   const dispatch = useDispatch()
+  // Account currency cannot be changed once Transactions are linked to it -
+  // the user must create a correctly denominated Account instead.
+  const hasLinkedTransactions = (eamAccount?.allTransactionsList?.length || 0) > 0;
   //
   useEffect(() => {
     if (eamAccount) {
@@ -29,6 +34,7 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
           name: eamAccount?.name || "",
           amount: eamAccount.amount || 0,
           accountType: eamAccount.accountType || "debit",
+          currency: eamAccount.currency || "MXN",
         });
       } else if (eamMode === "creation") {
         console.log(eamMode);
@@ -37,6 +43,7 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
           name: "",
           amount: 0,
           accountType: "debit",
+          currency: eamWallet?.primaryCurrency || "MXN",
           userId: eamAccount.user,
           walletId: eamAccount.wallet,
         });
@@ -172,6 +179,27 @@ function EditAccountModal({ eamMode, eamAccount, eamClose }) {
             onChange={handleChange}
             placeholder="0.00"
           />
+          <p className="label-tfp ">Currency</p>
+          <Tooltip
+            title={
+              hasLinkedTransactions
+                ? "Currency can't be changed once transactions are linked to this account. Create a new account in the target currency instead."
+                : "Each account has exactly one native currency."
+            }
+          >
+            <select
+              name="currency"
+              value={formAccount.currency}
+              onChange={handleChange}
+              disabled={eamMode === "edition" && hasLinkedTransactions}
+            >
+              {SUPPORTED_CURRENCIES.map((code) => (
+                <option key={code} value={code}>
+                  {code} ({CURRENCY_META[code].symbol}) - {CURRENCY_META[code].label}
+                </option>
+              ))}
+            </select>
+          </Tooltip>
           <p className="label-tfp ">Account Type</p>
           <select
             name="accountType"

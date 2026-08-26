@@ -8,7 +8,7 @@ import { fetchUser } from "@/lib/features/userSlice";
 import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import { Skeleton } from "antd";
 
-function MultiCreditCard({ acc, user, trans, mccSession }) {
+function MultiCreditCard({ acc, user, trans, mccSession, walletPrimaryCurrency }) {
   let [userName, setUserName] = useState("");
   let [allTransactions, setAllTransactions] = useState([]);
   let [accounts, setAccounts] = useState([]);
@@ -125,6 +125,8 @@ function MultiCreditCard({ acc, user, trans, mccSession }) {
                 user={userName}
                 trans={allTransactions}
                 cardColor={cardColors[index]}
+                walletPrimaryCurrency={walletPrimaryCurrency}
+                current
                 key={ac._id}
               />
           ))

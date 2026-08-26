@@ -1,6 +1,7 @@
 import Wallet from "@/model/Wallet";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
+import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 
 export async function GET() {
   return NextResponse.json({ mes: "Work" });
@@ -16,7 +17,8 @@ export async function POST(request) {
       totalBudget,
       totalSavings,
       isSurpassed,
-      isSaved
+      isSaved,
+      primaryCurrency,
     } = await request.json();
     await dbConnection();
     // FIND WALLET
@@ -39,6 +41,16 @@ export async function POST(request) {
     findWallet.budget.isSaved = !isSaved
       ? findWallet.budget.isSaved
       : isSaved;
+
+    // Multi-currency: changes presentation/reporting only, never
+    // reinterprets already-stored native Account/Transaction money.
+    if (primaryCurrency && primaryCurrency !== findWallet.primaryCurrency) {
+      if (!SUPPORTED_CURRENCIES.includes(primaryCurrency)) {
+        throw new Error(`Unsupported currency: ${primaryCurrency}`);
+      }
+      findWallet.primaryCurrency = primaryCurrency;
+      findWallet.currencyUpdatedAt = new Date();
+    }
 
     // SAVE
     const updatedWallet = await findWallet.save();

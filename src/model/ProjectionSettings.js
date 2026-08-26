@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { moneyAmountSchema } from "./schemas/moneySchemas";
 
 const projectionSettingsSchema = new Schema({
     user: {
@@ -14,12 +15,15 @@ const projectionSettingsSchema = new Schema({
     year: { type: Number, require: true },
     monthlyBalances: [{
       month: Number, // 0-11
-      balance: Number,
+      balance: Number, // legacy MXN-implicit; preserved until Phase 9
+      money: moneyAmountSchema,
     }],
     monthlyBuffers: [{
       month: Number, // 0-11
-      unexpectedBuffer: Number,
-      unexpectedIncomeBuffer: Number,
+      unexpectedBuffer: Number, // legacy MXN-implicit; preserved until Phase 9
+      unexpectedIncomeBuffer: Number, // legacy MXN-implicit; preserved until Phase 9
+      expenseMoney: moneyAmountSchema,
+      incomeMoney: moneyAmountSchema,
     }],
   },{ timestamps: true }
 );

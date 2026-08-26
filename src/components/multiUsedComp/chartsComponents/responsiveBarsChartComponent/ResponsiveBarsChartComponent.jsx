@@ -1,8 +1,9 @@
 "use client";
 import { ResponsiveBar } from "@nivo/bar";
 import React from "react";
+import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
-import currencyFormatter from "currency-formatter";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 
 function ResponsiveBarsChartComponent({
   data,
@@ -12,6 +13,7 @@ function ResponsiveBarsChartComponent({
   legenedLeft,
   header
 }) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const rest = {
     data: data,
     indexBy: "type",
@@ -20,7 +22,7 @@ function ResponsiveBarsChartComponent({
     padding: 0.15,
     valueScale: { type: "linear" },
     indexScale: { type: "band", round: true },
-    valueFormat: " >-$0,~r",
+    valueFormat: " >-,~r",
     colors: (cData) => String(cData.data[`color`]),
     borderColor: { from: "color", modifiers: [["darker", 1.6]] },
     axisTop: null,
@@ -101,14 +103,12 @@ function ResponsiveBarsChartComponent({
             </div>
             <div className="flex flex-col text-[13px] font-semibold">
               <div className="flex gap-2">
-                <p className="font-semibold">Total spent:</p>$
-                {currencyFormatter.format(totalValue, {
-                  locale: "en-US",
-                })}
+                <p className="font-semibold">Total spent:</p>
+                {formatMoneyMajor(totalValue, walletPrimaryCurrency)}
               </div>
               <div className="flex gap-2 underline">
                 <p className="font-semibold">Amount:</p>
-                {dataa.formattedValue}
+                {formatMoneyMajor(dataa.value, walletPrimaryCurrency)}
               </div>
               <div className="flex gap-2">
                 <p className="font-semibold">Percentage:</p>
@@ -131,9 +131,7 @@ function ResponsiveBarsChartComponent({
       <span className=" text-center text-xs">
         Total:{" "}
         <b>
-          {currencyFormatter.format(totalValue, {
-            locale: "en-US",
-          })}
+          {formatMoneyMajor(totalValue, walletPrimaryCurrency)}
         </b>
       </span>
       <ResponsiveBar {...rest} />

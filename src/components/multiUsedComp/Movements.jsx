@@ -4,7 +4,6 @@ import "@/components/multiUsedComp/css/muliUsed.css";
 
 import { PiExcludeSquareDuotone } from "react-icons/pi";
 import { HiMiniCursorArrowRipple } from "react-icons/hi2";
-import currencyFormatter from "currency-formatter";
 import CategoIcon from "./CategoIcon";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import dayjs from "dayjs";
@@ -35,6 +34,14 @@ import {
   getDateInYearMonthDay,
 } from "@/helpers/timeFunctions/timeFunctions";
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor, formatMoneyMinor, majorToMinor, SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import {
+  getDuplicates as sharedGetDuplicates,
+  getDuplicatesToDelete as sharedGetDuplicatesToDelete,
+  getAllMatchingIds as sharedGetAllMatchingIds,
+  getDuplicatePairs as sharedGetDuplicatePairs,
+} from "@/helpers/transformers/transactionDuplicates";
+import { fetchWallet } from "@/lib/features/walletSlice";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 
@@ -75,6 +82,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   const [loadingComponent, setLoadingComponent] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [exactAmountFilter, setExactAmountFilter] = useState("");
+  const [exactAmountMode, setExactAmountMode] = useState("primary"); // "primary" | "native"
+  const [exactAmountCurrency, setExactAmountCurrency] = useState("MXN");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [subCategoryFilter, setSubCategoryFilter] = useState("");
   const [dupFinderOpen, setDupFinderOpen] = useState(false);
@@ -100,6 +109,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   const reduxDispartcher = useDispatch();
   const reduxAllTrans = useSelector((state) => state.transacctionsReducer);
   const rdxTransactions = reduxAllTrans?.data;
+  const reduxWallet = useSelector((state) => state.walletReducer);
+  const wallet = reduxWallet?.data;
   const reduxCategories = useSelector((state) => state.categoriesReducer);
   const reduxSubCategories = useSelector((state) => state.subCategoryReducer);
   const allCategories = [...(reduxCategories.data?.user || []), ...(reduxCategories.data?.default || [])];
@@ -137,6 +148,9 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   useEffect(() => {
     if (reduxAllTrans.status == "idle") {
       reduxDispartcher(fetchTrans(mail));
+    }
+    if (reduxWallet.status == "idle") {
+      reduxDispartcher(fetchWallet(mail));
     }
     if (reduxCategories.status == "idle") {
       reduxDispartcher(fetchCategories(mail));
@@ -177,8 +191,21 @@ function MovementsContent({ timePeriodFromFather, mail }) {
       );
     }
     if (exactAmountFilter !== "" && !isNaN(Number(exactAmountFilter))) {
-      const target = Math.round(Number(exactAmountFilter) * 100);
-      filtered = filtered.filter((t) => Math.round((t.amount ?? 0) * 100) === target);
+      if (exactAmountMode === "native") {
+        const targetMinor = majorToMinor(Number(exactAmountFilter), exactAmountCurrency);
+        filtered = filtered.filter((t) => {
+          const native = t.displayMoney?.native;
+          return native ? native.currency === exactAmountCurrency && native.amountMinor === targetMinor
+            : exactAmountCurrency === "MXN" && Math.round(Math.abs(t.amount ?? 0) * 100) === targetMinor;
+        });
+      } else {
+        const primaryCurrency = wallet?.primaryCurrency || "MXN";
+        const targetMinor = majorToMinor(Number(exactAmountFilter), primaryCurrency);
+        filtered = filtered.filter((t) => {
+          const primary = t.displayMoney?.primary;
+          return primary && primary.currency === primaryCurrency && primary.amountMinor === targetMinor;
+        });
+      }
     }
     if (categoryFilter) {
       filtered = filtered.filter((t) => String(t.category?._id) === categoryFilter);
@@ -195,124 +222,35 @@ function MovementsContent({ timePeriodFromFather, mail }) {
       setDupCount(0);
       setAllMovements(filtered);
     }
-  }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, exactAmountFilter, categoryFilter, subCategoryFilter, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
+  }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, exactAmountFilter, exactAmountMode, exactAmountCurrency, wallet, categoryFilter, subCategoryFilter, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
 
-  const { totalBills, totalIncomes } = useMemo(() => {
-    let bills = 0;
-    let incomes = 0;
+  // Bills/Incomes summary broken down by each transaction's own native
+  // currency - "100 MXN + 100 USD" is never blended into a single number,
+  // since that would silently mix two different currencies together.
+  const { billsByCurrency, incomesByCurrency } = useMemo(() => {
+    const bills = {};
+    const incomes = {};
     for (const m of allMovements) {
-      const amt = Number(m.amount) || 0;
-      if (m.isIncome) {
-        incomes += amt;
-      } else {
-        bills += amt;
-      }
+      // Internal transfers/exchanges are not income or spending (plan
+      // section 2.6) - both legs stay visible in the list but never count
+      // toward these totals.
+      if (m.kind === "transfer" || m.kind === "exchange") continue;
+      const native = m.displayMoney?.native;
+      const currency = native?.currency || "MXN";
+      const amountMinor = native ? native.amountMinor : Math.round(Math.abs(Number(m.amount) || 0) * 100);
+      const bucket = m.isIncome ? incomes : bills;
+      bucket[currency] = (bucket[currency] || 0) + amountMinor;
     }
-    return { totalBills: bills, totalIncomes: incomes };
+    return { billsByCurrency: bills, incomesByCurrency: incomes };
   }, [allMovements]);
 
-  function areDuplicates(a, b, criteria, dateTol, amountTol) {
-    if (criteria.name) {
-      const na = (a.name || "").toLowerCase().trim();
-      const nb = (b.name || "").toLowerCase().trim();
-      if (na !== nb) return false;
-    }
-    if (criteria.date) {
-      const daStr = String(a.date || a.createdAt || "").slice(0, 10);
-      const dbStr = String(b.date || b.createdAt || "").slice(0, 10);
-      const da = new Date(daStr).getTime();
-      const db = new Date(dbStr).getTime();
-      const diffDays = Math.round(Math.abs(da - db) / 86400000);
-      if (diffDays > dateTol) return false;
-    }
-    if (criteria.amount) {
-      const diff = Math.abs((a.amount ?? 0) - (b.amount ?? 0));
-      if (diff > amountTol) return false;
-    }
-    if (criteria.category) {
-      if (String(a.category?._id || "none") !== String(b.category?._id || "none")) return false;
-    }
-    if (criteria.subcategory) {
-      if (String(a.subCategory?._id || "none") !== String(b.subCategory?._id || "none")) return false;
-    }
-    return true;
-  }
-
-  // Encuentra componentes conectados via Union-Find
-  function buildDupGroups(transactions, criteria, dateTol, amountTol) {
-    const n = transactions.length;
-    const parent = transactions.map((_, i) => i);
-    const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
-    const union = (i, j) => { parent[find(i)] = find(j); };
-
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        if (areDuplicates(transactions[i], transactions[j], criteria, dateTol, amountTol)) {
-          union(i, j);
-        }
-      }
-    }
-    // Agrupa índices por componente
-    const comps = {};
-    transactions.forEach((_, i) => {
-      const root = find(i);
-      if (!comps[root]) comps[root] = [];
-      comps[root].push(i);
-    });
-    return Object.values(comps).filter((g) => g.length > 1);
-  }
-
-  function getDuplicates(transactions, criteria, dateTol, amountTol) {
-    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-    const dupIds = new Set();
-    groups.forEach((g) => g.forEach((i) => dupIds.add(String(transactions[i]._id))));
-    return transactions.filter((t) => dupIds.has(String(t._id)));
-  }
-
-  // Devuelve IDs a eliminar: todos excepto el primero de cada componente
-  function getDuplicatesToDelete(transactions, criteria, dateTol, amountTol) {
-    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-    const toDelete = [];
-    groups.forEach((g) => g.slice(1).forEach((i) => toDelete.push(transactions[i]._id)));
-    return toDelete;
-  }
-
-  // Devuelve IDs a eliminar: TODOS los items de cada grupo (ninguno se conserva)
-  function getAllMatchingIds(transactions, criteria, dateTol, amountTol) {
-    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-    const toDelete = [];
-    groups.forEach((g) => g.forEach((i) => toDelete.push(transactions[i]._id)));
-    return toDelete;
-  }
-
-  // Construye pares estrictos 1 a 1 de { original, duplicate } para mostrar comparación lado a lado
-  function getDuplicatePairs(transactions, selectedIds, criteria, dateTol, amountTol) {
-    const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-    const selectedSet = new Set((selectedIds || []).map(String));
-    const pairs = [];
-    groups.forEach((g) => {
-      if (!g || g.length === 0) return;
-      const original = transactions[g[0]];
-      g.slice(1).forEach((idx) => {
-        const dupItem = transactions[idx];
-        if (dupItem && selectedSet.has(String(dupItem._id))) {
-          pairs.push({ original, duplicate: dupItem });
-        }
-      });
-      if (original && selectedSet.has(String(original._id)) && !pairs.some((p) => String(p.duplicate._id) === String(original._id))) {
-        const refItem = transactions[g[1]] || original;
-        pairs.push({ original: refItem, duplicate: original });
-      }
-    });
-    const pairedDupIds = new Set(pairs.map((p) => String(p.duplicate._id)));
-    (selectedIds || []).forEach((id) => {
-      if (!pairedDupIds.has(String(id))) {
-        const t = transactions.find((tr) => String(tr._id) === String(id));
-        if (t) pairs.push({ original: t, duplicate: t });
-      }
-    });
-    return pairs;
-  }
+  // Duplicate-detection logic lives in transactionDuplicates.js, shared with
+  // ModalContentTopMonthItem.jsx (see plan section 14.4) - currency-aware,
+  // so a native duplicate key never matches "100 MXN" against "100 USD".
+  const getDuplicates = sharedGetDuplicates;
+  const getDuplicatesToDelete = sharedGetDuplicatesToDelete;
+  const getAllMatchingIds = sharedGetAllMatchingIds;
+  const getDuplicatePairs = sharedGetDuplicatePairs;
 
   function getValueFromSelecter(v) {
     userHasSelectedPeriod.current = true;
@@ -335,6 +273,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     setTransType("all");
     setSearchQuery("");
     setExactAmountFilter("");
+    setExactAmountMode("primary");
+    setExactAmountCurrency("MXN");
     setCategoryFilter("");
     setSubCategoryFilter("");
     if (handleClean) handleClean();
@@ -355,7 +295,11 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     if (trastType !== "all") parts.push(`Type: ${trastType === "incomes" ? "Incomes only" : "Bills only"}`);
     if (readable !== "all") parts.push(`Readable: ${readable === "true" ? "Readable only" : "Not readable"}`);
     if (searchQuery.trim()) parts.push(`Search: "${searchQuery.trim()}"`);
-    if (exactAmountFilter !== "") parts.push(`Amount: ${currencyFormatter.format(Number(exactAmountFilter), { locale: "en-US" })}`);
+    if (exactAmountFilter !== "") {
+      const filterCurrency = exactAmountMode === "native" ? exactAmountCurrency : (wallet?.primaryCurrency || "MXN");
+      const modeLabel = exactAmountMode === "native" ? "native" : "primary";
+      parts.push(`Amount: ${formatMoneyMinor(majorToMinor(Number(exactAmountFilter), filterCurrency), filterCurrency)} (${modeLabel})`);
+    }
     if (categoryFilter) {
       const cat = allCategories.find((c) => String(c._id) === categoryFilter);
       parts.push(`Category: ${cat?.name || categoryFilter}`);
@@ -420,7 +364,44 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     }
   };
 
+  // A transfer/exchange leg deleted alone would leave its counterpart
+  // Account misrepresenting a real gain/loss - both linked legs are always
+  // removed together (plan section 13).
+  const handleTransferRemove = async (transferGroupId) => {
+    try {
+      const linkedIds = (rdxTransactions || [])
+        .filter((t) => t.transferGroupId === transferGroupId)
+        .map((t) => t._id);
+      for (const linkedId of linkedIds) {
+        const element = document.getElementById(`trans-${linkedId}`);
+        if (element) element.classList.add("backOutDown-5seg");
+      }
+      await new Promise((resolve) => setTimeout(resolve, 251));
+      linkedIds.forEach((linkedId) => {
+        const element = document.getElementById(`trans-${linkedId}`);
+        if (element) element.classList.add("hidden");
+      });
+      reduxDispartcher(removeManyTransactions(linkedIds));
+      const res = await toFetch.post("general-data/transactions/transfer/remove", { transferGroupId });
+      if (res.ok) {
+        runNotify("ok", String(res.message));
+      } else {
+        runNotify("error", res.message || "Something went wrong removing this transfer, please try again 🤕");
+      }
+    } catch (e) {
+      runNotify("error", String(e));
+    } finally {
+      setIsRemoveModal(false);
+      setConfirmLoading(false);
+    }
+  };
+
   const handleTransactionRemove = async (id) => {
+    const trans = getTransById(id);
+    if (trans?.transferGroupId) {
+      await handleTransferRemove(trans.transferGroupId);
+      return;
+    }
     try {
       const element = document.getElementById(`trans-${id}`);
       element.classList.add("backOutDown-5seg");
@@ -487,6 +468,16 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   };
 
   const handleTransEdit = (tra) => {
+    if (tra?.transferGroupId) {
+      // Editing a transfer/exchange leg would silently desync it from its
+      // counterpart leg - point the user at delete + recreate instead of
+      // opening the normal expense/income form (plan section 13).
+      runNotify(
+        "info",
+        "This is one leg of a transfer/exchange and can't be edited directly - delete it (both linked legs are removed together) and create a new transfer instead."
+      );
+      return;
+    }
     setEditingTrans(tra);
     setEditKey((k) => k + 1);
   };
@@ -645,7 +636,11 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             danger: false,
           }}
         >
-          <p className="text-slate-600 text-sm mb-2">Are you sure you want to permanently delete this transaction? This action cannot be undone.</p>
+          <p className="text-slate-600 text-sm mb-2">
+            {getTransById(transRemovableId)?.transferGroupId
+              ? "This is one leg of a transfer/exchange - both linked transactions will be deleted together. This action cannot be undone."
+              : "Are you sure you want to permanently delete this transaction? This action cannot be undone."}
+          </p>
           <DeletePreviewRow transaction={getTransById(transRemovableId)} />
         </Modal>
 
@@ -800,13 +795,34 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   </div>
                 </div>
                 <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center sm:font-base sm:font-extralight relative pulse-animation-short">
+                  <Tooltip title="Primary amount compares against your Wallet's primary currency. Native amount compares against each transaction's own Account currency.">
+                    <select
+                      className="bg-white border border-slate-200 rounded-2xl px-1 py-0.5 outline-none"
+                      value={exactAmountMode}
+                      onChange={(e) => setExactAmountMode(e.target.value)}
+                    >
+                      <option value="primary">Primary</option>
+                      <option value="native">Native</option>
+                    </select>
+                  </Tooltip>
+                  {exactAmountMode === "native" && (
+                    <select
+                      className="bg-white border border-slate-200 rounded-2xl px-1 py-0.5 outline-none"
+                      value={exactAmountCurrency}
+                      onChange={(e) => setExactAmountCurrency(e.target.value)}
+                    >
+                      {SUPPORTED_CURRENCIES.map((code) => (
+                        <option key={code} value={code}>{code}</option>
+                      ))}
+                    </select>
+                  )}
                   <input
                     type="number"
                     step="0.01"
                     placeholder="Exact amount"
                     value={exactAmountFilter}
                     onChange={(e) => setExactAmountFilter(e.target.value)}
-                    className="bg-white border border-slate-200 rounded-2xl px-2 py-0.5 w-[130px] outline-none focus:border-purple-400 transition-colors"
+                    className="bg-white border border-slate-200 rounded-2xl px-2 py-0.5 w-[110px] outline-none focus:border-purple-400 transition-colors"
                   />
                   {exactAmountFilter !== "" && (
                     <button
@@ -1168,14 +1184,32 @@ function MovementsContent({ timePeriodFromFather, mail }) {
               <div className="flex items-center gap-1.5 text-slate-500 font-medium">
                 <span>{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1 text-red-600 font-semibold bg-red-50 px-2.5 py-0.5 rounded-full border border-red-200">
                   <span className="text-[10px] font-bold tracking-wide">BILLS:</span>
-                  <span>-{currencyFormatter.format(totalBills, { locale: "en-US" })}</span>
+                  {Object.keys(billsByCurrency).length === 0 ? (
+                    <span>-{formatMoneyMinor(0, "MXN")}</span>
+                  ) : (
+                    Object.entries(billsByCurrency).map(([currency, amountMinor], i) => (
+                      <span key={currency}>
+                        {i > 0 && <span className="text-red-300 mx-0.5">·</span>}
+                        -{formatMoneyMinor(amountMinor, currency)}
+                      </span>
+                    ))
+                  )}
                 </div>
                 <div className="flex items-center gap-1 text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                   <span className="text-[10px] font-bold tracking-wide">INCOMES:</span>
-                  <span>+{currencyFormatter.format(totalIncomes, { locale: "en-US" })}</span>
+                  {Object.keys(incomesByCurrency).length === 0 ? (
+                    <span>+{formatMoneyMinor(0, "MXN")}</span>
+                  ) : (
+                    Object.entries(incomesByCurrency).map(([currency, amountMinor], i) => (
+                      <span key={currency}>
+                        {i > 0 && <span className="text-emerald-300 mx-0.5">·</span>}
+                        +{formatMoneyMinor(amountMinor, currency)}
+                      </span>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1282,7 +1316,32 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 )}
               </div>
             )}
-            {allMovements.map((movement) => (
+            {allMovements.map((movement) => {
+              const isTransferLeg = movement.kind === "transfer" || movement.kind === "exchange";
+              const native = movement.displayMoney?.native;
+              const primary = movement.displayMoney?.primary;
+              const merchant = movement.displayMoney?.merchant;
+              const showEquivalent = Boolean(native && primary && native.currency !== primary.currency);
+              const hasFxDetail = Boolean(merchant) || showEquivalent;
+              const amountLabel = native
+                ? formatMoneyMinor(native.amountMinor, native.currency)
+                : formatMoneyMajor(movement.amount, wallet?.primaryCurrency || "MXN");
+              const fxTooltipTitle = hasFxDetail ? (
+                <div className="flex flex-col gap-0.5 text-[11px]">
+                  {merchant && <div>Merchant: {formatMoneyMinor(merchant.amountMinor, merchant.currency)}</div>}
+                  {native && <div>Account: {formatMoneyMinor(native.amountMinor, native.currency)}</div>}
+                  {primary ? (
+                    <>
+                      <div>Reported ({primary.currency}): {formatMoneyMinor(primary.amountMinor, primary.currency)}</div>
+                      <div>Rate: {primary.rate} ({primary.source})</div>
+                      <div>{new Date(primary.effectiveDate).toLocaleDateString()} — {primary.estimated ? "estimated" : "exact"}{primary.stale ? ", stale" : ""}</div>
+                    </>
+                  ) : (
+                    <div>Exchange-rate estimate unavailable</div>
+                  )}
+                </div>
+              ) : null;
+              return (
               <div
                 key={movement._id}
                 id={`trans-${movement._id}`}
@@ -1341,31 +1400,31 @@ function MovementsContent({ timePeriodFromFather, mail }) {
 
                 <div>
                   <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end">
-                    {movement.isBill ? (
                       <div className="flex flex-col items-end">
-                        <div className="tra-amount-cont text-red-500 flex gap-1 items-center font-medium">
-                          <CategoIcon type={"MdKeyboardDoubleArrowDown"} />
-                          <p className="tra-amount">
-                            {currencyFormatter.format(movement.amount, { locale: "en-US" })}
-                          </p>
+                        <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-500" : movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
+                          <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? "Currency exchange" : "Transfer"} — not counted as income or spending` : ""}>
+                            <span className="flex items-center">
+                              <CategoIcon type={isTransferLeg ? "MdSwapHoriz" : movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
+                            </span>
+                          </Tooltip>
+                          <p className="tra-amount">{amountLabel}</p>
+                          {hasFxDetail && (
+                            <Tooltip title={fxTooltipTitle}>
+                              <span className="ml-1 text-[9px] font-bold text-purple-500 border border-purple-300 rounded px-1 cursor-default">
+                                FX
+                              </span>
+                            </Tooltip>
+                          )}
                         </div>
+                        {showEquivalent && (
+                          <p className="text-[11px] text-slate-500 cursor-default">
+                            ≈ {formatMoneyMinor(primary.amountMinor, primary.currency)}
+                          </p>
+                        )}
                         <div className="date-container text-[12px] font-light">
                           {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-end">
-                        <div className="tra-amount-cont text-green-500 flex gap-1 items-center font-medium">
-                          <CategoIcon type={"MdKeyboardDoubleArrowUp"} />
-                          <p className="tra-amount">
-                            {currencyFormatter.format(movement.amount, { locale: "en-US" })}
-                          </p>
-                        </div>
-                        <div className="date-container text-[12px] font-light">
-                          {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
-                        </div>
-                      </div>
-                    )}
                     <div className="btns flex justify-between gap-2">
                       <button
                         onClick={() => showRemoveModal("", movement._id)}
@@ -1383,7 +1442,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

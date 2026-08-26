@@ -14,8 +14,35 @@ import { IoColorPalette } from "react-icons/io5";
 import { FaRegQuestionCircle } from "react-icons/fa";
 import { Tooltip } from "antd";
 import { TbLetterCaseToggle } from "react-icons/tb";
+import fetcher from "@/helpers/fetcher";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { formatMoneyMajor, formatMoneyMinor, majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 
-function CreditCard({ acc, user, trans, cardColor, current }) {
+// A transaction's own native amount, in its own native currency - as
+// opposed to getPrimaryAmount, which converts to the Wallet's primary
+// currency. Used to show a foreign-currency account's totals in its own
+// currency first, matching how "Current" already shows the native balance.
+function getNativeAmount(tra) {
+  const native = tra?.displayMoney?.native;
+  if (native && native.currency) return minorToMajor(native.amountMinor, native.currency);
+  return Number(tra?.amount) || 0;
+}
+
+function CurrencyChip({ currency }) {
+  if (!currency) return null;
+  return (
+    <span className="text-[9px] sm:text-[10px] font-semibold text-white/90 bg-white/15 px-1.5 py-0.5 rounded shrink-0 self-center leading-none">
+      {currency}
+    </span>
+  );
+}
+
+function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrency: walletPrimaryCurrencyProp }) {
+  const router = useRouter();
+  const reduxWalletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency);
+  const walletPrimaryCurrency = walletPrimaryCurrencyProp || reduxWalletPrimaryCurrency || "MXN";
   let [userName, setUserName] = useState("");
   let [allTransactions, setAllTransacctions] = useState([]);
   let [account, setAccount] = useState([]);
@@ -25,10 +52,14 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
   let [totalAmount, setTotalAmount] = useState(0);
   let [totalBill, setTotalBill] = useState(0);
   let [totalIncome, setTotalIncome] = useState(0);
+  let [nativeTotalBill, setNativeTotalBill] = useState(0);
+  let [nativeTotalIncome, setNativeTotalIncome] = useState(0);
   let [selectedDuration, setSelectedDuration] = useState(30);
   let [lastDayRange, setLastDayRange] = useState(new Date());
   let [cardColore, setCardColore] = useState("");
   let [manualColor, setManualColor] = useState(false);
+  let [equivalentQuote, setEquivalentQuote] = useState(null);
+  const accountCurrency = account?.currency || "MXN";
 
   useEffect(() => {
     if (acc && user && trans) {
@@ -56,16 +87,32 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
       });
       const accBills = total.filter((bill) => bill.isBill);
       const accIncomes = total.filter((bill) => bill.isIncome);
+      // These totals are displayed labeled as the Wallet's primary currency
+      // (formatMoneyMajor(..., walletPrimaryCurrency) below), so they must
+      // be summed in that currency too - raw tra.amount is in the
+      // transaction's own native currency, which only happens to equal the
+      // Wallet primary for an all-MXN wallet.
       const finalAmount = total.reduce(
-        (current, tra) => current + tra.amount,
+        (current, tra) => current + getPrimaryAmount(tra),
         0
       );
       const finalBill = accBills.reduce(
-        (current, bill) => current + bill.amount,
+        (current, bill) => current + getPrimaryAmount(bill),
         0
       );
       const finalIncome = accIncomes.reduce(
-        (current, income) => current + income.amount,
+        (current, income) => current + getPrimaryAmount(income),
+        0
+      );
+      // Native-currency sums (e.g. USD for a Revolut account) - shown as the
+      // primary number for a foreign-currency account, with the wallet-
+      // primary total above as the small converted equivalent.
+      const nativeBill = accBills.reduce(
+        (current, bill) => current + getNativeAmount(bill),
+        0
+      );
+      const nativeIncome = accIncomes.reduce(
+        (current, income) => current + getNativeAmount(income),
         0
       );
       setTotalReadTransactions(total);
@@ -74,12 +121,44 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
       setTotalAmount(finalAmount);
       setTotalBill(finalBill);
       setTotalIncome(finalIncome);
+      setNativeTotalBill(nativeBill);
+      setNativeTotalIncome(nativeIncome);
     }
   }, [allTransactions, account, selectedDuration]);
 
   const handleDurationChange = (event) => {
     setSelectedDuration(parseInt(event.target.value, 10));
   };
+
+  // Current-equivalent: a live valuation of this Account's native balance in
+  // the Wallet's primary currency, not a second bank balance. Never shown
+  // when a quote isn't available - no fake rate-1 fallback.
+  useEffect(() => {
+    setEquivalentQuote(null);
+    if (!account?._id || !walletPrimaryCurrency) return;
+    if (accountCurrency === walletPrimaryCurrency) return;
+
+    let cancelled = false;
+    const toFetch = fetcher();
+    (async () => {
+      try {
+        const amountMinor = majorToMinor(account.amount || 0, accountCurrency);
+        const res = await toFetch.post("general-data/fx/quote", {
+          amountMinor,
+          fromCurrency: accountCurrency,
+          toCurrency: walletPrimaryCurrency,
+        });
+        if (!cancelled && res.ok) {
+          setEquivalentQuote(res.data);
+        }
+      } catch (e) {
+        // Silently unavailable - the card just omits the equivalent line.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [account?._id, account?.amount, accountCurrency, walletPrimaryCurrency]);
 
   const generateRandomColor = () => {
     const color1 = randomColor();
@@ -97,6 +176,8 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
     }
   };
 
+  const isForeignAccount = accountCurrency !== walletPrimaryCurrency;
+
   return (
     <div className="pulse-animation-short ">
       <div
@@ -105,7 +186,7 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
             cardColore ||
             "linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(18,127,205,1) 100%)",
         }}
-        className=" shadow-2xl flex flex-col px-4 py-4 rounded-3xl w-[300px] max-w-[300px] sm:min-w-[450px] sm:max-h-[330px] md:min-w-[500px] sm:px-5 sm:py-5 m-1"
+        className=" shadow-2xl flex flex-col px-4 py-4 rounded-3xl w-[300px] max-w-[300px] sm:min-w-[450px] sm:min-h-[330px] md:min-w-[500px] sm:px-5 sm:py-5 m-1"
       >
         <div className="flex justify-between items-stretch my-auto">
           <div
@@ -141,8 +222,21 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
           </div>
         </div>
         <div className="flex items-center justify-between gap-5 max-md:max-w-full max-md:flex-nowrap relative">
-          <Tooltip title={!account.name ? "Generic account" : account.name}>
-            <div className="flex my-auto truncate">
+          <Tooltip
+            title={
+              <>
+                {!account.name ? "Generic account" : account.name}
+                <br />
+                Click to go to the account
+              </>
+            }
+          >
+            <div
+              className="flex my-auto truncate cursor-pointer"
+              onClick={() => {
+                if (account?._id) router.push(`/dashboard/accounts?accountId=${account._id}`);
+              }}
+            >
               <p className="max-w-fit text-white text-2xl font-bold mt-1 sm:text-4xl break-word text-ellipsis overflow-hidden group">
                 {!account.name ? "Generic account" : account.name}
               </p>
@@ -159,25 +253,71 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
         {!current ? (
           ""
         ) : (
-          <div className="z-[1] flex gap-2.5 mt-3 self-end items-start sm:mt-5">
-            <div className="text-white text-sm font-thin sm:font-base sm:font-extralight ">
-              Current:
+          <div className="z-[1] flex flex-col gap-1 mt-3 self-end items-end sm:mt-5">
+            <div className="flex gap-2.5 items-start">
+              <div className="text-white text-sm font-thin sm:font-base sm:font-extralight ">
+                Current:
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
+                  {formatMoneyMajor(account.amount || 0, accountCurrency, { showCode: false })}
+                </div>
+                <CurrencyChip currency={accountCurrency} />
+              </div>
             </div>
-            <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-              $ {account.amount ? account.amount.toFixed(2) : 0}
-            </div>
+            {equivalentQuote ? (
+              <Tooltip
+                title={`Valued at ${equivalentQuote.rate} (${equivalentQuote.source}${equivalentQuote.stale ? ", stale" : ""}) on ${new Date(equivalentQuote.effectiveDate).toLocaleDateString()}. This is a valuation, not a second balance.`}
+              >
+                <div className="text-white/80 text-xs font-thin whitespace-nowrap">
+                  ≈ {formatMoneyMinor(equivalentQuote.amountMinor, equivalentQuote.currency, { showCode: false })} {equivalentQuote.currency}
+                </div>
+              </Tooltip>
+            ) : null}
           </div>
         )}
         <div className="z-[1] flex gap-2.5 mt-3 self-end items-start sm:mt-5">
           <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1 " />
-          <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-            $ {!totalIncome ? "No incomes... 🤕" : totalIncome.toFixed(2)}
+          <div className="flex flex-col gap-0.5 items-end">
+            <div className="flex items-center gap-1.5">
+              <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
+                {!totalIncome
+                  ? "No incomes... 🤕"
+                  : formatMoneyMajor(
+                      isForeignAccount ? nativeTotalIncome : totalIncome,
+                      isForeignAccount ? accountCurrency : walletPrimaryCurrency,
+                      { showCode: false }
+                    )}
+              </div>
+              {totalIncome ? <CurrencyChip currency={isForeignAccount ? accountCurrency : walletPrimaryCurrency} /> : null}
+            </div>
+            {isForeignAccount && totalIncome ? (
+              <div className="text-white/80 text-xs font-thin whitespace-nowrap">
+                ≈ {formatMoneyMajor(totalIncome, walletPrimaryCurrency, { showCode: false })} {walletPrimaryCurrency}
+              </div>
+            ) : null}
           </div>
         </div>
         <div className="flex gap-2.5 self-end items-start sm:mt-2">
           <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1" />
-          <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-            $ {!totalBill ? "No bills..." : totalBill.toFixed(2)}
+          <div className="flex flex-col gap-0.5 items-end">
+            <div className="flex items-center gap-1.5">
+              <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
+                {!totalBill
+                  ? "No bills..."
+                  : formatMoneyMajor(
+                      isForeignAccount ? nativeTotalBill : totalBill,
+                      isForeignAccount ? accountCurrency : walletPrimaryCurrency,
+                      { showCode: false }
+                    )}
+              </div>
+              {totalBill ? <CurrencyChip currency={isForeignAccount ? accountCurrency : walletPrimaryCurrency} /> : null}
+            </div>
+            {isForeignAccount && totalBill ? (
+              <div className="text-white/80 text-xs font-thin whitespace-nowrap">
+                ≈ {formatMoneyMajor(totalBill, walletPrimaryCurrency, { showCode: false })} {walletPrimaryCurrency}
+              </div>
+            ) : null}
           </div>
         </div>
         <div className="w-full flex justify-between items-center gap-3 mt-3 sm:mt-5">
@@ -191,12 +331,26 @@ function CreditCard({ acc, user, trans, cardColor, current }) {
               <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1" />
             )}
 
-            <div className="text-white text-2xl font-base whitespace-nowrap sm:text-5xl pulse-animation-short">
-              {!totalAmount ? (
-                <p className="text-xl sm:text-xl">No transactions... 🤕</p>
-              ) : (
-                `$ ${(totalIncome - totalBill).toFixed(2)}`
-              )}
+            <div className="flex flex-col gap-0.5 items-end">
+              <div className="flex items-center gap-1.5">
+                <div className="text-white text-2xl font-base whitespace-nowrap sm:text-5xl pulse-animation-short">
+                  {!totalAmount ? (
+                    <p className="text-xl sm:text-xl">No transactions... 🤕</p>
+                  ) : (
+                    formatMoneyMajor(
+                      isForeignAccount ? nativeTotalIncome - nativeTotalBill : totalIncome - totalBill,
+                      isForeignAccount ? accountCurrency : walletPrimaryCurrency,
+                      { showCode: false }
+                    )
+                  )}
+                </div>
+                {totalAmount ? <CurrencyChip currency={isForeignAccount ? accountCurrency : walletPrimaryCurrency} /> : null}
+              </div>
+              {isForeignAccount && totalAmount ? (
+                <div className="text-white/80 text-xs font-thin whitespace-nowrap">
+                  ≈ {formatMoneyMajor(totalIncome - totalBill, walletPrimaryCurrency, { showCode: false })} {walletPrimaryCurrency}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

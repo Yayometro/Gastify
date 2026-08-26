@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Spin } from "antd";
 import dayjs from "dayjs";
-import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
@@ -11,6 +10,7 @@ import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@/lib/money/currencies";
 
 const RECURRENCE_LABELS = {
   monthly: "Monthly",
@@ -19,13 +19,20 @@ const RECURRENCE_LABELS = {
   weekly: "Weekly",
 };
 
-const emptyForm = { name: "", amount: "", recurrence: "monthly", anchorDate: new Date() };
+const getEmptyForm = (currency) => ({
+  name: "",
+  amount: "",
+  currency: currency || "MXN",
+  recurrence: "monthly",
+  anchorDate: new Date(),
+});
 
-function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
+function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurrency, onChange }) {
+  const defaultCurrency = walletPrimaryCurrency || "MXN";
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState(() => getEmptyForm(defaultCurrency));
   const toFetch = fetcher();
 
   const handleChange = (e) => {
@@ -42,6 +49,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
     setForm({
       name: source.name || "",
       amount: source.amount || "",
+      currency: source.currency || defaultCurrency,
       recurrence: source.recurrence || "monthly",
       anchorDate: source.anchorDate ? new Date(source.anchorDate) : new Date(),
     });
@@ -49,7 +57,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
 
   const resetForm = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm(getEmptyForm(defaultCurrency));
   };
 
   const handleSubmit = async (e) => {
@@ -62,6 +70,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
           id: editingId,
           name: form.name,
           amount: Number(form.amount),
+          currency: form.currency,
           recurrence: form.recurrence,
           anchorDate: form.anchorDate || undefined,
         });
@@ -71,6 +80,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
           wallet: walletId,
           name: form.name,
           amount: Number(form.amount),
+          currency: form.currency,
           recurrence: form.recurrence,
           anchorDate: form.anchorDate || undefined,
         });
@@ -124,7 +134,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
                 <div className="flex flex-col">
                   <p className="text-purple-800">{source.name}</p>
                   <p className="text-xs text-gray-500">
-                    {usdFormatChanger(source.amount)} · {RECURRENCE_LABELS[source.recurrence]}
+                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence]}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -167,6 +177,21 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
               />
             </div>
             <div className="flex flex-col">
+              <p className="label-tfp mb-1">Currency</p>
+              <select
+                className="etm-selector"
+                name="currency"
+                value={form.currency}
+                onChange={handleChange}
+              >
+                {SUPPORTED_CURRENCIES.map((code) => (
+                  <option key={code} value={code}>
+                    {code} ({CURRENCY_META[code].symbol})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col">
               <p className="label-tfp mb-1">Recurrence</p>
               <select
                 className="etm-selector"
@@ -182,33 +207,28 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, onChange }) {
               </select>
             </div>
             <div className="flex flex-col">
-              <label className="text-xs text-gray-500">First payment date</label>
+              <p className="label-tfp mb-1">First payment date</p>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer components={["MobileDateTimePicker"]}>
-                  <DemoItem label="">
-                    <MobileDateTimePicker
-                      className="text-center flex items-center justify-between border-2"
-                      slotProps={{ textField: { size: "small" } }}
-                      onChange={handleDateChange}
-                      value={dayjs(form.anchorDate)}
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          width: "100%",
-                          height: "100%",
-                          padding: "0px",
-                          border: "none",
-                          borderRadius: "1000px",
-                        },
-                        "& .MuiInputBase-input": {
-                          width: "100%",
-                          height: "100%",
-                          border: "1px solid rgb(176, 23, 176)",
-                          borderRadius: "1000px",
-                        },
-                      }}
-                    />
-                  </DemoItem>
-                </DemoContainer>
+                <MobileDateTimePicker
+                  slotProps={{ textField: { size: "small", variant: "standard" } }}
+                  onChange={handleDateChange}
+                  value={dayjs(form.anchorDate)}
+                  sx={{
+                    width: "100%",
+                    // The visible pill (border/padding/radius/height) comes
+                    // entirely from the global `.form-trans-edit input` rule,
+                    // which already targets this MUI input's real <input>
+                    // element - same as its sibling fields. Drawing a second
+                    // border here on the wrapper on top of that produced a
+                    // visible double-border artifact.
+                    "& .MuiInputBase-root": {
+                      width: "100%",
+                    },
+                    "& .MuiInputBase-root:before, & .MuiInputBase-root:after": {
+                      border: "none",
+                    },
+                  }}
+                />
               </LocalizationProvider>
             </div>
             <button

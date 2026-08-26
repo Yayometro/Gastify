@@ -5,11 +5,27 @@ import {
   normalizeDateToUTC,
 } from "../timeFunctions/timeFunctions";
 import currencyFormatter from "currency-formatter";
+import { minorToMajor } from "@/lib/money/currencies";
 
 export function usdFormatChanger(currency) {
   return currencyFormatter.format(currency, {
     locale: "en-US",
   });
+}
+
+// The Wallet-primary-currency equivalent of a transaction's money, in major
+// units - safe to sum directly across transactions/Accounts of different
+// native currencies, unlike the legacy `transaction.amount` (which is only
+// ever meaningful within a single currency, and every reducer below used to
+// add it up blindly regardless of currency). Also accepts an
+// already-aggregated synthetic item (one produced by an earlier pass through
+// one of these same reducers - has `.value`/`.amount` but no `.displayMoney`
+// of its own) and passes its value through unchanged, since that value was
+// already currency-normalized the first time around.
+export function getPrimaryAmount(item) {
+  const primary = item?.displayMoney?.primary;
+  if (primary) return minorToMajor(primary.amountMinor, primary.currency);
+  return Number(item?.value ?? item?.amount) || 0;
 }
 
 export function orderByHighestValue(arr) {
@@ -22,7 +38,7 @@ export function get_total_value_of_all_transactions(arr){
   if (!(arr instanceof Array))
     throw new Error("arr should be an instance of Array");
   return arr.reduce((prev, current) => {
-    return prev + current.amount
+    return prev + getPrimaryAmount(current)
   }, 0)
 }
 
@@ -43,8 +59,13 @@ export function mapToAddTypeTransactionAndColor(arr) {
 }
 
 export function filterBillsOrIncomes(trans) {
-  const incomes = trans.filter((tra) => !tra.isBill);
-  const bills = trans.filter((tra) => tra.isBill);
+  // A transfer/exchange leg has isBill=false AND isIncome=false by design
+  // (plan section 13) - without this exclusion, `!tra.isBill` alone
+  // silently counted every transfer leg as income everywhere this function
+  // is used (Dashboard, Top3, History, Projections).
+  const nonTransfers = trans.filter((tra) => tra.kind !== "transfer" && tra.kind !== "exchange");
+  const incomes = nonTransfers.filter((tra) => !tra.isBill);
+  const bills = nonTransfers.filter((tra) => tra.isBill);
   return { incomes, bills };
 }
 
@@ -53,8 +74,9 @@ export function reduceAndTransforToCategories(array) {
     throw new Error("array should be an Array instance");
   const categoriesFathers = array.reduce((acc, trans) => {
     const category = trans.category;
+    const amount = getPrimaryAmount(trans);
     if (acc[category?.name]) {
-      acc[category?.name].value += trans.amount || trans.value;
+      acc[category?.name].value += amount;
       acc[category?.name].children = [...acc[category?.name].children, trans];
     } else {
       acc[category?.name] = {
@@ -62,7 +84,7 @@ export function reduceAndTransforToCategories(array) {
         type: category?.name || "No category",
         icon: category?.icon || "md/MdFilterNone",
         color: category?.color || "#ABABAB",
-        value: trans.amount || trans.value,
+        value: amount,
         isBill: trans.isBill,
         children: [trans],
       };
@@ -82,7 +104,7 @@ export function reduceAndTransforToCategories(array) {
 export function getTotalValue(arr) {
   if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
-  return arr.reduce((acc, item) => (acc += item.value || item.amount), 0);
+  return arr.reduce((acc, item) => (acc += getPrimaryAmount(item)), 0);
 }
 
 export function reduceTransToTransMonths(arr) {
@@ -93,14 +115,15 @@ export function reduceTransToTransMonths(arr) {
       getMonthOfTransaction(new Date(transaction.date).getMonth()).toLowerCase()
     );
     const month = transactionOfMonth.name;
+    const amount = getPrimaryAmount(transaction);
     if (acc[month]) {
-      acc[month].value += transaction.amount;
+      acc[month].value += amount;
     } else {
       acc[month] = {
         [month]: month,
         type: month,
         color: transactionOfMonth.color,
-        value: transaction.amount,
+        value: amount,
         icon: transactionOfMonth.icon || "md/MdOutlineFilter1",
         index: transactionOfMonth.index,
         isBill: transaction.isBill || null,
@@ -157,7 +180,7 @@ export function reduceTransCategoriesSliced(arr, slice) {
     throw new Error("the element shoudl be a instance of Array");
   const reduceObj = arr.reduce((acc, transaction) => {
     const categoryName = transaction?.category?.name || "No category";
-    const value = transaction.value || transaction.amount || 0;
+    const value = getPrimaryAmount(transaction);
     const icon = transaction.category?.icon || "MdFilterNone";
     if (acc[categoryName]) {
       acc[categoryName].value += value;
@@ -211,7 +234,7 @@ export function transactionsToCategories(arr) {
     return {
       _id: transaction.category?._id || "No category",
       type: transaction?.category?.name || "No category",
-      value: transaction.amount || 0,
+      value: getPrimaryAmount(transaction),
       icon: transaction.category?.icon || "MdFilterNone",
       color: transaction.category?.color || "#ABABAB",
       date: transaction.date || transaction.createdAt,
@@ -225,15 +248,16 @@ export function transformTransactionsToMonthsChartObject(trans) {
 
   const transactionsChanged = trans.map((tra) => {
     const transactionDate = normalizeDateToUTC(new Date(tra.date));
+    const amount = getPrimaryAmount(tra);
     if (
       transactionDate >= normalizeDateToUTC(monthRanges.get("january").start) &&
       transactionDate <= normalizeDateToUTC(monthRanges.get("january").end)
     ) {
       return {
-        ["january"]: tra.amount,
+        ["january"]: amount,
         type: "january",
         color: "#FF5733",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter1",
         index: 1,
         isBill: tra.isBill || null,
@@ -245,10 +269,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("february").end)
     ) {
       return {
-        ["february"]: tra.amount,
+        ["february"]: amount,
         type: "february",
         color: "#33FF57",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter2",
         index: 2,
         isBill: tra.isBill || null,
@@ -259,10 +283,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("march").end)
     ) {
       return {
-        ["march"]: tra.amount,
+        ["march"]: amount,
         type: "march",
         color: "#3357FF",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter3",
         index: 3,
         isBill: tra.isBill || null,
@@ -273,10 +297,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("april").end)
     ) {
       return {
-        ["april"]: tra.amount,
+        ["april"]: amount,
         type: "april",
         color: "#FF33A8",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter4",
         index: 4,
         isBill: tra.isBill || null,
@@ -287,10 +311,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("may").end)
     ) {
       return {
-        ["may"]: tra.amount,
+        ["may"]: amount,
         type: "may",
         color: "#FFD633",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter5",
         index: 5,
         isBill: tra.isBill || null,
@@ -301,10 +325,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("june").end)
     ) {
       return {
-        ["june"]: tra.amount,
+        ["june"]: amount,
         type: "june",
         color: "#33FFF6",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter6",
         index: 6,
         isBill: tra.isBill || null,
@@ -315,10 +339,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("july").end)
     ) {
       return {
-        ["july"]: tra.amount,
+        ["july"]: amount,
         type: "july",
         color: "#8D33FF",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter7",
         index: 7,
         isBill: tra.isBill || null,
@@ -329,10 +353,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("august").end)
     ) {
       return {
-        ["august"]: tra.amount,
+        ["august"]: amount,
         type: "august",
         color: "#FF8D33",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter8",
         index: 8,
         isBill: tra.isBill || null,
@@ -344,10 +368,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("september").end)
     ) {
       return {
-        ["september"]: tra.amount,
+        ["september"]: amount,
         type: "september",
         color: "#33FF8D",
-        value: tra.amount,
+        value: amount,
         icon: "md/MdOutlineFilter9",
         index: 9,
         isBill: tra.isBill || null,
@@ -358,10 +382,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("october").end)
     ) {
       return {
-        ["october"]: tra.amount,
+        ["october"]: amount,
         type: "october",
         color: "#5733FF",
-        value: tra.amount,
+        value: amount,
         icon: "md/Md10Mp",
         index: 10,
         isBill: tra.isBill || null,
@@ -373,10 +397,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("november").end)
     ) {
       return {
-        ["november"]: tra.amount,
+        ["november"]: amount,
         type: "november",
         color: "#FF3333",
-        value: tra.amount,
+        value: amount,
         icon: "md/Md11Mp",
         index: 11,
         isBill: tra.isBill || null,
@@ -388,10 +412,10 @@ export function transformTransactionsToMonthsChartObject(trans) {
       transactionDate <= normalizeDateToUTC(monthRanges.get("december").end)
     ) {
       return {
-        ["december"]: tra.amount,
+        ["december"]: amount,
         type: "december",
         color: "#33D4FF",
-        value: tra.amount,
+        value: amount,
         icon: "md/Md12Mp",
         index: 12,
         isBill: tra.isBill || null,

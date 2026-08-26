@@ -15,8 +15,8 @@ import {
   reduceTransCategoriesSliced,
   sortBasedOnValueProperty,
   sortByIndex,
-  usdFormatChanger,
 } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
@@ -52,6 +52,7 @@ function TopElementsContainer({timePeriodFromFather}) {
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
 
   const { email } = useGetUserSession();
 
@@ -88,8 +89,8 @@ function TopElementsContainer({timePeriodFromFather}) {
       const incomesTransactionsSlices = sortBasedOnValueProperty(elementsToDisplay, dividedTrans.incomes)
       const billsTransactionsSlices = sortBasedOnValueProperty(elementsToDisplay, dividedTrans.bills)
 
-      const totalTransLocalBills = usdFormatChanger(get_total_value_of_all_transactions(billsTransactionsSlices))
-      const totalTransLocalIncome = usdFormatChanger(get_total_value_of_all_transactions(incomesTransactionsSlices))
+      const totalTransLocalBills = formatMoneyMajor(get_total_value_of_all_transactions(billsTransactionsSlices), walletPrimaryCurrency)
+      const totalTransLocalIncome = formatMoneyMajor(get_total_value_of_all_transactions(incomesTransactionsSlices), walletPrimaryCurrency)
 
       setTotalTransactionsLocal({income: totalTransLocalIncome, bills:totalTransLocalBills})
       setTransactionsLocal([incomesTransactionsSlices, billsTransactionsSlices]);
@@ -103,7 +104,7 @@ function TopElementsContainer({timePeriodFromFather}) {
       );
       const finalBillsCategories = {
         children: toCategoriesSliced,
-        total: usdFormatChanger(totalValue),
+        total: formatMoneyMajor(totalValue, walletPrimaryCurrency),
       };
       const toCategoriesSlicedIncomes = orderByHighestValue(
         reduceTransCategoriesSliced(dividedTrans.incomes, dividedTrans.incomes.length)
@@ -114,7 +115,7 @@ function TopElementsContainer({timePeriodFromFather}) {
       );
       const finalIncomesCategories = {
         children: toCategoriesSlicedIncomes,
-        total: usdFormatChanger(totalValueIncome),
+        total: formatMoneyMajor(totalValueIncome, walletPrimaryCurrency),
       };
       setTransactionCategories({incomes: finalIncomesCategories, bills: finalBillsCategories});
     }

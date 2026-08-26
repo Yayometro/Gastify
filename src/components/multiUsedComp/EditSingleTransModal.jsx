@@ -22,6 +22,16 @@ import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import CategoIcon from "./CategoIcon";
 import { isProjectBudget } from "@/helpers/transformers/budgetTypes";
 import "@/components/multiUsedComp/css/muliUsed.css";
+import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEquivalent";
+import AmountEquivalentPreview from "./AmountEquivalentPreview";
+import ChargedElsewhereSection from "./ChargedElsewhereSection";
+import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+
+const CURRENCY_STRATEGIES = [
+  { value: "convert", label: "Convert", description: "Recalculate the amount to preserve the same reported value." },
+  { value: "reinterpret", label: "Keep number", description: "Keep the same number, just relabel the currency." },
+  { value: "manual", label: "Enter manually", description: "Type the exact amount in the new currency." },
+];
 
 function EditSingleTransModalInner({ trans, onClose }) {
   const dispatch = useDispatch();
@@ -29,8 +39,28 @@ function EditSingleTransModalInner({ trans, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const { close, handleClose } = useModal();
   const { handleClean, setItemSelected } = useContext(SelectCategoryContext);
-  const { accounts, categories, subCategories, budgets = [] } = useGetDataFromProvider();
+  const { wallet, accounts, categories, subCategories, budgets = [] } = useGetDataFromProvider();
   const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
+  const [currencyStrategy, setCurrencyStrategy] = useState(null);
+  // Advanced "Charged in another currency" disclosure (plan section 12.2) -
+  // see ChargedElsewhereSection for the shared UI/behavior with AddTransactionComp.
+  const [chargedElsewhere, setChargedElsewhere] = useState(false);
+  const [merchantAmount, setMerchantAmount] = useState("");
+  const [merchantCurrency, setMerchantCurrency] = useState("USD");
+  const [amountTouchedManually, setAmountTouchedManually] = useState(false);
+  const [merchantQuoting, setMerchantQuoting] = useState(false);
+  // Distinguishes "user never touched this section" (preserve whatever
+  // merchant money already existed) from "user turned it off on purpose"
+  // (clear it) - both look identical as chargedElsewhere=false otherwise.
+  const [merchantSectionTouched, setMerchantSectionTouched] = useState(false);
+  // Lets the user correct the reported (Wallet-primary-currency) equivalent
+  // by hand when the automatic ECB estimate doesn't match their bank's
+  // actual rate - buildTransactionMoney() already supports this via
+  // manualReportingAmount (used elsewhere for Account-currency reassignment
+  // and Excel import), this just exposes it directly on every foreign-
+  // currency transaction instead of only those two narrower paths.
+  const [reportedOverrideOpen, setReportedOverrideOpen] = useState(false);
+  const [reportedOverrideAmount, setReportedOverrideAmount] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -61,6 +91,18 @@ function EditSingleTransModalInner({ trans, onClose }) {
         account: trans.account?._id || trans.account || "",
         budget: trans.budget?._id || trans.budget || "",
       });
+      const existingMerchant = trans.displayMoney?.merchant || trans.money?.merchant;
+      if (existingMerchant) {
+        setChargedElsewhere(true);
+        setMerchantAmount(String(minorToMajor(existingMerchant.amountMinor, existingMerchant.currency)));
+        setMerchantCurrency(existingMerchant.currency);
+      } else {
+        setChargedElsewhere(false);
+        setMerchantAmount("");
+        setMerchantCurrency("USD");
+      }
+      setAmountTouchedManually(false);
+      setMerchantSectionTouched(false);
 
       const subCatId = trans.subCategory?._id || trans.subCategory;
       const catId = trans.category?._id || trans.category;
@@ -78,8 +120,65 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "amount") setAmountTouchedManually(true);
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Multi-currency: an Account reassignment that crosses currencies needs an
+  // explicit, user-chosen strategy - the server refuses to infer one.
+  const originalAccountCurrency = trans?.money?.account?.currency || wallet?.primaryCurrency || "MXN";
+  const selectedAccountCurrency =
+    accounts?.find((acc) => acc._id === form.account)?.currency || wallet?.primaryCurrency || "MXN";
+  const needsCurrencyStrategy = Boolean(form.account) && selectedAccountCurrency !== originalAccountCurrency;
+
+  useEffect(() => {
+    setCurrencyStrategy(null);
+  }, [form.account]);
+
+  const amountEquivalent = useTransactionAmountEquivalent({
+    amount: form.amount,
+    accountCurrency: selectedAccountCurrency,
+    walletPrimaryCurrency: wallet?.primaryCurrency || "MXN",
+  });
+
+  // Auto-suggest the Account Amount from the merchant amount whenever they
+  // differ in currency - debounced, and only while the user hasn't typed
+  // into the Amount field directly.
+  useEffect(() => {
+    if (!chargedElsewhere) return;
+    const numericMerchant = Number(merchantAmount);
+    if (!Number.isFinite(numericMerchant) || numericMerchant <= 0) return;
+
+    if (merchantCurrency === selectedAccountCurrency) {
+      if (!amountTouchedManually) setForm((f) => ({ ...f, amount: merchantAmount }));
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        setMerchantQuoting(true);
+        const amountMinor = majorToMinor(numericMerchant, merchantCurrency);
+        const res = await toFetch.post("general-data/fx/quote", {
+          amountMinor,
+          fromCurrency: merchantCurrency,
+          toCurrency: selectedAccountCurrency,
+        });
+        if (!cancelled && res.ok && !amountTouchedManually) {
+          setForm((f) => ({ ...f, amount: String(minorToMajor(res.data.amountMinor, selectedAccountCurrency)) }));
+        }
+      } catch (e) {
+        // Silently unavailable - the user can still enter the Account Amount manually.
+      } finally {
+        if (!cancelled) setMerchantQuoting(false);
+      }
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chargedElsewhere, merchantAmount, merchantCurrency, selectedAccountCurrency]);
 
   const onChangeSwitch = (checked, type) => {
     if (type === "income") setForm((p) => ({ ...p, isIncome: checked, isBill: !checked }));
@@ -101,6 +200,10 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (needsCurrencyStrategy && !currencyStrategy) {
+      runNotify("error", "Choose how to handle the currency change before saving");
+      return;
+    }
     setIsLoading(true);
     const tagsArr = form.tags
       ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
@@ -109,6 +212,18 @@ function EditSingleTransModalInner({ trans, onClose }) {
       ...form,
       name: form.name.trim(),
       tags: tagsArr,
+      ...(needsCurrencyStrategy ? { currencyStrategy } : {}),
+      // Only send merchantAmount/merchantCurrency at all if the user
+      // actually touched this section - an absent field means "preserve
+      // whatever was there", while an explicit null means "clear it".
+      ...(merchantSectionTouched
+        ? chargedElsewhere && merchantAmount !== ""
+          ? { merchantAmount, merchantCurrency }
+          : { merchantAmount: null, merchantCurrency: null }
+        : {}),
+      ...(reportedOverrideOpen && reportedOverrideAmount !== ""
+        ? { manualReportingAmount: Number(reportedOverrideAmount) }
+        : {}),
     };
     try {
       const response = await toFetch.post(`general-data/transactions/${trans._id}`, payload);
@@ -152,13 +267,80 @@ function EditSingleTransModalInner({ trans, onClose }) {
             placeholder="Transaction name"
           />
 
-          <p className="label-tfp">Amount</p>
+          <p className="label-tfp">Amount ({needsCurrencyStrategy ? selectedAccountCurrency : originalAccountCurrency})</p>
           <input
             type="number"
             name="amount"
             value={form.amount}
             onChange={handleChange}
             placeholder="Amount"
+          />
+          <AmountEquivalentPreview quote={amountEquivalent} />
+          {selectedAccountCurrency !== (wallet?.primaryCurrency || "MXN") && (
+            <div className="-mt-1">
+              {!reportedOverrideOpen ? (
+                <button
+                  type="button"
+                  className="text-[11px] text-purple-500 hover:underline cursor-pointer"
+                  onClick={() => {
+                    const prefill =
+                      amountEquivalent?.amountMinor !== undefined
+                        ? minorToMajor(amountEquivalent.amountMinor, amountEquivalent.currency)
+                        : trans?.displayMoney?.primary
+                        ? minorToMajor(trans.displayMoney.primary.amountMinor, trans.displayMoney.primary.currency)
+                        : "";
+                    setReportedOverrideAmount(String(prefill));
+                    setReportedOverrideOpen(true);
+                  }}
+                >
+                  Doesn&apos;t look right? Correct it
+                </button>
+              ) : (
+                <div className="flex flex-col gap-1 bg-purple-50 border border-purple-200 rounded-xl p-2">
+                  <p className="label-tfp !mb-0">
+                    Exact reported amount ({wallet?.primaryCurrency || "MXN"})
+                  </p>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={reportedOverrideAmount}
+                      onChange={(e) => setReportedOverrideAmount(e.target.value)}
+                      placeholder="Exact amount"
+                      className="flex-1"
+                    />
+                    <button
+                      type="button"
+                      className="text-[11px] text-slate-400 hover:text-slate-600 cursor-pointer"
+                      onClick={() => {
+                        setReportedOverrideOpen(false);
+                        setReportedOverrideAmount("");
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <ChargedElsewhereSection
+            enabled={chargedElsewhere}
+            onToggle={(checked) => {
+              setMerchantSectionTouched(true);
+              setChargedElsewhere(checked);
+            }}
+            merchantAmount={merchantAmount}
+            merchantCurrency={merchantCurrency}
+            onMerchantAmountChange={(v) => {
+              setMerchantSectionTouched(true);
+              setMerchantAmount(v);
+            }}
+            onMerchantCurrencyChange={(v) => {
+              setMerchantSectionTouched(true);
+              setMerchantCurrency(v);
+            }}
+            quoting={merchantQuoting}
           />
 
           <div className="switchers-cont flex gap-3">
@@ -237,6 +419,29 @@ function EditSingleTransModalInner({ trans, onClose }) {
             </select>
           </div>
 
+          {needsCurrencyStrategy && (
+            <div className="w-full bg-yellow-50 border border-yellow-300 rounded-xl p-2 flex flex-col gap-1">
+              <p className="text-[11px] text-yellow-800">
+                This account is in {selectedAccountCurrency}, different from {originalAccountCurrency}. Choose how to handle it:
+              </p>
+              {CURRENCY_STRATEGIES.map((strategy) => (
+                <label key={strategy.value} className="flex items-start gap-2 text-[11px] cursor-pointer">
+                  <input
+                    type="radio"
+                    name="currencyStrategy"
+                    value={strategy.value}
+                    checked={currencyStrategy === strategy.value}
+                    onChange={() => setCurrencyStrategy(strategy.value)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    <b>{strategy.label}</b> — {strategy.description}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+
           <p className="label-tfp">Project (optional)</p>
           <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
@@ -258,8 +463,13 @@ function EditSingleTransModalInner({ trans, onClose }) {
               Cancel
             </button>
             <button
-              className="flex-1 p-2 bg-purple-600 text-white text-center rounded-full hover:bg-purple-500"
+              className={`flex-1 p-2 text-white text-center rounded-full ${
+                needsCurrencyStrategy && !currencyStrategy
+                  ? "bg-purple-300 cursor-not-allowed"
+                  : "bg-purple-600 hover:bg-purple-500"
+              }`}
               type="submit"
+              disabled={needsCurrencyStrategy && !currencyStrategy}
             >
               {isLoading ? <Spin /> : "Save changes"}
             </button>

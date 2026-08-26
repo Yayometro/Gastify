@@ -1,9 +1,11 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../multiUsedComp/UniversalCategoIcon";
 import TransactionItemList from "../Transactions/ItemList/TransactionItemList";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 
 function RenderTransactionsInModal({ data }) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   return (
     <div className={`w-full h-full overflow-y-scroll bg-slate-100 mb-[10px]`}>
       <header className="pt-2 w-full h-fit flex flex-col justify-between items-center bg-purple-600 text-white sticky top-0 z-10">
@@ -12,7 +14,7 @@ function RenderTransactionsInModal({ data }) {
           <h1>{data.indexValue || "md/MdFilterNone"} Detail</h1>
         </span>
         <p className="font-semibold ">
-          <b>{usdFormatChanger(data.formattedValue )|| "No total info..."}</b>
+          <b>{formatMoneyMajor(data.formattedValue, walletPrimaryCurrency) || "No total info..."}</b>
         </p>
         <div className="footer-eader w-full h-3 rounded-t-3xl bg-slate-100 mt-4"></div>
       </header>

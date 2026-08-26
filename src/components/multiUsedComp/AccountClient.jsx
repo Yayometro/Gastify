@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./EmptyModule";
@@ -16,7 +17,9 @@ import ResumeTabsTrans from "./ResumeTabsTrans";
 import TransDetailsGrandContainer from "./TransDetailsGrandContainer";
 import DisplayerCategoryCirclePacking from "./DisplayerCategoryCirclePacking";
 import EditAccountModal from "./EditAccountModal";
+import PrimaryCurrencySelector from "./PrimaryCurrencySelector";
 import { fetchUser } from "@/lib/features/userSlice";
+import { fetchWallet } from "@/lib/features/walletSlice";
 import { fetchCategories } from "@/lib/features/categoriesSlice";
 import { fetchSubCat } from "@/lib/features/subCategorySlice";
 import { fetchAccounts } from "@/lib/features/accountsSlice";
@@ -32,15 +35,19 @@ function AccountClient({acSession}) {
   let [allTransactions, setAllTransacctions] = useState([]);
   let [finalAccounts, setFinalAccounts] = useState([]);
   let [carruselCurrent, setCarruselCurrent] = useState(0);
+  const searchParams = useSearchParams();
+  const targetAccountId = searchParams.get("accountId");
   // Redux
   const dispatch = useDispatch()
   const ccUser = useSelector((state) => state.userReducer)
+  const ccWallet = useSelector((state) => state.walletReducer)
   const ccAccounts = useSelector((state) => state.accountsReducer)
   const ccCategories = useSelector((state) => state.categoriesReducer)
   const ccSubCategories = useSelector((state) => state.subCategoryReducer)
   const ccTransacciones = useSelector((state) => state.transacctionsReducer)
 
   const userData = ccUser.data;
+  const walletData = ccWallet.data;
   const accountData = ccAccounts.data;
   const transactionData = ccTransacciones.data;
   
@@ -54,8 +61,12 @@ function AccountClient({acSession}) {
     if(ccUser.status == 'idle'){
       dispatch(fetchUser(acSession))
     }
+    // Wallet
+    if(ccWallet.status == 'idle'){
+      dispatch(fetchWallet(acSession))
+    }
     // Account
-    if(ccAccounts.status == 'idle'){ 
+    if(ccAccounts.status == 'idle'){
       dispatch(fetchAccounts(acSession))
     }
     //Transactions
@@ -167,6 +178,15 @@ function AccountClient({acSession}) {
     }
   }, [carruselCurrent, finalAccounts]);
 
+  // Deep-link support: a CreditCard's title links here as
+  // /dashboard/accounts?accountId=<id>, jumping the carousel straight to it.
+  useEffect(() => {
+    if (targetAccountId && finalAccounts.length > 0) {
+      const idx = finalAccounts.findIndex((a) => String(a._id) === String(targetAccountId));
+      if (idx >= 0) setCarruselCurrent(idx);
+    }
+  }, [targetAccountId, finalAccounts]);
+
   return (
     <div className=" w-full h-full sm:pr-2">
         <div className="w-full h-full relative">
@@ -208,6 +228,9 @@ function AccountClient({acSession}) {
               </div>
             </Tooltip>
           </div>
+          <div className="filters flex items-center justify-center pt-2">
+            <PrimaryCurrencySelector pcsWallet={walletData} />
+          </div>
           <div className="content-profile-cont w-full h-full bg-slate-100 text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl shadow-sm px-2">
             <h1 className="3xl w-full "></h1>
             <div className="account-multi-cc-container w-full py-4">
@@ -215,6 +238,7 @@ function AccountClient({acSession}) {
                   acc={accountData}
                   user={userData}
                   trans={transactionData}
+                  walletPrimaryCurrency={walletData?.primaryCurrency}
                 />
             </div>
             <div className="bg-purple-100 w-full flex justify-between items-center border-2 border-purple-400 rounded-3xl">
@@ -259,7 +283,7 @@ function AccountClient({acSession}) {
                 </div>
               ) : (
                 <div className="general-content-acc-ac w-full">
-                    <EditAccountModal eamMode={onEdition} eamAccount={finalAccounts[carruselCurrent] || null}  eamClose={e => setOnEdition(e)}
+                    <EditAccountModal eamMode={onEdition} eamAccount={finalAccounts[carruselCurrent] || null} eamWallet={walletData} eamClose={e => setOnEdition(e)}
                     />
                   <h1 className="text-[30px] min-[350px]:text-[40px] sm:text-[60px] font-light">
                     {finalAccounts[carruselCurrent]?.name || "No name data..."}

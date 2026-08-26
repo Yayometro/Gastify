@@ -7,7 +7,8 @@ import { useDispatch, useSelector } from "react-redux";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import TransactionItemList from "@/components/Transactions/ItemList/TransactionItemList";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import EditSingleTransModal from "@/components/multiUsedComp/EditSingleTransModal";
 import EditMultipleTransModal from "@/components/multiUsedComp/EditMultipleTransModal";
 import QuickEditModal from "@/components/multiUsedComp/QuickEditModal";
@@ -19,6 +20,12 @@ import {
   removeOneTransacction,
   removeManyTransactions,
 } from "@/lib/features/transacctionsSlice";
+import {
+  getDuplicates,
+  getDuplicatesToDelete,
+  getAllMatchingIds,
+  getDuplicatePairs,
+} from "@/helpers/transformers/transactionDuplicates";
 
 const QUICK_ACTIONS = [
   { key: "name",     label: "Rename",   icon: "MdDriveFileRenameOutline" },
@@ -29,90 +36,9 @@ const QUICK_ACTIONS = [
   { key: "tags",     label: "Tags",     icon: "MdLocalOffer" },
 ];
 
-function areDuplicates(a, b, criteria, dateTol, amountTol) {
-  if (criteria.name) {
-    const na = (a.name || "").toLowerCase().trim();
-    const nb = (b.name || "").toLowerCase().trim();
-    if (na !== nb) return false;
-  }
-  if (criteria.date) {
-    const daStr = String(a.date || a.createdAt || "").slice(0, 10);
-    const dbStr = String(b.date || b.createdAt || "").slice(0, 10);
-    const da = new Date(daStr).getTime();
-    const db = new Date(dbStr).getTime();
-    const diffDays = Math.round(Math.abs(da - db) / 86400000);
-    if (diffDays > dateTol) return false;
-  }
-  if (criteria.amount) {
-    const diff = Math.abs((a.amount ?? 0) - (b.amount ?? 0));
-    if (diff > amountTol) return false;
-  }
-  return true;
-}
-
-function buildDupGroups(transactions, criteria, dateTol, amountTol) {
-  const n = transactions.length;
-  const parent = transactions.map((_, i) => i);
-  const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
-  const union = (i, j) => { parent[find(i)] = find(j); };
-
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      if (areDuplicates(transactions[i], transactions[j], criteria, dateTol, amountTol)) {
-        union(i, j);
-      }
-    }
-  }
-
-  const groups = new Map();
-  for (let i = 0; i < n; i++) {
-    const root = find(i);
-    if (!groups.has(root)) groups.set(root, []);
-    groups.get(root).push(transactions[i]);
-  }
-  return Array.from(groups.values()).filter((g) => g.length > 1);
-}
-
-function getDuplicates(transactions, criteria, dateTol, amountTol) {
-  const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-  return groups.flat();
-}
-
-function getDuplicatesToDelete(transactions, criteria, dateTol, amountTol) {
-  const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-  const toDelete = [];
-  groups.forEach((group) => {
-    group.slice(1).forEach((trans) => toDelete.push(trans._id));
-  });
-  return toDelete;
-}
-
-function getAllMatchingIds(transactions, criteria, dateTol, amountTol) {
-  const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-  const toDelete = [];
-  groups.forEach((group) => {
-    group.forEach((trans) => toDelete.push(trans._id));
-  });
-  return toDelete;
-}
-
-function getDuplicatePairs(transactions, selectedIds, criteria, dateTol, amountTol) {
-  const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-  const selectedSet = new Set(selectedIds);
-  const pairs = [];
-  groups.forEach((group) => {
-    const orig = group[0];
-    group.slice(1).forEach((dup) => {
-      if (selectedSet.has(orig._id) || selectedSet.has(dup._id)) {
-        pairs.push({ original: orig, duplicate: dup });
-      }
-    });
-  });
-  return pairs;
-}
-
 function ModalContentTopMonthItem({ item, close }) {
   const dispatch = useDispatch();
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const toFetch = fetcher();
 
   // Capture original IDs at mount — never changes
@@ -280,7 +206,7 @@ function ModalContentTopMonthItem({ item, close }) {
             </Tooltip>
           </span>
           <p className="font-semibold">
-            <b>{usdFormatChanger(item?.value || item?.amount) || "No total info..."}</b>
+            <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency) || "No total info..."}</b>
           </p>
 
           {/* Selection controls — only when multiple items */}

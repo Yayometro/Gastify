@@ -10,6 +10,7 @@ import Movements from "../Movements";
 import runNotify from "@/helpers/gastifyNotifier";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
+import CurrencyBreakdownChips from "../CurrencyBreakdownChips";
 
 const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
   ssr: false,
@@ -29,6 +30,9 @@ function ProjectionMonthDetailModal({
   monthRow,
   bucketBreakdown,
   incomeOccurrences,
+  incomeCurrencyBreakdown,
+  expenseCurrencyBreakdown,
+  walletPrimaryCurrency,
   unexpectedBuffer,
   unexpectedIncomeBuffer,
   onSaveBuffers,
@@ -113,8 +117,9 @@ function ProjectionMonthDetailModal({
           >
             <CategoIcon type="MdClose" siz={20} />
           </div>
-          <h1 className="text-2xl text-purple-800 capitalize mb-1">
-            {monthRow.monthName} {monthRow.year}
+          <h1 className="text-2xl text-purple-800 capitalize mb-1 flex items-center">
+            <span>{monthRow.monthName} {monthRow.year}</span>
+            <QuestionTooltip title="Closed months show your real transactions. Future months are a pure estimate built from your active Budgets (expenses) and Income Sources (income). The current month blends both: it starts as an estimate and fills in with real numbers as the month happens. Use 'See transactions' to view the actual movements behind these numbers, and the buffers below to manually account for money that isn't tied to any Budget or Income Source." />
           </h1>
           <p className="text-xs text-gray-500 mb-4">
             {monthRow.type === "actual" && "Closed month — showing real transactions."}
@@ -141,6 +146,7 @@ function ProjectionMonthDetailModal({
                 <p className="text-xs text-gray-400">
                   real so far: {usdFormatChanger(monthRow.actualIncome || 0)} / expected: {usdFormatChanger(monthRow.shadowIncome || 0)}
                 </p>
+                <CurrencyBreakdownChips breakdown={incomeCurrencyBreakdown} walletPrimaryCurrency={walletPrimaryCurrency} />
               </div>
               <div className="bg-purple-50 rounded-xl p-2">
                 <p className="text-gray-500">Expense</p>
@@ -148,6 +154,7 @@ function ProjectionMonthDetailModal({
                 <p className="text-xs text-gray-400">
                   real so far: {usdFormatChanger(monthRow.actualExpense || 0)} / budgeted: {usdFormatChanger(monthRow.shadowExpense || 0)}
                 </p>
+                <CurrencyBreakdownChips breakdown={expenseCurrencyBreakdown} walletPrimaryCurrency={walletPrimaryCurrency} />
               </div>
             </div>
           )}
@@ -173,6 +180,7 @@ function ProjectionMonthDetailModal({
                 {monthRow.historicalIncome !== undefined && (
                   <p className="text-xs text-gray-400">expected back then: {usdFormatChanger(monthRow.historicalIncome || 0)}</p>
                 )}
+                <CurrencyBreakdownChips breakdown={incomeCurrencyBreakdown} walletPrimaryCurrency={walletPrimaryCurrency} />
               </div>
               <div className="bg-purple-50 rounded-xl p-2">
                 <p className="text-gray-500">Real expense</p>
@@ -180,6 +188,7 @@ function ProjectionMonthDetailModal({
                 {monthRow.historicalExpense !== undefined && (
                   <p className="text-xs text-gray-400">budgeted back then: {usdFormatChanger(monthRow.historicalExpense || 0)}</p>
                 )}
+                <CurrencyBreakdownChips breakdown={expenseCurrencyBreakdown} walletPrimaryCurrency={walletPrimaryCurrency} />
               </div>
             </div>
           )}

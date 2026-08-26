@@ -6,6 +6,9 @@ import SubCategory from "@/model/SubCategory";
 import Category from "@/model/Category";
 import Account from "@/model/Account";
 import Budget from "@/model/Budget";
+import Wallet from "@/model/Wallet";
+import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
 export async function GET() {
   try {
@@ -36,6 +39,9 @@ export async function POST(request) {
       subCategory,
       tags,
       budget,
+      merchantAmount,
+      merchantCurrency,
+      manualReportingAmount,
     } = await request.json();
     //Validators
     if (!user) throw new Error("No User ID finded to create a new Transaction");
@@ -53,6 +59,31 @@ export async function POST(request) {
     if (!isReadable) isReadable = true;
     // //
     await dbConnection();
+
+    // Multi-currency: resolve the Account's native currency (or the
+    // Wallet's primary currency when no Account is selected) and build the
+    // full money object here, rather than leaving it to the Transaction
+    // model's MXN-only pre-validate fallback.
+    const parsedDate = !date ? new Date() : new Date(date);
+    const selectedAccount = account ? await Account.findById(account).lean() : null;
+    const parentWallet = await Wallet.findById(wallet).lean();
+    if (!parentWallet) throw new Error("No Wallet found to create a new Transaction");
+    // .lean() never applies schema defaults - a real Account/Wallet document
+    // that predates the multi-currency migration has no currency/
+    // primaryCurrency field in its stored BSON at all, so this must default
+    // explicitly rather than silently reading `undefined`.
+    const walletPrimaryCurrency = parentWallet.primaryCurrency || "MXN";
+    const accountCurrency = selectedAccount?.currency || walletPrimaryCurrency;
+    const money = await buildTransactionMoney({
+      accountAmount: amount,
+      accountCurrency,
+      merchantAmount,
+      merchantCurrency,
+      walletPrimaryCurrency,
+      date: parsedDate,
+      manualReportingAmount,
+    });
+
     const newTransacction = new Transaction({
       user,
       wallet,
@@ -61,8 +92,11 @@ export async function POST(request) {
       isIncome,
       isBill,
       isReadable,
-      date: !date ? new Date() : new Date(date),
+      date: parsedDate,
       account: !account ? null : account,
+      kind: isIncome ? "income" : "expense",
+      direction: isIncome ? "credit" : "debit",
+      money,
     });
     if (subCategory) {
       console.log(subCategory);
@@ -120,14 +154,19 @@ export async function POST(request) {
       })
       .populate({
         path: "budget",
-      });
+      })
+      .lean();
       if (!finalTransaction)
       throw new Error("NEW TRANSACTIONS could not be loaded on POST");
+    const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
+      [finalTransaction],
+      walletPrimaryCurrency
+    );
     return NextResponse.json({
       message: `${
         savedTransacction.name || "Transaction"
       } was created successfully`,
-      data: finalTransaction,
+      data: transactionWithDisplayMoney,
       status: 201,
       ok: true,
     });

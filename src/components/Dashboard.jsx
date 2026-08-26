@@ -29,7 +29,8 @@ import {
 import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
-import currencyFormatter from "currency-formatter";
+import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import DashboardLoadingMessage from "./multiUsedComp/loaders/DashboardLoadingMessage";
 import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
@@ -78,6 +79,7 @@ function Wallet({ dataServ, session }) {
   const ccSubCategories = useSelector((state) => state.subCategoryReducer);
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
   const ccBudgets = useSelector((state) => state.budgetReducer);
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
 
   //
   useEffect(() => {
@@ -194,11 +196,11 @@ function Wallet({ dataServ, session }) {
       const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
       const accIncomes = total.filter((bill) => bill.isIncome && !bill.isBill);
       const finalBill = accBills.reduce(
-        (current, bill) => current + bill.amount,
+        (current, bill) => current + getPrimaryAmount(bill),
         0
       );
       const finalIncome = accIncomes.reduce(
-        (current, income) => current + income.amount,
+        (current, income) => current + getPrimaryAmount(income),
         0
       );
       let finalAmount = finalIncome - finalBill;
@@ -266,56 +268,54 @@ function Wallet({ dataServ, session }) {
                 Wallet
               </h2>
               <div
-                className={`text-white flex flex-col text-center items-center justify-center sm:justify-between pt-4 sm:pt-6`}
+                className={`text-white flex flex-col gap-2 text-center items-center justify-center sm:justify-between pt-4 sm:pt-6`}
               >
                 <div className="expense-header-cont w-full flex flex-row text-center items-center justify-between px-4">
                   <p className="current-money text-lg font-thin">Incomes:</p>
-                  <div className="flex flex-row gap-4">
+                  <div className="flex flex-row gap-4 items-center">
                     <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6 sm:mt-1" />
-                    <p className={`text-xl flash text-green-400`}>
-                      {!totalIncome
-                        ? "No amount..."
-                        : currencyFormatter.format(totalIncome, {
-                            locale: "en-US",
-                          })}
-                    </p>
+                    {!totalIncome ? (
+                      <p className="text-xl flash text-green-400">No amount...</p>
+                    ) : (
+                      <p className="text-xl flash text-green-300 bg-black/30 rounded-full px-3 py-0.5 leading-tight">
+                        {formatMoneyMajor(totalIncome, walletPrimaryCurrency)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="expense-header-cont w-full flex flex-row text-center items-center justify-between px-4">
                   <p className="current-money text-lg font-thin">Expenses:</p>
-                  <div className="flex flex-row gap-4">
+                  <div className="flex flex-row gap-4 items-center">
                     <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6 sm:mt-1" />
-                    <p className={`text-xl flash text-red-400`}>
-                      {!totalBill
-                        ? "No amount..."
-                        : currencyFormatter.format(totalBill, {
-                            locale: "en-US",
-                          })}
-                    </p>
+                    {!totalBill ? (
+                      <p className="text-xl flash text-red-400">No amount...</p>
+                    ) : (
+                      <p className="text-xl flash text-red-300 bg-black/30 rounded-full px-3 py-0.5 leading-tight">
+                        {formatMoneyMajor(totalBill, walletPrimaryCurrency)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="balance-header-cont w-full flex flex-row text-center items-center justify-between px-4">
                   <p className="current-money text-lg font-thin">Balance:</p>
                   <div className="flex flex-col items-end">
-                    <div className="flex gap-2 ">
+                    <div className="flex gap-2 items-center">
                       {totalAmountBalance < 0 ? (
                         <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-6 sm:h-6" />
                       ) : (
                         <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7" />
                       )}
-                      <p
-                        className={`text-2xl flash ${
-                          totalAmountBalance < 0
-                            ? "text-red-400"
-                            : "text-green-400"
-                        }`}
-                      >
-                        {!totalAmountBalance
-                          ? "No amount..."
-                          : currencyFormatter.format(totalAmountBalance, {
-                              locale: "en-US",
-                            })}
-                      </p>
+                      {!totalAmountBalance ? (
+                        <p className="text-2xl flash text-green-400">No amount...</p>
+                      ) : (
+                        <p
+                          className={`text-2xl flash rounded-full px-3 py-1 leading-tight bg-black/30 ${
+                            totalAmountBalance < 0 ? "text-red-300" : "text-green-300"
+                          }`}
+                        >
+                          {formatMoneyMajor(totalAmountBalance, walletPrimaryCurrency)}
+                        </p>
+                      )}
                     </div>
                     <p className="text-[10px]  pt-1">
                       From {dayjs(startDate).format("DD-MM-YYYY")} to{" "}

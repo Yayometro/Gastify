@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import CategoIcon from "./CategoIcon";
-import currencyFormatter from "currency-formatter";
+import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import dayjs from "dayjs";
 import { Tooltip } from "antd";
 
 function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const [topList, setTopList] = useState([]);
   //   console.log(t3List);
   //   console.log(t3Type);
@@ -29,7 +32,7 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
           if (!tra.category) {
             return {
               category: "no category",
-              amount: tra.amount,
+              amount: getPrimaryAmount(tra),
               id: "no-cat",
               color: "#ABABAB",
               icon: "MdFilterNone",
@@ -37,7 +40,7 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
           } else {
             return {
               category: tra.category.name,
-              amount: tra.amount,
+              amount: getPrimaryAmount(tra),
               id: tra.category._id,
               color: tra.category.color || "#ABABAB",
               icon: tra.category.icon || "MdFilterNone",
@@ -125,9 +128,7 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
                       </div>
                     )}
                     <p className="tra-amount ">
-                      {currencyFormatter.format(trans.amount, {
-                        locale: "en-US",
-                      })}
+                      {formatMoneyMajor(getPrimaryAmount(trans), walletPrimaryCurrency)}
                     </p>
                   </div>
                 </div>
@@ -193,9 +194,7 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
                       </div>
                     )}
                     <p className="tra-amount ">
-                      {currencyFormatter.format(transCat.amount, {
-                        locale: "en-US",
-                      })}
+                      {formatMoneyMajor(transCat.amount, walletPrimaryCurrency)}
                     </p>
                   </div>
                 </div>

@@ -33,6 +33,9 @@ export const walletSlice = createSlice({
     reducers: { //here are the acctions that willl update this initialState
         setWallet: (state, action) => {
             return action.payload //Is the argument returned later when invoke the function
+        },
+        updateWallet: (state, action) => {
+            state.data = action.payload
         }
     },
     extraReducers(builder) {
@@ -55,6 +58,6 @@ export const getRedxWallet = (state) => state.accounts.data;
 export const getRedxWalletEstatus = (state) => state.accounts.status;
 export const getRedxWalletError = (state) => state.accounts.error;
 
-export const {setWallet} = walletSlice.actions
+export const {setWallet, updateWallet} = walletSlice.actions
 
 export default walletSlice.reducer //This is the default value accros the app

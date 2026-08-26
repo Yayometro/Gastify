@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ResponsiveCirclePacking } from "@nivo/circle-packing";
+import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 
 function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const [zoomedId, setZoomedId] = useState(null);
   const [dataCat, setDataCat] = useState({});
   const [totalValueOn, setTotalValueOn] = useState(0);
@@ -10,7 +14,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
   useEffect(() => {
     if (ccpTransacctions) {
       // SET THE TOTAL AMOUNT
-      let totalAmount = ccpTransacctions.reduce((acc, trans) => acc += trans.amount , 0)
+      let totalAmount = ccpTransacctions.reduce((acc, trans) => acc += getPrimaryAmount(trans) , 0)
       if(totalAmount) setTotalValueOn(totalAmount)
       //NO CATEGORY FILTER
       let transNoCategory = ccpTransacctions.filter(
@@ -30,7 +34,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
         return {
           fatherId: "Generic-1",
           name: "No category",
-          loc: traNoCat?.amount,
+          loc: getPrimaryAmount(traNoCat),
           color: "#ABABAB",
           icon: "MdFilterNone",
           children: [],
@@ -40,7 +44,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
         return {
           fatherId: traCat.category._id,
           name: traCat?.category.name,
-          loc: traCat?.amount,
+          loc: getPrimaryAmount(traCat),
           color: traCat?.category?.color || "#ABABAB",
           icon: traCat?.category?.icon || "MdFilterNone",
           children: [],
@@ -57,7 +61,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
               {
                 childId: traSub.subCategory._id,
                 name: traSub.subCategory?.name,
-                loc: traSub?.amount,
+                loc: getPrimaryAmount(traSub),
                 color: traSub.subCategory?.color || "#ABABAB",
                 icon: traSub?.subCategory?.icon || "MdFilterNone",
               },
@@ -186,11 +190,11 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
                         <p className="font-semibold">
                           {ccpIsBill ? "Total spent:" : "Total earned:"}
                         </p>
-                        ${totalValueOn.toFixed(2)}
+                        {formatMoneyMajor(totalValueOn, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2 underline" >
                         <p className="font-semibold">Amount:</p>
-                        {dataa.formattedValue}
+                        {formatMoneyMajor(dataa.value, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
                         <p className="font-semibold">Percentage:</p>

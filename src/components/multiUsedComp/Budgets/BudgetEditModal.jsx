@@ -21,6 +21,7 @@ import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { findCoverageConflicts } from "@/helpers/transformers/budgetCoverage";
 import { BUDGET_TYPES, getBudgetType } from "@/helpers/transformers/budgetTypes";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@/lib/money/currencies";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
 const typeOptions = [
@@ -56,15 +57,16 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
     name: "", goalAmount: "", savingAmount: "", budgetType: BUDGET_TYPES.SPENDING,
     category: "", subCategory: "", period: "monthly", categories: [], linkedAccounts: [],
     eventStartDate: "", eventEndDate: "", linkedTags: [],
-    icon: DEFAULT_PROJECT_ICON,
+    icon: DEFAULT_PROJECT_ICON, currency: "MXN",
   });
   const [isIconMenuOpen, setIsIconMenuOpen] = useState(false);
   const toFetch = fetcher();
   const dispatch = useDispatch();
   const { close, handleClose } = useModal();
   const { setItemSelected } = useContext(SelectCategoryContext);
-  const { transacciones = [] } = useGetDataFromProvider();
+  const { transacciones = [], wallet } = useGetDataFromProvider();
   const ccAccounts = useSelector((state) => state.accountsReducer?.data || []);
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const ccBudgets = useSelector((state) => state.budgetReducer?.data || []);
 
   const availableTags = useMemo(() => {
@@ -106,6 +108,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
         eventStartDate: dateInputValue(budget.eventStartDate), eventEndDate: dateInputValue(budget.eventEndDate),
         linkedTags: (budget.linkedTags || []).map((tag) => String(tag?._id || tag)),
         icon: budget.icon || DEFAULT_PROJECT_ICON,
+        currency: budget.currency || wallet?.primaryCurrency || "MXN",
       });
       setItemSelected(budget.subCategory || budget.category || null);
     } else if (mode === "creation") {
@@ -117,10 +120,11 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
         period: "monthly", categories: draftCategories, linkedAccounts: [], eventStartDate: "", eventEndDate: "",
         linkedTags: (budget?.draftLinkedTags || []).map((tag) => String(tag?._id || tag)),
         icon: budget?.draftIcon || DEFAULT_PROJECT_ICON,
+        currency: wallet?.primaryCurrency || "MXN",
       });
       setItemSelected(null);
     }
-  }, [mode, budget, setItemSelected]);
+  }, [mode, budget, setItemSelected, wallet]);
 
   const categoryConflicts = useMemo(() => form.budgetType === BUDGET_TYPES.SPENDING
     ? findCoverageConflicts(form.categories, ccBudgets, mode === "edition" ? budget?._id : null)
@@ -166,6 +170,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
         eventEndDate: isProject ? form.eventEndDate || null : null,
         linkedTags: isProject ? form.linkedTags : [],
         icon: isProject ? form.icon || DEFAULT_PROJECT_ICON : undefined,
+        currency: form.currency || "MXN",
       };
       const res = mode === "edition"
         ? await toFetch.post("general-data/budget/update", { ...payload, id: budget._id })
@@ -235,7 +240,23 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
           </div>
 
           <p className="label-tfp mt-1">{isSaving ? "Savings target" : isProject ? "Project spending limit" : "Spending limit"}</p>
-          <input type="number" min="0" name="goalAmount" value={form.goalAmount} onChange={handleChange} required className="w-full" />
+          <div className="flex items-stretch gap-2">
+            <input type="number" min="0" name="goalAmount" value={form.goalAmount} onChange={handleChange} required className="flex-1 min-w-0" />
+            <Tooltip title="Which currency this budget's numbers are shown in. Doesn't convert or move any money.">
+              <select
+                name="currency"
+                value={form.currency}
+                onChange={handleChange}
+                className="h-10 shrink-0 bg-purple-50 border border-purple-300 text-purple-800 text-xs font-semibold rounded-full px-3 cursor-pointer outline-none"
+              >
+                {SUPPORTED_CURRENCIES.map((code) => (
+                  <option key={code} value={code}>
+                    {code} ({CURRENCY_META[code].symbol})
+                  </option>
+                ))}
+              </select>
+            </Tooltip>
+          </div>
 
           {isSaving && <>
             <p className="label-tfp mt-1">Current amount saved (manual)</p>
@@ -243,7 +264,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
             <div className="flex items-center gap-1"><p className="label-tfp">🔗 Or link account balances</p><Tooltip title="The selected balances track progress; no money is moved."><span className="text-purple-500"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} /></span></Tooltip></div>
             <div className="flex flex-col gap-2">{ccAccounts.length ? ccAccounts.map((acc) => {
               const selected = form.linkedAccounts.includes(String(acc._id));
-              return <button key={acc._id} type="button" onClick={() => toggleListValue("linkedAccounts", acc._id)} className={`flex justify-between rounded-xl border px-3 py-2 text-xs ${selected ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-200"}`}><span>{acc.name}</span><strong>{usdFormatChanger(acc.amount || 0)}</strong></button>;
+              return <button key={acc._id} type="button" onClick={() => toggleListValue("linkedAccounts", acc._id)} className={`flex justify-between rounded-xl border px-3 py-2 text-xs ${selected ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-200"}`}><span>{acc.name}</span><strong>{formatMoneyMajor(acc.amount || 0, acc.currency || walletPrimaryCurrency, { showCode: true })}</strong></button>;
             }) : <p className="text-xs text-gray-400 italic">No accounts available</p>}</div>
           </>}
 

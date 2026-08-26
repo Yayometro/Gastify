@@ -128,6 +128,8 @@ function EditMultipleTransModalInner({ trans, onClose }) {
         dispatch(updateManyTransactions(response.data));
         handleClean();
         onClose();
+      } else {
+        runNotify("error", response.message || "Something went wrong");
       }
     } catch (e) {
       runNotify("error", String(e));

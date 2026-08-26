@@ -9,7 +9,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on NEW INCOME SOURCE POST");
-    const { user, wallet, name, amount, recurrence, anchorDate } =
+    const { user, wallet, name, amount, currency, recurrence, anchorDate } =
       await request.json();
     await dbConnection();
     // NO USER/WALLET FILTER
@@ -21,6 +21,7 @@ export async function POST(request) {
     const newIncomeSource = new IncomeSource({
       name: name || null,
       amount: amount || 0,
+      currency: currency || null,
       recurrence: recurrence || "monthly",
       anchorDate: anchorDate || now,
       user: user,

@@ -1,5 +1,5 @@
 import { getYearMonthDateRange } from "../timeFunctions/timeFunctions";
-import { getTransactionsFromTimeRange, filterBillsOrIncomes } from "./transactionsChange";
+import { getTransactionsFromTimeRange, filterBillsOrIncomes, getPrimaryAmount } from "./transactionsChange";
 import { getValueActiveInMonth } from "./budgetHistory";
 import { isSpendingBudget } from "./budgetTypes";
 
@@ -141,11 +141,11 @@ function sumPerBucketMax(bills, budgets, bufferAmount) {
   budgets.forEach((budget) => {
     const matched = bills.filter((bill) => matchBillToBudget(bill, budget));
     matched.forEach((bill) => matchedBillIds.add(String(bill._id)));
-    const actual = sum(matched.map((bill) => bill.amount));
+    const actual = sum(matched.map(getPrimaryAmount));
     total += Math.max(budget.goalAmount || 0, actual);
   });
   const unmatched = bills.filter((bill) => !matchedBillIds.has(String(bill._id)));
-  const unmatchedActual = sum(unmatched.map((bill) => bill.amount));
+  const unmatchedActual = sum(unmatched.map(getPrimaryAmount));
   total += Math.max(bufferAmount || 0, unmatchedActual);
   return total;
 }
@@ -159,16 +159,54 @@ export function getMonthBucketBreakdown(bills, budgets, bufferAmount) {
     return {
       label: budget.name || budget.subCategory?.name || budget.category?.name || "Budget",
       budgeted: budget.goalAmount || 0,
-      actual: sum(matched.map((bill) => bill.amount)),
+      actual: sum(matched.map(getPrimaryAmount)),
     };
   });
   const unmatched = bills.filter((bill) => !matchedBillIds.has(String(bill._id)));
   rows.push({
     label: "Unexpected/Other",
     budgeted: bufferAmount || 0,
-    actual: sum(unmatched.map((bill) => bill.amount)),
+    actual: sum(unmatched.map(getPrimaryAmount)),
   });
   return rows;
+}
+
+// Groups a set of transactions by their own native currency, summing both
+// the native amount and its Wallet-primary equivalent per currency - so a
+// month's income/expense total can be shown broken down by "how much of
+// this actually came in pesos vs. dollars", plus the rate used for each
+// foreign currency. Transactions with no displayMoney (never migrated) are
+// skipped rather than guessed. `isMultiCurrency` is false when everything
+// is already in the wallet's own currency, so callers can hide the
+// breakdown UI entirely in the common single-currency case.
+export function getMonthCurrencyBreakdown(transactions, walletPrimaryCurrency) {
+  const groups = {};
+  for (const t of transactions || []) {
+    const native = t?.displayMoney?.native;
+    const primary = t?.displayMoney?.primary;
+    if (!native || !primary) continue;
+    const currency = native.currency;
+    if (!groups[currency]) {
+      groups[currency] = {
+        currency,
+        nativeAmountMinor: 0,
+        primaryAmountMinor: 0,
+        rate: null,
+        effectiveDate: null,
+      };
+    }
+    const g = groups[currency];
+    g.nativeAmountMinor += native.amountMinor;
+    g.primaryAmountMinor += primary.amountMinor;
+    if (!g.effectiveDate || new Date(primary.effectiveDate) > new Date(g.effectiveDate)) {
+      g.rate = primary.rate;
+      g.effectiveDate = primary.effectiveDate;
+    }
+  }
+  const breakdown = Object.values(groups);
+  const isMultiCurrency =
+    breakdown.length > 1 || (breakdown.length === 1 && breakdown[0].currency !== walletPrimaryCurrency);
+  return { breakdown, isMultiCurrency };
 }
 
 // Each month's unexpected buffers are set independently (see monthlyBuffers on
@@ -198,8 +236,8 @@ export function buildYearProjectionTable({ transactions, budgets, incomeSources,
     const { unexpectedBuffer, unexpectedIncomeBuffer } = getMonthBuffer(monthlyBuffers, monthIndex);
     const monthTx = getTransactionsFromTimeRange(transactions, start, end);
     const { incomes, bills } = filterBillsOrIncomes(monthTx);
-    const actualIncome = sum(incomes.map((tx) => tx.amount));
-    const actualExpense = sum(bills.map((tx) => tx.amount));
+    const actualIncome = sum(incomes.map(getPrimaryAmount));
+    const actualExpense = sum(bills.map(getPrimaryAmount));
 
     if (end < todayMonthStart) {
       // past month: headline is pure actual; also resolve what was budgeted/expected

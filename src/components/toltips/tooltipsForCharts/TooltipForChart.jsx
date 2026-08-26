@@ -1,8 +1,8 @@
 import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 
-function TooltipForChart({item, name, value, totalValue, color}) {
+function TooltipForChart({item, name, value, totalValue, color, walletPrimaryCurrency = "MXN"}) {
   return (
     <div className="w-full h-full flex gap-2" key={name + value}>
       <div
@@ -14,11 +14,11 @@ function TooltipForChart({item, name, value, totalValue, color}) {
       <div className="flex flex-col text-[13px] font-semibold">
         <div className="flex gap-2">
           <p className="font-semibold">Total spent:</p>
-          <b className="">{usdFormatChanger(totalValue)}</b>
+          <b className="">{formatMoneyMajor(totalValue, walletPrimaryCurrency)}</b>
         </div>
         <div className="flex gap-2 underline">
           <p className="font-semibold">Amount:</p>
-          <b className="">{usdFormatChanger(value)}</b>
+          <b className="">{formatMoneyMajor(value, walletPrimaryCurrency)}</b>
         </div>
         <div className="flex gap-2">
           <p className="font-semibold">Percentage:</p>

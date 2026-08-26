@@ -1,8 +1,10 @@
 "use client";
 import React from "react";
+import { useSelector } from "react-redux";
 import AtomicTop from "../atomicTop/AtomicTop";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { formatMoneyMajor } from "@/lib/money/currencies";
+import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import BasicTooltip from "../../Tooltips/BasicTooltip";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import useModal from "@/hooks/useModalBasic";
@@ -17,6 +19,7 @@ function TopItemContainer({
   value,
   index,
 }) {
+  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const { close, handleClose, renderModal, modalContent } = useModal();
   function renderModalContent(item) {
     renderModal(<ModalContentTopMonthItem item={item} close={handleClose} />);
@@ -62,7 +65,7 @@ function TopItemContainer({
                   color={item.color || color}
                   icon={item.icon}
                   isBill={item.isBill}
-                  value={item.value || item.amount}
+                  value={getPrimaryAmount(item)}
                   getItem={renderModalContent}
                   fatherStyle={`tra-cat-cont flex flex-col relative justify-center gap-1 items-center flex-1 rounded-3xl p-2 hover:mix-blend-multiply min-h-[130px] min-w-[100px] ${
                     item?.color ? "" : "brightness-90"
@@ -72,7 +75,7 @@ function TopItemContainer({
                       <p>{item.name || item.type}</p>
                       <p>
                         Value:{" "}
-                        <b>{usdFormatChanger(item.value || item.amount)}</b>
+                        <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency)}</b>
                       </p>
                     </div>
                   }

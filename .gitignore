@@ -29,6 +29,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# real financial data backups - never commit these
+/backups/
+
 # vercel
 .vercel
 

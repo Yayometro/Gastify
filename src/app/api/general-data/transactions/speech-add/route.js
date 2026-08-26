@@ -6,6 +6,9 @@ import User from "@/model/User";
 import Account from "@/model/Account";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
+import Wallet from "@/model/Wallet";
+import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
 export async function POST(request) {
   try {
@@ -162,6 +165,24 @@ export async function POST(request) {
         newTransacction.account = accountFound._id;
       }
     }
+    const parentWallet = await Wallet.findById(findUser.wallet).lean();
+    if (!parentWallet) throw new Error("No Wallet found to create a new Transaction");
+    // .lean() never applies schema defaults - a real Wallet/Account document
+    // that predates the multi-currency migration has no primaryCurrency/
+    // currency field in its stored BSON at all.
+    const walletPrimaryCurrency = parentWallet.primaryCurrency || "MXN";
+    const accountCurrency = newTransacction.account
+      ? (await Account.findById(newTransacction.account).lean())?.currency || walletPrimaryCurrency
+      : walletPrimaryCurrency;
+    newTransacction.kind = newTransacction.isIncome ? "income" : "expense";
+    newTransacction.direction = newTransacction.isIncome ? "credit" : "debit";
+    newTransacction.money = await buildTransactionMoney({
+      accountAmount: newTransacction.amount,
+      accountCurrency,
+      walletPrimaryCurrency,
+      date: newTransacction.date,
+    });
+
     const savedTransacction = await newTransacction.save();
     if (!savedTransacction)
       throw new Error(
@@ -180,15 +201,19 @@ export async function POST(request) {
       })
       .populate({
         path: "subCategory",
-      });
+      })
+      .lean();
     if (!finalTransaction)
       throw new Error("NEW TRANSACTIONS could not be loaded on POST");
-    console.log(finalTransaction);
+    const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
+      [finalTransaction],
+      walletPrimaryCurrency
+    );
     return NextResponse.json({
       message: `${
         savedTransacction.name || "Transaction"
       } using voice was created successfully 😎`,
-      data: finalTransaction,
+      data: transactionWithDisplayMoney,
       status: 201,
       ok: true,
     });

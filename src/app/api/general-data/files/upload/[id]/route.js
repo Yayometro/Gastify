@@ -7,10 +7,13 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
 import Account from "@/model/Account";
+import Wallet from "@/model/Wallet";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
-
-const CURRENT_TEMPLATE_VERSION = "2.1";
+import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
+import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -55,6 +58,11 @@ function parseFlexibleDate(value) {
   return isNaN(fallback.getTime()) ? null : fallback;
 }
 
+function normalizeCurrency(raw) {
+  if (raw === null || raw === undefined) return "";
+  return String(raw).trim().toUpperCase();
+}
+
 async function resolveCategory(name, userId) {
   if (name === null || name === undefined) return null;
   const safe = escapeRegex(String(name).trim());
@@ -87,7 +95,7 @@ async function resolveAccount(name, userId, walletId) {
     user: userId,
     wallet: walletId,
   }).lean();
-  return acc ? acc._id : null;
+  return acc || null;
 }
 
 async function resolveTags(rawTags, userId, walletId) {
@@ -131,12 +139,12 @@ export async function POST(request, { params }) {
       if (dataSheet) fileVersion = dataSheet.cell(1, 3).value();
     } catch (_) {}
 
-    if (!fileVersion || String(fileVersion).trim() !== CURRENT_TEMPLATE_VERSION) {
+    if (!fileVersion || String(fileVersion).trim() !== TEMPLATE_VERSION) {
       return NextResponse.json({
         ok: false,
         versionMismatch: true,
-        currentVersion: CURRENT_TEMPLATE_VERSION,
-        message: `Outdated template (v${fileVersion || "unknown"}). Please download the latest template (v${CURRENT_TEMPLATE_VERSION}) and try again.`,
+        currentVersion: TEMPLATE_VERSION,
+        message: `Outdated template (v${fileVersion || "unknown"}). Please download the latest template (v${TEMPLATE_VERSION}) and try again.`,
       }, { status: 400 });
     }
 
@@ -151,14 +159,17 @@ export async function POST(request, { params }) {
     if (!userFound) {
       return NextResponse.json({ ok: false, message: "User not found" }, { status: 404 });
     }
+    const parentWallet = await Wallet.findById(userFound.wallet).lean();
+    const walletPrimaryCurrency = parentWallet?.primaryCurrency || "MXN";
 
     // Data starts at row 3 (row 1 = headers, row 2 = note)
     let i = 3;
     const transactions = [];
     const skipped = [];
+    const cell = (col) => sheet.cell(i, col).value();
 
     while (true) {
-      const rawDate = sheet.cell(`A${i}`).value();
+      const rawDate = cell(COLUMNS.DATE);
       if (rawDate === null || rawDate === undefined || rawDate === "") break;
 
       const date = parseFlexibleDate(rawDate);
@@ -168,21 +179,85 @@ export async function POST(request, { params }) {
         continue;
       }
 
-      const concept = sheet.cell(`B${i}`).value();
-      const amountRaw = sheet.cell(`C${i}`).value();
-      const amount = amountRaw !== null && amountRaw !== undefined ? Number(amountRaw) : 0;
+      const concept = cell(COLUMNS.CONCEPT);
+      const accountAmountRaw = cell(COLUMNS.ACCOUNT_AMOUNT);
+      const accountAmount = accountAmountRaw !== null && accountAmountRaw !== undefined ? Number(accountAmountRaw) : 0;
 
-      if (!concept && amount === 0) {
+      if (!concept && accountAmount === 0) {
         // Likely the example row or truly empty — skip silently
         i++;
         continue;
       }
 
-      const typeRaw = sheet.cell(`D${i}`).value();
-      const catName = sheet.cell(`E${i}`).value();
-      const subCatName = sheet.cell(`F${i}`).value();
-      const tagsRaw = sheet.cell(`G${i}`).value();
-      const accountName = sheet.cell(`H${i}`).value();
+      const accountName = cell(COLUMNS.ACCOUNT);
+      const resolvedAccount = await resolveAccount(accountName, userFound._id, userFound.wallet);
+
+      // Account currency is authoritative when an Account is selected.
+      const rawAccountCurrency = normalizeCurrency(cell(COLUMNS.ACCOUNT_CURRENCY));
+      let accountCurrency;
+      if (resolvedAccount) {
+        accountCurrency = resolvedAccount.currency || walletPrimaryCurrency;
+        if (rawAccountCurrency && rawAccountCurrency !== accountCurrency) {
+          skipped.push({ row: i, reason: `Account Currency "${rawAccountCurrency}" doesn't match "${resolvedAccount.name}"'s currency (${accountCurrency}). Leave it blank or fix the mismatch.` });
+          i++;
+          continue;
+        }
+      } else if (rawAccountCurrency) {
+        if (!SUPPORTED_CURRENCIES.includes(rawAccountCurrency)) {
+          skipped.push({ row: i, reason: `Unsupported Account Currency: "${rawAccountCurrency}"` });
+          i++;
+          continue;
+        }
+        accountCurrency = rawAccountCurrency;
+      } else {
+        accountCurrency = walletPrimaryCurrency;
+      }
+
+      const merchantAmountRaw = cell(COLUMNS.MERCHANT_AMOUNT);
+      const merchantCurrencyRaw = normalizeCurrency(cell(COLUMNS.MERCHANT_CURRENCY));
+      const hasMerchantAmount = merchantAmountRaw !== null && merchantAmountRaw !== undefined && merchantAmountRaw !== "";
+      if (hasMerchantAmount !== Boolean(merchantCurrencyRaw)) {
+        skipped.push({ row: i, reason: "Merchant Amount and Merchant Currency must both be filled, or both left blank." });
+        i++;
+        continue;
+      }
+      if (merchantCurrencyRaw && !SUPPORTED_CURRENCIES.includes(merchantCurrencyRaw)) {
+        skipped.push({ row: i, reason: `Unsupported Merchant Currency: "${merchantCurrencyRaw}"` });
+        i++;
+        continue;
+      }
+
+      const reportingAmountRaw = cell(COLUMNS.REPORTING_AMOUNT);
+      const reportingCurrencyRaw = normalizeCurrency(cell(COLUMNS.REPORTING_CURRENCY));
+      const hasReportingAmount = reportingAmountRaw !== null && reportingAmountRaw !== undefined && reportingAmountRaw !== "";
+      if (hasReportingAmount !== Boolean(reportingCurrencyRaw)) {
+        skipped.push({ row: i, reason: "Reporting Amount and Reporting Currency must both be filled, or both left blank." });
+        i++;
+        continue;
+      }
+      if (reportingCurrencyRaw && reportingCurrencyRaw !== walletPrimaryCurrency) {
+        skipped.push({ row: i, reason: `Reporting Currency must be your Wallet's primary currency (${walletPrimaryCurrency}), got "${reportingCurrencyRaw}".` });
+        i++;
+        continue;
+      }
+
+      const fxSourceRaw = cell(COLUMNS.FX_SOURCE);
+      const fxSource = fxSourceRaw ? String(fxSourceRaw).trim().toLowerCase() : "";
+      if (fxSource && fxSource !== "manual") {
+        skipped.push({ row: i, reason: `FX Source must be blank or "manual", got "${fxSourceRaw}". Trusted provider sources aren't available through file upload.` });
+        i++;
+        continue;
+      }
+      if (fxSource === "manual" && !hasReportingAmount) {
+        skipped.push({ row: i, reason: 'FX Source is "manual" but no Reporting Amount was given.' });
+        i++;
+        continue;
+      }
+
+      const typeRaw = cell(COLUMNS.TYPE);
+      const catName = cell(COLUMNS.CATEGORY);
+      const subCatName = cell(COLUMNS.SUB_CATEGORY);
+      const tagsRaw = cell(COLUMNS.TAGS);
 
       const type = typeRaw ? String(typeRaw).trim().toLowerCase() : "bill";
       const isBill = type !== "income";
@@ -212,27 +287,41 @@ export async function POST(request, { params }) {
         userFound.wallet
       );
 
-      const resolvedAccountId = await resolveAccount(
-        accountName,
-        userFound._id,
-        userFound.wallet
-      );
+      let money;
+      try {
+        money = await buildTransactionMoney({
+          accountAmount,
+          accountCurrency,
+          merchantAmount: hasMerchantAmount ? Number(merchantAmountRaw) : undefined,
+          merchantCurrency: merchantCurrencyRaw || undefined,
+          walletPrimaryCurrency,
+          date,
+          manualReportingAmount: hasReportingAmount ? Number(reportingAmountRaw) : undefined,
+        });
+      } catch (fxError) {
+        skipped.push({ row: i, reason: fxError?.message || "Could not resolve this row's exchange rate" });
+        i++;
+        continue;
+      }
 
       const transaction = {
         date,
         name: concept || "no concept",
-        amount: isNaN(amount) ? 0 : amount,
+        amount: isNaN(accountAmount) ? 0 : accountAmount,
         isBill,
         isIncome,
         isReadable: true,
         user: userFound._id,
         wallet: userFound.wallet,
+        kind: isIncome ? "income" : "expense",
+        direction: isIncome ? "credit" : "debit",
+        money,
       };
 
       if (finalSubCategoryId) transaction.subCategory = finalSubCategoryId;
       if (finalCategoryId) transaction.category = finalCategoryId;
       if (tagIds.length > 0) transaction.tags = tagIds;
-      if (resolvedAccountId) transaction.account = resolvedAccountId;
+      if (resolvedAccount) transaction.account = resolvedAccount._id;
 
       transactions.push(transaction);
       i++;
@@ -256,8 +345,18 @@ export async function POST(request, { params }) {
       .populate("account")
       .lean();
 
+    // The frontend dispatches this response's `data` straight into Redux
+    // rather than re-fetching from get-transactions, so it needs the same
+    // displayMoney DTO every other read route attaches - otherwise these
+    // rows render with their raw legacy `amount` mislabeled as the Wallet's
+    // primary currency until the next full refetch.
+    const transactionsWithDisplayMoney = await attachDisplayMoneyToList(
+      populatedTransactions,
+      walletPrimaryCurrency
+    );
+
     return NextResponse.json({
-      data: populatedTransactions,
+      data: transactionsWithDisplayMoney,
       message: `File saved${skipped.length > 0 ? ` (${skipped.length} rows skipped)` : ""}`,
       skipped,
       status: 201,
