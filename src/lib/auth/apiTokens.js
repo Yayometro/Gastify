@@ -18,15 +18,14 @@ export function hashApiToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
-// Resolves the User + Wallet a request is acting as, from its
-// `Authorization: Bearer <token>` header. Throws on any failure - callers
+// Resolves the User + Wallet a raw token is acting as. This is the single
+// source of truth for verifying a personal access token, shared by every
+// connector entry point (Claude's Authorization-header route, ChatGPT's
+// URL-embedded-token route, and whatever comes next) regardless of where
+// each one extracts the raw token from. Throws on any failure - callers
 // should catch and respond 401, never fall back to trusting a body field.
-export async function getUserFromApiToken(request) {
-  const authHeader = request.headers.get("authorization") || "";
-  const [scheme, token] = authHeader.split(" ");
-  if (scheme !== "Bearer" || !token) {
-    throw new Error("Missing or malformed Authorization header");
-  }
+export async function resolveApiToken(token) {
+  if (!token) throw new Error("Missing API token");
 
   await dbConnection();
   const tokenHash = hashApiToken(token);
@@ -41,4 +40,15 @@ export async function getUserFromApiToken(request) {
   if (!wallet) throw new Error("No wallet found for this user");
 
   return { user, wallet };
+}
+
+// Claude (and any header-based connector): reads `Authorization: Bearer
+// <token>` off the request, then resolves it via resolveApiToken.
+export async function getUserFromApiToken(request) {
+  const authHeader = request.headers.get("authorization") || "";
+  const [scheme, token] = authHeader.split(" ");
+  if (scheme !== "Bearer" || !token) {
+    throw new Error("Missing or malformed Authorization header");
+  }
+  return resolveApiToken(token);
 }

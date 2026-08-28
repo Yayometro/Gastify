@@ -1,181 +1,21 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { z } from "zod";
 import { getUserFromApiToken } from "@/lib/auth/apiTokens";
-import { createTransaction } from "@/lib/transactions/createTransaction";
-import { formatMoneyMinor } from "@/lib/money/currencies";
-import Category from "@/model/Category";
-import SubCategory from "@/model/SubCategory";
-import Account from "@/model/Account";
-import Budget from "@/model/Budget";
+import { handleGastifyMcpTransport } from "@/lib/mcp/buildGastifyMcpServer";
 
-// Remote MCP server for third-party AI-agent connectors (Claude, later
-// ChatGPT) - see .mds/AI_AGENT_CONNECTOR_PLAN.md. Runs on Gastify's own
-// Vercel deployment (no local process, no user device required). Every
-// request is authenticated per-call via a personal access token, and a
-// fresh McpServer/transport pair is built per request (stateless mode) so
-// the resolved {user, wallet} can just be closed over by the tool handlers
+// Remote MCP server for Claude's custom connector (header-based auth) - see
+// .mds/AI_AGENT_CONNECTOR_PLAN.md. Runs on Gastify's own Vercel deployment
+// (no local process, no user device required). Every request is
+// authenticated per-call via a personal access token, and a fresh
+// McpServer/transport pair is built per request (stateless mode) so the
+// resolved {user, wallet} can just be closed over by the tool handlers
 // instead of threaded through the SDK's OAuth-oriented auth plumbing.
-function buildServer({ user, wallet }) {
-  const server = new McpServer({ name: "gastify", version: "1.0.0" });
-
-  server.registerTool(
-    "get_context",
-    {
-      title: "Get context",
-      description:
-        "Returns everything needed to resolve real ids for create_transaction, in a single call: accounts (name + currency), categories + subcategories (including Gastify's built-in defaults), and budgets of every type (project, saving, spending). Call this once at the start of a conversation instead of making several separate lookups - cheaper and faster. Only a 'project'-type budget can be passed as create_transaction's projectId; saving/spending budgets are included here for context/reference only.",
-    },
-    async () => {
-      const [
-        categories,
-        defaultCategories,
-        subCategories,
-        defaultSubCategories,
-        accounts,
-        budgets,
-      ] = await Promise.all([
-        Category.find({ user: user._id, wallet: wallet._id }).lean(),
-        Category.find({ isDefaultCatego: true }).lean(),
-        SubCategory.find({ user: user._id, wallet: wallet._id })
-          .populate("fatherCategory")
-          .lean(),
-        SubCategory.find({ isDefaultSubCatego: true })
-          .populate("fatherCategory")
-          .lean(),
-        Account.find({ user: user._id, wallet: wallet._id })
-          .sort({ order: 1, createdAt: 1 })
-          .lean(),
-        Budget.find({ user: user._id, wallet: wallet._id, archived: { $ne: true } }).lean(),
-      ]);
-      const payload = {
-        categories: [...categories, ...defaultCategories].map((c) => ({
-          id: String(c._id),
-          name: c.name,
-        })),
-        subCategories: [...subCategories, ...defaultSubCategories].map((s) => ({
-          id: String(s._id),
-          name: s.name,
-          fatherCategoryId: s.fatherCategory ? String(s.fatherCategory._id) : null,
-        })),
-        accounts: accounts.map((a) => ({
-          id: String(a._id),
-          name: a.name,
-          currency: a.currency,
-        })),
-        budgets: budgets.map((b) => ({
-          id: String(b._id),
-          name: b.name,
-          budgetType: b.budgetType || (b.isSaving ? "saving" : "spending"),
-        })),
-      };
-      return { content: [{ type: "text", text: JSON.stringify(payload) }] };
-    }
-  );
-
-  server.registerTool(
-    "create_transaction",
-    {
-      title: "Create transaction",
-      description:
-        "Creates a real transaction in the user's Gastify wallet right now. Resolve categoryId/subCategoryId/accountId/projectId via get_context first - never invent an id. Omit date to use the current time.",
-      inputSchema: {
-        amount: z
-          .number()
-          .positive()
-          .describe(
-            "The transaction amount in major currency units (e.g. 200 for $200.00). Always positive - use isIncome to indicate direction."
-          ),
-        name: z
-          .string()
-          .optional()
-          .describe("A short label, e.g. 'Tacos'. Defaults to a generic name if omitted."),
-        isIncome: z
-          .boolean()
-          .optional()
-          .describe("true if this is money coming in. Defaults to false (an expense)."),
-        accountId: z
-          .string()
-          .optional()
-          .describe(
-            "An account id from get_context. Omit for a wallet-level transaction (uses the wallet's primary currency)."
-          ),
-        categoryId: z.string().optional().describe("A category id from get_context."),
-        subCategoryId: z
-          .string()
-          .optional()
-          .describe(
-            "A subcategory id from get_context. If set, its parent category is applied automatically."
-          ),
-        projectId: z
-          .string()
-          .optional()
-          .describe(
-            "A budgetType:'project' budget id from get_context, if the user mentioned linking this to a project. Passing a saving/spending budget id fails - only projects can be linked directly."
-          ),
-        tags: z
-          .array(z.string())
-          .optional()
-          .describe("Tag names to attach, e.g. ['trip-cancun']. Created automatically if new."),
-        date: z
-          .string()
-          .optional()
-          .describe(
-            "ISO 8601 date/time. Omit if the user didn't say when it happened - defaults to now."
-          ),
-      },
-    },
-    async ({ amount, name, isIncome, accountId, categoryId, subCategoryId, projectId, tags, date }) => {
-      const { transaction, name: resolvedName } = await createTransaction({
-        user: user._id,
-        wallet: wallet._id,
-        name,
-        amount,
-        isIncome,
-        isBill: !isIncome,
-        account: accountId,
-        category: categoryId,
-        subCategory: subCategoryId,
-        budget: projectId,
-        tags,
-        date,
-      });
-      const native = transaction.displayMoney?.native;
-      const formattedAmount = native
-        ? formatMoneyMinor(native.amountMinor, native.currency)
-        : `${amount}`;
-      const summary = [
-        `Created "${resolvedName}": ${formattedAmount}`,
-        transaction.date ? `on ${new Date(transaction.date).toLocaleDateString()}` : null,
-        transaction.category?.name ? `in ${transaction.category.name}` : null,
-        transaction.budget?.name ? `linked to project "${transaction.budget.name}"` : null,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      return { content: [{ type: "text", text: summary }] };
-    }
-  );
-
-  return server;
-}
-
 async function handleMcpRequest(request) {
   let auth;
   try {
     auth = await getUserFromApiToken(request);
   } catch (e) {
-    return Response.json(
-      { error: e.message || "Unauthorized" },
-      { status: 401 }
-    );
+    return Response.json({ error: e.message || "Unauthorized" }, { status: 401 });
   }
-
-  const server = buildServer(auth);
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  });
-  await server.connect(transport);
-  return transport.handleRequest(request);
+  return handleGastifyMcpTransport(auth, request);
 }
 
 export async function POST(request) {

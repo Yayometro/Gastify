@@ -159,6 +159,46 @@ Separately, Luis asked about the per-tool-call approval prompt he saw in Claude'
 Claude's own client-side connector permission setting (e.g. an "always allow" option), not
 something Gastify's server controls or this plan can change from our side.
 
+## Phase 5: ChatGPT connector (2026-08-28)
+
+ChatGPT (Plus and above) added native remote MCP support in September 2025, via
+**Settings → Apps → Advanced settings → Developer mode → Add custom connector** - so unlike the
+original plan assumed, this does **not** need a separate OpenAPI/GPT-Actions integration. It can
+reuse the exact same tools as Claude's connector.
+
+The complication: ChatGPT's Developer Mode is OAuth-first and has no confirmed equivalent to
+Claude's "no auth + custom header" option, so the header-based `Authorization: Bearer <token>`
+scheme Claude uses can't be reused as-is. Building a full OAuth 2.1 authorization server (with
+Dynamic Client Registration) was considered and explicitly deferred - real infra, not
+proportional to a personal single-user connector - in favor of embedding the token in the URL
+itself:
+
+- **New route**: `src/app/api/mcp/[token]/route.js` - reads the token from the URL path segment
+  instead of a header, then shares everything else with Claude's route.
+- **Refactored to share code, not duplicate it**: `resolveApiToken(token)` in
+  `src/lib/auth/apiTokens.js` is now the single hash-and-lookup implementation; both routes just
+  differ in how they extract the raw token (header vs. URL segment). The MCP tools themselves
+  (`get_context`, `create_transaction`) moved to `src/lib/mcp/buildGastifyMcpServer.js`, imported
+  by both `/api/mcp/route.js` and `/api/mcp/[token]/route.js` - one definition, both connectors.
+- **Verified**: URL-token route lists tools and calls `get_context` correctly; an invalid token
+  401s correctly; the original header-based Claude route is unaffected by the refactor.
+- **Security trade-off, explicitly accepted by Luis for now**: a token embedded in a URL is more
+  leak-prone than a header (browser history, proxy/server access logs) - acceptable for a
+  personal connector, revocable the same way as any other token from Profile if it ever leaks.
+  Full OAuth-as-provider was scoped as a separate future upgrade, not a blocker (see below).
+
+### OAuth-as-provider and passkeys - explicitly separate future initiatives, not bundled together
+
+Discussed with Luis and deliberately **not conflated**:
+- **OAuth (Gastify as an authorization server for third parties)** would let connectors get
+  scoped, revocable, expiring tokens via a real consent screen, instead of today's all-or-nothing
+  personal token. Real infra investment (authorization + token endpoints, client registration,
+  consent UI) - future work, not needed for the current connectors.
+- **Passkeys/WebAuthn for Gastify's own login** (replacing the password Gastify's users log in
+  with) is a *different, independent* initiative - about proving who the human is, not about
+  delegating access to a third party. NextAuth supports WebAuthn if this gets prioritized later.
+  Building one does not give you the other for free.
+
 ## Future phases (Luis's long-term vision, 2026-08-28 - not yet scheduled or scoped)
 
 Luis wants to eventually turn this into a full conversational interface to Gastify, phased in
