@@ -187,6 +187,25 @@ itself:
   personal connector, revocable the same way as any other token from Profile if it ever leaks.
   Full OAuth-as-provider was scoped as a separate future upgrade, not a blocker (see below).
 
+### `create_transactions` (plural) - batch tool (2026-08-28)
+
+Dictating several transactions in one utterance already worked before this - the agent just
+called `create_transaction` once per item, since that's normal tool-calling behavior, not
+something requiring server support. But Luis wanted it done in one round-trip instead of N (same
+efficiency motivation as the `get_context` consolidation), so `create_transactions` was added:
+takes `{ transactions: [...] }` (1-20 entries, same shape as `create_transaction`), processes them
+sequentially, and reports each entry's result individually (`"1. OK - ..."` / `"2. FAILED -
+..."`) rather than failing the whole batch if one entry is bad. Both tools share one
+`createOneTransaction` implementation - no duplicated logic.
+
+**Found while testing (pre-existing, not introduced by this change):** `createTransaction` does
+not validate that a given `accountId` actually exists before saving - an Account lookup miss
+silently falls back to the wallet's primary currency but still writes the bogus id into the
+Transaction's `account` field, unlike `subCategoryId`/`projectId` which do throw a clear error on
+a bad id. This is a real gap in the original `new-transaction` route's logic (inherited as-is by
+the shared function), not something the MCP work introduced - flagged for a separate fix, not
+addressed in this pass.
+
 ### OAuth-as-provider and passkeys - explicitly separate future initiatives, not bundled together
 
 Discussed with Luis and deliberately **not conflated**:
