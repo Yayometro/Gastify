@@ -1,9 +1,10 @@
 # AI Agent Connector Plan (voice-driven transaction creation)
 
-**Status:** Phase 3 complete - MCP server live at `/api/mcp` and end-to-end verified with a real
-token against real Mongo data (list_categories/list_accounts/list_projects/create_transaction all
-confirmed correct, then cleaned up). Next: Phase 4 (real Claude connector from claude.ai + mobile
-voice test).
+**Status:** Phase 4 done - real Claude connector added from claude.ai, verified end-to-end from
+both the web app and a fresh chat (confirming stateless per-request auth works with no shared
+context needed between chats), including a real transaction created and confirmed in the app UI.
+Tools were then consolidated based on Luis's live-testing feedback (see below). Next: whichever
+of the "Future phases" below Luis wants to prioritize.
 **Owner:** Luis, implemented by Claude Code
 
 ## Motivation
@@ -141,6 +142,37 @@ The MCP tool needs the exact same correctness (no bypassing multi-currency handl
      subCategoryId?, projectId?, tags?, date? }` -> calls the shared creation function, returns a
      short confirmation summary for the agent to read back to the user. `projectId` must
      reference a `budgetType: "project"` Budget (enforced by the shared function already).
+
+### Consolidated into `get_context` (post-Phase-4 feedback, 2026-08-28)
+
+After live-testing the real connector, Luis flagged that `list_categories` + `list_accounts` +
+`list_projects` as three separate tool calls before every `create_transaction` was wasteful -
+more round-trips, more tokens, and (client-side) more individual tool-approval prompts. Fixed by
+merging all three into one **`get_context`** tool that returns accounts, categories/
+subcategories, and budgets **of every type** (`project`, `saving`, `spending` - not just
+projects, so the agent has full visibility for future read/analytics use cases even though only
+`project` budgets are linkable via `create_transaction` today) in a single call. `list_categories`
+/`list_accounts`/`list_projects` were removed rather than kept alongside `get_context`, since
+keeping both would just grow the tool list without solving the round-trip problem.
+
+Separately, Luis asked about the per-tool-call approval prompt he saw in Claude's UI - that is
+Claude's own client-side connector permission setting (e.g. an "always allow" option), not
+something Gastify's server controls or this plan can change from our side.
+
+## Future phases (Luis's long-term vision, 2026-08-28 - not yet scheduled or scoped)
+
+Luis wants to eventually turn this into a full conversational interface to Gastify, phased in
+incrementally rather than built all at once:
+
+- **Query/analytics tools**: "how much have I spent this month", "what are my top 6 expense
+  categories" - read-only aggregation tools over existing transactions.
+- **Edit/delete transactions** via the connector.
+- **Manage accounts/categories/projects** (create/edit/delete) via the connector, not just read.
+- **Reports, charts, and analytics** - deeper integration than simple text summaries.
+
+None of these are designed yet. Each should get its own scoping pass (tool inputs/outputs,
+confirmation-before-destructive-action policy, etc.) before implementation - this list is a
+backlog, not a commitment to build in this order.
 
 ## Phases
 
