@@ -8,6 +8,85 @@ import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
 import Budget from "@/model/Budget";
 
+// Shared by both create_transaction and create_transactions so the two
+// tools can never drift on what a "transaction" input looks like.
+const transactionInputShape = {
+  amount: z
+    .number()
+    .positive()
+    .describe(
+      "The transaction amount in major currency units (e.g. 200 for $200.00). Always positive - use isIncome to indicate direction."
+    ),
+  name: z
+    .string()
+    .optional()
+    .describe("A short label, e.g. 'Tacos'. Defaults to a generic name if omitted."),
+  isIncome: z
+    .boolean()
+    .optional()
+    .describe("true if this is money coming in. Defaults to false (an expense)."),
+  accountId: z
+    .string()
+    .optional()
+    .describe(
+      "An account id from get_context. Omit for a wallet-level transaction (uses the wallet's primary currency)."
+    ),
+  categoryId: z.string().optional().describe("A category id from get_context."),
+  subCategoryId: z
+    .string()
+    .optional()
+    .describe(
+      "A subcategory id from get_context. If set, its parent category is applied automatically."
+    ),
+  projectId: z
+    .string()
+    .optional()
+    .describe(
+      "A budgetType:'project' budget id from get_context, if the user mentioned linking this to a project. Passing a saving/spending budget id fails - only projects can be linked directly."
+    ),
+  tags: z
+    .array(z.string())
+    .optional()
+    .describe("Tag names to attach, e.g. ['trip-cancun']. Created automatically if new."),
+  date: z
+    .string()
+    .optional()
+    .describe("ISO 8601 date/time. Omit if the user didn't say when it happened - defaults to now."),
+};
+
+// Creates one transaction and returns a short human-readable summary line.
+// Throws on failure - callers decide whether that should fail the whole
+// request (create_transaction) or just that one item (create_transactions).
+async function createOneTransaction(
+  { user, wallet },
+  { amount, name, isIncome, accountId, categoryId, subCategoryId, projectId, tags, date }
+) {
+  const { transaction, name: resolvedName } = await createTransaction({
+    user: user._id,
+    wallet: wallet._id,
+    name,
+    amount,
+    isIncome,
+    isBill: !isIncome,
+    account: accountId,
+    category: categoryId,
+    subCategory: subCategoryId,
+    budget: projectId,
+    tags,
+    date,
+  });
+  const native = transaction.displayMoney?.native;
+  const formattedAmount = native ? formatMoneyMinor(native.amountMinor, native.currency) : `${amount}`;
+  return [
+    `Created "${resolvedName}": ${formattedAmount}`,
+    transaction.date ? `on ${new Date(transaction.date).toLocaleDateString()}` : null,
+    transaction.category?.name ? `in ${transaction.category.name}` : null,
+    transaction.budget?.name ? `linked to project "${transaction.budget.name}"` : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
 // Single source of truth for the Gastify MCP tools - shared by every
 // connector entry point (Claude's Authorization-header route, ChatGPT's
 // URL-embedded-token route, and whatever comes next). Each entry point only
@@ -75,81 +154,40 @@ export function buildGastifyMcpServer({ user, wallet }) {
     {
       title: "Create transaction",
       description:
-        "Creates a real transaction in the user's Gastify wallet right now. Resolve categoryId/subCategoryId/accountId/projectId via get_context first - never invent an id. Omit date to use the current time.",
+        "Creates a single real transaction in the user's Gastify wallet right now. Resolve categoryId/subCategoryId/accountId/projectId via get_context first - never invent an id. Omit date to use the current time. If the user described several transactions in one message, use create_transactions instead - it's one call instead of several.",
+      inputSchema: transactionInputShape,
+    },
+    async (args) => {
+      const summary = await createOneTransaction({ user, wallet }, args);
+      return { content: [{ type: "text", text: summary }] };
+    }
+  );
+
+  server.registerTool(
+    "create_transactions",
+    {
+      title: "Create multiple transactions",
+      description:
+        "Creates several real transactions in one call - use this instead of calling create_transaction repeatedly whenever the user described more than one transaction in the same message (e.g. 'gasté 50 en tacos, 30 en uber y 100 en super'). Each entry is independent (its own amount/account/category/etc, same fields as create_transaction). Transactions are created one by one server-side; if one entry fails (e.g. a bad id) the rest still get created - the response reports each entry's result individually so you can tell the user exactly what happened.",
       inputSchema: {
-        amount: z
-          .number()
-          .positive()
-          .describe(
-            "The transaction amount in major currency units (e.g. 200 for $200.00). Always positive - use isIncome to indicate direction."
-          ),
-        name: z
-          .string()
-          .optional()
-          .describe("A short label, e.g. 'Tacos'. Defaults to a generic name if omitted."),
-        isIncome: z
-          .boolean()
-          .optional()
-          .describe("true if this is money coming in. Defaults to false (an expense)."),
-        accountId: z
-          .string()
-          .optional()
-          .describe(
-            "An account id from get_context. Omit for a wallet-level transaction (uses the wallet's primary currency)."
-          ),
-        categoryId: z.string().optional().describe("A category id from get_context."),
-        subCategoryId: z
-          .string()
-          .optional()
-          .describe(
-            "A subcategory id from get_context. If set, its parent category is applied automatically."
-          ),
-        projectId: z
-          .string()
-          .optional()
-          .describe(
-            "A budgetType:'project' budget id from get_context, if the user mentioned linking this to a project. Passing a saving/spending budget id fails - only projects can be linked directly."
-          ),
-        tags: z
-          .array(z.string())
-          .optional()
-          .describe("Tag names to attach, e.g. ['trip-cancun']. Created automatically if new."),
-        date: z
-          .string()
-          .optional()
-          .describe(
-            "ISO 8601 date/time. Omit if the user didn't say when it happened - defaults to now."
-          ),
+        transactions: z
+          .array(z.object(transactionInputShape))
+          .min(1)
+          .max(20)
+          .describe("One entry per transaction to create, in the order given."),
       },
     },
-    async ({ amount, name, isIncome, accountId, categoryId, subCategoryId, projectId, tags, date }) => {
-      const { transaction, name: resolvedName } = await createTransaction({
-        user: user._id,
-        wallet: wallet._id,
-        name,
-        amount,
-        isIncome,
-        isBill: !isIncome,
-        account: accountId,
-        category: categoryId,
-        subCategory: subCategoryId,
-        budget: projectId,
-        tags,
-        date,
-      });
-      const native = transaction.displayMoney?.native;
-      const formattedAmount = native
-        ? formatMoneyMinor(native.amountMinor, native.currency)
-        : `${amount}`;
-      const summary = [
-        `Created "${resolvedName}": ${formattedAmount}`,
-        transaction.date ? `on ${new Date(transaction.date).toLocaleDateString()}` : null,
-        transaction.category?.name ? `in ${transaction.category.name}` : null,
-        transaction.budget?.name ? `linked to project "${transaction.budget.name}"` : null,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      return { content: [{ type: "text", text: summary }] };
+    async ({ transactions }) => {
+      const results = [];
+      for (let i = 0; i < transactions.length; i++) {
+        try {
+          const summary = await createOneTransaction({ user, wallet }, transactions[i]);
+          results.push(`${i + 1}. OK - ${summary}`);
+        } catch (e) {
+          results.push(`${i + 1}. FAILED - ${e.message || e}`);
+        }
+      }
+      return { content: [{ type: "text", text: results.join("\n") }] };
     }
   );
 
