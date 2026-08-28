@@ -198,13 +198,29 @@ sequentially, and reports each entry's result individually (`"1. OK - ..."` / `"
 ..."`) rather than failing the whole batch if one entry is bad. Both tools share one
 `createOneTransaction` implementation - no duplicated logic.
 
-**Found while testing (pre-existing, not introduced by this change):** `createTransaction` does
-not validate that a given `accountId` actually exists before saving - an Account lookup miss
-silently falls back to the wallet's primary currency but still writes the bogus id into the
-Transaction's `account` field, unlike `subCategoryId`/`projectId` which do throw a clear error on
-a bad id. This is a real gap in the original `new-transaction` route's logic (inherited as-is by
-the shared function), not something the MCP work introduced - flagged for a separate fix, not
-addressed in this pass.
+**Found while testing (pre-existing, not introduced by this change) - fixed 2026-08-28:**
+`createTransaction` didn't validate that `accountId`/`categoryId` actually existed before saving,
+and `subCategoryId` only checked existence, not ownership; separately, tag lookup by name wasn't
+scoped by user/wallet at all, so two different users' tags with the same name could collide.
+These gaps mattered little for the original UI-only route (the frontend only ever sent ids it had
+just fetched for the logged-in user), but the MCP connector accepts agent-supplied ids directly,
+so they needed real enforcement. Fixed:
+- `account`/`category`/`subCategory` now all verify the referenced document exists **and**
+  belongs to this user's wallet (or, for category/subCategory, carries the shared
+  `isDefaultCatego`/`isDefaultSubCatego` flag) before being used - `assertOwnedOrDefault()` in
+  `createTransaction.js`. A mismatch throws the same "not found" message as a nonexistent id,
+  deliberately not distinguishing the two (an external caller shouldn't be able to tell "no such
+  id" from "that id isn't yours" by probing).
+- Tag lookup-by-name is now scoped `{name, user, wallet}` instead of matching any user's tag.
+- Verified live: a real owned account/category still creates normally; a syntactically-valid but
+  nonexistent accountId/categoryId now correctly returns an MCP tool error instead of silently
+  saving a broken reference. 3 new regression tests added to `route.test.js` (account/category/
+  subCategory ownership mismatch); 156/156 tests pass.
+- **Explicitly out of scope**: `wallet` itself is still trusted as supplied by the caller with no
+  ownership check against the authenticated user, matching how the rest of the app's routes have
+  always worked (the client/agent is expected to only ever pass its own resolved wallet id) -
+  this is a systemic, app-wide trust boundary, not specific to `createTransaction`, and
+  re-architecting it was judged out of scope for this fix.
 
 ### OAuth-as-provider and passkeys - explicitly separate future initiatives, not bundled together
 
