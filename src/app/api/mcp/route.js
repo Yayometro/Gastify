@@ -20,24 +20,34 @@ function buildServer({ user, wallet }) {
   const server = new McpServer({ name: "gastify", version: "1.0.0" });
 
   server.registerTool(
-    "list_categories",
+    "get_context",
     {
-      title: "List categories",
+      title: "Get context",
       description:
-        "Lists this user's transaction categories and subcategories (including Gastify's built-in default ones). Call this before create_transaction to resolve a real categoryId/subCategoryId from what the user said - never invent an id.",
+        "Returns everything needed to resolve real ids for create_transaction, in a single call: accounts (name + currency), categories + subcategories (including Gastify's built-in defaults), and budgets of every type (project, saving, spending). Call this once at the start of a conversation instead of making several separate lookups - cheaper and faster. Only a 'project'-type budget can be passed as create_transaction's projectId; saving/spending budgets are included here for context/reference only.",
     },
     async () => {
-      const [categories, defaultCategories, subCategories, defaultSubCategories] =
-        await Promise.all([
-          Category.find({ user: user._id, wallet: wallet._id }).lean(),
-          Category.find({ isDefaultCatego: true }).lean(),
-          SubCategory.find({ user: user._id, wallet: wallet._id })
-            .populate("fatherCategory")
-            .lean(),
-          SubCategory.find({ isDefaultSubCatego: true })
-            .populate("fatherCategory")
-            .lean(),
-        ]);
+      const [
+        categories,
+        defaultCategories,
+        subCategories,
+        defaultSubCategories,
+        accounts,
+        budgets,
+      ] = await Promise.all([
+        Category.find({ user: user._id, wallet: wallet._id }).lean(),
+        Category.find({ isDefaultCatego: true }).lean(),
+        SubCategory.find({ user: user._id, wallet: wallet._id })
+          .populate("fatherCategory")
+          .lean(),
+        SubCategory.find({ isDefaultSubCatego: true })
+          .populate("fatherCategory")
+          .lean(),
+        Account.find({ user: user._id, wallet: wallet._id })
+          .sort({ order: 1, createdAt: 1 })
+          .lean(),
+        Budget.find({ user: user._id, wallet: wallet._id, archived: { $ne: true } }).lean(),
+      ]);
       const payload = {
         categories: [...categories, ...defaultCategories].map((c) => ({
           id: String(c._id),
@@ -48,46 +58,17 @@ function buildServer({ user, wallet }) {
           name: s.name,
           fatherCategoryId: s.fatherCategory ? String(s.fatherCategory._id) : null,
         })),
+        accounts: accounts.map((a) => ({
+          id: String(a._id),
+          name: a.name,
+          currency: a.currency,
+        })),
+        budgets: budgets.map((b) => ({
+          id: String(b._id),
+          name: b.name,
+          budgetType: b.budgetType || (b.isSaving ? "saving" : "spending"),
+        })),
       };
-      return { content: [{ type: "text", text: JSON.stringify(payload) }] };
-    }
-  );
-
-  server.registerTool(
-    "list_accounts",
-    {
-      title: "List accounts",
-      description:
-        "Lists this user's accounts (name + native currency). Call this before create_transaction to resolve a real accountId - never invent an id. Omitting accountId on create_transaction makes a wallet-level transaction in the wallet's primary currency instead.",
-    },
-    async () => {
-      const accounts = await Account.find({ user: user._id, wallet: wallet._id })
-        .sort({ order: 1, createdAt: 1 })
-        .lean();
-      const payload = accounts.map((a) => ({
-        id: String(a._id),
-        name: a.name,
-        currency: a.currency,
-      }));
-      return { content: [{ type: "text", text: JSON.stringify(payload) }] };
-    }
-  );
-
-  server.registerTool(
-    "list_projects",
-    {
-      title: "List projects",
-      description:
-        "Lists this user's project budgets. A transaction can only link directly to a 'project' budget - saving/spending budgets aggregate from linked accounts instead, not from individual transactions. Call this before create_transaction if the user mentions a project by name.",
-    },
-    async () => {
-      const projects = await Budget.find({
-        user: user._id,
-        wallet: wallet._id,
-        budgetType: "project",
-        archived: { $ne: true },
-      }).lean();
-      const payload = projects.map((p) => ({ id: String(p._id), name: p.name }));
       return { content: [{ type: "text", text: JSON.stringify(payload) }] };
     }
   );
@@ -97,7 +78,7 @@ function buildServer({ user, wallet }) {
     {
       title: "Create transaction",
       description:
-        "Creates a real transaction in the user's Gastify wallet right now. Resolve categoryId/subCategoryId/accountId/projectId via list_categories/list_accounts/list_projects first - never invent an id. Omit date to use the current time.",
+        "Creates a real transaction in the user's Gastify wallet right now. Resolve categoryId/subCategoryId/accountId/projectId via get_context first - never invent an id. Omit date to use the current time.",
       inputSchema: {
         amount: z
           .number()
@@ -117,19 +98,21 @@ function buildServer({ user, wallet }) {
           .string()
           .optional()
           .describe(
-            "An id from list_accounts. Omit for a wallet-level transaction (uses the wallet's primary currency)."
+            "An account id from get_context. Omit for a wallet-level transaction (uses the wallet's primary currency)."
           ),
-        categoryId: z.string().optional().describe("A category id from list_categories."),
+        categoryId: z.string().optional().describe("A category id from get_context."),
         subCategoryId: z
           .string()
           .optional()
           .describe(
-            "A subcategory id from list_categories. If set, its parent category is applied automatically."
+            "A subcategory id from get_context. If set, its parent category is applied automatically."
           ),
         projectId: z
           .string()
           .optional()
-          .describe("A project id from list_projects, if the user mentioned linking this to a project."),
+          .describe(
+            "A budgetType:'project' budget id from get_context, if the user mentioned linking this to a project. Passing a saving/spending budget id fails - only projects can be linked directly."
+          ),
         tags: z
           .array(z.string())
           .optional()
