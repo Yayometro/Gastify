@@ -5,7 +5,7 @@ vi.mock("@/model/Account", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Tag", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/SubCategory", () => ({ default: { findById: vi.fn() } }));
-vi.mock("@/model/Category", () => ({ default: {} }));
+vi.mock("@/model/Category", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Budget", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/lib/money/server/transactionMoneyService", () => ({ buildTransactionMoney: vi.fn() }));
 
@@ -30,6 +30,8 @@ const { TransactionMock } = vi.hoisted(() => {
 vi.mock("@/model/Transaction", () => ({ default: TransactionMock }));
 
 import Account from "@/model/Account";
+import Category from "@/model/Category";
+import SubCategory from "@/model/SubCategory";
 import Wallet from "@/model/Wallet";
 import Transaction from "@/model/Transaction";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
@@ -61,7 +63,9 @@ beforeEach(() => {
 
 describe("new-transaction currency resolution", () => {
   it("resolves the Account's own currency when an Account is selected", async () => {
-    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
+    Account.findById.mockReturnValue({
+      lean: vi.fn().mockResolvedValue({ currency: "USD", user: "u1", wallet: "w1" }),
+    });
 
     await POST(mockRequest({ user: "u1", wallet: "w1", name: "Coffee", amount: 100, isBill: true, account: "acc1" }));
 
@@ -101,5 +105,58 @@ describe("new-transaction currency resolution", () => {
     expect(buildTransactionMoney).toHaveBeenCalledWith(
       expect.objectContaining({ accountCurrency: "MXN", walletPrimaryCurrency: "MXN" })
     );
+  });
+});
+
+// Regression: an id that resolves to a real document belonging to a
+// *different* user must be rejected exactly like a non-existent id - an
+// external caller (the MCP connector's create_transaction/create_transactions
+// tools take agent-supplied ids) must not be able to attach another user's
+// account/category/subCategory to its own transaction just by guessing or
+// leaking an id.
+describe("new-transaction ownership validation", () => {
+  it("rejects an accountId that exists but belongs to another user's wallet", async () => {
+    Account.findById.mockReturnValue({
+      lean: vi.fn().mockResolvedValue({ currency: "USD", user: "someone-else", wallet: "w1" }),
+    });
+
+    await expect(
+      POST(
+        mockRequest({ user: "u1", wallet: "w1", name: "Coffee", amount: 100, isBill: true, account: "acc1" })
+      )
+    ).rejects.toThrow(/Account not found for this user/);
+  });
+
+  it("rejects a categoryId that exists but belongs to another user's wallet", async () => {
+    Category.findById.mockReturnValue({
+      lean: vi.fn().mockResolvedValue({ name: "Food", user: "u1", wallet: "someone-elses-wallet" }),
+    });
+
+    await expect(
+      POST(
+        mockRequest({ user: "u1", wallet: "w1", name: "Lunch", amount: 100, isBill: true, category: "cat1" })
+      )
+    ).rejects.toThrow(/Category not found for this user/);
+  });
+
+  it("rejects a subCategoryId that exists but belongs to another user's wallet", async () => {
+    SubCategory.findById.mockReturnValue({
+      lean: vi
+        .fn()
+        .mockResolvedValue({ name: "Uber", fatherCategory: "cat1", user: "someone-else", wallet: "w1" }),
+    });
+
+    await expect(
+      POST(
+        mockRequest({
+          user: "u1",
+          wallet: "w1",
+          name: "Ride",
+          amount: 100,
+          isBill: true,
+          subCategory: "sub1",
+        })
+      )
+    ).rejects.toThrow(/No SUB-CATEGORY found at NEW TRANSACTION/);
   });
 });
