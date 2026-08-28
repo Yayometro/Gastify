@@ -2,6 +2,7 @@ import {
   getMonthOfTransaction,
   getYearMonthDateRange,
   mapedMonths,
+  months,
   normalizeDateToUTC,
 } from "../timeFunctions/timeFunctions";
 import currencyFormatter from "currency-formatter";
@@ -150,6 +151,43 @@ export function transactionsToMonths(allTrans) {
   const transformed = reduceTransToTransMonths(allTrans);
   // remove the entry with the name and left only the values
   const final = Object.values(transformed).sort((a, b) => a.index - b.index);
+  const totalValue = final.reduce((acc, item) => acc + item.value, 0);
+  return { array: final, totalValue };
+}
+
+// Like transactionsToMonths, but buckets by position within the range
+// (0 = the range's first calendar month, 1 = the second, ...) instead of by
+// calendar month name. transactionsToMonths' "january"/"february"/... keys
+// only work for a range confined to a single year - comparing two ranges
+// that span different years (or aren't the same calendar months at all,
+// e.g. "last 3 months" vs "the 3 months before that") needs bars to align
+// by relative position, not by which real month they happened to fall in.
+// `rangeStart` should be the same Date passed to getTransactionsFromTimeRange
+// for this same array, so bucket 0 always means "this range's first month."
+export function transactionsToRelativeMonths(trans, rangeStart) {
+  const start = new Date(rangeStart);
+  const buckets = trans.reduce((acc, transaction) => {
+    const txDate = new Date(transaction.date || transaction.createdAt);
+    const monthsSinceStart =
+      (txDate.getFullYear() - start.getFullYear()) * 12 +
+      (txDate.getMonth() - start.getMonth());
+    const amount = getPrimaryAmount(transaction);
+    const monthLabel = `${months[txDate.getMonth()]} ${txDate.getFullYear()}`;
+    if (acc[monthsSinceStart]) {
+      acc[monthsSinceStart].value += amount;
+    } else {
+      acc[monthsSinceStart] = {
+        type: `Month ${monthsSinceStart + 1}`,
+        index: monthsSinceStart,
+        monthLabel,
+        value: amount,
+        isBill: transaction.isBill || null,
+        isIncome: transaction.isIncome || null,
+      };
+    }
+    return acc;
+  }, {});
+  const final = Object.values(buckets).sort((a, b) => a.index - b.index);
   const totalValue = final.reduce((acc, item) => acc + item.value, 0);
   return { array: final, totalValue };
 }
