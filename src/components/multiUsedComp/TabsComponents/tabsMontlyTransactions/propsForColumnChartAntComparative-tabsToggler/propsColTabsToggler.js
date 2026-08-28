@@ -131,3 +131,104 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
     },
   };
 };
+
+// Props for the "Compare periods" tab: two independent [start,end] ranges,
+// each split into income/bill, bucketed by position-within-range (so bars
+// pair up even when the two ranges span different years) and grouped side
+// by side per relative month via the same Column chart used for the
+// bill-vs-income comparative.
+export const generatePropForChartColAntPeriodCompare = ({
+  compareData,
+  totals,
+  labelA,
+  labelB,
+  walletPrimaryCurrency = "MXN",
+}) => {
+  const balanceA = (totals.incomeA || 0) - (totals.billA || 0);
+  const balanceB = (totals.incomeB || 0) - (totals.billB || 0);
+  return {
+    data: compareData,
+    totalValue: (
+      <div className="w-full flex flex-col items-center gap-1 text-sm">
+        <div className="flex gap-6 flex-wrap justify-center">
+          <div className="flex flex-col items-center">
+            <b className="text-xs text-gray-500">{labelA}</b>
+            <p className="text-emerald-600">
+              Income: <b>{formatMoneyMajor(totals.incomeA || 0, walletPrimaryCurrency)}</b>
+            </p>
+            <p className="text-red-500">
+              Bills: <b>{formatMoneyMajor(totals.billA || 0, walletPrimaryCurrency)}</b>
+            </p>
+            <p className={`font-semibold ${balanceA >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+              Balance: <b>{formatMoneyMajor(balanceA, walletPrimaryCurrency)}</b>
+            </p>
+          </div>
+          <div className="border-l border-slate-300"></div>
+          <div className="flex flex-col items-center">
+            <b className="text-xs text-gray-500">{labelB}</b>
+            <p className="text-emerald-600">
+              Income: <b>{formatMoneyMajor(totals.incomeB || 0, walletPrimaryCurrency)}</b>
+            </p>
+            <p className="text-red-500">
+              Bills: <b>{formatMoneyMajor(totals.billB || 0, walletPrimaryCurrency)}</b>
+            </p>
+            <p className={`font-semibold ${balanceB >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+              Balance: <b>{formatMoneyMajor(balanceB, walletPrimaryCurrency)}</b>
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+    propPlus: {
+      style: {
+        fill: ({ color }) => color,
+        inset: 0.2,
+      },
+      // The base ColumnChartAntComparative's default label divides by the
+      // `totalValue` prop, which here is a JSX summary block, not a number
+      // (NaN% otherwise) - a plain formatted amount is also more meaningful
+      // than a percentage for a 4-series comparison anyway (percentage of
+      // which total - this period's income, the grand total across all
+      // four series? - is ambiguous here in a way it isn't for the
+      // 2-series bill-vs-income tab).
+      label: {
+        text: ({ value }) => formatMoneyMajor(value, walletPrimaryCurrency),
+        textBaseline: "bottom",
+      },
+      interaction: {
+        tooltip: {
+          render: (e, { items, title }) => {
+            return (
+              <div
+                className="max-w-[280px] flex gap-1 flex-col items-center justify-center rounded-lg p-1 font-sans"
+                key={title}
+              >
+                <h1 className="text-base text-center text-wrap font-bold">
+                  {String(title).toUpperCase()}
+                </h1>
+                {items.map((entry) => {
+                  const { value, color, name } = entry;
+                  return (
+                    <div key={name} className="flex items-center gap-1 text-xs">
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          background: color,
+                          borderRadius: "50%",
+                          display: "inline-block",
+                        }}
+                      />
+                      <span>{name}:</span>
+                      <b>{formatMoneyMajor(value, walletPrimaryCurrency)}</b>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          },
+        },
+      },
+    },
+  };
+};

@@ -15,6 +15,13 @@ function TabsTogglerMontlyView({
   components,
   data,
   timePeriod,
+  tabs,
+  compareEnabled,
+  setCompareEnabled,
+  comparePeriod,
+  getCompareValueFromSelecter,
+  handleCompareRangeDate,
+  timePeriodsForCompareSelecter,
 }) {
 
   return (
@@ -56,12 +63,41 @@ function TabsTogglerMontlyView({
             rpResponse={rangePickerResponse}
           />
         </div>
+        {typeof setCompareEnabled === "function" && (
+          <div className="w-full flex flex-col items-center gap-2 mt-2">
+            <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={compareEnabled}
+                onChange={(e) => setCompareEnabled(e.target.checked)}
+              />
+              Compare vs another period
+            </label>
+            {compareEnabled && (
+              <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
+                <span className="text-xs">vs</span>
+                <SelecterFilter
+                  getValue={getCompareValueFromSelecter}
+                  periodOverride={timePeriodsForCompareSelecter}
+                  styles={
+                    "bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+                  }
+                />
+                <TimeRange
+                  rpDate={handleCompareRangeDate}
+                  startDateValue={comparePeriod?.[0]}
+                  endDateValue={comparePeriod?.[1]}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {data.length <= 0 ? (
         <Skeleton active className="py-3"/>
       ) : (
         <TabsToggler
-          tabs={["Comparative", "Bills", "Incomes"]}
+          tabs={tabs || ["Comparative", "Bills", "Incomes"]}
           compontentsArray={components}
           tooltip={"Select the tab that you want to see 😎"}
         />

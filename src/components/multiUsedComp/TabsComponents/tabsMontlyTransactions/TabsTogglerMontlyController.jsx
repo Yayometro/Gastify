@@ -15,11 +15,16 @@ import {
   getTransactionsFromTimeRange,
   mapToAddTypeTransactionAndColor,
   transactionsToMonths,
+  transactionsToRelativeMonths,
 } from "@/helpers/transformers/transactionsChange";
+import { getDateInYearMonthDay } from "@/helpers/timeFunctions/timeFunctions";
 import ColumnChartAntComparative from "../../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
 import TooltipForChart from "@/components/toltips/tooltipsForCharts/TooltipForChart";
 import AtomicTop from "../../top3/atomicTop/AtomicTop";
-import { generatePropForChartColAntTogglerTabs } from "./propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler";
+import {
+  generatePropForChartColAntTogglerTabs,
+  generatePropForChartColAntPeriodCompare,
+} from "./propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler";
 
 const today = new Date();
 
@@ -32,6 +37,22 @@ function TabsTogglerMontlyController() {
       today,
     ]);
   const [clickedItems, setClickedItems] = useState([]);
+  const [compareEnabled, setCompareEnabled] = useState(false);
+  // Default: the same span the user is already looking at, shifted back
+  // exactly one year - the most common comparison ("this vs. last year").
+  const [comparePeriod, setComparePeriod] = useState(() => [
+    new Date(
+      timePeriod[0].getFullYear() - 1,
+      timePeriod[0].getMonth(),
+      timePeriod[0].getDate()
+    ),
+    new Date(
+      timePeriod[1].getFullYear() - 1,
+      timePeriod[1].getMonth(),
+      timePeriod[1].getDate()
+    ),
+  ]);
+  const [compareChartData, setCompareChartData] = useState(null);
 
   let { email } = useGetUserSession();
 
@@ -82,6 +103,50 @@ function TabsTogglerMontlyController() {
     }
   }, [allTransactions, timePeriod]);
 
+  useEffect(() => {
+    if (!compareEnabled) {
+      setCompareChartData(null);
+      return;
+    }
+    if (allTransactions.length < 1) return;
+    if (!timePeriod[0] || !timePeriod[1] || !comparePeriod[0] || !comparePeriod[1]) return;
+
+    const transA = getTransactionsFromTimeRange(allTransactions, timePeriod[0], timePeriod[1]);
+    const transB = getTransactionsFromTimeRange(allTransactions, comparePeriod[0], comparePeriod[1]);
+    const splitA = filterBillsOrIncomes(transA);
+    const splitB = filterBillsOrIncomes(transB);
+
+    // Bucketed by position-within-range (not calendar month name) so the two
+    // periods pair up bar-for-bar even when they span different years or
+    // aren't the same calendar months at all.
+    const incomesA = transactionsToRelativeMonths(splitA.incomes, timePeriod[0]);
+    const billsA = transactionsToRelativeMonths(splitA.bills, timePeriod[0]);
+    const incomesB = transactionsToRelativeMonths(splitB.incomes, comparePeriod[0]);
+    const billsB = transactionsToRelativeMonths(splitB.bills, comparePeriod[0]);
+
+    const labelA = `${getDateInYearMonthDay(timePeriod[0])} to ${getDateInYearMonthDay(timePeriod[1])}`;
+    const labelB = `${getDateInYearMonthDay(comparePeriod[0])} to ${getDateInYearMonthDay(comparePeriod[1])}`;
+    const tag = (arr, transactionType, color) =>
+      arr.map((m) => ({ ...m, transactionType, color }));
+
+    setCompareChartData({
+      chartData: [
+        ...tag(incomesA.array, `Income (${labelA})`, "#88FFE3"),
+        ...tag(billsA.array, `Bill (${labelA})`, "#ff8c8c"),
+        ...tag(incomesB.array, `Income (${labelB})`, "#4fd1b5"),
+        ...tag(billsB.array, `Bill (${labelB})`, "#ff5252"),
+      ],
+      totals: {
+        incomeA: incomesA.totalValue,
+        billA: billsA.totalValue,
+        incomeB: incomesB.totalValue,
+        billB: billsB.totalValue,
+      },
+      labelA,
+      labelB,
+    });
+  }, [allTransactions, timePeriod, comparePeriod, compareEnabled]);
+
   // FUNCTIONS
 
   function getValueFromSelecter(v) {
@@ -92,6 +157,17 @@ function TabsTogglerMontlyController() {
   function handleRangeDate(dateStart, dateEnd) {
     if (dateStart && dateEnd) {
       setTimePeriod([dateStart, dateEnd]);
+    }
+  }
+
+  function getCompareValueFromSelecter(v) {
+    const [start, end] = v.split("*");
+    setComparePeriod([new Date(start), new Date(end)]);
+  }
+
+  function handleCompareRangeDate(dateStart, dateEnd) {
+    if (dateStart && dateEnd) {
+      setComparePeriod([dateStart, dateEnd]);
     }
   }
 
@@ -122,6 +198,23 @@ function TabsTogglerMontlyController() {
       Component: ColumnChartAntComparative,
     },
   ];
+
+  const tabs = ["Comparative", "Bills", "Incomes"];
+  if (compareEnabled && compareChartData) {
+    components.push({
+      tab: "compare periods",
+      props: generatePropForChartColAntPeriodCompare({
+        compareData: compareChartData.chartData,
+        totals: compareChartData.totals,
+        labelA: compareChartData.labelA,
+        labelB: compareChartData.labelB,
+        walletPrimaryCurrency,
+      }),
+      Component: ColumnChartAntComparative,
+    });
+    tabs.push("Compare periods");
+  }
+
   const timePeriodsForSelecter = [
     {
       value: `${new Date(
@@ -142,6 +235,13 @@ function TabsTogglerMontlyController() {
       handleRangeDate={handleRangeDate}
       timePeriod={timePeriod}
       components={components}
+      tabs={tabs}
+      compareEnabled={compareEnabled}
+      setCompareEnabled={setCompareEnabled}
+      comparePeriod={comparePeriod}
+      getCompareValueFromSelecter={getCompareValueFromSelecter}
+      handleCompareRangeDate={handleCompareRangeDate}
+      timePeriodsForCompareSelecter={timePeriodsForSelecter}
     />
   );
 }
