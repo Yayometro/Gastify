@@ -190,10 +190,12 @@ export const generatePropForChartColAntPeriodCompare = ({
       // than a percentage for a 4-series comparison anyway (percentage of
       // which total - this period's income, the grand total across all
       // four series? - is ambiguous here in a way it isn't for the
-      // 2-series bill-vs-income tab).
+      // 2-series bill-vs-income tab). Period B's values are negated
+      // upstream so its bars render mirrored below the zero line - shows
+      // the absolute amount here so a downward bar doesn't read as
+      // "negative spending."
       label: {
-        text: ({ value }) => formatMoneyMajor(value, walletPrimaryCurrency),
-        textBaseline: "bottom",
+        text: ({ value }) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency),
       },
       interaction: {
         tooltip: {
@@ -220,7 +222,7 @@ export const generatePropForChartColAntPeriodCompare = ({
                         }}
                       />
                       <span>{name}:</span>
-                      <b>{formatMoneyMajor(value, walletPrimaryCurrency)}</b>
+                      <b>{formatMoneyMajor(Math.abs(value), walletPrimaryCurrency)}</b>
                     </div>
                   );
                 })}

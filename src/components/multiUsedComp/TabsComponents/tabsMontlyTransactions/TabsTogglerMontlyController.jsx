@@ -126,15 +126,26 @@ function TabsTogglerMontlyController() {
 
     const labelA = `${getDateInYearMonthDay(timePeriod[0])} to ${getDateInYearMonthDay(timePeriod[1])}`;
     const labelB = `${getDateInYearMonthDay(comparePeriod[0])} to ${getDateInYearMonthDay(comparePeriod[1])}`;
-    const tag = (arr, transactionType, color) =>
-      arr.map((m) => ({ ...m, transactionType, color }));
+    // Period A renders above the zero line, period B below it (mirrored) -
+    // keeps the two periods visually anchored to "this vs that" instead of
+    // reading left-to-right as 4 separate bars per month. `absValue` keeps
+    // the real (always-positive) amount for labels/tooltips, since a
+    // downward bar shouldn't be read as "negative spending."
+    const tag = (arr, transactionType, color, mirror) =>
+      arr.map((m) => ({
+        ...m,
+        transactionType,
+        color,
+        absValue: m.value,
+        value: mirror ? -m.value : m.value,
+      }));
 
     setCompareChartData({
       chartData: [
-        ...tag(incomesA.array, `Income (${labelA})`, "#88FFE3"),
-        ...tag(billsA.array, `Bill (${labelA})`, "#ff8c8c"),
-        ...tag(incomesB.array, `Income (${labelB})`, "#4fd1b5"),
-        ...tag(billsB.array, `Bill (${labelB})`, "#ff5252"),
+        ...tag(incomesA.array, `Income (${labelA})`, "#88FFE3", false),
+        ...tag(billsA.array, `Bill (${labelA})`, "#ff8c8c", false),
+        ...tag(incomesB.array, `Income (${labelB})`, "#4fd1b5", true),
+        ...tag(billsB.array, `Bill (${labelB})`, "#ff5252", true),
       ],
       totals: {
         incomeA: incomesA.totalValue,

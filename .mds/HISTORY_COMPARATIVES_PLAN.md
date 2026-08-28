@@ -65,15 +65,23 @@ existing first - hence doing History's comparatives before Snapshots.
 **Phase A implementation notes:** additive, not a rework - the existing "Comparative"/"Bills"/
 "Incomes" tabs are pixel-identical when the new "Compare vs another period" checkbox is off. When
 on, a 4th "Compare periods" tab appears with a second `SelecterFilter`+`TimeRange` pair (defaults
-to the primary range shifted back exactly one year) and a grouped bar chart (income/bill × period
-A/period B) using the new `transactionsToRelativeMonths` bucketing. One bug caught in live
-testing: the base `ColumnChartAntComparative`'s default label divides by its `totalValue` prop to
-show a percentage, but that prop is a JSX summary block here (not a number) - NaN% until
-`generatePropForChartColAntPeriodCompare` overrode `label.text` to show the formatted amount
-directly instead (also more meaningful than a percentage for a 4-series chart, where "percent of
-which total" is ambiguous). Verified live against real transaction data (2026 vs. 2025, 3-month
-range): correct per-period totals/balance, correct month-by-month alignment across the year
-boundary, correct tooltip.
+to the primary range shifted back exactly one year) and a chart (income/bill × period A/period B)
+using the new `transactionsToRelativeMonths` bucketing. Two bugs caught in live testing and fixed
+before shipping:
+- The base `ColumnChartAntComparative`'s default label divides by its `totalValue` prop to show a
+  percentage, but that prop is a JSX summary block here (not a number) - NaN% until
+  `generatePropForChartColAntPeriodCompare` overrode `label.text` to show the formatted amount
+  directly instead.
+- **First shipped version grouped all 4 bars side by side per month** (income A, bill A, income
+  B, bill B in a row) - Luis's feedback: this read as confusing left-right scanning rather than a
+  clear "this period vs that period" comparison. Changed to a **mirrored/diverging layout**:
+  period A's bars render above the zero line, period B's (values negated in the controller) below
+  it - the same month position on the x-axis, one period up, the other down. Labels/tooltip show
+  `Math.abs(value)` so a downward bar never reads as "negative spending."
+
+Verified live against real transaction data (2026 vs. 2025, 3-month range) both before and after
+the mirrored-layout fix: correct per-period totals/balance, correct month-by-month alignment
+across the year boundary, correct tooltip, no negative-looking labels.
 
 ## Phase B: Categories "vs" comparative
 
