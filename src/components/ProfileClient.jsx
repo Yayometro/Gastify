@@ -13,6 +13,7 @@ import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 import { fetchUser, updateUser } from "@/lib/features/userSlice";
 import { CldUploadWidget } from "next-cloudinary";
+import ApiTokensPanel from "./multiUsedComp/ApiTokensPanel";
 
 function ProfileClient({ pcSession }) {
   const [onEdition, setOnEdition] = useState(false);
@@ -243,6 +244,9 @@ function ProfileClient({ pcSession }) {
                     </p>
                   </div>
                 </div>
+              </div>
+              <div className="w-full px-4 sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
+                <ApiTokensPanel mail={pcSession} />
               </div>
               <div className="remove-account-prof w-full mb-[100px]">
                 <div className="remove-acc w-full text-sm font-light text-red-700 underline cursor-pointer text-center">

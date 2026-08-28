@@ -11,7 +11,16 @@ const userSchema = new Schema({
         ref: "Wallet",
         require: true
     },
-
+    // Personal access tokens for third-party AI-agent connectors (e.g. a
+    // Claude/ChatGPT connector calling Gastify's MCP server). Only the
+    // SHA-256 hash is ever stored - the raw token is shown once at creation
+    // and cannot be recovered. See .mds/AI_AGENT_CONNECTOR_PLAN.md.
+    apiTokens: [{
+        name: { type: String, required: true },
+        tokenHash: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+        lastUsedAt: { type: Date, default: null },
+    }],
 
 }, {timestamps: true})
 
