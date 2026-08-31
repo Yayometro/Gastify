@@ -56,6 +56,26 @@ export function getDateInYearMonthDay(date, where) {
   // throw new Error("Invalid date parameter passed to getDateInYearMonthDay");
 }
 
+// Prefers a matching preset's friendly name ("All 2026") over the raw date
+// range ("2026-01-01 to 2026-12-31") wherever a period gets labeled in a
+// comparative view - a name the user actually picked from the dropdown is
+// more recognizable at a glance than parsing two ISO dates. Falls back to
+// the raw range for a manually-picked custom range, which has no name.
+// `periodOptions` is the same {value: "start*end", name}[] array already
+// passed to SelecterFilter - matched by resolved timestamp, not string
+// identity, since Date objects built from the same source moment are only
+// guaranteed equal via getTime().
+export function getPeriodLabel(periodOptions, range) {
+  if (!range?.[0] || !range?.[1]) return "No time selected";
+  const start = range[0] instanceof Date ? range[0] : new Date(range[0]);
+  const end = range[1] instanceof Date ? range[1] : new Date(range[1]);
+  const match = (periodOptions || []).find((opt) => {
+    const [optStart, optEnd] = String(opt.value).split("*");
+    return new Date(optStart).getTime() === start.getTime() && new Date(optEnd).getTime() === end.getTime();
+  });
+  return match?.name || `${getDateInYearMonthDay(start)} to ${getDateInYearMonthDay(end)}`;
+}
+
 export function orderItemsInTheirMonth(arr) {
   if (!(arr instanceof Array))
     throw new Error("arr param should be an Array instance");

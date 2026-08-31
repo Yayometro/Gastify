@@ -192,6 +192,54 @@ export function transactionsToRelativeMonths(trans, rangeStart) {
   return { array: final, totalValue };
 }
 
+// Same relative-position bucketing as transactionsToRelativeMonths, but
+// keeps every underlying transaction per bucket (as `childrens`) instead of
+// collapsing to a single total - the Top-elements compare table needs the
+// actual items to list per month, not just a sum.
+export function orderItemsInRelativeMonth(arr, rangeStart) {
+  if (!(arr instanceof Array))
+    throw new Error("arr param should be an Array instance");
+  const start = new Date(rangeStart);
+  const buckets = arr.reduce((acc, item) => {
+    const txDate = new Date(item.date || item.createdAt);
+    const index =
+      (txDate.getFullYear() - start.getFullYear()) * 12 +
+      (txDate.getMonth() - start.getMonth());
+    const monthLabel = `${months[txDate.getMonth()]} ${txDate.getFullYear()}`;
+    if (acc[index]) {
+      acc[index].value += getPrimaryAmount(item);
+      acc[index].childrens.push(item);
+    } else {
+      acc[index] = { index, monthLabel, value: getPrimaryAmount(item), childrens: [item] };
+    }
+    return acc;
+  }, {});
+  return Object.values(buckets).sort((a, b) => a.index - b.index);
+}
+
+// Aligns two periods' orderItemsInRelativeMonth() outputs into table rows by
+// relative index (month 0 of A next to month 0 of B, etc.), the same
+// left/older-vs-right/newer alignment the mirrored compare charts use -
+// months missing from one side (a shorter period, or simply no data that
+// month) come through as a null column rather than being dropped, so the
+// row grid stays intact.
+export function mergeTopElementsForCompareTable(monthsA, monthsB) {
+  const mapA = new Map(monthsA.map((m) => [m.index, m]));
+  const mapB = new Map(monthsB.map((m) => [m.index, m]));
+  const maxIndex = Math.max(
+    monthsA.length ? Math.max(...monthsA.map((m) => m.index)) : -1,
+    monthsB.length ? Math.max(...monthsB.map((m) => m.index)) : -1
+  );
+  const rows = [];
+  for (let i = 0; i <= maxIndex; i++) {
+    const colA = mapA.get(i) || null;
+    const colB = mapB.get(i) || null;
+    if (!colA && !colB) continue;
+    rows.push({ index: i, colA, colB });
+  }
+  return rows;
+}
+
 export function getTransactionsFromTimeRange(trans, start, end) {
   if (!(start instanceof Date) || !(end instanceof Date)) {
     throw new Error("Start and end parameters must be valid Date objects.");

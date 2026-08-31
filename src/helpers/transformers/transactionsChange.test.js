@@ -7,6 +7,8 @@ import {
   reduceTransCategoriesSliced,
   transactionsToCategories,
   filterBillsOrIncomes,
+  orderItemsInRelativeMonth,
+  mergeTopElementsForCompareTable,
 } from "./transactionsChange";
 
 function tx({ amountMinor, currency = "MXN", legacyAmount, category = null, isBill = true }) {
@@ -114,5 +116,58 @@ describe("filterBillsOrIncomes", () => {
     const { incomes, bills } = filterBillsOrIncomes(transactions);
     expect(bills).toHaveLength(1);
     expect(incomes).toHaveLength(1);
+  });
+});
+
+describe("orderItemsInRelativeMonth", () => {
+  it("buckets items by months-since-rangeStart, keeping every underlying item", () => {
+    const rangeStart = new Date(2026, 0, 1);
+    const items = [
+      { amount: 100, date: new Date(2026, 0, 10) },
+      { amount: 50, date: new Date(2026, 0, 20) },
+      { amount: 200, date: new Date(2026, 1, 5) },
+    ];
+    const result = orderItemsInRelativeMonth(items, rangeStart);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({ index: 0, value: 150 });
+    expect(result[0].childrens).toHaveLength(2);
+    expect(result[1]).toMatchObject({ index: 1, value: 200, monthLabel: "February 2026" });
+  });
+
+  it("aligns items from different years to the same relative index when they share a rangeStart offset", () => {
+    const items2025 = orderItemsInRelativeMonth(
+      [{ amount: 10, date: new Date(2025, 2, 15) }],
+      new Date(2025, 0, 1)
+    );
+    const items2026 = orderItemsInRelativeMonth(
+      [{ amount: 10, date: new Date(2026, 2, 15) }],
+      new Date(2026, 0, 1)
+    );
+    expect(items2025[0].index).toBe(items2026[0].index);
+  });
+});
+
+describe("mergeTopElementsForCompareTable", () => {
+  it("aligns two periods' relative-month buckets side by side by index", () => {
+    const monthsA = [
+      { index: 0, monthLabel: "January 2025", childrens: ["a-jan"] },
+      { index: 1, monthLabel: "February 2025", childrens: ["a-feb"] },
+    ];
+    const monthsB = [
+      { index: 0, monthLabel: "January 2026", childrens: ["b-jan"] },
+    ];
+    const rows = mergeTopElementsForCompareTable(monthsA, monthsB);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({
+      index: 0,
+      colA: { monthLabel: "January 2025" },
+      colB: { monthLabel: "January 2026" },
+    });
+    expect(rows[1].colA.monthLabel).toBe("February 2025");
+    expect(rows[1].colB).toBeNull();
+  });
+
+  it("returns an empty array when both periods have no data", () => {
+    expect(mergeTopElementsForCompareTable([], [])).toEqual([]);
   });
 });

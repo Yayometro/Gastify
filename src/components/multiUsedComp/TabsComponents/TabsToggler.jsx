@@ -1,11 +1,26 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { Tooltip } from "antd";
 import EmptyModule from "../EmptyModule";
 
 function TabsToggler({ tabs, compontentsArray, tooltip, contentStyle }) {
   const [active, setActive] = useState(tabs?.[0]?.toLowerCase() || "");
+
+  // Every "Compare" toggle on the History page adds/removes tabs at
+  // runtime (e.g. "Compare periods" only exists while compare is on) - if
+  // the currently active tab is one of those and gets removed (toggling
+  // compare back off while still looking at it), `active` was staying
+  // stale pointing at a tab that no longer exists in `tabs`, so nothing
+  // matched in compontentsArray and the content silently went blank. Fall
+  // back to the first available tab whenever that happens.
+  useEffect(() => {
+    if (!tabs || tabs.length === 0) return;
+    const stillExists = tabs.some((tab) => tab.toLowerCase() === active);
+    if (!stillExists) {
+      setActive(tabs[0].toLowerCase());
+    }
+  }, [tabs, active]);
 
   const handleTab = (type) => {
     setActive(type.toLowerCase());
