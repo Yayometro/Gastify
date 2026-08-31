@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ResponsiveCirclePacking } from "@nivo/circle-packing";
 import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
-import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import { buildCategoryHierarchy, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 
 function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
@@ -13,102 +13,11 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
 
   useEffect(() => {
     if (ccpTransacctions) {
-      // SET THE TOTAL AMOUNT
-      let totalAmount = ccpTransacctions.reduce((acc, trans) => acc += getPrimaryAmount(trans) , 0)
-      if(totalAmount) setTotalValueOn(totalAmount)
-      //NO CATEGORY FILTER
-      let transNoCategory = ccpTransacctions.filter(
-        (trans) => !trans.category
-      );
-      // console.log(transNoCategory);
-      //CATEGORY FILTER
-      let transWithCategory = ccpTransacctions.filter(
-        (trans) => trans?.category && !trans?.subCategory
-      );
-      // SUB CAT FILTER
-      let transWithSubCat = ccpTransacctions.filter(
-        (trans) => trans?.subCategory
-      );
-      // CREATE NEW OBJ NO CATEGORY
-      let cateFaseOne = transNoCategory.map((traNoCat) => {
-        return {
-          fatherId: "Generic-1",
-          name: "No category",
-          loc: getPrimaryAmount(traNoCat),
-          color: "#ABABAB",
-          icon: "MdFilterNone",
-          children: [],
-        };
-      });
-      let cateFaseDos = transWithCategory.map((traCat) => {
-        return {
-          fatherId: traCat.category._id,
-          name: traCat?.category.name,
-          loc: getPrimaryAmount(traCat),
-          color: traCat?.category?.color || "#ABABAB",
-          icon: traCat?.category?.icon || "MdFilterNone",
-          children: [],
-        };
-      });
-      if (transWithSubCat) {
-        transWithSubCat.forEach((traSub) => {
-          cateFaseDos.push({
-            fatherId: traSub.category._id,
-            name: traSub.category?.name,
-            color: traSub.category?.color|| "#ABABAB",
-            icon: traSub?.category?.icon || "MdFilterNone",
-            children: [
-              {
-                childId: traSub.subCategory._id,
-                name: traSub.subCategory?.name,
-                loc: getPrimaryAmount(traSub),
-                color: traSub.subCategory?.color || "#ABABAB",
-                icon: traSub?.subCategory?.icon || "MdFilterNone",
-              },
-            ],
-          });
-        });
-        cateFaseDos = cateFaseDos.concat(cateFaseOne);
-        // console.log(cateFaseDos);
-        const result = cateFaseDos.reduce((acc, item) => {
-          // Si la categoría no existe en el acumulador, la inicializamos
-          if (!acc[item.fatherId]) {
-            // console.log(acc[item.fatherId])
-            acc[item.fatherId] = { ...item, loc: 0, children: [] }; // Inicializamos loc en 0 para sumarlo correctamente después
-          }
-          
-          // Sumamos loc solo si no es una entrada de subcategoría directa
-          if (!item.children.length) {
-            // console.log(acc[item.fatherId])
-            acc[item.fatherId].loc += item.loc;
-          }
-          
-          // Procesamos los hijos (subcategorías)
-          item.children.forEach((child) => {
-            const existingChild = acc[item.fatherId].children.find(c => c.childId === child.childId);
-            if (existingChild) {
-              existingChild.loc += child.loc; // Sumamos si el hijo ya existe
-            } else {
-              acc[item.fatherId].children.push({ ...child }); // Añadimos el hijo si no existe
-            }
-          });
-        
-          return acc;
-        }, {});
-        // console.log(result);
-        if (result) {
-          const newDataCat = {
-            name: ccpIsBill ? "Total expenses" : "Total incomes",
-            color: ccpIsBill ? "#FF9797" : "#A7E295",
-            icon: "md/MdMonetizationOn",
-            children: Object.values(result),
-          };
-          //   console.log(newDataCat);
-          setDataCat(newDataCat);
-        }
-      }
+      const totalAmount = ccpTransacctions.reduce((acc, trans) => acc += getPrimaryAmount(trans), 0);
+      if (totalAmount) setTotalValueOn(totalAmount);
+      setDataCat(buildCategoryHierarchy(ccpTransacctions, ccpIsBill));
     }
-  }, [ccpTransacctions]);
+  }, [ccpTransacctions, ccpIsBill]);
   // console.log(newColors);
   // console.log(dataCat);
   return (

@@ -146,43 +146,61 @@ export const generatePropForChartColAntPeriodCompare = ({
 }) => {
   const balanceA = (totals.incomeA || 0) - (totals.billA || 0);
   const balanceB = (totals.incomeB || 0) - (totals.billB || 0);
+  // Each x-axis bucket is "Month N Income"/"Month N Bill", so a 3-month
+  // comparison is 6 buckets and reads fine with inline labels - a full-year
+  // comparison is 24, and $XX,XXX.XX-formatted labels are wider than each
+  // bucket gets at that count, so they visually pile on top of each other.
+  // Past ~6 months (12 buckets) the tooltip (already shows the same figures
+  // on hover) takes over instead of fighting for space on the chart itself.
+  const showInlineLabels = new Set(compareData.map((d) => d.type)).size <= 12;
   return {
     data: compareData,
+    // Side by side with a VS between them - lets the two periods' figures be
+    // read straight across (income vs income, bills vs bills) instead of
+    // scrolled past one after the other.
     totalValue: (
-      <div className="w-full flex flex-col items-center gap-1 text-sm">
-        <div className="flex gap-6 flex-wrap justify-center">
-          <div className="flex flex-col items-center">
-            <b className="text-xs text-gray-500">{labelA}</b>
-            <p className="text-emerald-600">
-              Income: <b>{formatMoneyMajor(totals.incomeA || 0, walletPrimaryCurrency)}</b>
-            </p>
-            <p className="text-red-500">
-              Bills: <b>{formatMoneyMajor(totals.billA || 0, walletPrimaryCurrency)}</b>
-            </p>
-            <p className={`font-semibold ${balanceA >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-              Balance: <b>{formatMoneyMajor(balanceA, walletPrimaryCurrency)}</b>
-            </p>
-          </div>
-          <div className="border-l border-slate-300"></div>
-          <div className="flex flex-col items-center">
-            <b className="text-xs text-gray-500">{labelB}</b>
-            <p className="text-emerald-600">
-              Income: <b>{formatMoneyMajor(totals.incomeB || 0, walletPrimaryCurrency)}</b>
-            </p>
-            <p className="text-red-500">
-              Bills: <b>{formatMoneyMajor(totals.billB || 0, walletPrimaryCurrency)}</b>
-            </p>
-            <p className={`font-semibold ${balanceB >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-              Balance: <b>{formatMoneyMajor(balanceB, walletPrimaryCurrency)}</b>
-            </p>
-          </div>
+      <div className="w-full flex items-center justify-center gap-3 text-sm flex-wrap">
+        <div className="flex flex-col items-center">
+          <b className="text-xs text-gray-500">{labelA}</b>
+          <p className="text-emerald-600">
+            Income: <b>{formatMoneyMajor(totals.incomeA || 0, walletPrimaryCurrency)}</b>
+          </p>
+          <p className="text-red-500">
+            Bills: <b>{formatMoneyMajor(totals.billA || 0, walletPrimaryCurrency)}</b>
+          </p>
+          <p className={`font-semibold ${balanceA >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+            Balance: <b>{formatMoneyMajor(balanceA, walletPrimaryCurrency)}</b>
+          </p>
+        </div>
+        <span className="text-purple-700 font-bold shrink-0">VS</span>
+        <div className="flex flex-col items-center">
+          <b className="text-xs text-gray-500">{labelB}</b>
+          <p className="text-emerald-600">
+            Income: <b>{formatMoneyMajor(totals.incomeB || 0, walletPrimaryCurrency)}</b>
+          </p>
+          <p className="text-red-500">
+            Bills: <b>{formatMoneyMajor(totals.billB || 0, walletPrimaryCurrency)}</b>
+          </p>
+          <p className={`font-semibold ${balanceB >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+            Balance: <b>{formatMoneyMajor(balanceB, walletPrimaryCurrency)}</b>
+          </p>
         </div>
       </div>
     ),
     propPlus: {
+      // The base ColumnChartAntComparative always sets `group: true`, which
+      // @ant-design/plots maps straight to a `dodgeX` transform - that's
+      // what actually split the two compared bars apart horizontally
+      // (visible even with inset:0, since dodgeX moves the *whole* bar to
+      // its own sub-slot, not just its padding). Disabling it here is what
+      // makes the two bars share the exact same x position - one drawn
+      // from 0 upward for the current period, one from 0 downward for the
+      // compared period (already negated upstream) - instead of two
+      // separate columns that only happen to sit next to each other.
+      group: false,
       style: {
         fill: ({ color }) => color,
-        inset: 0.2,
+        inset: 0,
       },
       // The base ColumnChartAntComparative's default label divides by the
       // `totalValue` prop, which here is a JSX summary block, not a number
@@ -194,9 +212,9 @@ export const generatePropForChartColAntPeriodCompare = ({
       // upstream so its bars render mirrored below the zero line - shows
       // the absolute amount here so a downward bar doesn't read as
       // "negative spending."
-      label: {
-        text: ({ value }) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency),
-      },
+      label: showInlineLabels
+        ? { text: ({ value }) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency) }
+        : false,
       interaction: {
         tooltip: {
           render: (e, { items, title }) => {

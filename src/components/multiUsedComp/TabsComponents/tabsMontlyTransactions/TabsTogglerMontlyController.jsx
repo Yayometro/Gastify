@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ResponsiveBarsChartComponent from "../../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
 import {
   fetchTrans,
@@ -8,7 +8,7 @@ import {
 } from "@/lib/features/transacctionsSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import { useDispatch, useSelector } from "react-redux";
-import { timeperiodRangesArray } from "@/helpers/timeFunctions/timeFunctions";
+import { getPeriodLabel, timeperiodRangesArray } from "@/helpers/timeFunctions/timeFunctions";
 import TabsTogglerMontlyView from "./TabsTogglerMontlyView";
 import {
   filterBillsOrIncomes,
@@ -17,7 +17,6 @@ import {
   transactionsToMonths,
   transactionsToRelativeMonths,
 } from "@/helpers/transformers/transactionsChange";
-import { getDateInYearMonthDay } from "@/helpers/timeFunctions/timeFunctions";
 import ColumnChartAntComparative from "../../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
 import TooltipForChart from "@/components/toltips/tooltipsForCharts/TooltipForChart";
 import AtomicTop from "../../top3/atomicTop/AtomicTop";
@@ -61,6 +60,20 @@ function TabsTogglerMontlyController() {
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
   const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const allTransactions = ccTransacciones.data;
+  // Stable across the component's lifetime (only depends on the
+  // module-level `today`) - memoized so it can safely sit in the compare
+  // effect's dependency array below without a new array reference on every
+  // render re-triggering that effect in a loop.
+  const timePeriodsForSelecter = useMemo(
+    () => [
+      {
+        value: `${new Date(today.getFullYear(), today.getMonth() - 2, 1)}*${today}`,
+        name: "Last 3 months",
+      },
+      ...timeperiodRangesArray,
+    ],
+    []
+  );
 
   useEffect(() => {
     // User
@@ -124,29 +137,58 @@ function TabsTogglerMontlyController() {
     const incomesB = transactionsToRelativeMonths(splitB.incomes, comparePeriod[0]);
     const billsB = transactionsToRelativeMonths(splitB.bills, comparePeriod[0]);
 
-    const labelA = `${getDateInYearMonthDay(timePeriod[0])} to ${getDateInYearMonthDay(timePeriod[1])}`;
-    const labelB = `${getDateInYearMonthDay(comparePeriod[0])} to ${getDateInYearMonthDay(comparePeriod[1])}`;
-    // Period A renders above the zero line, period B below it (mirrored) -
-    // keeps the two periods visually anchored to "this vs that" instead of
-    // reading left-to-right as 4 separate bars per month. `absValue` keeps
-    // the real (always-positive) amount for labels/tooltips, since a
-    // downward bar shouldn't be read as "negative spending."
-    const tag = (arr, transactionType, color, mirror) =>
-      arr.map((m) => ({
-        ...m,
-        transactionType,
-        color,
-        absValue: m.value,
-        value: mirror ? -m.value : m.value,
-      }));
+    const labelA = getPeriodLabel(timePeriodsForSelecter, timePeriod);
+    const labelB = getPeriodLabel(timePeriodsForSelecter, comparePeriod);
+    // Period A renders above the zero line, period B below it (mirrored).
+    // `type` (the chart's xField) folds the metric into the bucket key -
+    // "June Income" / "June Bill" - not just "Month 1", so each xField
+    // bucket only ever contains the 2 bars being compared (this period's
+    // income vs. that period's income), and the axis reads as real month
+    // names instead of "Month 1"/"Month 2". Bucketing by month alone put
+    // all 4 series (income A/B, bill A/B) in the same bucket, so the
+    // grouped-bar layout scattered them side by side instead of stacking
+    // income over income and bill over bill - `absValue` keeps the real
+    // (always-positive) amount for labels/tooltips, since a downward bar
+    // shouldn't read as "negative spending."
+    const tagOne = (m, monthName, metricLabel, periodLabel, color, mirror) => ({
+      ...m,
+      type: `${monthName} ${metricLabel}`,
+      transactionType: `${metricLabel} (${periodLabel})`,
+      color,
+      absValue: m.value,
+      value: mirror ? -m.value : m.value,
+    });
+
+    const monthIndices = Array.from(
+      new Set([
+        ...incomesA.array.map((m) => m.index),
+        ...incomesB.array.map((m) => m.index),
+        ...billsA.array.map((m) => m.index),
+        ...billsB.array.map((m) => m.index),
+      ])
+    ).sort((a, b) => a - b);
+    const byIndex = (arr, idx) => arr.find((m) => m.index === idx);
+
+    const chartData = [];
+    monthIndices.forEach((idx) => {
+      const iA = byIndex(incomesA.array, idx);
+      const iB = byIndex(incomesB.array, idx);
+      const bA = byIndex(billsA.array, idx);
+      const bB = byIndex(billsB.array, idx);
+      // Period A's calendar month name for this relative slot, preferred
+      // since it's the "current"/primary timeline the axis is oriented
+      // around - falls back to B's (or a plain "Month N") only when A has
+      // no data at all for this index.
+      const monthName =
+        (iA || bA || iB || bB)?.monthLabel?.split(" ")[0] || `Month ${idx + 1}`;
+      if (iA) chartData.push(tagOne(iA, monthName, "Income", labelA, "#88FFE3", false));
+      if (iB) chartData.push(tagOne(iB, monthName, "Income", labelB, "#4fd1b5", true));
+      if (bA) chartData.push(tagOne(bA, monthName, "Bill", labelA, "#ff8c8c", false));
+      if (bB) chartData.push(tagOne(bB, monthName, "Bill", labelB, "#ff5252", true));
+    });
 
     setCompareChartData({
-      chartData: [
-        ...tag(incomesA.array, `Income (${labelA})`, "#88FFE3", false),
-        ...tag(billsA.array, `Bill (${labelA})`, "#ff8c8c", false),
-        ...tag(incomesB.array, `Income (${labelB})`, "#4fd1b5", true),
-        ...tag(billsB.array, `Bill (${labelB})`, "#ff5252", true),
-      ],
+      chartData,
       totals: {
         incomeA: incomesA.totalValue,
         billA: billsA.totalValue,
@@ -156,7 +198,7 @@ function TabsTogglerMontlyController() {
       labelA,
       labelB,
     });
-  }, [allTransactions, timePeriod, comparePeriod, compareEnabled]);
+  }, [allTransactions, timePeriod, comparePeriod, compareEnabled, timePeriodsForSelecter]);
 
   // FUNCTIONS
 
@@ -225,18 +267,6 @@ function TabsTogglerMontlyController() {
     });
     tabs.push("Compare periods");
   }
-
-  const timePeriodsForSelecter = [
-    {
-      value: `${new Date(
-        today.getFullYear(),
-        today.getMonth() - 2,
-        1
-      )}*${today}`,
-      name: "Last 3 months",
-    },
-    ...timeperiodRangesArray,
-  ];
 
   return (
     <TabsTogglerMontlyView

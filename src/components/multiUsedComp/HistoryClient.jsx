@@ -8,6 +8,7 @@ import TabsToggler from "./TabsComponents/TabsToggler";
 import TabsTogglerMontlyController from "./TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyController";
 import HistoricalMovementsController from "./HistoricalMovementsandCategories/HistoricalMovementsController";
 import HistoricalComparativeCategories from "./historicalComparativeCategories/HistoricalComparativeCategories";
+import HistoricalBudgetsComparative from "./historicalBudgetsComparative/HistoricalBudgetsComparative";
 
 function HistoryClient({ email }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +59,9 @@ function HistoryClient({ email }) {
           </div>
           <div className="w-full h-fulls pb-6 historical-comparative-categories">
             <HistoricalComparativeCategories />
+          </div>
+          <div className="w-full h-fulls pb-6 historical-budgets-comparative">
+            <HistoricalBudgetsComparative />
           </div>
           <div className="w-full h-fulls historical-transactions-container">
             <HistoricalMovementsController />

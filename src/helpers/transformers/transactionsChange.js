@@ -102,6 +102,91 @@ export function reduceAndTransforToCategories(array) {
   };
 }
 
+// Builds the two-level category -> subcategory hierarchy (with amounts
+// summed at every level) shared by the Wallet page's category-detail charts
+// - originally inlined once inside CategoryCirclePacking's bubble chart,
+// extracted here so the new Treemap view can build the identical tree
+// instead of re-deriving its own version of this reduce/merge logic.
+// A transaction with a subCategory contributes to BOTH its subcategory leaf
+// and its parent category's total; a transaction with only a category (no
+// subCategory) contributes directly to that category with no children; a
+// transaction with neither is grouped under a single synthetic
+// "No category" bucket.
+export function buildCategoryHierarchy(transactions, isBill) {
+  const rootName = isBill ? "Total expenses" : "Total incomes";
+  const rootColor = isBill ? "#FF9797" : "#A7E295";
+  if (!transactions || transactions.length === 0) {
+    return { name: rootName, color: rootColor, icon: "md/MdMonetizationOn", children: [] };
+  }
+
+  const transNoCategory = transactions.filter((t) => !t.category);
+  const transWithCategory = transactions.filter((t) => t?.category && !t?.subCategory);
+  const transWithSubCat = transactions.filter((t) => t?.subCategory);
+
+  const cateFaseOne = transNoCategory.map((t) => ({
+    fatherId: "Generic-1",
+    name: "No category",
+    loc: getPrimaryAmount(t),
+    color: "#ABABAB",
+    icon: "MdFilterNone",
+    children: [],
+  }));
+
+  let cateFaseDos = transWithCategory.map((t) => ({
+    fatherId: t.category._id,
+    name: t?.category.name,
+    loc: getPrimaryAmount(t),
+    color: t?.category?.color || "#ABABAB",
+    icon: t?.category?.icon || "MdFilterNone",
+    children: [],
+  }));
+
+  transWithSubCat.forEach((t) => {
+    cateFaseDos.push({
+      fatherId: t.category._id,
+      name: t.category?.name,
+      color: t.category?.color || "#ABABAB",
+      icon: t?.category?.icon || "MdFilterNone",
+      children: [
+        {
+          childId: t.subCategory._id,
+          name: t.subCategory?.name,
+          loc: getPrimaryAmount(t),
+          color: t.subCategory?.color || "#ABABAB",
+          icon: t?.subCategory?.icon || "MdFilterNone",
+        },
+      ],
+    });
+  });
+
+  cateFaseDos = cateFaseDos.concat(cateFaseOne);
+
+  const result = cateFaseDos.reduce((acc, item) => {
+    if (!acc[item.fatherId]) {
+      acc[item.fatherId] = { ...item, loc: 0, children: [] };
+    }
+    if (!item.children.length) {
+      acc[item.fatherId].loc += item.loc;
+    }
+    item.children.forEach((child) => {
+      const existingChild = acc[item.fatherId].children.find((c) => c.childId === child.childId);
+      if (existingChild) {
+        existingChild.loc += child.loc;
+      } else {
+        acc[item.fatherId].children.push({ ...child });
+      }
+    });
+    return acc;
+  }, {});
+
+  return {
+    name: rootName,
+    color: rootColor,
+    icon: "md/MdMonetizationOn",
+    children: Object.values(result),
+  };
+}
+
 export function getTotalValue(arr) {
   if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
@@ -190,6 +275,54 @@ export function transactionsToRelativeMonths(trans, rangeStart) {
   const final = Object.values(buckets).sort((a, b) => a.index - b.index);
   const totalValue = final.reduce((acc, item) => acc + item.value, 0);
   return { array: final, totalValue };
+}
+
+// Same relative-position bucketing as transactionsToRelativeMonths, but
+// keeps every underlying transaction per bucket (as `childrens`) instead of
+// collapsing to a single total - the Top-elements compare table needs the
+// actual items to list per month, not just a sum.
+export function orderItemsInRelativeMonth(arr, rangeStart) {
+  if (!(arr instanceof Array))
+    throw new Error("arr param should be an Array instance");
+  const start = new Date(rangeStart);
+  const buckets = arr.reduce((acc, item) => {
+    const txDate = new Date(item.date || item.createdAt);
+    const index =
+      (txDate.getFullYear() - start.getFullYear()) * 12 +
+      (txDate.getMonth() - start.getMonth());
+    const monthLabel = `${months[txDate.getMonth()]} ${txDate.getFullYear()}`;
+    if (acc[index]) {
+      acc[index].value += getPrimaryAmount(item);
+      acc[index].childrens.push(item);
+    } else {
+      acc[index] = { index, monthLabel, value: getPrimaryAmount(item), childrens: [item] };
+    }
+    return acc;
+  }, {});
+  return Object.values(buckets).sort((a, b) => a.index - b.index);
+}
+
+// Aligns two periods' orderItemsInRelativeMonth() outputs into table rows by
+// relative index (month 0 of A next to month 0 of B, etc.), the same
+// left/older-vs-right/newer alignment the mirrored compare charts use -
+// months missing from one side (a shorter period, or simply no data that
+// month) come through as a null column rather than being dropped, so the
+// row grid stays intact.
+export function mergeTopElementsForCompareTable(monthsA, monthsB) {
+  const mapA = new Map(monthsA.map((m) => [m.index, m]));
+  const mapB = new Map(monthsB.map((m) => [m.index, m]));
+  const maxIndex = Math.max(
+    monthsA.length ? Math.max(...monthsA.map((m) => m.index)) : -1,
+    monthsB.length ? Math.max(...monthsB.map((m) => m.index)) : -1
+  );
+  const rows = [];
+  for (let i = 0; i <= maxIndex; i++) {
+    const colA = mapA.get(i) || null;
+    const colB = mapB.get(i) || null;
+    if (!colA && !colB) continue;
+    rows.push({ index: i, colA, colB });
+  }
+  return rows;
 }
 
 export function getTransactionsFromTimeRange(trans, start, end) {

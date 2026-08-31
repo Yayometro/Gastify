@@ -7,6 +7,9 @@ import {
   reduceTransCategoriesSliced,
   transactionsToCategories,
   filterBillsOrIncomes,
+  orderItemsInRelativeMonth,
+  mergeTopElementsForCompareTable,
+  buildCategoryHierarchy,
 } from "./transactionsChange";
 
 function tx({ amountMinor, currency = "MXN", legacyAmount, category = null, isBill = true }) {
@@ -114,5 +117,147 @@ describe("filterBillsOrIncomes", () => {
     const { incomes, bills } = filterBillsOrIncomes(transactions);
     expect(bills).toHaveLength(1);
     expect(incomes).toHaveLength(1);
+  });
+});
+
+describe("orderItemsInRelativeMonth", () => {
+  it("buckets items by months-since-rangeStart, keeping every underlying item", () => {
+    const rangeStart = new Date(2026, 0, 1);
+    const items = [
+      { amount: 100, date: new Date(2026, 0, 10) },
+      { amount: 50, date: new Date(2026, 0, 20) },
+      { amount: 200, date: new Date(2026, 1, 5) },
+    ];
+    const result = orderItemsInRelativeMonth(items, rangeStart);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({ index: 0, value: 150 });
+    expect(result[0].childrens).toHaveLength(2);
+    expect(result[1]).toMatchObject({ index: 1, value: 200, monthLabel: "February 2026" });
+  });
+
+  it("aligns items from different years to the same relative index when they share a rangeStart offset", () => {
+    const items2025 = orderItemsInRelativeMonth(
+      [{ amount: 10, date: new Date(2025, 2, 15) }],
+      new Date(2025, 0, 1)
+    );
+    const items2026 = orderItemsInRelativeMonth(
+      [{ amount: 10, date: new Date(2026, 2, 15) }],
+      new Date(2026, 0, 1)
+    );
+    expect(items2025[0].index).toBe(items2026[0].index);
+  });
+});
+
+describe("mergeTopElementsForCompareTable", () => {
+  it("aligns two periods' relative-month buckets side by side by index", () => {
+    const monthsA = [
+      { index: 0, monthLabel: "January 2025", childrens: ["a-jan"] },
+      { index: 1, monthLabel: "February 2025", childrens: ["a-feb"] },
+    ];
+    const monthsB = [
+      { index: 0, monthLabel: "January 2026", childrens: ["b-jan"] },
+    ];
+    const rows = mergeTopElementsForCompareTable(monthsA, monthsB);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({
+      index: 0,
+      colA: { monthLabel: "January 2025" },
+      colB: { monthLabel: "January 2026" },
+    });
+    expect(rows[1].colA.monthLabel).toBe("February 2025");
+    expect(rows[1].colB).toBeNull();
+  });
+
+  it("returns an empty array when both periods have no data", () => {
+    expect(mergeTopElementsForCompareTable([], [])).toEqual([]);
+  });
+});
+
+describe("buildCategoryHierarchy", () => {
+  const CAT_FOOD = { _id: "cat-food", name: "Food", color: "#f00", icon: "md/MdFastfood" };
+  const SUB_RESTAURANT = { _id: "sub-restaurant", name: "Restaurant", color: "#0f0", icon: "md/MdRestaurant" };
+  const CAT_HEALTH = { _id: "cat-health", name: "Health", color: "#00f", icon: "md/MdHealth" };
+
+  it("returns an empty-children root when there are no transactions", () => {
+    const result = buildCategoryHierarchy([], true);
+    expect(result).toMatchObject({ name: "Total expenses", children: [] });
+  });
+
+  it("groups a category-only transaction under its category with no children", () => {
+    const result = buildCategoryHierarchy([{ amount: 100, category: CAT_FOOD }], true);
+    expect(result.children).toHaveLength(1);
+    expect(result.children[0]).toMatchObject({ name: "Food", loc: 100, children: [] });
+  });
+
+  it("nests a subcategory transaction as a child leaf under its category", () => {
+    const result = buildCategoryHierarchy(
+      [{ amount: 50, category: CAT_FOOD, subCategory: SUB_RESTAURANT }],
+      true
+    );
+    expect(result.children).toHaveLength(1);
+    expect(result.children[0].name).toBe("Food");
+    expect(result.children[0].children).toHaveLength(1);
+    expect(result.children[0].children[0]).toMatchObject({ name: "Restaurant", loc: 50 });
+    // The category node's own `loc` only tallies its *direct* (non-subcategorized)
+    // spend, not its children's - it stays 0 here since every transaction in
+    // this category was subcategorized. This isn't a display bug: both
+    // consumers (Nivo's d3-hierarchy .sum() for the bubble chart, G2 treemap's
+    // ignoreParentValue) recompute each parent's true total by summing its
+    // whole subtree themselves, ignoring this raw field whenever children
+    // exist - so the category circle/tile still shows the correct combined
+    // amount on screen either way.
+    expect(result.children[0].loc).toBe(0);
+  });
+
+  it("keeps a category's direct spend and its subcategory's spend as separate fields, not pre-summed", () => {
+    const result = buildCategoryHierarchy(
+      [
+        { amount: 100, category: CAT_FOOD },
+        { amount: 50, category: CAT_FOOD, subCategory: SUB_RESTAURANT },
+      ],
+      true
+    );
+    expect(result.children).toHaveLength(1);
+    // Direct-only spend (the category-with-no-subcategory transaction).
+    expect(result.children[0].loc).toBe(100);
+    expect(result.children[0].children).toHaveLength(1);
+    expect(result.children[0].children[0].loc).toBe(50);
+  });
+
+  it("accumulates repeated subcategory transactions into one leaf instead of duplicating it", () => {
+    const result = buildCategoryHierarchy(
+      [
+        { amount: 20, category: CAT_FOOD, subCategory: SUB_RESTAURANT },
+        { amount: 30, category: CAT_FOOD, subCategory: SUB_RESTAURANT },
+      ],
+      true
+    );
+    expect(result.children[0].children).toHaveLength(1);
+    expect(result.children[0].children[0].loc).toBe(50);
+  });
+
+  it("groups every categoryless transaction into one 'No category' bucket", () => {
+    const result = buildCategoryHierarchy(
+      [{ amount: 10, category: null }, { amount: 15, category: null }],
+      true
+    );
+    expect(result.children).toHaveLength(1);
+    expect(result.children[0]).toMatchObject({ name: "No category", loc: 25 });
+  });
+
+  it("keeps separate categories as separate top-level entries", () => {
+    const result = buildCategoryHierarchy(
+      [{ amount: 10, category: CAT_FOOD }, { amount: 20, category: CAT_HEALTH }],
+      true
+    );
+    expect(result.children).toHaveLength(2);
+    const names = result.children.map((c) => c.name).sort();
+    expect(names).toEqual(["Food", "Health"]);
+  });
+
+  it("uses the incomes root name/color when isBill is false", () => {
+    const result = buildCategoryHierarchy([], false);
+    expect(result.name).toBe("Total incomes");
+    expect(result.color).toBe("#A7E295");
   });
 });

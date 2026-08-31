@@ -7,7 +7,6 @@ import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
 import MultiCreditCard from "./multiUsedComp/MultiCreditCard";
-import Category from "./multiUsedComp/Category";
 import Movements from "./multiUsedComp/Movements";
 import BudgetCont from "./multiUsedComp/BudgetCont";
 //REDUX
@@ -25,6 +24,8 @@ import ResumeTabsTrans from "./multiUsedComp/ResumeTabsTrans";
 import {
   MdKeyboardDoubleArrowUp,
   MdKeyboardDoubleArrowDown,
+  MdChevronLeft,
+  MdChevronRight,
 } from "react-icons/md";
 import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
 import dayjs from "dayjs";
@@ -79,6 +80,12 @@ function Wallet({ dataServ, session }) {
     const el = e.target;
     if (!el.clientWidth) return;
     setHeaderActiveSlide(Math.round(el.scrollLeft / el.clientWidth));
+  };
+  const goToHeaderSlide = (index) => {
+    const el = headerCarouselRef.current;
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(2, index));
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
   };
   //LOADER
   const [loading, setLoading] = useState(true);
@@ -279,12 +286,12 @@ function Wallet({ dataServ, session }) {
   }
 
   // Category color (not sign-based): Incomes always green-tinted,
-  // Expenses always red-tinted, Balance always blue-tinted - very light,
-  // near-white tones so they stay legible on the purple gradient without
-  // competing with it.
-  const INCOME_COLOR = "#E3F7EC";
-  const EXPENSE_COLOR = "#FCEBEB";
-  const BALANCE_COLOR = "#E6F1FB";
+  // Expenses always red-tinted, Balance always blue-tinted - light enough
+  // to stay legible on the purple gradient/panel backgrounds, but with
+  // enough of their own hue to read as green/red/blue at a glance.
+  const INCOME_COLOR = "#6EE7A8";
+  const EXPENSE_COLOR = "#FF8A8A";
+  const BALANCE_COLOR = "#7EC8FF";
 
   function renderDeltaRow(label, current, previous, colorHex) {
     const delta = current - previous;
@@ -292,19 +299,29 @@ function Wallet({ dataServ, session }) {
     const sign = delta > 0 ? "+" : delta < 0 ? "-" : "";
     const arrow = delta > 0 ? "▲" : delta < 0 ? "▼" : "";
     return (
-      <div key={label} className="flex flex-col bg-black/15 rounded-lg px-2.5 py-1.5 w-full">
-        <span className="text-white/70 text-[10px]">{label}</span>
-        <span className="text-xs font-medium" style={{ color: colorHex }}>
-          {sign}
-          {formatMoneyMajor(Math.abs(delta), walletPrimaryCurrency, { showCode: false })}
-          {pct !== null ? ` (${arrow} ${Math.abs(Math.round(pct))}%)` : ""}
-        </span>
+      <div key={label} className="flex flex-col gap-1 bg-black/15 rounded-lg px-2.5 py-1.5 w-full">
+        <div className="flex items-center justify-between">
+          <span className="text-white/70 text-[10px]">{label}</span>
+          <span className="text-xs font-semibold" style={{ color: colorHex }}>
+            {sign}
+            {formatMoneyMajor(Math.abs(delta), walletPrimaryCurrency, { showCode: false })}
+            {pct !== null ? ` (${arrow} ${Math.abs(Math.round(pct))}%)` : ""}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-xs text-white/80">
+          <span>
+            Mes anterior: {formatMoneyMajor(previous, walletPrimaryCurrency, { showCode: false })}
+          </span>
+          <span>
+            Actual: {formatMoneyMajor(current, walletPrimaryCurrency, { showCode: false })}
+          </span>
+        </div>
       </div>
     );
   }
 
   const accountsPanel = (
-    <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full max-h-[170px] overflow-y-auto">
+    <div className="scrollbar-thin-white bg-black/20 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full overflow-y-auto">
       <span className="text-white/70 text-[10px] uppercase tracking-wide">Tus cuentas</span>
       {!accounts || accounts.length === 0 ? (
         <span className="text-white/60 text-xs">No accounts yet</span>
@@ -328,53 +345,62 @@ function Wallet({ dataServ, session }) {
   );
 
   const summaryPanel = (
-    <div className="flex flex-col gap-2 items-center w-full">
-      <div className="flex items-center gap-3 w-full justify-center">
-        <span className="text-white text-sm w-20 text-right shrink-0">Incomes:</span>
-        <MdKeyboardDoubleArrowUp className="w-4 h-4 text-green-400 shrink-0" />
+    <div className="bg-black/20 rounded-2xl p-3 flex flex-col w-full h-full">
+      <span className="text-white/70 text-[10px] uppercase tracking-wide">Resumen</span>
+      <div className="flex flex-col gap-2 justify-end flex-1">
+      <div className="flex items-center justify-between gap-3 w-full">
+        <span className="flex items-center gap-1.5 text-white text-sm shrink-0">
+          <MdKeyboardDoubleArrowUp className="w-4 h-4 text-green-400 shrink-0" />
+          Incomes:
+        </span>
         {!totalIncome ? (
           <span className="text-green-400 text-sm">No amount...</span>
         ) : (
-          <span className="text-sm font-medium rounded-full px-3 py-1 bg-black/30" style={{ color: INCOME_COLOR }}>
+          <span className="text-sm font-semibold" style={{ color: INCOME_COLOR }}>
             {formatMoneyMajor(totalIncome, walletPrimaryCurrency)}
           </span>
         )}
       </div>
-      <div className="flex items-center gap-3 w-full justify-center">
-        <span className="text-white text-sm w-20 text-right shrink-0">Expenses:</span>
-        <MdKeyboardDoubleArrowDown className="w-4 h-4 text-red-400 shrink-0" />
+      <div className="flex items-center justify-between gap-3 w-full">
+        <span className="flex items-center gap-1.5 text-white text-sm shrink-0">
+          <MdKeyboardDoubleArrowDown className="w-4 h-4 text-red-400 shrink-0" />
+          Expenses:
+        </span>
         {!totalBill ? (
           <span className="text-red-400 text-sm">No amount...</span>
         ) : (
-          <span className="text-sm font-medium rounded-full px-3 py-1 bg-black/30" style={{ color: EXPENSE_COLOR }}>
+          <span className="text-sm font-semibold" style={{ color: EXPENSE_COLOR }}>
             {formatMoneyMajor(totalBill, walletPrimaryCurrency)}
           </span>
         )}
       </div>
-      <div className="flex items-center gap-3 w-full justify-center">
-        <span className="text-white text-sm w-20 text-right shrink-0">Balance:</span>
-        {totalAmountBalance < 0 ? (
-          <MdKeyboardDoubleArrowDown className="w-4 h-4 text-red-400 shrink-0" />
-        ) : (
-          <MdKeyboardDoubleArrowUp className="w-4 h-4 text-green-400 shrink-0" />
-        )}
+      <div className="flex items-center justify-between gap-3 w-full">
+        <span className="flex items-center gap-1.5 text-white text-sm shrink-0">
+          {totalAmountBalance < 0 ? (
+            <MdKeyboardDoubleArrowDown className="w-4 h-4 text-red-400 shrink-0" />
+          ) : (
+            <MdKeyboardDoubleArrowUp className="w-4 h-4 text-green-400 shrink-0" />
+          )}
+          Balance:
+        </span>
         {!totalAmountBalance ? (
           <span className="text-green-400 text-sm">No amount...</span>
         ) : (
-          <span className="text-sm font-medium rounded-full px-3 py-1 bg-black/30" style={{ color: BALANCE_COLOR }}>
+          <span className="text-sm font-semibold" style={{ color: BALANCE_COLOR }}>
             {formatMoneyMajor(totalAmountBalance, walletPrimaryCurrency)}
           </span>
         )}
       </div>
-      <p className="text-white/70 text-[10px] pt-1">
+      <p className="text-white/70 text-[10px] pt-1 text-center">
         From {dayjs(startDate).format("DD-MM-YYYY")} to {dayjs(endDate).format("DD-MM-YYYY")}.
       </p>
+      </div>
     </div>
   );
 
   const comparisonPanel = (
-    <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full">
-      <span className="text-white/70 text-[10px] uppercase tracking-wide text-right">Vs. mes anterior</span>
+    <div className="bg-black/20 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
+      <span className="text-white/70 text-[10px] uppercase tracking-wide">Vs. mes anterior</span>
       {renderDeltaRow("Ingresos", totalIncome, prevTotalIncome, INCOME_COLOR)}
       {renderDeltaRow("Gastos", totalBill, prevTotalBill, EXPENSE_COLOR)}
       {renderDeltaRow("Balance", totalAmountBalance, prevTotalIncome - prevTotalBill, BALANCE_COLOR)}
@@ -397,13 +423,13 @@ function Wallet({ dataServ, session }) {
       {user && wallet ? (
         <div className="walllet-header ">
           <div className="wallet-header pt-5 pb-2 px-3 flex flex-col gap-4 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
-            <div className="w-full max-w-[900px]">
+            <div className="w-full">
               <h2 className="text-white text-3xl sm:text-6xl font-thin text-center">
                 {!user.fullName ? <Spin size="large" /> : `${user.fullName} `}{" "}
                 Wallet
               </h2>
 
-              <div className="hidden sm:grid sm:grid-cols-[1fr_1.6fr_1fr] sm:gap-4 sm:items-start pt-6">
+              <div className="hidden sm:grid sm:grid-cols-3 sm:gap-4 sm:items-stretch pt-6">
                 {accountsPanel}
                 {summaryPanel}
                 {comparisonPanel}
@@ -413,19 +439,37 @@ function Wallet({ dataServ, session }) {
                 <div
                   ref={headerCarouselRef}
                   onScroll={handleHeaderCarouselScroll}
-                  className="flex overflow-x-auto snap-x snap-mandatory"
+                  className="scrollbar-none flex overflow-x-auto snap-x snap-mandatory"
                 >
                   <div className="snap-center shrink-0 w-full px-1">{accountsPanel}</div>
                   <div className="snap-center shrink-0 w-full px-1">{summaryPanel}</div>
                   <div className="snap-center shrink-0 w-full px-1">{comparisonPanel}</div>
                 </div>
-                <div className="flex justify-center gap-1.5 mt-2">
+                <div className="flex items-center justify-center gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => goToHeaderSlide(headerActiveSlide - 1)}
+                    disabled={headerActiveSlide === 0}
+                    aria-label="Previous"
+                    className="w-6 h-6 flex items-center justify-center rounded-full bg-white/15 text-white disabled:opacity-30 transition-opacity"
+                  >
+                    <MdChevronLeft size={16} />
+                  </button>
                   {[0, 1, 2].map((i) => (
                     <span
                       key={i}
                       className={`w-1.5 h-1.5 rounded-full ${headerActiveSlide === i ? "bg-white" : "bg-white/40"}`}
                     />
                   ))}
+                  <button
+                    type="button"
+                    onClick={() => goToHeaderSlide(headerActiveSlide + 1)}
+                    disabled={headerActiveSlide === 2}
+                    aria-label="Next"
+                    className="w-6 h-6 flex items-center justify-center rounded-full bg-white/15 text-white disabled:opacity-30 transition-opacity"
+                  >
+                    <MdChevronRight size={16} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -484,26 +528,9 @@ function Wallet({ dataServ, session }) {
                   </div>
                 ) : (
                   <TransDetailsGrandContainer
-                    tdgcBills={allBills}
-                    tdgcInc={allIncomes}
+                    timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
                   />
                 )}
-              </div>
-              <div>
-                <div className="asociatedCategories py-3 px-1 flex gap-1 justify-center items-center flex-wrap">
-                  {!categories.length > 0 ? (
-                    <div className="w-full py-[20px]">
-                      <Skeleton active />
-                    </div>
-                  ) : (
-                    categories.map((category) => (
-                      <Category
-                        category={category}
-                        key={`dashboard-categories-min-circle${category._id}`}
-                      />
-                    ))
-                  )}
-                </div>
               </div>
             </div>
             <div className="wallet-total-col-container flex flex-col items-center justify-center lg:flex-row lg:gap-2 lg:items-start ">
@@ -538,7 +565,7 @@ function Wallet({ dataServ, session }) {
                 </div>
               </div> */}
               <div className="wallet-right-col-container w-full h-full lg:max-w-[50%]s lg:flex lg:flex-col justify-center items-center">
-                <div className="movements w-full h-full max-h-[500px] lg:max-w-[800px] lg:max-h-[1000px] overflow-scroll flex flex-row justify-center items-center">
+                <div className="movements w-full h-full lg:max-w-[800px] flex flex-row justify-center items-center">
                   <Movements
                     timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
                   />

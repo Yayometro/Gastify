@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import HistoricalMovementsView from "./HistoricalMovementsView";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser, setUser } from "@/lib/features/userSlice";
@@ -11,18 +11,41 @@ import useGetUserSession from "@/hooks/useGetUserSession";
 import {
   filterBillsOrIncomes,
   getTransactionsFromTimeRange,
+  mergeTopElementsForCompareTable,
   orderByHighestValue,
+  orderItemsInRelativeMonth,
   reduceTransCategoriesSliced,
   sortByIndex,
 } from "@/helpers/transformers/transactionsChange";
 import {
+  getPeriodLabel,
   orderItemsInTheirMonth,
   slicedAndReduceNewValuesForMonths,
   timeperiodRangesArray,
 } from "@/helpers/timeFunctions/timeFunctions";
 import TopMonthContainer from "../top3/topMonthContainer/TopMonthContainer";
+import TopElementsCompareTable from "../top3/topMonthContainer/TopElementsCompareTable";
 
 const today = new Date();
+
+// Slices each relative-month bucket down to its top N highest-value
+// transactions, for the compare table (same "top N" idea as the single-period
+// view's slicedAndReduceNewValuesForMonths, just keyed by relative index).
+function sliceTopTransactionMonths(monthsArr, n) {
+  return monthsArr.map((m) => ({
+    ...m,
+    childrens: orderByHighestValue([...m.childrens]).slice(0, n),
+  }));
+}
+
+// Same idea, but collapses each month's transactions into per-category
+// totals first (reduceTransCategoriesSliced), then keeps the top N categories.
+function sliceTopCategoryMonths(monthsArr, n) {
+  return monthsArr.map((m) => ({
+    ...m,
+    childrens: orderByHighestValue(reduceTransCategoriesSliced(m.childrens, n)).slice(0, n),
+  }));
+}
 
 function HistoricalMovementsController() {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,12 +56,32 @@ function HistoricalMovementsController() {
     new Date(today.getFullYear(), today.getMonth() - 2, 1),
     today,
   ]);
+  const [compareEnabled, setCompareEnabled] = useState(false);
+  const [comparePeriod, setComparePeriod] = useState(() => [
+    new Date(today.getFullYear() - 1, today.getMonth() - 2, 1),
+    new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()),
+  ]);
+  const [compareTables, setCompareTables] = useState(null);
   // Redux
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
 
   const { email } = useGetUserSession();
+  // Stable across the component's lifetime (only depends on the
+  // module-level `today`) - memoized so it can safely sit in the compare
+  // effect's dependency array below without a new array reference on every
+  // render re-triggering that effect in a loop.
+  const timePeriodsForSelecter = useMemo(
+    () => [
+      {
+        value: `${new Date(today.getFullYear(), today.getMonth() - 2, 1)}*${today}`,
+        name: "Last 3 months",
+      },
+      ...timeperiodRangesArray,
+    ],
+    []
+  );
 
   // USE EFFECTS:
   useEffect(() => {
@@ -98,6 +141,61 @@ function HistoricalMovementsController() {
     }
   }, [ccUser, ccTransacciones, timePeriod, elementsToDisplay]);
 
+  // "Compare vs another period" table - mirrors the effect above but for
+  // comparePeriod, bucketing both periods by relative month position (not
+  // calendar month name) so they line up left-to-right regardless of which
+  // years they fall in, matching the mirrored compare charts elsewhere on
+  // this page. The earlier period always renders on the left.
+  useEffect(() => {
+    if (!compareEnabled) {
+      setCompareTables(null);
+      return;
+    }
+    if (!(ccTransacciones.data && ccTransacciones.data.length >= 1)) return;
+    if (!timePeriod[0] || !timePeriod[1] || !comparePeriod[0] || !comparePeriod[1]) return;
+
+    const [leftStart, leftEnd, rightStart, rightEnd] =
+      timePeriod[0] <= comparePeriod[0]
+        ? [timePeriod[0], timePeriod[1], comparePeriod[0], comparePeriod[1]]
+        : [comparePeriod[0], comparePeriod[1], timePeriod[0], timePeriod[1]];
+
+    const leftDivided = filterBillsOrIncomes(
+      getTransactionsFromTimeRange(ccTransacciones.data, leftStart, leftEnd)
+    );
+    const rightDivided = filterBillsOrIncomes(
+      getTransactionsFromTimeRange(ccTransacciones.data, rightStart, rightEnd)
+    );
+
+    function buildKind(leftArr, rightArr) {
+      const leftMonths = orderItemsInRelativeMonth(leftArr, leftStart);
+      const rightMonths = orderItemsInRelativeMonth(rightArr, rightStart);
+      return {
+        transactionRows: mergeTopElementsForCompareTable(
+          sliceTopTransactionMonths(leftMonths, elementsToDisplay),
+          sliceTopTransactionMonths(rightMonths, elementsToDisplay)
+        ),
+        categoryRows: mergeTopElementsForCompareTable(
+          sliceTopCategoryMonths(leftMonths, elementsToDisplay),
+          sliceTopCategoryMonths(rightMonths, elementsToDisplay)
+        ),
+      };
+    }
+
+    setCompareTables({
+      bills: buildKind(leftDivided.bills, rightDivided.bills),
+      incomes: buildKind(leftDivided.incomes, rightDivided.incomes),
+      labelLeft: getPeriodLabel(timePeriodsForSelecter, [leftStart, leftEnd]),
+      labelRight: getPeriodLabel(timePeriodsForSelecter, [rightStart, rightEnd]),
+    });
+  }, [
+    ccTransacciones.data,
+    timePeriod,
+    comparePeriod,
+    compareEnabled,
+    elementsToDisplay,
+    timePeriodsForSelecter,
+  ]);
+
   // COMPONENTS AND VARIABLES
   const styleChildTopMontContainer = "text-3xl text-purple-700 mt-2";
   const components = [
@@ -106,6 +204,7 @@ function HistoricalMovementsController() {
       props: {
         items: transactionsLocal[1],
         title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Transactions</h1>,
+        mode: "transaction",
       },
       Component: TopMonthContainer,
     },
@@ -114,6 +213,7 @@ function HistoricalMovementsController() {
       props: {
         items: transactionsLocal[0],
         title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Transactions</h1>,
+        mode: "transaction",
       },
       Component: TopMonthContainer,
     },
@@ -122,6 +222,7 @@ function HistoricalMovementsController() {
       props: {
         items: transactionCategories[1],
         title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Categories</h1>,
+        mode: "category",
       },
       Component: TopMonthContainer,
     },
@@ -130,22 +231,41 @@ function HistoricalMovementsController() {
       props: {
         items: transactionCategories[0],
         title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Categories</h1>,
+        mode: "category",
       },
       Component: TopMonthContainer,
     },
   ];
 
-  const timePeriodsForSelecter = [
-    {
-      value: `${new Date(
-        today.getFullYear(),
-        today.getMonth() - 2,
-        1
-      )}*${today}`,
-      name: "Last 3 months",
-    },
-    ...timeperiodRangesArray,
-  ];
+  const tabs = ["Bills", "Incomes"];
+  if (compareEnabled && compareTables) {
+    components.push(
+      {
+        tab: "compare bills",
+        props: {
+          transactionRows: compareTables.bills.transactionRows,
+          categoryRows: compareTables.bills.categoryRows,
+          labelLeft: compareTables.labelLeft,
+          labelRight: compareTables.labelRight,
+          elementsToDisplay,
+        },
+        Component: TopElementsCompareTable,
+      },
+      {
+        tab: "compare incomes",
+        props: {
+          transactionRows: compareTables.incomes.transactionRows,
+          categoryRows: compareTables.incomes.categoryRows,
+          labelLeft: compareTables.labelLeft,
+          labelRight: compareTables.labelRight,
+          elementsToDisplay,
+        },
+        Component: TopElementsCompareTable,
+      }
+    );
+    tabs.push("Compare bills", "Compare incomes");
+  }
+
   // FUNCTIONS
   function getValueFromSelecter(v) {
     const [start, end] = v.split("*");
@@ -161,6 +281,17 @@ function HistoricalMovementsController() {
     setElementsToDisplay(+e)
   }, [])
 
+  function getCompareValueFromSelecter(v) {
+    const [start, end] = v.split("*");
+    setComparePeriod([new Date(start), new Date(end)]);
+  }
+
+  function handleCompareRangeDate(dateStart, dateEnd) {
+    if (dateStart && dateEnd) {
+      setComparePeriod([dateStart, dateEnd]);
+    }
+  }
+
   return (
     <HistoricalMovementsView
       isloading={isLoading}
@@ -173,7 +304,14 @@ function HistoricalMovementsController() {
       getValueFromSelecter={getValueFromSelecter}
       handleRangeDate={handleRangeDate}
       components={components}
+      tabs={tabs}
       getValueFromItems={getValueFromItems}
+      compareEnabled={compareEnabled}
+      setCompareEnabled={setCompareEnabled}
+      comparePeriod={comparePeriod}
+      getCompareValueFromSelecter={getCompareValueFromSelecter}
+      handleCompareRangeDate={handleCompareRangeDate}
+      timePeriodsForCompareSelecter={timePeriodsForSelecter}
     />
   );
 }
