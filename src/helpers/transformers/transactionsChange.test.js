@@ -9,6 +9,7 @@ import {
   filterBillsOrIncomes,
   orderItemsInRelativeMonth,
   mergeTopElementsForCompareTable,
+  buildCategoryHierarchy,
 } from "./transactionsChange";
 
 function tx({ amountMinor, currency = "MXN", legacyAmount, category = null, isBill = true }) {
@@ -169,5 +170,94 @@ describe("mergeTopElementsForCompareTable", () => {
 
   it("returns an empty array when both periods have no data", () => {
     expect(mergeTopElementsForCompareTable([], [])).toEqual([]);
+  });
+});
+
+describe("buildCategoryHierarchy", () => {
+  const CAT_FOOD = { _id: "cat-food", name: "Food", color: "#f00", icon: "md/MdFastfood" };
+  const SUB_RESTAURANT = { _id: "sub-restaurant", name: "Restaurant", color: "#0f0", icon: "md/MdRestaurant" };
+  const CAT_HEALTH = { _id: "cat-health", name: "Health", color: "#00f", icon: "md/MdHealth" };
+
+  it("returns an empty-children root when there are no transactions", () => {
+    const result = buildCategoryHierarchy([], true);
+    expect(result).toMatchObject({ name: "Total expenses", children: [] });
+  });
+
+  it("groups a category-only transaction under its category with no children", () => {
+    const result = buildCategoryHierarchy([{ amount: 100, category: CAT_FOOD }], true);
+    expect(result.children).toHaveLength(1);
+    expect(result.children[0]).toMatchObject({ name: "Food", loc: 100, children: [] });
+  });
+
+  it("nests a subcategory transaction as a child leaf under its category", () => {
+    const result = buildCategoryHierarchy(
+      [{ amount: 50, category: CAT_FOOD, subCategory: SUB_RESTAURANT }],
+      true
+    );
+    expect(result.children).toHaveLength(1);
+    expect(result.children[0].name).toBe("Food");
+    expect(result.children[0].children).toHaveLength(1);
+    expect(result.children[0].children[0]).toMatchObject({ name: "Restaurant", loc: 50 });
+    // The category node's own `loc` only tallies its *direct* (non-subcategorized)
+    // spend, not its children's - it stays 0 here since every transaction in
+    // this category was subcategorized. This isn't a display bug: both
+    // consumers (Nivo's d3-hierarchy .sum() for the bubble chart, G2 treemap's
+    // ignoreParentValue) recompute each parent's true total by summing its
+    // whole subtree themselves, ignoring this raw field whenever children
+    // exist - so the category circle/tile still shows the correct combined
+    // amount on screen either way.
+    expect(result.children[0].loc).toBe(0);
+  });
+
+  it("keeps a category's direct spend and its subcategory's spend as separate fields, not pre-summed", () => {
+    const result = buildCategoryHierarchy(
+      [
+        { amount: 100, category: CAT_FOOD },
+        { amount: 50, category: CAT_FOOD, subCategory: SUB_RESTAURANT },
+      ],
+      true
+    );
+    expect(result.children).toHaveLength(1);
+    // Direct-only spend (the category-with-no-subcategory transaction).
+    expect(result.children[0].loc).toBe(100);
+    expect(result.children[0].children).toHaveLength(1);
+    expect(result.children[0].children[0].loc).toBe(50);
+  });
+
+  it("accumulates repeated subcategory transactions into one leaf instead of duplicating it", () => {
+    const result = buildCategoryHierarchy(
+      [
+        { amount: 20, category: CAT_FOOD, subCategory: SUB_RESTAURANT },
+        { amount: 30, category: CAT_FOOD, subCategory: SUB_RESTAURANT },
+      ],
+      true
+    );
+    expect(result.children[0].children).toHaveLength(1);
+    expect(result.children[0].children[0].loc).toBe(50);
+  });
+
+  it("groups every categoryless transaction into one 'No category' bucket", () => {
+    const result = buildCategoryHierarchy(
+      [{ amount: 10, category: null }, { amount: 15, category: null }],
+      true
+    );
+    expect(result.children).toHaveLength(1);
+    expect(result.children[0]).toMatchObject({ name: "No category", loc: 25 });
+  });
+
+  it("keeps separate categories as separate top-level entries", () => {
+    const result = buildCategoryHierarchy(
+      [{ amount: 10, category: CAT_FOOD }, { amount: 20, category: CAT_HEALTH }],
+      true
+    );
+    expect(result.children).toHaveLength(2);
+    const names = result.children.map((c) => c.name).sort();
+    expect(names).toEqual(["Food", "Health"]);
+  });
+
+  it("uses the incomes root name/color when isBill is false", () => {
+    const result = buildCategoryHierarchy([], false);
+    expect(result.name).toBe("Total incomes");
+    expect(result.color).toBe("#A7E295");
   });
 });

@@ -102,6 +102,91 @@ export function reduceAndTransforToCategories(array) {
   };
 }
 
+// Builds the two-level category -> subcategory hierarchy (with amounts
+// summed at every level) shared by the Wallet page's category-detail charts
+// - originally inlined once inside CategoryCirclePacking's bubble chart,
+// extracted here so the new Treemap view can build the identical tree
+// instead of re-deriving its own version of this reduce/merge logic.
+// A transaction with a subCategory contributes to BOTH its subcategory leaf
+// and its parent category's total; a transaction with only a category (no
+// subCategory) contributes directly to that category with no children; a
+// transaction with neither is grouped under a single synthetic
+// "No category" bucket.
+export function buildCategoryHierarchy(transactions, isBill) {
+  const rootName = isBill ? "Total expenses" : "Total incomes";
+  const rootColor = isBill ? "#FF9797" : "#A7E295";
+  if (!transactions || transactions.length === 0) {
+    return { name: rootName, color: rootColor, icon: "md/MdMonetizationOn", children: [] };
+  }
+
+  const transNoCategory = transactions.filter((t) => !t.category);
+  const transWithCategory = transactions.filter((t) => t?.category && !t?.subCategory);
+  const transWithSubCat = transactions.filter((t) => t?.subCategory);
+
+  const cateFaseOne = transNoCategory.map((t) => ({
+    fatherId: "Generic-1",
+    name: "No category",
+    loc: getPrimaryAmount(t),
+    color: "#ABABAB",
+    icon: "MdFilterNone",
+    children: [],
+  }));
+
+  let cateFaseDos = transWithCategory.map((t) => ({
+    fatherId: t.category._id,
+    name: t?.category.name,
+    loc: getPrimaryAmount(t),
+    color: t?.category?.color || "#ABABAB",
+    icon: t?.category?.icon || "MdFilterNone",
+    children: [],
+  }));
+
+  transWithSubCat.forEach((t) => {
+    cateFaseDos.push({
+      fatherId: t.category._id,
+      name: t.category?.name,
+      color: t.category?.color || "#ABABAB",
+      icon: t?.category?.icon || "MdFilterNone",
+      children: [
+        {
+          childId: t.subCategory._id,
+          name: t.subCategory?.name,
+          loc: getPrimaryAmount(t),
+          color: t.subCategory?.color || "#ABABAB",
+          icon: t?.subCategory?.icon || "MdFilterNone",
+        },
+      ],
+    });
+  });
+
+  cateFaseDos = cateFaseDos.concat(cateFaseOne);
+
+  const result = cateFaseDos.reduce((acc, item) => {
+    if (!acc[item.fatherId]) {
+      acc[item.fatherId] = { ...item, loc: 0, children: [] };
+    }
+    if (!item.children.length) {
+      acc[item.fatherId].loc += item.loc;
+    }
+    item.children.forEach((child) => {
+      const existingChild = acc[item.fatherId].children.find((c) => c.childId === child.childId);
+      if (existingChild) {
+        existingChild.loc += child.loc;
+      } else {
+        acc[item.fatherId].children.push({ ...child });
+      }
+    });
+    return acc;
+  }, {});
+
+  return {
+    name: rootName,
+    color: rootColor,
+    icon: "md/MdMonetizationOn",
+    children: Object.values(result),
+  };
+}
+
 export function getTotalValue(arr) {
   if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
