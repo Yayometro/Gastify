@@ -67,7 +67,7 @@ function CategoriesCompareTable({
       </div>
       <p className="text-[10px] text-gray-400 text-center">
         Each side ranks its own top {TOP_N} categories independently - row 1 on the left and row 1
-        on the right don't have to be the same category.
+        on the right don&apos;t have to be the same category.
       </p>
     </div>
   );
