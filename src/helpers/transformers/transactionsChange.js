@@ -179,11 +179,38 @@ export function buildCategoryHierarchy(transactions, isBill) {
     return acc;
   }, {});
 
+  // Attach each node's own raw transactions (not just the summed `loc`) so
+  // consumers that need to drill all the way down to individual
+  // transactions - e.g. the Wallet treemap, once a category/subcategory has
+  // few enough branches that showing them one aggregate tile each would
+  // waste the space - can do so without re-deriving this grouping.
+  const directTxByCategoryId = new Map();
+  transWithCategory.forEach((t) => {
+    const key = t.category._id;
+    if (!directTxByCategoryId.has(key)) directTxByCategoryId.set(key, []);
+    directTxByCategoryId.get(key).push(t);
+  });
+  const txBySubCategoryId = new Map();
+  transWithSubCat.forEach((t) => {
+    const key = t.subCategory._id;
+    if (!txBySubCategoryId.has(key)) txBySubCategoryId.set(key, []);
+    txBySubCategoryId.get(key).push(t);
+  });
+
+  const children = Object.values(result).map((cat) => ({
+    ...cat,
+    transactions: cat.fatherId === "Generic-1" ? transNoCategory : (directTxByCategoryId.get(cat.fatherId) || []),
+    children: cat.children.map((sub) => ({
+      ...sub,
+      transactions: txBySubCategoryId.get(sub.childId) || [],
+    })),
+  }));
+
   return {
     name: rootName,
     color: rootColor,
     icon: "md/MdMonetizationOn",
-    children: Object.values(result),
+    children,
   };
 }
 
