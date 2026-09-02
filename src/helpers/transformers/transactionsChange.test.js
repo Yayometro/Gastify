@@ -260,4 +260,25 @@ describe("buildCategoryHierarchy", () => {
     expect(result.name).toBe("Total incomes");
     expect(result.color).toBe("#A7E295");
   });
+
+  it("attaches each subcategory's own raw transactions, not just their summed loc", () => {
+    const txA = { amount: 20, category: CAT_FOOD, subCategory: SUB_RESTAURANT };
+    const txB = { amount: 30, category: CAT_FOOD, subCategory: SUB_RESTAURANT };
+    const result = buildCategoryHierarchy([txA, txB], true);
+    expect(result.children[0].children[0].transactions).toEqual([txA, txB]);
+  });
+
+  it("attaches a category's direct (non-subcategorized) transactions", () => {
+    const txDirect = { amount: 100, category: CAT_FOOD };
+    const txSub = { amount: 50, category: CAT_FOOD, subCategory: SUB_RESTAURANT };
+    const result = buildCategoryHierarchy([txDirect, txSub], true);
+    expect(result.children[0].transactions).toEqual([txDirect]);
+    expect(result.children[0].children[0].transactions).toEqual([txSub]);
+  });
+
+  it("attaches categoryless transactions to the 'No category' bucket", () => {
+    const tx = { amount: 10, category: null };
+    const result = buildCategoryHierarchy([tx], true);
+    expect(result.children[0].transactions).toEqual([tx]);
+  });
 });

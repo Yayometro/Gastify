@@ -36,7 +36,7 @@ const QUICK_ACTIONS = [
   { key: "tags",     label: "Tags",     icon: "MdLocalOffer" },
 ];
 
-function ModalContentTopMonthItem({ item, close }) {
+function ModalContentTopMonthItem({ item, close, onBack }) {
   const dispatch = useDispatch();
   const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const toFetch = fetcher();
@@ -64,6 +64,12 @@ function ModalContentTopMonthItem({ item, close }) {
           return false;
         }
         if (item.children?.length > 0 || item.childrens?.length > 0) {
+          // Subcategory-scoped items (e.g. Wallet Analyzer's biggest-subcategory
+          // drill-down) re-check against subCategory, not category - the
+          // matching below assumes `item` is a category otherwise.
+          if (item.filterBy === "subCategory") {
+            return (t.subCategory?.name || null) === item.name;
+          }
           const catId = item._id;
           const catName = item.type || item.name;
           const tCatId = t.category?._id;
@@ -189,22 +195,37 @@ function ModalContentTopMonthItem({ item, close }) {
   const isMulti = localItems.length > 1;
   const selectedTransObjects = localItems.filter((t) => selected.has(t._id));
 
+  // A category/subcategory list (has children) already names itself as the
+  // title - only a single transaction needs its category spelled out
+  // separately, since the transaction's own name doesn't say what it is.
+  const isSingleTransaction = !(item?.children?.length > 0 || item?.childrens?.length > 0);
+  const headerColor = item?.color || item?.category?.color || "#ABABAB";
+
   return (
     <>
       <div className="content absolute bg-slate-100 border-2 border-purple-600 flex flex-col w-full h-full max-w-[500px] max-h-[90%] rounded-2xl items-center justify-center overflow-hidden z-[10002]">
         {/* Header */}
         <header className="pt-2 w-full h-fit flex flex-col justify-between items-center bg-purple-600 text-white sticky top-0 z-10">
-          <span className="w-full flex gap-1 items-center justify-center font-bold text-3xl px-8">
-            <UniversalCategoIcon
-              type={item?.icon || item?.type || item?.category?.icon || "md/MdFilterNone"}
-              siz={30}
-            />
+          <span className="w-full flex gap-2 items-center justify-center font-bold text-3xl px-8">
+            <span
+              className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: headerColor }}
+            >
+              <UniversalCategoIcon
+                type={item?.icon || item?.type || item?.category?.icon || "md/MdFilterNone"}
+                siz={20}
+                colore="#fff"
+              />
+            </span>
             <Tooltip title={`${item?.name || item?.type || "No name..."} Detail`} placement="bottom">
-              <h1 className="truncate max-w-[70%]">
+              <h1 className="truncate max-w-[65%]">
                 {item?.name || item?.type || "No name..."} Detail
               </h1>
             </Tooltip>
           </span>
+          {isSingleTransaction && item?.category?.name && (
+            <p className="text-sm text-white/80 -mt-1">{item.category.name}{item.subCategory?.name ? ` · ${item.subCategory.name}` : ""}</p>
+          )}
           <p className="font-semibold">
             <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency) || "No total info..."}</b>
           </p>
@@ -452,6 +473,17 @@ function ModalContentTopMonthItem({ item, close }) {
             ))}
           </section>
         </div>
+
+        {/* Back - only when opened from another list (e.g. the monthly-
+            champions summary), so returning doesn't just close everything */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="back-con absolute top-[0%] left-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short z-50"
+          >
+            <CategoIcon type="MdArrowBack" siz={20} />
+          </button>
+        )}
 
         {/* Close */}
         <button

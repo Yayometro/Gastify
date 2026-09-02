@@ -28,6 +28,8 @@ import {
   MdChevronRight,
 } from "react-icons/md";
 import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
+import WalletAnalyzer from "./multiUsedComp/walletAnalyzer/WalletAnalyzer";
+import WalletAnalyzerTeaser from "./multiUsedComp/walletAnalyzer/WalletAnalyzerTeaser";
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
 import { formatMoneyMajor } from "@/lib/money/currencies";
@@ -498,6 +500,7 @@ function Wallet({ dataServ, session }) {
             </div>
           </div>
           <div className="content-wallet px-2 bg-stone-100 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px]">
+            <WalletAnalyzerTeaser timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
             <div className="multi-container lg:flex lg:item">
               <MultiCreditCard
                 acc={accounts}
@@ -575,6 +578,9 @@ function Wallet({ dataServ, session }) {
                   <BudgetCont bcSession={session} />
                 </div>
               </div>
+            </div>
+            <div id="wallet-analyzer-full" className="wallet-analyzer-container w-full">
+              <WalletAnalyzer timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
             </div>
           </div>
         </div>
