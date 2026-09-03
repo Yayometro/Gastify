@@ -42,12 +42,22 @@ export async function POST(request) {
       settings.monthlyBuffers = settings.monthlyBuffers || [];
       const expenseMoney = { amountMinor: majorToMinor(monthBuffer.unexpectedBuffer || 0, walletPrimaryCurrency), currency: walletPrimaryCurrency };
       const incomeMoney = { amountMinor: majorToMinor(monthBuffer.unexpectedIncomeBuffer || 0, walletPrimaryCurrency), currency: walletPrimaryCurrency };
+      const updatedAt = new Date();
+      const revision = {
+        unexpectedBuffer: monthBuffer.unexpectedBuffer,
+        unexpectedIncomeBuffer: monthBuffer.unexpectedIncomeBuffer,
+        expenseMoney,
+        incomeMoney,
+        updatedAt,
+      };
       const existing = settings.monthlyBuffers.find((m) => m.month === monthBuffer.month);
       if (existing) {
         existing.unexpectedBuffer = monthBuffer.unexpectedBuffer;
         existing.unexpectedIncomeBuffer = monthBuffer.unexpectedIncomeBuffer;
         existing.expenseMoney = expenseMoney;
         existing.incomeMoney = incomeMoney;
+        existing.revisions = existing.revisions || [];
+        existing.revisions.push(revision);
       } else {
         settings.monthlyBuffers.push({
           month: monthBuffer.month,
@@ -55,18 +65,23 @@ export async function POST(request) {
           unexpectedIncomeBuffer: monthBuffer.unexpectedIncomeBuffer,
           expenseMoney,
           incomeMoney,
+          revisions: [revision],
         });
       }
     }
     if (monthBalance && monthBalance.month !== undefined) {
       settings.monthlyBalances = settings.monthlyBalances || [];
       const money = { amountMinor: majorToMinor(monthBalance.balance || 0, walletPrimaryCurrency), currency: walletPrimaryCurrency };
+      const updatedAt = new Date();
+      const revision = { balance: monthBalance.balance, money, updatedAt };
       const existing = settings.monthlyBalances.find((m) => m.month === monthBalance.month);
       if (existing) {
         existing.balance = monthBalance.balance;
         existing.money = money;
+        existing.revisions = existing.revisions || [];
+        existing.revisions.push(revision);
       } else {
-        settings.monthlyBalances.push({ month: monthBalance.month, balance: monthBalance.balance, money });
+        settings.monthlyBalances.push({ month: monthBalance.month, balance: monthBalance.balance, money, revisions: [revision] });
       }
     }
     const savedSettings = await settings.save();

@@ -91,6 +91,15 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Sort order for the transaction list below - defaults to largest-first,
+  // since that's what every caller (Top 6/Top 12 categories, Top 6/Top 12
+  // transactions, Wallet Analyzer drill-downs, historical comparatives)
+  // actually wants. Centralized here rather than in each caller, since this
+  // one modal is shared across all of them - whatever order `item.children`
+  // happened to arrive in otherwise leaked straight through unsorted.
+  const [sortBy, setSortBy] = useState("amount");
+  const [sortDir, setSortDir] = useState("desc");
+
   const [dupMode, setDupMode] = useState(false);
   const [dupCriteria, setDupCriteria] = useState({ name: true, date: true, amount: true, category: false, subcategory: false });
   const [dupDateTolerance, setDupDateTolerance] = useState(0);
@@ -104,6 +113,18 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
     const dupIds = new Set(dups.map((d) => d._id));
     return localItems.filter((t) => dupIds.has(t._id));
   }, [localItems, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
+
+  const sortedDisplayItems = useMemo(() => {
+    const withOrder = [...displayItems];
+    withOrder.sort((a, b) => {
+      const diff =
+        sortBy === "date"
+          ? new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt)
+          : getPrimaryAmount(a) - getPrimaryAmount(b);
+      return sortDir === "asc" ? diff : -diff;
+    });
+    return withOrder;
+  }, [displayItems, sortBy, sortDir]);
 
   const toggleSelect = (id) =>
     setSelected((prev) => {
@@ -454,13 +475,34 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
 
         {/* Transaction list */}
         <div className="w-full h-full overflow-y-scroll bg-slate-100 mb-[10px]">
+          {isMulti && (
+            <div className="w-full flex items-center justify-end gap-1.5 px-2 pt-1.5 pb-0.5 text-xs text-slate-500">
+              <span>Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 text-xs outline-none"
+              >
+                <option value="amount">Amount</option>
+                <option value="date">Date</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => setSortDir((d) => (d === "desc" ? "asc" : "desc"))}
+                className="flex items-center gap-0.5 bg-white border border-slate-200 hover:border-purple-300 rounded-lg px-1.5 py-0.5 text-xs text-slate-600"
+              >
+                <CategoIcon type={sortDir === "desc" ? "MdArrowDownward" : "MdArrowUpward"} siz={12} />
+                {sortDir === "desc" ? "Highest first" : "Lowest first"}
+              </button>
+            </div>
+          )}
           <section className="w-full h-full bg-slate-100 flex flex-col items-center gap-1 p-1">
             {dupMode && displayItems.length === 0 && (
               <div className="w-full text-center py-4 text-slate-500 text-sm font-light">
                 No duplicates found among these transactions.
               </div>
             )}
-            {displayItems.map((transaction) => (
+            {sortedDisplayItems.map((transaction) => (
               <TransactionItemList
                 movement={transaction}
                 key={`top-modal-${transaction._id}`}

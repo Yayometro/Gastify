@@ -179,14 +179,14 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
   const isForeignAccount = accountCurrency !== walletPrimaryCurrency;
 
   return (
-    <div className="pulse-animation-short ">
+    <div className="pulse-animation-short h-full">
       <div
         style={{
           background:
             cardColore ||
             "linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(18,127,205,1) 100%)",
         }}
-        className=" shadow-2xl flex flex-col px-4 py-4 rounded-3xl w-[300px] max-w-[300px] sm:min-w-[450px] sm:min-h-[330px] md:min-w-[500px] sm:px-5 sm:py-5 m-1"
+        className="h-full shadow-2xl flex flex-col px-4 py-4 rounded-3xl w-[300px] max-w-[300px] sm:min-w-[450px] sm:min-h-[330px] md:min-w-[500px] sm:px-5 sm:py-5 m-1"
       >
         <div className="flex justify-between items-stretch my-auto">
           <div

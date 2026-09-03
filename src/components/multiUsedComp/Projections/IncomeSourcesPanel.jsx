@@ -220,9 +220,13 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurr
                     // which already targets this MUI input's real <input>
                     // element - same as its sibling fields. Drawing a second
                     // border here on the wrapper on top of that produced a
-                    // visible double-border artifact.
+                    // visible double-border artifact. The wrapper itself
+                    // defaults to 50px tall regardless of the inner input's
+                    // own height, though, so it still needs its own explicit
+                    // match to the sibling fields' 40px.
                     "& .MuiInputBase-root": {
                       width: "100%",
+                      height: "40px",
                     },
                     "& .MuiInputBase-root:before, & .MuiInputBase-root:after": {
                       border: "none",

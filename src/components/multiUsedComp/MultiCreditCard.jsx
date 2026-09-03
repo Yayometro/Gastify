@@ -32,7 +32,7 @@ function SortableCard({ account, children }) {
     cursor: "grab",
   };
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className="h-full" {...attributes} {...listeners}>
       {children}
     </div>
   );
