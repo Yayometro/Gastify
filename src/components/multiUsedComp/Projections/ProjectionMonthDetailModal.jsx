@@ -35,6 +35,7 @@ function ProjectionMonthDetailModal({
   walletPrimaryCurrency,
   unexpectedBuffer,
   unexpectedIncomeBuffer,
+  bufferRevisions,
   onSaveBuffers,
   onSaveMonthBalance,
   onClose,
@@ -278,6 +279,27 @@ function ProjectionMonthDetailModal({
             >
               {isSaving ? <Spin size="small" /> : "Save buffers"}
             </button>
+            {bufferRevisions && bufferRevisions.length > 0 && (
+              <details className="text-xs">
+                <summary className="text-purple-500 cursor-pointer select-none">
+                  Historial de esta proyección ({bufferRevisions.length})
+                </summary>
+                <ul className="mt-2 flex flex-col gap-1">
+                  {[...bufferRevisions]
+                    .sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt))
+                    .map((rev, i) => (
+                      <li key={i} className="flex justify-between bg-purple-50/70 rounded-lg px-2 py-1 text-gray-500">
+                        <span>
+                          {new Date(rev.updatedAt).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
+                        </span>
+                        <span>
+                          gasto: {usdFormatChanger(rev.unexpectedBuffer || 0)} · ingreso: {usdFormatChanger(rev.unexpectedIncomeBuffer || 0)}
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+              </details>
+            )}
           </div>
             </div>
 

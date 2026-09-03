@@ -103,9 +103,22 @@ function ProjectionsView({ rows, onRowClick }) {
                   {formatMoney(row.net)}
                 </td>
                 <td className="py-2 px-3">
-                  {formatMoney(row.balance)}
-                  {row.type === "actual" && row.manualBalance !== undefined && (
-                    <span className="block text-[9px] text-gray-400 normal-case">manually set</span>
+                  {row.balance != null ? (
+                    <>
+                      {formatMoney(row.balance)}
+                      {row.type === "actual" && row.manualBalance !== undefined && (
+                        <span className="block text-[9px] text-gray-400 normal-case">manually set</span>
+                      )}
+                    </>
+                  ) : row.estimatedBalance != null ? (
+                    <Tooltip title="Basado en tus transacciones reales donde existen, y en tu ingreso/gasto aproximado el resto del tiempo - no un valor exacto.">
+                      <span className="text-gray-400 font-normal">
+                        {formatMoney(row.estimatedBalance)}
+                        <span className="block text-[9px] normal-case">aproximado</span>
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    formatMoney(row.balance)
                   )}
                 </td>
               </tr>

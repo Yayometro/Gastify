@@ -580,7 +580,7 @@ function Wallet({ dataServ, session }) {
               </div>
             </div>
             <div id="wallet-analyzer-full" className="wallet-analyzer-container w-full">
-              <WalletAnalyzer timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
+              <WalletAnalyzer timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} mail={session} />
             </div>
           </div>
         </div>

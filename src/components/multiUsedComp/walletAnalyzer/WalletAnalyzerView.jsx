@@ -14,6 +14,7 @@ import WalletAnalyzerTrendChart from "./WalletAnalyzerTrendChart";
 import WalletAnalyzerWeekdayChart from "./WalletAnalyzerWeekdayChart";
 import InsightDetailModal from "./InsightDetailModal";
 import WalletAnalyzerInsightsStrip from "./WalletAnalyzerInsightsStrip";
+import WalletAnalyzerProjectionCard from "./WalletAnalyzerProjectionCard";
 import MonthlyChampionsModal from "./MonthlyChampionsModal";
 import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
 
@@ -142,6 +143,7 @@ function WalletAnalyzerView({
   snapshot,
   fxExposure,
   transactions,
+  projectionComparison,
 }) {
   const {
     currentTotals,
@@ -299,6 +301,11 @@ function WalletAnalyzerView({
         walletPrimaryCurrency={walletPrimaryCurrency}
         transactions={transactions}
         currentRange={currentRange}
+      />
+
+      <WalletAnalyzerProjectionCard
+        comparison={projectionComparison}
+        walletPrimaryCurrency={walletPrimaryCurrency}
       />
 
       <div className="grid md:grid-cols-5 gap-4">

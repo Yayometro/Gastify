@@ -9,13 +9,17 @@ import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import IncomeSourcesPanel from "./IncomeSourcesPanel";
+import HistoricalBaselinePanel from "./HistoricalBaselinePanel";
 import ProjectionsView from "./ProjectionsView";
+import ProjectionAccuracyReport from "./ProjectionAccuracyReport";
 import ProjectionMonthDetailModal from "./ProjectionMonthDetailModal";
 import ProjectionsInfoModal from "./ProjectionsInfoModal";
 import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
 import { getTransactionsFromTimeRange, filterBillsOrIncomes } from "@/helpers/transformers/transactionsChange";
 import {
   buildYearProjectionTable,
+  buildProjectionAccuracyReport,
+  estimateHistoricalBalances,
   getMonthBucketBreakdown,
   getExpectedOccurrencesInMonth,
   getMonthCurrencyBreakdown,
@@ -33,6 +37,7 @@ function ProjectionsClient({ mcSession }) {
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [selectedMonthName, setSelectedMonthName] = useState(null);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [projectionBaseline, setProjectionBaseline] = useState(null);
   const toFetch = fetcher();
 
   const loadSettings = async () => {
@@ -56,8 +61,24 @@ function ProjectionsClient({ mcSession }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year]);
 
-  const monthlyBalances = projectionSettings?.monthlyBalances || [];
-  const monthlyBuffers = projectionSettings?.monthlyBuffers || [];
+  // Wallet-wide, not year-scoped - fetched once on mount, never re-fetched
+  // when the user flips between years.
+  const loadBaseline = async () => {
+    try {
+      const res = await toFetch.post("general-data/projection-baseline/get", { mail: mcSession });
+      if (res.ok) setProjectionBaseline(res.data);
+    } catch (e) {
+      runNotify("error", String(e));
+    }
+  };
+
+  useEffect(() => {
+    loadBaseline();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const monthlyBalances = useMemo(() => projectionSettings?.monthlyBalances || [], [projectionSettings]);
+  const monthlyBuffers = useMemo(() => projectionSettings?.monthlyBuffers || [], [projectionSettings]);
 
   const today = new Date();
   const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
@@ -95,6 +116,51 @@ function ProjectionsClient({ mcSession }) {
     };
   }, [incomeSources, walletPrimaryCurrency]);
 
+  // ProjectionBaseline entries can each carry their own currency (e.g. a USD
+  // paycheck), but summing entries at resolution time needs them all in one
+  // currency - convert every foreign-currency entry via a live quote here,
+  // same pattern as incomeSourcesConverted above. The RAW (unconverted)
+  // projectionBaseline is still what the panel displays, so entries keep
+  // showing in the currency the user actually entered them in.
+  const [projectionBaselineConverted, setProjectionBaselineConverted] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!projectionBaseline) {
+        if (!cancelled) setProjectionBaselineConverted(projectionBaseline);
+        return;
+      }
+      const toFetch = fetcher();
+      const convertEntries = (entries, moneyField) =>
+        Promise.all(
+          (entries || []).map(async (entry) => {
+            const money = entry[moneyField];
+            const entryCurrency = money?.currency || walletPrimaryCurrency;
+            if (!money || entryCurrency === walletPrimaryCurrency) return entry;
+            try {
+              const res = await toFetch.post("general-data/fx/quote", {
+                amountMinor: money.amountMinor,
+                fromCurrency: entryCurrency,
+                toCurrency: walletPrimaryCurrency,
+              });
+              if (res.ok) return { ...entry, [moneyField]: { amountMinor: res.data.amountMinor, currency: walletPrimaryCurrency } };
+            } catch (e) {
+              // No rate available - fall through to the raw (unconverted) entry.
+            }
+            return entry;
+          })
+        );
+      const [incomeHistory, expenseHistory] = await Promise.all([
+        convertEntries(projectionBaseline.incomeHistory, "incomeMoney"),
+        convertEntries(projectionBaseline.expenseHistory, "expenseMoney"),
+      ]);
+      if (!cancelled) setProjectionBaselineConverted({ ...projectionBaseline, incomeHistory, expenseHistory });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [projectionBaseline, walletPrimaryCurrency]);
+
   const rows = useMemo(() => {
     if (!transacciones || !budgets) return [];
     return buildYearProjectionTable({
@@ -102,10 +168,24 @@ function ProjectionsClient({ mcSession }) {
       budgets,
       incomeSources: incomeSourcesConverted,
       projectionSettings: { monthlyBuffers },
+      projectionBaseline: projectionBaselineConverted,
       year,
       today: new Date(),
     });
-  }, [transacciones, budgets, incomeSourcesConverted, monthlyBuffers, year]);
+  }, [transacciones, budgets, incomeSourcesConverted, monthlyBuffers, projectionBaselineConverted, year]);
+
+  const accuracyRows = useMemo(() => {
+    if (!transacciones || !budgets) return [];
+    return buildProjectionAccuracyReport({
+      transactions: transacciones,
+      budgets,
+      incomeSources: incomeSourcesConverted,
+      projectionSettings: { monthlyBuffers },
+      projectionBaseline: projectionBaselineConverted,
+      year,
+      today: new Date(),
+    });
+  }, [transacciones, budgets, incomeSourcesConverted, monthlyBuffers, projectionBaselineConverted, year]);
 
   // Converts every non-credit Account's own native balance into the Wallet's
   // primary currency using the latest reference rate (plan section 17:
@@ -174,8 +254,14 @@ function ProjectionsClient({ mcSession }) {
   }, [rows, startingBalance, year, monthlyBalances]);
 
   const monthRanges = useMemo(() => getYearMonthDateRange(new Date(year, 0, 1)), [year]);
-  const selectedRow = rowsWithBalance.find((r) => r.monthName === selectedMonthName) || null;
-  const selectedMonthIndex = rowsWithBalance.findIndex((r) => r.monthName === selectedMonthName);
+
+  const rowsWithEstimates = useMemo(() => {
+    const monthStarts = [...monthRanges.values()].map((r) => r.start);
+    return estimateHistoricalBalances(rowsWithBalance, monthStarts, projectionBaselineConverted);
+  }, [rowsWithBalance, monthRanges, projectionBaselineConverted]);
+
+  const selectedRow = rowsWithEstimates.find((r) => r.monthName === selectedMonthName) || null;
+  const selectedMonthIndex = rowsWithEstimates.findIndex((r) => r.monthName === selectedMonthName);
   const selectedMonthBufferEntry = monthlyBuffers.find((m) => m.month === selectedMonthIndex);
   const selectedUnexpectedBuffer = selectedMonthBufferEntry?.unexpectedBuffer || 0;
   const selectedUnexpectedIncomeBuffer = selectedMonthBufferEntry?.unexpectedIncomeBuffer || 0;
@@ -285,12 +371,31 @@ function ProjectionsClient({ mcSession }) {
           onChange={loadSettings}
         />
 
+        <HistoricalBaselinePanel
+          baseline={projectionBaseline}
+          walletPrimaryCurrency={walletPrimaryCurrency}
+          mail={mcSession}
+          onChange={loadBaseline}
+          defaultOpen={
+            (projectionBaseline?.incomeHistory?.length || 0) === 0 &&
+            (projectionBaseline?.expenseHistory?.length || 0) === 0 &&
+            rows.some((r) => r.type === "actual" && r.hasTransactions === false)
+          }
+        />
+
         {isLoading ? (
           <Skeleton active />
         ) : (
           <ProjectionsView
-            rows={rowsWithBalance}
+            rows={rowsWithEstimates}
             onRowClick={(row) => setSelectedMonthName(row.monthName)}
+          />
+        )}
+
+        {!isLoading && (
+          <ProjectionAccuracyReport
+            rows={accuracyRows}
+            onRowClick={(monthName) => setSelectedMonthName(monthName)}
           />
         )}
 
@@ -304,6 +409,7 @@ function ProjectionsClient({ mcSession }) {
             walletPrimaryCurrency={walletPrimaryCurrency}
             unexpectedBuffer={selectedUnexpectedBuffer}
             unexpectedIncomeBuffer={selectedUnexpectedIncomeBuffer}
+            bufferRevisions={selectedMonthBufferEntry?.revisions}
             onSaveBuffers={handleSaveBuffers}
             onSaveMonthBalance={handleSaveMonthBalance}
             onClose={() => setSelectedMonthName(null)}

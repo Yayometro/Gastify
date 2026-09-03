@@ -17,6 +17,13 @@ const projectionSettingsSchema = new Schema({
       month: Number, // 0-11
       balance: Number, // legacy MXN-implicit; preserved until Phase 9
       money: moneyAmountSchema,
+      // Append-only log of every value this entry has ever had, so a later
+      // edit never silently rewrites what was set at an earlier point in time.
+      revisions: [{
+        balance: Number,
+        money: moneyAmountSchema,
+        updatedAt: Date,
+      }],
     }],
     monthlyBuffers: [{
       month: Number, // 0-11
@@ -24,6 +31,16 @@ const projectionSettingsSchema = new Schema({
       unexpectedIncomeBuffer: Number, // legacy MXN-implicit; preserved until Phase 9
       expenseMoney: moneyAmountSchema,
       incomeMoney: moneyAmountSchema,
+      // Same append-only log as monthlyBalances.revisions above - this is
+      // what lets a closed month's "what was projected back then" stay
+      // correct even if the buffer is edited again after the month ends.
+      revisions: [{
+        unexpectedBuffer: Number,
+        unexpectedIncomeBuffer: Number,
+        expenseMoney: moneyAmountSchema,
+        incomeMoney: moneyAmountSchema,
+        updatedAt: Date,
+      }],
     }],
   },{ timestamps: true }
 );
