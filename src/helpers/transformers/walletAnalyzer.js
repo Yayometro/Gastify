@@ -788,3 +788,78 @@ export function buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDa
 
   return { ...facts, insights: generateInsights(facts), currentRange, previousRange };
 }
+
+// Every computation inside buildWalletAnalyzerSnapshot caps its own lookback
+// at 12 months back from the reference date (computeBudgetStreaks,
+// findBiggestSpendPatterns, computeMonthlyChampions all use
+// lookbackMonths=12; everything else uses less) - so a caller fetching
+// transactions from a database (rather than an already-loaded Redux store)
+// never needs more than this window, regardless of whether it's building
+// the curated or the detailed summary.
+export function getSnapshotLookbackStart(referenceDate) {
+  const ref = new Date(referenceDate);
+  return new Date(ref.getFullYear(), ref.getMonth() - 11, 1);
+}
+
+// Trims a full buildWalletAnalyzerSnapshot() result down to what a monthly
+// summary actually needs - for the AI-facing MCP tool (get_monthly_summary),
+// where every extra field is tokens the user's own LLM pays for. The single
+// biggest cut isn't topN (12->6) - it's dropping each budget's monthlySeries
+// (up to 12 months per budget), which dwarfs everything else in the full
+// snapshot. Keeping this as its own pure function (rather than inlining the
+// trim in the MCP handler) means the exact same curation logic is testable
+// on its own and can't drift from a second copy if anything else ever needs
+// the same "cheap monthly summary" shape.
+export function buildCuratedWalletSummary(snapshot) {
+  return {
+    currentTotals: snapshot.currentTotals,
+    previousTotals: snapshot.previousTotals,
+    // A "budget" insight's `data` is a full budgetRows entry (see
+    // generateInsights: `data: worstBudget` / `data: bestStreak`), copied
+    // from the *uncurated* snapshot - so it still carries `monthlySeries`
+    // even after the top-level budgetRows below gets trimmed. Strip it here
+    // too, or a heavy field leaks right back in through the insight cards.
+    insights: snapshot.insights.map((insight) =>
+      insight.type === "budget" && insight.data?.monthlySeries
+        ? { ...insight, data: (({ monthlySeries, ...rest }) => rest)(insight.data) }
+        : insight
+    ),
+    budgetRows: snapshot.budgetRows.map(({ monthlySeries, ...rest }) => rest),
+    topCategoriesBills: snapshot.topCategoriesBills.slice(0, 6),
+    topCategoriesIncomes: snapshot.topCategoriesIncomes.slice(0, 6),
+    topTransactionsBills: {
+      current: snapshot.topTransactionsBills.current.slice(0, 6),
+      previous: snapshot.topTransactionsBills.previous.slice(0, 6),
+    },
+    subscriptions: snapshot.subscriptions,
+    pace: snapshot.pace,
+    weekdaySpending: snapshot.weekdaySpending,
+    savingsHistoryLabeled: snapshot.savingsHistoryLabeled,
+    monthlyAverages: snapshot.monthlyAverages,
+    categoryAnomaly: snapshot.categoryAnomaly,
+  };
+}
+
+// Compares two arbitrary calendar months directly against each other - not
+// necessarily adjacent, and not anchored to "now" the way the snapshot's own
+// current-vs-previous comparison is (e.g. "January vs. December" from two
+// years apart). Reuses the exact same per-range primitives
+// buildWalletAnalyzerSnapshot itself calls (compareCategoriesAcrossMonths,
+// compareTransactionsAcrossMonths) - both already take two independent
+// ranges as parameters, so no new comparison math is needed here, just an
+// orchestrator that doesn't assume the two ranges are consecutive.
+export function buildMonthComparison({ transactions, monthADate, monthBDate, topN = 12 }) {
+  const dateA = new Date(monthADate);
+  const dateB = new Date(monthBDate);
+  const rangeA = getMonthRange(dateA);
+  const rangeB = getMonthRange(dateB);
+  const labelFor = (d) => `${months[d.getMonth()]} ${d.getFullYear()}`;
+
+  return {
+    monthA: { label: labelFor(dateA), totals: getMonthTotals(transactions, rangeA.start, rangeA.end) },
+    monthB: { label: labelFor(dateB), totals: getMonthTotals(transactions, rangeB.start, rangeB.end) },
+    categoriesBills: compareCategoriesAcrossMonths(transactions, true, rangeA, rangeB, topN),
+    categoriesIncomes: compareCategoriesAcrossMonths(transactions, false, rangeA, rangeB, topN),
+    transactionsBills: compareTransactionsAcrossMonths(transactions, true, rangeA, rangeB, topN),
+  };
+}

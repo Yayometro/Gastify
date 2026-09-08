@@ -18,6 +18,9 @@ import {
   computeSpendingByWeekday,
   generateInsights,
   buildWalletAnalyzerSnapshot,
+  getSnapshotLookbackStart,
+  buildCuratedWalletSummary,
+  buildMonthComparison,
 } from "./walletAnalyzer";
 
 const CAT_FOOD = { _id: "cat-food", name: "Food", color: "#f00", icon: "md/MdFastfood" };
@@ -601,5 +604,117 @@ describe("buildWalletAnalyzerSnapshot", () => {
     expect(snapshot.trend).toHaveLength(6);
     expect(snapshot.budgetRows).toHaveLength(1);
     expect(Array.isArray(snapshot.insights)).toBe(true);
+  });
+});
+
+describe("getSnapshotLookbackStart", () => {
+  it("returns the 1st of the month 11 months before the reference date (a 12-month window inclusive of the reference month)", () => {
+    const start = getSnapshotLookbackStart(new Date(2026, 7, 20)); // August 2026
+    expect(start.getFullYear()).toBe(2025);
+    expect(start.getMonth()).toBe(8); // September (0-indexed) - Sep 2025..Aug 2026 = 12 months
+    expect(start.getDate()).toBe(1);
+  });
+
+  it("rolls the year back correctly near a year boundary", () => {
+    const start = getSnapshotLookbackStart(new Date(2026, 1, 10)); // February 2026
+    expect(start.getFullYear()).toBe(2025);
+    expect(start.getMonth()).toBe(2); // March 2025
+  });
+});
+
+describe("buildCuratedWalletSummary", () => {
+  it("strips monthlySeries from every budget row and caps top lists at 6, while keeping every other summary section", () => {
+    const transactions = [
+      tx({ amount: 5000, date: new Date(2026, 7, 1), isBill: false, name: "Salary" }),
+      ...Array.from({ length: 8 }, (_, i) =>
+        tx({
+          amount: 100 + i,
+          date: new Date(2026, 7, 2),
+          category: { _id: `cat-${i}`, name: `Category ${i}`, color: "#f00", icon: "md/MdFastfood" },
+          name: `Expense ${i}`,
+        })
+      ),
+    ];
+    const budgets = [
+      {
+        _id: "b1",
+        budgetType: "spending",
+        period: "monthly",
+        goalAmount: 500,
+        category: CAT_FOOD,
+        createdAt: new Date(2025, 0, 1),
+        history: [],
+      },
+    ];
+    const snapshot = buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: new Date(2026, 7, 20) });
+    const curated = buildCuratedWalletSummary(snapshot);
+
+    expect(curated.budgetRows).toHaveLength(snapshot.budgetRows.length);
+    curated.budgetRows.forEach((row) => {
+      expect(row).not.toHaveProperty("monthlySeries");
+      expect(row).toHaveProperty("category");
+      expect(row).toHaveProperty("streakMonths");
+    });
+    // A "budget"-type insight card (see generateInsights) embeds a full
+    // budgetRows entry as its own `data` - regression check for the bug
+    // caught in real end-to-end testing: curating the top-level budgetRows
+    // array alone doesn't stop monthlySeries from leaking back in through
+    // an insight card that references the same uncurated row.
+    curated.insights
+      .filter((i) => i.type === "budget")
+      .forEach((i) => expect(i.data).not.toHaveProperty("monthlySeries"));
+    expect(curated.topCategoriesBills.length).toBeLessThanOrEqual(6);
+    expect(curated.topTransactionsBills.current.length).toBeLessThanOrEqual(6);
+    expect(curated.topTransactionsBills.previous.length).toBeLessThanOrEqual(6);
+    expect(curated.currentTotals).toEqual(snapshot.currentTotals);
+    // Not a deep-equal against snapshot.insights - a "budget"-type insight's
+    // data is deliberately rewritten (monthlySeries stripped) above.
+    // Non-budget insights (title/type/tone/icon) still pass through as-is.
+    expect(curated.insights.map((i) => i.title)).toEqual(snapshot.insights.map((i) => i.title));
+    // Fields deliberately dropped from the curated payload - the whole
+    // point of this function - should not leak through.
+    expect(curated).not.toHaveProperty("monthlyChampions");
+    expect(curated).not.toHaveProperty("biggestSpendPatterns");
+    expect(curated).not.toHaveProperty("topCategoriesBillsPrevious");
+    expect(curated).not.toHaveProperty("trend");
+  });
+});
+
+describe("buildMonthComparison", () => {
+  it("compares two non-adjacent months directly, not just consecutive ones", () => {
+    const transactions = [
+      // January 2026
+      tx({ amount: 1000, date: new Date(2026, 0, 5), category: CAT_FOOD, name: "Groceries" }),
+      // March 2026 - one month skipped (February) in between
+      tx({ amount: 300, date: new Date(2026, 2, 5), category: CAT_FOOD, name: "Groceries" }),
+      tx({ amount: 3000, date: new Date(2026, 2, 1), isBill: false, name: "Salary" }),
+    ];
+
+    const comparison = buildMonthComparison({
+      transactions,
+      monthADate: new Date(2026, 0, 15), // January
+      monthBDate: new Date(2026, 2, 15), // March
+    });
+
+    expect(comparison.monthA.label).toBe("January 2026");
+    expect(comparison.monthB.label).toBe("March 2026");
+    expect(comparison.monthA.totals.expense).toBe(1000);
+    expect(comparison.monthB.totals.expense).toBe(300);
+    expect(comparison.monthB.totals.income).toBe(3000);
+
+    const food = comparison.categoriesBills.find((c) => c.name === "Food");
+    expect(food.current).toBe(1000); // monthA (January)
+    expect(food.previous).toBe(300); // monthB (March)
+  });
+
+  it("handles a month with zero activity on either side without throwing", () => {
+    const transactions = [tx({ amount: 500, date: new Date(2026, 5, 1), category: CAT_FOOD })];
+    const comparison = buildMonthComparison({
+      transactions,
+      monthADate: new Date(2026, 5, 1),
+      monthBDate: new Date(2025, 0, 1),
+    });
+    expect(comparison.monthB.totals.expense).toBe(0);
+    expect(comparison.categoriesBills.length).toBeGreaterThan(0);
   });
 });
