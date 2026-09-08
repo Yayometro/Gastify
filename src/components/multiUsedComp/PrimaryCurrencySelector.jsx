@@ -42,7 +42,7 @@ function PrimaryCurrencySelector({ pcsWallet }) {
 
   return (
     <Tooltip title="Wallet reports and totals are displayed in this currency. It does not change how each Account's own balance is stored.">
-      <div className="pcs-container flex items-center gap-1 text-[10px] font-light bg-slate-100 text-black rounded-2xl px-[8px] py-[2px] sm:text-xs">
+      <div className="pcs-container flex items-center gap-1 text-[10px] font-light bg-gf-surface-2 text-gf-text rounded-2xl px-[8px] py-[2px] sm:text-xs">
         <span className="whitespace-nowrap">Primary currency:</span>
         {isSaving ? (
           <Spin size="small" />

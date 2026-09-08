@@ -5,7 +5,7 @@ function CategorySearchedItem({ style, category, name, icon, onSelect, size }) {
     <div
       className={
         style ||
-        "w-full h-full max-h-[30px] bg-slate-200 rounded-md flex gap-2 justify-start items-center hover:bg-slate-300 cursor-pointer py-1 px-2 max-w-[500px]"
+        "w-full h-full max-h-[30px] bg-gf-surface-2 rounded-md flex gap-2 justify-start items-center hover:bg-gf-surface-2 cursor-pointer py-1 px-2 max-w-[500px]"
       }
       onClick={() => onSelect(category)}
     >

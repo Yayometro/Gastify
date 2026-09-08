@@ -134,7 +134,7 @@ const resetDrilldown = () => {
         <h1 className="wallet-budget-title text-2xl text-center font-bold">
           Category {trchIsBill ? "Bills" : "Incomes"} Details
         </h1>
-        <div className="return p-2 text-black border-2 border-purple-500 rounded-2xl flex items-center justify-cente text-center cursor-pointer " onClick={resetDrilldown}>
+        <div className="return p-2 text-gf-text border-2 border-purple-500 rounded-2xl flex items-center justify-cente text-center cursor-pointer " onClick={resetDrilldown}>
           <IoMdRefresh size={20}/>
         </div>
       </div>
@@ -175,8 +175,7 @@ const resetDrilldown = () => {
               return (
                 <div
                   style={{
-                    padding: 5,
-                    background: "#F7F9F9",
+                    padding: 10,
                     boxShadow: `0px 7px 16px 0px ${
                       dataa.color ? dataa.color : "rgba(0,0,0,0.27)"
                     }`,
@@ -185,9 +184,9 @@ const resetDrilldown = () => {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    borderRadius: "10px",
+                    borderRadius: "16px",
                   }}
-                  className="max-w-[250px]"
+                  className="max-w-[250px] gf-glass-chip text-gf-text"
                 >
                   <h1 className="text-base text-center text-wrap font-bold">
                     {dataa.data.name}

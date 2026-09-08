@@ -141,10 +141,10 @@ function EditMultipleTransModalInner({ trans, onClose }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
-      <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
+    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-black/50 backdrop-blur-md flex items-center justify-center">
+      <div className="content gf-glass-violet flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         {isLoading && (
-          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[10001]">
+          <div className="absolute top-0 left-0 bg-gf-surface/70 flex justify-center items-center w-full h-full z-[10001]">
             <Spin size="large" />
           </div>
         )}
@@ -153,14 +153,14 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           Edit {Array.isArray(trans) ? trans.length : 0} Transactions 🪄
         </h1>
         <div className="w-full px-4 pb-2">
-          <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 text-[11px] rounded-xl px-3 py-2 text-center leading-relaxed">
+          <div className="bg-yellow-500/15 border border-yellow-300 text-yellow-800 text-[11px] rounded-xl px-3 py-2 text-center leading-relaxed">
             ⚠️ Everything you fill in here will overwrite <b>all {Array.isArray(trans) ? trans.length : 0} selected transactions</b>. Fields you leave blank will keep their original values.
           </div>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="form-trans-edit w-full h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20 overflow-y-scroll"
+          className="form-trans-edit w-full h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20 overflow-y-scroll"
         >
           <p className="label-tfp">Name</p>
           <input
@@ -218,7 +218,7 @@ function EditMultipleTransModalInner({ trans, onClose }) {
                     value={transactionInfo.date ? dayjs(transactionInfo.date) : null}
                     sx={{
                       "& .MuiInputBase-root": { width: "100%", height: "100%", padding: "0px", border: "none" },
-                      "& .MuiInputBase-input": { width: "100%", height: "100%", border: "1px solid rgb(176, 23, 176)" },
+                      "& .MuiInputBase-input": { width: "100%", height: "100%", border: "none" },
                     }}
                   />
                 </DemoItem>
@@ -248,7 +248,7 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           />
 
           <p className="label-tfp">Account</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               value={transactionInfo.account || ""}
@@ -262,14 +262,14 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           </div>
 
           <button
-            className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
+            className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
             {isLoading ? <Spin /> : "Save changes"}
           </button>
         </form>
 
-        <button onClick={onClose} className="close-con absolute top-0 right-0 border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short">
+        <button onClick={onClose} className="close-con absolute top-0 right-0 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short">
           <CategoIcon type={"MdClose"} siz={20} />
         </button>
       </div>

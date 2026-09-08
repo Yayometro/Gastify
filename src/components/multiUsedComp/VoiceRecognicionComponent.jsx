@@ -133,13 +133,13 @@ function VoiceRecognicionComponent() {
 
   
   return (
-    <div className=" w-full h-full bg-slate-50 py-10 my-2 px-[30px] rounded-[60px]  overflow-y-scrolls max-w-[900px]">
+    <div className=" w-full h-full bg-gf-surface py-10 my-2 px-[30px] rounded-[60px]  overflow-y-scrolls max-w-[900px]">
       {!isLoading ? (
         ""
       ) : (
-        <div className="loader absolute top-0 left-0 w-full h-full flex justify-center items-center flex-col gap-2 bg-white/90 z-50 rounded-[60px]">
+        <div className="loader absolute top-0 left-0 w-full h-full flex justify-center items-center flex-col gap-2 bg-gf-bg/90 z-50 rounded-[60px]">
           <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
-          <p className=" text-xl text-purple-800">
+          <p className=" text-xl text-purple-300">
             We are creating your new transaction, please wait 🤓
           </p>
         </div>
@@ -180,12 +180,12 @@ function VoiceRecognicionComponent() {
           </div>
         )}
       </button>
-      <p className=" text-sm font-thin text-orange-600 py-0.5">
+      <p className=" text-sm font-thin text-orange-400 py-0.5">
         {!isRecording
           ? ""
           : "Press again the record button to stop the recording ✋"}
       </p>
-      <div className="transcription-container font-light rounded-lg pt-1 pb-5 my-2 px-2 bg-purple-100 relative">
+      <div className="transcription-container font-light rounded-lg pt-1 pb-5 my-2 px-2 bg-gf-accent-soft-bg relative">
         <textarea
           className="border-0 p-0 focus:ring-0 focus:border-0 focus:outline-none bg-transparent w-full h-full min-h-[100px] text-center"
           onChange={handleChangeTextarea}
@@ -227,7 +227,7 @@ function VoiceRecognicionComponent() {
         </div>
       )}
       <br />
-      <div className="examples-container flex flex-col justify-start bg-blue-50 text-black/70 rounded-2xl py-2 px-4 text-left relative">
+      <div className="examples-container flex flex-col justify-start bg-blue-500/15 text-gf-text-muted rounded-2xl py-2 px-4 text-left relative">
         <div className="icon absolute top-0 right-0 p-2">
           <FaRegCommentDots size={20} />
         </div>

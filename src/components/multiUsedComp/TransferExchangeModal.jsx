@@ -142,9 +142,9 @@ function TransferExchangeModal() {
   };
 
   return (
-    <div className="w-full h-full overflow-y-scroll relative bg-slate-50">
+    <div className="w-full h-full overflow-y-scroll relative">
       <div
-        className={`loader-add-trans absolute w-full h-full bg-white/90 items-center justify-center z-[100] rounded-t-2xl ${
+        className={`loader-add-trans absolute w-full h-full bg-gf-surface/90 items-center justify-center z-[100] rounded-t-2xl ${
           isLoading ? "flex" : "hidden"
         }`}
       >
@@ -153,7 +153,7 @@ function TransferExchangeModal() {
       <div className="w-full h-full flex justify-center items-center">
         <form
           onSubmit={handleSubmit}
-          className="form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]"
+          className="form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]"
         >
           <h1 className="text-xl min-[450px]:text-2xl font-light text-center w-full">
             {isCrossCurrency ? "Currency Exchange" : "Transfer Between Accounts"}
@@ -168,7 +168,7 @@ function TransferExchangeModal() {
           />
 
           <p className="label-tfp">From account</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               name="sourceAccountId"
@@ -194,7 +194,7 @@ function TransferExchangeModal() {
           />
 
           <p className="label-tfp">To account</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               name="destinationAccountId"
@@ -238,7 +238,7 @@ function TransferExchangeModal() {
                     value={dayjs(form.date)}
                     sx={{
                       "& .MuiInputBase-root": { width: "100%", height: "100%", padding: "0px", border: "none" },
-                      "& .MuiInputBase-input": { width: "100%", height: "100%", border: "1px solid rgb(176, 23, 176)" },
+                      "& .MuiInputBase-input": { width: "100%", height: "100%", border: "none" },
                     }}
                   />
                 </DemoItem>
@@ -247,14 +247,18 @@ function TransferExchangeModal() {
           </div>
 
           <button
-            className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
+            className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
             {isLoading ? <Spin /> : isCrossCurrency ? "Exchange" : "Transfer"}
           </button>
-          <div className="clearForm underline text-red-400 cursor-pointer" onClick={clearForm}>
+          <button
+            type="button"
+            className="clearForm w-full p-2 gf-glass-button-neutral text-red-300 text-center rounded-full cursor-pointer mb-2"
+            onClick={clearForm}
+          >
             Clear Form
-          </div>
+          </button>
         </form>
       </div>
     </div>

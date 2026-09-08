@@ -43,8 +43,8 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
     <div
       className={
         style ||
-        `w-full flex justify-between items-center rounded-2xl py-1 px-2 hover:bg-slate-200 relative transition-colors ${
-          selected ? "bg-purple-50 border border-purple-300" : "bg-slate-50"
+        `w-full flex justify-between items-center rounded-2xl py-1 px-2 relative transition-colors ${
+          selected ? "bg-gf-accent-soft-bg border border-purple-300" : "gf-glass-row"
         }`
       }
     >
@@ -53,7 +53,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
           type="checkbox"
           checked={selected || false}
           onChange={() => onSelect?.(movement._id)}
-          className="mr-2 w-4 h-4 cursor-pointer shrink-0 accent-purple-600"
+          className="mr-2 gf-checkbox-round"
         />
       )}
       <div className="section-one flex-1 min-w-0 flex justify-start items-center gap-2">
@@ -61,7 +61,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
           style={{
             backgroundColor: movement.category?.color || "#DADADA",
           }}
-          className={`circle-ico min-w-[50px] min-h-[50px] rounded-full flex items-center justify-center hover:mix-blend-multiply`}
+          className={`circle-ico min-w-[50px] min-h-[50px] rounded-full flex items-center justify-center hover:brightness-90 transition-[filter]`}
         >
           <UniversalCategoIcon
             type={`${movement?.category?.icon || "md/MdFilterNone"}`}
@@ -95,7 +95,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
       </div>
       <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end">
         <div className="flex flex-col items-end">
-          <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-500" : movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
+          <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-400" : movement.isBill ? "text-red-400" : "text-green-400"} flex gap-1 items-center font-medium`}>
             <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? "Currency exchange" : "Transfer"} — not counted as income or spending` : ""}>
               <span className="flex items-center">
                 <CategoIcon type={isTransferLeg ? "MdSwapHoriz" : movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
@@ -111,7 +111,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
             )}
           </div>
           {showEquivalent && (
-            <p className="text-[11px] text-slate-500 cursor-default">
+            <p className="text-[11px] text-gf-text-muted cursor-default">
               ≈ {formatMoneyMinor(primary.amountMinor, primary.currency)}
             </p>
           )}
@@ -123,7 +123,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
           {handleDelete && (
             <button
               onClick={() => handleDelete(movement._id)}
-              className="hover:text-red-600 micro-pulse"
+              className="hover:text-red-400 micro-pulse"
             >
               <CategoIcon type={"MdDelete"} size={15} />
             </button>

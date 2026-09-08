@@ -6,11 +6,11 @@ import { formatMoneyMajor } from "@/lib/money/currencies";
 
 function MonthRow({ label, right, met }) {
   return (
-    <div className="flex items-center justify-between py-1.5 border-t border-slate-100 first:border-t-0 text-[13px]">
-      <span className="text-slate-500">{label}</span>
+    <div className="flex items-center justify-between py-1.5 border-t border-gf-border first:border-t-0 text-[13px]">
+      <span className="text-gf-text-muted">{label}</span>
       <span className="flex items-center gap-2">
-        <span className="font-semibold text-slate-800">{right}</span>
-        {met !== undefined && <span className={met ? "text-green-600" : "text-red-500"}>{met ? "✓" : "✗"}</span>}
+        <span className="font-semibold text-gf-text">{right}</span>
+        {met !== undefined && <span className={met ? "text-green-400" : "text-red-500"}>{met ? "✓" : "✗"}</span>}
       </span>
     </div>
   );
@@ -28,7 +28,7 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }) {
 
   if (type === "budget") {
     explanation = (
-      <p className="text-xs text-slate-500 mb-3">
+      <p className="text-xs text-gf-text-muted mb-3">
         Presupuesto mensual de {formatMoneyMajor(data.limit, walletPrimaryCurrency)} para <b>{data.category}</b>.
         {" "}Racha actual: <b>{data.streakMonths}</b> mes{data.streakMonths === 1 ? "" : "es"} bajo presupuesto.
       </p>
@@ -43,7 +43,7 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }) {
     ));
   } else if (type === "category_anomaly") {
     explanation = (
-      <p className="text-xs text-slate-500 mb-3">
+      <p className="text-xs text-gf-text-muted mb-3">
         Promedio de los últimos {data.monthlyTotals?.length || 6} meses (sin contar este mes):{" "}
         <b>{formatMoneyMajor(data.average, walletPrimaryCurrency)}</b>. Se necesitan al menos 3 meses de historial para
         calcularlo.
@@ -57,7 +57,7 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }) {
     ];
   } else if (type === "subscription") {
     explanation = (
-      <p className="text-xs text-slate-500 mb-3">
+      <p className="text-xs text-gf-text-muted mb-3">
         Detectada porque el mismo nombre se repite en al menos 2 de los últimos 3 meses con un monto que varía menos
         de 15% — categoría <b>{data.categoryName}</b>.
       </p>
@@ -67,7 +67,7 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }) {
     ));
   } else if (type === "monthly_average") {
     explanation = (
-      <p className="text-xs text-slate-500 mb-3">
+      <p className="text-xs text-gf-text-muted mb-3">
         Promedio de los últimos {data.trend?.length || 6} meses: <b>{formatMoneyMajor(data.avgIncome, walletPrimaryCurrency)}</b> de
         ingresos, <b>{formatMoneyMajor(data.avgExpense, walletPrimaryCurrency)}</b> de gastos, y{" "}
         <b>{Math.round(data.avgTransactionCount || 0)}</b> transacciones por mes.
@@ -81,7 +81,7 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }) {
       />
     ));
   } else if (type === "trend_month") {
-    explanation = <p className="text-xs text-slate-500 mb-3">Detalle de {data.label} — útil en pantallas donde no hay hover, como celular.</p>;
+    explanation = <p className="text-xs text-gf-text-muted mb-3">Detalle de {data.label} — útil en pantallas donde no hay hover, como celular.</p>;
     rows = [
       <MonthRow key="income" label="Ingresos" right={formatMoneyMajor(data.income, walletPrimaryCurrency)} />,
       <MonthRow key="expense" label="Gastos" right={formatMoneyMajor(data.expense, walletPrimaryCurrency)} />,
@@ -89,13 +89,13 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }) {
       <MonthRow key="count" label="Transacciones" right={String(data.transactionCount)} />,
     ];
   } else if (type === "savings_rate") {
-    explanation = <p className="text-xs text-slate-500 mb-3">Tasa de ahorro = balance del mes ÷ ingresos del mes.</p>;
+    explanation = <p className="text-xs text-gf-text-muted mb-3">Tasa de ahorro = balance del mes ÷ ingresos del mes.</p>;
     rows = (data.savingsHistoryLabeled || []).map((m) => (
       <MonthRow key={m.label} label={m.label} right={`${Math.round(m.rate * 100)}%`} />
     ));
   } else if (type === "spending_pace") {
     explanation = (
-      <p className="text-xs text-slate-500 mb-3">
+      <p className="text-xs text-gf-text-muted mb-3">
         Compara cuánto llevas gastado este mes (al día {data.dayOfMonth}) contra cuánto habías gastado, para ese mismo
         día del mes, en cada uno de los últimos {data.monthlyDetail?.length || 6} meses.
       </p>
@@ -113,8 +113,10 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }) {
       open
       onCancel={onClose}
       footer={null}
+      className="gf-antd-modal-glass"
+      zIndex={20000}
       title={
-        <div className="flex items-center gap-2 text-purple-700 font-semibold text-base">
+        <div className="flex items-center gap-2 text-purple-300 font-semibold text-base">
           <span>{icon}</span>
           {title}
         </div>

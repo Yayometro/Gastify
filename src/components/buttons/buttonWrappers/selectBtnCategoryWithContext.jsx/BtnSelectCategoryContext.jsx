@@ -8,11 +8,11 @@ function BtnSelectCategoryContext({ onClose }) {
     <>
     <span className="flex flex-col pl-2">
       <span className="flex items-center gap-2">
-        <p className="text-sm text-purple-700">Selected: </p>
-        <p className="text-sm text-purple-700 font-bold">{itemSelected?.name || "Nothing..."}</p>
+        <p className="text-sm text-purple-300">Selected: </p>
+        <p className="text-sm text-purple-300 font-bold">{itemSelected?.name || "Nothing..."}</p>
       </span>
       {itemSelected?.fatherCategory && (
-        <p className="text-[10px] text-slate-400 leading-tight">
+        <p className="text-[10px] text-gf-text-muted leading-tight">
           in {itemSelected.fatherCategory?.name || ""}
         </p>
       )}

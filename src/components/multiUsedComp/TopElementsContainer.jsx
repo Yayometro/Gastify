@@ -24,7 +24,7 @@ import {
   slicedAndReduceNewValuesForMonths,
   timeperiodRangesArray,
 } from "@/helpers/timeFunctions/timeFunctions";
-import TopContainer from "./top3/top-container/TopContainer";
+import TopRankColumn from "./top3/topRankColumn/TopRankColumn";
 import TopElementContainerView from "./TopElementContainerView";
 
 const today = new Date();
@@ -129,83 +129,49 @@ function TopElementsContainer({timePeriodFromFather}) {
   }, [timePeriodFromFather]);
 
   // COMPONENTS AND VARIABLES
-  const styleChildTopMontContainer = "text-3xl text-purple-700 mt-2";
+  // Same title convention as WalletAnalyzerView's Top 12 cards (eyebrow +
+  // big total), fuchsia instead of purple so this control reads as its own
+  // thing next to the Wallet Analyzer's identical-looking [3,6,12,24] toggle.
+  const topRankTitle = (label, total) => (
+    <>
+      <p className="text-[10.5px] font-bold uppercase tracking-wide text-fuchsia-400">
+        Top {elementsToDisplay} {label}
+      </p>
+      <p className="text-[15px] font-extrabold text-gf-text mb-2">Total: {total}</p>
+    </>
+  );
   const components = [
     {
       tab: "bills",
       props: {
         items: transactionsLocal[1],
-        style: {
-          father: "w-full text-center",
-          child: "w-full flex align-center justify-center",
-        },
-        title: (
-           <>
-          <h1 className={styleChildTopMontContainer}>
-            Top {elementsToDisplay} Transactions
-          </h1>
-          <p className="">Total of all: {totalTransactionsLocal.bills}</p>
-          </>
-        ),
+        title: topRankTitle("Transactions", totalTransactionsLocal.bills),
       },
-      Component: TopContainer,
+      Component: TopRankColumn,
     },
     {
       tab: "incomes",
       props: {
         items: transactionsLocal[0],
-        style: {
-          father: "w-full text-center",
-          child: "w-full flex align-center justify-center",
-        },
-        title: (
-          <>
-          <h1 className={styleChildTopMontContainer}>
-            Top {elementsToDisplay} Transactions
-          </h1>
-          <p className="">Total of all: {totalTransactionsLocal.income}</p>
-          </>
-        ),
+        title: topRankTitle("Transactions", totalTransactionsLocal.income),
       },
-      Component: TopContainer,
+      Component: TopRankColumn,
     },
     {
       tab: "bills",
       props: {
-        style: {
-            father: "w-full text-center",
-            child: "w-full flex align-center justify-center",
-          },
         items: transactionCategories.bills.children,
-        title: (
-          <>
-          <h1 className={styleChildTopMontContainer}>
-            Top {elementsToDisplay} Categories
-          </h1>
-          <p className="">Total of all: {transactionCategories.bills.total}</p>
-          </>
-        ),
+        title: topRankTitle("Categories", transactionCategories.bills.total),
       },
-      Component: TopContainer,
+      Component: TopRankColumn,
     },
     {
       tab: "incomes",
       props: {
-        style: {
-            father: "w-full text-center",
-            child: "w-full flex align-center justify-center",
-          },
         items: transactionCategories.incomes.children,
-        title: (
-          <>
-          <h1 className={styleChildTopMontContainer}>
-            Top {elementsToDisplay} Categories
-          </h1>
-          <p className="">Total of all: {transactionCategories.bills.total}</p>
-          </>
-        ),
+        title: topRankTitle("Categories", transactionCategories.incomes.total),
       },
-      Component: TopContainer,
+      Component: TopRankColumn,
     },
   ];
 

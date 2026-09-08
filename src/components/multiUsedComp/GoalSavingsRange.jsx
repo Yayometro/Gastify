@@ -47,7 +47,7 @@ function GoalSavingsRange({ ggrSavings }) {
   };
   //HANLDES
   return (
-    <div className="w-[90%] flex flex-col justify-center items-center bg-slate-50 rounded-2xl shadow-xl mt-2">
+    <div className="w-[90%] flex flex-col justify-center items-center bg-gf-surface-2 rounded-2xl shadow-xl mt-2">
       <div className="Bug-info-cont w-full flex flex-row items-center justify-center gap-2 text-lg pt-2  px-3">
         <div
           style={{

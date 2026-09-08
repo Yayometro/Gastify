@@ -45,7 +45,6 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
     user: "",
     wallet: "",
   });
-  let [isShort, setIsShort] = useState(false);
   // Advanced "Charged in another currency" disclosure (plan section 12.2):
   // the Amount field above stays in the Account's own currency (what
   // actually left the account); this optionally records what the merchant
@@ -251,7 +250,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
   const projectSelector = (
     <>
       <p className="label-tfp">Project (optional)</p>
-      <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
+      <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
         <select
           className="bg-transparent appearance-none w-full pr-4"
           name="budget"
@@ -266,162 +265,18 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
   );
 
   return (
-    <div className="w-full h-full overflow-y-scroll relative bg-slate-50">
+    <div className="w-full h-full overflow-y-scroll relative">
       <div
-        className={`loader-add-trans absolute w-full h-full bg-white/90  items-center justify-center z-[100] rounded-t-2xl ${
+        className={`loader-add-trans absolute w-full h-full bg-gf-surface/90  items-center justify-center z-[100] rounded-t-2xl ${
           isLoading ? "flex" : "hidden"
         }`}
       >
         <Spin size="large" />
       </div>
-      <div className="shortToggle w-full bg-purple-600 sticky top-0 flex justify-center items-center">
-        <ConfigProvider
-          theme={{
-            token: {
-              // Seed Token
-              colorPrimary: "#9700FF",
-              borderRadius: 2,
-
-              // Alias Token
-              colorBgContainer: "#9700FF",
-            },
-          }}
-        >
-          <Space direction="" size={12} className=" text-slate-200 pb-1 ">
-            <p className=" text-sm ">Short transacction:</p>
-            <Switch
-              onChange={(value) => setIsShort(!isShort)}
-              value={isShort}
-              className="bg-purple-200"
-            />
-          </Space>
-        </ConfigProvider>
-      </div>
-      {isShort ? (
-        <div className="w-full h-full flex justify-center items-center ">
+      <div className="w-full h-full flex justify-center items-center">
           <form
             onSubmit={handleSubmit}
-            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-10 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
-          >
-            <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
-              Add Short Transaction
-            </h1>
-            <p className="label-tfp ">Name</p>
-            <input
-              type="text"
-              name="name"
-              value={transactionInfo.name}
-              onChange={handleChange}
-              placeholder="Transaction Name"
-            />
-            <p className="label-tfp ">Amount ({accountCurrency})</p>
-            <input
-              type="number"
-              name="amount"
-              value={transactionInfo.amount}
-              onChange={handleChange}
-              placeholder="Amount"
-            />
-            <AmountEquivalentPreview quote={amountEquivalent} />
-            <ChargedElsewhereSection
-              enabled={chargedElsewhere}
-              onToggle={setChargedElsewhere}
-              merchantAmount={merchantAmount}
-              merchantCurrency={merchantCurrency}
-              onMerchantAmountChange={setMerchantAmount}
-              onMerchantCurrencyChange={setMerchantCurrency}
-              quoting={merchantQuoting}
-            />
-            <div className="switchers-cont flex gap-3">
-              <label>
-                <ConfigProvider
-                  theme={{
-                    token: {
-                      // Seed Token
-                      colorPrimary: "#9700FF",
-                      borderRadius: 2,
-
-                      // Alias Token
-                      colorBgContainer: "#9700FF",
-                    },
-                  }}
-                >
-                  <Space direction="" size={12}>
-                    <div className="switch-int-cont">
-                      <p className="label-tfp ">Is Income:</p>
-                      <Switch
-                        onChange={(value) => onChangeSwitch(value, "income")}
-                        value={transactionInfo?.isIncome}
-                      />
-                    </div>
-                    <div className="switch-int-cont">
-                      <p className="label-tfp ">Is Bill:</p>
-                      <Switch
-                        onChange={(value) => onChangeSwitch(value, "bill")}
-                        value={transactionInfo?.isBill}
-                      />
-                    </div>
-                    <div className="switch-int-cont">
-                      <p className="label-tfp ">Is Readable:</p>
-                      <Switch
-                        onChange={(value) => onChangeSwitch(value, "readable")}
-                        value={transactionInfo?.isReadable}
-                      />
-                    </div>
-                  </Space>
-                </ConfigProvider>
-              </label>
-            </div>
-            <p className="label-tfp ">Date</p>
-            <div className="date-container w-full h-[100px] ">
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer components={["MobileDateTimePicker"]}>
-                  <DemoItem label="">
-                    <MobileDateTimePicker
-                      className="text-center flex items-center justify-between border-2"
-                      slotProps={{ textField: { size: "small" } }}
-                      onChange={(newValue) =>
-                        hanleDatePickerChange(newValue.format())
-                      }
-                      value={dayjs(transactionInfo?.date)}
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          width: "100%",
-                          height: "100%",
-                          padding: "0px",
-                          border: "none",
-                        },
-                        "& .MuiInputBase-input": {
-                          width: "100%",
-                          height: "100%",
-                          border: "1px solid rgb(176, 23, 176)",
-                        },
-                      }}
-                    />
-                  </DemoItem>
-                </DemoContainer>
-              </LocalizationProvider>
-            </div>
-            {projectSelector}
-            <button
-              className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
-              type="submit"
-            >
-              {isLoading ? <Spin /> : "Submit"}
-            </button>
-            <div
-              className="clearForm underline text-red-400 cursor-pointer"
-              onClick={clearForm}
-            >
-              Clear Form
-            </div>
-          </form>
-        </div>
-      ) : (
-        <div className="w-full h-full flex justify-center items-center">
-          <form
-            onSubmit={handleSubmit}
-            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
+            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
           >
             <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
               Add New Transaction
@@ -460,9 +315,6 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
                       // Seed Token
                       colorPrimary: "#9700FF",
                       borderRadius: 2,
-
-                      // Alias Token
-                      colorBgContainer: "#9700FF",
                     },
                   }}
                 >
@@ -514,7 +366,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
                         "& .MuiInputBase-input": {
                           width: "100%",
                           height: "100%",
-                          border: "1px solid rgb(176, 23, 176)",
+                          border: "none",
                         },
                       }}
                     />
@@ -527,6 +379,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               {close && (
                 <BasicModal
                   close={handleClose}
+                  zIndexClass="z-[20000]"
                   renderContent={
                     <ModalCategoryContent
                       close={handleClose}
@@ -544,7 +397,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               placeholder="Tags (separated by comma)"
             />
             <p className="label-tfp ">Account</p>
-            <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
+            <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center">
               <select
                 className=" bg-transparent appearance-none w-full pr-4"
                 name="DateSelector"
@@ -565,20 +418,20 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
             </div>
             {projectSelector}
             <button
-              className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
+              className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
               type="submit"
             >
               {isLoading ? <Spin /> : "Submit"}
             </button>
-            <div
-              className="clearForm underline text-red-400 cursor-pointer pb-4"
+            <button
+              type="button"
+              className="clearForm w-full p-2 gf-glass-button-neutral text-red-300 text-center rounded-full cursor-pointer mb-4"
               onClick={clearForm}
             >
               Clear Form
-            </div>
+            </button>
           </form>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

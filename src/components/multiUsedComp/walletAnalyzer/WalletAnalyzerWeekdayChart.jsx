@@ -19,7 +19,7 @@ function WalletAnalyzerWeekdayChart({ days, walletPrimaryCurrency }) {
           onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
         >
           {hovered === i && (
-            <div className="absolute bottom-full mb-2 z-10 w-max max-w-[200px] bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 shadow-lg pointer-events-none">
+            <div className="absolute bottom-full mb-2 z-10 w-max max-w-[200px] bg-gf-surface-2 text-white text-[11px] rounded-lg px-3 py-2 shadow-lg pointer-events-none">
               <p className="font-bold mb-1">{day.dayName}</p>
               <p>Promedio: {formatMoneyMajor(day.avgPerOccurrence, walletPrimaryCurrency)}</p>
               <p className="text-slate-300">
@@ -33,7 +33,7 @@ function WalletAnalyzerWeekdayChart({ days, walletPrimaryCurrency }) {
               style={{ height: `${Math.max(2, (day.avgPerOccurrence / maxValue) * 108)}px` }}
             />
           </div>
-          <span className={`text-[11px] font-semibold ${hovered === i ? "text-slate-700" : "text-slate-400"}`}>{SHORT_LABELS[day.dayName]}</span>
+          <span className={`text-[11px] font-semibold ${hovered === i ? "text-gf-text-muted" : "text-gf-text-muted"}`}>{SHORT_LABELS[day.dayName]}</span>
         </div>
       ))}
     </div>

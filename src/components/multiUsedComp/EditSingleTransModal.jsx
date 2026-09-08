@@ -244,10 +244,10 @@ function EditSingleTransModalInner({ trans, onClose }) {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-white/10 backdrop-blur-sm flex items-center justify-center">
-      <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
+    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-black/50 backdrop-blur-md flex items-center justify-center">
+      <div className="content gf-glass-violet flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         {isLoading && (
-          <div className="absolute top-0 left-0 bg-white/70 flex justify-center items-center w-full h-full z-[10001]">
+          <div className="absolute top-0 left-0 bg-gf-surface/70 flex justify-center items-center w-full h-full z-[10001]">
             <Spin size="large" />
           </div>
         )}
@@ -256,7 +256,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
         <form
           onSubmit={handleSubmit}
-          className="form-trans-edit w-full h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20 overflow-y-scroll"
+          className="form-trans-edit w-full h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20 overflow-y-scroll"
         >
           <p className="label-tfp">Name</p>
           <input
@@ -296,7 +296,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
                   Doesn&apos;t look right? Correct it
                 </button>
               ) : (
-                <div className="flex flex-col gap-1 bg-purple-50 border border-purple-200 rounded-xl p-2">
+                <div className="flex flex-col gap-1 bg-gf-accent-soft-bg border border-purple-200 rounded-xl p-2">
                   <p className="label-tfp !mb-0">
                     Exact reported amount ({wallet?.primaryCurrency || "MXN"})
                   </p>
@@ -311,7 +311,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
                     />
                     <button
                       type="button"
-                      className="text-[11px] text-slate-400 hover:text-slate-600 cursor-pointer"
+                      className="text-[11px] text-gf-text-muted hover:text-gf-text-muted cursor-pointer"
                       onClick={() => {
                         setReportedOverrideOpen(false);
                         setReportedOverrideAmount("");
@@ -377,7 +377,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
                     onChange={(v) => setForm((p) => ({ ...p, date: new Date(v.format()) }))}
                     sx={{
                       "& .MuiInputBase-root": { width: "100%", padding: "0px", border: "none", borderRadius: "12px" },
-                      "& .MuiInputBase-input": { border: "1px solid rgb(176,23,176)", borderRadius: "12px", padding: "8px 12px" },
+                      "& .MuiInputBase-input": { border: "none", borderRadius: "12px", padding: "8px 12px" },
                       "& .MuiOutlinedInput-notchedOutline": { borderRadius: "12px" },
                     }}
                   />
@@ -406,7 +406,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
           />
 
           <p className="label-tfp">Account</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               value={form.account || ""}
@@ -420,7 +420,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
           </div>
 
           {needsCurrencyStrategy && (
-            <div className="w-full bg-yellow-50 border border-yellow-300 rounded-xl p-2 flex flex-col gap-1">
+            <div className="w-full bg-yellow-500/15 border border-yellow-300 rounded-xl p-2 flex flex-col gap-1">
               <p className="text-[11px] text-yellow-800">
                 This account is in {selectedAccountCurrency}, different from {originalAccountCurrency}. Choose how to handle it:
               </p>
@@ -443,7 +443,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
           )}
 
           <p className="label-tfp">Project (optional)</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]">
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               value={form.budget || ""}
@@ -458,15 +458,15 @@ function EditSingleTransModalInner({ trans, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 p-2 bg-slate-200 text-slate-700 text-center rounded-full hover:bg-slate-300"
+              className="flex-1 p-2 gf-glass-button-neutral text-gf-text text-center rounded-full"
             >
               Cancel
             </button>
             <button
               className={`flex-1 p-2 text-white text-center rounded-full ${
                 needsCurrencyStrategy && !currencyStrategy
-                  ? "bg-purple-300 cursor-not-allowed"
-                  : "bg-purple-600 hover:bg-purple-500"
+                  ? "gf-glass-button opacity-60 cursor-not-allowed"
+                  : "gf-glass-button"
               }`}
               type="submit"
               disabled={needsCurrencyStrategy && !currencyStrategy}
@@ -476,7 +476,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
           </div>
         </form>
 
-        <button onClick={onClose} className="close-con absolute top-0 right-0 border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short">
+        <button onClick={onClose} className="close-con absolute top-0 right-0 rounded-full gf-glass-card text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short">
           <CategoIcon type="MdClose" siz={20} />
         </button>
       </div>

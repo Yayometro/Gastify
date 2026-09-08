@@ -35,11 +35,11 @@ function IconDisplayerMenu({ idmActive, idmIcon, idmClose }) {
     <div
       className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[1005] ${
         active ? "flex" : "hidden"
-      } justify-center items-center backdrop-blur-[3px]`}
+      } justify-center items-center bg-black/50 backdrop-blur-md`}
     >
-      <div className=" w-[90%] h-[95%] border-2 border-purple-700  pl-2 pr-4 py-4 bg-slate-100/50 relative rounded-2xl overflow-scroll ">
+      <div className=" w-[90%] h-[95%] gf-glass-violet pl-2 pr-4 py-4 relative rounded-2xl overflow-scroll ">
         <div
-          className="close-con absolute top-[0%] right-[0%] border-2 border-purple-400 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short cursor-pointer p-2"
+          className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer p-2"
           onClick={() => {
             setActive(false), idmClose(false);
           }}
@@ -81,7 +81,7 @@ function IconDisplayerMenu({ idmActive, idmIcon, idmClose }) {
                 className="w-full  my-4 py-1 rounded-3xl  "
                 key={`icdm-icon-gen-sec-${index}`}
               >
-                <h1 className="text-2xl pb-1 text-purple-800 text-center">
+                <h1 className="text-2xl pb-1 text-purple-300 text-center">
                   {icon.name || "No name"}
                 </h1>
                 <ul className="flex flex-wrap justify-center items-center gap-2 pt-3 ">
@@ -91,7 +91,7 @@ function IconDisplayerMenu({ idmActive, idmIcon, idmClose }) {
                       key={`icon-displayer-menu-icon-${icon}`}
                     >
                       <li
-                        className="flex justify-center items-center cursor-pointer hover:bg-white hover:rounded-2xl"
+                        className="flex justify-center items-center cursor-pointer gf-hover-glass hover:rounded-2xl"
                         onClick={() => {
                           handleSelectionIcon(icon),
                             setActive(false),

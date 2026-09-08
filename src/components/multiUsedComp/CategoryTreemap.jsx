@@ -167,7 +167,7 @@ function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, 
             readable and consistent regardless. Icon sits centered against
             the title+amount block as a unit, not pinned to the title line. */}
         {isBig ? (
-          <div className="inline-flex max-w-full items-center gap-2 rounded-xl bg-white px-2.5 py-2 shadow-[0_2px_10px_rgba(15,15,25,0.18)]">
+          <div className="inline-flex max-w-full items-center gap-2 rounded-xl gf-glass-chip px-2.5 py-2">
             <span
               className="flex items-center justify-center h-8 w-8 rounded-full shrink-0"
               style={{ backgroundColor: node.color || "#8884d8" }}
@@ -175,23 +175,23 @@ function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, 
               <UniversalCategoIcon type={node.icon} siz={16} colore="#fff" />
             </span>
             <div className="flex flex-col min-w-0">
-              <span className="text-slate-800 font-bold text-xs truncate">{node.name}</span>
-              <span className="text-slate-500 text-[11px] font-semibold">
+              <span className="text-gf-text font-bold text-xs truncate">{node.name}</span>
+              <span className="text-gf-text-muted text-[11px] font-semibold">
                 {formatMoneyMajor(node.value, currency)}
               </span>
               {node.kind === "transaction" ? (
                 node.date && (
-                  <span className="text-slate-400 text-[10px]">{dayjs(node.date).format("DD/MM/YYYY")}</span>
+                  <span className="text-gf-text-muted text-[10px]">{dayjs(node.date).format("DD/MM/YYYY")}</span>
                 )
               ) : (
-                <span className="text-slate-400 text-[10px]">
+                <span className="text-gf-text-muted text-[10px]">
                   {node.transactionCount} txn{node.transactionCount === 1 ? "" : "s"} · {pct}%
                 </span>
               )}
             </div>
           </div>
         ) : (
-          <span className="inline-block max-w-full truncate rounded-md bg-white px-1.5 py-0.5 text-slate-800 text-[10px] font-semibold shadow-[0_2px_8px_rgba(15,15,25,0.15)]">
+          <span className="inline-block max-w-full truncate rounded-md gf-glass-chip px-1.5 py-0.5 text-gf-text text-[10px] font-semibold">
             {node.name}
           </span>
         )}
@@ -205,55 +205,54 @@ function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, 
           rolled up into them alongside the amount/percentage. */}
       {hover && (
         <div
-          className="pointer-events-none absolute z-40 flex flex-col items-center gap-1.5 rounded-2xl px-4 py-3 bg-white border border-slate-100 min-w-[140px] max-w-[220px]"
+          className="pointer-events-none absolute z-40 flex flex-col items-center gap-1.5 rounded-2xl px-4 py-3 gf-glass-chip min-w-[140px] max-w-[220px]"
           style={{
             left: pos.flipX ? undefined : pos.x + 16,
             right: pos.flipX ? pos.w - pos.x + 16 : undefined,
             top: pos.flipY ? undefined : pos.y + 16,
             bottom: pos.flipY ? pos.h - pos.y + 16 : undefined,
-            boxShadow: "0 12px 28px rgba(15, 15, 25, 0.18)",
           }}
         >
           <span
-            className="flex items-center justify-center h-14 w-14 rounded-full border-2 border-slate-200 shrink-0"
+            className="flex items-center justify-center h-14 w-14 rounded-full border-2 border-gf-border shrink-0"
             style={{ backgroundColor: node.color || "#8884d8" }}
           >
             <UniversalCategoIcon type={node.icon} siz={27} colore="#fff" />
           </span>
-          <span className="text-slate-800 font-bold text-sm text-center leading-tight">
+          <span className="text-gf-text font-bold text-sm text-center leading-tight">
             {node.name}
           </span>
-          <span className="text-slate-500 text-xs font-semibold">
+          <span className="text-gf-text-muted text-xs font-semibold">
             {formatMoneyMajor(node.value, currency)}
           </span>
           {node.kind === "transaction" ? (
             <>
-              <div className="w-full border-t border-slate-100 my-0.5" />
+              <div className="w-full border-t border-gf-border my-0.5" />
               {node.date && (
-                <span className="text-slate-500 text-[11px]">{dayjs(node.date).format("DD/MM/YYYY")}</span>
+                <span className="text-gf-text-muted text-[11px]">{dayjs(node.date).format("DD/MM/YYYY")}</span>
               )}
               {node.accountName && (
-                <span className="text-slate-500 text-[11px]">Cuenta: {node.accountName}</span>
+                <span className="text-gf-text-muted text-[11px]">Cuenta: {node.accountName}</span>
               )}
               {(node.categoryName || node.subcategoryName) && (
-                <span className="text-slate-500 text-[11px] text-center">
+                <span className="text-gf-text-muted text-[11px] text-center">
                   {node.categoryName}
                   {node.subcategoryName ? ` · ${node.subcategoryName}` : ""}
                 </span>
               )}
               {node.tags && node.tags.length > 0 && (
-                <span className="text-slate-400 text-[10px] text-center">
+                <span className="text-gf-text-muted text-[10px] text-center">
                   {node.tags.map((tag) => tag.name).filter(Boolean).join(", ")}
                 </span>
               )}
-              <span className="text-slate-400 text-[11px]">{pct}% del total</span>
+              <span className="text-gf-text-muted text-[11px]">{pct}% del total</span>
             </>
           ) : (
             <>
-              <span className="text-slate-400 text-[11px]">
+              <span className="text-gf-text-muted text-[11px]">
                 {node.transactionCount} transaccion{node.transactionCount === 1 ? "" : "es"}
               </span>
-              <span className="text-slate-400 text-[11px]">{pct}% del total</span>
+              <span className="text-gf-text-muted text-[11px]">{pct}% del total</span>
             </>
           )}
         </div>
@@ -493,7 +492,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
         </h1>
       </div>
       <div className="w-full px-3 sm:px-6 pt-4 pb-6">
-        <div className="rounded-3xl overflow-hidden bg-white border border-slate-100 shadow-sm">
+        <div className="rounded-[32px] overflow-hidden gf-glass-card border border-gf-border">
           <div className="flex items-start justify-between px-5 pt-5 pb-3">
             <div className="flex items-center gap-2 min-w-0">
               {path.length > 0 && (
@@ -501,13 +500,13 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
                   type="button"
                   onClick={() => setPath((prev) => prev.slice(0, -1))}
                   aria-label="Back one level"
-                  className="text-slate-400 hover:text-purple-600 transition-colors text-xl leading-none px-1"
+                  className="text-gf-text-muted hover:text-purple-600 transition-colors text-xl leading-none px-1"
                 >
                   ‹
                 </button>
               )}
               <div className="min-w-0 flex flex-col">
-                <h2 className="text-slate-800 font-bold text-lg leading-tight truncate">
+                <h2 className="text-gf-text font-bold text-lg leading-tight truncate">
                   {!breadcrumb ? (
                     `Category ${ctIsBill ? "Bills" : "Incomes"}`
                   ) : (
@@ -525,7 +524,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
                         </>
                       )}
                       {!breadcrumb.second && autoExpandIsMixed && (
-                        <span className="text-slate-400 font-normal text-sm"> · Transacciones</span>
+                        <span className="text-gf-text-muted font-normal text-sm"> · Transacciones</span>
                       )}
                     </>
                   )}
@@ -535,15 +534,15 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
                     way mobile users ever see a category/subcategory's own
                     transaction count and share of the total. */}
                 {path.length > 0 && (
-                  <span className="text-slate-400 text-xs leading-tight">
+                  <span className="text-gf-text-muted text-xs leading-tight">
                     {headerCount} transaccion{headerCount === 1 ? "" : "es"} · {headerPct}% del total
                   </span>
                 )}
               </div>
             </div>
-            <div className="text-slate-500 text-sm shrink-0 pl-2">
+            <div className="text-gf-text-muted text-sm shrink-0 pl-2">
               Total:{" "}
-              <span className="text-slate-800 font-bold">
+              <span className="text-gf-text font-bold">
                 {formatMoneyMajor(headerTotal, walletPrimaryCurrency)}
               </span>
             </div>
@@ -554,7 +553,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
               there's no hover to fall back on, so without this the full
               detail (date/account/category/tags) would be unreachable. */}
           {selectedTransaction && (
-            <div className="mx-5 mb-3 flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+            <div className="mx-5 mb-3 flex items-start gap-3 rounded-2xl border border-gf-border bg-gf-surface-2 px-4 py-3">
               <span
                 className="flex items-center justify-center h-10 w-10 rounded-full border-2 border-white shrink-0"
                 style={{ backgroundColor: selectedTransaction.color || "#8884d8" }}
@@ -563,27 +562,27 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
               </span>
               <div className="flex flex-col min-w-0 flex-1 gap-0.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-slate-800 font-bold text-sm truncate">{selectedTransaction.name}</span>
-                  <span className="text-slate-800 font-bold text-sm shrink-0">
+                  <span className="text-gf-text font-bold text-sm truncate">{selectedTransaction.name}</span>
+                  <span className="text-gf-text font-bold text-sm shrink-0">
                     {formatMoneyMajor(selectedTransaction.value, walletPrimaryCurrency)}
                   </span>
                 </div>
-                <span className="text-slate-500 text-xs">
+                <span className="text-gf-text-muted text-xs">
                   {selectedTransaction.date && dayjs(selectedTransaction.date).format("DD/MM/YYYY")}
                   {selectedTransaction.accountName ? ` · Cuenta: ${selectedTransaction.accountName}` : ""}
                 </span>
                 {(selectedTransaction.categoryName || selectedTransaction.subcategoryName) && (
-                  <span className="text-slate-500 text-xs">
+                  <span className="text-gf-text-muted text-xs">
                     {selectedTransaction.categoryName}
                     {selectedTransaction.subcategoryName ? ` · ${selectedTransaction.subcategoryName}` : ""}
                   </span>
                 )}
                 {selectedTransaction.tags && selectedTransaction.tags.length > 0 && (
-                  <span className="text-slate-400 text-xs">
+                  <span className="text-gf-text-muted text-xs">
                     {selectedTransaction.tags.map((tag) => tag.name).filter(Boolean).join(", ")}
                   </span>
                 )}
-                <span className="text-slate-400 text-xs">
+                <span className="text-gf-text-muted text-xs">
                   {totalValue > 0 ? ((selectedTransaction.value / totalValue) * 100).toFixed(1) : "0.0"}% del total
                 </span>
               </div>
@@ -591,7 +590,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
                 type="button"
                 onClick={() => setSelectedTransaction(null)}
                 aria-label="Close transaction detail"
-                className="text-slate-400 hover:text-purple-600 transition-colors text-lg leading-none shrink-0"
+                className="text-gf-text-muted hover:text-purple-600 transition-colors text-lg leading-none shrink-0"
               >
                 ×
               </button>
@@ -633,8 +632,8 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
                   onClick={() => handleChipClick(cat)}
                   className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
                     isActive
-                      ? "border-purple-500 bg-purple-50 text-purple-700"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-purple-300"
+                      ? "border-purple-500 bg-gf-accent-soft-bg text-purple-300"
+                      : "border-gf-border bg-gf-surface text-gf-text-muted hover:border-purple-300"
                   }`}
                 >
                   <span
@@ -646,11 +645,11 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
                   <span className="flex flex-col items-start leading-tight">
                     <span className="flex items-center gap-1">
                       {cat.name}
-                      <span className="text-slate-400 font-normal">
+                      <span className="text-gf-text-muted font-normal">
                         {formatMoneyMajor(total, walletPrimaryCurrency)}
                       </span>
                     </span>
-                    <span className="text-slate-400 font-normal text-[10px]">
+                    <span className="text-gf-text-muted font-normal text-[10px]">
                       {count} txn{count === 1 ? "" : "s"} · {pct}%
                     </span>
                   </span>

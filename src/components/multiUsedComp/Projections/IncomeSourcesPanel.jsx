@@ -113,12 +113,12 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurr
   };
 
   return (
-    <div className="income-sources-panel w-full bg-purple-100 rounded-3xl p-4 mb-4">
+    <div className="income-sources-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
       <div
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h2 className="text-xl text-purple-800 font-normal">
+        <h2 className="text-xl text-purple-300 font-normal">
           Income sources ({(incomeSources || []).length})
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
@@ -129,11 +129,11 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurr
             {(incomeSources || []).map((source) => (
               <li
                 key={source._id}
-                className="flex justify-between items-center bg-white rounded-2xl px-4 py-2"
+                className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
               >
                 <div className="flex flex-col">
-                  <p className="text-purple-800">{source.name}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-purple-300">{source.name}</p>
+                  <p className="text-xs text-gf-text-muted">
                     {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence]}
                   </p>
                 </div>
@@ -153,7 +153,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurr
           </ul>
           <form
             onSubmit={handleSubmit}
-            className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-white rounded-2xl p-3"
+            className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">
               <p className="label-tfp mb-1">Name</p>
@@ -237,12 +237,12 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurr
             </div>
             <button
               type="submit"
-              className="bg-purple-600 text-white rounded-full px-4 py-2 hover:bg-purple-500"
+              className="gf-glass-button text-white rounded-full px-4 py-2"
             >
               {isLoading ? <Spin /> : editingId ? "Save" : "Add"}
             </button>
             {editingId && (
-              <button type="button" className="text-gray-500 underline" onClick={resetForm}>
+              <button type="button" className="gf-glass-button-neutral text-gf-text rounded-full px-4 py-2" onClick={resetForm}>
                 Cancel
               </button>
             )}

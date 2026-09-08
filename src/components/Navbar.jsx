@@ -13,21 +13,24 @@ import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { FaWallet } from "react-icons/fa6";
 import { MdAutoGraph } from "react-icons/md";
 import { MdSavings } from "react-icons/md";
-import { IoAddCircle } from "react-icons/io5";
+import { IoAdd } from "react-icons/io5";
 import { MdAccountBalance } from "react-icons/md";
 import { IoPricetags } from "react-icons/io5";
 import { IoMdExit } from "react-icons/io";
 import { BiSolidCategory } from "react-icons/bi";
+import { MdLightMode, MdDarkMode } from "react-icons/md";
 
 import "@/components/styles/NavbarStyle.css"
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "@/lib/features/userSlice";
 import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
 import { FaHistory } from "react-icons/fa";
+import { useThemeMode } from "@/app/ThemeProvider";
 
 function Navbar({ sesion }) {
   const [toggleNav, setToggleNav] = useState(false);
   const [isAddTrans, setIsAddTrans] = useState(false);
+  const { mode, toggleMode } = useThemeMode();
   const handleToggleNav = () => {
     setToggleNav(!toggleNav);
   };
@@ -49,14 +52,14 @@ function Navbar({ sesion }) {
   return (
     <nav className="navbar w-full fixed flex flex-col items-center justify-center bottom-0 md:w-fit md:fixed md:top-0 z-[1000] ">
       <ul
-        className={`nav-full pt-8 pb-12 -mb-6 w-[93%] flex flex-col items-center justify-center gap-4 bg-white z-[1001] rounded-t-[50px] text-center text-purple-900 md:w-fit md:flex md:h-[95vh] md:inset-0  md:mb-0 md:rounded-3xl md:ml-2 md:justify-between shadow-xl ${
+        className={`nav-full pt-8 pb-12 -mb-6 w-[93%] flex flex-col items-center justify-center gap-4 gf-nav-surface z-[1001] rounded-t-[50px] text-center text-gf-text md:w-fit md:flex md:h-[95vh] md:inset-0  md:mb-0 md:rounded-3xl md:ml-2 md:justify-between shadow-xl ${
           toggleNav ? "" : "hidden"
         }`}
       >
         <li className="flex flex-row items-center justify-center micro-pulse sm:px-2">
           <Link href="/dashboard/profile">
             <Image
-              className="rounded-full border-[1px] border-purple-800 m-auto w-[60px]  sm:w-[40px]"
+              className="rounded-full border-[1px] border-purple-500 m-auto w-[60px]  sm:w-[40px]"
               src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
               alt={`${ccUser?.fullName} profile account`}
               width={50}
@@ -92,8 +95,10 @@ function Navbar({ sesion }) {
           </Link>
         </li>
         <li >
-          <div className="text-purple-600 add-more sm:flex micro-pulse">
-              <IoAddCircle size={50} onClick={toogleAddTrans} className="cursor-pointer"/>
+          <div className="add-more sm:flex micro-pulse">
+              <button type="button" onClick={toogleAddTrans} aria-label="Add a transaction" className="gf-glass-fab w-[50px] h-[50px]">
+                <IoAdd size={30} />
+              </button>
               <p className="hidden hoverTooltip">Add a transaction</p>
             </div>
             {
@@ -119,6 +124,16 @@ function Navbar({ sesion }) {
             <p className="sm:hidden hoverTooltip">Categories</p>
           </Link>
         </li>
+        <li className="micro-pulse">
+          <button onClick={toggleMode} type="button" aria-label="Toggle light/dark mode">
+            {mode === "dark" ? (
+              <MdLightMode size={26} className="hidden sm:inline" />
+            ) : (
+              <MdDarkMode size={26} className="hidden sm:inline" />
+            )}
+            <p className="sm:hidden hoverTooltip">{mode === "dark" ? "Light mode" : "Dark mode"}</p>
+          </button>
+        </li>
         <li className=" flash">
           <button onClick={() => signOut()}>
             <IoMdExit size={30} className="hidden sm:inline" />
@@ -126,7 +141,7 @@ function Navbar({ sesion }) {
           </button>
         </li>
       </ul>
-      <ul className="bg-white mb-3 n-mobile w-[93%] flex flex-row justify-between py-2 px-3 items-center rounded-full shadow-xl z-[1002] fadeInUp md:hidden">
+      <ul className="gf-nav-surface text-gf-text mb-3 n-mobile w-[93%] flex flex-row justify-between py-2 px-3 items-center rounded-full shadow-xl z-[1002] fadeInUp md:hidden">
         <li className="nb-li-btn">
           <button onClick={handleToggleNav}>
             <IoIosArrowUp size={20} />
@@ -142,8 +157,10 @@ function Navbar({ sesion }) {
             <BiSolidCategory size={30} />
           </Link>
         </li>
-        <li >
-              <IoAddCircle size={50} onClick={toogleAddTrans} className="cursor-pointer"/>
+        <li className="">
+              <button type="button" onClick={toogleAddTrans} aria-label="Add a transaction" className="gf-glass-fab w-[50px] h-[50px]">
+                <IoAdd size={30} />
+              </button>
               <p className="hidden hoverTooltip">Add a transaction</p>
             {
               (isAddTrans && <AddTransactionModal close={toogleAddTrans}/>)
@@ -162,7 +179,7 @@ function Navbar({ sesion }) {
         <li className="">
           <Link href="/dashboard/profile">
             <Image
-              className="rounded-full border-[1px] border-purple-800 m-auto w-[30px]  sm:w-[40px]"
+              className="rounded-full border-[1px] border-purple-500 m-auto w-[30px]  sm:w-[40px]"
               src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
               alt={`${ccUser?.fullName} profile account`}
               width={50}

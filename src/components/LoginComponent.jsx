@@ -95,12 +95,12 @@ function LoginComponent() {
         {!loading ? (
           ""
         ) : (
-          <div className="w-full h-full flex flex-col justify-center items-center bg-white/80 z-50 absolute text-center p-4 gap-4 left-0">
+          <div className="w-full h-full flex flex-col justify-center items-center bg-gf-bg/90 z-50 absolute text-center p-4 gap-4 left-0">
             <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
-            <p className=" text-xl text-purple-800">
+            <p className=" text-xl text-purple-200">
               We are working to set everything up for you
             </p>
-            <p className=" text-xl text-purple-800">Please wait a moment 🤓</p>
+            <p className=" text-xl text-purple-200">Please wait a moment 🤓</p>
           </div>
         )}
       </div>
@@ -109,7 +109,7 @@ function LoginComponent() {
           Login to use Gastify 💸
         </h1>
       </div>
-      <div className="form-container bg-white w-full rounded-t-[100px] h-full m-auto">
+      <div className="form-container bg-gf-surface w-full rounded-t-[100px] h-full m-auto">
         <form
           className="form-login w-full h-full text-center flex flex-col gap-4 justify-start items-center pt-2 sm:pt-10"
           onSubmit={handleSubmit}
@@ -131,7 +131,7 @@ function LoginComponent() {
             />
             <div
               id="emailHelp"
-              className="form-text-never w-[90%] font-light text-xs text-slate-400"
+              className="form-text-never w-[90%] font-light text-xs text-gf-text-muted"
             >
               We will never share your email with anyone else.
             </div>
@@ -162,7 +162,7 @@ function LoginComponent() {
               </div> */}
             <div
               id="passwordHelp"
-              className="form-text-never w-[90%] font-light text-xs text-slate-400"
+              className="form-text-never w-[90%] font-light text-xs text-gf-text-muted"
             >
               We will never share your password with anyone else.
             </div>
@@ -175,7 +175,7 @@ function LoginComponent() {
           <button type="submit" className="social-btn-lf">
             Submit
           </button>
-          <div className="divider border-t-2 border-slate-300 w-[70%] mt-5"></div>
+          <div className="divider border-t-2 border-gf-border w-[70%] mt-5"></div>
           <div className="bts-fast w-[100%] pt-5  flex flex-col gap-8 justify-center items-center">
             <div className="social-btn-lf" onClick={googleSignIn}>
               <div className="sblf-icon-cont">
@@ -189,7 +189,7 @@ function LoginComponent() {
               </div>
               <p> GitHub</p>
             </div>
-            <div className="text-purple-700 w-[90%] text-xs hover:underline">
+            <div className="text-purple-300 w-[90%] text-xs hover:underline">
               <Link href="/register">
                 <p className="">You do not have an account? - Click here</p>
               </Link>

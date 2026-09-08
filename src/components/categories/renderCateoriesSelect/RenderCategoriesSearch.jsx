@@ -14,7 +14,7 @@ function RenderCategoriesSearch({ getSelected, onlyFathers = false }) {
       {filtered.length <= 0 ? (
         ""
       ) : (
-        <div className="finded-cats-container w-full h-fit shadow-md flex flex-col items-center justify-center gap-2 bg-slate-100">
+        <div className="finded-cats-container w-full h-fit shadow-md flex flex-col items-center justify-center gap-2 bg-gf-surface-2">
           {filtered.map((cat) => (
             <CategorySearchedItem
               key={`item-search-category-${cat._id}`}

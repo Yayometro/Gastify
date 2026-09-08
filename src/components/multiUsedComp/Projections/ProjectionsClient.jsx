@@ -326,8 +326,8 @@ function ProjectionsClient({ mcSession }) {
 
   return (
     <div className="w-full h-full sm:pr-2 pb-10">
-      <div className="w-full profile-img py-[40px] text-center text-white">
-        <h1 className="text-3xl min-[400px]:text-[40px] sm:text-[40px] md:text-[60px] font-thin">
+      <div className="w-full profile-img py-4 text-center text-white">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
           Projections
         </h1>
       </div>
@@ -338,12 +338,12 @@ function ProjectionsClient({ mcSession }) {
           </div>
         </Tooltip>
       </div>
-      <div className="content-profile-cont w-full h-full bg-slate-100 items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl shadow-sm px-4 sm:px-8 py-6">
+      <div className="content-profile-cont w-full h-full content-wallet-glass items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl px-4 sm:px-8 py-6">
         <div className="flex items-center justify-center gap-3 mb-2">
           <div className="cursor-pointer" onClick={() => setYear((y) => y - 1)}>
             <CategoIcon type="MdChevronLeft" siz={28} />
           </div>
-          <h2 className="text-2xl text-purple-800">{year}</h2>
+          <h2 className="text-2xl text-purple-300">{year}</h2>
           <div className="cursor-pointer" onClick={() => setYear((y) => y + 1)}>
             <CategoIcon type="MdChevronRight" siz={28} />
           </div>
@@ -352,7 +352,7 @@ function ProjectionsClient({ mcSession }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-1 mb-4 text-purple-800">
+        <div className="flex items-center justify-center gap-1 mb-4 text-purple-300">
           <p className="text-lg">
             Total money today: <span className="font-bold">{usdFormatChanger(startingBalance)}</span>
           </p>

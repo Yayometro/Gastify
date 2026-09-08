@@ -44,17 +44,13 @@ function HistoryClient({ email }) {
             />
           )}
         </div>
-        <div className="w-full profile-img py-[40px] text-center text-white">
-          <h1 className="text-3xl min-[400px]:text-[40px] sm:text-[40px] md:text-[60px] font-thin">
+        <div className="w-full profile-img py-4 text-center text-white">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
             Transactions History
           </h1>
         </div>
-        <div className="content-profile-cont w-full h-full bg-slate-100 text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl shadow-sm px-2 pt-6 pb-[80px]">
+        <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">
           <div className="history-client-cont w-full h-fulls flex flex-col justify-center items-center pb-4">
-            <h1 className="text-3xl min-[text-[45px]]: py-2">
-              History details
-            </h1>
-            {/*  */}
             <TabsTogglerMontlyController />
           </div>
           <div className="w-full h-fulls pb-6 historical-comparative-categories">

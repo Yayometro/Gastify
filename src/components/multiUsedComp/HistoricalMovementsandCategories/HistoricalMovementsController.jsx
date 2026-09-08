@@ -197,7 +197,7 @@ function HistoricalMovementsController() {
   ]);
 
   // COMPONENTS AND VARIABLES
-  const styleChildTopMontContainer = "text-3xl text-purple-700 mt-2";
+  const styleChildTopMontContainer = "text-3xl text-purple-300 mt-2";
   const components = [
     {
       tab: "bills",

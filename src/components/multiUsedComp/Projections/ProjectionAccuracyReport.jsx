@@ -19,7 +19,7 @@ function ProjectionAccuracyReport({ rows, onRowClick }) {
 
   return (
     <div className="w-full mt-6">
-      <h2 className="text-purple-800 text-lg mb-2 flex items-center">
+      <h2 className="text-purple-300 text-lg mb-2 flex items-center">
         Precisión de tus proyecciones
         <div
           className="inline-block ml-1 align-middle cursor-pointer text-purple-500"
@@ -29,7 +29,7 @@ function ProjectionAccuracyReport({ rows, onRowClick }) {
         </div>
       </h2>
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[600px] text-center bg-white rounded-2xl overflow-hidden">
+        <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
           <thead>
             <tr className="bg-purple-600 text-white">
               <th className="py-2 px-3">Mes</th>
@@ -44,14 +44,14 @@ function ProjectionAccuracyReport({ rows, onRowClick }) {
             {rows.map((row) => (
               <tr
                 key={row.monthName}
-                className="capitalize cursor-pointer hover:bg-purple-50 border-b border-purple-100"
+                className="capitalize cursor-pointer hover:bg-gf-accent-soft-bg border-b border-gf-border"
                 onClick={() => onRowClick(row.monthName)}
               >
                 <td className="py-2 px-3">{row.monthName}</td>
-                <td className="py-2 px-3 text-gray-500">{usdFormatChanger(row.projectedIncome)}</td>
-                <td className="py-2 px-3 text-green-700">{usdFormatChanger(row.actualIncome)}</td>
-                <td className="py-2 px-3 text-gray-500">{usdFormatChanger(row.projectedExpense)}</td>
-                <td className="py-2 px-3 text-red-700">{usdFormatChanger(row.actualExpense)}</td>
+                <td className="py-2 px-3 text-gf-text-muted">{usdFormatChanger(row.projectedIncome)}</td>
+                <td className="py-2 px-3 text-green-400">{usdFormatChanger(row.actualIncome)}</td>
+                <td className="py-2 px-3 text-gf-text-muted">{usdFormatChanger(row.projectedExpense)}</td>
+                <td className="py-2 px-3 text-red-400">{usdFormatChanger(row.actualExpense)}</td>
                 <td className="py-2 px-3">
                   <div className="flex flex-col leading-tight text-xs items-start mx-auto w-fit">
                     <ProjectionVarianceCell
@@ -75,7 +75,7 @@ function ProjectionAccuracyReport({ rows, onRowClick }) {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-gray-400 mt-2 px-1">
+      <p className="text-xs text-gf-text-muted mt-2 px-1">
         Solo se muestran meses cerrados con un historial de proyección registrado.
       </p>
       {showInfoModal && <ProjectionAccuracyInfoModal onClose={() => setShowInfoModal(false)} />}

@@ -21,7 +21,7 @@ const STATUS = {
   idle: null,
   uploading: { label: "Uploading file...", color: "text-purple-500", spin: true },
   processing: { label: "Reading and creating transactions...", color: "text-purple-500", spin: true },
-  done: { label: "Done!", color: "text-green-600", spin: false },
+  done: { label: "Done!", color: "text-green-400", spin: false },
   error: { label: "Something went wrong", color: "text-red-500", spin: false },
 };
 
@@ -258,12 +258,12 @@ function ReadFileComp({}) {
   const isUploading = uploadStatus === "uploading" || uploadStatus === "processing";
 
   return (
-    <div className="bg-slate-50 py-8 my-2 px-[30px] rounded-[60px] w-full max-w-[900px] flex flex-col gap-4">
+    <div className="gf-glass-card py-8 my-2 px-[30px] rounded-[60px] w-full h-full max-w-[900px] flex flex-col gap-4">
 
       {/* ── Description ── */}
       <div className="text-center">
         <h1 className="text-2xl font-light">Import from Excel</h1>
-        <p className="text-xs text-slate-400 mt-1 max-w-[300px] mx-auto leading-relaxed">
+        <p className="text-xs text-gf-text-muted mt-1 max-w-[300px] mx-auto leading-relaxed">
           Download the Gastify template, fill it with your transactions (date, concept, amount, currency, type) and upload it here. Categories, tags, accounts and account currencies are auto-resolved from your existing ones.
         </p>
       </div>
@@ -284,7 +284,7 @@ function ReadFileComp({}) {
               icon={<UploadOutlined />}
               loading={isUploading}
               disabled={isUploading}
-              className="!bg-purple-600 !border-purple-600 !text-white hover:!bg-purple-500 hover:!border-purple-500"
+              className="gf-glass-button !border-0 !text-white"
             >
               {isUploading ? "Processing..." : "Upload file"}
             </Button>
@@ -294,7 +294,7 @@ function ReadFileComp({}) {
         <StatusBadge status={uploadStatus} />
 
         {uploadResult && (
-          <div className="flex items-start gap-2 bg-green-50 text-green-700 text-xs px-4 py-2 rounded-xl w-full">
+          <div className="flex items-start gap-2 bg-green-500/15 text-green-400 text-xs px-4 py-2 rounded-xl w-full">
             <div className="flex-1 text-center">
               <p className="font-semibold">
                 {uploadResult.count > 0
@@ -305,7 +305,7 @@ function ReadFileComp({}) {
             </div>
             <button
               onClick={() => setUploadResult(null)}
-              className="text-green-400 hover:text-green-600 text-base leading-none shrink-0 mt-[1px]"
+              className="text-green-400 hover:text-green-300 text-base leading-none shrink-0 mt-[1px]"
               aria-label="Dismiss"
             >
               ×
@@ -323,13 +323,13 @@ function ReadFileComp({}) {
       </div>
 
       {/* ── Divider ── */}
-      <div className="border-t border-slate-200 w-full" />
+      <div className="border-t border-gf-border w-full" />
 
       {/* ── Remove Duplicates section ── */}
       <div className="flex flex-col items-center gap-2">
         <button
           onClick={() => { setShowDedup(!showDedup); setDedupResult(null); setDedupPreview(null); }}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-purple-500 transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-sm text-gf-text-muted hover:text-purple-500 transition-colors cursor-pointer"
         >
           <MdOutlineCleaningServices size={18} />
           <span>{showDedup ? "Hide" : "Remove duplicates from Excel"}</span>
@@ -337,18 +337,18 @@ function ReadFileComp({}) {
 
         {showDedup && (
           <div className="flex flex-col items-center gap-3 w-full">
-            <p className="text-xs text-slate-400 text-center max-w-[280px] leading-relaxed">
+            <p className="text-xs text-gf-text-muted text-center max-w-[280px] leading-relaxed">
               Upload the same Excel you already imported. Transactions that share the exact <b>date</b>, <b>name</b>, <b>amount</b> and <b>currency</b> will be processed according to the mode below.
             </p>
 
             {/* Toggle delete mode */}
-            <div className="flex items-center gap-2 bg-slate-100 rounded-full p-1 text-xs select-none">
+            <div className="flex items-center gap-2 bg-gf-surface-2 rounded-full p-1 text-xs select-none">
               <button
                 onClick={() => setDedupDeleteAll(false)}
                 className={`px-3 py-1 rounded-full transition-colors ${
                   !dedupDeleteAll
-                    ? "bg-white text-purple-600 font-medium shadow-sm"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-gf-accent-soft-bg text-purple-300 font-medium shadow-sm"
+                    : "text-gf-text-muted hover:text-gf-text-muted"
                 }`}
               >
                 Keep one original
@@ -357,14 +357,14 @@ function ReadFileComp({}) {
                 onClick={() => setDedupDeleteAll(true)}
                 className={`px-3 py-1 rounded-full transition-colors ${
                   dedupDeleteAll
-                    ? "bg-white text-red-600 font-medium shadow-sm"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-red-500/15 text-red-400 font-medium shadow-sm"
+                    : "text-gf-text-muted hover:text-gf-text-muted"
                 }`}
               >
                 Delete all matches
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 text-center max-w-[260px] -mt-1 leading-relaxed">
+            <p className="text-[10px] text-gf-text-muted text-center max-w-[260px] -mt-1 leading-relaxed">
               {dedupDeleteAll
                 ? "Every transaction matching a row in the file will be deleted — nothing is kept."
                 : "One record is always kept per group — only the extra copies are removed."}
@@ -375,7 +375,7 @@ function ReadFileComp({}) {
                 <Button
                   icon={<MdOutlineCleaningServices size={14} />}
                   loading={dedupLoading}
-                  className={`text-xs ${dedupDeleteAll ? "!border-red-400 !text-red-600 hover:!border-red-500" : ""}`}
+                  className={`text-xs ${dedupDeleteAll ? "!border-red-400 !text-red-400 hover:!border-red-500" : ""}`}
                 >
                   {dedupLoading ? "Scanning for duplicates..." : "Upload & Clean"}
                 </Button>
@@ -383,7 +383,7 @@ function ReadFileComp({}) {
             </div>
 
             {dedupResult && (
-              <div className={`flex items-start gap-2 text-xs px-4 py-2 rounded-xl w-full ${dedupResult.removed > 0 ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+              <div className={`flex items-start gap-2 text-xs px-4 py-2 rounded-xl w-full ${dedupResult.removed > 0 ? "bg-green-500/15 text-green-400" : "bg-gf-surface-2 text-gf-text-muted"}`}>
                 <div className="flex-1 text-center">
                   {dedupResult.removed > 0 ? (
                     <>
@@ -396,7 +396,7 @@ function ReadFileComp({}) {
                 </div>
                 <button
                   onClick={() => setDedupResult(null)}
-                  className={`text-base leading-none shrink-0 mt-[1px] ${dedupResult.removed > 0 ? "text-green-400 hover:text-green-600" : "text-slate-400 hover:text-slate-600"}`}
+                  className={`text-base leading-none shrink-0 mt-[1px] ${dedupResult.removed > 0 ? "text-green-400 hover:text-green-300" : "text-gf-text-muted hover:text-gf-text-muted"}`}
                   aria-label="Dismiss"
                 >
                   ×

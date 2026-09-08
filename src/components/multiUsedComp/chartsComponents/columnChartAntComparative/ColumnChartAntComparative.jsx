@@ -19,6 +19,12 @@ function ColumnChartAntComparative({
     colorField: "transactionType",
     colorLabel: "color",
     group: true,
+    // AntV's default theme assumes a light page - axis numbers/labels and
+    // the legend all rendered in a dark grey that was unreadable against
+    // this app's dark surfaces. "classicDark" is G2's own built-in dark
+    // theme and covers every text element this chart draws (axis, legend,
+    // labels) in one shot.
+    theme: "classicDark",
     style: {
       // Here you can destructerd the object and get the specific prop that you want, in this case I want the property color and that the only one that I get
       fill: ({ color }) => color,
@@ -63,22 +69,40 @@ function ColumnChartAntComparative({
         }
     },
     interaction: {
-      tooltip:  {
-        render: (e, { items, title }) => {
-          console.log(items);
-          console.log(title);
-
-          return (
-            <div
-              className="max-w-[250px] flex gap-1 flex-col items-center justify-center rounded-lg p-1"
-              key={title}
-            >
-              <h1 className="text-base text-center text-wrap font-bold font-sans">
-                {String(title).toUpperCase()}
-              </h1>
-            </div>
-          );
-        },
+      // @ant-design/plots' Column chart defaults to
+      // `elementHighlight: { background: true }` (see its own
+      // getDefaultOptions) - a separate interaction from the tooltip's own
+      // crosshairs, drawing a shaded rect behind the whole hovered
+      // x-category. Off since the tooltip already marks what's active.
+      elementHighlight: false,
+      tooltip: {
+        // Previously only showed the title (a leftover partial
+        // implementation) - dropping every item's own name/value, which is
+        // the whole point of a tooltip. Matches the dark "glass chip" style
+        // already used by ResponsiveBarsChartComponent's tooltip instead of
+        // G2's own default (light, cramped) tooltip box.
+        render: (e, { items, title }) => (
+          <div
+            className="max-w-[250px] gf-glass-chip text-gf-text rounded-2xl p-3 flex flex-col gap-1.5"
+            key={title}
+          >
+            <h1 className="text-sm text-center text-wrap font-bold">
+              {String(title).toUpperCase()}
+            </h1>
+            {items.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between gap-3 text-xs">
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  {item.name}
+                </span>
+                <span className="font-semibold">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        ),
       },
     },
     ...propPlus,

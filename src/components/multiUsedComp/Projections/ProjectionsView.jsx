@@ -29,9 +29,9 @@ function HeaderTooltip({ title }) {
 const getIncomeColorClass = (type) => {
   switch (type) {
     case "actual":
-      return "text-green-700 font-normal"; // Closed/past months - historical green, normal weight
+      return "text-green-400 font-normal"; // Closed/past months - historical green, normal weight
     case "current":
-      return "text-green-600 font-normal"; // Current active month - present green, normal weight
+      return "text-green-400 font-normal"; // Current active month - present green, normal weight
     case "estimate":
     default:
       return "text-emerald-500 font-normal"; // Future estimated months - lighter green, normal weight
@@ -41,7 +41,7 @@ const getIncomeColorClass = (type) => {
 const getExpenseColorClass = (type) => {
   switch (type) {
     case "actual":
-      return "text-red-700 font-normal"; // Closed/past months - historical red, normal weight
+      return "text-red-400 font-normal"; // Closed/past months - historical red, normal weight
     case "current":
       return "text-red-500 font-normal"; // Current active month - present red, normal weight
     case "estimate":
@@ -53,7 +53,7 @@ const getExpenseColorClass = (type) => {
 function ProjectionsView({ rows, onRowClick }) {
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full min-w-[600px] text-center bg-white rounded-2xl overflow-hidden">
+      <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
         <thead>
           <tr className="bg-purple-600 text-white">
             <th className="py-2 px-3">Month</th>
@@ -76,14 +76,14 @@ function ProjectionsView({ rows, onRowClick }) {
             return (
               <tr
                 key={row.monthName}
-                className={`capitalize cursor-pointer hover:bg-purple-50 border-b border-purple-100 ${
-                  row.type === "current" ? "bg-purple-100/60 font-medium" : ""
+                className={`capitalize cursor-pointer hover:bg-gf-accent-soft-bg border-b border-gf-border ${
+                  row.type === "current" ? "bg-gf-accent-soft-bg/60 font-medium" : ""
                 }`}
                 onClick={() => onRowClick(row)}
               >
                 <td className="py-2 px-3">
                   {row.monthName}
-                  <span className="block text-[10px] text-gray-400 normal-case">
+                  <span className="block text-[10px] text-gf-text-muted normal-case">
                     {TYPE_LABEL[row.type]}
                   </span>
                 </td>
@@ -107,12 +107,12 @@ function ProjectionsView({ rows, onRowClick }) {
                     <>
                       {formatMoney(row.balance)}
                       {row.type === "actual" && row.manualBalance !== undefined && (
-                        <span className="block text-[9px] text-gray-400 normal-case">manually set</span>
+                        <span className="block text-[9px] text-gf-text-muted normal-case">manually set</span>
                       )}
                     </>
                   ) : row.estimatedBalance != null ? (
                     <Tooltip title="Basado en tus transacciones reales donde existen, y en tu ingreso/gasto aproximado el resto del tiempo - no un valor exacto.">
-                      <span className="text-gray-400 font-normal">
+                      <span className="text-gf-text-muted font-normal">
                         {formatMoney(row.estimatedBalance)}
                         <span className="block text-[9px] normal-case">aproximado</span>
                       </span>
@@ -126,7 +126,7 @@ function ProjectionsView({ rows, onRowClick }) {
           })}
         </tbody>
       </table>
-      <p className="text-xs text-gray-400 mt-2 px-1">
+      <p className="text-xs text-gf-text-muted mt-2 px-1">
         Balance is anchored to your accounts&apos; current totals (as of today) and may not
         reflect every past transaction if account balances aren&apos;t kept up to date.
       </p>

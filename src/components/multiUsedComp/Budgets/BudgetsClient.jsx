@@ -23,6 +23,8 @@ import {
   UnbudgetedSpendingCard,
   UnbudgetedSpendingModal,
 } from "./UnbudgetedSpending";
+import SpendingSummaryDetailModal from "./SpendingSummaryDetailModal";
+import BasicModal from "@/components/modals/basicModal/BasicModal";
 import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget, BUDGET_TYPES } from "@/helpers/transformers/budgetTypes";
 import PrimaryCurrencySelector from "../PrimaryCurrencySelector";
 import fetcher from "@/helpers/fetcher";
@@ -41,6 +43,7 @@ function BudgetsClient({ mcSession }) {
   const [modalMode, setModalMode] = useState(null); // "creation" | "edition" | null
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [returnToUnbudgeted, setReturnToUnbudgeted] = useState(false);
+  const [showSpendingSummary, setShowSpendingSummary] = useState(false);
   const dispatch = useDispatch();
   const toFetch = fetcher();
 
@@ -237,8 +240,8 @@ function BudgetsClient({ mcSession }) {
 
   return (
     <div className="w-full h-full sm:pr-2 pb-10">
-      <div className="w-full profile-img py-[40px] text-center text-white">
-        <h1 className="text-3xl min-[400px]:text-[40px] sm:text-[40px] md:text-[60px] font-thin">
+      <div className="w-full profile-img py-4 text-center text-white">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
           Budgets
         </h1>
       </div>
@@ -249,11 +252,11 @@ function BudgetsClient({ mcSession }) {
           </div>
         </Tooltip>
       </div>
-      <div className="content-profile-cont w-full h-full bg-slate-100 items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl shadow-sm px-4 sm:px-8 py-6">
+      <div className="content-profile-cont w-full h-full content-wallet-glass items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl px-4 sm:px-8 py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <div
-              className="bg-white border border-purple-200 text-purple-900 font-semibold text-xs px-3.5 py-1.5 rounded-2xl shadow-xs flex items-center gap-1.5 select-none"
+              className="gf-glass-card text-purple-100 font-semibold text-xs px-3.5 py-1.5 rounded-2xl flex items-center gap-1.5 select-none"
               title="Time period currently being considered for budgets"
             >
               <UniversalCategoIcon type="fa/FaCalendarAlt" siz={13} />
@@ -264,7 +267,7 @@ function BudgetsClient({ mcSession }) {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="flex items-center gap-1 bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold px-3 py-1.5 rounded-full text-xs transition-colors cursor-pointer"
+                className="flex items-center gap-1 gf-glass-card hover:brightness-110 text-purple-100 font-bold px-3 py-1.5 rounded-full text-xs transition-[filter] cursor-pointer"
               >
                 <UniversalCategoIcon type="md/MdRefresh" siz={15} />
                 <span>Reset</span>
@@ -277,7 +280,7 @@ function BudgetsClient({ mcSession }) {
             </Tooltip>
           </div>
           <div
-            className="flex items-center gap-2 bg-purple-600 text-white rounded-full px-4 py-2 cursor-pointer hover:bg-purple-500"
+            className="flex items-center gap-2 gf-glass-button text-white rounded-full px-4 py-2 cursor-pointer"
             onClick={openCreate}
           >
             <CategoIcon type="MdAddCircleOutline" siz={22} />
@@ -289,20 +292,29 @@ function BudgetsClient({ mcSession }) {
           <Skeleton active />
         ) : (
           <>
-            <h2 className="text-xl text-purple-800 mb-2">Spending budgets</h2>
+            <h2 className="text-xl text-purple-300 mb-2">Spending budgets</h2>
             {(spendingBudgets.length > 0 || coverage.totalSpent > 0) && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-                <div className="flex-1 bg-purple-100 rounded-2xl p-3 text-center">
-                  <p className="text-xs text-gray-500">Planned</p>
-                  <p className="text-lg text-purple-800 font-bold">{usdFormatChanger(spendingTotals.fixed)}</p>
+                <div
+                  className="flex-1 bg-gf-accent-soft-bg rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
+                  onClick={() => setShowSpendingSummary(true)}
+                >
+                  <p className="text-xs text-gf-text-muted">Planned</p>
+                  <p className="text-lg text-purple-300 font-bold">{usdFormatChanger(spendingTotals.fixed)}</p>
                 </div>
-                <div className="flex-1 bg-purple-100 rounded-2xl p-3 text-center">
-                  <p className="text-xs text-gray-500">Total spent</p>
-                  <p className="text-lg text-purple-800 font-bold">{usdFormatChanger(coverage.totalSpent)}</p>
+                <div
+                  className="flex-1 bg-gf-accent-soft-bg rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
+                  onClick={() => setShowSpendingSummary(true)}
+                >
+                  <p className="text-xs text-gf-text-muted">Total spent</p>
+                  <p className="text-lg text-purple-300 font-bold">{usdFormatChanger(coverage.totalSpent)}</p>
                 </div>
-                <div className="flex-1 bg-amber-100 rounded-2xl p-3 text-center">
-                  <p className="text-xs text-amber-700">Unbudgeted</p>
-                  <p className="text-lg text-amber-900 font-bold">
+                <div
+                  className="flex-1 gf-glass-warning rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
+                  onClick={() => setShowSpendingSummary(true)}
+                >
+                  <p className="text-xs text-amber-400">Unbudgeted</p>
+                  <p className="text-lg text-amber-400 font-bold">
                     {usdFormatChanger(coverage.unbudgetedSpent)}
                     <span className="text-xs font-normal ml-1">
                       · {Math.round(coverage.unbudgetedPercentage)}%
@@ -339,8 +351,8 @@ function BudgetsClient({ mcSession }) {
               </div>
             )}
 
-            <h2 className="text-xl text-purple-800 mb-2">Projects</h2>
-            <p className="text-xs text-gray-500 mb-3">One-time plans made from specific movements. Their dates and details can be changed at any time.</p>
+            <h2 className="text-xl text-purple-300 mb-2">Projects</h2>
+            <p className="text-xs text-gf-text-muted mb-3">One-time plans made from specific movements. Their dates and details can be changed at any time.</p>
             {projectBudgets.length <= 0 ? (
               <div className="mb-6"><EmptyModule emMessage="No project budgets yet. Create one for a trip, renovation, or event ✈️" /></div>
             ) : (
@@ -349,7 +361,7 @@ function BudgetsClient({ mcSession }) {
               </div>
             )}
 
-            <h2 className="text-xl text-purple-800 mb-2">Savings</h2>
+            <h2 className="text-xl text-purple-300 mb-2">Savings</h2>
             {savingBudgets.length <= 0 ? (
               <EmptyModule emMessage="No savings budgets yet. Create one 🤓" />
             ) : (
@@ -401,6 +413,21 @@ function BudgetsClient({ mcSession }) {
             onAddToBudget={openAddToBudget}
             onCreateProject={openCreateProjectFromUnbudgeted}
             onAddToProject={addGroupToProject}
+          />
+        )}
+
+        {showSpendingSummary && (
+          <BasicModal
+            close={() => setShowSpendingSummary(false)}
+            renderContent={
+              <SpendingSummaryDetailModal
+                close={() => setShowSpendingSummary(false)}
+                spendingBudgets={spendingBudgets}
+                actualByBudgetId={actualByBudgetId}
+                coverage={coverage}
+                spendingTotals={spendingTotals}
+              />
+            }
           />
         )}
       </div>

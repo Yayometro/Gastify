@@ -22,7 +22,7 @@ function HistoricalComparativeCategoriesView({
 }) {
   return (
     <div className="w-full h-full">
-      {title || <h1 className=" text-3xl text-purple-700">Categories comparative</h1>}
+      {title || <h1 className=" text-3xl text-purple-300">Categories comparative</h1>}
       <PeriodFiltersWithCompare
         timePeriod={timePeriod}
         getValueFromSelecter={getValueFromSelecter}

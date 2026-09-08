@@ -126,7 +126,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   };
 
   return (
-    <div className="budget-cont py-4 px-2 w-full max-w-[1200px] mx-auto">
+    <div className="budget-cont gf-glass-card py-4 px-2 w-full max-w-[1200px] mx-auto rounded-[32px]">
       <div className="wallet-budget-Content">
         <h1 className="wallet-budget-title text-2xl text-center font-bold">
           Wallet Budgets
@@ -136,21 +136,21 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
         <SelecterFilter
           getValue={getValueFromSelecter}
           periodOverride={generate_timeperiod_ranges_array_for_dashboard(initialToday.getFullYear())}
-          styles="bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+          styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
         />
         <TimeRange rpDate={handleRangeDate} rpResponse={""} />
         <Tooltip title="Click to return time to current month 🤓">
           <button
             type="button"
             onClick={handleResetFilters}
-            className="flex items-center gap-1 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-full px-3 py-1 text-xs font-medium shadow-sm transition-colors cursor-pointer"
+            className="flex items-center gap-1 gf-glass-card hover:brightness-110 text-purple-100 rounded-full px-3 py-1 text-xs font-medium transition-[filter] cursor-pointer"
           >
             <UniversalCategoIcon type="md/MdRefresh" siz={15} />
             <span>Reset</span>
           </button>
         </Tooltip>
       </div>
-      <div className="bc-tab-headers-cont w-full text-center flex justify-center items-center gap-2">
+      <div className="bc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 mb-2">
         <div
           onClick={() => handleTab("budget")}
           className={`tab-budget p-4 cursor-pointer hover:text-purple-400 ${
@@ -227,7 +227,7 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
               compact
               onClick={() => router.push("/dashboard/budgets")}
             />
-            {projects.length > 0 && <><p className="text-lg text-purple-800 text-center mt-4">Projects</p>{projects.map((project) => {
+            {projects.length > 0 && <><p className="text-lg text-purple-300 text-center mt-4">Projects</p>{projects.map((project) => {
               const actual = bcTrans.filter((transaction) => getExplicitBudgetId(transaction) === String(project._id) && transaction.isBill && !transaction.isIncome).reduce((sum, transaction) => sum + (Number(transaction.amount) || 0), 0);
               return <BudgetBarRow key={`project-${project._id}`} budget={project} actual={actual} onClick={openDetail} />;
             })}</>}

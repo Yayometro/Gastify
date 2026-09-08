@@ -56,14 +56,14 @@ function UncategorizedSuggestionsTab({ mail, onApplied }) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-10">
         <Spin />
-        <p className="text-xs text-slate-400">Scanning uncategorized transactions...</p>
+        <p className="text-xs text-gf-text-muted">Scanning uncategorized transactions...</p>
       </div>
     );
   }
 
   if (suggestions.length === 0) {
     return (
-      <p className="text-sm text-slate-400 text-center py-10">
+      <p className="text-sm text-gf-text-muted text-center py-10">
         No suggestions right now — you&apos;re all caught up! 🎉
       </p>
     );
@@ -71,7 +71,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }) {
 
   return (
     <div>
-      <p className="text-xs text-slate-400 text-center mb-3">
+      <p className="text-xs text-gf-text-muted text-center mb-3">
         {suggestions.length} uncategorized transaction{suggestions.length !== 1 ? "s" : ""} matched a rule · uncheck any to skip
       </p>
       <SuggestionsList

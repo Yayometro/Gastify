@@ -32,14 +32,14 @@ function CategoriesCompareTable({
     <div className="w-full flex flex-col items-center gap-2">
       <div className="flex items-center justify-center gap-3 flex-wrap text-sm">
         <div className="flex flex-col items-center">
-          <b className="text-xs text-gray-500">{labelA}</b>
+          <b className="text-xs text-gf-text-muted">{labelA}</b>
           <p>
             Total {kindLabel}: <b>{formatMoneyMajor(totalA || 0, walletPrimaryCurrency)}</b>
           </p>
         </div>
-        <span className="text-purple-700 font-bold shrink-0">VS</span>
+        <span className="text-purple-300 font-bold shrink-0">VS</span>
         <div className="flex flex-col items-center">
-          <b className="text-xs text-gray-500">{labelB}</b>
+          <b className="text-xs text-gf-text-muted">{labelB}</b>
           <p>
             Total {kindLabel}: <b>{formatMoneyMajor(totalB || 0, walletPrimaryCurrency)}</b>
           </p>
@@ -48,7 +48,7 @@ function CategoriesCompareTable({
       <div className="w-full grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1 min-w-0">
           {topA.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center">No categories</p>
+            <p className="text-xs text-gf-text-muted text-center">No categories</p>
           ) : (
             topA.map((item, i) => (
               <TopCategoryRow key={`a-${item._id || item.type || i}`} item={item} index={i} onClick={onOpenItem} />
@@ -57,7 +57,7 @@ function CategoriesCompareTable({
         </div>
         <div className="flex flex-col gap-1 min-w-0">
           {topB.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center">No categories</p>
+            <p className="text-xs text-gf-text-muted text-center">No categories</p>
           ) : (
             topB.map((item, i) => (
               <TopCategoryRow key={`b-${item._id || item.type || i}`} item={item} index={i} onClick={onOpenItem} />
@@ -65,7 +65,7 @@ function CategoriesCompareTable({
           )}
         </div>
       </div>
-      <p className="text-[10px] text-gray-400 text-center">
+      <p className="text-[10px] text-gf-text-muted text-center">
         Each side ranks its own top {TOP_N} categories independently - row 1 on the left and row 1
         on the right don&apos;t have to be the same category.
       </p>

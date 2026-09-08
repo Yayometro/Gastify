@@ -42,7 +42,7 @@ function CategoryList({ clCategories ,clUser }) {
             >
               <div
                 style={{ backgroundColor: category.color || "#ABABAB" }}
-                className={`w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] flex flex-col justify-center items-center rounded-full px-2 py-1 hover:mix-blend-multiply shadow-lg cursor-pointer`}
+                className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] flex flex-col justify-center items-center rounded-full px-2 py-1 hover:brightness-90 cursor-pointer`}
                 onClick={() => {
                   if (category.isDefaultCatego) {
                     runNotify(

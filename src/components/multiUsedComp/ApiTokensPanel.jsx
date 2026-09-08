@@ -70,34 +70,34 @@ function ApiTokensPanel({ mail }) {
   };
 
   return (
-    <div className="api-tokens-panel w-full bg-purple-100 rounded-3xl p-4 mb-4">
+    <div className="api-tokens-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
       <div
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h2 className="text-xl text-purple-800 font-normal">Connector access tokens</h2>
+        <h2 className="text-xl text-purple-300 font-normal">Connector access tokens</h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
         <div className="mt-3">
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-gf-text-muted mb-3">
             Personal tokens for AI agent connectors (Claude, ChatGPT) to create transactions on
             your behalf. Each one is shown only once at creation - store it wherever the
             connector asks for it, then it can&apos;t be viewed again (only revoked).
           </p>
 
           {justCreatedToken && (
-            <div className="bg-white border-2 border-purple-400 rounded-2xl p-3 mb-4">
-              <p className="text-xs font-semibold text-purple-800 mb-1">
+            <div className="bg-gf-surface border-2 border-purple-400 rounded-2xl p-3 mb-4">
+              <p className="text-xs font-semibold text-purple-300 mb-1">
                 Copy this token now - it won&apos;t be shown again:
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs bg-purple-50 rounded-xl px-2 py-2 break-all">
+                <code className="flex-1 text-xs bg-gf-accent-soft-bg rounded-xl px-2 py-2 break-all">
                   {justCreatedToken}
                 </code>
                 <button
                   type="button"
-                  className="shrink-0 bg-purple-600 text-white text-xs rounded-full px-3 py-2 hover:bg-purple-500"
+                  className="shrink-0 gf-glass-button text-white text-xs rounded-full px-3 py-2"
                   onClick={() => {
                     navigator.clipboard.writeText(justCreatedToken);
                     runNotify("ok", "Copied to clipboard 🤓");
@@ -108,7 +108,7 @@ function ApiTokensPanel({ mail }) {
               </div>
               <button
                 type="button"
-                className="text-[11px] text-gray-500 underline mt-2"
+                className="text-[11px] text-gf-text-muted underline mt-2"
                 onClick={() => setJustCreatedToken(null)}
               >
                 Done, hide this
@@ -118,16 +118,16 @@ function ApiTokensPanel({ mail }) {
 
           <ul className="flex flex-col gap-2 mb-4">
             {tokens.length === 0 ? (
-              <li className="text-xs text-gray-400 italic">No tokens yet.</li>
+              <li className="text-xs text-gf-text-muted italic">No tokens yet.</li>
             ) : (
               tokens.map((t) => (
                 <li
                   key={t._id}
-                  className="flex justify-between items-center bg-white rounded-2xl px-4 py-2"
+                  className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
                 >
                   <div className="flex flex-col">
-                    <p className="text-purple-800">{t.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-purple-300">{t.name}</p>
+                    <p className="text-xs text-gf-text-muted">
                       Created {dayjs(t.createdAt).format("DD/MM/YYYY")} · Last used{" "}
                       {t.lastUsedAt ? dayjs(t.lastUsedAt).format("DD/MM/YYYY HH:mm") : "never"}
                     </p>
@@ -145,7 +145,7 @@ function ApiTokensPanel({ mail }) {
 
           <form
             onSubmit={handleCreate}
-            className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-white rounded-2xl p-3"
+            className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">
               <p className="label-tfp mb-1">Name</p>
@@ -159,7 +159,7 @@ function ApiTokensPanel({ mail }) {
             </div>
             <button
               type="submit"
-              className="bg-purple-600 text-white rounded-full px-4 py-2 hover:bg-purple-500"
+              className="gf-glass-button text-white rounded-full px-4 py-2"
             >
               {isLoading ? <Spin /> : "Generate token"}
             </button>

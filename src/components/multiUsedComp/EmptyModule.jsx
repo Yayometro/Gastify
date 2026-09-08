@@ -4,7 +4,7 @@ import { Empty } from "antd";
 function EmptyModule({ emMessage }) {
   return (
     <>
-      <Empty description={<span className="text-slate-400">{emMessage}</span>} />
+      <Empty description={<span className="text-gf-text-muted">{emMessage}</span>} />
     </>
   );
 }

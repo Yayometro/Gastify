@@ -25,6 +25,25 @@ function ResponsiveBarsChartComponent({
     valueFormat: " >-,~r",
     colors: (cData) => String(cData.data[`color`]),
     borderColor: { from: "color", modifiers: [["darker", 1.6]] },
+    // Nivo's default theme assumes a light page - axis numbers, tick
+    // labels, axis titles and the right-side legend all default to a dark
+    // grey that reads as near-invisible against this app's dark surfaces.
+    // Read straight from the CSS tokens so this one shared chart (used
+    // across Transactions Resume, History, and anywhere else it's dropped
+    // in) stays legible in both themes without a separate override per
+    // caller. The per-bar value labels (labelTextColor below) are
+    // untouched - those derive contrast from each bar's OWN color, not the
+    // page theme, and were already legible.
+    theme: {
+      text: { fill: "var(--gf-text)" },
+      axis: {
+        ticks: { text: { fill: "var(--gf-text-muted)", fontSize: 11 } },
+        legend: { text: { fill: "var(--gf-text)", fontSize: 12, fontWeight: 600 } },
+      },
+      legends: { text: { fill: "var(--gf-text)", fontSize: 11 } },
+      grid: { line: { stroke: "var(--gf-border)" } },
+      tooltip: { container: { background: "transparent", boxShadow: "none", padding: 0 } },
+    },
     axisTop: null,
     axisRight: null,
     axisBottom: {
@@ -73,12 +92,10 @@ function ResponsiveBarsChartComponent({
       },
     ],
     tooltip: (dataa) => {
-      // console.log(dataa)
       return (
         <div
           style={{
-            padding: 5,
-            background: "#F7F9F9",
+            padding: 10,
             boxShadow: `0px 7px 16px 0px ${
               dataa.color ? dataa.color : "rgba(0,0,0,0.27)"
             }`,
@@ -87,9 +104,9 @@ function ResponsiveBarsChartComponent({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            borderRadius: "10px",
+            borderRadius: "16px",
           }}
-          className="max-w-[250px]"
+          className="max-w-[250px] gf-glass-chip text-gf-text"
         >
           <h1 className="text-base text-center text-wrap font-bold">
             {dataa.data.type.toUpperCase()}

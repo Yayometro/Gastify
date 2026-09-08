@@ -178,23 +178,23 @@ function BudgetDetailModal({
       <BasicModal
         close={onClose}
         renderContent={
-          <div className="content absolute bg-purple-600 border-2 border-purple-600 flex flex-col w-[94vw] max-w-[640px] max-h-[90vh] overflow-y-auto rounded-3xl pt-8 pb-6 px-4 z-[1001]">
-            <div className="w-full bg-slate-50 rounded-2xl p-6 relative flex flex-col gap-5 shadow-lg">
+          <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[640px] max-h-[90vh] overflow-y-auto rounded-3xl z-[1001]">
+            <div className="w-full p-6 relative flex flex-col gap-5">
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 text-purple-700 hover:bg-purple-100 rounded-full p-1.5 transition-colors cursor-pointer"
+                className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors cursor-pointer"
               >
                 <UniversalCategoIcon type="md/MdClose" siz={22} />
               </button>
 
               {/* Header section */}
-              <div className="flex items-start justify-between gap-3 pr-8">
+              <div className="flex items-start justify-between gap-3 pr-12">
                 <div>
-                  <h2 className="text-2xl font-bold text-purple-800">
+                  <h2 className="text-2xl font-bold text-purple-300">
                     {budget.name || "Unnamed Budget"}
                   </h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gf-text-muted mt-0.5">
                     {isSaving ? "Savings goal" : "Spending budget"} ({budget.period || "monthly"}) • {budgetCurrency} based
                   </p>
                 </div>
@@ -206,15 +206,15 @@ function BudgetDetailModal({
               </div>
 
               {/* Progress Bar Summary with Circle Percentage Badge at Head */}
-              <div className="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm">
+              <div className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
                 <div className="flex justify-between items-baseline mb-2">
-                  <span className="text-sm font-semibold text-gray-700">
+                  <span className="text-sm font-semibold text-gf-text-muted">
                     {isSaving ? "Saved:" : "Spent:"}{" "}
-                    <span className="text-purple-700 font-bold">
+                    <span className="text-lg text-purple-200 font-extrabold">
                       {usdFormatChanger(effectiveAmount)}
                     </span>
                   </span>
-                  <span className="text-xs text-gray-500 font-medium">
+                  <span className="text-xs text-gf-text-muted font-medium">
                     {isSaving ? "Goal: " : "Limit: "}
                     {usdFormatChanger(goalAmount)}
                     {periodLabel}
@@ -224,20 +224,22 @@ function BudgetDetailModal({
                   breakdown={isSaving ? linkedAccountsBreakdown : expenseCurrencyBreakdown}
                   walletPrimaryCurrency={walletPrimaryCurrency}
                 />
-                <div className="w-full h-5 bg-gray-200 rounded-full relative my-3">
+                <div className="w-full h-5 bg-gf-surface-2 rounded-full relative my-3">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{ width: `${Math.min(Math.max(ratio * 100, 0), 100)}%`, background: gradient }}
                   />
                   <div
                     style={{
-                      left: `calc(${Math.min(Math.max(ratio * 100, 0), 100)}% - ${Math.min(Math.max(ratio * 100, 0), 100) * 0.40}px)`,
+                      left: `clamp(0px, calc(${Math.min(Math.max(ratio * 100, 0), 100)}% - 20px), calc(100% - 40px))`,
                       borderColor: barColor,
                     }}
-                    className={`absolute top-1/2 -translate-y-1/2 w-10 h-10 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center text-[12px] font-extrabold shadow-md z-10 border-[3px] ${
+                    className={`absolute top-1/2 -translate-y-1/2 w-10 h-10 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center text-[12px] font-extrabold shadow-md z-10 border-[3px] bg-gf-surface ${
                       isExceeded
-                        ? "bg-red-50 text-red-700"
-                        : "bg-white text-slate-800"
+                        ? isSaving
+                          ? "text-blue-300"
+                          : "text-red-300"
+                        : "text-gf-text"
                     }`}
                     title={isExceeded ? `Exceeded limit/goal! (${pctNum}%)` : `${pctNum}% of goal/limit`}
                   >
@@ -245,21 +247,21 @@ function BudgetDetailModal({
                   </div>
                 </div>
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-semibold text-purple-800">
+                  <span className="font-semibold text-purple-300">
                     {pctNum}% of {isSaving ? "goal" : "limit"}
                   </span>
-                  <span className="font-bold text-gray-600">{remainingText}</span>
+                  <span className="font-bold text-gf-text-muted">{remainingText}</span>
                 </div>
               </div>
 
               {/* Spending by Category (Horizontal Stacked Bar Chart) */}
               {categoryBreakdown.length > 0 && (
-                <div className="bg-white rounded-2xl p-4 border border-purple-100 shadow-sm">
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                <div className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
+                  <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-3">
                     Spending Distribution by Category
                   </h3>
                   {/* Stacked bar */}
-                  <div className="w-full h-3.5 bg-gray-100 rounded-full overflow-hidden flex mb-3">
+                  <div className="w-full h-3.5 bg-gf-surface-2 rounded-full overflow-hidden flex mb-3">
                     {categoryBreakdown.map((cat, idx) => {
                       const catPct = totalSpent > 0 ? (cat.amount / totalSpent) * 100 : 0;
                       return (
@@ -282,18 +284,18 @@ function BudgetDetailModal({
                       return (
                         <div
                           key={idx}
-                          className="flex items-center justify-between text-xs bg-gray-50 rounded-xl px-2.5 py-1.5"
+                          className="flex items-center justify-between text-xs bg-gf-surface-2 rounded-xl px-2.5 py-1.5"
                         >
                           <div className="flex items-center gap-1.5 truncate pr-2">
                             <span
                               style={{ backgroundColor: cat.color }}
                               className="w-2.5 h-2.5 rounded-full shrink-0"
                             />
-                            <span className="text-gray-700 font-medium truncate">
+                            <span className="text-gf-text-muted font-medium truncate">
                               {cat.name}
                             </span>
                           </div>
-                          <span className="font-bold text-purple-700 shrink-0">
+                          <span className="font-bold text-purple-300 shrink-0">
                             {catPct}%
                           </span>
                         </div>
@@ -305,13 +307,13 @@ function BudgetDetailModal({
 
               {/* Detailed Movements List (Movements.jsx transaction component style) */}
               <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-2">
                   Detailed Movements ({matchingTransactions.length})
                 </h3>
 
                 {/* Linked accounts banner for savings */}
                 {isSaving && budget.linkedAccounts && budget.linkedAccounts.length > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-3 flex items-center justify-between text-xs text-blue-900">
+                  <div className="gf-glass-info rounded-2xl p-3 mb-3 flex items-center justify-between text-xs text-blue-100">
                     <div className="flex items-center gap-2">
                       <span className="text-base">🔗</span>
                       <span>
@@ -323,20 +325,20 @@ function BudgetDetailModal({
                         </strong>
                       </span>
                     </div>
-                    <span className="font-bold text-blue-700">{formatMoneyMajor(effectiveAmount, walletPrimaryCurrency, { showCode: true })}</span>
+                    <span className="font-bold text-blue-200">{formatMoneyMajor(effectiveAmount, walletPrimaryCurrency, { showCode: true })}</span>
                   </div>
                 )}
 
                 {/* Manual saving progress banner for savings */}
                 {isSaving && (!budget.linkedAccounts || budget.linkedAccounts.length === 0) && (Number(budget.savingAmount) || 0) > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-3 flex items-center justify-between text-xs text-blue-900">
+                  <div className="gf-glass-info rounded-2xl p-3 mb-3 flex items-center justify-between text-xs text-blue-100">
                     <div className="flex items-center gap-2">
                       <span className="text-base">📌</span>
                       <span>
                         Manual saving progress set:
                       </span>
                     </div>
-                    <span className="font-bold text-blue-700">{usdFormatChanger(budget.savingAmount)}</span>
+                    <span className="font-bold text-blue-200">{usdFormatChanger(budget.savingAmount)}</span>
                   </div>
                 )}
 
@@ -346,7 +348,7 @@ function BudgetDetailModal({
                       <div
                         key={movement._id}
                         id={`trans-${movement._id}`}
-                        className="flex flex-row justify-between items-center bg-white rounded-2xl py-2 px-3 border border-gray-100 hover:bg-slate-100 relative shadow-xs transition-colors"
+                        className="flex flex-row justify-between items-center bg-gf-surface rounded-2xl py-2 px-3 border border-gf-border hover:bg-gf-surface-2 relative shadow-xs transition-colors"
                       >
                         <div className="flex gap-3 items-center truncate pr-2">
                           <div className="tra-cat-cont shrink-0">
@@ -362,30 +364,30 @@ function BudgetDetailModal({
                             </div>
                           </div>
                           <div className="flex flex-col truncate">
-                            <div className="font-medium text-xs text-gray-800 truncate">
+                            <div className="font-medium text-xs text-gf-text truncate">
                               {!movement.name ? (
-                                <span className="italic text-gray-400">No name. Asign one...</span>
+                                <span className="italic text-gf-text-muted">No name. Asign one...</span>
                               ) : (
                                 <span>{movement.name}</span>
                               )}
                             </div>
-                            <div className="text-[10px] text-gray-500 flex items-center gap-2 flex-wrap mt-0.5">
+                            <div className="text-[10px] text-gf-text-muted flex items-center gap-2 flex-wrap mt-0.5">
                               <span>
-                                <strong className="text-gray-400 font-light">Cat: </strong>
+                                <strong className="text-gf-text-muted font-light">Cat: </strong>
                                 {movement.category?.name || "—"}
                               </span>
                               {movement.subCategory?.name && (
                                 <span>
-                                  <strong className="text-gray-400 font-light">Sub: </strong>
+                                  <strong className="text-gf-text-muted font-light">Sub: </strong>
                                   {movement.subCategory.name}
                                 </span>
                               )}
                               <span>
-                                <strong className="text-gray-400 font-light">Acc: </strong>
+                                <strong className="text-gf-text-muted font-light">Acc: </strong>
                                 {movement.account?.name || "—"}
                               </span>
                             </div>
-                            <div className="flex flex-wrap gap-1 items-center justify-start text-[10px] text-gray-400 mt-1">
+                            <div className="flex flex-wrap gap-1 items-center justify-start text-[10px] text-gf-text-muted mt-1">
                               <span className="font-light">Tags:</span>
                               {!movement.tags || movement.tags.length === 0 ? (
                                 <span>No tags...</span>
@@ -415,7 +417,7 @@ function BudgetDetailModal({
                                 </span>
                               </div>
                             )}
-                            <div className="text-[10px] text-gray-400 font-light mt-0.5">
+                            <div className="text-[10px] text-gf-text-muted font-light mt-0.5">
                               {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
                             </div>
                           </div>
@@ -423,7 +425,7 @@ function BudgetDetailModal({
                             <button
                               type="button"
                               onClick={() => handleRemoveTrans(movement._id)}
-                              className="text-gray-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
+                              className="text-gf-text-muted hover:text-red-400 transition-colors p-1 cursor-pointer"
                               title="Delete transaction"
                             >
                               <CategoIcon type="MdDelete" size={15} />
@@ -431,7 +433,7 @@ function BudgetDetailModal({
                             <button
                               type="button"
                               onClick={() => setEditingTrans(movement)}
-                              className="text-gray-400 hover:text-purple-600 transition-colors p-1 cursor-pointer"
+                              className="text-gf-text-muted hover:text-purple-600 transition-colors p-1 cursor-pointer"
                               title="Edit transaction"
                             >
                               <CategoIcon type="MdOutlineCreate" size={15} />
@@ -449,14 +451,14 @@ function BudgetDetailModal({
               </div>
 
               {/* Action Bar: Edit Budget Button */}
-              <div className="pt-2 border-t border-gray-200">
+              <div className="pt-2 border-t border-gf-border">
                 <button
                   type="button"
                   onClick={() => {
                     onClose();
                     if (onEdit) onEdit(budget);
                   }}
-                  className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
+                  className="w-full py-3 px-4 gf-glass-button text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
                 >
                   <UniversalCategoIcon type="md/MdEdit" siz={18} />
                   <span>Edit Budget ✏️</span>

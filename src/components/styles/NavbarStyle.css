@@ -6,7 +6,7 @@
   line-height: 100%;
   /* width: 1rem; */
   height: fit-content;
-  color: rgb(46 16 101);
+  color: var(--gf-text);
 }
 .li-add-more{
     color: rgb(88 28 135) !important;

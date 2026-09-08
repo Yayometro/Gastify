@@ -20,7 +20,7 @@ function CategoryCircle({
         }}
         className={`w-[${size || 100}px] h-[${
           size || 100
-        }px] sm:w-[130px] sm:h-[130px] flex flex-col justify-center items-center rounded-full px-2 py-1 hover:mix-blend-multiply shadow-lg cursor-pointer`}
+        }px] sm:w-[130px] sm:h-[130px] flex flex-col justify-center items-center rounded-full px-2 py-1 hover:brightness-90 transition-[filter] shadow-lg cursor-pointer`}
         onClick={() => onSelect(category)}
       >
         <div className="subCategory-list-icon-container w-full flex items-center justify-center">
