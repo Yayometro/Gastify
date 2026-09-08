@@ -9,27 +9,27 @@ function ProjectionsInfoModal({ onClose }) {
     <BasicModal
       close={onClose}
       renderContent={
-        <div className="content absolute bg-slate-100 border-2 border-purple-600 flex flex-col w-[95%] max-w-[550px] max-h-[85%] rounded-2xl items-center overflow-y-auto z-[1001] p-6">
+        <div className="content absolute gf-glass-violet flex flex-col w-[95%] max-w-[550px] max-h-[85%] rounded-2xl items-center overflow-y-auto z-[1001] p-6">
           <div
-            className="close-con absolute top-2 right-2 border-2 rounded-full bg-slate-50 text-purple-700 p-1 cursor-pointer"
+            className="close-con absolute top-2 right-2 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors cursor-pointer"
             onClick={onClose}
           >
             <CategoIcon type={"MdClose"} siz={20} />
           </div>
-          <h1 className="text-2xl text-purple-800 mb-4">How Projections works</h1>
+          <h1 className="text-2xl text-purple-300 mb-4">How Projections works</h1>
 
           <div className="w-full flex flex-col gap-4 text-left">
             <div>
-              <p className="font-bold text-purple-700">Net</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-bold text-purple-300">Net</p>
+              <p className="text-sm text-gf-text-muted">
                 Income minus expense for that one month. It&apos;s the &quot;result&quot; of that specific
                 month — positive means you came out ahead, negative means you spent more than
                 you earned that month.
               </p>
             </div>
             <div>
-              <p className="font-bold text-purple-700">Balance</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-bold text-purple-300">Balance</p>
+              <p className="text-sm text-gf-text-muted">
                 Your running account total, carried forward month by month starting from
                 today&apos;s real balance. Past months show a dash because the app never
                 auto-adjusts your account balance when you add a transaction — there&apos;s no
@@ -38,8 +38,8 @@ function ProjectionsInfoModal({ onClose }) {
               </p>
             </div>
             <div>
-              <p className="font-bold text-purple-700">Why the current month can look &quot;too high&quot;</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-bold text-purple-300">Why the current month can look &quot;too high&quot;</p>
+              <p className="text-sm text-gf-text-muted">
                 For the month in progress, each Budget shows whichever is bigger: what you
                 budgeted, or what you&apos;ve actually spent so far. So if you budgeted $20,000 for
                 a category but have only spent $17,000 so far this month, Projections still
@@ -51,14 +51,14 @@ function ProjectionsInfoModal({ onClose }) {
               </p>
             </div>
             <div>
-              <p className="font-bold text-purple-700">Current Month Balance</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-bold text-purple-300">Current Month Balance</p>
+              <p className="text-sm text-gf-text-muted">
                 To estimate your balance at the end of the current month, Gastify takes the money you have today and adds the &quot;remainder&quot; of your projection (what&apos;s left to earn minus what&apos;s left to spend, including buffers). As you record real transactions, this estimate automatically calibrates itself so it never counts money twice.
               </p>
             </div>
             <div>
-              <p className="font-bold text-purple-700">Unexpected buffers</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-bold text-purple-300">Unexpected buffers</p>
+              <p className="text-sm text-gf-text-muted">
                 Two manual amounts (one for expenses, one for income) that cover anything that
                 doesn&apos;t have its own Budget or Income source — your &quot;just in case&quot; cushion.
                 Edit them from any month&apos;s detail view.

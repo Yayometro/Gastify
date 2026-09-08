@@ -33,7 +33,9 @@ function MonthlyChampionsModal({ kind, months, onClose, onSelectMonth, walletPri
       open
       onCancel={onClose}
       footer={null}
-      title={<span className="text-purple-700 font-semibold text-base">{TITLES[kind]}</span>}
+      className="gf-antd-modal-glass"
+      zIndex={20000}
+      title={<span className="text-purple-300 font-semibold text-base">{TITLES[kind]}</span>}
     >
       <div className="flex flex-col max-h-[420px] overflow-y-auto pr-1">
         {rows.map(({ entry, champion }) => (
@@ -45,7 +47,7 @@ function MonthlyChampionsModal({ kind, months, onClose, onSelectMonth, walletPri
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") onSelectMonth(entry);
             }}
-            className="flex items-center gap-3 py-2.5 border-t border-slate-100 first:border-t-0 cursor-pointer hover:bg-slate-50 transition-colors -mx-1 px-1 rounded-lg"
+            className="flex items-center gap-3 py-2.5 border-t border-gf-border first:border-t-0 cursor-pointer hover:bg-gf-surface-2 transition-colors -mx-1 px-1 rounded-lg"
           >
             <span
               className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
@@ -54,13 +56,13 @@ function MonthlyChampionsModal({ kind, months, onClose, onSelectMonth, walletPri
               <UniversalCategoIcon type={(kind === "subCategory" ? champion.categoryIcon : champion.icon) || "MdFilterNone"} siz={16} colore="#fff" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-slate-400">{entry.label}</p>
-              <p className="text-[13px] font-semibold text-slate-800 truncate">{champion.name}</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">{entry.label}</p>
+              <p className="text-[13px] font-semibold text-gf-text truncate">{champion.name}</p>
               {kind !== "transaction" && (
-                <p className="text-[11px] text-slate-400">{Math.round(champion.pctOfWindowTotal)}% del total de los 12 meses</p>
+                <p className="text-[11px] text-gf-text-muted">{Math.round(champion.pctOfWindowTotal)}% del total de los 12 meses</p>
               )}
             </div>
-            <span className="text-[13px] font-bold text-slate-800 shrink-0">
+            <span className="text-[13px] font-bold text-gf-text shrink-0">
               {formatMoneyMajor(kind === "transaction" ? champion.amount : champion.total, walletPrimaryCurrency)}
             </span>
           </div>

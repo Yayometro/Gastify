@@ -18,7 +18,7 @@ function TopCategoryRow({ item, index, onClick }) {
   return (
     <div
       onClick={() => onClick?.(item)}
-      className="w-full flex justify-between items-center gap-2 rounded-2xl py-1 px-2 bg-slate-50 hover:bg-slate-200 cursor-pointer transition-colors"
+      className="w-full flex justify-between items-center gap-2 rounded-2xl py-1 px-2 gf-glass-row cursor-pointer"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -26,10 +26,10 @@ function TopCategoryRow({ item, index, onClick }) {
       }}
     >
       <div className="min-w-0 flex-1 flex items-center gap-2">
-        <p className="w-5 shrink-0 text-center text-xs text-gray-400 font-medium">{index + 1}</p>
+        <p className="w-5 shrink-0 text-center text-xs text-gf-text-muted font-medium">{index + 1}</p>
         <div
           style={{ backgroundColor: item.color || "#DADADA" }}
-          className="rounded-full min-w-[50px] min-h-[50px] w-[50px] h-[50px] flex items-center justify-center shrink-0 hover:mix-blend-multiply"
+          className="gf-glass-tile rounded-full min-w-[50px] min-h-[50px] w-[50px] h-[50px] flex items-center justify-center shrink-0 hover:brightness-90"
         >
           <UniversalCategoIcon type={item.icon || "md/MdFilterNone"} size={10} />
         </div>

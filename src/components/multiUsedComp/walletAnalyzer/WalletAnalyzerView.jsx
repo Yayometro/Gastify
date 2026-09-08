@@ -26,20 +26,20 @@ import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
 function ChangePill({ changePct, isNew, unit = "%", invert = false }) {
   if (isNew) {
     return (
-      <span className="text-[11px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">nueva</span>
+      <span className="text-[11px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>
     );
   }
   if (changePct === null || changePct === undefined) {
-    return <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">—</span>;
+    return <span className="text-[11px] font-semibold text-gf-text-muted bg-gf-surface-2 px-2 py-0.5 rounded-full">—</span>;
   }
   if (Math.abs(changePct) < 1) {
-    return <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">= 0{unit}</span>;
+    return <span className="text-[11px] font-semibold text-gf-text-muted bg-gf-surface-2 px-2 py-0.5 rounded-full">= 0{unit}</span>;
   }
   const up = changePct > 0;
   const isWarm = invert ? !up : up;
   return (
     <span
-      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${isWarm ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"}`}
+      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${isWarm ? "text-red-400 bg-red-500/15" : "text-green-400 bg-green-500/15"}`}
     >
       {up ? "▲" : "▼"} {Math.abs(Math.round(changePct))}{unit}
     </span>
@@ -56,8 +56,8 @@ function CategoryDot({ color }) {
 function RankRow({ index, item, currency, subtitle, onClick }) {
   return (
     <div
-      className={`flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-slate-100 first:border-t-0 transition-colors ${
-        onClick ? "cursor-pointer hover:bg-slate-50" : ""
+      className={`flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 transition-colors ${
+        onClick ? "cursor-pointer gf-hover-glass" : ""
       }`}
       onClick={onClick}
       role={onClick ? "button" : undefined}
@@ -70,7 +70,7 @@ function RankRow({ index, item, currency, subtitle, onClick }) {
           : undefined
       }
     >
-      <span className="w-4 text-[11px] text-slate-400 font-bold shrink-0">{index + 1}</span>
+      <span className="w-4 text-[11px] text-gf-text-muted font-bold shrink-0">{index + 1}</span>
       <span
         className="h-7 w-7 rounded-full flex items-center justify-center shrink-0"
         style={{ backgroundColor: item.color || "#ABABAB" }}
@@ -78,10 +78,10 @@ function RankRow({ index, item, currency, subtitle, onClick }) {
         <UniversalCategoIcon type={item.icon} siz={13} colore="#fff" />
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-[12.5px] font-semibold text-slate-800 truncate">{item.name}</p>
-        {subtitle && <p className="text-[10.5px] text-slate-400 truncate">{subtitle}</p>}
+        <p className="text-[12.5px] font-semibold text-gf-text truncate">{item.name}</p>
+        {subtitle && <p className="text-[10.5px] text-gf-text-muted truncate">{subtitle}</p>}
       </div>
-      <span className="text-[12.5px] font-bold text-slate-800 shrink-0">{formatMoneyMajor(item.amount, currency)}</span>
+      <span className="text-[12.5px] font-bold text-gf-text shrink-0">{formatMoneyMajor(item.amount, currency)}</span>
     </div>
   );
 }
@@ -242,13 +242,13 @@ function WalletAnalyzerView({
   return (
     <div className="wallet-analyzer-container w-full flex flex-col gap-4">
       <div className="flex flex-col items-center gap-2">
-        <h1 className="wallet-analyzer-title text-2xl text-center font-bold text-slate-900">Wallet Analyzer</h1>
-        <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-full px-1.5 shadow-sm" style={{ height: 32 }}>
+        <h1 className="wallet-analyzer-title text-2xl text-center font-bold text-gf-text">Wallet Analyzer</h1>
+        <div className="flex items-center gap-1.5 bg-gf-surface border border-gf-border rounded-full px-1.5 shadow-sm" style={{ height: 32 }}>
           <button
             type="button"
             onClick={onPrevMonth}
             aria-label="Mes anterior"
-            className="w-6 h-6 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-full text-gf-text-muted hover:bg-gf-surface-2 transition-colors"
           >
             ‹
           </button>
@@ -261,7 +261,7 @@ function WalletAnalyzerView({
               the trigger's un-clipped geometry still drives popup centering,
               since antd reads its full layout box, not what's visibly clipped. */}
           <div className="relative inline-flex items-center justify-center overflow-hidden" style={{ minWidth: 84, height: 32 }}>
-            <span className="text-xs font-bold text-slate-700 px-1.5 pointer-events-none whitespace-nowrap">{referenceMonthLabel}</span>
+            <span className="text-xs font-bold text-gf-text-muted px-1.5 pointer-events-none whitespace-nowrap">{referenceMonthLabel}</span>
             <ConfigProvider locale={esES} theme={{ token: { colorPrimary: "#9333ea", borderRadius: 999 } }}>
               <DatePicker
                 picker="month"
@@ -289,7 +289,7 @@ function WalletAnalyzerView({
             onClick={onNextMonth}
             aria-label="Mes siguiente"
             disabled={!canGoNext}
-            className="w-6 h-6 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+            className="w-6 h-6 flex items-center justify-center rounded-full text-gf-text-muted hover:bg-gf-surface-2 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
           >
             ›
           </button>
@@ -308,25 +308,25 @@ function WalletAnalyzerView({
         walletPrimaryCurrency={walletPrimaryCurrency}
       />
 
-      <div className="grid md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* Month vs month */}
-        <div className="md:col-span-2 bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-slate-800">{referenceMonthLabel} vs. {previousMonthLabel}</p>
-          <p className="text-xs text-slate-400 mb-3">Comparativo del mes contra el periodo anterior</p>
+        <div className="md:col-span-2 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[15px] font-extrabold text-gf-text">{referenceMonthLabel} vs. {previousMonthLabel}</p>
+          <p className="text-xs text-gf-text-muted mb-3">Comparativo del mes contra el periodo anterior</p>
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="text-[10.5px] uppercase tracking-wide text-slate-400">
+              <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
                 <th className="text-left font-bold pb-2"></th>
-                <th className="text-right font-bold pb-2 text-slate-500">{previousMonthLabel.split(" ")[0]}</th>
+                <th className="text-right font-bold pb-2 text-gf-text-muted">{previousMonthLabel.split(" ")[0]}</th>
                 <th className="text-right font-bold pb-2">{referenceMonthLabel.split(" ")[0]}</th>
                 <th className="text-right font-bold pb-2">Cambio</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="py-2 text-slate-500">Ingresos</td>
-                <td className="py-2 text-right text-slate-500">{formatMoneyMajor(previousTotals.income, walletPrimaryCurrency)}</td>
-                <td className="py-2 text-right font-semibold text-slate-800">
+                <td className="py-2 text-gf-text-muted">Ingresos</td>
+                <td className="py-2 text-right text-gf-text-muted">{formatMoneyMajor(previousTotals.income, walletPrimaryCurrency)}</td>
+                <td className="py-2 text-right font-semibold text-gf-text">
                   {formatMoneyMajor(currentTotals.income, walletPrimaryCurrency)}
                 </td>
                 <td className="py-2 text-right">
@@ -334,40 +334,40 @@ function WalletAnalyzerView({
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-slate-500 border-t border-slate-100">Gastos</td>
-                <td className="py-2 text-right text-slate-500 border-t border-slate-100">{formatMoneyMajor(previousTotals.expense, walletPrimaryCurrency)}</td>
-                <td className="py-2 text-right font-semibold text-slate-800 border-t border-slate-100">
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">Gastos</td>
+                <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{formatMoneyMajor(previousTotals.expense, walletPrimaryCurrency)}</td>
+                <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">
                   {formatMoneyMajor(currentTotals.expense, walletPrimaryCurrency)}
                 </td>
-                <td className="py-2 text-right border-t border-slate-100">
+                <td className="py-2 text-right border-t border-gf-border">
                   <ChangePill changePct={previousTotals.expense > 0 ? ((currentTotals.expense - previousTotals.expense) / previousTotals.expense) * 100 : null} />
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-slate-500 border-t border-slate-100">Balance</td>
-                <td className="py-2 text-right text-slate-500 border-t border-slate-100">{formatMoneyMajor(previousTotals.balance, walletPrimaryCurrency)}</td>
-                <td className="py-2 text-right font-semibold text-slate-800 border-t border-slate-100">
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">Balance</td>
+                <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{formatMoneyMajor(previousTotals.balance, walletPrimaryCurrency)}</td>
+                <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">
                   {formatMoneyMajor(currentTotals.balance, walletPrimaryCurrency)}
                 </td>
-                <td className="py-2 text-right border-t border-slate-100">
+                <td className="py-2 text-right border-t border-gf-border">
                   <ChangePill changePct={previousTotals.balance > 0 ? ((currentTotals.balance - previousTotals.balance) / previousTotals.balance) * 100 : null} invert />
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-slate-500 border-t border-slate-100">Tasa de ahorro</td>
-                <td className="py-2 text-right text-slate-500 border-t border-slate-100">{Math.round(previousTotals.savingsRate * 100)}%</td>
-                <td className="py-2 text-right font-semibold text-slate-800 border-t border-slate-100">
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">Tasa de ahorro</td>
+                <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{Math.round(previousTotals.savingsRate * 100)}%</td>
+                <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">
                   {Math.round(currentTotals.savingsRate * 100)}%
                 </td>
-                <td className="py-2 text-right border-t border-slate-100">
+                <td className="py-2 text-right border-t border-gf-border">
                   <ChangePill changePct={savingsRateChangePp === 0 ? null : savingsRateChangePp} unit="pp" invert />
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-slate-500 border-t border-slate-100">Transacciones</td>
-                <td className="py-2 text-right text-slate-500 border-t border-slate-100">{previousTotals.transactionCount}</td>
-                <td className="py-2 text-right font-semibold text-slate-800 border-t border-slate-100">{currentTotals.transactionCount}</td>
-                <td className="py-2 text-right border-t border-slate-100">
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">Transacciones</td>
+                <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{previousTotals.transactionCount}</td>
+                <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">{currentTotals.transactionCount}</td>
+                <td className="py-2 text-right border-t border-gf-border">
                   <ChangePill
                     changePct={
                       previousTotals.transactionCount > 0
@@ -382,9 +382,9 @@ function WalletAnalyzerView({
         </div>
 
         {/* Trend */}
-        <div className="md:col-span-3 bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-slate-800">Tendencia · 6 meses</p>
-          <p className="text-xs text-slate-400 mb-3">Ingresos vs. gastos por mes — pasa el cursor o toca un mes para ver el detalle</p>
+        <div className="md:col-span-3 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[15px] font-extrabold text-gf-text">Tendencia · 6 meses</p>
+          <p className="text-xs text-gf-text-muted mb-3">Ingresos vs. gastos por mes — pasa el cursor o toca un mes para ver el detalle</p>
           <div
             onClick={() =>
               setActiveInsight({
@@ -410,17 +410,17 @@ function WalletAnalyzerView({
             }}
             className="grid grid-cols-3 gap-3 mb-4 cursor-pointer group"
           >
-            <div className="rounded-xl bg-green-50 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-green-700/70">Promedio mensual · Ingresos</p>
-              <p className="text-lg font-extrabold text-green-700">{formatMoneyMajor(monthlyAverages.avgIncome, walletPrimaryCurrency)}</p>
+            <div className="rounded-xl bg-green-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">Promedio mensual · Ingresos</p>
+              <p className="text-lg font-extrabold text-green-400">{formatMoneyMajor(monthlyAverages.avgIncome, walletPrimaryCurrency)}</p>
             </div>
-            <div className="rounded-xl bg-red-50 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-red-700/70">Promedio mensual · Gastos</p>
-              <p className="text-lg font-extrabold text-red-700">{formatMoneyMajor(monthlyAverages.avgExpense, walletPrimaryCurrency)}</p>
+            <div className="rounded-xl bg-red-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-red-400/70">Promedio mensual · Gastos</p>
+              <p className="text-lg font-extrabold text-red-400">{formatMoneyMajor(monthlyAverages.avgExpense, walletPrimaryCurrency)}</p>
             </div>
-            <div className="rounded-xl bg-purple-50 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-purple-700/70">Promedio mensual · Transacciones</p>
-              <p className="text-lg font-extrabold text-purple-700">{Math.round(monthlyAverages.avgTransactionCount)}</p>
+            <div className="rounded-xl bg-gf-accent-soft-bg px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300/70">Promedio mensual · Transacciones</p>
+              <p className="text-lg font-extrabold text-purple-300">{Math.round(monthlyAverages.avgTransactionCount)}</p>
             </div>
           </div>
           <WalletAnalyzerTrendChart
@@ -435,15 +435,15 @@ function WalletAnalyzerView({
 
       {/* Item-count control - governs both Top categories and Top transactions below */}
       <div className="flex items-center justify-between px-1 flex-wrap gap-2">
-        <p className="text-xs font-semibold text-slate-500">Elementos en Top categorías y Top transacciones</p>
-        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-full p-1 shadow-sm">
+        <p className="text-xs font-semibold text-gf-text-muted">Elementos en Top categorías y Top transacciones</p>
+        <div className="flex items-center gap-1 bg-gf-surface border border-gf-border rounded-full p-1 shadow-sm">
           {[3, 6, 12, 24].map((n) => (
             <button
               key={n}
               type="button"
               onClick={() => onChangeTopN?.(n)}
               className={`w-7 h-6 flex items-center justify-center rounded-full text-xs font-bold transition-colors ${
-                topN === n ? "bg-purple-600 text-white" : "text-slate-500 hover:bg-slate-100"
+                topN === n ? "bg-purple-600 text-white" : "text-gf-text-muted hover:bg-gf-surface-2"
               }`}
             >
               {n}
@@ -453,12 +453,12 @@ function WalletAnalyzerView({
       </div>
 
       {/* Top categories - previous month left, current month right, mirroring top transactions */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-600">Top {topN} categorías</p>
-          <p className="text-[15px] font-extrabold text-slate-800 mb-2">{previousMonthLabel}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías</p>
+          <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousMonthLabel}</p>
           {topCategoriesBillsPrevious.length === 0 ? (
-            <p className="text-xs text-slate-400">Sin gastos el mes pasado.</p>
+            <p className="text-xs text-gf-text-muted">Sin gastos el mes pasado.</p>
           ) : (
             topCategoriesBillsPrevious.map((c, i) => (
               <RankRow
@@ -471,11 +471,11 @@ function WalletAnalyzerView({
             ))
           )}
         </div>
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-600">Top {topN} categorías</p>
-          <p className="text-[15px] font-extrabold text-slate-800 mb-2">{referenceMonthLabel}</p>
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías</p>
+          <p className="text-[15px] font-extrabold text-gf-text mb-2">{referenceMonthLabel}</p>
           {topCategoriesBills.length === 0 ? (
-            <p className="text-xs text-slate-400">Sin gastos este mes.</p>
+            <p className="text-xs text-gf-text-muted">Sin gastos este mes.</p>
           ) : (
             topCategoriesBills.map((c, i) => (
               <RankRow
@@ -491,12 +491,12 @@ function WalletAnalyzerView({
       </div>
 
       {/* Top transactions - previous month left, current month right */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-600">Top {topN} transacciones</p>
-          <p className="text-[15px] font-extrabold text-slate-800 mb-2">{previousMonthLabel}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} transacciones</p>
+          <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousMonthLabel}</p>
           {topTransactionsBills.previous.length === 0 ? (
-            <p className="text-xs text-slate-400">Sin transacciones el mes pasado.</p>
+            <p className="text-xs text-gf-text-muted">Sin transacciones el mes pasado.</p>
           ) : (
             topTransactionsBills.previous.map((t, i) => (
               <RankRow
@@ -510,11 +510,11 @@ function WalletAnalyzerView({
             ))
           )}
         </div>
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-600">Top {topN} transacciones</p>
-          <p className="text-[15px] font-extrabold text-slate-800 mb-2">{referenceMonthLabel}</p>
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} transacciones</p>
+          <p className="text-[15px] font-extrabold text-gf-text mb-2">{referenceMonthLabel}</p>
           {topTransactionsBills.current.length === 0 ? (
-            <p className="text-xs text-slate-400">Sin transacciones este mes.</p>
+            <p className="text-xs text-gf-text-muted">Sin transacciones este mes.</p>
           ) : (
             topTransactionsBills.current.map((t, i) => (
               <RankRow
@@ -531,11 +531,11 @@ function WalletAnalyzerView({
       </div>
 
       {/* Budgets */}
-      <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-        <p className="text-[15px] font-extrabold text-slate-800">Presupuestos · cumplimiento y rachas</p>
-        <p className="text-xs text-slate-400 mb-3">Qué tan cerca estuviste de tus límites mensuales — toca una fila para ver el detalle</p>
+      <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+        <p className="text-[15px] font-extrabold text-gf-text">Presupuestos · cumplimiento y rachas</p>
+        <p className="text-xs text-gf-text-muted mb-3">Qué tan cerca estuviste de tus límites mensuales — toca una fila para ver el detalle</p>
         {budgetRows.length === 0 ? (
-          <p className="text-xs text-slate-400">No tienes presupuestos de gasto configurados.</p>
+          <p className="text-xs text-gf-text-muted">No tienes presupuestos de gasto configurados.</p>
         ) : (
           <div className="flex flex-col">
             {budgetRows.map((b) => {
@@ -559,13 +559,13 @@ function WalletAnalyzerView({
                       setActiveInsight({ icon: "📊", tone: "info", title: `${b.category} — cumplimiento`, type: "budget", data: b });
                     }
                   }}
-                  className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-lg border-t border-slate-100 first:border-t-0 cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 cursor-pointer gf-hover-glass transition-colors"
                 >
-                  <span className="w-24 shrink-0 text-[12.5px] font-semibold text-slate-800 truncate">{b.category}</span>
-                  <span className="w-40 shrink-0 text-[11px] text-slate-400">
+                  <span className="w-24 shrink-0 text-[12.5px] font-semibold text-gf-text truncate">{b.category}</span>
+                  <span className="w-40 shrink-0 text-[11px] text-gf-text-muted">
                     {formatMoneyMajor(b.spent, walletPrimaryCurrency)} / {formatMoneyMajor(b.limit, walletPrimaryCurrency)}
                   </span>
-                  <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="flex-1 h-2 rounded-full bg-gf-surface-2 overflow-hidden">
                     <div
                       className="h-full rounded-full"
                       style={{ width: `${Math.min(100, ratio * 100)}%`, backgroundColor: getBudgetBarColor(ratio, false) }}
@@ -573,7 +573,7 @@ function WalletAnalyzerView({
                   </div>
                   <span
                     className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                      b.status === "over" ? "text-red-600 bg-red-50" : b.status === "warning" ? "text-amber-600 bg-amber-50" : "text-green-600 bg-green-50"
+                      b.status === "over" ? "text-red-400 bg-red-500/15" : b.status === "warning" ? "text-amber-400 bg-amber-500/15" : "text-green-400 bg-green-500/15"
                     }`}
                   >
                     {b.streakMonths >= 2 ? `${b.streakMonths} meses ✅` : `${Math.round(b.pct)}%`}
@@ -587,10 +587,10 @@ function WalletAnalyzerView({
 
       {/* Biggest spend patterns */}
       {biggestSpendPatterns && (
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-slate-800">Grandes gastos · últimos {biggestSpendPatterns.monthsBack} meses</p>
-          <p className="text-xs text-slate-400 mb-3">Dónde está tu gasto más grande, y si hay un patrón detrás</p>
-          <div className="grid md:grid-cols-3 gap-3 mb-4">
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[15px] font-extrabold text-gf-text">Grandes gastos · últimos {biggestSpendPatterns.monthsBack} meses</p>
+          <p className="text-xs text-gf-text-muted mb-3">Dónde está tu gasto más grande, y si hay un patrón detrás</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
             <div
               onClick={() => setChampionsModalKind("transaction")}
               role="button"
@@ -598,12 +598,12 @@ function WalletAnalyzerView({
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") setChampionsModalKind("transaction");
               }}
-              className="rounded-xl border border-slate-100 p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
+              className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
             >
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Transacción más grande</p>
-              <p className="text-[13px] font-bold text-slate-800 truncate mt-1">{biggestSpendPatterns.biggestTransaction.name}</p>
-              <p className="text-lg font-extrabold text-slate-900">{formatMoneyMajor(biggestSpendPatterns.biggestTransaction.amount, walletPrimaryCurrency)}</p>
-              <p className="text-[11px] text-slate-400 truncate">
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Transacción más grande</p>
+              <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestTransaction.name}</p>
+              <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestTransaction.amount, walletPrimaryCurrency)}</p>
+              <p className="text-[11px] text-gf-text-muted truncate">
                 {biggestSpendPatterns.biggestTransaction.categoryName}
                 {biggestSpendPatterns.biggestTransaction.subcategoryName ? ` · ${biggestSpendPatterns.biggestTransaction.subcategoryName}` : ""}
               </p>
@@ -619,12 +619,12 @@ function WalletAnalyzerView({
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") setChampionsModalKind("category");
               }}
-              className="rounded-xl border border-slate-100 p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
+              className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
             >
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Categoría con más gasto</p>
-              <p className="text-[13px] font-bold text-slate-800 truncate mt-1">{biggestSpendPatterns.biggestCategory.name}</p>
-              <p className="text-lg font-extrabold text-slate-900">{formatMoneyMajor(biggestSpendPatterns.biggestCategory.total, walletPrimaryCurrency)}</p>
-              <p className="text-[11px] text-slate-400">{Math.round(biggestSpendPatterns.analysis.categoryShareOfTotal)}% de tu gasto total</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Categoría con más gasto</p>
+              <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestCategory.name}</p>
+              <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestCategory.total, walletPrimaryCurrency)}</p>
+              <p className="text-[11px] text-gf-text-muted">{Math.round(biggestSpendPatterns.analysis.categoryShareOfTotal)}% de tu gasto total</p>
             </div>
 
             {biggestSpendPatterns.biggestSubcategory && (
@@ -635,20 +635,20 @@ function WalletAnalyzerView({
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") setChampionsModalKind("subCategory");
                 }}
-                className="rounded-xl border border-slate-100 p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
+                className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
               >
-                <p className="text-[10.5px] font-bold uppercase tracking-wide text-slate-400">Subcategoría con más gasto</p>
-                <p className="text-[13px] font-bold text-slate-800 truncate mt-1">{biggestSpendPatterns.biggestSubcategory.name}</p>
-                <p className="text-lg font-extrabold text-slate-900">{formatMoneyMajor(biggestSpendPatterns.biggestSubcategory.total, walletPrimaryCurrency)}</p>
-                <p className="text-[11px] text-slate-400">{biggestSpendPatterns.biggestSubcategory.categoryName}</p>
+                <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Subcategoría con más gasto</p>
+                <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestSubcategory.name}</p>
+                <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestSubcategory.total, walletPrimaryCurrency)}</p>
+                <p className="text-[11px] text-gf-text-muted">{biggestSpendPatterns.biggestSubcategory.categoryName}</p>
               </div>
             )}
           </div>
-          <p className="text-[11px] text-slate-400 -mt-2 mb-2">Toca una tarjeta para ver el detalle mes por mes</p>
+          <p className="text-[11px] text-gf-text-muted -mt-2 mb-2">Toca una tarjeta para ver el detalle mes por mes</p>
 
-          <div className="rounded-xl bg-purple-50 p-3.5">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-purple-700 mb-1.5">Análisis</p>
-            <ul className="list-disc pl-4 space-y-1 text-[12.5px] text-slate-700 leading-relaxed">
+          <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300 mb-1.5">Análisis</p>
+            <ul className="list-disc pl-4 space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
               {buildSpendPatternAnalysis(biggestSpendPatterns).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
               ))}
@@ -657,13 +657,13 @@ function WalletAnalyzerView({
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Subscriptions */}
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-slate-800">Suscripciones recurrentes</p>
-          <p className="text-xs text-slate-400 mb-3">Detectadas por nombre y frecuencia mensual</p>
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p>
+          <p className="text-xs text-gf-text-muted mb-3">Detectadas por nombre y frecuencia mensual</p>
           {subscriptions.length === 0 ? (
-            <p className="text-xs text-slate-400">No se detectaron suscripciones recurrentes.</p>
+            <p className="text-xs text-gf-text-muted">No se detectaron suscripciones recurrentes.</p>
           ) : (
             <div className="flex flex-col">
               {subscriptions.map((s) => (
@@ -679,7 +679,7 @@ function WalletAnalyzerView({
                       setActiveInsight({ icon: "🔁", tone: "info", title: s.name, type: "subscription", data: s });
                     }
                   }}
-                  className="flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-slate-100 first:border-t-0 cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 cursor-pointer gf-hover-glass transition-colors"
                 >
                   <span
                     className="h-7 w-7 rounded-full flex items-center justify-center shrink-0"
@@ -688,11 +688,11 @@ function WalletAnalyzerView({
                     <UniversalCategoIcon type={s.icon} siz={13} colore="#fff" />
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12.5px] font-semibold text-slate-800 truncate">{s.name}</p>
-                    <p className="text-[10.5px] text-slate-400">{s.categoryName}</p>
+                    <p className="text-[12.5px] font-semibold text-gf-text truncate">{s.name}</p>
+                    <p className="text-[10.5px] text-gf-text-muted">{s.categoryName}</p>
                   </div>
-                  {s.isNew && <span className="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">nueva</span>}
-                  <span className="text-[12.5px] font-bold text-slate-800 shrink-0">
+                  {s.isNew && <span className="text-[10px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>}
+                  <span className="text-[12.5px] font-bold text-gf-text shrink-0">
                     {formatMoneyMajor(s.amount, walletPrimaryCurrency)}
                   </span>
                 </div>
@@ -702,17 +702,17 @@ function WalletAnalyzerView({
         </div>
 
         {/* FX exposure */}
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-slate-800">Exposición multi-moneda</p>
-          <p className="text-xs text-slate-400 mb-3">Valor de tus saldos en otras monedas</p>
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[15px] font-extrabold text-gf-text">Exposición multi-moneda</p>
+          <p className="text-xs text-gf-text-muted mb-3">Valor de tus saldos en otras monedas</p>
           {fxExposure.loading ? (
-            <p className="text-xs text-slate-400">Consultando tipo de cambio…</p>
+            <p className="text-xs text-gf-text-muted">Consultando tipo de cambio…</p>
           ) : fxExposure.rows.length === 0 ? (
-            <p className="text-xs text-slate-400">Todas tus cuentas están en {walletPrimaryCurrency}.</p>
+            <p className="text-xs text-gf-text-muted">Todas tus cuentas están en {walletPrimaryCurrency}.</p>
           ) : (
             <table className="w-full text-[13px]">
               <thead>
-                <tr className="text-[10.5px] uppercase tracking-wide text-slate-400">
+                <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
                   <th className="text-left font-bold pb-2">Moneda</th>
                   <th className="text-right font-bold pb-2">Saldo</th>
                   <th className="text-right font-bold pb-2">En {walletPrimaryCurrency}</th>
@@ -721,10 +721,10 @@ function WalletAnalyzerView({
               </thead>
               <tbody>
                 {fxExposure.rows.map((r) => (
-                  <tr key={r.currency} className="border-t border-slate-100">
-                    <td className="py-2 font-semibold text-slate-800">{r.currency}</td>
-                    <td className="py-2 text-right text-slate-500">{formatMoneyMajor(r.nativeAmount, r.currency)}</td>
-                    <td className="py-2 text-right font-semibold text-slate-800">
+                  <tr key={r.currency} className="border-t border-gf-border">
+                    <td className="py-2 font-semibold text-gf-text">{r.currency}</td>
+                    <td className="py-2 text-right text-gf-text-muted">{formatMoneyMajor(r.nativeAmount, r.currency)}</td>
+                    <td className="py-2 text-right font-semibold text-gf-text">
                       {formatMoneyMajor(r.valueInPrimary, walletPrimaryCurrency)}
                     </td>
                     <td className="py-2 text-right">
@@ -748,17 +748,17 @@ function WalletAnalyzerView({
             setActiveInsight({ icon: "🏃", tone: "info", title: "Ritmo de gasto", type: "spending_pace", data: pace });
           }
         }}
-        className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
+        className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <p className="text-[15px] font-extrabold text-slate-800">Ritmo de gasto</p>
+          <p className="text-[15px] font-extrabold text-gf-text">Ritmo de gasto</p>
           <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
         </div>
-        <p className="text-xs text-slate-400 mb-3">Comparado con tu propio promedio a esta altura del mes</p>
-        <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+        <p className="text-xs text-gf-text-muted mb-3">Comparado con tu propio promedio a esta altura del mes</p>
+        <div className="h-2.5 rounded-full bg-gf-surface-2 overflow-hidden">
           <div className="h-full rounded-full bg-purple-500" style={{ width: `${pacePct}%` }} />
         </div>
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="text-xs text-gf-text-muted mt-2">
           Llevas gastado {formatMoneyMajor(pace.spentSoFar, walletPrimaryCurrency)} al día {pace.dayOfMonth}
           {pace.deltaPct !== null && (
             <>
@@ -779,15 +779,15 @@ function WalletAnalyzerView({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") setWeekdayDetailOpen(true);
         }}
-        className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
+        className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <p className="text-[15px] font-extrabold text-slate-800">Patrones por día de la semana</p>
+          <p className="text-[15px] font-extrabold text-gf-text">Patrones por día de la semana</p>
           <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
         </div>
-        <p className="text-xs text-slate-400 mb-3">Promedio de gasto por día, este mes</p>
+        <p className="text-xs text-gf-text-muted mb-3">Promedio de gasto por día, este mes</p>
         <WalletAnalyzerWeekdayChart days={weekdaySpending.days} walletPrimaryCurrency={walletPrimaryCurrency} />
-        <p className="text-xs text-slate-500 mt-3">{weekdaySpending.insight}</p>
+        <p className="text-xs text-gf-text-muted mt-3">{weekdaySpending.insight}</p>
       </div>
 
       {close && <BasicModal close={handleClose} renderContent={modalContent} />}

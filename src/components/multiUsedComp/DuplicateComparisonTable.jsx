@@ -5,7 +5,7 @@ import DeletePreviewRow from "./DeletePreviewRow";
 
 function DuplicateComparisonTable({ pairs, selectedTrans = [], selectedIds, onToggleSelect }) {
   if (!pairs || pairs.length === 0) {
-    return <p className="text-xs text-slate-400 italic text-center py-4">No duplicate pairs to compare</p>;
+    return <p className="text-xs text-gf-text-muted italic text-center py-4">No duplicate pairs to compare</p>;
   }
 
   // Support both selectedTrans array or selectedIds Set/array
@@ -13,19 +13,19 @@ function DuplicateComparisonTable({ pairs, selectedTrans = [], selectedIds, onTo
   const selectedSet = new Set(selArray.map(String));
 
   return (
-    <div className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
-      <div className="bg-amber-50 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-800 flex items-center gap-2">
+    <div className="flex flex-col border border-gf-border rounded-xl overflow-hidden bg-gf-surface-2">
+      <div className="bg-amber-500/15 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-400 flex items-center gap-2">
         <span className="text-sm">☑️</span>
         <span>
           <b>Checked items</b> will be permanently deleted when you confirm. Uncheck any duplicate you want to keep, or check an original if you want to delete it too.
         </span>
       </div>
-      <div className="grid grid-cols-2 bg-slate-100 border-b border-slate-200 py-2 px-3 font-semibold text-xs text-slate-700">
-        <div className="flex items-center gap-1.5 text-green-700 truncate">
+      <div className="grid grid-cols-2 bg-gf-surface-2 border-b border-gf-border py-2 px-3 font-semibold text-xs text-gf-text-muted">
+        <div className="flex items-center gap-1.5 text-green-400 truncate">
           <UniversalCategoIcon type="md/MdCheckCircle" siz={15} />
           <span>ORIGINAL (TO KEEP)</span>
         </div>
-        <div className="flex items-center gap-1.5 text-red-600 truncate">
+        <div className="flex items-center gap-1.5 text-red-400 truncate">
           <UniversalCategoIcon type="md/MdDelete" siz={15} />
           <span>DUPLICATE (TO DELETE)</span>
         </div>
@@ -38,7 +38,7 @@ function DuplicateComparisonTable({ pairs, selectedTrans = [], selectedIds, onTo
           return (
             <div
               key={`dup-pair-${index}-${pair.duplicate?._id}`}
-              className="grid grid-cols-2 gap-3 p-2 items-center hover:bg-slate-100/50 transition-colors"
+              className="grid grid-cols-2 gap-3 p-2 items-center hover:bg-gf-surface-2/50 transition-colors"
             >
               {/* Left Column: Original */}
               <div className="min-w-0 flex items-center gap-2">
@@ -46,7 +46,7 @@ function DuplicateComparisonTable({ pairs, selectedTrans = [], selectedIds, onTo
                   type="checkbox"
                   checked={isOrigChecked}
                   onChange={() => pair.original && onToggleSelect && onToggleSelect(pair.original._id)}
-                  className="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer flex-shrink-0"
+                  className="w-4 h-4 text-red-400 rounded border-gf-border focus:ring-red-500 cursor-pointer flex-shrink-0"
                   title="Check to also delete this original transaction"
                 />
                 <div className={`min-w-0 flex-1 transition-all ${isOrigChecked ? "opacity-40 line-through grayscale" : ""}`}>
@@ -60,7 +60,7 @@ function DuplicateComparisonTable({ pairs, selectedTrans = [], selectedIds, onTo
                   type="checkbox"
                   checked={isDupChecked}
                   onChange={() => pair.duplicate && onToggleSelect && onToggleSelect(pair.duplicate._id)}
-                  className="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer flex-shrink-0"
+                  className="w-4 h-4 text-red-400 rounded border-gf-border focus:ring-red-500 cursor-pointer flex-shrink-0"
                   title="Uncheck to keep this transaction instead of deleting it"
                 />
                 <div className={`min-w-0 flex-1 transition-all ${!isDupChecked ? "opacity-60 border-2 border-green-500/30 rounded-xl" : ""}`}>

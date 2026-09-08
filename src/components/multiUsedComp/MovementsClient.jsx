@@ -11,7 +11,6 @@ import { fetchUser } from "@/lib/features/userSlice";
 import { fetchAccounts } from "@/lib/features/accountsSlice";
 import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import ReadFileComp from "./ReadFileComp";
-import VoiceRecognicionComponent from "./VoiceRecognicionComponent";
 import CategorySuggestionsSection from "./CategorySuggestions/CategorySuggestionsSection";
 
 function MovementsClient({ mcData, mcSession }) {
@@ -58,8 +57,8 @@ function MovementsClient({ mcData, mcSession }) {
   return (
     <div className=" w-full h-full sm:pr-2">
       <div className="w-full h-full relative">
-        <div className="w-full profile-img py-[40px] text-center text-white">
-          <h1 className="text-3xl min-[400px]:text-[40px] sm:text-[40px] md:text-[60px] font-thin">
+        <div className="w-full profile-img py-4 text-center text-white">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
             {user.fullName ? (
               `${user.fullName} Movements`
             ) : (
@@ -70,21 +69,20 @@ function MovementsClient({ mcData, mcSession }) {
             )}
           </h1>
         </div>
-        <div className="content-profile-cont w-full h-full bg-slate-100 text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl shadow-sm px-2 pt-6 pb-[80px]">
+        <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">
           <h1 className="3xl w-full "></h1>
           <div className="cc-categoryList-cont w-full flex flex-col justify-center items-center">
             <h1 className="text-3xl min-[text-[45px]]: py-2">
               Movements details
             </h1>
           </div>
-          <div className="add-file-trans w-full h-full flex justify-center items-center">
-            <ReadFileComp />
-          </div>
-          <div className="category-suggestions w-full h-full flex justify-center items-center">
-            <CategorySuggestionsSection mail={mcSession} />
-          </div>
-          <div className="voice w-full h-full flex justify-center items-center">
-            <VoiceRecognicionComponent />
+          <div className="movements-panels-cont w-full grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
+            <div className="add-file-trans w-full h-full flex justify-center items-center">
+              <ReadFileComp />
+            </div>
+            <div className="category-suggestions w-full h-full flex justify-center items-center">
+              <CategorySuggestionsSection mail={mcSession} />
+            </div>
           </div>
           <div className="mov-grans-cont w-full flex justify-center items-center ">
             <div className="w-full h-full min-[810px]:w-[800px] max-h-[1000px]  px-1 relative">

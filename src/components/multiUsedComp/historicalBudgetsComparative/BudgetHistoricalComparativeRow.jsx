@@ -14,7 +14,7 @@ import { generatePropForBudgetMonthlyChart } from "./propsForBudgetMonthlyChart"
 function BudgetHistoricalComparativeRow({ row, walletPrimaryCurrency, onOpenDetail }) {
   const { budget, monthlySeries, monthsTracked, monthsMet, monthsEstimated, complianceRate } = row;
   const pct = Math.round((complianceRate || 0) * 100);
-  const pctColor = pct >= 70 ? "text-green-600" : pct >= 40 ? "text-yellow-600" : "text-red-600";
+  const pctColor = pct >= 70 ? "text-green-400" : pct >= 40 ? "text-yellow-400" : "text-red-400";
 
   let defaultCate = budget.category;
   if (budget.subCategory) defaultCate = budget.subCategory;
@@ -23,7 +23,7 @@ function BudgetHistoricalComparativeRow({ row, walletPrimaryCurrency, onOpenDeta
 
   return (
     <div
-      className="bg-white rounded-2xl p-3 w-full cursor-pointer hover:shadow-md transition-shadow"
+      className="gf-glass-row rounded-2xl p-3 w-full cursor-pointer hover:shadow-md transition-shadow"
       onClick={() => onOpenDetail(row)}
       role="button"
       tabIndex={0}
@@ -40,12 +40,12 @@ function BudgetHistoricalComparativeRow({ row, walletPrimaryCurrency, onOpenDeta
             <UniversalCategoIcon type={defaultCate?.icon || "md/MdCategory"} siz={18} />
           </div>
           <div className="flex flex-col">
-            <p className="text-purple-800 hover:underline">{budget.name || "Unnamed budget"}</p>
-            <p className="text-[10px] text-gray-500">
+            <p className="text-purple-300 hover:underline">{budget.name || "Unnamed budget"}</p>
+            <p className="text-[10px] text-gf-text-muted">
               {monthsMet} of {monthsTracked} months met
               {monthsEstimated > 0 && (
                 <span
-                  className="text-gray-400 cursor-help"
+                  className="text-gf-text-muted cursor-help"
                   title={`${monthsEstimated} of these month${
                     monthsEstimated === 1 ? "" : "s"
                   } predate this budget's earliest known goal, so they're compared against that earliest goal as an estimate, not a verified historical figure.`}

@@ -33,7 +33,7 @@ function getNativeAmount(tra) {
 function CurrencyChip({ currency }) {
   if (!currency) return null;
   return (
-    <span className="text-[9px] sm:text-[10px] font-semibold text-white/90 bg-white/15 px-1.5 py-0.5 rounded shrink-0 self-center leading-none">
+    <span className="text-[9px] sm:text-[10px] font-semibold text-white/90 bg-gf-surface/15 px-1.5 py-0.5 rounded shrink-0 self-center leading-none">
       {currency}
     </span>
   );

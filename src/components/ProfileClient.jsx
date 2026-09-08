@@ -150,7 +150,7 @@ function ProfileClient({ pcSession }) {
   return (
     <div className="profile-component-container w-full h-full sm:pr-2">
       {!userData ? (
-        <div className="flex justify-center items-center bg-slate-100 rounded-2xl h-screen">
+        <div className="flex justify-center items-center content-wallet-glass rounded-2xl h-screen">
           <EmptyModule
             emMessage={`Ups! No user data please refresh de page or try again later... 🤕`}
           />
@@ -185,7 +185,7 @@ function ProfileClient({ pcSession }) {
             />
           </div>
           {!onEdition ? (
-            <div className="content-profile-cont w-full h-screen bg-slate-100 text-center flex flex-col justify-center items-center rounded-t-[100px] rounded-b-2xl shadow-sm">
+            <div className="content-profile-cont w-full h-screen content-wallet-glass text-center flex flex-col justify-center items-center rounded-t-[100px] rounded-b-2xl">
               {userData.fullName == "" ? (
                 <Spin size="large" />
               ) : (
@@ -249,22 +249,22 @@ function ProfileClient({ pcSession }) {
                 <ApiTokensPanel mail={pcSession} />
               </div>
               <div className="remove-account-prof w-full mb-[100px]">
-                <div className="remove-acc w-full text-sm font-light text-red-700 underline cursor-pointer text-center">
+                <div className="remove-acc w-full text-sm font-light text-red-400 underline cursor-pointer text-center">
                   Remove account
                 </div>
               </div>
             </div>
           ) : (
-            <div className="w-full h-full bg-slate-100 shadow-sm rounded-t-[100px] relative">
+            <div className="w-full h-full content-wallet-glass rounded-t-[100px] relative">
               <div
                 className={`${
                   isLoading ? "absolute" : "hidden"
-                } top-0 left-0 bg-white/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] rounded-t-[100px]`}
+                } top-0 left-0 bg-gf-surface/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] rounded-t-[100px]`}
               >
                 <Spin size="large" />
               </div>
               <form
-                className="content-profile-form-cont w-full h-screen bg-slate-100 text-center flex flex-col justify-center items-center rounded-t-[100px] rounded-b-2xl shadow-sm sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]"
+                className="content-profile-form-cont w-full h-screen content-wallet-glass text-center flex flex-col justify-center items-center rounded-t-[100px] rounded-b-2xl sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]"
                 onSubmit={handleSubmit}
               >
                 <h1 className="text-3xl pt-9 pb-1">
@@ -361,7 +361,7 @@ function ProfileClient({ pcSession }) {
                     <p className="text-[11px]">Image:</p>
                     <div className=" w-full h-full flex  flex-col gap-2 justify-center items-center">
                       <Image
-                      className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500 mb-2 hover:bg-white"
+                      className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500 mb-2 hover:bg-gf-surface"
                         alt="gastify-profile-avatar"
                         width={100}
                         height={100}
@@ -376,7 +376,7 @@ function ProfileClient({ pcSession }) {
                         {({ open }) => {
                           return (
                             <button
-                              className=" py-1 px-2 bg-purple-600 rounded-2xl text-white hover:bg-purple-500"
+                              className="py-1 px-2 gf-glass-button rounded-2xl text-white"
                               onClick={() => open()}
                             >
                               Upload an Image
@@ -396,17 +396,16 @@ function ProfileClient({ pcSession }) {
                     />
                   </div>
                   <button
-                    className={`w-full p-2 ${
-                      !isLoading ? "bg-purple-600" : "bg-purple-200"
-                    } text-white text-center rounded-full mt-3 hover:bg-purple-500`}
+                    className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
                     type="submit"
+                    disabled={isLoading}
                   >
                     {isLoading ? <Spin /> : "Submit"}
                   </button>
                 </div>
               </form>
               <div className="remove-account-prof w-full py-[100px]">
-                <div className="remove-acc w-full text-sm font-light text-red-700 underline cursor-pointer text-center">
+                <div className="remove-acc w-full text-sm font-light text-red-400 underline cursor-pointer text-center">
                   Remove account
                 </div>
               </div>

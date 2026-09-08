@@ -19,24 +19,24 @@ function WalletAnalyzerProjectionCard({ comparison, walletPrimaryCurrency }) {
   const actualColumnLabel = isInProgress ? "Real hasta hoy" : "Real";
 
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-      <p className="text-[15px] font-extrabold text-slate-800 mb-0.5">Proyectado vs. Real</p>
-      <p className="text-xs text-slate-400 mb-4">
+    <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+      <p className="text-[15px] font-extrabold text-gf-text mb-0.5">Proyectado vs. Real</p>
+      <p className="text-xs text-gf-text-muted mb-4">
         {isInProgress
           ? "Este mes sigue en curso - comparado contra lo esperado hasta ahora."
           : "Lo que proyectabas para este mes contra lo que realmente pasó."}
       </p>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-purple-50 rounded-xl p-3">
-          <p className="text-xs text-gray-500 mb-1">Ingreso</p>
-          <p className="text-xs text-gray-400">Proyectado: {formatMoneyMajor(comparison.projectedIncome, walletPrimaryCurrency)}</p>
-          <p className="text-sm font-semibold text-green-700">{actualColumnLabel}: {formatMoneyMajor(comparison.actualIncome, walletPrimaryCurrency)}</p>
+        <div className="bg-gf-accent-soft-bg rounded-xl p-3">
+          <p className="text-xs text-gf-text-muted mb-1">Ingreso</p>
+          <p className="text-xs text-gf-text-muted">Proyectado: {formatMoneyMajor(comparison.projectedIncome, walletPrimaryCurrency)}</p>
+          <p className="text-sm font-semibold text-green-400">{actualColumnLabel}: {formatMoneyMajor(comparison.actualIncome, walletPrimaryCurrency)}</p>
         </div>
-        <div className="bg-purple-50 rounded-xl p-3">
-          <p className="text-xs text-gray-500 mb-1">Gasto</p>
-          <p className="text-xs text-gray-400">Proyectado: {formatMoneyMajor(comparison.projectedExpense, walletPrimaryCurrency)}</p>
-          <p className="text-sm font-semibold text-red-700">{actualColumnLabel}: {formatMoneyMajor(comparison.actualExpense, walletPrimaryCurrency)}</p>
+        <div className="bg-gf-accent-soft-bg rounded-xl p-3">
+          <p className="text-xs text-gf-text-muted mb-1">Gasto</p>
+          <p className="text-xs text-gf-text-muted">Proyectado: {formatMoneyMajor(comparison.projectedExpense, walletPrimaryCurrency)}</p>
+          <p className="text-sm font-semibold text-red-400">{actualColumnLabel}: {formatMoneyMajor(comparison.actualExpense, walletPrimaryCurrency)}</p>
         </div>
       </div>
 

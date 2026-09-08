@@ -101,18 +101,18 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
 
   return (
     <div className="mb-4 last:mb-0">
-      <p className="text-purple-800 font-medium mb-2">{label}</p>
+      <p className="text-purple-300 font-medium mb-2">{label}</p>
       {sorted.length > 0 && (
         <ul className="flex flex-col gap-2 mb-3">
           {sorted.map((entry) => (
             <li
               key={entry._id}
-              className="flex justify-between items-center bg-white rounded-2xl px-4 py-2"
+              className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
             >
-              <p className="text-purple-800 capitalize">
+              <p className="text-purple-300 capitalize">
                 Desde {formatMonthYear(entry.effectiveFrom)}
                 {entry.effectiveTo ? ` hasta ${formatMonthYear(entry.effectiveTo)}` : " (en curso)"}
-                <span className="text-xs text-gray-500 normal-case ml-2">
+                <span className="text-xs text-gf-text-muted normal-case ml-2">
                   ~{formatMoneyMajor(
                     minorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || defaultCurrency),
                     entry[moneyField]?.currency || defaultCurrency,
@@ -137,13 +137,14 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
       )}
       <form
         onSubmit={handleSubmit}
-        className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-white rounded-2xl p-3"
+        className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
       >
         <div className="flex flex-col">
           <p className="label-tfp mb-1">Desde</p>
           <ConfigProvider locale={esES} theme={pickerTheme}>
             <DatePicker
               picker="month"
+              className="ant-date-picker-range3"
               value={effectiveFrom ? effectiveFrom.locale("es") : null}
               onChange={(d) => setEffectiveFrom(d)}
               format="MMMM YYYY"
@@ -158,6 +159,7 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
           <ConfigProvider locale={esES} theme={pickerTheme}>
             <DatePicker
               picker="month"
+              className="ant-date-picker-range3"
               value={effectiveTo ? effectiveTo.locale("es") : null}
               onChange={(d) => setEffectiveTo(d)}
               disabledDate={(d) => effectiveFrom && d.isBefore(effectiveFrom, "month")}
@@ -194,12 +196,12 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
         </div>
         <button
           type="submit"
-          className="bg-purple-600 text-white rounded-full px-4 py-2 hover:bg-purple-500 shrink-0"
+          className="gf-glass-button text-white rounded-full px-4 py-2 shrink-0"
         >
           {isLoading ? <Spin /> : editingId ? "Guardar" : "Agregar"}
         </button>
         {editingId && (
-          <button type="button" className="text-gray-500 underline shrink-0" onClick={resetForm}>
+          <button type="button" className="gf-glass-button-neutral text-gf-text rounded-full px-4 py-2 shrink-0" onClick={resetForm}>
             Cancelar
           </button>
         )}
@@ -222,19 +224,19 @@ function HistoricalBaselinePanel({ baseline, walletPrimaryCurrency, mail, onChan
   const totalEntries = (baseline?.incomeHistory?.length || 0) + (baseline?.expenseHistory?.length || 0);
 
   return (
-    <div className="historical-baseline-panel w-full bg-purple-100 rounded-3xl p-4 mb-4">
+    <div className="historical-baseline-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
       <div
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h2 className="text-xl text-purple-800 font-normal">
+        <h2 className="text-xl text-purple-300 font-normal">
           Referencia histórica ({totalEntries})
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
         <div className="mt-3">
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-gf-text-muted mb-3">
             Solo se usa para rellenar meses sin transacciones, Presupuestos o Fuentes de ingreso
             reales — donde sí haya datos reales, esos siempre ganan. Ingreso y gasto se manejan por
             separado, ya que no necesariamente cambian al mismo tiempo. Si dos periodos se cruzan

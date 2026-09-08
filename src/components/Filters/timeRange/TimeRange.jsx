@@ -105,12 +105,12 @@ function TimeRange({ rpDate, rpResponse, styles, startDateValue, endDateValue })
   const dateFormat = "DD/MM/YYYY";
 
   return (
-    <div className={`w-fit flex items-center gap-1 ${!styles ? "bg-slate-200 px-1.5 py-0.5 rounded-full" : styles}`}>
+    <div className={`w-fit flex items-center gap-1 ${!styles ? "gf-glass-card px-1.5 py-0.5 rounded-full" : styles}`}>
       <Tooltip title={`Go to previous month: ${prevInfo.label}`}>
         <button
           type="button"
           onClick={handlePrevMonth}
-          className="w-5 h-5 flex items-center justify-center rounded-full bg-white hover:bg-purple-600 hover:text-white text-slate-600 shadow-2xs border border-slate-300 transition-all active:scale-95 flex-shrink-0"
+          className="w-5 h-5 flex items-center justify-center rounded-full gf-glass-inset hover:bg-purple-600 hover:text-white text-gf-text shadow-2xs transition-all active:scale-95 flex-shrink-0"
         >
           <MdChevronLeft size={16} />
         </button>
@@ -147,7 +147,7 @@ function TimeRange({ rpDate, rpResponse, styles, startDateValue, endDateValue })
         <button
           type="button"
           onClick={handleNextMonth}
-          className="w-5 h-5 flex items-center justify-center rounded-full bg-white hover:bg-purple-600 hover:text-white text-slate-600 shadow-2xs border border-slate-300 transition-all active:scale-95 flex-shrink-0"
+          className="w-5 h-5 flex items-center justify-center rounded-full gf-glass-inset hover:bg-purple-600 hover:text-white text-gf-text shadow-2xs transition-all active:scale-95 flex-shrink-0"
         >
           <MdChevronRight size={16} />
         </button>

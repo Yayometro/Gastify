@@ -16,7 +16,7 @@ function CategoryCircleWithChilds({
   return (
     <div className="father-container flex flex-col justify-start items-center gap-2">
       <span
-        className="w-full text-4xl text-purple-700 hover:underline cursor-pointer flex justify-center items-center gap-2"
+        className="w-full text-4xl text-purple-300 hover:underline cursor-pointer flex justify-center items-center gap-2"
         onClick={() => onSelect(category)}
       >
         <UniversalCategoIcon type={icon} />
@@ -25,7 +25,7 @@ function CategoryCircleWithChilds({
           <FaRegQuestionCircle size={25}/>
         </Tooltip>
       </span>
-      <p className="text-sm font-semibold text-purple-700">
+      <p className="text-sm font-semibold text-purple-300">
         {name} Sub Categories:
       </p>
       <div className="childs-container flex justify-center items-center gap-2 flex-wrap">

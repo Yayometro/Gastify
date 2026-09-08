@@ -54,11 +54,11 @@ function BudgetBarRow({ budget, actual, onClick }) {
       : `${usdFormatChanger(balance)} remaining`;
   const balanceColor = isSaving
     ? balance <= 0
-      ? "text-blue-600"
-      : "text-gray-400"
+      ? "text-blue-300"
+      : "text-gf-text-muted"
     : exceeded
-      ? "text-red-600"
-      : "text-green-600";
+      ? "text-red-300"
+      : "text-green-400";
 
   const periodLabel = isProject
     ? "one-time"
@@ -73,13 +73,13 @@ function BudgetBarRow({ budget, actual, onClick }) {
 
   return (
     <div
-      className="budget-bar-row w-full bg-white rounded-2xl p-3 cursor-pointer hover:shadow-md transition-shadow"
+      className="budget-bar-row w-full gf-glass-row rounded-2xl p-3 cursor-pointer hover:shadow-md transition-shadow"
       onClick={() => onClick(budget)}
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
           {isProject ? (
-            <div className="rounded-full w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-purple-100 text-purple-700 border-2 border-white shadow-sm shrink-0">
+            <div className="rounded-full w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-gf-accent-soft-bg text-purple-300 border-2 border-white shadow-sm shrink-0">
               <UniversalCategoIcon type={budget.icon || "md/MdFlightTakeoff"} siz={18} />
             </div>
           ) : budget.categories && budget.categories.length > 0 ? (
@@ -101,7 +101,7 @@ function BudgetBarRow({ budget, actual, onClick }) {
                 );
               })}
               {budget.categories.length > 3 && (
-                <div className="rounded-full w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-purple-100 text-purple-800 text-xs font-bold border-2 border-white shadow-sm shrink-0">
+                <div className="rounded-full w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-gf-accent-soft-bg text-purple-300 text-xs font-bold border-2 border-white shadow-sm shrink-0">
                   +{budget.categories.length - 3}
                 </div>
               )}
@@ -115,8 +115,8 @@ function BudgetBarRow({ budget, actual, onClick }) {
             </div>
           )}
           <div className="flex flex-col">
-            <p className="text-purple-800">{budget.name || "Unnamed budget"}</p>
-            <p className="text-[10px] text-gray-500">
+            <p className="text-purple-200 font-bold">{budget.name || "Unnamed budget"}</p>
+            <p className="text-[10px] gf-text-muted-glass">
               {isSaving ? "Saving Goal" : isProject ? "Project Budget" : "Spending Budget"} • {periodLabel} • {budgetCurrency} based
             </p>
           </div>
@@ -128,27 +128,36 @@ function BudgetBarRow({ budget, actual, onClick }) {
           </span>
         </div>
       </div>
-      <div className="w-full h-5 bg-gray-200 rounded-full relative my-3">
+      <div className="w-full h-5 bg-gf-surface-2 rounded-full relative my-3">
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${Math.min(Math.max(ratio * 100, 0), 100)}%`, background: gradient }}
         />
         <div
           style={{
-            left: `calc(${Math.min(Math.max(ratio * 100, 0), 100)}% - ${Math.min(Math.max(ratio * 100, 0), 100) * 0.40}px)`,
+            // Badge is 40px wide (half = 20px) - centering it exactly on the
+            // fill bar's edge needs `pct% - 20px`, then clamped so it never
+            // overhangs past either end of the track. The old formula
+            // (`pct% - pct*0.4px`) only produced that exact centered offset
+            // at pct=50 - everywhere else it drifted, most visibly at low
+            // percentages where it landed ~20px right of the fill's actual
+            // edge, reading as a gap between the bar and its badge.
+            left: `clamp(0px, calc(${Math.min(Math.max(ratio * 100, 0), 100)}% - 20px), calc(100% - 40px))`,
             borderColor: barColor,
           }}
-          className={`absolute top-1/2 -translate-y-1/2 w-10 h-10 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center text-[12px] font-extrabold shadow-md z-10 border-[3px] ${
+          className={`absolute top-1/2 -translate-y-1/2 w-10 h-10 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center text-[12px] font-extrabold shadow-md z-10 border-[3px] bg-gf-surface ${
             isExceeded
-              ? "bg-red-50 text-red-700"
-              : "bg-white text-slate-800"
+              ? isSaving
+                ? "text-blue-300"
+                : "text-red-300"
+              : "text-gf-text"
           }`}
           title={isExceeded ? `Exceeded limit/goal! (${pctNum}%)` : `${pctNum}% of goal/limit`}
         >
           <span>{pctNum}%</span>
         </div>
       </div>
-      <div className="flex justify-between text-xs text-gray-500 mt-1">
+      <div className="flex justify-between text-xs gf-text-muted-glass mt-1">
         <span>{usdFormatChanger(value)}</span>
         <span>
           of {usdFormatChanger(goalAmount)}

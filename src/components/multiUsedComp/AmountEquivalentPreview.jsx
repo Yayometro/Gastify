@@ -14,7 +14,7 @@ function AmountEquivalentPreview({ quote }) {
     <Tooltip
       title={`Estimated at ${quote.rate} (${quote.source}${quote.stale ? ", stale" : ""}) on ${new Date(quote.effectiveDate).toLocaleDateString()}. Not a manual override.`}
     >
-      <p className="text-[11px] text-slate-500 -mt-1 cursor-default">
+      <p className="text-[11px] text-gf-text-muted -mt-1 cursor-default">
         ≈ {formatMoneyMinor(quote.amountMinor, quote.currency, { showCode: false })} {quote.currency}
         {quote.estimated ? " (estimated)" : ""}
       </p>

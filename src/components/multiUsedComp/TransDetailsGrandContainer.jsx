@@ -58,7 +58,7 @@ function TransDetailsGrandContainer({ timePeriodFromFather }) {
   }
 
   return (
-    <div className="tdgc-cont w-full h-full">
+    <div className="tdgc-cont gf-glass-card w-full h-full rounded-[32px] p-4">
       <h1 className="text-2xl text-center font-semibold pt-5">
         Category Details
       </h1>
@@ -71,7 +71,7 @@ function TransDetailsGrandContainer({ timePeriodFromFather }) {
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
           <Tooltip title="Filter by date using a preset range or selecting a specific range 🤓">
-            <div className="text-black w-[10px]">
+            <div className="text-gf-text w-[10px]">
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
             </div>
           </Tooltip>
@@ -79,12 +79,12 @@ function TransDetailsGrandContainer({ timePeriodFromFather }) {
             getValue={getValueFromSelecter}
             periodFromFather={timePeriodsForSelecter[0]}
             periodOverride={timePeriodsForSelecter}
-            styles="bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+            styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
           />
           <TimeRange rpDate={handleRangeDate} />
         </div>
       </div>
-      <div className="tdgc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 bg-purple-100 ">
+      <div className="tdgc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 gf-tab-bar-accent ">
         <div
           onClick={() => setActiveTab("treemap")}
           className={`tab-treemap p-4 cursor-pointer hover:text-purple-400 ${
@@ -129,7 +129,7 @@ function TransDetailsGrandContainer({ timePeriodFromFather }) {
       */}
       <div className="trc-container-sub w-full h-full">
         {activeTab === "treemap" && (
-          <DisplayerCategoryTreemap dctIncomes={allIncomes} dctBills={allBills} />
+          <DisplayerCategoryTreemap dccpIncomes={allIncomes} dccoBills={allBills} />
         )}
         {activeTab === "bubble" && (
           <DisplayerCategoryCirclePacking dccpIncomes={allIncomes} dccoBills={allBills} />

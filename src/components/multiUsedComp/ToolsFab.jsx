@@ -15,7 +15,7 @@ function ToolsFab({ mail }) {
       <Tooltip title="Tools" placement="left">
         <button
           onClick={() => setOpen(true)}
-          className="fixed top-4 sm:top-auto bottom-auto sm:bottom-4 right-4 z-[2500] w-12 h-12 rounded-full bg-purple-600 text-white shadow-lg hover:bg-purple-500 transition-colors flex items-center justify-center cursor-pointer"
+          className="fixed top-4 sm:top-auto bottom-auto sm:bottom-4 right-4 z-[2500] w-12 h-12 rounded-full gf-glass-button text-white flex items-center justify-center cursor-pointer"
           aria-label="Open tools"
         >
           <CategoIcon type="MdAutoAwesome" siz={22} />

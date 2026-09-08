@@ -17,7 +17,7 @@ function SelecterFilter({ getValue, periodOverride, periodFromFather, styles }) 
     getValue(event.target.value);
   }
   return (
-    <div className={`${!styles ? " bg-slate-50 text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]" : styles}`}>
+    <div className={`${!styles ? " gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]" : styles}`}>
       <select
         className="bg-transparent w-full pr-4 appearance-none text-center"
         name="DateSelector"

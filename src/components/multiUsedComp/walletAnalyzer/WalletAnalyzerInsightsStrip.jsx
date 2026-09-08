@@ -8,9 +8,9 @@ import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMo
 import InsightDetailModal from "./InsightDetailModal";
 
 const TONE_STYLES = {
-  warning: { bg: "bg-amber-50" },
-  positive: { bg: "bg-green-50" },
-  info: { bg: "bg-purple-50" },
+  warning: { bg: "bg-amber-500/15" },
+  positive: { bg: "bg-green-500/15" },
+  info: { bg: "bg-gf-accent-soft-bg" },
 };
 
 // Card one-liners are rendered here (not baked into the transformer)
@@ -63,11 +63,11 @@ function WalletAnalyzerInsightsStrip({ insights, walletPrimaryCurrency, transact
   }
 
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-      <p className="text-[15px] font-extrabold text-slate-800 mb-0.5">{title}</p>
-      <p className="text-xs text-slate-400 mb-4">Calculado a partir de tu historial - sin llamadas a IA</p>
+    <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+      <p className="text-[15px] font-extrabold text-gf-text mb-0.5">{title}</p>
+      <p className="text-xs text-gf-text-muted mb-4">Calculado a partir de tu historial - sin llamadas a IA</p>
       {insights.length === 0 ? (
-        <p className="text-xs text-slate-400">Nada fuera de lo común este mes.</p>
+        <p className="text-xs text-gf-text-muted">Nada fuera de lo común este mes.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {insights.map((insight, i) => (
@@ -79,15 +79,15 @@ function WalletAnalyzerInsightsStrip({ insights, walletPrimaryCurrency, transact
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") openInsight(insight);
               }}
-              className="border border-slate-100 rounded-xl p-3.5 flex flex-col gap-1.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-purple-200"
+              className="border border-gf-border rounded-xl p-3.5 flex flex-col gap-1.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-purple-200"
             >
               <span
-                className={`h-8 w-8 rounded-full flex items-center justify-center text-base ${TONE_STYLES[insight.tone]?.bg || "bg-slate-50"}`}
+                className={`h-8 w-8 rounded-full flex items-center justify-center text-base ${TONE_STYLES[insight.tone]?.bg || "bg-gf-surface-2"}`}
               >
                 {insight.icon}
               </span>
-              <p className="text-xs font-bold text-slate-800 leading-tight">{insight.title}</p>
-              <p className="text-[11px] text-slate-500 leading-snug">{renderInsightDetail(insight, walletPrimaryCurrency)}</p>
+              <p className="text-xs font-bold text-gf-text leading-tight">{insight.title}</p>
+              <p className="text-[11px] text-gf-text-muted leading-snug">{renderInsightDetail(insight, walletPrimaryCurrency)}</p>
             </div>
           ))}
         </div>

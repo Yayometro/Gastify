@@ -102,7 +102,7 @@ function GoalGaugeRange({ indBud, indBills }) {
     setSelectedDuration(parseInt(event.target.value, 10));
   };
   return (
-    <div className="w-[90%] flex flex-col justify-center items-center bg-slate-50 rounded-2xl shadow-xl mt-2">
+    <div className="w-[90%] flex flex-col justify-center items-center bg-gf-surface-2 rounded-2xl shadow-xl mt-2">
       <div className="filters flex items-center justify-center">
         <div className=" w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
           <select

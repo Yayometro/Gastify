@@ -14,14 +14,14 @@ function CompareCell({ column, mode, onOpenItem }) {
   if (!column || column.childrens.length === 0) {
     return (
       <div className="flex flex-col gap-1 min-w-0">
-        <p className="text-[11px] text-gray-400 text-center">{column?.monthLabel || "No data"}</p>
+        <p className="text-[11px] text-gf-text-muted text-center">{column?.monthLabel || "No data"}</p>
         <p className="text-xs text-gray-300 italic">Nothing this month</p>
       </div>
     );
   }
   return (
     <div className="flex flex-col gap-1 min-w-0">
-      <p className="w-full text-center text-sm font-bold text-purple-800 mb-0.5">
+      <p className="w-full text-center text-sm font-bold text-purple-300 mb-0.5">
         {column.monthLabel}
       </p>
       {column.childrens.map((item, i) =>
@@ -38,22 +38,22 @@ function CompareCell({ column, mode, onOpenItem }) {
 function CompareSection({ title, rows, mode, labelLeft, labelRight, onOpenItem }) {
   return (
     <div className="w-full flex flex-col gap-2 mb-4">
-      <h2 className="text-xl text-purple-700">{title}</h2>
+      <h2 className="text-xl text-purple-300">{title}</h2>
       {!rows || rows.length === 0 ? (
-        <p className="text-sm text-gray-400">No items to compare for this period.</p>
+        <p className="text-sm text-gf-text-muted">No items to compare for this period.</p>
       ) : (
         <div className="w-full overflow-x-auto">
           <div className="min-w-[560px] flex flex-col gap-2">
             <div className="grid grid-cols-2 gap-3 sticky top-0 z-[1]">
-              <p className="text-xs font-semibold text-purple-700 bg-purple-100 rounded-lg px-2 py-1 truncate" title={labelLeft}>
+              <p className="text-xs font-semibold text-purple-300 bg-gf-accent-soft-bg rounded-lg px-2 py-1 truncate" title={labelLeft}>
                 {labelLeft}
               </p>
-              <p className="text-xs font-semibold text-purple-700 bg-purple-100 rounded-lg px-2 py-1 truncate" title={labelRight}>
+              <p className="text-xs font-semibold text-purple-300 bg-gf-accent-soft-bg rounded-lg px-2 py-1 truncate" title={labelRight}>
                 {labelRight}
               </p>
             </div>
             {rows.map((row) => (
-              <div key={`compare-row-${row.index}`} className="grid grid-cols-2 gap-3 border-t border-slate-200 pt-2">
+              <div key={`compare-row-${row.index}`} className="grid grid-cols-2 gap-3 border-t border-gf-border pt-2">
                 <CompareCell column={row.colA} mode={mode} onOpenItem={onOpenItem} />
                 <CompareCell column={row.colB} mode={mode} onOpenItem={onOpenItem} />
               </div>

@@ -109,7 +109,7 @@ function QuickEditInner({ field, transIds, onClose }) {
         value={value.name}
         onChange={(e) => setValue((v) => ({ ...v, name: e.target.value }))}
         placeholder="New name for all selected transactions"
-        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
+        className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
       />
     );
 
@@ -144,14 +144,14 @@ function QuickEditInner({ field, transIds, onClose }) {
               checked={value.isIncome}
               onChange={(checked) => setValue((v) => ({ ...v, isIncome: checked, isBill: !checked }))}
             />
-            <span className="text-sm text-slate-600">Income</span>
+            <span className="text-sm text-gf-text-muted">Income</span>
           </div>
           <div className="flex items-center gap-3">
             <Switch
               checked={value.isBill}
               onChange={(checked) => setValue((v) => ({ ...v, isBill: checked, isIncome: !checked }))}
             />
-            <span className="text-sm text-slate-600">Bill / Expense</span>
+            <span className="text-sm text-gf-text-muted">Bill / Expense</span>
           </div>
         </Space>
       </ConfigProvider>
@@ -176,7 +176,7 @@ function QuickEditInner({ field, transIds, onClose }) {
 
     if (field === "account") return (
       <select
-        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-purple-400"
+        className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm bg-gf-surface outline-none focus:border-purple-400"
         value={value.account || ""}
         onChange={(e) => setValue((v) => ({ ...v, account: e.target.value || null }))}
       >
@@ -194,13 +194,14 @@ function QuickEditInner({ field, transIds, onClose }) {
         value={value.tags || ""}
         onChange={(e) => setValue((v) => ({ ...v, tags: e.target.value }))}
         placeholder="Tags separated by comma (e.g. food, vacation, monthly)"
-        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
+        className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
       />
     );
   };
 
   return (
     <Modal
+      className="gf-antd-modal-glass"
       open
       zIndex={10000}
       onCancel={onClose}
@@ -211,12 +212,13 @@ function QuickEditInner({ field, transIds, onClose }) {
       okButtonProps={{
         className: isLoading
           ? "!bg-purple-300 !border-purple-300 !text-white/70 cursor-not-allowed"
-          : "!bg-purple-600 !border-purple-600 !text-white hover:!bg-purple-500",
+          : "gf-glass-button !border-0 !text-white",
       }}
+      cancelButtonProps={{ className: "gf-glass-button-neutral !border-0 !text-gf-text" }}
       title={
         <div className="flex flex-col gap-0.5">
           <span className="text-base font-semibold">{meta?.label}</span>
-          <span className="text-xs font-normal text-slate-400">
+          <span className="text-xs font-normal text-gf-text-muted">
             Affects {transIds.length} transaction{transIds.length !== 1 ? "s" : ""} — only this field will change, everything else stays the same.
           </span>
         </div>

@@ -323,7 +323,7 @@ function Wallet({ dataServ, session }) {
   }
 
   const accountsPanel = (
-    <div className="scrollbar-thin-white bg-black/20 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full overflow-y-auto">
+    <div className="scrollbar-thin-white bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full overflow-y-auto">
       <span className="text-white/70 text-[10px] uppercase tracking-wide">Tus cuentas</span>
       {!accounts || accounts.length === 0 ? (
         <span className="text-white/60 text-xs">No accounts yet</span>
@@ -347,7 +347,7 @@ function Wallet({ dataServ, session }) {
   );
 
   const summaryPanel = (
-    <div className="bg-black/20 rounded-2xl p-3 flex flex-col w-full h-full">
+    <div className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
       <span className="text-white/70 text-[10px] uppercase tracking-wide">Resumen</span>
       <div className="flex flex-col gap-2 justify-end flex-1">
       <div className="flex items-center justify-between gap-3 w-full">
@@ -401,7 +401,7 @@ function Wallet({ dataServ, session }) {
   );
 
   const comparisonPanel = (
-    <div className="bg-black/20 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
+    <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
       <span className="text-white/70 text-[10px] uppercase tracking-wide">Vs. mes anterior</span>
       {renderDeltaRow("Ingresos", totalIncome, prevTotalIncome, INCOME_COLOR)}
       {renderDeltaRow("Gastos", totalBill, prevTotalBill, EXPENSE_COLOR)}
@@ -453,14 +453,14 @@ function Wallet({ dataServ, session }) {
                     onClick={() => goToHeaderSlide(headerActiveSlide - 1)}
                     disabled={headerActiveSlide === 0}
                     aria-label="Previous"
-                    className="w-6 h-6 flex items-center justify-center rounded-full bg-white/15 text-white disabled:opacity-30 transition-opacity"
+                    className="w-6 h-6 flex items-center justify-center rounded-full bg-gf-surface/15 text-white disabled:opacity-30 transition-opacity"
                   >
                     <MdChevronLeft size={16} />
                   </button>
                   {[0, 1, 2].map((i) => (
                     <span
                       key={i}
-                      className={`w-1.5 h-1.5 rounded-full ${headerActiveSlide === i ? "bg-white" : "bg-white/40"}`}
+                      className={`w-1.5 h-1.5 rounded-full ${headerActiveSlide === i ? "bg-gf-surface" : "bg-gf-surface/40"}`}
                     />
                   ))}
                   <button
@@ -468,7 +468,7 @@ function Wallet({ dataServ, session }) {
                     onClick={() => goToHeaderSlide(headerActiveSlide + 1)}
                     disabled={headerActiveSlide === 2}
                     aria-label="Next"
-                    className="w-6 h-6 flex items-center justify-center rounded-full bg-white/15 text-white disabled:opacity-30 transition-opacity"
+                    className="w-6 h-6 flex items-center justify-center rounded-full bg-gf-surface/15 text-white disabled:opacity-30 transition-opacity"
                   >
                     <MdChevronRight size={16} />
                   </button>
@@ -482,7 +482,7 @@ function Wallet({ dataServ, session }) {
                   new Date().getFullYear()
                 )}
                 styles={
-                  "bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+                  "gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
                 }
               />
               <TimeRange
@@ -499,7 +499,7 @@ function Wallet({ dataServ, session }) {
               </Tooltip>
             </div>
           </div>
-          <div className="content-wallet px-2 bg-stone-100 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px]">
+          <div className="content-wallet content-wallet-glass px-2 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px] flex flex-col gap-8">
             <WalletAnalyzerTeaser timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
             <div className="multi-container lg:flex lg:item">
               <MultiCreditCard
@@ -567,7 +567,7 @@ function Wallet({ dataServ, session }) {
                   </div>
                 </div>
               </div> */}
-              <div className="wallet-right-col-container w-full h-full lg:max-w-[50%]s lg:flex lg:flex-col justify-center items-center">
+              <div className="wallet-right-col-container w-full h-full lg:max-w-[50%]s flex flex-col gap-8 justify-center items-center">
                 <div className="movements w-full h-full lg:max-w-[800px] flex flex-row justify-center items-center">
                   <Movements
                     timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}

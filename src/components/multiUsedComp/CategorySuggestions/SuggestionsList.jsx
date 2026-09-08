@@ -37,22 +37,22 @@ function CategoryTransitionChip({ transaction, suggestion }) {
   return (
     <div
       className={`flex items-center justify-between gap-2 rounded-full pl-2 pr-2 py-1.5 w-full border ${
-        isLowConfidence ? "bg-amber-50 border-amber-200" : "bg-purple-50 border-purple-200"
+        isLowConfidence ? "bg-amber-500/15 border-amber-200" : "bg-gf-accent-soft-bg border-purple-200"
       }`}
     >
       <div className="flex items-center gap-1.5 min-w-0 shrink">
         <CategoryDot color={transaction.category?.color} icon={transaction.category?.icon} />
         <Tooltip title={currentLabel}>
-          <span className="text-xs text-slate-500 truncate cursor-default">{currentLabel}</span>
+          <span className="text-xs text-gf-text-muted truncate cursor-default">{currentLabel}</span>
         </Tooltip>
       </div>
 
-      <CategoIcon type="MdArrowForward" siz={16} className="shrink-0 text-slate-400" />
+      <CategoIcon type="MdArrowForward" siz={16} className="shrink-0 text-gf-text-muted" />
 
       <div className="flex items-center justify-end gap-1.5 min-w-0 shrink">
         <Tooltip title={suggestedLabel}>
           <span
-            className={`text-xs truncate cursor-default text-right ${isLowConfidence ? "text-amber-700" : "text-purple-700"}`}
+            className={`text-xs truncate cursor-default text-right ${isLowConfidence ? "text-amber-400" : "text-purple-300"}`}
           >
             {suggestedLabel}
           </span>
@@ -76,11 +76,11 @@ function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }) {
         type="checkbox"
         checked={selected}
         onChange={() => onToggle(id)}
-        className="w-4 h-4 cursor-pointer shrink-0 accent-purple-600"
+        className="gf-checkbox-round"
         title={selected ? "Uncheck to skip this suggestion" : "Check to apply this suggestion"}
       />
 
-      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:border sm:border-slate-100 sm:rounded-2xl sm:p-2">
+      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:border sm:border-gf-border sm:rounded-2xl sm:p-2">
         <div className="w-full sm:w-1/2 min-w-0">
           <TransactionItemList
             movement={entry.transaction}
@@ -89,7 +89,7 @@ function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }) {
           />
         </div>
 
-        <div className="hidden sm:block w-px self-stretch bg-slate-200 shrink-0" />
+        <div className="hidden sm:block w-px self-stretch bg-gf-surface-2 shrink-0" />
 
         <div className="w-full sm:w-1/2 min-w-0">
           <CategoryTransitionChip transaction={entry.transaction} suggestion={entry.suggestion} />
@@ -178,7 +178,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
   };
 
   if (items.length === 0) {
-    return <p className="text-sm text-slate-400 text-center py-6">Nothing left to review here.</p>;
+    return <p className="text-sm text-gf-text-muted text-center py-6">Nothing left to review here.</p>;
   }
 
   return (
@@ -196,7 +196,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
         ))}
       </div>
 
-      <p className="text-xs text-center text-slate-500 bg-slate-50 rounded-xl py-2 px-3">
+      <p className="text-xs text-center text-gf-text-muted bg-gf-surface-2 rounded-xl py-2 px-3">
         {effective.length > 0
           ? `${effective.length} transaction${effective.length !== 1 ? "s" : ""} will be categorized.`
           : "All items unchecked — nothing will change."}
@@ -207,7 +207,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
           <button
             onClick={onCancel}
             disabled={confirming}
-            className="px-4 py-2 rounded-full text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-full text-sm text-gf-text-muted hover:text-gf-text-muted hover:bg-gf-surface-2 transition-colors disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -215,7 +215,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
         <button
           onClick={handleConfirm}
           disabled={confirming || effective.length === 0}
-          className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium gf-glass-button text-white"
         >
           {confirming && (
             <svg className="animate-spin h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">

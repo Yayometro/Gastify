@@ -17,7 +17,7 @@ function Top3ContComp({ t3ccTransactions, ist3ccCategory }) {
   return (
     <div className="tdgc-cont w-full h-full">
       {/* <h1 className="text-2xl text-center font-semibold pt-5">Top 3</h1> */}
-      <div className="tdgc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 bg-purple-100">
+      <div className="tdgc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 gf-tab-bar-accent">
         <div
           onClick={() => setIsBill(true)}
           className={`tab-budget p-4 cursor-pointer hover:text-purple-400 ${

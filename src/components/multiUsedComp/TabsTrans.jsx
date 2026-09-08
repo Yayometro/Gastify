@@ -87,6 +87,15 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
           from: "color",
           modifiers: [["darker", 1.6]],
         }}
+        theme={{
+          text: { fill: "var(--gf-text)" },
+          axis: {
+            ticks: { text: { fill: "var(--gf-text-muted)", fontSize: 11 } },
+            legend: { text: { fill: "var(--gf-text)", fontSize: 12, fontWeight: 600 } },
+          },
+          legends: { text: { fill: "var(--gf-text)", fontSize: 11 } },
+          grid: { line: { stroke: "var(--gf-border)" } },
+        }}
         axisTop={null}
         axisRight={null}
         axisBottom={{
@@ -144,8 +153,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
           return (
             <div
               style={{
-                padding: 5,
-                background: "#F7F9F9",
+                padding: 10,
                 boxShadow: `0px 7px 16px 0px ${
                   dataa.color ? dataa.color : "rgba(0,0,0,0.27)"
                 }`,
@@ -154,9 +162,9 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                borderRadius: "10px",
+                borderRadius: "16px",
               }}
-              className="max-w-[250px]"
+              className="max-w-[250px] gf-glass-chip text-gf-text"
             >
               <h1 className="text-base text-center text-wrap font-bold">
                 {dataa.data.type}
@@ -198,7 +206,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
                     {breakdown.map((g) => (
                       <div
                         key={g.currency}
-                        className="bg-white rounded-full px-2 py-0.5 text-[10px] border border-gray-200"
+                        className="bg-gf-surface rounded-full px-2 py-0.5 text-[10px] border border-gf-border"
                       >
                         {formatMoneyMinor(g.nativeAmountMinor, g.currency, { showCode: true })}
                         {g.currency !== walletPrimaryCurrency && (

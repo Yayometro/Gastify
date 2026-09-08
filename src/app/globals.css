@@ -5,15 +5,562 @@
 * {
   box-sizing: border-box;
 }
-:root {
+
+/* Native number-input spin buttons render as an unstyleable OS-themed
+   widget (a light grey up/down control in every browser) that can't be
+   recolored to match the app's dark glass pill inputs - the up/down glyphs
+   are drawn by the browser, not CSS-paintable beyond hide/show. Hiding them
+   app-wide keeps every type="number" field a clean pill consistent with
+   every other input instead of clashing with a mismatched native control. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-  }
+/* Dark is the default theme, so its values live directly on :root rather
+   than behind a .dark class - most visitors never toggle, and this way
+   they never pay for an extra attribute lookup. Registered as real
+   Tailwind colors in tailwind.config.js (gf-bg, gf-surface, ...) so
+   components write bg-gf-surface instead of the var directly - keeps
+   className strings consistent with every other color in this codebase.
+   Purple/violet brand accents are untouched on purpose; only the neutral
+   surface/text tokens live here. */
+:root {
+  /* Hue-matched to the walllet-bg/profile-img gradient's dark end
+     (#1e1147) instead of the old blue-black (#0f0a1a) - the canvas now
+     reads as the same family as the hero band it sits under, rather than
+     a harsher, unrelated near-black. Lighter overall too, for the same
+     reason. */
+  --gf-bg: #180f2e;
+  --gf-surface: #251a45;
+  --gf-surface-2: #302354;
+  --gf-border: rgba(255, 255, 255, 0.1);
+  --gf-text: #f3f0fb;
+  --gf-text-muted: #ada0c9;
+  --gf-accent-soft-bg: rgba(147, 51, 234, 0.18);
+  --gf-accent-soft-text: #d3b8fb;
+}
+
+/* Light theme override - opted into via [data-theme="light"] on <html>,
+   set by ThemeProvider.jsx (state + localStorage) and mirrored by the
+   blocking inline script in layout.js so the correct theme paints before
+   first render, no flash. Every component already reads these through the
+   gf-* Tailwind tokens, so this block is the only place light mode needs
+   defining. */
+:root[data-theme="light"] {
+  --gf-bg: #f4f2fa;
+  --gf-surface: #ffffff;
+  --gf-surface-2: #f1ecf9;
+  --gf-border: rgba(27, 16, 61, 0.1);
+  --gf-text: #1e1533;
+  --gf-text-muted: #6b6280;
+  --gf-accent-soft-bg: rgba(147, 51, 234, 0.08);
+  --gf-accent-soft-text: #7e22ce;
 }
 
 body {
+  background-color: var(--gf-bg);
+  color: var(--gf-text);
+}
+/* The sidebar/bottom nav (Navbar.jsx). Dark mode only, by design: frosted
+   glass instead of a flat fill - translucent + blurred, so the mesh
+   gradient behind it (.walllet-bg, now fixed-attachment so it runs behind
+   the whole page) bleeds through softly and the sidebar reads as a pane
+   floating over that atmosphere rather than a separate flat panel. Light
+   mode keeps the plain white-to-lavender gradient from before - there's no
+   equally-colorful backdrop behind it there for glass to react to. */
+.gf-nav-surface {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+:root[data-theme="light"] .gf-nav-surface {
+  background: linear-gradient(160deg, #ffffff 0%, #f1ecf9 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+}
+/* Stand-in for the Dashboard page's content-wallet canvas (bg-gf-bg) - dark
+   mode only. Confirmed transparent after a live A/B: the page reads better
+   with .walllet-bg's fixed mesh gradient showing all the way down,
+   unbroken, than with any panel sitting on top of it. Individual sections
+   inside it (WalletAnalyzerInsightsStrip, etc.) carry their own
+   .gf-glass-card treatment instead. Light mode keeps the plain bg-gf-bg
+   canvas: the light .walllet-bg isn't fixed/ambient, so there's nothing to
+   bleed through. */
+.content-wallet-glass {
+  background: transparent;
+}
+:root[data-theme="light"] .content-wallet-glass {
+  background: var(--gf-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+}
+/* General-purpose frosted-glass card, for anything sitting inside the mesh
+   atmosphere that currently uses a flat bg-gf-surface and reads as a dead
+   dark block against it (e.g. WalletAnalyzerInsightsStrip's card) - same
+   family as .gf-nav-surface/.content-wallet-glass so the whole page speaks
+   one visual language. Light mode falls back to the plain gf-surface fill,
+   unchanged from before. */
+.gf-glass-card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.35);
+}
+:root[data-theme="light"] .gf-glass-card {
+  background: var(--gf-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+/* Tab-header strips (Treemap/Bubble/Nested Pie, Bills/Incomes, ...) used
+   bg-gf-accent-soft-bg as a soft pink/purple band behind the tab labels -
+   made sense as a subtle tint on the old flat light-purple cards, but
+   reads as a stray pink stripe now that the card itself is glass. Dark
+   mode drops it to transparent so the tab strip just sits on the glass
+   card's own surface; light mode is unaffected; the tint still makes
+   sense there. */
+.gf-tab-bar-accent {
+  background: transparent;
+}
+:root[data-theme="light"] .gf-tab-bar-accent {
+  background: var(--gf-accent-soft-bg);
+}
+/* Inverse of .gf-glass-card - a sunken "well" instead of a raised pane.
+   The TimeRange prev/next arrow buttons and the Start/End date inputs sit
+   INSIDE a gf-glass-card shell (the pill track), and using the same raised
+   treatment on both nested levels read as if the buttons were popping out
+   of the shell instead of sitting in it. This darkens the fill and flips
+   the highlight to the shadow's inner top edge (concave, catching less
+   light) so the shell is what reads as embossed and the controls inside
+   it read as pressed in. */
+.gf-glass-inset {
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.4), inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+}
+:root[data-theme="light"] .gf-glass-inset {
+  background: rgba(27, 16, 61, 0.07);
+  box-shadow: inset 0 2px 3px 0 rgba(27, 16, 61, 0.18), inset 0 -1px 0 0 rgba(255, 255, 255, 0.6);
+}
+/* Darker "smoked glass" chip - for the floating info tags inside
+   CategoryTreemap's tiles (name+icon, amount, tooltip). Those tiles can be
+   ANY category color, including pale ones like yellow, so a plain flat
+   bg-gf-surface chip reads as a jarring near-black box on top of them. This
+   is deliberately darker/more opaque than .gf-glass-card's filter-chip
+   treatment (a near-black wash instead of a white-tinted one) so text stays
+   legible regardless of the tile's hue underneath, while still reading as
+   glass via the blur + soft top highlight. */
+.gf-glass-chip {
+  background: linear-gradient(160deg, rgba(20, 10, 40, 0.6) 0%, rgba(8, 4, 18, 0.7) 100%);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 6px 16px -6px rgba(0, 0, 0, 0.5);
+}
+:root[data-theme="light"] .gf-glass-chip {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.55) 100%);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 4px 12px -4px rgba(27, 16, 61, 0.2);
+}
+/* Raised outward 3D shell for tiles whose fill is an arbitrary per-item
+   inline color (category circles, Top-6 category/transaction tiles) - those
+   can't use a translucent glass BACKGROUND (there's nothing to blur behind
+   a fully opaque brand color), but a translucent gradient IMAGE layers
+   cleanly on top of an inline `background-color` (background-image and
+   background-color are separate longhands - setting one via a class and
+   the other inline doesn't conflict, unlike the `background` shorthand).
+   Same 160deg diagonal + light-to-dark direction as .gf-glass-fab (the
+   navbar "+" button) for a consistent light-north/dark-south wash across
+   the whole app, just translucent instead of a fixed color so each tile's
+   own hue still reads through. Needs `position: relative` on the tile
+   itself so the overlay pseudo-element resolves against the tile's own
+   box rather than an ancestor. Plain `inset: 0` only reaches the padding
+   edge, stopping short of a caller-drawn border (e.g. SubCategoryList's
+   father-category-colored ring) - `--gf-tile-border` lets a caller with
+   such a border opt the overlay out past it too, via a negative inset
+   equal to that border's own width (0 by default, so tiles with no
+   border - CategoryList, TopCategoryRow - are unaffected). */
+.gf-glass-tile {
+  position: relative;
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.55);
+  transition: filter 150ms ease, box-shadow 150ms ease;
+}
+.gf-glass-tile::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--gf-tile-border, 0px));
+  border-radius: inherit;
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.08) 42%, rgba(0, 0, 0, 0.04) 56%, rgba(0, 0, 0, 0.26) 100%);
+  pointer-events: none;
+}
+:root[data-theme="light"] .gf-glass-tile {
+  box-shadow: 0 4px 12px -4px rgba(27, 16, 61, 0.3);
+}
+:root[data-theme="light"] .gf-glass-tile::before {
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.14) 42%, rgba(0, 0, 0, 0.02) 56%, rgba(0, 0, 0, 0.14) 100%);
+}
+/* Quiet translucent tint for list rows nested INSIDE an already-glass card
+   (transaction rows, budget bars) - a flat bg-gf-surface fill on top of a
+   glass parent reads as a dead near-black slab. Deliberately lighter and
+   without .gf-glass-card's raised shadow/highlight (no shell popping out of
+   a shell) - it just needs to read as its own soft glassy layer, matching
+   the "not so dark, still interesting" ask. */
+.gf-glass-row {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+}
+.gf-glass-row:hover {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.12) 100%);
+}
+:root[data-theme="light"] .gf-glass-row {
+  background: var(--gf-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-theme="light"] .gf-glass-row:hover {
+  background: var(--gf-surface-2);
+}
+/* Row hover for lists that sit directly on the mesh/glass atmosphere (Top 6
+   / Top 12 rank rows) - hover:bg-gf-surface-2 was a flat opaque dark fill,
+   reading as a jarring near-black patch against the glass card around it.
+   This reads as a soft glass highlight instead, consistent with the rest of
+   the glass language. */
+.gf-hover-glass {
+  transition: background 150ms ease;
+}
+.gf-hover-glass:hover {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%);
+}
+:root[data-theme="light"] .gf-hover-glass:hover {
+  background: var(--gf-surface-2);
+}
+/* Muted text sitting on .gf-glass-row (BudgetBarRow's subtitle/stats) needs
+   more contrast than the standard --gf-text-muted token gives now that the
+   row itself is a lighter translucent glass rather than a flat dark
+   surface. Light mode is unaffected - that row reverts to a solid opaque
+   surface where the standard muted token already reads fine. */
+.gf-text-muted-glass {
+  color: rgba(255, 255, 255, 0.82);
+}
+:root[data-theme="light"] .gf-text-muted-glass {
+  color: var(--gf-text-muted);
+}
+/* Amber/emerald "glass" fills for UnbudgetedSpendingCard - the original
+   bg-amber-500/15 + solid border was tuned for a flat surface; at 15%
+   opacity over the busy mesh gradient the tint all but disappears, leaving
+   what reads as just an outline. Blur + a stronger tint reads as amber/
+   emerald glass regardless of what's behind it, matching every other glass
+   surface in the app; no border, same as the rest of that language. */
+.gf-glass-warning {
+  background: linear-gradient(160deg, rgba(245, 158, 11, 0.32) 0%, rgba(245, 158, 11, 0.16) 100%);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
+}
+.gf-glass-warning:hover {
+  background: linear-gradient(160deg, rgba(245, 158, 11, 0.4) 0%, rgba(245, 158, 11, 0.2) 100%);
+}
+:root[data-theme="light"] .gf-glass-warning {
+  background: rgba(245, 158, 11, 0.14);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+:root[data-theme="light"] .gf-glass-warning:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+.gf-glass-success {
+  background: linear-gradient(160deg, rgba(16, 185, 129, 0.32) 0%, rgba(16, 185, 129, 0.16) 100%);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
+}
+.gf-glass-success:hover {
+  background: linear-gradient(160deg, rgba(16, 185, 129, 0.4) 0%, rgba(16, 185, 129, 0.2) 100%);
+}
+:root[data-theme="light"] .gf-glass-success {
+  background: rgba(16, 185, 129, 0.14);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+:root[data-theme="light"] .gf-glass-success:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+.gf-glass-info {
+  background: linear-gradient(160deg, rgba(59, 130, 246, 0.32) 0%, rgba(59, 130, 246, 0.16) 100%);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
+}
+.gf-glass-info:hover {
+  background: linear-gradient(160deg, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.2) 100%);
+}
+:root[data-theme="light"] .gf-glass-info {
+  background: rgba(59, 130, 246, 0.14);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+:root[data-theme="light"] .gf-glass-info:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+/* Circular multi-select checkbox for transaction list rows - was a plain
+   square browser-default checkbox that looked out of place next to the
+   rest of the glass UI. Light lilac ring when empty, solid light-lilac
+   fill + a dark checkmark glyph when checked. */
+.gf-checkbox-round {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  border: 2px solid rgba(216, 180, 254, 0.55);
+  background-color: rgba(216, 180, 254, 0.08);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.gf-checkbox-round:checked {
+  background-color: #e9d5ff;
+  border-color: #e9d5ff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2l3 3 6-6.4' stroke='%234c1d95' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px 10px;
+}
+:root[data-theme="light"] .gf-checkbox-round {
+  border-color: rgba(147, 51, 234, 0.35);
+  background-color: rgba(147, 51, 234, 0.05);
+}
+:root[data-theme="light"] .gf-checkbox-round:checked {
+  background-color: #9333ea;
+  border-color: #9333ea;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2l3 3 6-6.4' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+/* Voluminous "glass" CTA button - the app's solid-fill purple buttons
+   (Submit, Save changes, Apply N, Create, ...) read as flat/plain next to
+   everything else that's gone glass. Same raised highlight+shadow
+   structure as .gf-glass-card, tinted solid-ish purple instead of neutral,
+   so it still reads clearly as a primary action while picking up the same
+   3D glass language. */
+.gf-glass-button {
+  /* !important on background AND box-shadow: also applied to antd <Button>s
+     (okButtonProps className, or a plain Upload trigger like ReadFileComp's
+     "Upload file") whose own .ant-btn default box-shadow is faint/flat and
+     otherwise wins the cascade tie (same specificity, antd's stylesheet
+     injected later) - silently flattening the raised 3D look on every antd
+     button while plain HTML <button>s using this same class kept it,
+     reading as two different button styles side by side. */
+  background: linear-gradient(160deg, rgba(168, 85, 247, 0.95) 0%, rgba(126, 34, 206, 0.95) 100%) !important;
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 16px -6px rgba(0, 0, 0, 0.5) !important;
+  transition: filter 150ms ease, box-shadow 150ms ease;
+}
+.gf-glass-button:hover {
+  filter: brightness(1.12);
+}
+.gf-glass-button:active {
+  filter: brightness(0.92);
+}
+.gf-glass-button:disabled {
+  filter: grayscale(0.4) brightness(0.85);
+  cursor: not-allowed;
+}
+:root[data-theme="light"] .gf-glass-button {
+  background: linear-gradient(160deg, #9333ea 0%, #7e22ce 100%) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 4px 12px -4px rgba(126, 34, 206, 0.4);
+}
+/* Circular 3D glass "+" badge for the Navbar's Add Transaction trigger -
+   the bare IoAddCircle glyph + drop-shadow glow never read as genuine 3D no
+   matter how strong the glow got, because a drop-shadow only darkens the
+   silhouette's edges - it can't fake the gradient+highlight depth every
+   other raised glass surface in the app gets. Wrapping a bare "+" glyph (no
+   built-in circle) in its own circular shell, using the same raised
+   gradient/inset-highlight/outer-shadow structure as .gf-glass-button, gives
+   it real dimensional depth instead of a flat glyph with a glow behind it. */
+.gf-glass-fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: linear-gradient(160deg, rgba(232, 121, 249, 0.95) 0%, rgba(168, 85, 247, 0.95) 55%, rgba(126, 34, 206, 0.95) 100%);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 6px 16px -4px rgba(126, 34, 206, 0.6);
+  color: #fff;
+  cursor: pointer;
+  transition: filter 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.gf-glass-fab:hover {
+  filter: brightness(1.12);
+}
+.gf-glass-fab:active {
+  filter: brightness(0.92);
+  transform: scale(0.96);
+}
+:root[data-theme="light"] .gf-glass-fab {
+  background: linear-gradient(160deg, #e879f9 0%, #9333ea 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 4px 12px -4px rgba(126, 34, 206, 0.4);
+}
+/* Same treatment, red - for the destructive/"confirm delete" side of
+   confirmation dialogs. */
+.gf-glass-button-danger {
+  background: linear-gradient(160deg, rgba(248, 113, 113, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%) !important;
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 16px -6px rgba(0, 0, 0, 0.5) !important;
+  transition: filter 150ms ease, box-shadow 150ms ease;
+}
+.gf-glass-button-danger:hover {
+  filter: brightness(1.12);
+}
+.gf-glass-button-danger:active {
+  filter: brightness(0.92);
+}
+:root[data-theme="light"] .gf-glass-button-danger {
+  background: linear-gradient(160deg, #ef4444 0%, #b91c1c 100%) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 4px 12px -4px rgba(185, 28, 28, 0.4);
+}
+/* Neutral glass button for secondary actions (Cancel, Clear form, ...)
+   sitting next to a .gf-glass-button primary action - reuses .gf-glass-card's
+   raised surface with an explicit hover so it isn't a dead flat fill. */
+.gf-glass-button-neutral {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%) !important;
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 6px 16px -6px rgba(0, 0, 0, 0.4) !important;
+  transition: background 150ms ease;
+}
+.gf-glass-button-neutral:hover {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.11) 100%) !important;
+}
+:root[data-theme="light"] .gf-glass-button-neutral {
+  background: var(--gf-surface) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 2px 8px -2px rgba(27, 16, 61, 0.15);
+}
+:root[data-theme="light"] .gf-glass-button-neutral:hover {
+  background: var(--gf-surface-2) !important;
+}
+/* Violet "glass" surface for the category/transaction drill-down modal
+   (ModalContentTopMonthItem) - it's the one modal with its own purple
+   identity (header, accents), so instead of the neutral white-tinted
+   .gf-glass-card it gets its own violet-tinted glass, reading as one
+   continuous surface instead of stacked flat-purple blocks. */
+.gf-glass-violet {
+  background: linear-gradient(165deg, rgba(147, 51, 234, 0.55) 0%, rgba(76, 29, 149, 0.65) 55%, rgba(46, 16, 101, 0.75) 100%);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16), 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+:root[data-theme="light"] .gf-glass-violet {
+  background: var(--gf-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+/* Flat (non-gradient) variant of .gf-glass-violet, for a small element
+   nested INSIDE a .gf-glass-violet parent (e.g. AddTransactionComp's
+   sticky "Short transaction" toggle band). A `linear-gradient` is scoped
+   to its own element's box, not the viewport - a short, narrow box and its
+   tall parent each resolve the SAME gradient stops to a visibly different
+   color at the same screen position, reading as a mismatched patch rather
+   than one continuous surface. This solid tone (sampled from the middle of
+   that gradient) reads consistently regardless of the element's own size
+   or position, so nested "bands" match their surroundings instead of
+   introducing a shade seam. */
+.gf-glass-violet-flat {
+  background: rgba(88, 28, 135, 0.82);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+}
+:root[data-theme="light"] .gf-glass-violet-flat {
+  background: var(--gf-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+/* Black "glass" surface - for confirmation dialogs (delete transaction,
+   etc.) that already read fine in a near-black tone and don't need the
+   modal's own violet identity; just the same blur + 3D depth as every
+   other glass surface instead of a flat opaque fill. */
+.gf-glass-black {
+  background: linear-gradient(165deg, rgba(20, 14, 36, 0.82) 0%, rgba(6, 4, 14, 0.9) 100%);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 20px 60px -20px rgba(0, 0, 0, 0.75);
+}
+:root[data-theme="light"] .gf-glass-black {
+  background: var(--gf-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 20px 60px -20px rgba(27, 16, 61, 0.3);
+}
+/* Same treatment for antd's own <Modal> confirmation dialogs (delete
+   confirmations, etc.) - antd's dark algorithm already gives these a
+   reasonable near-black fill, this just adds the same blur + 3D depth
+   every other glass surface has instead of a flat opaque box. */
+.gf-antd-modal-glass .ant-modal-content {
+  background: linear-gradient(165deg, rgba(20, 14, 36, 0.88) 0%, rgba(6, 4, 14, 0.94) 100%) !important;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 20px 60px -20px rgba(0, 0, 0, 0.75) !important;
+}
+/* antd's .ant-modal-header paints its own flat solid colorBgElevated fill
+   (rgb(31,31,31) under the dark algorithm) independently of
+   .ant-modal-content's background - the title row above rendered as a
+   visibly separate flat strip instead of one continuous glass surface. */
+.gf-antd-modal-glass .ant-modal-header {
+  background: transparent !important;
+}
+:root[data-theme="light"] .gf-antd-modal-glass .ant-modal-content {
+  background: var(--gf-surface) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+/* TimeRange.jsx's Start/End antd DatePickers - they sit inside the light
+   glass pill (gf-glass-card shell) but antd paints its own solid dark
+   colorBgContainer behind each input by default, so without this they'd
+   read as two dark boxes floating in an otherwise-light pill. Given the
+   same sunken treatment as the arrow buttons (see .gf-glass-inset above)
+   so the whole control reads as one consistent shell + recessed controls.
+   Scoped to this one classname (not a global antd override) so every
+   other DatePicker in the app keeps its normal themed background. */
+.ant-date-picker-range3.ant-picker {
+  background: rgba(0, 0, 0, 0.18) !important;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.4), inset 0 -1px 0 0 rgba(255, 255, 255, 0.05) !important;
+}
+:root[data-theme="light"] .ant-date-picker-range3.ant-picker {
+  background: rgba(27, 16, 61, 0.07) !important;
+  box-shadow: inset 0 2px 3px 0 rgba(27, 16, 61, 0.18), inset 0 -1px 0 0 rgba(255, 255, 255, 0.6) !important;
+}
+.ant-date-picker-range3 input {
+  color: var(--gf-text) !important;
+}
+.ant-date-picker-range3 input::placeholder {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+:root[data-theme="light"] .ant-date-picker-range3 input::placeholder {
+  color: rgba(27, 16, 61, 0.55) !important;
 }
 /* .DashboardPage{
   display: flex;
@@ -53,14 +600,104 @@ body {
 
 }
 .walllet-bg{
-  /* background: linear-gradient(0deg, rgba(0,179,255,1) 4%, rgba(187,71,255,1) 35%, rgba(0,98,255,1) 58%, rgba(187,71,255,1) 92%, rgba(0,98,255,1) 100%); */
-  /* background: linear-gradient(0deg, rgba(201,184,255,1) 69%, rgba(169,141,255,1) 100%); */
-  /* background: linear-gradient(0deg, rgba(162,131,255,1) 0%, rgba(210,196,255,1) 83%, rgba(175,149,255,1) 100%); */
-  /* background: linear-gradient(0deg, rgba(162,131,255,1) 0%, rgba(210,196,255,1) 90%, rgba(175,149,255,1) 100%); */
-  background: linear-gradient(0deg, rgba(144,107,255,1) 0%, rgba(198,181,255,1) 90%, rgba(160,129,255,1) 100%);
+  /* This is the outermost background for the ENTIRE dashboard shell
+     (applied once in src/app/dashboard/layout.js, wrapping Navbar + every
+     dashboard route's content, not just the hero band). Dark mode only,
+     by design - a mesh of expanding radial blobs (violet/magenta/indigo)
+     instead of a flat linear sweep.
 
-
+     Fixed to the viewport (not tiled with the page's scroll content) -
+     an earlier version tiled this same 5-blob pattern every 100vh via
+     `background-repeat: repeat` so a long page would never scroll past
+     the last blob into a flat dead patch, but a repeating pattern only
+     looks seamless if the value at the top edge of one tile matches the
+     value at the bottom edge of the previous one; these blobs don't
+     satisfy that (confirmed live: a hard horizontal line at every 100vh
+     scroll multiple, unrelated to any component - it was in the mesh
+     itself, isolated by hiding every other layer on the page). Pinning
+     it to the viewport instead paints the mesh exactly once, so there is
+     no seam for a repeat to ever expose. The five blobs already sit at
+     all four corners plus center, which covers a single viewport well
+     enough that this doesn't reintroduce the dead-patch problem the
+     tiling was originally solving. Dashboard.jsx's content-wallet canvas
+     sits on top of this at reduced opacity (see .content-wallet-glass)
+     so the mesh keeps showing through as you scroll. Still dark enough
+     between blobs for the text-white content that lives on the hero
+     band itself. */
+  background-color: #140b26;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(124, 58, 237, 0.5) 0%, transparent 42%),
+    radial-gradient(circle at 85% 8%, rgba(192, 38, 211, 0.45) 0%, transparent 38%),
+    radial-gradient(circle at 55% 55%, rgba(109, 40, 217, 0.32) 0%, transparent 48%),
+    radial-gradient(circle at 12% 85%, rgba(134, 25, 143, 0.32) 0%, transparent 45%),
+    radial-gradient(circle at 90% 90%, rgba(124, 58, 237, 0.28) 0%, transparent 42%);
+  background-repeat: no-repeat;
+  background-size: 100% 100vh;
+  background-attachment: fixed;
 }
+/* Same sweep, lifted into vivid violet/fuchsia/purple territory instead of
+   indigo/plum - still saturated enough for the white text riding on top,
+   but reads unmistakably as the light theme next to the dark version. */
+:root[data-theme="light"] .walllet-bg {
+  background: linear-gradient(135deg, #7c3aed 0%, #a21caf 30%, #c026d3 55%, #9333ea 80%, #6d28d9 100%);
+}
+/* Hero banner background for every "Client" page header (Profile,
+   Categories, Movements, History, Accounts, Projections, Budgets).
+   Dark mode: transparent, same reasoning as .content-wallet-glass - this
+   hero sits on top of the SAME continuous .walllet-bg mesh that covers the
+   whole dashboard/layout.js shell, and painting its own flat gradient here
+   created a hard seam where the hero rectangle ended and the mesh resumed
+   (confirmed via screenshots - a visible straight line dividing two
+   different backgrounds). Dropping it lets the mesh show through
+   continuously, matching how the main Wallet dashboard page (which never
+   had its own hero background) already looks. Light mode keeps its own
+   gradient - unaffected, not part of this ask. */
+.profile-img {
+  background: transparent;
+}
+/* Same reasoning as .walllet-bg above - every consumer renders text-white
+   on top of this, so light mode gets the brighter violet/fuchsia sweep,
+   not the light neutral tokens. */
+:root[data-theme="light"] .profile-img {
+  background: linear-gradient(120deg, #7c3aed 0%, #c026d3 50%, #9333ea 100%);
+}
+/* App-wide scrollbar reset - without this every native scrollbar (page,
+   modal, any plain overflow:auto div) renders with the OS/Chrome default
+   light-grey styling, which reads as a foreign light patch dropped into the
+   dark UI. This is the base for EVERY scrollbar in the app; the opt-in
+   classes below (.scrollbar-thin*, .scrollbar-none) win on top of it via
+   normal class-selector specificity where a different treatment is wanted. */
+:root {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+:root[data-theme="light"] {
+  scrollbar-color: rgba(27, 16, 61, 0.25) rgba(27, 16, 61, 0.05);
+}
+:root[data-theme="light"] ::-webkit-scrollbar-track {
+  background: rgba(27, 16, 61, 0.05);
+}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background-color: rgba(27, 16, 61, 0.22);
+}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(27, 16, 61, 0.35);
+}
+
 /* Slim, translucent-white scrollbar for scrollable panels on dark/purple
    backgrounds (e.g. the Wallet header's accounts list) - the browser's
    default scrollbar reads as a jarring grey slab there. */
@@ -82,6 +719,38 @@ body {
   background-color: rgba(255, 255, 255, 0.55);
 }
 
+/* Same slim treatment, but theme-aware - for scrollable panels that sit on
+   the canvas/surface tokens (which flip between light and dark) rather
+   than on a hero gradient that's always dark enough for a white thumb
+   (e.g. the account-cards carousel in MultiCreditCard.jsx). */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+:root[data-theme="light"] .scrollbar-thin {
+  scrollbar-color: rgba(27, 16, 61, 0.25) transparent;
+}
+:root[data-theme="light"] .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(27, 16, 61, 0.25);
+}
+:root[data-theme="light"] .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(27, 16, 61, 0.4);
+}
+
 /* Hides the scrollbar entirely - for swipeable/snap carousels (e.g. the
    Wallet header's mobile panel carousel) where the snap dots + arrow
    buttons are the intended navigation UI, not a visible scroll track. */
@@ -97,13 +766,14 @@ body {
   border: 1px solid rgb(169, 32, 169);
   border-radius: 20px;
   width: 80%;
-  color: rgb(32, 32, 32);
+  color: var(--gf-text);
+  background-color: var(--gf-surface-2);
   padding: 5px 12px;
 }
 .form-login label {
   font-size: 18px;
   font-weight: 500;
-  color: rgb(82, 82, 82);
+  color: var(--gf-text-muted);
 }
 .social-btn-lf {
   display: flex;
@@ -111,17 +781,17 @@ body {
   align-items: center;
   gap: 10px;
   width: 80%;
-  border: 1px solid rgb(104, 81, 104);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
   padding: 5px 10px;
   font-size: 16px;
   font-weight: 500;
-  color: rgb(88, 88, 88);
+  color: var(--gf-text);
   cursor: pointer;
 }
 .social-btn-lf:hover{
-  background-color: rgb(240, 240, 240);
+  background-color: var(--gf-surface-2);
 }
 /* .social-btn-lf .sblf-icon-cont{
   font-size: 40px;
@@ -172,4 +842,105 @@ box-shadow: -1px 0px 20px 5px rgba(142, 142, 142, 0.7);
   border: none !important;
   border-radius: 50px 0px 0px 50px !important;
   padding-left: 5px !important;
+}
+/* MUI's Modal/Dialog portal defaults to z-index 1300 (its theme's
+   zIndex.modal), which loses to Add/Edit Transaction's own modal shell
+   (z-[10002]/z-[20000]) - the date/time picker opened from inside those
+   forms rendered fully behind the transaction modal, invisible even though
+   its backdrop dimmed the page (the only visible sign it had opened at
+   all). Both variants (Desktop's `.MuiPickersPopper-root`, Mobile's
+   `.MuiDialog-root`) get pushed comfortably above every modal z-index used
+   in this app so a picker opened from inside ANY modal always wins. */
+:root .MuiPickersPopper-root,
+:root .MuiDialog-root {
+  z-index: 30000 !important;
+}
+/* Same problem, antd's own <DatePicker> (TimeRange.jsx's Start/End fields,
+   reused everywhere including inside modals like BudgetEditModal's "Project
+   window") - its dropdown portal defaults to z-index 1050, losing to any
+   modal it's opened from (z-[5000]+). It was genuinely there and correctly
+   positioned, just stacked underneath the modal panel - invisible with no
+   visible error, easy to mistake for "nothing happened" on click. */
+:root .ant-picker-dropdown {
+  z-index: 30000 !important;
+}
+/* Same problem again, this time for antd's <ColorPicker> (renders an
+   .ant-popover) and <Tooltip> (.ant-tooltip) - both default to z-index
+   ~1030, well below any modal. The color picker opened from inside
+   EditCategoryModal was genuinely opening, just stacked underneath the
+   modal panel it was triggered from - same for a Tooltip placed next to a
+   field inside any modal. */
+:root .ant-popover,
+:root .ant-tooltip {
+  z-index: 30000 !important;
+}
+/* G2's own tooltip container (div.g2-tooltip) - every Column chart's
+   custom `interaction.tooltip.render()` output (the gf-glass-chip rounded
+   box) gets inserted AS A CHILD of this container, which has its own
+   opaque rgb(31,31,31) fill, 12px padding, box-shadow, and a near-square
+   4px border-radius. That default box was still fully visible around our
+   rounded content - a flat, barely-rounded rectangle peeking out past the
+   glass chip's own corners, reading as two stacked tooltips. Confirmed via
+   getComputedStyle on the live element, not guessed. Stripped entirely so
+   the custom render() content is the only thing visible. */
+.g2-tooltip {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  opacity: 1 !important;
+}
+/* MUI X's DateTimePicker popup (Add/Edit Transaction's Date field) renders
+   into its own portal outside any component's className, always in MUI's
+   own light-theme default regardless of the app's dark mode - a stark
+   white calendar next to everything else here. Desktop pickers render into
+   a `.MuiPickersPopper-root`; `MobileDateTimePicker` (what this app
+   actually uses) renders into a `.MuiDialog-root` instead - both are
+   targeted here. This isn't the same glass language as the rest of the app
+   (MUI's own theming system doesn't reach for a per-instance ThemeProvider
+   change), but at minimum it shouldn't be a jarring white box - dark mode
+   only, same as the rest of this file. */
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiPaper-root,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiPaper-root {
+  background-color: #1b1430 !important;
+  color: #f3f0fb !important;
+}
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiPickersCalendarHeader-label,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiIconButton-root,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiPickersDay-root,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiDayCalendar-weekDayLabel,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiPickersYear-yearButton,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiMultiSectionDigitalClockSection-item,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiTypography-root,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiDialogActions-root .MuiButton-root,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiPickersCalendarHeader-label,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiIconButton-root,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiPickersDay-root,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiDayCalendar-weekDayLabel,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiPickersYear-yearButton,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiMultiSectionDigitalClockSection-item,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiTypography-root,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiDialogActions-root .MuiButton-root {
+  color: #f3f0fb !important;
+}
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiPickersDay-root.Mui-selected,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiPickersYear-yearButton.Mui-selected,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiMultiSectionDigitalClockSection-item.Mui-selected,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiPickersDay-root.Mui-selected,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiPickersYear-yearButton.Mui-selected,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiMultiSectionDigitalClockSection-item.Mui-selected {
+  background-color: #9333ea !important;
+  color: #fff !important;
+}
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiPickersDay-root:hover,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiIconButton-root:hover,
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiMultiSectionDigitalClockSection-item:hover,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiPickersDay-root:hover,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiIconButton-root:hover,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiMultiSectionDigitalClockSection-item:hover {
+  background-color: rgba(147, 51, 234, 0.25) !important;
+}
+:root:not([data-theme="light"]) .MuiPickersPopper-root .MuiDivider-root,
+:root:not([data-theme="light"]) .MuiDialog-root .MuiDivider-root {
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }

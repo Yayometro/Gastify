@@ -12,10 +12,17 @@ import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import MultiCreditCard from "./MultiCreditCard";
 import CategoIcon from "./CategoIcon";
-import RangePicker from "./RangePicker";
+import TimeRange from "@/components/Filters/timeRange/TimeRange";
+import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
+import {
+  generate_timeperiod_ranges_array_for_dashboard,
+  getLastDayOfMonth,
+  getDateInYearMonthDay,
+} from "@/helpers/timeFunctions/timeFunctions";
+import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
 import ResumeTabsTrans from "./ResumeTabsTrans";
 import TransDetailsGrandContainer from "./TransDetailsGrandContainer";
-import DisplayerCategoryCirclePacking from "./DisplayerCategoryCirclePacking";
+import DisplayerCategoryTreemap from "./DisplayerCategoryTreemap";
 import EditAccountModal from "./EditAccountModal";
 import PrimaryCurrencySelector from "./PrimaryCurrencySelector";
 import { fetchUser } from "@/lib/features/userSlice";
@@ -35,6 +42,16 @@ function AccountClient({acSession}) {
   let [allTransactions, setAllTransacctions] = useState([]);
   let [finalAccounts, setFinalAccounts] = useState([]);
   let [carruselCurrent, setCarruselCurrent] = useState(0);
+  // Independent time-period filter for "Account movements details" (the
+  // Treemap) - same pattern as ResumeTabsTrans's own local filter, so this
+  // section can be scoped to a different range than the page-level filter
+  // above without moving it.
+  const today = new Date();
+  const [treemapTimePeriod, setTreemapTimePeriod] = useState([
+    new Date(today.getFullYear(), today.getMonth(), 1),
+    getLastDayOfMonth(today.getFullYear(), today.getMonth()),
+  ]);
+  const treemapTimePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(today.getFullYear());
   const searchParams = useSearchParams();
   const targetAccountId = searchParams.get("accountId");
   // Redux
@@ -154,6 +171,17 @@ function AccountClient({acSession}) {
     }
   }, [accountData, transactionData, selectedDuration, startDate, endDate]);
 
+  function getTreemapValueFromSelecter(v) {
+    const [start, end] = v.split("*");
+    setTreemapTimePeriod([new Date(start), new Date(end)]);
+  }
+
+  function handleTreemapRangeDate(dateStart, dateEnd) {
+    if (dateStart && dateEnd) {
+      setTreemapTimePeriod([dateStart, dateEnd]);
+    }
+  }
+
   const handleChange = (e, tp) => {
     const { name, value } = e.target;
     console.log(name, value);
@@ -190,8 +218,8 @@ function AccountClient({acSession}) {
   return (
     <div className=" w-full h-full sm:pr-2">
         <div className="w-full h-full relative">
-          <div className="w-full profile-img py-[40px] text-center text-white">
-            <h1 className="text-3xl min-[400px]:text-[40px] sm:text-[40px] md:text-[60px] font-thin">
+          <div className="w-full profile-img py-4 text-center text-white">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
               {
                 nameGeneral == undefined || nameGeneral == '' ? (<Spin />) : 
                 (`${nameGeneral} `)
@@ -200,7 +228,7 @@ function AccountClient({acSession}) {
             </h1>
           </div>
           <div className="filters flex items-center justify-center gap-2">
-            <div className=" bg-slate-100 text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]">
+            <div className="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative min-[400px]:py-[2px] min-[640px]:py-[4px]">
               <select
                 className="bg-transparent appearance-none w-full pr-4"
                 name="DateSelector"
@@ -218,7 +246,7 @@ function AccountClient({acSession}) {
                 <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
               </div>
             </div>
-            <RangePicker rpDate={handleRangeDate} rpResponse={""} />
+            <TimeRange rpDate={handleRangeDate} startDateValue={startDate} endDateValue={endDate} />
             <Tooltip title="Filter de date by generic filter or selecting a specific range 🤓">
               <div className="text-white w-[10px]">
                 <UniversalCategoIcon
@@ -231,7 +259,7 @@ function AccountClient({acSession}) {
           <div className="filters flex items-center justify-center pt-2">
             <PrimaryCurrencySelector pcsWallet={walletData} />
           </div>
-          <div className="content-profile-cont w-full h-full bg-slate-100 text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl shadow-sm px-2">
+          <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2">
             <h1 className="3xl w-full "></h1>
             <div className="account-multi-cc-container w-full py-4">
                 <MultiCreditCard
@@ -241,39 +269,6 @@ function AccountClient({acSession}) {
                   walletPrimaryCurrency={walletData?.primaryCurrency}
                   mail={acSession}
                 />
-            </div>
-            <div className="bg-purple-100 w-full flex justify-between items-center border-2 border-purple-400 rounded-3xl">
-              <div
-                className="ac-leftArrowSelector cursor-pointer p-1 flex justify-center items-center"
-                onClick={() => {
-                  const prevIndex = carruselCurrent - 1;
-                  setCarruselCurrent(
-                    prevIndex < 0 ? finalAccounts.length - 1 : prevIndex
-                  );
-                }}
-              >
-                <UniversalCategoIcon
-                  type={`fa/FaArrowAltCircleLeft`}
-                  siz={30}
-                />
-              </div>
-              <div className="ac-current-acc text-purple-500">
-                {finalAccounts[carruselCurrent]?.name}
-              </div>
-              <div
-                className="ac-rightArrowSelector cursor-pointer p-1 flex justify-center items-center first-letter"
-                onClick={() => {
-                  const nextIndex = carruselCurrent + 1;
-                  setCarruselCurrent(
-                    nextIndex >= finalAccounts.length ? 0 : nextIndex
-                  );
-                }}
-              >
-                <UniversalCategoIcon
-                  type={`fa/FaArrowAltCircleRight`}
-                  siz={30}
-                />
-              </div>
             </div>
             <div className="ac-dashboard-client w-full-h-full">
               {!finalAccounts.length > 0 ? (
@@ -286,24 +281,58 @@ function AccountClient({acSession}) {
                 <div className="general-content-acc-ac w-full">
                     <EditAccountModal eamMode={onEdition} eamAccount={finalAccounts[carruselCurrent] || null} eamWallet={walletData} eamClose={e => setOnEdition(e)}
                     />
-                  <h1 className="text-[30px] min-[350px]:text-[40px] sm:text-[60px] font-light">
-                    {finalAccounts[carruselCurrent]?.name || "No name data..."}
-                  </h1>
-                  <div className="w-full flex justify-center items-center gap-2">
-                    <div 
-                        className="w-[200px] flex gap-2 justify-center items-center border-2 border-purple-400 bg-purple-100 hover:bg-purple-300 rounded-3xl cursor-pointer"
+                  <div className="w-full flex justify-center items-center gap-3">
+                    <button
+                      type="button"
+                      aria-label="Previous account"
+                      className="gf-glass-fab w-[44px] h-[44px] shrink-0"
+                      onClick={() => {
+                        const prevIndex = carruselCurrent - 1;
+                        setCarruselCurrent(
+                          prevIndex < 0 ? finalAccounts.length - 1 : prevIndex
+                        );
+                      }}
+                    >
+                      <UniversalCategoIcon
+                        type={`md/MdChevronLeft`}
+                        siz={26}
+                      />
+                    </button>
+                    <h1 className="text-[30px] min-[350px]:text-[40px] sm:text-[60px] font-light">
+                      {finalAccounts[carruselCurrent]?.name || "No name data..."}
+                    </h1>
+                    <button
+                      type="button"
+                      aria-label="Next account"
+                      className="gf-glass-fab w-[44px] h-[44px] shrink-0"
+                      onClick={() => {
+                        const nextIndex = carruselCurrent + 1;
+                        setCarruselCurrent(
+                          nextIndex >= finalAccounts.length ? 0 : nextIndex
+                        );
+                      }}
+                    >
+                      <UniversalCategoIcon
+                        type={`md/MdChevronRight`}
+                        siz={26}
+                      />
+                    </button>
+                  </div>
+                  <div className="w-full flex justify-center items-center gap-2 mb-6">
+                    <div
+                        className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
                         onClick={() => setOnEdition('edition')}
                     >
-                        <p className=" text-purple-600">Edit Account</p>
+                        <p className="text-white">Edit Account</p>
                         <div className=" flex justify-center items-center">
                           <CategoIcon type={`MdModeEdit`} siz={25} />
                         </div>
                     </div>
-                    <div 
-                        className="w-[200px] flex gap-2 justify-center items-center border-2 border-purple-400 bg-purple-100 hover:bg-purple-300 rounded-3xl cursor-pointer"
+                    <div
+                        className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
                         onClick={() => setOnEdition('creation')}
                     >
-                        <p className=" text-purple-600">New Account</p>
+                        <p className="text-white">New Account</p>
                         <div className=" flex justify-center items-center">
                           <CategoIcon type={`MdAddCircleOutline`} siz={25} />
                         </div>
@@ -322,21 +351,49 @@ function AccountClient({acSession}) {
                       )
                     }
                   </div>
-                  <div className="ac-TransactionsDetails w-full h-full">
+                  <div className="ac-TransactionsDetails w-full h-full mt-10">
                     <h1 className=" font-bold text-2xl sm:text-3xl">
                       Account movements details
                     </h1>
+                    <div className="filters flex flex-col justify-center items-center mb-2">
+                      <span className="text-xs">
+                        From:{" "}
+                        <b>{treemapTimePeriod[0] ? getDateInYearMonthDay(treemapTimePeriod[0]) : "No time selected"}</b>
+                        {" "}to:{" "}
+                        <b>{treemapTimePeriod[1] ? getDateInYearMonthDay(treemapTimePeriod[1]) : "No time selected"}</b>
+                      </span>
+                      <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
+                        <Tooltip title="Filter by date using a preset range or selecting a specific range 🤓">
+                          <div className="text-gf-text w-[10px]">
+                            <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
+                          </div>
+                        </Tooltip>
+                        <SelecterFilter
+                          getValue={getTreemapValueFromSelecter}
+                          periodFromFather={treemapTimePeriodsForSelecter[0]}
+                          periodOverride={treemapTimePeriodsForSelecter}
+                          styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+                        />
+                        <TimeRange rpDate={handleTreemapRangeDate} />
+                      </div>
+                    </div>
                     {!finalAccounts[carruselCurrent]?.billsList ? (
                       <Skeleton active/>
                       ) : !finalAccounts[carruselCurrent]?.incomesList ? (
                       <Skeleton active/>
                     ) : (
                       <div className="w-full h-full">
-                        <DisplayerCategoryCirclePacking
-                          dccpIncomes={
-                            finalAccounts[carruselCurrent]?.incomesList
-                          }
-                          dccoBills={finalAccounts[carruselCurrent]?.billsList}
+                        <DisplayerCategoryTreemap
+                          dccpIncomes={getTransactionsFromTimeRange(
+                            finalAccounts[carruselCurrent]?.incomesList || [],
+                            treemapTimePeriod[0],
+                            treemapTimePeriod[1]
+                          )}
+                          dccoBills={getTransactionsFromTimeRange(
+                            finalAccounts[carruselCurrent]?.billsList || [],
+                            treemapTimePeriod[0],
+                            treemapTimePeriod[1]
+                          )}
                         />
                       </div>
                     )}

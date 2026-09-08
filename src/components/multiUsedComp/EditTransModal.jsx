@@ -186,12 +186,12 @@ function EditTransModal({ hidden, trans }) {
     <div>No transaccion passed</div>
   ) : (
     <div
-      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[1000] bg-white/10 backdrop-blur-sm ${
+      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[1000] bg-black/50 backdrop-blur-md ${
         active ? "hidden" : "flex"
       } items-center justify-center`}
     >
       <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-[350px] h-[650px] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
-        <div className={`${isLoading ? "absolute" : "hidden"} top-0 left-0 bg-white/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] `}>
+        <div className={`${isLoading ? "absolute" : "hidden"} top-0 left-0 bg-gf-surface/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] `}>
           <Spin  size="large"/>
         </div>
         <h1 className="text-center py-[20px] text-2xl text-white">
@@ -199,7 +199,7 @@ function EditTransModal({ hidden, trans }) {
         </h1>
         <form
           onSubmit={handleSubmit}
-          className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20`}
+          className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-gf-surface-2 rounded-t-[60px] pt-[30px] pb-20`}
         >
           <p className="label-tfp ">Name</p>
           <input
@@ -279,7 +279,7 @@ function EditTransModal({ hidden, trans }) {
                       "& .MuiInputBase-input": {
                         width: "100%",
                         height: "100%",
-                        border: "1px solid rgb(176, 23, 176)",
+                        border: "none",
                       },
                     }}
                   />
@@ -291,7 +291,7 @@ function EditTransModal({ hidden, trans }) {
           {
             transactionInfo.subCategory ? 
             (
-              <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center cursor-not-allowed">
+              <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center cursor-not-allowed">
               <select
                 className=" bg-transparent appearance-none w-full pr-4 cursor-not-allowed"
                 name="DateSelector"
@@ -312,7 +312,7 @@ function EditTransModal({ hidden, trans }) {
               </select>
             </div>
               ) : 
-            (<div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
+            (<div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center">
             <select
               className=" bg-transparent appearance-none w-full pr-4"
               name="DateSelector"
@@ -334,7 +334,7 @@ function EditTransModal({ hidden, trans }) {
           }
           
           <p className="label-tfp ">Sub Category</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center">
             <select
               className=" bg-transparent appearance-none w-full pr-4"
               name="DateSelector"
@@ -362,7 +362,7 @@ function EditTransModal({ hidden, trans }) {
             placeholder="Tags (separated by comma)"
           />
           <p className="label-tfp ">Account</p>
-          <div className="etm-selector bg-white text-black w-full flex items-center justify-center px-[4px] py-[2px]text-center">
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center">
             <select
               className=" bg-transparent appearance-none w-full pr-4"
               name="DateSelector"
@@ -382,14 +382,14 @@ function EditTransModal({ hidden, trans }) {
             </select>
           </div>
           <button
-            className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
+            className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
             {isLoading ? (<Spin />) : "Submit"}
           </button>
         </form>
         <button onClick={handleClose}>
-          <div className="close-con absolute top-[0%] right-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short">
+          <div className="close-con absolute top-[0%] right-[0%] border-2 rounded-full bg-gf-surface-2 text-purple-300 m-1 pulse-animation-short">
             <CategoIcon type={"MdClose"} siz={20} />
           </div>
         </button>

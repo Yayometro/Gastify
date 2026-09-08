@@ -30,7 +30,7 @@ function WalletAnalyzerTrendChart({ trend, walletPrimaryCurrency, onSelectMonth 
     <div ref={containerRef} className="relative" onMouseMove={handleMouseMove}>
       {hovered !== null && (
         <div
-          className="absolute z-10 w-[190px] bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 shadow-lg pointer-events-none"
+          className="absolute z-10 w-[190px] bg-gf-surface-2 text-white text-[11px] rounded-lg px-3 py-2 shadow-lg pointer-events-none"
           style={{ left: tooltipLeft, top: Math.max(cursor.y - 76, 0) }}
         >
           <p className="font-bold mb-1">{trend[hovered].label}</p>
@@ -73,11 +73,11 @@ function WalletAnalyzerTrendChart({ trend, walletPrimaryCurrency, onSelectMonth 
                 style={{ height: `${Math.max(2, (month.transactionCount / maxCount) * 108)}px` }}
               />
             </div>
-            <span className={`text-[11px] font-semibold ${hovered === i ? "text-slate-700" : "text-slate-400"}`}>{month.shortLabel}</span>
+            <span className={`text-[11px] font-semibold ${hovered === i ? "text-gf-text-muted" : "text-gf-text-muted"}`}>{month.shortLabel}</span>
           </div>
         ))}
       </div>
-      <div className="flex gap-3.5 text-[11px] text-slate-500 mt-2.5">
+      <div className="flex gap-3.5 text-[11px] text-gf-text-muted mt-2.5">
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-sm bg-green-500/80" /> Ingresos
         </span>

@@ -224,9 +224,9 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
 
   return (
     <>
-      <div className="content absolute bg-slate-100 border-2 border-purple-600 flex flex-col w-full h-full max-w-[500px] max-h-[90%] rounded-2xl items-center justify-center overflow-hidden z-[10002]">
+      <div className="content absolute gf-glass-violet flex flex-col w-full h-full max-w-[500px] max-h-[90%] rounded-2xl items-center justify-center overflow-hidden z-[10002]">
         {/* Header */}
-        <header className="pt-2 w-full h-fit flex flex-col justify-between items-center bg-purple-600 text-white sticky top-0 z-10">
+        <header className="pt-2 w-full h-fit flex flex-col justify-between items-center text-white sticky top-0 z-10">
           <span className="w-full flex gap-2 items-center justify-center font-bold text-3xl px-8">
             <span
               className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
@@ -310,7 +310,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
                     <button
                       key={action.key}
                       onClick={() => setQuickEditField(action.key)}
-                      className="flex items-center gap-1 bg-white/20 hover:bg-white/30 text-white text-xs rounded-lg px-2 py-0.5 border border-white/20"
+                      className="flex items-center gap-1 bg-gf-surface/20 hover:bg-gf-surface/30 text-white text-xs rounded-lg px-2 py-0.5 border border-white/20"
                     >
                       <CategoIcon type={action.icon} siz={12} />
                       {action.label}
@@ -319,7 +319,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
                   <Tooltip title="Edit all fields at once. Blank fields keep their original value.">
                     <button
                       onClick={() => setGeneralEditOpen(true)}
-                      className="flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white text-xs rounded-lg px-2 py-0.5 border border-white/20"
+                      className="flex items-center gap-1 bg-gf-surface/10 hover:bg-gf-surface/20 text-white/70 hover:text-white text-xs rounded-lg px-2 py-0.5 border border-white/20"
                     >
                       <CategoIcon type="MdOutlineCreate" siz={12} />
                       General
@@ -430,7 +430,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
                           className={`px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1 ${
                             dupDeleteAll
                               ? "text-red-300 border-red-400/80 bg-red-950/60 hover:bg-red-900/60 font-medium"
-                              : "text-white/80 border-white/30 hover:bg-white/10"
+                              : "text-white/80 border-white/30 hover:bg-gf-surface/10"
                           }`}
                         >
                           <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={13} />
@@ -442,7 +442,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
                         <>
                           <button
                             onClick={() => setSelected(new Set())}
-                            className="bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded-lg transition-colors border border-slate-500/50"
+                            className="bg-gf-surface-2 hover:bg-gf-surface text-white px-2 py-1 rounded-lg transition-colors border border-gf-border"
                           >
                             Clear selection
                           </button>
@@ -470,18 +470,18 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
             </div>
           )}
 
-          <div className="footer-header w-full h-3 rounded-t-3xl bg-slate-100 mt-2" />
+          <div className="footer-header w-full h-3 rounded-t-3xl mt-2" />
         </header>
 
         {/* Transaction list */}
-        <div className="w-full h-full overflow-y-scroll bg-slate-100 mb-[10px]">
+        <div className="w-full h-full overflow-y-scroll mb-[10px]">
           {isMulti && (
-            <div className="w-full flex items-center justify-end gap-1.5 px-2 pt-1.5 pb-0.5 text-xs text-slate-500">
+            <div className="w-full flex items-center justify-end gap-1.5 px-2 pt-1.5 pb-0.5 text-xs text-gf-text-muted">
               <span>Sort by:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 text-xs outline-none"
+                className="bg-gf-surface border border-gf-border rounded-lg px-1.5 py-0.5 text-xs outline-none"
               >
                 <option value="amount">Amount</option>
                 <option value="date">Date</option>
@@ -489,16 +489,16 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
               <button
                 type="button"
                 onClick={() => setSortDir((d) => (d === "desc" ? "asc" : "desc"))}
-                className="flex items-center gap-0.5 bg-white border border-slate-200 hover:border-purple-300 rounded-lg px-1.5 py-0.5 text-xs text-slate-600"
+                className="flex items-center gap-0.5 bg-gf-surface border border-gf-border hover:border-purple-300 rounded-lg px-1.5 py-0.5 text-xs text-gf-text-muted"
               >
                 <CategoIcon type={sortDir === "desc" ? "MdArrowDownward" : "MdArrowUpward"} siz={12} />
                 {sortDir === "desc" ? "Highest first" : "Lowest first"}
               </button>
             </div>
           )}
-          <section className="w-full h-full bg-slate-100 flex flex-col items-center gap-1 p-1">
+          <section className="w-full h-full flex flex-col items-center gap-1 p-1">
             {dupMode && displayItems.length === 0 && (
-              <div className="w-full text-center py-4 text-slate-500 text-sm font-light">
+              <div className="w-full text-center py-4 text-gf-text-muted text-sm font-light">
                 No duplicates found among these transactions.
               </div>
             )}
@@ -521,7 +521,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
         {onBack && (
           <button
             onClick={onBack}
-            className="back-con absolute top-[0%] left-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short z-50"
+            className="back-con absolute top-[0%] left-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short z-50"
           >
             <CategoIcon type="MdArrowBack" siz={20} />
           </button>
@@ -530,7 +530,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
         {/* Close */}
         <button
           onClick={close}
-          className="close-con absolute top-[0%] right-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short z-50"
+          className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short z-50"
         >
           <CategoIcon type="MdClose" siz={20} />
         </button>
@@ -568,16 +568,16 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
       {/* Declarative confirmation modal — avoids Ant Design static Modal.confirm minified chunk issues in Vercel */}
       {confirmDelete && createPortal(
         <div className="fixed inset-0 z-[30000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`bg-white rounded-2xl shadow-xl ${dupMode && confirmDelete.type === "many" ? "max-w-3xl" : "max-w-lg"} w-full p-6 flex flex-col gap-4 border border-slate-200`}>
-            <div className="flex items-center gap-3 text-red-600">
+          <div className={`gf-glass-black rounded-2xl ${dupMode && confirmDelete.type === "many" ? "max-w-3xl" : "max-w-lg"} w-full p-6 flex flex-col gap-4`}>
+            <div className="flex items-center gap-3 text-red-400">
               <CategoIcon type="MdWarning" siz={24} />
-              <h3 className="font-bold text-lg text-slate-800">
+              <h3 className="font-bold text-lg text-gf-text">
                 {confirmDelete.type === "many"
                   ? `Delete ${confirmDelete.ids.length} transaction${confirmDelete.ids.length !== 1 ? "s" : ""}?`
                   : "Delete transaction?"}
               </h3>
             </div>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-gf-text-muted">
               This action cannot be undone. Are you sure you want to permanently delete{" "}
               <b>{confirmDelete.type === "many" ? `${confirmDelete.ids.length} transactions` : "this transaction"}</b>?
             </p>
@@ -619,7 +619,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
                 type="button"
                 disabled={deleting}
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 rounded-xl text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                className="px-4 py-2 rounded-xl text-sm font-medium gf-glass-button-neutral text-gf-text"
               >
                 Cancel
               </button>
@@ -635,7 +635,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
                     executeDeleteMany(target.ids);
                   }
                 }}
-                className="px-4 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-500 text-white shadow-md transition-colors"
+                className="px-4 py-2 rounded-xl text-sm font-medium gf-glass-button-danger text-white"
               >
                 {deleting ? "Deleting..." : "Confirm delete"}
               </button>
@@ -652,7 +652,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
           width={750}
           onCancel={() => setComparing(false)}
           title={
-            <div className="flex items-center gap-2 text-purple-700 font-semibold text-base">
+            <div className="flex items-center gap-2 text-purple-300 font-semibold text-base">
               <UniversalCategoIcon type="md/MdOutlineCompare" siz={18} />
               Duplicate Comparison Detail
             </div>
@@ -676,7 +676,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
             </Button>,
           ]}
         >
-          <p className="text-xs text-slate-500 mb-3">
+          <p className="text-xs text-gf-text-muted mb-3">
             Mode: <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>.
             Review what will be kept vs deleted before proceeding.
           </p>

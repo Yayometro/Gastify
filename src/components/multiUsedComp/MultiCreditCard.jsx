@@ -104,13 +104,13 @@ function MultiCreditCard({ acc, user, trans, mccSession, walletPrimaryCurrency, 
   };
 
   return (
-    <div className="w-full overflow-x-hidden flex flex-col">
+    <div className="gf-glass-card w-full overflow-x-hidden flex flex-col rounded-[32px] py-2">
       <div className="header text-center">
-        <h1 className="movement-title text-black text-2xl text-center font-bold py-4">
+        <h1 className="movement-title text-gf-text text-2xl text-center font-bold py-4">
           Accounts resume
         </h1>
       </div>
-      <div className="flex flex-row pb-6 px-1 overflow-x-scroll">
+      <div className="scrollbar-thin flex flex-row pb-6 px-1 overflow-x-scroll">
         {accounts && accounts.length > 0 ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={accounts.map((a) => a._id)} strategy={horizontalListSortingStrategy}>

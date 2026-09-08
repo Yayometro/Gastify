@@ -22,7 +22,6 @@ function TabsTogglerMontlyView({
 
   return (
     <div className="w-full h-full">
-      <h1>Transactions History</h1>
       <PeriodFiltersWithCompare
         timePeriod={timePeriod}
         getValueFromSelecter={getValueSelecterFilter}

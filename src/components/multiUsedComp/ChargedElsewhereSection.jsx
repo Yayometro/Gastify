@@ -27,7 +27,7 @@ function ChargedElsewhereSection({
         <p className="label-tfp !mb-0">Charged in another currency</p>
       </div>
       {enabled && (
-        <div className="w-full flex flex-col gap-2 bg-purple-50 border border-purple-200 rounded-xl p-2">
+        <div className="w-full flex flex-col gap-2 bg-gf-accent-soft-bg border border-purple-200 rounded-xl p-2">
           <p className="label-tfp">Charged amount</p>
           <div className="flex gap-2 w-full">
             <input
@@ -39,7 +39,7 @@ function ChargedElsewhereSection({
               className="flex-1"
             />
             <select
-              className="bg-white border border-purple-300 rounded-2xl px-2"
+              className="bg-gf-surface border border-purple-300 rounded-2xl px-2"
               value={merchantCurrency}
               onChange={(e) => onMerchantCurrencyChange(e.target.value)}
             >
@@ -50,7 +50,7 @@ function ChargedElsewhereSection({
               ))}
             </select>
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-gf-text-muted">
             {quoting
               ? "Estimating the equivalent…"
               : "The Amount field above fills in automatically from a live estimate - adjust it if you know the exact amount that was charged."}

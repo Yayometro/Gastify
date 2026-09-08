@@ -45,14 +45,14 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
           </div>
         )}
         <div className="w-full pt-2 flex flex-col items-center gap-0.5 text-sm">
-          <p className="text-emerald-600">
+          <p className="text-emerald-400">
             Total incomes: <b>{formatMoneyMajor(totalAmount[0] || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className="text-red-500">
             Total bills: <b>{formatMoneyMajor(totalAmount[1] || 0, walletPrimaryCurrency)}</b>
           </p>
-          <div className="border-t border-slate-300 w-48 my-1"></div>
-          <p className={`font-semibold ${(totalAmount[0] || 0) - (totalAmount[1] || 0) >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+          <div className="border-t border-gf-border w-48 my-1"></div>
+          <p className={`font-semibold ${(totalAmount[0] || 0) - (totalAmount[1] || 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
             Balance (Incomes - Bills):{" "}
             <b>{formatMoneyMajor((totalAmount[0] || 0) - (totalAmount[1] || 0), walletPrimaryCurrency)}</b>
           </p>
@@ -73,11 +73,21 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
       },
       interaction: {
         elementSelectByX: true,
+        // @ant-design/plots' Column chart defaults to
+        // `elementHighlight: { background: true }` - a separate interaction
+        // from the tooltip's own crosshairs, drawing a shaded rect behind
+        // the whole hovered x-category. Off since the tooltip already
+        // marks what's active.
+        elementHighlight: false,
         tooltip: {
+          // Column marks also default to a shaded crosshair rect via the
+          // tooltip interaction itself - same backdrop problem, separate
+          // switch.
+          crosshairs: false,
           render: (e, { items, title }) => {
             return (
               <div
-                className="max-w-[250px] flex gap-1 flex-col items-center justify-center rounded-lg p-1 font-sans"
+                className="max-w-[250px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
                 key={title}
               >
                 <h1 className="text-base text-center text-wrap font-bold">
@@ -161,27 +171,27 @@ export const generatePropForChartColAntPeriodCompare = ({
     totalValue: (
       <div className="w-full flex items-center justify-center gap-3 text-sm flex-wrap">
         <div className="flex flex-col items-center">
-          <b className="text-xs text-gray-500">{labelA}</b>
-          <p className="text-emerald-600">
+          <b className="text-xs text-gf-text-muted">{labelA}</b>
+          <p className="text-emerald-400">
             Income: <b>{formatMoneyMajor(totals.incomeA || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className="text-red-500">
             Bills: <b>{formatMoneyMajor(totals.billA || 0, walletPrimaryCurrency)}</b>
           </p>
-          <p className={`font-semibold ${balanceA >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+          <p className={`font-semibold ${balanceA >= 0 ? "text-emerald-400" : "text-red-400"}`}>
             Balance: <b>{formatMoneyMajor(balanceA, walletPrimaryCurrency)}</b>
           </p>
         </div>
-        <span className="text-purple-700 font-bold shrink-0">VS</span>
+        <span className="text-purple-300 font-bold shrink-0">VS</span>
         <div className="flex flex-col items-center">
-          <b className="text-xs text-gray-500">{labelB}</b>
-          <p className="text-emerald-600">
+          <b className="text-xs text-gf-text-muted">{labelB}</b>
+          <p className="text-emerald-400">
             Income: <b>{formatMoneyMajor(totals.incomeB || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className="text-red-500">
             Bills: <b>{formatMoneyMajor(totals.billB || 0, walletPrimaryCurrency)}</b>
           </p>
-          <p className={`font-semibold ${balanceB >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+          <p className={`font-semibold ${balanceB >= 0 ? "text-emerald-400" : "text-red-400"}`}>
             Balance: <b>{formatMoneyMajor(balanceB, walletPrimaryCurrency)}</b>
           </p>
         </div>
@@ -213,14 +223,36 @@ export const generatePropForChartColAntPeriodCompare = ({
       // the absolute amount here so a downward bar doesn't read as
       // "negative spending."
       label: showInlineLabels
-        ? { text: ({ value }) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency) }
+        ? {
+            text: ({ value }) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency),
+            // A plain white label sits directly on top of light-colored bars
+            // (e.g. the mint "income" fill) and disappears - G2's own
+            // contrastReverse transform picks white or dark text per label
+            // based on that label's own bar color, so it stays legible on
+            // any fill without a stroke halo or a separate background box
+            // (G2 doesn't support a background chip on Column labels).
+            style: { fill: "#fff" },
+            transform: [{ type: "contrastReverse" }],
+          }
         : false,
       interaction: {
+        // @ant-design/plots' Column chart defaults to
+        // `elementHighlight: { background: true }` - a separate interaction
+        // from the tooltip's own crosshairs, drawing a shaded rect behind
+        // the whole hovered x-category. Off since the tooltip already
+        // marks what's active.
+        elementHighlight: false,
         tooltip: {
+          // Column marks also default to a shaded crosshair rect spanning
+          // the hovered x-category's full plot height - visible here as a
+          // big grey backdrop competing with the tooltip's own glass box.
+          // Explicitly off since the tooltip itself already marks which
+          // bar is active.
+          crosshairs: false,
           render: (e, { items, title }) => {
             return (
               <div
-                className="max-w-[280px] flex gap-1 flex-col items-center justify-center rounded-lg p-1 font-sans"
+                className="max-w-[280px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
                 key={title}
               >
                 <h1 className="text-base text-center text-wrap font-bold">
@@ -229,18 +261,15 @@ export const generatePropForChartColAntPeriodCompare = ({
                 {items.map((entry) => {
                   const { value, color, name } = entry;
                   return (
-                    <div key={name} className="flex items-center gap-1 text-xs">
-                      <span
-                        style={{
-                          width: 8,
-                          height: 8,
-                          background: color,
-                          borderRadius: "50%",
-                          display: "inline-block",
-                        }}
-                      />
-                      <span>{name}:</span>
-                      <b>{formatMoneyMajor(Math.abs(value), walletPrimaryCurrency)}</b>
+                    <div key={name} className="w-full flex items-center justify-between gap-3 text-xs">
+                      <span className="flex items-center gap-1.5">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: color }}
+                        />
+                        {name}:
+                      </span>
+                      <b className="font-semibold">{formatMoneyMajor(Math.abs(value), walletPrimaryCurrency)}</b>
                     </div>
                   );
                 })}

@@ -590,22 +590,22 @@ function MovementsContent({ timePeriodFromFather, mail }) {
         }}
       >
         <div className="flex flex-col gap-3 py-1">
-          <div className="bg-slate-50 rounded-xl px-4 py-3 flex flex-col gap-1">
-            <p className="text-xs font-semibold text-slate-600 mb-1">Active filters</p>
+          <div className="bg-gf-surface-2 rounded-xl px-4 py-3 flex flex-col gap-1">
+            <p className="text-xs font-semibold text-gf-text-muted mb-1">Active filters</p>
             {buildFilterSummary().map((line, i) => (
-              <p key={i} className="text-xs text-slate-500">• {line}</p>
+              <p key={i} className="text-xs text-gf-text-muted">• {line}</p>
             ))}
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-600">
+          <div className="flex items-center gap-2 text-xs text-gf-text-muted">
             <span>Format:</span>
             <span className="font-semibold text-purple-600 flex items-center gap-1">
               {exportFormat === "excel"
-                ? <><PiMicrosoftExcelLogoFill size={14} className="text-green-600" /> Excel (.xlsx) — re-importable</>
+                ? <><PiMicrosoftExcelLogoFill size={14} className="text-green-400" /> Excel (.xlsx) — re-importable</>
                 : <><VscJson size={14} className="text-amber-500" /> JSON — full populated data</>
               }
             </span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-gf-text-muted">
             {exportFormat === "excel"
               ? "The file will match the Gastify import template and can be re-uploaded to any Gastify account."
               : "The JSON file includes all fields: category, subcategory, account, tags, amounts and dates."}
@@ -622,6 +622,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
           />
         )}
         <Modal
+          className="gf-antd-modal-glass"
           title={<span className="text-red-500 font-semibold flex items-center gap-1">⚠️ Delete transaction</span>}
           open={isRemoveModal}
           onOk={() => handleOkRemove()}
@@ -632,11 +633,12 @@ function MovementsContent({ timePeriodFromFather, mail }) {
           okButtonProps={{
             className: confirmLoading
               ? "!bg-red-300 !border-red-300 !text-white cursor-not-allowed"
-              : "!bg-red-500 !border-red-500 !text-white hover:!bg-red-400 hover:!border-red-400 transition-colors",
+              : "gf-glass-button-danger !border-0 !text-white",
             danger: false,
           }}
+          cancelButtonProps={{ className: "gf-glass-button-neutral !border-0 !text-gf-text" }}
         >
-          <p className="text-slate-600 text-sm mb-2">
+          <p className="text-gf-text-muted text-sm mb-2">
             {getTransById(transRemovableId)?.transferGroupId
               ? "This is one leg of a transfer/exchange - both linked transactions will be deleted together. This action cannot be undone."
               : "Are you sure you want to permanently delete this transaction? This action cannot be undone."}
@@ -645,6 +647,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
         </Modal>
 
         <Modal
+          className="gf-antd-modal-glass"
           title={<span className="text-red-500 font-semibold flex items-center gap-1">⚠️ Delete {selectedTrans.length > 0 ? selectedTrans.length : ""} transactions</span>}
           open={isRemoveModalMany}
           onOk={() => handleOkRemove("many")}
@@ -656,11 +659,12 @@ function MovementsContent({ timePeriodFromFather, mail }) {
           okButtonProps={{
             className: confirmLoading
               ? "!bg-red-300 !border-red-300 !text-white cursor-not-allowed"
-              : "!bg-red-500 !border-red-500 !text-white hover:!bg-red-400 hover:!border-red-400 transition-colors",
+              : "gf-glass-button-danger !border-0 !text-white",
             danger: false,
           }}
+          cancelButtonProps={{ className: "gf-glass-button-neutral !border-0 !text-gf-text" }}
         >
-          <p className="text-slate-600 text-sm mb-2">
+          <p className="text-gf-text-muted text-sm mb-2">
             Are you sure you want to permanently delete{" "}
             <b>{selectedTrans.length > 0 ? `${selectedTrans.length} transactions` : "these items"}</b>?{" "}
             This action cannot be undone.
@@ -683,7 +687,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
         {/* ── Duplicate comparison modal ── */}
         <Modal
           title={
-            <div className="flex items-center gap-2 text-purple-700 font-semibold text-base">
+            <div className="flex items-center gap-2 text-purple-300 font-semibold text-base">
               <UniversalCategoIcon type="md/MdOutlineCompare" siz={18} />
               Duplicate Comparison Detail
             </div>
@@ -710,7 +714,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             </Button>,
           ]}
         >
-          <p className="text-xs text-slate-500 mb-3">
+          <p className="text-xs text-gf-text-muted mb-3">
             Mode: <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>.
             Review what will be kept vs deleted before proceeding.
           </p>
@@ -728,7 +732,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
         </div>
       ) : (
         <div className="table-container w-full h-full overflow-y-scroll relative max-h-[1000px] px-1">
-          <div className="bg-slate-50 text-slate-900 sticky z-50 top-0 border-b-2 border-slate-200 px-1 py-2 mb-1 rounded-t-2xl">
+          <div className="gf-glass-violet-flat text-gf-text sticky z-50 top-0 px-1 py-2 mb-1 rounded-t-2xl">
             <div className="movement-content">
               <h1 className="movement-title text-2xl text-center font-bold">
                 Transactions details
@@ -753,7 +757,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   <HiMiniCursorArrowRipple size={15} />
                 </div>
                 <Tooltip title="Filter by date using a preset range or a specific range 🤓">
-                  <div className="text-black w-[10px]">
+                  <div className="text-gf-text w-[10px]">
                     <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
                   </div>
                 </Tooltip>
@@ -761,12 +765,12 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   getValue={getValueFromSelecter}
                   periodFromFather={timePeriodsForSelecter[0]}
                   periodOverride={timePeriodsForSelecter}
-                  styles="bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+                  styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
                 />
                 <TimeRange rpDate={handleRangeDate} />
-                <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
+                <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight gf-glass-card rounded-2xl pl-2.5 pr-1 py-0.5 relative pulse-animation-short">
                   <select
-                    className="bg-transparent appearance-none w-full pr-4"
+                    className="bg-transparent appearance-none w-full pr-4 outline-none"
                     name="TransTypeSelector"
                     value={trastType}
                     onChange={handleTransType}
@@ -775,13 +779,13 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     <option value={"incomes"}>All incomes</option>
                     <option value={"bills"}>All bills</option>
                   </select>
-                  <div className="filterIconContainer absolute right-[0px] pointer-events-none">
+                  <div className="filterIconContainer absolute right-[8px] pointer-events-none">
                     <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
                   </div>
                 </div>
-                <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
+                <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight gf-glass-card rounded-2xl pl-2.5 pr-1 py-0.5 relative pulse-animation-short">
                   <select
-                    className="bg-transparent appearance-none pr-4 max-w-[30px]"
+                    className="bg-transparent appearance-none pr-4 max-w-[30px] outline-none"
                     name="ReadableSelector"
                     value={readable}
                     onChange={handleReadable}
@@ -790,14 +794,14 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     <option value={"true"}>Readable</option>
                     <option value={"false"}>Not readable</option>
                   </select>
-                  <div className="filterIconContainer absolute right-[0px] pointer-events-none">
+                  <div className="filterIconContainer absolute right-[8px] pointer-events-none">
                     <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
                   </div>
                 </div>
                 <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center sm:font-base sm:font-extralight relative pulse-animation-short">
                   <Tooltip title="Primary amount compares against your Wallet's primary currency. Native amount compares against each transaction's own Account currency.">
                     <select
-                      className="bg-white border border-slate-200 rounded-2xl px-1 py-0.5 outline-none"
+                      className="gf-glass-card rounded-2xl px-1 py-0.5 outline-none border-0"
                       value={exactAmountMode}
                       onChange={(e) => setExactAmountMode(e.target.value)}
                     >
@@ -807,7 +811,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   </Tooltip>
                   {exactAmountMode === "native" && (
                     <select
-                      className="bg-white border border-slate-200 rounded-2xl px-1 py-0.5 outline-none"
+                      className="gf-glass-card rounded-2xl px-1 py-0.5 outline-none border-0"
                       value={exactAmountCurrency}
                       onChange={(e) => setExactAmountCurrency(e.target.value)}
                     >
@@ -822,12 +826,12 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     placeholder="Exact amount"
                     value={exactAmountFilter}
                     onChange={(e) => setExactAmountFilter(e.target.value)}
-                    className="bg-white border border-slate-200 rounded-2xl px-2 py-0.5 w-[110px] outline-none focus:border-purple-400 transition-colors"
+                    className="gf-glass-inset rounded-2xl px-2 py-0.5 w-[110px] outline-none border-0 focus:ring-1 focus:ring-purple-400 transition-colors"
                   />
                   {exactAmountFilter !== "" && (
                     <button
                       onClick={() => setExactAmountFilter("")}
-                      className="text-slate-400 hover:text-slate-600 transition-colors"
+                      className="text-gf-text-muted hover:text-gf-text-muted transition-colors"
                     >
                       <UniversalCategoIcon type="md/MdClose" siz={13} />
                     </button>
@@ -835,26 +839,26 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 </div>
                 <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center relative pulse-animation-short">
                   <Tooltip title="Filter by Category or SubCategory — pick either one 🤓">
-                    <div className="text-slate-400 hover:text-purple-600 transition-colors cursor-help">
+                    <div className="text-gf-text-muted hover:text-purple-600 transition-colors cursor-help">
                       <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
                     </div>
                   </Tooltip>
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="bg-white border border-slate-200 hover:border-purple-400 rounded-2xl px-2.5 py-0.5 text-[10px] font-normal flex items-center gap-1 text-slate-700 hover:text-purple-700 hover:bg-purple-50/50 transition-colors cursor-pointer"
+                    className="gf-glass-card hover:brightness-110 rounded-2xl px-2.5 py-0.5 text-[10px] font-normal flex items-center gap-1 text-gf-text-muted hover:text-purple-300 transition-colors cursor-pointer"
                   >
                     <UniversalCategoIcon type={displayCatIcon} siz={11} />
                     <span>{displayCatName}</span>
                     {displayFatherName && (
                       <span className="text-[9px] text-purple-400">({displayFatherName})</span>
                     )}
-                    <UniversalCategoIcon type="md/MdOutlineArrowDownward" siz={10} className="text-slate-400" />
+                    <UniversalCategoIcon type="md/MdOutlineArrowDownward" siz={10} className="text-gf-text-muted" />
                   </button>
                   {(categoryFilter || subCategoryFilter) && (
                     <button
                       onClick={handleClearCategoryFilter}
-                      className="text-slate-400 hover:text-slate-600 transition-colors ml-1"
+                      className="text-gf-text-muted hover:text-gf-text-muted transition-colors ml-1"
                       title="Clear category filter"
                     >
                       <UniversalCategoIcon type="md/MdClose" siz={13} />
@@ -863,7 +867,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 </div>
                 <Tooltip title="Find transactions that look like duplicates based on chosen criteria">
                   <div
-                    className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer ${dupMode ? "text-orange-500 font-medium" : ""}`}
+                    className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter] ${dupMode ? "text-orange-500 font-medium" : ""}`}
                     onClick={() => setDupFinderOpen(!dupFinderOpen)}
                   >
                     <MdOutlineFindInPage size={15} />
@@ -872,7 +876,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 </Tooltip>
                 <Tooltip title="Export the currently filtered transactions as Excel (re-importable) or JSON">
                   <div
-                    className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer ${exportOpen ? "text-purple-500 font-medium" : ""}`}
+                    className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter] ${exportOpen ? "text-purple-500 font-medium" : ""}`}
                     onClick={() => setExportOpen(!exportOpen)}
                   >
                     <MdOutlineFileDownload size={15} />
@@ -880,7 +884,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   </div>
                 </Tooltip>
                 <div
-                  className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer"
+                  className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter]"
                   onClick={handleCleanFilter}
                 >
                   <p className="pr-2">Clear filters</p>
@@ -891,9 +895,9 @@ function MovementsContent({ timePeriodFromFather, mail }) {
 
             {/* ── Duplicate finder submenu ── */}
             {dupFinderOpen && (
-              <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-2">
+              <div className="bg-gf-surface border border-gf-border rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <p className="text-[11px] font-medium text-slate-600">
+                  <p className="text-[11px] font-medium text-gf-text-muted">
                     Match criteria — a duplicate is found when ALL checked fields are identical:
                   </p>
                   <Tooltip title={
@@ -907,7 +911,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                       <p><b>Delete X selected</b> — removes selected transactions permanently.</p>
                     </div>
                   }>
-                    <div className="cursor-pointer text-slate-400 hover:text-slate-600">
+                    <div className="cursor-pointer text-gf-text-muted hover:text-gf-text-muted">
                       <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
                     </div>
                   </Tooltip>
@@ -922,7 +926,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     { key: "category",    label: "Category" },
                     { key: "subcategory", label: "Subcategory" },
                   ].map(({ key, label }) => (
-                    <label key={key} className="flex items-center gap-1 cursor-pointer text-[11px] text-slate-600 select-none">
+                    <label key={key} className="flex items-center gap-1 cursor-pointer text-[11px] text-gf-text-muted select-none">
                       <input
                         type="checkbox"
                         checked={dupCriteria[key]}
@@ -935,15 +939,15 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 </div>
 
                 {/* Tolerance controls */}
-                <div className="flex flex-wrap gap-4 items-center border-t border-slate-100 pt-2">
+                <div className="flex flex-wrap gap-4 items-center border-t border-gf-border pt-2">
                   <div className="flex items-center gap-2">
                     <Tooltip title="Allow this many days of difference between dates to still count as duplicates">
-                      <label className="text-[11px] text-slate-500 select-none cursor-help">Date tolerance</label>
+                      <label className="text-[11px] text-gf-text-muted select-none cursor-help">Date tolerance</label>
                     </Tooltip>
                     <select
                       value={dupDateTolerance}
                       onChange={(e) => setDupDateTolerance(Number(e.target.value))}
-                      className="text-[11px] bg-white border border-slate-200 rounded-lg px-2 py-0.5 outline-none focus:border-purple-400"
+                      className="text-[11px] bg-gf-surface border border-gf-border rounded-lg px-2 py-0.5 outline-none focus:border-purple-400"
                     >
                       <option value={0}>Exact (same day)</option>
                       <option value={1}>±1 day</option>
@@ -954,7 +958,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Tooltip title="Allow this amount difference (in your currency) between two transactions to still count as duplicates">
-                      <label className="text-[11px] text-slate-500 select-none cursor-help">Amount tolerance</label>
+                      <label className="text-[11px] text-gf-text-muted select-none cursor-help">Amount tolerance</label>
                     </Tooltip>
                     <input
                       type="number"
@@ -962,14 +966,14 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                       step="0.01"
                       value={dupAmountTolerance}
                       onChange={(e) => setDupAmountTolerance(Math.max(0, Number(e.target.value)))}
-                      className="text-[11px] bg-white border border-slate-200 rounded-lg px-2 py-0.5 w-20 outline-none focus:border-purple-400"
+                      className="text-[11px] bg-gf-surface border border-gf-border rounded-lg px-2 py-0.5 w-20 outline-none focus:border-purple-400"
                       placeholder="0.00"
                     />
                   </div>
                 </div>
 
                 {/* Action buttons — Organized in 2 Justified Rows */}
-                <div className="flex flex-col gap-2 border-t border-slate-100 pt-2.5 w-full">
+                <div className="flex flex-col gap-2 border-t border-gf-border pt-2.5 w-full">
                   {/* ROW 1: Search/Refresh on Left, Exit duplicate view on Right */}
                   <div className="flex items-center justify-between w-full flex-wrap gap-2">
                     <div className="flex items-center gap-2">
@@ -990,7 +994,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                             setDupAmountTolerance(0);
                             setDupMode(true);
                           }}
-                          className="text-[11px] text-slate-500 hover:text-purple-600 border border-slate-200 px-2.5 py-1 rounded-full transition-colors flex items-center gap-1"
+                          className="text-[11px] text-gf-text-muted hover:text-purple-600 border border-gf-border px-2.5 py-1 rounded-full transition-colors flex items-center gap-1"
                         >
                           <UniversalCategoIcon type={"md/MdRefresh"} siz={14} />
                           Refresh defaults
@@ -1011,7 +1015,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                             if (el) el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
                           });
                         }}
-                        className="text-[11px] text-orange-600 border border-orange-300 px-3 py-1 rounded-full hover:bg-orange-50 transition-colors font-medium"
+                        className="text-[11px] text-orange-400 border border-orange-300 px-3 py-1 rounded-full hover:bg-orange-500/15 transition-colors font-medium"
                       >
                         Exit duplicate view
                       </button>
@@ -1020,7 +1024,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
 
                   {/* ROW 2: Selection tools on Left, Delete X selected on Right */}
                   {dupMode && dupCount > 0 && (
-                    <div className="flex items-start justify-between w-full pt-2 border-t border-slate-100/80 flex-wrap gap-3">
+                    <div className="flex items-start justify-between w-full pt-2 border-t border-gf-border/80 flex-wrap gap-3">
                       {/* Left column: Selection actions + Comparison in detail below */}
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -1041,7 +1045,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                               });
                               setSelectedTrans(toDelete);
                             }}
-                            className="text-[11px] text-purple-700 bg-purple-50 border border-purple-300 px-3 py-1 rounded-full hover:bg-purple-100 transition-colors flex items-center gap-1 font-medium"
+                            className="text-[11px] text-purple-300 bg-gf-accent-soft-bg border border-purple-300 px-3 py-1 rounded-full hover:bg-gf-accent-soft-bg transition-colors flex items-center gap-1 font-medium"
                           >
                             <HiMiniCursorArrowRipple size={12} />
                             Select possible duplicates
@@ -1056,7 +1060,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                                   if (el) el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
                                 });
                               }}
-                              className="text-[11px] text-slate-600 bg-slate-100 border border-slate-300 px-2.5 py-1 rounded-full hover:bg-slate-200 transition-colors flex items-center gap-1 font-medium"
+                              className="text-[11px] text-gf-text-muted bg-gf-surface-2 border border-gf-border px-2.5 py-1 rounded-full hover:bg-gf-surface-2 transition-colors flex items-center gap-1 font-medium"
                             >
                               <UniversalCategoIcon type="md/MdClear" siz={13} />
                               Clear selection ({selectedTrans.length})
@@ -1074,8 +1078,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                               onClick={() => setDupDeleteAll((v) => !v)}
                               className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors flex items-center gap-1 ${
                                 dupDeleteAll
-                                  ? "text-red-600 border-red-400 bg-red-50 hover:bg-red-100"
-                                  : "text-slate-500 border-slate-300 hover:bg-slate-50"
+                                  ? "text-red-400 border-red-400 bg-red-500/15 hover:bg-red-500/15"
+                                  : "text-gf-text-muted border-gf-border hover:bg-gf-surface-2"
                               }`}
                             >
                               <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={12} />
@@ -1089,7 +1093,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                           <div className="flex items-center">
                             <button
                               onClick={() => setDupCompareModalOpen(true)}
-                              className="text-[11px] text-amber-800 bg-amber-50 border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                              className="text-[11px] text-amber-400 bg-amber-500/15 border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-500/15 transition-colors flex items-center gap-1 font-semibold shadow-sm"
                             >
                               <UniversalCategoIcon type="md/MdOutlineCompare" siz={13} />
                               Comparison in detail ({selectedTrans.length})
@@ -1116,7 +1120,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
 
                 {/* Results summary */}
                 {dupMode && (
-                  <p className={`text-[11px] font-medium ${dupCount > 0 ? "text-orange-500" : "text-green-600"}`}>
+                  <p className={`text-[11px] font-medium ${dupCount > 0 ? "text-orange-500" : "text-green-400"}`}>
                     {dupCount > 0 ? `${dupCount} possible duplicate transaction(s) found` : "No duplicates found with current criteria 🎉"}
                   </p>
                 )}
@@ -1125,26 +1129,26 @@ function MovementsContent({ timePeriodFromFather, mail }) {
 
             {/* ── Export submenu ── */}
             {exportOpen && (
-              <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-3">
-                <p className="text-[11px] font-medium text-slate-600">
-                  Choose export format — <span className="text-slate-400 font-normal">{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""} with current filters</span>
+              <div className="bg-gf-surface border border-gf-border rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-3">
+                <p className="text-[11px] font-medium text-gf-text-muted">
+                  Choose export format — <span className="text-gf-text-muted font-normal">{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""} with current filters</span>
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => { setExportFormat("excel"); setExportModalOpen(true); }}
-                    className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-slate-600 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                    className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-gf-text-muted hover:border-purple-400 hover:text-purple-600 hover:bg-gf-accent-soft-bg transition-colors"
                   >
-                    <PiMicrosoftExcelLogoFill size={22} className="text-green-600" />
+                    <PiMicrosoftExcelLogoFill size={22} className="text-green-400" />
                     <span className="font-medium">Excel</span>
-                    <span className="text-slate-400 text-[10px] text-center leading-tight">Re-importable format<br/>(.xlsx)</span>
+                    <span className="text-gf-text-muted text-[10px] text-center leading-tight">Re-importable format<br/>(.xlsx)</span>
                   </button>
                   <button
                     onClick={() => { setExportFormat("json"); setExportModalOpen(true); }}
-                    className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-slate-600 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                    className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-gf-text-muted hover:border-purple-400 hover:text-purple-600 hover:bg-gf-accent-soft-bg transition-colors"
                   >
                     <VscJson size={22} className="text-amber-500" />
                     <span className="font-medium">JSON</span>
-                    <span className="text-slate-400 text-[10px] text-center leading-tight">Full data with all<br/>populated fields</span>
+                    <span className="text-gf-text-muted text-[10px] text-center leading-tight">Full data with all<br/>populated fields</span>
                   </button>
                 </div>
               </div>
@@ -1153,19 +1157,19 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             <div className="relative w-full mt-2 mb-3 px-2">
               <IoSearchOutline
                 size={15}
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-gf-text-muted pointer-events-none"
               />
               <input
                 type="text"
                 placeholder="Search by name, category, subcategory or tag..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-8 py-1.5 text-[11px] bg-white border border-slate-200 rounded-2xl outline-none focus:border-purple-400 transition-colors"
+                className="w-full pl-8 pr-8 py-1.5 text-[11px] gf-glass-inset rounded-2xl outline-none border-0 focus:ring-1 focus:ring-purple-400 transition-colors"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-gf-text-muted hover:text-gf-text-muted transition-colors"
                 >
                   <UniversalCategoIcon type="md/MdClose" siz={15} />
                 </button>
@@ -1180,12 +1184,12 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             </div>
 
             {/* Computed Bills (Red) & Incomes (Green) Summary Bar according to applied filters */}
-            <div className="flex flex-wrap items-center justify-between gap-2 py-1.5 px-3 bg-slate-100/90 border border-slate-200 rounded-xl text-xs my-1 shadow-2xs">
-              <div className="flex items-center gap-1.5 text-slate-500 font-medium">
+            <div className="flex flex-wrap items-center justify-between gap-2 py-1.5 px-3 bg-gf-surface-2/90 border border-gf-border rounded-xl text-xs my-1 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-gf-text-muted font-medium">
                 <span>{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""}</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-1 text-red-600 font-semibold bg-red-50 px-2.5 py-0.5 rounded-full border border-red-200">
+                <div className="flex items-center gap-1 text-red-400 font-semibold bg-red-500/15 px-2.5 py-0.5 rounded-full border border-red-200">
                   <span className="text-[10px] font-bold tracking-wide">BILLS:</span>
                   {Object.keys(billsByCurrency).length === 0 ? (
                     <span>-{formatMoneyMinor(0, "MXN")}</span>
@@ -1198,7 +1202,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     ))
                   )}
                 </div>
-                <div className="flex items-center gap-1 text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                <div className="flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-200">
                   <span className="text-[10px] font-bold tracking-wide">INCOMES:</span>
                   {Object.keys(incomesByCurrency).length === 0 ? (
                     <span>+{formatMoneyMinor(0, "MXN")}</span>
@@ -1214,7 +1218,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
               </div>
             </div>
             {isSelectionMode && (
-              <div className="selectionHeader flex flex-col gap-1 py-1.5 bg-purple-50 text-[13px] rounded-xl px-2">
+              <div className="selectionHeader flex flex-col gap-1 py-1.5 bg-gf-accent-soft-bg text-[13px] rounded-xl px-2">
                 {/* Row 1: selection controls */}
                 <div className="flex gap-2 justify-between items-center">
                   <div
@@ -1233,7 +1237,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     </div>
                     {selectedTrans.length > 0 && (
                       <div
-                        className="text-slate-400 flex gap-1 items-center cursor-pointer hover:text-slate-600 transition-colors"
+                        className="text-gf-text-muted flex gap-1 items-center cursor-pointer hover:text-gf-text-muted transition-colors"
                         onClick={() => {
                           allMovements.forEach((mov) => {
                             const el = document.getElementById(`trans-${mov._id}`);
@@ -1246,20 +1250,20 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                         <PiExcludeSquareDuotone size={15} />
                       </div>
                     )}
-                    <p className="text-[11px] text-slate-500">{selectedTrans.length} selected</p>
+                    <p className="text-[11px] text-gf-text-muted">{selectedTrans.length} selected</p>
                     <Tooltip title="Select transactions then use the action buttons below to edit a specific field for all of them at once, or delete them all.">
                       <div className="flex items-center"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} /></div>
                     </Tooltip>
                   </div>
                   {/* Delete */}
-                  <button onClick={() => showRemoveModal("many", selectedTrans)} className="hover:text-red-600 micro-pulse text-slate-500">
+                  <button onClick={() => showRemoveModal("many", selectedTrans)} className="hover:text-red-400 micro-pulse text-gf-text-muted">
                     <CategoIcon type={"MdDelete"} size={18} />
                   </button>
                 </div>
 
                 {/* Row 2: focused edit actions — only when items selected */}
                 {selectedTrans.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 border-t border-purple-100 pt-1.5">
+                  <div className="flex flex-wrap gap-1.5 border-t border-gf-border pt-1.5">
                     {[
                       { field: "name",     icon: <MdOutlineDriveFileRenameOutline size={13} />, label: "Rename" },
                       { field: "date",     icon: <MdOutlineCalendarMonth size={13} />,           label: "Date" },
@@ -1270,7 +1274,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                       <button
                         key={field}
                         onClick={() => setQuickEditField(field)}
-                        className="flex items-center gap-1 text-[11px] text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full hover:bg-purple-100 transition-colors"
+                        className="flex items-center gap-1 text-[11px] text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full hover:bg-gf-accent-soft-bg transition-colors"
                       >
                         {icon}{label}
                       </button>
@@ -1278,7 +1282,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     <Tooltip title="Edit all fields at once — anything you fill in will overwrite all selected transactions">
                       <button
                         onClick={() => handleMultiTransEdit(selectedTrans)}
-                        className="flex items-center gap-1 text-[11px] text-slate-400 border border-slate-200 px-2 py-0.5 rounded-full hover:bg-slate-100 transition-colors"
+                        className="flex items-center gap-1 text-[11px] text-gf-text-muted border border-gf-border px-2 py-0.5 rounded-full hover:bg-gf-surface-2 transition-colors"
                       >
                         <MdOutlineSettings size={13} />General edit
                       </button>
@@ -1299,7 +1303,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
           </div>
           <div className="movements-container flex flex-col gap-2">
             {allMovements.length === 0 && (
-              <div className="w-full flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+              <div className="w-full flex flex-col items-center justify-center py-10 text-gf-text-muted gap-2">
                 {dupMode ? <MdOutlineFindInPage size={32} /> : <IoSearchOutline size={32} />}
                 <p className="text-sm">
                   {dupMode ? "No duplicates found with the selected criteria 🎉" : "No transactions match your filters"}
@@ -1345,7 +1349,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
               <div
                 key={movement._id}
                 id={`trans-${movement._id}`}
-                className="flex flex-row justify-between items-center bg-slate-50 rounded-2xl py-1 px-2 hover:bg-slate-200 relative"
+                className="flex flex-row justify-between items-center gf-glass-row rounded-2xl py-1 px-2 relative"
               >
                 <div className="flex gap-2 items-center">
                   <div className={`editor-cont ${isSelectionMode ? "" : "hidden"}`}>
@@ -1357,7 +1361,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                   <div className="tra-cat-cont">
                     <div
                       style={{ backgroundColor: movement.category?.color || "#DADADA" }}
-                      className="circle-ico w-[50px] h-[50px] rounded-full flex items-center justify-center hover:mix-blend-multiply"
+                      className="circle-ico w-[50px] h-[50px] rounded-full flex items-center justify-center hover:brightness-90 transition-[filter]"
                     >
                       {!movement.category || !movement.category.icon ? (
                         <UniversalCategoIcon type="md/MdFilterNone" size={10} />
@@ -1378,11 +1382,11 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                         )}
                       </div>
                       <div className="tra-acount-cont text-[10px] font-normal flex items-center gap-2 flex-wrap">
-                        <p><span className="text-slate-400 font-light">Categoría: </span><span className="text-slate-600">{movement.category?.name || "—"}</span></p>
+                        <p><span className="text-gf-text-muted font-light">Categoría: </span><span className="text-gf-text-muted">{movement.category?.name || "—"}</span></p>
                         {movement.subCategory?.name && (
-                          <p><span className="text-slate-400 font-light">Subcategoría: </span><span className="text-slate-600">{movement.subCategory.name}</span></p>
+                          <p><span className="text-gf-text-muted font-light">Subcategoría: </span><span className="text-gf-text-muted">{movement.subCategory.name}</span></p>
                         )}
-                        <p><span className="text-slate-400 font-light">Cuenta: </span><span className="text-slate-600">{movement.account?.name || "—"}</span></p>
+                        <p><span className="text-gf-text-muted font-light">Cuenta: </span><span className="text-gf-text-muted">{movement.account?.name || "—"}</span></p>
                       </div>
                       <div className="tra-tag-cont flex flex-wrap gap-1 items-center justify-start text-[10px] font-thin">
                         <p className="font-light">Tags: </p>
@@ -1417,7 +1421,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                           )}
                         </div>
                         {showEquivalent && (
-                          <p className="text-[11px] text-slate-500 cursor-default">
+                          <p className="text-[11px] text-gf-text-muted cursor-default">
                             ≈ {formatMoneyMinor(primary.amountMinor, primary.currency)}
                           </p>
                         )}
@@ -1428,13 +1432,13 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     <div className="btns flex justify-between gap-2">
                       <button
                         onClick={() => showRemoveModal("", movement._id)}
-                        className="hover:text-slate-700 micro-pulse"
+                        className="hover:text-gf-text-muted micro-pulse"
                       >
                         <CategoIcon type={"MdDelete"} size={15} />
                       </button>
                       <button
                         onClick={() => handleTransEdit(movement)}
-                        className="hover:text-slate-700 micro-pulse"
+                        className="hover:text-gf-text-muted micro-pulse"
                       >
                         <CategoIcon type={"MdOutlineCreate"} size={15} />
                       </button>

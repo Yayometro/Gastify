@@ -16,7 +16,7 @@ import TimeRange from "@/components/Filters/timeRange/TimeRange";
 
 const today = new Date();
 
-function ResumeTabsTrans({ timePeriodFromFather }) {
+function ResumeTabsTrans({ timePeriodFromFather, rttTrans }) {
   const [isBillTab, setIsBillTab] = useState(true);
   const [allBills, setAllBills] = useState([]);
   const [allIncomes, setAllIncomes] = useState([]);
@@ -37,14 +37,24 @@ function ResumeTabsTrans({ timePeriodFromFather }) {
   }, [timePeriodFromFather]);
 
   useEffect(() => {
-    if (!ccTransacciones.data || ccTransacciones.data.length === 0) return;
+    // rttTrans (when passed) scopes this to one account - e.g. AccountClient
+    // passes that account's own transaction list so switching the selected
+    // account via the carousel updates this section too. Falls back to the
+    // full wallet's redux transactions for callers (Dashboard.jsx) that
+    // don't scope to a single account.
+    const sourceTransactions = rttTrans || ccTransacciones.data;
+    if (!sourceTransactions || sourceTransactions.length === 0) {
+      setAllBills([]);
+      setAllIncomes([]);
+      return;
+    }
     const [start, end] = timePeriod;
-    const filtered = getTransactionsFromTimeRange(ccTransacciones.data, start, end).sort(
+    const filtered = getTransactionsFromTimeRange(sourceTransactions, start, end).sort(
       (a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)
     );
     setAllBills(filtered.filter((t) => t.isBill && !t.isIncome));
     setAllIncomes(filtered.filter((t) => t.isIncome && !t.isBill));
-  }, [ccTransacciones.data, timePeriod]);
+  }, [ccTransacciones.data, rttTrans, timePeriod]);
 
   function getValueFromSelecter(v) {
     const [start, end] = v.split("*");
@@ -60,7 +70,7 @@ function ResumeTabsTrans({ timePeriodFromFather }) {
   const handleTab = (budType) => setIsBillTab(budType === "bill");
 
   return (
-    <div className="rtt-cont w-full h-full">
+    <div className="rtt-cont gf-glass-card w-full h-full rounded-[32px] p-4">
       <h1 className="text-2xl text-center font-semibold pt-3">
         Transactions Resume
       </h1>
@@ -73,7 +83,7 @@ function ResumeTabsTrans({ timePeriodFromFather }) {
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
           <Tooltip title="Filter by date using a preset range or selecting a specific range 🤓">
-            <div className="text-black w-[10px]">
+            <div className="text-gf-text w-[10px]">
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
             </div>
           </Tooltip>
@@ -81,7 +91,7 @@ function ResumeTabsTrans({ timePeriodFromFather }) {
             getValue={getValueFromSelecter}
             periodFromFather={timePeriodsForSelecter[0]}
             periodOverride={timePeriodsForSelecter}
-            styles="bg-white text-black w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
+            styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
           />
           <TimeRange rpDate={handleRangeDate} />
         </div>
@@ -104,7 +114,7 @@ function ResumeTabsTrans({ timePeriodFromFather }) {
           Income Resume
         </div>
       </div>
-      <div className="rtt-content-cont">
+      <div className="rtt-content-cont mt-3">
         <div className={`rtt-sub-cont w-full h-full ${isBillTab ? "" : "hidden"}`}>
           {allBills.length <= 0 ? (
             <div className="w-full py-[20px]">

@@ -42,8 +42,9 @@ function SubCategoryList({sclSubCategory ,clUser, sclCategories}) {
                     style={{
                       backgroundColor: subCategory.color || "#ABABAB",
                       border: `10px solid ${subCategory.fatherCategory?.color || "#ABABAB"}`,
+                      "--gf-tile-border": "10px",
                     }}
-                    className={`w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] border-[10px] sm:border-[20px]  flex flex-col justify-center items-center rounded-full px-2 py-1 hover:mix-blend-multiply shadow-lg cursor-pointer`}
+                    className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] border-[10px] sm:border-[20px]  flex flex-col justify-center items-center rounded-full px-2 py-1 hover:brightness-90 cursor-pointer`}
                     onClick={() => {
                       if (subCategory.isDefaultSubCatego) {
                         runNotify(

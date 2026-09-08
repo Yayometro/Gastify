@@ -84,13 +84,13 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
               {topList.map((trans, index) => (
                 <Tooltip title={`${trans.name}`} key={`t3-trans-${trans.id}`}>
                 <div
-                  className={`tra-cat-cont flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 min-w-[106]s max-w-[120px]s w-fulls hover:mix-blend-multiply min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2 min-[352px]:min-h-[130px] min-[352px]:min-w-[100px]`}
+                  className={`tra-cat-cont gf-glass-tile flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 min-w-[106]s max-w-[120px]s w-fulls hover:brightness-90 min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2 min-[352px]:min-h-[130px] min-[352px]:min-w-[100px]`}
                   style={{
                     backgroundColor: trans?.category?.color || "#DADADA",
                   }}
                 >
                   <div className="w-full flex gap-2 items-center truncate">
-                    <div className=" bg-white flex justify-center items-center border-2 rounded-full min-w-[30px] min-[352px]:w-[25px] min-[352px]:h-[25px] min-[352px]:absolute min-[352px]:top-[6px] min-[352px]:left-[6px] min-[352px]:shadow-lg">
+                    <div className=" bg-gf-surface flex justify-center items-center border-2 rounded-full min-w-[30px] min-[352px]:w-[25px] min-[352px]:h-[25px] min-[352px]:absolute min-[352px]:top-[6px] min-[352px]:left-[6px] min-[352px]:shadow-lg">
                       {index + 1}
                     </div>
                     <div className="w-full flex items-center justify-center gap-2 min-[352px]:flex-col min-[352px]:justify-start ">
@@ -123,7 +123,7 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
                         <CategoIcon type={"MdKeyboardDoubleArrowDown"} />
                       </div>
                     ) : (
-                      <div className="text-green-800">
+                      <div className="text-green-500">
                         <CategoIcon type={"MdKeyboardDoubleArrowUp"} />
                       </div>
                     )}
@@ -149,14 +149,14 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
               {topList.map((transCat, index) => (
                 <Tooltip title={`${transCat.category}`} key={`t3-trans-${transCat.id}`}>
                 <div
-                  className={`tra-cat-cont flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 hover:mix-blend-multiply min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2 min-[352px]:min-h-[130px] min-[352px]:min-w-[100px]`}
+                  className={`tra-cat-cont gf-glass-tile flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 hover:brightness-90 min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2 min-[352px]:min-h-[130px] min-[352px]:min-w-[100px]`}
                   style={{
                     backgroundColor: transCat?.color || "#DADADA",
                   }}
                   // key={`t3-trans-${trans.id}`}
                 >
                   <div className="w-full flex gap-2 items-center truncate">
-                    <div className=" bg-white flex justify-center items-center border-2 rounded-full min-w-[30px] min-[352px]:w-[25px] min-[352px]:h-[25px] min-[352px]:absolute min-[352px]:top-[6px] min-[352px]:left-[6px] min-[352px]:shadow-lg">
+                    <div className=" bg-gf-surface flex justify-center items-center border-2 rounded-full min-w-[30px] min-[352px]:w-[25px] min-[352px]:h-[25px] min-[352px]:absolute min-[352px]:top-[6px] min-[352px]:left-[6px] min-[352px]:shadow-lg">
                       {index + 1}
                     </div>
                     <div className="w-full flex items-center justify-center gap-2 min-[352px]:flex-col min-[352px]:justify-start ">
@@ -189,7 +189,7 @@ function Top3({ t3List, t3Type, t3IsBill, t3IsTop }) {
                         <CategoIcon type={"MdKeyboardDoubleArrowDown"} />
                       </div>
                     ) : (
-                      <div className="text-green-800">
+                      <div className="text-green-500">
                         <CategoIcon type={"MdKeyboardDoubleArrowUp"} />
                       </div>
                     )}

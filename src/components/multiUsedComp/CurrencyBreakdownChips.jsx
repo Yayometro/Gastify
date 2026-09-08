@@ -23,7 +23,7 @@ function CurrencyBreakdownChips({ breakdown, walletPrimaryCurrency, className })
               : `Converted at ${g.rate} (${walletPrimaryCurrency} per ${g.currency}) as of ${g.effectiveDate ? new Date(g.effectiveDate).toLocaleDateString() : "n/a"}.`
           }
         >
-          <div className="bg-white border border-purple-200 rounded-full px-2 py-0.5 text-[11px] text-purple-700">
+          <div className="bg-gf-surface border border-purple-200 rounded-full px-2 py-0.5 text-[11px] text-purple-300">
             {formatMoneyMinor(g.nativeAmountMinor, g.currency, { showCode: true })}
             {g.currency !== walletPrimaryCurrency && (
               <> → {formatMoneyMinor(g.primaryAmountMinor, walletPrimaryCurrency, { showCode: true })}</>

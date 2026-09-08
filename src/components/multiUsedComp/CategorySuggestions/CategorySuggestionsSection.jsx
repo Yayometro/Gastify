@@ -31,7 +31,7 @@ function CategorySuggestionsSection({ mail }) {
   }, [mail]);
 
   return (
-    <div className="bg-slate-50 py-6 my-2 px-[30px] rounded-[60px] w-full max-w-[900px] flex flex-col items-center gap-2">
+    <div className="gf-glass-card py-6 my-2 px-[30px] rounded-[60px] w-full h-full max-w-[900px] flex flex-col items-center justify-center gap-2">
       <div className="flex items-center gap-1">
         <h1 className="text-xl font-light">Transaction Categorizer</h1>
         <Tooltip title="Scans your uncategorized transactions and suggests a category based on your saved rules (merchant name, amount). Nothing changes until you review and apply.">
@@ -42,17 +42,17 @@ function CategorySuggestionsSection({ mail }) {
       </div>
 
       {count === null ? (
-        <p className="text-xs text-slate-400">Checking for suggestions...</p>
+        <p className="text-xs text-gf-text-muted">Checking for suggestions...</p>
       ) : count === 0 ? (
-        <p className="text-xs text-slate-400">No suggestions right now — you&apos;re all caught up! 🎉</p>
+        <p className="text-xs text-gf-text-muted">No suggestions right now — you&apos;re all caught up! 🎉</p>
       ) : (
         <>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gf-text-muted">
             💡 {count} transaction{count !== 1 ? "s" : ""} have a suggested category
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="mt-1 px-5 py-2 rounded-full text-sm font-medium bg-purple-600 text-white hover:bg-purple-500 transition-colors"
+            className="mt-1 px-5 py-2 rounded-full text-sm font-medium gf-glass-button text-white transition-colors"
           >
             Review suggestions
           </button>

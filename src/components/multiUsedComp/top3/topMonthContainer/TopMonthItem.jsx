@@ -36,13 +36,13 @@ function TopMonthItem({
           // One flat, subtle tone for every month instead of the old
           // per-month rainbow - easier on the eyes across a full range of
           // months, and keeps the section visually on-brand (purple).
-          "w-full h-full bg-purple-50 flex flex-col justify-start items-center relative rounded-2xl p-2 hover:brightness-95 shadow-md "
+          "w-full h-full bg-gf-accent-soft-bg flex flex-col justify-start items-center relative rounded-2xl p-2 hover:brightness-95 shadow-md "
         }
       >
-        <div className=" bg-white text-black flex justify-center items-center border-2 rounded-full w-[25px] h-[25px] absolute top-[6px] left-[6px] shadow-lg gap-2">
+        <div className=" bg-gf-surface text-gf-text flex justify-center items-center border-2 rounded-full w-[25px] h-[25px] absolute top-[6px] left-[6px] shadow-lg gap-2">
           <span className="text-xs font-bold">{monthNumberFromIcon(icon)}</span>
         </div>
-        <div className=" bg-white text-black flex justify-center items-center border-2 rounded-full w-[25px] h-[25px] absolute top-[6px] right-[6px] shadow-lg gap-2">
+        <div className=" bg-gf-surface text-gf-text flex justify-center items-center border-2 rounded-full w-[25px] h-[25px] absolute top-[6px] right-[6px] shadow-lg gap-2">
           <BasicTooltip
             title={
               "In each month you can see the highest bills or transactions according to the time-period selected and the number of elements to display"
@@ -50,7 +50,7 @@ function TopMonthItem({
           />
         </div>
         <section className="">
-          <h1 className="text-purple-700 font-semibold">{name}</h1>
+          <h1 className="text-gf-accent-soft-text font-semibold">{name}</h1>
           {!value ? (
             "No value"
           ) : (

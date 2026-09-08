@@ -126,10 +126,10 @@ export default function RegisterComp({ params }) {
        <div className="loader">
       {
               !loading ? ('') : (
-                <div className="w-full h-full flex flex-col justify-center items-center bg-white/80 z-50 absolute text-center p-4 gap-4 left-0">
+                <div className="w-full h-full flex flex-col justify-center items-center bg-gf-bg/90 z-50 absolute text-center p-4 gap-4 left-0">
                   <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
-                  <p className=" text-xl text-purple-800">We are building up your dashboard and data</p>
-                  <p className=" text-xl text-purple-800">Please wait a moment 🤓</p>
+                  <p className=" text-xl text-purple-200">We are building up your dashboard and data</p>
+                  <p className=" text-xl text-purple-200">Please wait a moment 🤓</p>
                 </div>
               )
             }
@@ -139,7 +139,7 @@ export default function RegisterComp({ params }) {
           Register
         </h1>
       </div>
-      <div className="form-container bg-white w-full rounded-t-[100px] h-full m-auto">
+      <div className="form-container bg-gf-surface w-full rounded-t-[100px] h-full m-auto">
         <form
           className="form-login w-full h-full text-center flex flex-col gap-4 justify-start items-center pt-5 sm:pt-10"
           onSubmit={handleSubmit}
@@ -179,7 +179,7 @@ export default function RegisterComp({ params }) {
             />
             <div
               id="emailHelp"
-              className="form-text-never w-[90%] font-light text-[10px] text-slate-400"
+              className="form-text-never w-[90%] font-light text-[10px] text-gf-text-muted"
             >
               We will never share your email with anyone else.
             </div>
@@ -210,7 +210,7 @@ export default function RegisterComp({ params }) {
             </div>
             <div
               id="emailHelp"
-              className="form-text-never w-[90%] font-light text-[10px] text-slate-400"
+              className="form-text-never w-[90%] font-light text-[10px] text-gf-text-muted"
             >
               We will never share your email with anyone else.
             </div>
@@ -225,7 +225,7 @@ export default function RegisterComp({ params }) {
                   onChange={handleChange}
                 />
               </div>
-              <div className="form-text-never w-fit font-light text-[12px] text-slate-400">
+              <div className="form-text-never w-fit font-light text-[12px] text-gf-text-muted">
                 <p className="w-fit">I agree to terms and conditions</p>
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function RegisterComp({ params }) {
           <button type="submit" className="social-btn-lf">
             Submit
           </button>
-          <div className="divider border-t-2 border-slate-300 w-[70%] mt-5"></div>
+          <div className="divider border-t-2 border-gf-border w-[70%] mt-5"></div>
           <div className="bts-fast w-[100%] pt-5  flex flex-col gap-8 justify-center items-center">
             <div className="social-btn-lf" onClick={googleSignIn}>
               <div className="sblf-icon-cont">
@@ -252,7 +252,7 @@ export default function RegisterComp({ params }) {
               </div>
               <p> GitHub</p>
             </div>
-            <div className="text-purple-700 w-[90%] text-xs hover:underline pb-[30px]">
+            <div className="text-purple-300 w-[90%] text-xs hover:underline pb-[30px]">
               <Link href="/login">
                 <p>You have an account already? - Login here</p>
               </Link>

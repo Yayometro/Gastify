@@ -9,15 +9,15 @@ import { formatMoneyMajor } from "@/lib/money/currencies";
 function ExcelRowChip({ match }) {
   if (!match) return null;
   return (
-    <div className="h-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 flex flex-col justify-center gap-[3px] min-h-0">
-      <p className="text-xs font-medium text-amber-800 truncate" title={match.name}>
+    <div className="h-full bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2 flex flex-col justify-center gap-[3px] min-h-0">
+      <p className="text-xs font-medium text-amber-400 truncate" title={match.name}>
         {match.name}
       </p>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] text-amber-600 whitespace-nowrap">
+        <p className="text-[11px] text-amber-400 whitespace-nowrap">
           {dayjs(match.date).format("DD/MM/YYYY")}
         </p>
-        <p className="text-[11px] font-semibold text-amber-700 whitespace-nowrap">
+        <p className="text-[11px] font-semibold text-amber-400 whitespace-nowrap">
           {formatMoneyMajor(match.amount ?? 0, match.currency || "MXN")}
         </p>
       </div>
@@ -86,12 +86,12 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
 
   return createPortal(
     <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className={`bg-white rounded-3xl shadow-2xl w-full ${maxW} mx-2 sm:mx-4 flex flex-col gap-5 p-4 sm:p-7 max-h-[95vh] overflow-y-auto`}>
+      <div className={`bg-gf-surface rounded-3xl shadow-2xl w-full ${maxW} mx-2 sm:mx-4 flex flex-col gap-5 p-4 sm:p-7 max-h-[95vh] overflow-y-auto`}>
 
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-slate-800">Confirm deduplication</h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <h2 className="text-xl font-semibold text-gf-text">Confirm deduplication</h2>
+          <p className="text-xs text-gf-text-muted mt-1">
             {scanned} row{scanned !== 1 ? "s" : ""} scanned
             {!deleteAll && " · uncheck any item to skip deletion"}
           </p>
@@ -103,7 +103,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
             <div className="flex items-center justify-between pr-1">
               <h3 className="text-sm font-semibold text-red-500">
                 Will be deleted{" "}
-                <span className="font-normal text-slate-400">
+                <span className="font-normal text-gf-text-muted">
                   ({effective.length} of {toDelete.length})
                   {skipped > 0 && <span> · {skipped} skipped</span>}
                 </span>
@@ -115,7 +115,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
               )}
             </div>
             {toDelete.length === 0 ? (
-              <p className="text-xs text-slate-400 italic">No transactions will be deleted.</p>
+              <p className="text-xs text-gf-text-muted italic">No transactions will be deleted.</p>
             ) : (
               <div className="flex flex-col gap-2 max-h-[58vh] overflow-y-auto pr-1">
                 {toDelete.map((t) => (
@@ -137,10 +137,10 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
             {/* Left — will be kept */}
             <SideColumn
               title={`Will be kept (${toKeep.length})`}
-              colorClass="text-green-600"
+              colorClass="text-green-400"
             >
               {toKeep.length === 0
-                ? <p className="text-xs text-slate-400 italic">Nothing to keep.</p>
+                ? <p className="text-xs text-gf-text-muted italic">Nothing to keep.</p>
                 : toKeep.map((t) => (
                     <div key={String(t._id)} className="min-w-0">
                       <TransactionItemList movement={t} />
@@ -150,7 +150,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
             </SideColumn>
 
             {/* Vertical divider */}
-            <div className="w-px self-stretch bg-slate-200 shrink-0" />
+            <div className="w-px self-stretch bg-gf-surface-2 shrink-0" />
 
             {/* Right — will be deleted */}
             <SideColumn
@@ -165,7 +165,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
               }
             >
               {toDelete.length === 0
-                ? <p className="text-xs text-slate-400 italic">No transactions will be deleted.</p>
+                ? <p className="text-xs text-gf-text-muted italic">No transactions will be deleted.</p>
                 : toDelete.map((t) => (
                     <DeleteRow
                       key={String(t._id)}
@@ -180,7 +180,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
         )}
 
         {/* Summary */}
-        <p className="text-xs text-center text-slate-500 bg-slate-50 rounded-xl py-2 px-3">
+        <p className="text-xs text-center text-gf-text-muted bg-gf-surface-2 rounded-xl py-2 px-3">
           {effective.length > 0
             ? `${effective.length} transaction${effective.length !== 1 ? "s" : ""} will be permanently deleted.${skipped > 0 ? ` ${skipped} unchecked will be kept.` : ""}`
             : toDelete.length > 0
@@ -193,7 +193,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
           <button
             onClick={onCancel}
             disabled={confirming}
-            className="px-4 py-2 rounded-full text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-full text-sm text-gf-text-muted hover:text-gf-text-muted hover:bg-gf-surface-2 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

@@ -29,8 +29,8 @@ function ProjectionVarianceCell({ label, actual, projected, value, betterWhenPos
   );
   return (
     <Tooltip title={tooltip}>
-      <span className="text-gray-500 cursor-help">
-        {label}: <span className={isBetter ? "text-green-700 font-medium" : "text-red-700 font-medium"}>{sign}{usdFormatChanger(value)}</span>
+      <span className="text-gf-text-muted cursor-help">
+        {label}: <span className={isBetter ? "text-green-400 font-medium" : "text-red-400 font-medium"}>{sign}{usdFormatChanger(value)}</span>
       </span>
     </Tooltip>
   );

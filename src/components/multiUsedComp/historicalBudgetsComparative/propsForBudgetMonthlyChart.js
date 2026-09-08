@@ -50,7 +50,18 @@ export function generatePropForBudgetMonthlyChart({ monthlySeries, walletPrimary
         },
       },
       interaction: {
+        // @ant-design/plots' Column chart defaults to
+        // `elementHighlight: { background: true }` - a separate interaction
+        // from the tooltip's own crosshairs, drawing a shaded rect behind
+        // the whole hovered x-category. Off since the tooltip already
+        // marks what's active.
+        elementHighlight: false,
         tooltip: {
+          // Column marks also default to a shaded crosshair rect spanning
+          // the hovered x-category's full plot height - a big grey backdrop
+          // competing with the tooltip's own glass box. The tooltip itself
+          // already marks which month/bar is active, so this is redundant.
+          crosshairs: false,
           render: (e, { items, title }) => {
             // items[].origin isn't a documented/verified shape in this
             // chart library version - look the month up from the closed-
@@ -61,18 +72,20 @@ export function generatePropForBudgetMonthlyChart({ monthlySeries, walletPrimary
             const goal = items.find((it) => it.name === "Goal");
             return (
               <div
-                className="max-w-[240px] flex gap-1 flex-col items-center justify-center rounded-lg p-2 font-sans"
+                className="max-w-[240px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
                 key={title}
               >
                 <h1 className="text-sm text-center font-bold">{String(title)}</h1>
-                <p className="text-xs">
-                  Actual: <b>{formatMoneyMajor(actual?.value ?? monthData?.actual ?? 0, walletPrimaryCurrency)}</b>
-                </p>
-                <p className="text-xs">
-                  Goal: <b>{formatMoneyMajor(goal?.value ?? monthData?.goal ?? 0, walletPrimaryCurrency)}</b>
-                </p>
+                <div className="w-full flex items-center justify-between gap-3 text-xs">
+                  <span className="text-gf-text-muted">Actual:</span>
+                  <b>{formatMoneyMajor(actual?.value ?? monthData?.actual ?? 0, walletPrimaryCurrency)}</b>
+                </div>
+                <div className="w-full flex items-center justify-between gap-3 text-xs">
+                  <span className="text-gf-text-muted">Goal:</span>
+                  <b>{formatMoneyMajor(goal?.value ?? monthData?.goal ?? 0, walletPrimaryCurrency)}</b>
+                </div>
                 {monthData && (
-                  <p className={`text-xs font-semibold ${monthData.met ? "text-green-600" : "text-red-600"}`}>
+                  <p className={`text-xs font-semibold ${monthData.met ? "text-green-400" : "text-red-400"}`}>
                     {monthData.met ? "Met" : "Exceeded"}
                     {monthData.estimated ? " (estimated goal)" : ""}
                   </p>

@@ -13,9 +13,7 @@ export default async function Register() {
     const session = await getServerSession(authOptions); //If user logged then redirect
     if(session) redirect("/dashboard")
   return (
-    <div className='bg-slate-100 p-4 w-screen h-screen flex justify-center items-center Class
-    Properties
-    bg-origin-border bg-center' style={{backgroundImage: "url('/infoOne.jpg')"}}>
+    <div className='bg-gf-bg p-4 w-full h-screen flex justify-center items-center bg-origin-border bg-center' style={{backgroundImage: "url('/infoOne.jpg')"}}>
         <RegisterComp />
     </div>
   )

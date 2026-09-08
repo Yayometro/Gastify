@@ -68,8 +68,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
               return (
                 <div
                   style={{
-                    padding: 5,
-                    background: "#F7F9F9",
+                    padding: 10,
                     boxShadow: `0px 7px 16px 0px ${
                       dataa.color ? dataa.color : "rgba(0,0,0,0.27)"
                     }`,
@@ -78,9 +77,9 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    borderRadius: "10px",
+                    borderRadius: "16px",
                   }}
-                  className="max-w-[250px]"
+                  className="max-w-[250px] gf-glass-chip text-gf-text"
                 >
                   <h1 className="text-base text-center text-wrap font-bold">
                     {dataa.data.name}

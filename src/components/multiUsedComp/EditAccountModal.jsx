@@ -138,15 +138,15 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
 
   return (
     <div
-      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[1000] bg-white/10 backdrop-blur-sm ${
+      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[5000] bg-black/50 backdrop-blur-md ${
         !active ? "hidden" : "flex"
       } items-center justify-center`}
     >
-      <div className="content bg-purple-600 border-2 border-purple-600 flex flex-col w-[350px] h-[650px] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
+      <div className="content gf-glass-violet flex flex-col w-[350px] h-[650px] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         <div
           className={`${
             isLoading ? "absolute" : "hidden"
-          } top-0 left-0 bg-white/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] `}
+          } top-0 left-0 bg-gf-surface/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] `}
         >
           <Spin size="large" />
         </div>
@@ -155,10 +155,10 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
         </h1>
         <form
           onSubmit={handleSubmit}
-          className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 bg-slate-50 rounded-t-[60px] pt-[30px] pb-20`}
+          className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20`}
         >
           <div
-            className="close-con absolute top-[0%] right-[0%] border-2 rounded-full bg-slate-50 text-purple-700 m-1 pulse-animation-short cursor-pointer"
+            className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer"
             onClick={handleClose}
           >
             <CategoIcon type={"MdClose"} siz={20} />
@@ -187,43 +187,50 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
                 : "Each account has exactly one native currency."
             }
           >
-            <select
-              name="currency"
-              value={formAccount.currency}
-              onChange={handleChange}
-              disabled={eamMode === "edition" && hasLinkedTransactions}
-            >
-              {SUPPORTED_CURRENCIES.map((code) => (
-                <option key={code} value={code}>
-                  {code} ({CURRENCY_META[code].symbol}) - {CURRENCY_META[code].label}
-                </option>
-              ))}
-            </select>
+            <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
+              <select
+                className="bg-transparent appearance-none w-full pr-4"
+                name="currency"
+                value={formAccount.currency}
+                onChange={handleChange}
+                disabled={eamMode === "edition" && hasLinkedTransactions}
+              >
+                {SUPPORTED_CURRENCIES.map((code) => (
+                  <option key={code} value={code}>
+                    {code} ({CURRENCY_META[code].symbol}) - {CURRENCY_META[code].label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </Tooltip>
           <p className="label-tfp ">Account Type</p>
-          <select
-            name="accountType"
-            value={formAccount.accountType}
-            onChange={handleChange}
-          >
-            <option value="debit">Debit</option>
-            <option value="credit">Credit</option>
-            <option value="cash">Cash</option>
-            <option value="savings">Savings</option>
-          </select>
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
+            <select
+              className="bg-transparent appearance-none w-full pr-4"
+              name="accountType"
+              value={formAccount.accountType}
+              onChange={handleChange}
+            >
+              <option value="debit">Debit</option>
+              <option value="credit">Credit</option>
+              <option value="cash">Cash</option>
+              <option value="savings">Savings</option>
+            </select>
+          </div>
           {eamMode === "edition" ? (
-            <div
-              className="w-full text-red-500 flex justify-center items-center p-1 underline cursor-pointer hover:text-red-800"
+            <button
+              type="button"
+              className="w-full p-2 gf-glass-button-danger text-white text-center rounded-full mt-2"
               onClick={() => handleDeletation()}
             >
               Remove account
-            </div>
+            </button>
           ) : (
             ""
           )}
 
           <button
-            className="w-full p-2 bg-purple-600 text-white text-center rounded-full mt-3 hover:bg-purple-500"
+            className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
             {isLoading ? <Spin /> : "Submit"}

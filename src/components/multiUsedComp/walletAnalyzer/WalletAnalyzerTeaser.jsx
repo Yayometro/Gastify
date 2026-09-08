@@ -50,14 +50,14 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }) {
         currentRange={snapshot.currentRange}
         title="Wallet Analyzer — resumen del mes"
       />
-      <p className="text-xs text-slate-500 mt-3">
+      <p className="text-xs text-gf-text mt-3">
         Hay mucho más por descubrir sobre tus gastos este mes 👀 — tendencias, presupuestos, suscripciones y patrones de
         gasto te esperan en el análisis completo.
       </p>
       <button
         type="button"
         onClick={scrollToFullAnalyzer}
-        className="mt-1.5 text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors flex items-center gap-1"
+        className="mt-1.5 text-sm font-bold text-purple-300 hover:text-white transition-colors flex items-center gap-1"
       >
         Ver análisis completo ↓
       </button>
