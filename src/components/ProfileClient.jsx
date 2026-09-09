@@ -185,7 +185,7 @@ function ProfileClient({ pcSession }) {
             />
           </div>
           {!onEdition ? (
-            <div className="content-profile-cont w-full h-screen content-wallet-glass text-center flex flex-col justify-center items-center rounded-t-[100px] rounded-b-2xl">
+            <div className="content-profile-cont w-full min-h-screen content-wallet-glass text-center flex flex-col justify-start items-center rounded-t-[100px] rounded-b-2xl">
               {userData.fullName == "" ? (
                 <Spin size="large" />
               ) : (
@@ -193,27 +193,27 @@ function ProfileClient({ pcSession }) {
                   {`${userData.fullName} Profile` || "Profile"}
                 </h1>
               )}
-              <div className="w-full h-full displayed-profile flex flex-col items-start gap-6 pt-4 px-4 pb-12 sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
-                <div className=" w-full cpc-name flex flex-col justify-center items-start">
+              <div className="w-full h-full displayed-profile flex flex-col items-start gap-7 pt-6 px-4 pb-12 sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
+                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                   <p className="text-[11px]">Full name:</p>
-                  <div className="w-full border-2 border-purple-400 rounded-xl truncate px-2">
-                    <p className="text-lg font-light">
+                  <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
+                    <p className="text-lg font-light text-left">
                       {userData.fullName || "No name. Asign One..."}
                     </p>
                   </div>
                 </div>
-                <div className=" w-full cpc-name flex flex-col justify-center items-start">
+                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                   <p className="text-[11px]">Mail:</p>
-                  <div className="w-full border-2 border-purple-400 rounded-xl truncate px-2">
-                    <p className="text-lg font-light">{userData.mail}</p>
+                  <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
+                    <p className="text-lg font-light text-left">{userData.mail}</p>
                   </div>
                 </div>
-                <div className=" w-full cpc-name flex flex-col justify-center items-start">
+                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                   <p className="text-[11px]">Password:</p>
-                  <div className="w-full border-2 border-purple-400 rounded-xl truncate px-2">
-                    <p className="text-lg font-light truncate pt-0.5">
+                  <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
+                    <p className="text-lg font-light truncate text-left">
                       ***********
-                      {/* {userData.password ? userData.password 
+                      {/* {userData.password ? userData.password
                         .split("")
                         .map((c) => "*")
                         .join("")
@@ -222,7 +222,7 @@ function ProfileClient({ pcSession }) {
                     </p>
                   </div>
                 </div>
-                <div className=" w-full cpc-name flex flex-col justify-center items-start">
+                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                   <p className="text-[11px]">Image:</p>
                     <div className="prof-edit-img flex justify-center items-center w-full">
                       <Image
@@ -236,10 +236,10 @@ function ProfileClient({ pcSession }) {
                       />
                     </div>
                 </div>
-                <div className=" w-full cpc-name flex flex-col justify-center items-start">
+                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                   <p className="text-[11px]">Phone:</p>
-                  <div className="w-full border-2 border-purple-400 rounded-xl truncate px-2">
-                    <p className="text-lg font-light truncate pt-0.5">
+                  <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
+                    <p className="text-lg font-light truncate text-left">
                       {userData.phone || "No phone register"}
                     </p>
                   </div>
@@ -248,10 +248,10 @@ function ProfileClient({ pcSession }) {
               <div className="w-full px-4 sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
                 <ApiTokensPanel mail={pcSession} />
               </div>
-              <div className="remove-account-prof w-full mb-[100px]">
-                <div className="remove-acc w-full text-sm font-light text-red-400 underline cursor-pointer text-center">
+              <div className="remove-account-prof w-full pt-8 pb-[100px] flex justify-center">
+                <button type="button" className="remove-acc gf-glass-button-danger text-white text-sm font-medium rounded-full px-6 py-2">
                   Remove account
-                </div>
+                </button>
               </div>
             </div>
           ) : (
@@ -264,27 +264,27 @@ function ProfileClient({ pcSession }) {
                 <Spin size="large" />
               </div>
               <form
-                className="content-profile-form-cont w-full h-screen content-wallet-glass text-center flex flex-col justify-center items-center rounded-t-[100px] rounded-b-2xl sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]"
+                className="content-profile-form-cont w-full min-h-screen content-wallet-glass text-center flex flex-col justify-start items-center rounded-t-[100px] rounded-b-2xl sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]"
                 onSubmit={handleSubmit}
               >
                 <h1 className="text-3xl pt-9 pb-1">
                   {`${userData.fullName} Profile` || "Profile"}
                 </h1>
-                <div className="w-full h-full displayed-profile flex flex-col items-start gap-6 pt-4 px-4 ">
-                  <div className=" w-full cpc-name flex flex-col justify-center items-start">
+                <div className="w-full h-full displayed-profile flex flex-col items-start gap-7 pt-6 px-4 ">
+                  <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                     <p className="text-[11px]">Full name:</p>
                     <input
-                      className="w-full border-2 border-purple-400 rounded-xl truncate px-2 text-lg font-light"
+                      className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
                       type="text"
                       name="fullName"
                       value={userInfo.fullName || null}
                       onChange={handleChange}
                     />
                   </div>
-                  <div className=" w-full cpc-name flex flex-col justify-center items-start">
+                  <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                     <p className="text-[11px]">Mail:</p>
                     <input
-                      className="w-full border-2 border-purple-400 rounded-xl truncate px-2 text-lg font-light"
+                      className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
                       type="text"
                       name="mail"
                       value={userInfo.mail || null}
@@ -318,11 +318,11 @@ function ProfileClient({ pcSession }) {
                   </div>
                   {!onEditPasswordState ? (
                     <div
-                      className={` w-full cpc-name flex flex-col justify-center items-start cursor-not-allowed`}
+                      className={` w-full cpc-name flex flex-col justify-center items-start gap-1 cursor-not-allowed`}
                     >
                       <p className="text-[11px]">Password:</p>
                       <input
-                        className="w-full border-2 border-purple-400 rounded-xl truncate px-2 text-lg font-light"
+                        className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
                         type="text"
                         name="password"
                         placeholder="****************"
@@ -357,7 +357,7 @@ function ProfileClient({ pcSession }) {
                       </div>
                     </div>
                   )}
-                  <div className=" w-full cpc-name flex flex-col justify-center items-start">
+                  <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                     <p className="text-[11px]">Image:</p>
                     <div className=" w-full h-full flex  flex-col gap-2 justify-center items-center">
                       <Image
@@ -386,7 +386,7 @@ function ProfileClient({ pcSession }) {
                       </CldUploadWidget>
                     </div>
                   </div>
-                  <div className=" w-full cpc-name flex flex-col justify-center items-start">
+                  <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
                     <p className="text-[11px]">Phone:</p>
                     <PhoneInput
                       defaultCountry="ua"
@@ -404,10 +404,10 @@ function ProfileClient({ pcSession }) {
                   </button>
                 </div>
               </form>
-              <div className="remove-account-prof w-full py-[100px]">
-                <div className="remove-acc w-full text-sm font-light text-red-400 underline cursor-pointer text-center">
+              <div className="remove-account-prof w-full pt-8 pb-[100px] flex justify-center">
+                <button type="button" className="remove-acc gf-glass-button-danger text-white text-sm font-medium rounded-full px-6 py-2">
                   Remove account
-                </div>
+                </button>
               </div>
             </div>
           )}
