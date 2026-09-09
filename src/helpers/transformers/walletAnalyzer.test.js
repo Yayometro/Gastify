@@ -21,6 +21,8 @@ import {
   getSnapshotLookbackStart,
   buildCuratedWalletSummary,
   buildMonthComparison,
+  buildPeriodComparison,
+  buildBudgetPeriodChanges,
 } from "./walletAnalyzer";
 
 const CAT_FOOD = { _id: "cat-food", name: "Food", color: "#f00", icon: "md/MdFastfood" };
@@ -716,5 +718,115 @@ describe("buildMonthComparison", () => {
     });
     expect(comparison.monthB.totals.expense).toBe(0);
     expect(comparison.categoriesBills.length).toBeGreaterThan(0);
+  });
+});
+
+describe("buildBudgetPeriodChanges", () => {
+  function monthlyBudget(overrides = {}) {
+    return {
+      _id: "b1",
+      budgetType: "spending",
+      period: "monthly",
+      goalAmount: 1000,
+      category: CAT_FOOD,
+      createdAt: new Date(2025, 0, 1),
+      history: [],
+      ...overrides,
+    };
+  }
+
+  it("sums actual/goal across each range and reports compliance per period", () => {
+    const transactions = [
+      // Q1 2026 - Jan/Feb/Mar, each under the 1000 monthly goal
+      tx({ amount: 500, date: new Date(2026, 0, 10), category: CAT_FOOD }),
+      tx({ amount: 500, date: new Date(2026, 1, 10), category: CAT_FOOD }),
+      tx({ amount: 500, date: new Date(2026, 2, 10), category: CAT_FOOD }),
+      // Q1 2025 (comparison period) - Feb exceeds the goal
+      tx({ amount: 400, date: new Date(2025, 0, 10), category: CAT_FOOD }),
+      tx({ amount: 1500, date: new Date(2025, 1, 10), category: CAT_FOOD }),
+      tx({ amount: 400, date: new Date(2025, 2, 10), category: CAT_FOOD }),
+    ];
+    const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) };
+    const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 2, 31, 23, 59, 59, 999) };
+
+    const [row] = buildBudgetPeriodChanges([monthlyBudget()], transactions, rangeA, rangeB);
+
+    expect(row.category).toBe("Food");
+    expect(row.periodA).toMatchObject({ actual: 1500, goal: 3000, monthsTracked: 3, monthsMet: 3 });
+    expect(row.periodB).toMatchObject({ actual: 2300, goal: 3000, monthsTracked: 3, monthsMet: 2 });
+  });
+
+  it("still includes a budget with no tracked months in one of the two ranges", () => {
+    // buildBudgetHistoricalComparative excludes months that haven't
+    // started yet - a rangeB entirely in the future has nothing to track,
+    // while rangeA (the past) has real data.
+    const budget = monthlyBudget();
+    const transactions = [tx({ amount: 200, date: new Date(2026, 5, 10), category: CAT_FOOD })];
+    const rangeA = { start: new Date(2026, 5, 1), end: new Date(2026, 5, 30, 23, 59, 59, 999) };
+    const rangeB = { start: new Date(2099, 0, 1), end: new Date(2099, 11, 31, 23, 59, 59, 999) };
+
+    const [row] = buildBudgetPeriodChanges([budget], transactions, rangeA, rangeB);
+    expect(row.periodA).not.toBeNull();
+    expect(row.periodB).toBeNull();
+  });
+});
+
+describe("buildPeriodComparison", () => {
+  it("compares two arbitrary multi-month ranges (a quarter vs. the same quarter last year)", () => {
+    const transactions = [
+      tx({ amount: 1000, date: new Date(2026, 0, 5), category: CAT_FOOD, name: "Groceries" }),
+      tx({ amount: 500, date: new Date(2026, 2, 5), category: CAT_FOOD, name: "Groceries" }),
+      tx({ amount: 4000, date: new Date(2026, 1, 1), isBill: false, name: "Salary" }),
+      tx({ amount: 300, date: new Date(2025, 0, 5), category: CAT_FOOD, name: "Groceries" }),
+    ];
+    const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) };
+    const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 2, 31, 23, 59, 59, 999) };
+
+    const comparison = buildPeriodComparison({
+      transactions,
+      budgets: [],
+      rangeA,
+      rangeB,
+      labelA: "Q1 2026",
+      labelB: "Q1 2025",
+    });
+
+    expect(comparison.periodA.label).toBe("Q1 2026");
+    expect(comparison.periodB.label).toBe("Q1 2025");
+    expect(comparison.periodA.totals.expense).toBe(1500);
+    expect(comparison.periodA.totals.income).toBe(4000);
+    expect(comparison.periodB.totals.expense).toBe(300);
+
+    const food = comparison.categoriesBills.find((c) => c.name === "Food");
+    expect(food.current).toBe(1500);
+    expect(food.previous).toBe(300);
+    expect(comparison.budgetChanges).toEqual([]);
+  });
+
+  it("includes budgetChanges when budgets are passed", () => {
+    const budget = {
+      _id: "b1",
+      budgetType: "spending",
+      period: "monthly",
+      goalAmount: 1000,
+      category: CAT_FOOD,
+      createdAt: new Date(2020, 0, 1),
+      history: [],
+    };
+    const transactions = [tx({ amount: 500, date: new Date(2026, 0, 10), category: CAT_FOOD })];
+    const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31, 23, 59, 59, 999) };
+    const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 0, 31, 23, 59, 59, 999) };
+
+    const comparison = buildPeriodComparison({
+      transactions,
+      budgets: [budget],
+      rangeA,
+      rangeB,
+      labelA: "January 2026",
+      labelB: "January 2025",
+    });
+
+    expect(comparison.budgetChanges).toHaveLength(1);
+    expect(comparison.budgetChanges[0].periodA).toMatchObject({ actual: 500, goal: 1000 });
   });
 });

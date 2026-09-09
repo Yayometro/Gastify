@@ -887,3 +887,65 @@ export function buildMonthComparison({ transactions, monthADate, monthBDate, top
     transactionsBills: compareTransactionsAcrossMonths(transactions, true, rangeA, rangeB, topN),
   };
 }
+
+// Compares every spending Budget's limit/spend between two arbitrary
+// ranges (a quarter, a half, a year - not just a single month) - reuses
+// buildBudgetHistoricalComparative's own per-month goal resolution (it
+// already walks each budget's history[] to know what the limit WAS during
+// a given past month, and applies the period-type monthly divisor) rather
+// than re-deriving any of that, once per range, then merges the two
+// month-series into one row per budget by summing across each range.
+// A budget with no tracked months in one of the two ranges (created after
+// range A ended, or archived before range B started) still gets a row -
+// its data for that side is just `null` instead of being silently dropped.
+function sumBudgetSeries(row) {
+  return {
+    actual: row.monthlySeries.reduce((a, m) => a + m.actual, 0),
+    goal: row.monthlySeries.reduce((a, m) => a + m.goal, 0),
+    monthsTracked: row.monthsTracked,
+    monthsMet: row.monthsMet,
+    complianceRate: row.complianceRate,
+  };
+}
+
+export function buildBudgetPeriodChanges(budgets, transactions, rangeA, rangeB) {
+  const rowsA = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeA.start, endDate: rangeA.end });
+  const rowsB = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeB.start, endDate: rangeB.end });
+
+  const byId = (rows) => new Map(rows.map((row) => [String(row.budget._id), row]));
+  const mapA = byId(rowsA);
+  const mapB = byId(rowsB);
+  const allIds = new Set([...mapA.keys(), ...mapB.keys()]);
+
+  const results = [];
+  allIds.forEach((id) => {
+    const rowA = mapA.get(id);
+    const rowB = mapB.get(id);
+    const budget = (rowA || rowB).budget;
+    results.push({
+      budgetId: id,
+      category: budget.category?.name || budget.name || "Budget",
+      periodA: rowA ? sumBudgetSeries(rowA) : null,
+      periodB: rowB ? sumBudgetSeries(rowB) : null,
+    });
+  });
+  return results;
+}
+
+// Compares two arbitrary date RANGES against each other - a quarter vs. the
+// same quarter last year, this year vs. last year, any 3/6-month window vs.
+// another - not just two single calendar months (see buildMonthComparison
+// above for that narrower case, still used by the MCP tools).
+// getMonthTotals/compareCategoriesAcrossMonths/compareTransactionsAcrossMonths
+// already accept a range of any width on each side, so this is a pure
+// orchestrator - no new comparison math beyond the budget merge above.
+export function buildPeriodComparison({ transactions, budgets, rangeA, rangeB, labelA, labelB, topN = 12 }) {
+  return {
+    periodA: { label: labelA, totals: getMonthTotals(transactions, rangeA.start, rangeA.end) },
+    periodB: { label: labelB, totals: getMonthTotals(transactions, rangeB.start, rangeB.end) },
+    categoriesBills: compareCategoriesAcrossMonths(transactions, true, rangeA, rangeB, topN),
+    categoriesIncomes: compareCategoriesAcrossMonths(transactions, false, rangeA, rangeB, topN),
+    transactionsBills: compareTransactionsAcrossMonths(transactions, true, rangeA, rangeB, topN),
+    budgetChanges: buildBudgetPeriodChanges(budgets, transactions, rangeA, rangeB),
+  };
+}
