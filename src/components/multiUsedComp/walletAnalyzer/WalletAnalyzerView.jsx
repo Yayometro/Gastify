@@ -90,7 +90,7 @@ export function RankRow({ index, item, currency, subtitle, onClick }) {
 // bullets - every claim here is a direct readout of a computed boolean/
 // percentage, not an inference, so it stays consistent with the rest of
 // Wallet Analyzer's "no AI" rule-based approach.
-function buildSpendPatternAnalysis(patterns) {
+export function buildSpendPatternAnalysis(patterns) {
   const { biggestTransaction, biggestCategory, biggestSubcategory, mostCommonCategoryTag, analysis } = patterns;
   const bullets = [];
 
@@ -100,7 +100,7 @@ function buildSpendPatternAnalysis(patterns) {
       : `La transacción más grande NO pertenece a la categoría con más gasto — está en ${biggestTransaction.categoryName}, mientras que la categoría con más gasto es ${biggestCategory.name}.`
   );
 
-  bullets.push(`${biggestCategory.name} representa el ${Math.round(analysis.categoryShareOfTotal)}% de tu gasto total en los últimos ${patterns.monthsBack} meses.`);
+  bullets.push(`${biggestCategory.name} representa el ${Math.round(analysis.categoryShareOfTotal)}% de tu gasto total en este periodo.`);
 
   bullets.push(
     analysis.transactionShareOfCategory >= 50
@@ -542,7 +542,7 @@ function WalletAnalyzerView({
               const ratio = b.limit > 0 ? b.spent / b.limit : 0;
               return (
                 <div
-                  key={b.category}
+                  key={b.budgetId}
                   onClick={() =>
                     setActiveInsight({
                       icon: b.status === "over" ? "⚠️" : "📊",

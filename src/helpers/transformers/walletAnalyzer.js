@@ -327,6 +327,12 @@ export function computeBudgetStreaks(budgets, transactions, referenceDate, lookb
     const last = series[series.length - 1] || { actual: 0, goal: 0 };
     const pct = last.goal > 0 ? (last.actual / last.goal) * 100 : 0;
     return {
+      // Two different Budgets can share the same category name (e.g. a
+      // spending budget and a separate one, both tagged "Clothes") - this
+      // is one row per BUDGET, not per category name, so callers rendering
+      // a list need `budgetId` (unique) as the key, not `category` (only
+      // unique in the common case).
+      budgetId: String(row.budget._id),
       category: row.budget.category?.name || row.budget.name || "Budget",
       limit: last.goal,
       spent: last.actual,
