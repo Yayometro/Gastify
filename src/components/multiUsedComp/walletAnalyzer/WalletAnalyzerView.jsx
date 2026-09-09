@@ -23,7 +23,7 @@ import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
 // `invert`: for expense-side metrics (spending), up is the warm/notable
 // direction (red) - for income/balance/savings-rate/FX-value, up is the
 // good direction (green), so those pass invert to flip the colors.
-function ChangePill({ changePct, isNew, unit = "%", invert = false }) {
+export function ChangePill({ changePct, isNew, unit = "%", invert = false }) {
   if (isNew) {
     return (
       <span className="text-[11px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>
@@ -53,7 +53,7 @@ function CategoryDot({ color }) {
 // `onClick`, when present, drives the same drill-down modal used for the
 // "top elements by month" section elsewhere in the app - a category row
 // opens that category's transactions, a transaction row opens itself.
-function RankRow({ index, item, currency, subtitle, onClick }) {
+export function RankRow({ index, item, currency, subtitle, onClick }) {
   return (
     <div
       className={`flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 transition-colors ${

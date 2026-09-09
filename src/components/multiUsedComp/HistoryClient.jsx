@@ -9,6 +9,7 @@ import TabsTogglerMontlyController from "./TabsComponents/tabsMontlyTransactions
 import HistoricalMovementsController from "./HistoricalMovementsandCategories/HistoricalMovementsController";
 import HistoricalComparativeCategories from "./historicalComparativeCategories/HistoricalComparativeCategories";
 import HistoricalBudgetsComparative from "./historicalBudgetsComparative/HistoricalBudgetsComparative";
+import HistoricalWalletAnalyzer from "./HistoricalWalletAnalyzer/HistoricalWalletAnalyzer";
 import usePeriodComparison from "@/hooks/usePeriodComparison";
 
 function HistoryClient({ email }) {
@@ -56,6 +57,9 @@ function HistoryClient({ email }) {
         <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">
           <div className="history-client-cont w-full h-fulls flex flex-col justify-center items-center pb-4">
             <TabsTogglerMontlyController periodState={periodState} />
+          </div>
+          <div className="w-full h-fulls pb-6 historical-wallet-analyzer">
+            <HistoricalWalletAnalyzer periodState={periodState} />
           </div>
           <div className="w-full h-fulls pb-6 historical-comparative-categories">
             <HistoricalComparativeCategories periodState={periodState} />
