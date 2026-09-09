@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ResponsiveBarsChartComponent from "../../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
 import {
   fetchTrans,
@@ -8,7 +8,7 @@ import {
 } from "@/lib/features/transacctionsSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import { useDispatch, useSelector } from "react-redux";
-import { getPeriodLabel, timeperiodRangesArray } from "@/helpers/timeFunctions/timeFunctions";
+import { getPeriodLabel } from "@/helpers/timeFunctions/timeFunctions";
 import TabsTogglerMontlyView from "./TabsTogglerMontlyView";
 import {
   filterBillsOrIncomes,
@@ -25,32 +25,11 @@ import {
   generatePropForChartColAntPeriodCompare,
 } from "./propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler";
 
-const today = new Date();
-
-function TabsTogglerMontlyController() {
+function TabsTogglerMontlyController({ periodState }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalAmount, setTotalAmount] = useState([]);
-  const [timePeriod, setTimePeriod] = useState([
-      new Date(today.getFullYear(), today.getMonth() - 2, 1),
-      today,
-    ]);
   const [clickedItems, setClickedItems] = useState([]);
-  const [compareEnabled, setCompareEnabled] = useState(false);
-  // Default: the same span the user is already looking at, shifted back
-  // exactly one year - the most common comparison ("this vs. last year").
-  const [comparePeriod, setComparePeriod] = useState(() => [
-    new Date(
-      timePeriod[0].getFullYear() - 1,
-      timePeriod[0].getMonth(),
-      timePeriod[0].getDate()
-    ),
-    new Date(
-      timePeriod[1].getFullYear() - 1,
-      timePeriod[1].getMonth(),
-      timePeriod[1].getDate()
-    ),
-  ]);
   const [compareChartData, setCompareChartData] = useState(null);
 
   let { email } = useGetUserSession();
@@ -60,20 +39,20 @@ function TabsTogglerMontlyController() {
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
   const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const allTransactions = ccTransacciones.data;
-  // Stable across the component's lifetime (only depends on the
-  // module-level `today`) - memoized so it can safely sit in the compare
-  // effect's dependency array below without a new array reference on every
-  // render re-triggering that effect in a loop.
-  const timePeriodsForSelecter = useMemo(
-    () => [
-      {
-        value: `${new Date(today.getFullYear(), today.getMonth() - 2, 1)}*${today}`,
-        name: "Last 3 months",
-      },
-      ...timeperiodRangesArray,
-    ],
-    []
-  );
+  // Period state (timePeriod/comparePeriod/compareEnabled + selector
+  // options/handlers) is owned by HistoryClient via usePeriodComparison and
+  // shared across every /dashboard/history section - see that hook for why.
+  const {
+    timePeriod,
+    comparePeriod,
+    compareEnabled,
+    setCompareEnabled,
+    timePeriodsForSelecter,
+    getValueFromSelecter,
+    handleRangeDate,
+    getCompareValueFromSelecter,
+    handleCompareRangeDate,
+  } = periodState;
 
   useEffect(() => {
     // User
@@ -199,30 +178,6 @@ function TabsTogglerMontlyController() {
       labelB,
     });
   }, [allTransactions, timePeriod, comparePeriod, compareEnabled, timePeriodsForSelecter]);
-
-  // FUNCTIONS
-
-  function getValueFromSelecter(v) {
-    const [start, end] = v.split("*");
-    setTimePeriod([new Date(start), new Date(end)]);
-  }
-
-  function handleRangeDate(dateStart, dateEnd) {
-    if (dateStart && dateEnd) {
-      setTimePeriod([dateStart, dateEnd]);
-    }
-  }
-
-  function getCompareValueFromSelecter(v) {
-    const [start, end] = v.split("*");
-    setComparePeriod([new Date(start), new Date(end)]);
-  }
-
-  function handleCompareRangeDate(dateStart, dateEnd) {
-    if (dateStart && dateEnd) {
-      setComparePeriod([dateStart, dateEnd]);
-    }
-  }
 
   const components = [
     {
