@@ -10,6 +10,7 @@ import HistoricalMovementsController from "./HistoricalMovementsandCategories/Hi
 import HistoricalComparativeCategories from "./historicalComparativeCategories/HistoricalComparativeCategories";
 import HistoricalBudgetsComparative from "./historicalBudgetsComparative/HistoricalBudgetsComparative";
 import HistoricalWalletAnalyzer from "./HistoricalWalletAnalyzer/HistoricalWalletAnalyzer";
+import HistoricalProjectionsTable from "./HistoricalWalletAnalyzer/HistoricalProjectionsTable";
 import usePeriodComparison from "@/hooks/usePeriodComparison";
 
 function HistoryClient({ email }) {
@@ -60,6 +61,9 @@ function HistoryClient({ email }) {
           </div>
           <div className="w-full h-fulls pb-6 historical-wallet-analyzer">
             <HistoricalWalletAnalyzer periodState={periodState} />
+          </div>
+          <div className="w-full h-fulls pb-6 historical-projections-table">
+            <HistoricalProjectionsTable periodState={periodState} />
           </div>
           <div className="w-full h-fulls pb-6 historical-comparative-categories">
             <HistoricalComparativeCategories periodState={periodState} />
