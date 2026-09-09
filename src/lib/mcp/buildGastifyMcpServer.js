@@ -8,6 +8,9 @@ import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
 import Budget from "@/model/Budget";
 import Transaction from "@/model/Transaction";
+import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
+import { filterBillsOrIncomes, getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
+import { getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
 import {
   buildWalletAnalyzerSnapshot,
   buildCuratedWalletSummary,
@@ -126,6 +129,15 @@ function resolveReferenceDate({ month, year }) {
 // matters here because this runs fresh on every single tool call, not once
 // per page load. Every computation inside buildWalletAnalyzerSnapshot caps
 // its own lookback at 12 months, so `from`/`to` only need to cover that.
+//
+// attachDisplayMoneyToList is not optional here: every walletAnalyzer.js
+// total goes through getPrimaryAmount, which reads transaction.displayMoney
+// .primary and, if it's missing, silently falls back to the raw legacy
+// `amount` field summed as-is - blending USD and MXN transactions together
+// as if they were the same currency. Every other route in the app attaches
+// this DTO before doing any money math (see get-transactions/route.js); the
+// MCP tools must do the same or their totals are wrong for any wallet with
+// more than one transaction currency.
 async function fetchTransactionsAndBudgets({ user, wallet }, { from, to } = {}) {
   const transactionQuery = { user: user._id, wallet: wallet._id };
   if (from || to) {
@@ -133,7 +145,7 @@ async function fetchTransactionsAndBudgets({ user, wallet }, { from, to } = {}) 
     if (from) transactionQuery.date.$gte = from;
     if (to) transactionQuery.date.$lte = to;
   }
-  const [transactions, budgets] = await Promise.all([
+  const [rawTransactions, budgets] = await Promise.all([
     Transaction.find(transactionQuery)
       .populate("category")
       .populate("subCategory")
@@ -141,7 +153,27 @@ async function fetchTransactionsAndBudgets({ user, wallet }, { from, to } = {}) 
       .lean(),
     Budget.find({ user: user._id, wallet: wallet._id, archived: { $ne: true } }).lean(),
   ]);
+  const transactions = await attachDisplayMoneyToList(rawTransactions, wallet.primaryCurrency || "MXN");
   return { transactions, budgets };
+}
+
+// Wallet Analyzer's totals are already currency-correct once displayMoney is
+// attached (getPrimaryAmount converts every transaction into the wallet's
+// primary currency before summing) - but a single blended total doesn't
+// tell the AI *which* amounts came from a non-primary currency, the way the
+// dashboard's own CurrencyBreakdownChips do for a human. Returns null when
+// nothing in range is multi-currency, so the common case (everything in the
+// wallet's own currency) doesn't pay for an empty field.
+function buildCurrencyBreakdown(transactions, walletPrimaryCurrency, range) {
+  const monthTx = getTransactionsFromTimeRange(transactions, range.start, range.end);
+  const { incomes, bills } = filterBillsOrIncomes(monthTx);
+  const income = getMonthCurrencyBreakdown(incomes, walletPrimaryCurrency);
+  const expense = getMonthCurrencyBreakdown(bills, walletPrimaryCurrency);
+  if (!income.isMultiCurrency && !expense.isMultiCurrency) return null;
+  return {
+    income: income.isMultiCurrency ? income.breakdown : null,
+    expense: expense.isMultiCurrency ? expense.breakdown : null,
+  };
 }
 
 // Baked into every wallet-analysis tool's *result* (not only its
@@ -150,14 +182,39 @@ async function fetchTransactionsAndBudgets({ user, wallet }, { from, to } = {}) 
 // before using a result it already has. See .mds/AI_MONTHLY_SUMMARY_PLAN.md
 // for why the AI's job here is synthesis/prioritization, never recomputing
 // numbers Gastify already computed correctly.
+const CURRENCY_NOTE =
+  " `walletPrimaryCurrency` is the currency every total is already converted into. If `currencyBreakdown` is present for a period, some of that period's income or expense came from a different currency - call out the native amount and its conversion rate explicitly (e.g. 'of that, $X USD converted at Y') instead of only reporting the blended total. If `currencyBreakdown` is absent (null), everything that period was already in the wallet's own currency - don't mention currency at all.";
+
+// Shared by all three tools - this is the actual lever for analysis depth.
+// The underlying data already carries multi-month trend context
+// (monthlyAverages, savingsHistoryLabeled, categoryAnomaly), per-weekday-name
+// spending (weekdaySpending.days, not just a weekday/weekend split), each
+// budget's streak/status history, and a deterministic possibleDuplicateInMonth
+// flag on subscriptions - none of that is worth much if the model just
+// recites the headline totals instead of actually reasoning over it. Written
+// as concrete instructions (not "be more detailed") specifically because a
+// vague ask produced wildly inconsistent depth across different models
+// calling these same tools with the same data.
+const ANALYSIS_DEPTH_NOTE =
+  " Do not just recite the numbers - this data supports real analysis, use all of it: (1) frame notable figures against their own multi-month trend (monthlyAverages, savingsHistoryLabeled, categoryAnomaly), not only against the single prior period - e.g. 'this is the 4th month in a row this rose' is more useful than '+11% vs last month'; (2) when weekdaySpending shows concentration, name the actual weekday(s) (`days[].dayName`), not a generic 'weekday vs weekend' split; (3) use each budget's `streakMonths`/`status` to say whether an overage is a one-off or a repeat pattern, and whether a big one-off transaction (check topTransactionsBills / topCategoriesBills) is what's distorting an otherwise-normal budget; (4) actively flag anything that looks inconsistent or worth the user confirming - a brand-new category, an unusually large one-off transaction, income that breaks the historical pattern, a subscription with `possibleDuplicateInMonth: true` - and ask about it directly rather than only stating the figure. A short response can still be analytically dense: fewer words, not fewer insights - don't compress by dropping analysis, compress by dropping restated numbers the user can already see in the app.";
+
 const MONTHLY_SUMMARY_INSTRUCTIONS =
-  "These figures are already computed and correct - never recalculate or invent numbers from them. Your job is to synthesize them into a short narrative (not a list of cards): one headline number for the month, 2-3 things that genuinely stand out, budget status, and one or two concrete, actionable suggestions. Use `insights` as a starting point but weigh the rest of the data too - you're not limited to only those 5 if something else here matters more for this user. Reply in the same language the user is writing/speaking in. Close by asking if they want you to go deeper into anything specific (a category, a budget, the last 12 months) - if they say yes, call get_monthly_summary_detailed for that. If they name two specific months to compare directly, use compare_months instead of calling this tool twice yourself.";
+  "These figures are already computed and correct - never recalculate or invent numbers from them. Your job is to synthesize them into a short but insight-dense narrative: one headline number for the month, then whatever 3-5 things genuinely matter this month - trend shifts, budget patterns, anomalies worth flagging, a clarifying question - not a fixed template of 'headline + 2 generic bullets'. Use `insights` as a starting point but weigh the rest of the data too - you're not limited to only those 5 if something else here matters more for this user." +
+  ANALYSIS_DEPTH_NOTE +
+  CURRENCY_NOTE +
+  " Reply in the same language the user is writing/speaking in. Close by asking a specific follow-up grounded in something you actually found (not a generic 'want more detail?') - if they want to go deeper, call get_monthly_summary_detailed. If they name two specific months to compare directly, use compare_months instead of calling this tool twice yourself.";
 
 const DETAILED_SUMMARY_INSTRUCTIONS =
-  "These figures are already computed and correct - never recalculate or invent numbers from them. This is the full 12-month-lookback dataset behind the summary you already gave - use it to answer the specific follow-up the user asked about, not to redo the whole monthly narrative again. Reply in the same language the user is writing/speaking in.";
+  "These figures are already computed and correct - never recalculate or invent numbers from them. This is the full 12-month-lookback dataset behind the summary you already gave - use the full detail available (tables comparing categories/months where useful, the complete top-12 lists, each budget's full history) to go deeper on what the user asked about, not to repeat the short narrative with more decimals." +
+  ANALYSIS_DEPTH_NOTE +
+  CURRENCY_NOTE +
+  " Reply in the same language the user is writing/speaking in.";
 
 const COMPARE_MONTHS_INSTRUCTIONS =
-  "Both months' figures are already computed and correct - never recalculate or invent numbers from them. Synthesize the comparison into prose (what changed, by how much, in which direction) - don't just restate two lists side by side. Reply in the same language the user is writing/speaking in.";
+  "Both months' figures are already computed and correct - never recalculate or invent numbers from them. Synthesize the comparison into prose (what changed, by how much, in which direction, and why if the data suggests a reason) - don't just restate two lists side by side." +
+  ANALYSIS_DEPTH_NOTE +
+  CURRENCY_NOTE +
+  " Reply in the same language the user is writing/speaking in.";
 
 // Single source of truth for the Gastify MCP tools - shared by every
 // connector entry point (Claude's Authorization-header route, ChatGPT's
@@ -278,7 +335,15 @@ export function buildGastifyMcpServer({ user, wallet }) {
         { from: getSnapshotLookbackStart(referenceDate) }
       );
       const snapshot = buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate });
-      const data = buildCuratedWalletSummary(snapshot);
+      const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
+      const data = {
+        ...buildCuratedWalletSummary(snapshot),
+        walletPrimaryCurrency,
+        currencyBreakdown: {
+          current: buildCurrencyBreakdown(transactions, walletPrimaryCurrency, snapshot.currentRange),
+          previous: buildCurrencyBreakdown(transactions, walletPrimaryCurrency, snapshot.previousRange),
+        },
+      };
       return {
         content: [{ type: "text", text: JSON.stringify({ data, instructions: MONTHLY_SUMMARY_INSTRUCTIONS }) }],
       };
@@ -299,7 +364,16 @@ export function buildGastifyMcpServer({ user, wallet }) {
         { user, wallet },
         { from: getSnapshotLookbackStart(referenceDate) }
       );
-      const data = buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate });
+      const snapshot = buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate });
+      const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
+      const data = {
+        ...snapshot,
+        walletPrimaryCurrency,
+        currencyBreakdown: {
+          current: buildCurrencyBreakdown(transactions, walletPrimaryCurrency, snapshot.currentRange),
+          previous: buildCurrencyBreakdown(transactions, walletPrimaryCurrency, snapshot.previousRange),
+        },
+      };
       return {
         content: [{ type: "text", text: JSON.stringify({ data, instructions: DETAILED_SUMMARY_INSTRUCTIONS }) }],
       };
@@ -333,7 +407,15 @@ export function buildGastifyMcpServer({ user, wallet }) {
           to: rangeA.end > rangeB.end ? rangeA.end : rangeB.end,
         }
       );
-      const data = buildMonthComparison({ transactions, monthADate: dateA, monthBDate: dateB });
+      const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
+      const data = {
+        ...buildMonthComparison({ transactions, monthADate: dateA, monthBDate: dateB }),
+        walletPrimaryCurrency,
+        currencyBreakdown: {
+          monthA: buildCurrencyBreakdown(transactions, walletPrimaryCurrency, rangeA),
+          monthB: buildCurrencyBreakdown(transactions, walletPrimaryCurrency, rangeB),
+        },
+      };
       return {
         content: [{ type: "text", text: JSON.stringify({ data, instructions: COMPARE_MONTHS_INSTRUCTIONS }) }],
       };

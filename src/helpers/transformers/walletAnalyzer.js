@@ -273,6 +273,29 @@ export function detectSubscriptions(transactions, referenceDate, lookbackMonths 
     const occurrences = [...recentTx]
       .sort((a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt))
       .map((t) => ({ date: t.date || t.createdAt, amount: getPrimaryAmount(t) }));
+
+    // A real recurring subscription fires once per billing cycle - two
+    // occurrences less than 48h apart, in the current month, are far more
+    // likely a duplicate charge (a retry, a double-submit) than the provider
+    // actually billing twice - worth surfacing explicitly rather than relying
+    // on the AI to notice it while eyeballing raw dates, which is how this
+    // was caught in the first place (inconsistently, only by some models).
+    const { start: currentMonthStart, end: currentMonthEnd } = getMonthRange(ref);
+    const occurrencesThisMonth = occurrences.filter((o) => {
+      const d = new Date(o.date);
+      return d >= currentMonthStart && d <= currentMonthEnd;
+    });
+    let possibleDuplicateInMonth = false;
+    for (let i = 0; i < occurrencesThisMonth.length && !possibleDuplicateInMonth; i++) {
+      for (let j = i + 1; j < occurrencesThisMonth.length; j++) {
+        const hoursApart = Math.abs(new Date(occurrencesThisMonth[i].date) - new Date(occurrencesThisMonth[j].date)) / 36e5;
+        if (hoursApart <= 48) {
+          possibleDuplicateInMonth = true;
+          break;
+        }
+      }
+    }
+
     results.push({
       name: latest.name,
       categoryName: latest.category?.name || "No category",
@@ -281,6 +304,7 @@ export function detectSubscriptions(transactions, referenceDate, lookbackMonths 
       color: latest.category?.color || "#ABABAB",
       icon: latest.category?.icon || "MdFilterNone",
       isNew,
+      possibleDuplicateInMonth,
       occurrences,
     });
   });
