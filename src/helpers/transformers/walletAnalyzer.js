@@ -558,10 +558,11 @@ export function computeMonthlyChampions(transactions, referenceDate, monthsBack 
     const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills;
 
     if (bills.length === 0) {
-      monthEntries.push({ label, range, biggestTransaction: null, biggestCategory: null, biggestSubcategory: null });
+      monthEntries.push({ label, range, total: 0, biggestTransaction: null, biggestCategory: null, biggestSubcategory: null });
       continue;
     }
 
+    const total = bills.reduce((a, t) => a + getPrimaryAmount(t), 0);
     const biggestTransactionRaw = [...bills].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))[0];
 
     const byCategory = new Map();
@@ -592,6 +593,7 @@ export function computeMonthlyChampions(transactions, referenceDate, monthsBack 
     monthEntries.push({
       label,
       range,
+      total,
       biggestTransaction: {
         _id: biggestTransactionRaw._id,
         name: biggestTransactionRaw.name || "Transaction",
@@ -612,6 +614,64 @@ export function computeMonthlyChampions(transactions, referenceDate, monthsBack 
   }
 
   return { months: monthEntries, windowTotal, monthsBack };
+}
+
+// History's Wallet Analyzer always analyzes an arbitrary multi-month
+// range (never a single month), so it needs the champions window to
+// exactly cover the SELECTED range - not "N months back from an anchor
+// date" like computeMonthlyChampions (built for the Dashboard's one-month
+// view, where "anchor + lookback" and "the analyzed period" are the same
+// thing by construction). Reusing computeMonthlyChampions here with
+// monthsBack=someGuess would misalign the window with `range` whenever
+// `range` doesn't happen to end at `today` (e.g. "all 2026" picked in
+// September: the real range is Jan-Dec, but a lookback from today would
+// cover Oct(previous year)-Sept instead). This walks calendar months from
+// range.start through min(range.end, today) directly.
+export function computeMonthlyChampionsForRange(transactions, range, today = new Date()) {
+  const effectiveEnd = range.end < today ? range.end : today;
+  if (effectiveEnd < range.start) {
+    return { months: [], windowTotal: 0, monthsBack: 0 };
+  }
+  const monthsBack =
+    (effectiveEnd.getFullYear() - range.start.getFullYear()) * 12 + (effectiveEnd.getMonth() - range.start.getMonth()) + 1;
+  return computeMonthlyChampions(transactions, effectiveEnd, monthsBack);
+}
+
+// The single busiest calendar month inside a champions window - the
+// concrete answer to "mes del período en el que más se gastó".
+export function findPeakMonth(monthlyChampions) {
+  const withSpend = monthlyChampions.months.filter((m) => m.total > 0);
+  if (withSpend.length === 0) return null;
+  return withSpend.reduce((best, m) => (m.total > best.total ? m : best));
+}
+
+// Buckets a champions window's months into real calendar quarters (Q1
+// Jan-Mar ... Q4 Oct-Dec), so "período del año en el que más se gastó"
+// reads as an actual season/quarter rather than an arbitrary 3-month
+// slice - meaningful once a period spans enough months to compare more
+// than one quarter against another (a 3-month "last quarter" selection
+// only ever touches one bucket, so there's nothing to compare there).
+export function computeQuarterTotals(monthlyChampions) {
+  const byQuarter = new Map();
+  monthlyChampions.months.forEach((m) => {
+    const monthDate = m.range.start;
+    const year = monthDate.getFullYear();
+    const quarter = Math.floor(monthDate.getMonth() / 3) + 1;
+    const key = `${year}-Q${quarter}`;
+    if (!byQuarter.has(key)) {
+      byQuarter.set(key, { label: `Q${quarter} ${year}`, year, quarter, total: 0, months: [] });
+    }
+    const entry = byQuarter.get(key);
+    entry.total += m.total;
+    entry.months.push({ label: m.label, total: m.total });
+  });
+  return [...byQuarter.values()].sort((a, b) => (a.year - b.year) || (a.quarter - b.quarter));
+}
+
+export function findPeakQuarter(quarterTotals) {
+  const withSpend = quarterTotals.filter((q) => q.total > 0);
+  if (withSpend.length === 0) return null;
+  return withSpend.reduce((best, q) => (q.total > best.total ? q : best));
 }
 
 // 7. How this month's spend-through-today compares to the same
@@ -917,7 +977,13 @@ const INSIGHT_PRIORITY = { warning: 0, positive: 1, info: 2 };
 // currency-agnostic transformer layer intentionally doesn't know about.
 // The View renders both the card's one-line detail AND the "why" modal's
 // expanded breakdown from this same `data`, keyed by `type`.
-export function generateInsights(facts) {
+// `extraInsights` and `maxInsights` let buildPeriodSnapshot append
+// period-native insights (peak month/quarter, etc. - things that only
+// make sense across a multi-month range) without duplicating this
+// function's sort/priority logic; both default away to nothing so every
+// existing single-month caller (buildWalletAnalyzerSnapshot, the
+// Dashboard) behaves exactly as before.
+export function generateInsights(facts, extraInsights = [], maxInsights = 5) {
   const insights = [];
 
   const worstBudget = facts.budgetRows.find((b) => b.status === "over");
@@ -999,7 +1065,7 @@ export function generateInsights(facts) {
     }
   }
 
-  return insights.sort((a, b) => INSIGHT_PRIORITY[a.tone] - INSIGHT_PRIORITY[b.tone]).slice(0, 5);
+  return [...insights, ...extraInsights].sort((a, b) => INSIGHT_PRIORITY[a.tone] - INSIGHT_PRIORITY[b.tone]).slice(0, maxInsights);
 }
 
 // Orchestrator - composes every sync computation above into one snapshot.
@@ -1272,7 +1338,14 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
   const subscriptions = detectSubscriptions(transactions, monthAnchor, 3, 6);
   const pace = computeSpendingPaceForRange(transactions, range, true, resolvedPeriodsBack, today);
   const biggestSpendPatterns = findBiggestSpendPatternsForRange(transactions, range);
-  const monthlyChampions = computeMonthlyChampions(transactions, monthAnchor, 12);
+  // Scoped exactly to the selected range (see computeMonthlyChampionsForRange's
+  // own comment) - and computed for the previous equivalent range too, so
+  // "peak month"/"peak quarter" can be compared period-over-period below,
+  // matching what History always needs: this section only ever analyzes
+  // periods of 3+ months, never a single calendar month.
+  const monthlyChampions = computeMonthlyChampionsForRange(transactions, range, today);
+  const previousMonthlyChampions = computeMonthlyChampionsForRange(transactions, previousRange, today);
+  const quarterTotals = computeQuarterTotals(monthlyChampions);
   const weekdaySpending = computeSpendingByWeekdayForRange(transactions, range);
 
   // savingsHistory[0] is the CURRENT period (matching generateInsights'
@@ -1301,6 +1374,51 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
     }
   });
 
+  // Insights that only make sense across a genuinely multi-month range -
+  // "which month/quarter within the period spent the most", and how that
+  // compares to the equivalent previous period. History's Wallet Analyzer
+  // always analyzes 3+ months, so these are the period-native complement
+  // to generateInsights' month-anchored ones (budget streaks, anomalies,
+  // savings-rate swings) - without them, a wide range like a full year
+  // came back nearly empty since most of those single-month-flavored
+  // conditions rarely fire over a long span.
+  const periodInsights = [];
+  const peakMonth = findPeakMonth(monthlyChampions);
+  if (peakMonth && monthlyChampions.months.length > 1) {
+    periodInsights.push({
+      icon: "📊",
+      tone: "info",
+      title: `${peakMonth.label} fue el mes con más gasto del período`,
+      type: "peak_month",
+      data: { peakMonth },
+    });
+
+    const previousPeakMonth = findPeakMonth(previousMonthlyChampions);
+    if (previousPeakMonth) {
+      const samePosition = peakMonth.range.start.getMonth() === previousPeakMonth.range.start.getMonth();
+      periodInsights.push({
+        icon: "🔁",
+        tone: "info",
+        title: samePosition
+          ? `${months[peakMonth.range.start.getMonth()]} también fue el mes de mayor gasto en el período anterior`
+          : `El período anterior gastó más en ${previousPeakMonth.label}, este período en ${peakMonth.label}`,
+        type: "peak_month_vs_previous",
+        data: { current: peakMonth, previous: previousPeakMonth },
+      });
+    }
+  }
+
+  const peakQuarter = findPeakQuarter(quarterTotals);
+  if (peakQuarter && quarterTotals.length >= 2) {
+    periodInsights.push({
+      icon: "🗓️",
+      tone: "info",
+      title: `${peakQuarter.label} concentró el mayor gasto del período`,
+      type: "peak_quarter",
+      data: { peakQuarter },
+    });
+  }
+
   const facts = {
     currentTotals,
     previousTotals,
@@ -1315,11 +1433,13 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
     pace,
     biggestSpendPatterns,
     monthlyChampions,
+    previousMonthlyChampions,
+    quarterTotals,
     weekdaySpending,
     savingsHistory,
     savingsHistoryLabeled,
     categoryAnomaly,
   };
 
-  return { ...facts, insights: generateInsights(facts), currentRange: range, previousRange };
+  return { ...facts, insights: generateInsights(facts, periodInsights, 8), currentRange: range, previousRange };
 }

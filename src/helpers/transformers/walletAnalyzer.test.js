@@ -15,6 +15,10 @@ import {
   computeSpendingPace,
   findBiggestSpendPatterns,
   computeMonthlyChampions,
+  computeMonthlyChampionsForRange,
+  findPeakMonth,
+  computeQuarterTotals,
+  findPeakQuarter,
   computeSpendingByWeekday,
   generateInsights,
   buildWalletAnalyzerSnapshot,
@@ -407,7 +411,88 @@ describe("computeMonthlyChampions", () => {
     const transactions = [tx({ amount: 1000, date: new Date(2026, 7, 5), category: CAT_FOOD })];
     const result = computeMonthlyChampions(transactions, new Date(2026, 7, 20), 2);
     expect(result.months[0].biggestTransaction).toBeNull();
+    expect(result.months[0].total).toBe(0);
     expect(result.months[1].biggestTransaction).toMatchObject({ amount: 1000 });
+    expect(result.months[1].total).toBe(1000);
+  });
+});
+
+describe("computeMonthlyChampionsForRange", () => {
+  it("windows exactly the selected range's calendar months, not a lookback from an unrelated anchor", () => {
+    // Range is Q3 (Jul-Sep) 2026; a July transaction and one just outside
+    // the range (June) confirm the window starts at range.start's month,
+    // not "N months back from today."
+    const range = { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30, 23, 59, 59, 999) };
+    const today = new Date(2027, 0, 1); // long after the range - shouldn't clamp anything here
+    const transactions = [
+      tx({ amount: 100, date: new Date(2026, 5, 15), category: CAT_FOOD }), // June - outside range
+      tx({ amount: 500, date: new Date(2026, 6, 10), category: CAT_FOOD }), // July - inside range
+    ];
+    const result = computeMonthlyChampionsForRange(transactions, range, today);
+    expect(result.months).toHaveLength(3); // Jul, Aug, Sep
+    expect(result.months[0].label).toBe("July 2026");
+    expect(result.months[0].total).toBe(500);
+    expect(result.windowTotal).toBe(500);
+  });
+
+  it("clamps the window to today when range.end is still in the future", () => {
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const today = new Date(2026, 2, 15); // March 15 - only Jan/Feb/Mar have happened
+    const transactions = [tx({ amount: 100, date: new Date(2026, 1, 5), category: CAT_FOOD })];
+    const result = computeMonthlyChampionsForRange(transactions, range, today);
+    expect(result.months).toHaveLength(3); // Jan, Feb, Mar - not all 12
+  });
+
+  it("returns an empty window when the range hasn't started yet", () => {
+    const range = { start: new Date(2027, 0, 1), end: new Date(2027, 11, 31, 23, 59, 59, 999) };
+    const today = new Date(2026, 5, 1);
+    const result = computeMonthlyChampionsForRange([], range, today);
+    expect(result.months).toEqual([]);
+  });
+});
+
+describe("findPeakMonth", () => {
+  it("picks the month with the highest total, ignoring months with no spend", () => {
+    const monthlyChampions = {
+      months: [
+        { label: "July 2026", range: { start: new Date(2026, 6, 1) }, total: 500 },
+        { label: "August 2026", range: { start: new Date(2026, 7, 1) }, total: 0 },
+        { label: "September 2026", range: { start: new Date(2026, 8, 1) }, total: 1200 },
+      ],
+    };
+    expect(findPeakMonth(monthlyChampions).label).toBe("September 2026");
+  });
+
+  it("returns null when every month has zero spend", () => {
+    const monthlyChampions = { months: [{ label: "July 2026", range: { start: new Date(2026, 6, 1) }, total: 0 }] };
+    expect(findPeakMonth(monthlyChampions)).toBeNull();
+  });
+});
+
+describe("computeQuarterTotals / findPeakQuarter", () => {
+  it("buckets months into real calendar quarters and finds the busiest one", () => {
+    const monthlyChampions = {
+      months: [
+        { label: "January 2026", range: { start: new Date(2026, 0, 1) }, total: 100 },
+        { label: "April 2026", range: { start: new Date(2026, 3, 1) }, total: 900 },
+        { label: "May 2026", range: { start: new Date(2026, 4, 1) }, total: 300 },
+      ],
+    };
+    const quarters = computeQuarterTotals(monthlyChampions);
+    expect(quarters).toEqual([
+      { label: "Q1 2026", year: 2026, quarter: 1, total: 100, months: [{ label: "January 2026", total: 100 }] },
+      {
+        label: "Q2 2026",
+        year: 2026,
+        quarter: 2,
+        total: 1200,
+        months: [
+          { label: "April 2026", total: 900 },
+          { label: "May 2026", total: 300 },
+        ],
+      },
+    ]);
+    expect(findPeakQuarter(quarters).label).toBe("Q2 2026");
   });
 });
 
@@ -988,5 +1073,28 @@ describe("buildPeriodSnapshot", () => {
     const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range: yearRange });
     expect(snapshot.trend.length).toBeLessThan(6);
     expect(snapshot.trend.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("surfaces peak-month/peak-quarter insights for a wide range instead of coming back nearly empty", () => {
+    // A full-year selection previously surfaced almost nothing in "Lo más
+    // destacado del período" because generateInsights' conditions
+    // (budget-over-limit, category anomaly, new category/subscription,
+    // best streak, savings-rate swing) rarely fire across a long span.
+    // These new period-native insights are the fix: they're derived
+    // straight from monthlyChampions, which is always populated whenever
+    // there's any spend in the range.
+    const yearRange = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const today = new Date(2026, 8, 15); // mid-September - year still in progress
+    const transactions = [
+      tx({ amount: 100, date: new Date(2026, 1, 10), category: CAT_FOOD }), // Feb
+      tx({ amount: 5000, date: new Date(2026, 6, 10), category: CAT_FOOD }), // Jul - the peak
+      tx({ amount: 200, date: new Date(2026, 7, 10), category: CAT_FOOD }), // Aug
+    ];
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range: yearRange, today });
+    expect(snapshot.monthlyChampions.months).toHaveLength(9); // Jan-Sep, clamped to today
+    expect(findPeakMonth(snapshot.monthlyChampions).label).toBe("July 2026");
+    const types = snapshot.insights.map((i) => i.type);
+    expect(types).toContain("peak_month");
+    expect(types).toContain("peak_quarter");
   });
 });

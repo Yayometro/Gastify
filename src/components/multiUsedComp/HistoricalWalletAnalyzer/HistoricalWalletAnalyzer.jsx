@@ -574,6 +574,48 @@ function HistoricalWalletAnalyzer({ periodState }) {
         </div>
       )}
 
+      {/* Category leader per month - History always analyzes 3+ months, so
+          "which category led the spend, month by month" (already computed
+          per-month by monthlyChampions, previously only reachable via the
+          "Grandes gastos" drill-down) is worth its own glanceable table -
+          especially useful for year-vs-year comparisons. Hidden for a
+          single-month window since there'd be nothing to compare. */}
+      {monthlyChampions.months.length > 1 && (
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[15px] font-extrabold text-gf-text">Categoría líder por mes</p>
+          <p className="text-xs text-gf-text-muted mb-3">Qué categoría concentró más gasto, mes a mes, dentro de este periodo</p>
+          <div className="flex flex-col">
+            {monthlyChampions.months.map((m) => (
+              <div
+                key={m.label}
+                onClick={() => m.biggestCategory && openCategoryModal({ name: m.biggestCategory.name, color: m.biggestCategory.color, icon: m.biggestCategory.icon, current: m.biggestCategory.total }, true, m.range)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if ((e.key === "Enter" || e.key === " ") && m.biggestCategory) {
+                    openCategoryModal({ name: m.biggestCategory.name, color: m.biggestCategory.color, icon: m.biggestCategory.icon, current: m.biggestCategory.total }, true, m.range);
+                  }
+                }}
+                className="flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 cursor-pointer gf-hover-glass transition-colors"
+              >
+                <span className="w-28 shrink-0 text-[11px] font-semibold text-gf-text-muted">{m.label}</span>
+                {m.biggestCategory ? (
+                  <>
+                    <span className="h-7 w-7 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: m.biggestCategory.color }}>
+                      <UniversalCategoIcon type={m.biggestCategory.icon} siz={13} colore="#fff" />
+                    </span>
+                    <p className="flex-1 min-w-0 text-[12.5px] font-semibold text-gf-text truncate">{m.biggestCategory.name}</p>
+                    <span className="text-[12.5px] font-bold text-gf-text shrink-0">{formatMoneyMajor(m.biggestCategory.total, walletPrimaryCurrency)}</span>
+                  </>
+                ) : (
+                  <p className="flex-1 text-[12px] text-gf-text-muted">Sin gastos ese mes</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Subscriptions + FX exposure, side by side - subscriptions alone
           didn't need the full card width, so the freed half goes to
           another metric worth having (how much of the wallet sits in a

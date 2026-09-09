@@ -30,6 +30,12 @@ export function renderInsightDetail(insight, currency) {
       return `${formatMoneyMajor(data.amount, currency)} por mes — ${data.categoryName}`;
     case "savings_rate":
       return `${Math.round(data.currentRate * 100)}% de tus ingresos`;
+    case "peak_month":
+      return `${formatMoneyMajor(data.peakMonth.total, currency)} de gasto ese mes`;
+    case "peak_month_vs_previous":
+      return `${formatMoneyMajor(data.current.total, currency)} vs. ${formatMoneyMajor(data.previous.total, currency)} en el período anterior`;
+    case "peak_quarter":
+      return `${formatMoneyMajor(data.peakQuarter.total, currency)} de gasto ese trimestre`;
     default:
       return "";
   }

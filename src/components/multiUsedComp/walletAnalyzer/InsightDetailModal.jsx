@@ -93,6 +93,36 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }) {
     rows = (data.savingsHistoryLabeled || []).map((m) => (
       <MonthRow key={m.label} label={m.label} right={`${Math.round(m.rate * 100)}%`} />
     ));
+  } else if (type === "peak_month") {
+    const m = data.peakMonth;
+    explanation = (
+      <p className="text-xs text-gf-text-muted mb-3">
+        De todos los meses dentro de este periodo, <b>{m.label}</b> fue el que más gasto acumuló.
+      </p>
+    );
+    rows = [
+      <MonthRow key="total" label={m.label} right={formatMoneyMajor(m.total, walletPrimaryCurrency)} />,
+      ...(m.biggestCategory ? [<MonthRow key="cat" label="Categoría con más gasto" right={`${m.biggestCategory.name} — ${formatMoneyMajor(m.biggestCategory.total, walletPrimaryCurrency)}`} />] : []),
+      ...(m.biggestTransaction ? [<MonthRow key="txn" label="Transacción más grande" right={`${m.biggestTransaction.name} — ${formatMoneyMajor(m.biggestTransaction.amount, walletPrimaryCurrency)}`} />] : []),
+    ];
+  } else if (type === "peak_month_vs_previous") {
+    explanation = (
+      <p className="text-xs text-gf-text-muted mb-3">
+        Comparación entre el mes de mayor gasto de este periodo y el del periodo anterior equivalente.
+      </p>
+    );
+    rows = [
+      <MonthRow key="current" label={`Este periodo — ${data.current.label}`} right={formatMoneyMajor(data.current.total, walletPrimaryCurrency)} />,
+      <MonthRow key="previous" label={`Periodo anterior — ${data.previous.label}`} right={formatMoneyMajor(data.previous.total, walletPrimaryCurrency)} />,
+    ];
+  } else if (type === "peak_quarter") {
+    const q = data.peakQuarter;
+    explanation = (
+      <p className="text-xs text-gf-text-muted mb-3">
+        De todos los trimestres dentro de este periodo, <b>{q.label}</b> fue el que más gasto acumuló.
+      </p>
+    );
+    rows = q.months.map((m) => <MonthRow key={m.label} label={m.label} right={formatMoneyMajor(m.total, walletPrimaryCurrency)} />);
   } else if (type === "spending_pace") {
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
