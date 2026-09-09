@@ -951,4 +951,42 @@ describe("buildPeriodSnapshot", () => {
     expect(snapshot.trend).toHaveLength(2);
     expect(snapshot.insights).toBeInstanceOf(Array);
   });
+
+  it("clamps budget/subscription/champion analysis to today when range.end is in the future", () => {
+    // "All 2026" picked while today is still September - range.end (Dec
+    // 31) is a future date. Real data exists Jan-Sep; anchoring at
+    // range.end instead of today would ask these month-based functions
+    // about months that haven't happened yet and come back empty even
+    // though Sep has real, complete data.
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const today = new Date(2026, 8, 15); // September 15, 2026 - still mid-year
+    const budget = {
+      _id: "b1",
+      budgetType: "spending",
+      period: "monthly",
+      goalAmount: 1000,
+      category: CAT_FOOD,
+      createdAt: new Date(2025, 0, 1),
+      history: [],
+    };
+    const transactions = [
+      tx({ amount: 500, date: new Date(2026, 8, 10), category: CAT_FOOD, name: "Netflix" }),
+      tx({ amount: 500, date: new Date(2026, 7, 10), category: CAT_FOOD, name: "Netflix" }),
+    ];
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [budget], range, periodsBack: 2, today });
+    const [row] = snapshot.budgetRows;
+    expect(row.spent).toBeGreaterThan(0); // not 0/0 from a future "last" month
+    expect(snapshot.subscriptions.length).toBeGreaterThan(0); // Netflix detected
+  });
+
+  it("scales the default lookback down for a wide range instead of asking for 6x its width", () => {
+    const yearRange = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const transactions = [tx({ amount: 100, date: new Date(2026, 5, 15), category: CAT_FOOD })];
+    // No periodsBack override - if the default still blindly used 6, this
+    // would ask for 6 preceding YEARS; asserting it doesn't throw and
+    // produces a small (not 6-long) trend confirms the scaled-down default.
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range: yearRange });
+    expect(snapshot.trend.length).toBeLessThan(6);
+    expect(snapshot.trend.length).toBeGreaterThanOrEqual(2);
+  });
 });

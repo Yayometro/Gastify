@@ -15,9 +15,19 @@ import usePeriodComparison from "@/hooks/usePeriodComparison";
 
 function HistoryClient({ email }) {
   const [isLoading, setIsLoading] = useState(false);
-  // Single shared "period A vs period B" state for every section below -
-  // see usePeriodComparison for why this used to be duplicated per section.
+  // Shared "period A vs period B" state for the chart/category/budget/
+  // movements sections below - see usePeriodComparison for why this used
+  // to be duplicated per section instead of shared once.
   const periodState = usePeriodComparison();
+  // Wallet Analyzer and Projections each get their OWN independent period
+  // state, deliberately NOT sharing periodState above - confirmed live that
+  // sharing one instance meant picking a period in the Wallet Analyzer
+  // silently changed what Projections showed too, which isn't wanted:
+  // these two sections are meant to be filterable independently of each
+  // other and of the rest of the page, the same way every section already
+  // was before periodState existed.
+  const walletAnalyzerPeriodState = usePeriodComparison();
+  const projectionsPeriodState = usePeriodComparison();
 
   const dispatch = useDispatch();
   const ccUser = useSelector((state) => state.userReducer);
@@ -60,10 +70,10 @@ function HistoryClient({ email }) {
             <TabsTogglerMontlyController periodState={periodState} />
           </div>
           <div className="w-full h-fulls pb-6 historical-wallet-analyzer">
-            <HistoricalWalletAnalyzer periodState={periodState} />
+            <HistoricalWalletAnalyzer periodState={walletAnalyzerPeriodState} />
           </div>
           <div className="w-full h-fulls pb-6 historical-projections-table">
-            <HistoricalProjectionsTable periodState={periodState} />
+            <HistoricalProjectionsTable periodState={projectionsPeriodState} />
           </div>
           <div className="w-full h-fulls pb-6 historical-comparative-categories">
             <HistoricalComparativeCategories periodState={periodState} />

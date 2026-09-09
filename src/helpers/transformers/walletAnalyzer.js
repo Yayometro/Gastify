@@ -1231,8 +1231,22 @@ export function buildPeriodComparison({ transactions, budgets, rangeA, rangeB, l
 // (budget limits, subscription billing cycles, "which calendar month
 // spent the most"): generalizing those to the display period's own width
 // would be answering a question nobody asked.
-export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack = 6, topN = 12, today = new Date() }) {
+export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack, topN = 12, today = new Date() }) {
   const previousRange = getPrecedingPeriods(range, 1)[0];
+
+  // A fixed periodsBack (the original month-based Wallet Analyzer always
+  // used 6) doesn't scale: 6 PRECEDING periods of the SAME width as `range`
+  // means 6 months back for a 1-month range (fine, matches the original),
+  // but 6 YEARS back for a full-year range - most accounts don't have 6
+  // years of history, so trend/pace/anomaly would come back empty not
+  // because anything's broken, but because that much history genuinely
+  // doesn't exist. Scaling the default so the total lookback horizon stays
+  // roughly "about a year" regardless of the selected width keeps this
+  // asking for a realistic amount of history - capped at 6 (matches the
+  // original monthly behavior exactly for a 1-month range) and floored at
+  // 2 (need at least two points to show anything resembling a trend).
+  const widthDays = getRangeWidthDays(range);
+  const resolvedPeriodsBack = periodsBack ?? Math.max(2, Math.min(6, Math.round(365 / widthDays)));
 
   const currentTotals = getMonthTotals(transactions, range.start, range.end);
   const previousTotals = getMonthTotals(transactions, previousRange.start, previousRange.end);
@@ -1242,13 +1256,23 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack 
   const topCategoriesBillsPrevious = rankCategoriesForRange(transactions, true, previousRange, topN);
   const topTransactionsBills = compareTransactionsAcrossMonths(transactions, true, range, previousRange, topN);
 
-  const trend = computeTrendForRange(transactions, range, periodsBack);
+  const trend = computeTrendForRange(transactions, range, resolvedPeriodsBack);
   const monthlyAverages = computeMonthlyAverages(trend);
-  const budgetRows = computeBudgetStreaks(budgets, transactions, range.end, 12);
-  const subscriptions = detectSubscriptions(transactions, range.end, 3, 6);
-  const pace = computeSpendingPaceForRange(transactions, range, true, periodsBack, today);
+  // Budget streaks/subscriptions/"biggest month" are inherently monthly
+  // (budget limits and billing cycles don't stretch to match a wide
+  // selected range) and are anchored at range.end - but when `range` is
+  // the current, still-in-progress period (e.g. "All 2026" picked while
+  // today is still September), range.end is a FUTURE date. Anchoring
+  // there asked these month-based functions about months that haven't
+  // happened yet, which is why they came back empty even though real data
+  // exists earlier in the very same range - clamping to "today" instead
+  // fixes that without changing anything for a fully-closed past range.
+  const monthAnchor = range.end < today ? range.end : today;
+  const budgetRows = computeBudgetStreaks(budgets, transactions, monthAnchor, 12);
+  const subscriptions = detectSubscriptions(transactions, monthAnchor, 3, 6);
+  const pace = computeSpendingPaceForRange(transactions, range, true, resolvedPeriodsBack, today);
   const biggestSpendPatterns = findBiggestSpendPatternsForRange(transactions, range);
-  const monthlyChampions = computeMonthlyChampions(transactions, range.end, 12);
+  const monthlyChampions = computeMonthlyChampions(transactions, monthAnchor, 12);
   const weekdaySpending = computeSpendingByWeekdayForRange(transactions, range);
 
   // savingsHistory[0] is the CURRENT period (matching generateInsights'
@@ -1256,7 +1280,7 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack 
   // labeled array stays chronological (oldest first) for the trend chart.
   const savingsHistory = [];
   const savingsHistoryLabeled = [];
-  const orderedPeriods = [range, ...getPrecedingPeriods(range, periodsBack - 1).reverse()];
+  const orderedPeriods = [range, ...getPrecedingPeriods(range, resolvedPeriodsBack - 1).reverse()];
   orderedPeriods.forEach((period) => {
     const rate = getMonthTotals(transactions, period.start, period.end).savingsRate;
     savingsHistory.push(rate);
@@ -1267,7 +1291,7 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack 
   // direction) from its own trailing average is the one worth calling out.
   let categoryAnomaly = null;
   topCategoriesBills.slice(0, 5).forEach((c) => {
-    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverageForRange(transactions, c.name, true, range, periodsBack);
+    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverageForRange(transactions, c.name, true, range, resolvedPeriodsBack);
     if (average <= 0 || monthsOfHistory < 3) return;
     const changePct = ((c.current - average) / average) * 100;
     if (!categoryAnomaly || Math.abs(changePct) > Math.abs(categoryAnomaly.changePct)) {
