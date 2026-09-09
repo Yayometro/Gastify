@@ -5,6 +5,7 @@ import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import useProjectionTable from "@/hooks/useProjectionTable";
 import ProjectionsView from "../Projections/ProjectionsView";
+import PeriodFiltersWithCompare from "../periodFiltersWithCompare/PeriodFiltersWithCompare";
 
 // Slices buildYearProjectionTable's output - via useProjectionTable, the
 // exact same fetch+conversion+running-balance pipeline ProjectionsClient.jsx
@@ -22,7 +23,7 @@ import ProjectionsView from "../Projections/ProjectionsView";
 // can legitimately span two, so wiring it up here would need real new
 // design work beyond "show the numbers for this range."
 function HistoricalProjectionsTable({ periodState }) {
-  const { timePeriod } = periodState;
+  const { timePeriod, getValueFromSelecter, timePeriodsForSelecter, handleRangeDate } = periodState;
   const { email } = useGetUserSession();
   const { transacciones, budgets, accounts, wallet } = useGetDataFromProvider();
   const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
@@ -65,8 +66,16 @@ function HistoricalProjectionsTable({ periodState }) {
 
   return (
     <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-      <p className="text-[15px] font-extrabold text-gf-text">Proyecciones · periodo seleccionado</p>
-      <p className="text-xs text-gf-text-muted mb-3">Ingreso, gasto y balance proyectado mes a mes, para el rango elegido arriba</p>
+      <p className="text-[15px] font-extrabold text-gf-text text-center">Proyecciones</p>
+      <div className="flex justify-center mb-3">
+        <PeriodFiltersWithCompare
+          timePeriod={timePeriod}
+          getValueFromSelecter={getValueFromSelecter}
+          timePeriodsForSelecter={timePeriodsForSelecter}
+          handleRangeDate={handleRangeDate}
+        />
+      </div>
+      <p className="text-xs text-gf-text-muted mb-3 text-center">Ingreso, gasto y balance proyectado mes a mes, para el rango elegido arriba</p>
       {isLoading ? (
         <p className="text-xs text-gf-text-muted">Cargando proyecciones…</p>
       ) : rows.length === 0 ? (

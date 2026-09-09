@@ -10,7 +10,10 @@ import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMo
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import { getPeriodLabel } from "@/helpers/timeFunctions/timeFunctions";
+import { useAccountsFxExposure } from "@/helpers/hooks/useAccountsFxExposure";
+import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import UniversalCategoIcon from "../UniversalCategoIcon";
+import PeriodFiltersWithCompare from "../periodFiltersWithCompare/PeriodFiltersWithCompare";
 import {
   buildPeriodSnapshot,
   buildPeriodComparison,
@@ -25,6 +28,12 @@ import InsightDetailModal from "../walletAnalyzer/InsightDetailModal";
 import MonthlyChampionsModal from "../walletAnalyzer/MonthlyChampionsModal";
 import WeekdaySpendingDetailModal from "../walletAnalyzer/WeekdaySpendingDetailModal";
 import BudgetPeriodDetailModal from "./BudgetPeriodDetailModal";
+
+// Short "DD/MM/YYYY" for the small parenthetical dates next to a friendlier
+// period phrase (e.g. "Últimos 3 meses (01/07/2026 - 09/09/2026)").
+function formatShortDate(date) {
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
 
 // The period-vs-period compare table's row for a single category -
 // buildPeriodComparison's categoriesBills/categoriesIncomes are ALREADY a
@@ -78,9 +87,11 @@ function HistoricalWalletAnalyzer({ periodState }) {
   const [budgets, setBudgets] = useState([]);
   const [topN, setTopN] = useState(6);
   const { email } = useGetUserSession();
+  const { accounts } = useGetDataFromProvider();
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
   const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const { close, modalContent, renderModal, handleClose } = useModal();
+  const fxExposure = useAccountsFxExposure(accounts, walletPrimaryCurrency, timePeriod?.[1]);
 
   const [activeInsight, setActiveInsight] = useState(null);
   const [championsModalKind, setChampionsModalKind] = useState(null);
@@ -172,10 +183,20 @@ function HistoricalWalletAnalyzer({ periodState }) {
     );
   }
 
+  const periodFilters = (
+    <div className="flex flex-col items-center gap-1">
+      <h2 className="text-2xl text-center font-bold text-gf-text">Wallet Analyzer</h2>
+      <PeriodFiltersWithCompare {...periodState} />
+    </div>
+  );
+
   if (!snapshot) {
     return (
-      <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 text-center">
-        <p className="text-xs text-gf-text-muted">Cargando Wallet Analyzer…</p>
+      <div className="w-full flex flex-col gap-4">
+        {periodFilters}
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 text-center">
+          <p className="text-xs text-gf-text-muted">Cargando Wallet Analyzer…</p>
+        </div>
       </div>
     );
   }
@@ -223,10 +244,7 @@ function HistoricalWalletAnalyzer({ periodState }) {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <div className="flex flex-col items-center gap-1">
-        <h2 className="text-2xl text-center font-bold text-gf-text">Wallet Analyzer</h2>
-        <p className="text-xs text-gf-text-muted text-center">{labelA}</p>
-      </div>
+      {periodFilters}
 
       <WalletAnalyzerInsightsStrip
         insights={insights}
@@ -239,8 +257,12 @@ function HistoricalWalletAnalyzer({ periodState }) {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* Period vs. auto-previous-equivalent-period */}
         <div className="md:col-span-2 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">{labelA} vs. {previousPeriodLabel}</p>
-          <p className="text-xs text-gf-text-muted mb-3">Comparativo contra el periodo inmediatamente anterior de igual duración</p>
+          <p className="text-[15px] font-extrabold text-gf-text">
+            {labelA} <span className="text-[11px] font-normal text-gf-text-muted">({formatShortDate(currentRange.start)} - {formatShortDate(currentRange.end)})</span>
+            {" "}vs. periodo anterior equivalente{" "}
+            <span className="text-[11px] font-normal text-gf-text-muted">({formatShortDate(previousRange.start)} - {formatShortDate(previousRange.end)})</span>
+          </p>
+          <p className="text-xs text-gf-text-muted mb-3">Mismo número de días, justo antes de este periodo</p>
           <table className="w-full text-[13px]">
             <thead>
               <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
@@ -543,7 +565,7 @@ function HistoricalWalletAnalyzer({ periodState }) {
 
           <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
             <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300 mb-1.5">Análisis</p>
-            <ul className="list-disc pl-4 space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
+            <ul className="space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
               {buildSpendPatternAnalysis(biggestSpendPatterns).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
               ))}
@@ -552,41 +574,79 @@ function HistoricalWalletAnalyzer({ periodState }) {
         </div>
       )}
 
-      {/* Subscriptions */}
-      <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-        <p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p>
-        <p className="text-xs text-gf-text-muted mb-3">Detectadas por nombre y frecuencia mensual</p>
-        {subscriptions.length === 0 ? (
-          <p className="text-xs text-gf-text-muted">No se detectaron suscripciones recurrentes.</p>
-        ) : (
-          <div className="flex flex-col">
-            {subscriptions.map((s) => (
-              <div
-                key={s.name}
-                onClick={() => setActiveInsight({ icon: "🔁", tone: "info", title: s.name, type: "subscription", data: s })}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") setActiveInsight({ icon: "🔁", tone: "info", title: s.name, type: "subscription", data: s });
-                }}
-                className="flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 cursor-pointer gf-hover-glass transition-colors"
-              >
-                <span className="h-7 w-7 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: s.color }}>
-                  <UniversalCategoIcon type={s.icon} siz={13} colore="#fff" />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12.5px] font-semibold text-gf-text truncate">{s.name}</p>
-                  <p className="text-[10.5px] text-gf-text-muted">{s.categoryName}</p>
+      {/* Subscriptions + FX exposure, side by side - subscriptions alone
+          didn't need the full card width, so the freed half goes to
+          another metric worth having (how much of the wallet sits in a
+          non-primary currency, and how that's moved). */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p>
+          <p className="text-xs text-gf-text-muted mb-3">Detectadas por nombre y frecuencia mensual</p>
+          {subscriptions.length === 0 ? (
+            <p className="text-xs text-gf-text-muted">No se detectaron suscripciones recurrentes.</p>
+          ) : (
+            <div className="flex flex-col">
+              {subscriptions.map((s) => (
+                <div
+                  key={s.name}
+                  onClick={() => setActiveInsight({ icon: "🔁", tone: "info", title: s.name, type: "subscription", data: s })}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") setActiveInsight({ icon: "🔁", tone: "info", title: s.name, type: "subscription", data: s });
+                  }}
+                  className="flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 cursor-pointer gf-hover-glass transition-colors"
+                >
+                  <span className="h-7 w-7 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: s.color }}>
+                    <UniversalCategoIcon type={s.icon} siz={13} colore="#fff" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12.5px] font-semibold text-gf-text truncate">{s.name}</p>
+                    <p className="text-[10.5px] text-gf-text-muted">{s.categoryName}</p>
+                  </div>
+                  {s.isNew && <span className="text-[10px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>}
+                  {s.possibleDuplicateInMonth && (
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full">posible duplicado</span>
+                  )}
+                  <span className="text-[12.5px] font-bold text-gf-text shrink-0">{formatMoneyMajor(s.amount, walletPrimaryCurrency)}</span>
                 </div>
-                {s.isNew && <span className="text-[10px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>}
-                {s.possibleDuplicateInMonth && (
-                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full">posible duplicado</span>
-                )}
-                <span className="text-[12.5px] font-bold text-gf-text shrink-0">{formatMoneyMajor(s.amount, walletPrimaryCurrency)}</span>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
+          <p className="text-[15px] font-extrabold text-gf-text">Exposición multi-moneda</p>
+          <p className="text-xs text-gf-text-muted mb-3">Valor de tus saldos en otras monedas</p>
+          {fxExposure.loading ? (
+            <p className="text-xs text-gf-text-muted">Consultando tipo de cambio…</p>
+          ) : fxExposure.rows.length === 0 ? (
+            <p className="text-xs text-gf-text-muted">Todas tus cuentas están en {walletPrimaryCurrency}.</p>
+          ) : (
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
+                  <th className="text-left font-bold pb-2">Moneda</th>
+                  <th className="text-right font-bold pb-2">Saldo</th>
+                  <th className="text-right font-bold pb-2">En {walletPrimaryCurrency}</th>
+                  <th className="text-right font-bold pb-2">Cambio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fxExposure.rows.map((r) => (
+                  <tr key={r.currency} className="border-t border-gf-border">
+                    <td className="py-2 font-semibold text-gf-text">{r.currency}</td>
+                    <td className="py-2 text-right text-gf-text-muted">{formatMoneyMajor(r.nativeAmount, r.currency)}</td>
+                    <td className="py-2 text-right font-semibold text-gf-text">{formatMoneyMajor(r.valueInPrimary, walletPrimaryCurrency)}</td>
+                    <td className="py-2 text-right">
+                      <ChangePill changePct={r.changePct} invert />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       {/* Pace */}
