@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Skeleton, Tooltip } from "antd";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
+import useProjectionTable from "@/hooks/useProjectionTable";
 import fetcher from "@/helpers/fetcher";
-import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
@@ -14,251 +14,46 @@ import ProjectionsView from "./ProjectionsView";
 import ProjectionAccuracyReport from "./ProjectionAccuracyReport";
 import ProjectionMonthDetailModal from "./ProjectionMonthDetailModal";
 import ProjectionsInfoModal from "./ProjectionsInfoModal";
-import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
 import { getTransactionsFromTimeRange, filterBillsOrIncomes } from "@/helpers/transformers/transactionsChange";
-import {
-  buildYearProjectionTable,
-  buildProjectionAccuracyReport,
-  estimateHistoricalBalances,
-  getMonthBucketBreakdown,
-  getExpectedOccurrencesInMonth,
-  getMonthCurrencyBreakdown,
-} from "@/helpers/transformers/projectionsChange";
+import { getMonthBucketBreakdown, getExpectedOccurrencesInMonth, getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
 import { getValueActiveInMonth } from "@/helpers/transformers/budgetHistory";
 import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 import PrimaryCurrencySelector from "../PrimaryCurrencySelector";
-import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 
 function ProjectionsClient({ mcSession }) {
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
   const [year, setYear] = useState(new Date().getFullYear());
-  const [incomeSources, setIncomeSources] = useState([]);
-  const [projectionSettings, setProjectionSettings] = useState(null);
-  const [settingsLoading, setSettingsLoading] = useState(true);
   const [selectedMonthName, setSelectedMonthName] = useState(null);
   const [showInfoModal, setShowInfoModal] = useState(false);
-  const [projectionBaseline, setProjectionBaseline] = useState(null);
   const toFetch = fetcher();
 
-  const loadSettings = async () => {
-    setSettingsLoading(true);
-    try {
-      const [incomeRes, projRes] = await Promise.all([
-        toFetch.post("general-data/income-sources/get", mcSession),
-        toFetch.post("general-data/projections/get", { mail: mcSession, year }),
-      ]);
-      if (incomeRes.ok) setIncomeSources(incomeRes.data || []);
-      if (projRes.ok) setProjectionSettings(projRes.data);
-    } catch (e) {
-      runNotify("error", String(e));
-    } finally {
-      setSettingsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSettings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [year]);
-
-  // Wallet-wide, not year-scoped - fetched once on mount, never re-fetched
-  // when the user flips between years.
-  const loadBaseline = async () => {
-    try {
-      const res = await toFetch.post("general-data/projection-baseline/get", { mail: mcSession });
-      if (res.ok) setProjectionBaseline(res.data);
-    } catch (e) {
-      runNotify("error", String(e));
-    }
-  };
-
-  useEffect(() => {
-    loadBaseline();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const monthlyBalances = useMemo(() => projectionSettings?.monthlyBalances || [], [projectionSettings]);
-  const monthlyBuffers = useMemo(() => projectionSettings?.monthlyBuffers || [], [projectionSettings]);
-
-  const today = new Date();
   const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
 
-  // Income sources are entered in their own currency (e.g. a USD paycheck),
-  // but the projection math needs every source in the Wallet's primary
-  // currency to sum them meaningfully. Same-currency sources pass through
-  // untouched; foreign ones are converted via a live quote, never faked.
-  const [incomeSourcesConverted, setIncomeSourcesConverted] = useState([]);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const toFetch = fetcher();
-      const converted = await Promise.all(
-        (incomeSources || []).map(async (s) => {
-          const sourceCurrency = s.currency || walletPrimaryCurrency;
-          if (sourceCurrency === walletPrimaryCurrency) return s;
-          try {
-            const res = await toFetch.post("general-data/fx/quote", {
-              amountMinor: majorToMinor(s.amount || 0, sourceCurrency),
-              fromCurrency: sourceCurrency,
-              toCurrency: walletPrimaryCurrency,
-            });
-            if (res.ok) return { ...s, amount: minorToMajor(res.data.amountMinor, walletPrimaryCurrency) };
-          } catch (e) {
-            // No rate available - fall through to the raw (unconverted) source.
-          }
-          return s;
-        })
-      );
-      if (!cancelled) setIncomeSourcesConverted(converted);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [incomeSources, walletPrimaryCurrency]);
-
-  // ProjectionBaseline entries can each carry their own currency (e.g. a USD
-  // paycheck), but summing entries at resolution time needs them all in one
-  // currency - convert every foreign-currency entry via a live quote here,
-  // same pattern as incomeSourcesConverted above. The RAW (unconverted)
-  // projectionBaseline is still what the panel displays, so entries keep
-  // showing in the currency the user actually entered them in.
-  const [projectionBaselineConverted, setProjectionBaselineConverted] = useState(null);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (!projectionBaseline) {
-        if (!cancelled) setProjectionBaselineConverted(projectionBaseline);
-        return;
-      }
-      const toFetch = fetcher();
-      const convertEntries = (entries, moneyField) =>
-        Promise.all(
-          (entries || []).map(async (entry) => {
-            const money = entry[moneyField];
-            const entryCurrency = money?.currency || walletPrimaryCurrency;
-            if (!money || entryCurrency === walletPrimaryCurrency) return entry;
-            try {
-              const res = await toFetch.post("general-data/fx/quote", {
-                amountMinor: money.amountMinor,
-                fromCurrency: entryCurrency,
-                toCurrency: walletPrimaryCurrency,
-              });
-              if (res.ok) return { ...entry, [moneyField]: { amountMinor: res.data.amountMinor, currency: walletPrimaryCurrency } };
-            } catch (e) {
-              // No rate available - fall through to the raw (unconverted) entry.
-            }
-            return entry;
-          })
-        );
-      const [incomeHistory, expenseHistory] = await Promise.all([
-        convertEntries(projectionBaseline.incomeHistory, "incomeMoney"),
-        convertEntries(projectionBaseline.expenseHistory, "expenseMoney"),
-      ]);
-      if (!cancelled) setProjectionBaselineConverted({ ...projectionBaseline, incomeHistory, expenseHistory });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [projectionBaseline, walletPrimaryCurrency]);
-
-  const rows = useMemo(() => {
-    if (!transacciones || !budgets) return [];
-    return buildYearProjectionTable({
-      transactions: transacciones,
-      budgets,
-      incomeSources: incomeSourcesConverted,
-      projectionSettings: { monthlyBuffers },
-      projectionBaseline: projectionBaselineConverted,
-      year,
-      today: new Date(),
-    });
-  }, [transacciones, budgets, incomeSourcesConverted, monthlyBuffers, projectionBaselineConverted, year]);
-
-  const accuracyRows = useMemo(() => {
-    if (!transacciones || !budgets) return [];
-    return buildProjectionAccuracyReport({
-      transactions: transacciones,
-      budgets,
-      incomeSources: incomeSourcesConverted,
-      projectionSettings: { monthlyBuffers },
-      projectionBaseline: projectionBaselineConverted,
-      year,
-      today: new Date(),
-    });
-  }, [transacciones, budgets, incomeSourcesConverted, monthlyBuffers, projectionBaselineConverted, year]);
-
-  // Converts every non-credit Account's own native balance into the Wallet's
-  // primary currency using the latest reference rate (plan section 17:
-  // "Starting balance converts every non-credit Account from native
-  // currency to Wallet primary using the latest reference snapshot") -
-  // this is a live, right-now valuation, not a historical one, so it can't
-  // reuse a stored per-transaction snapshot the way closed months do.
-  const [startingBalance, setStartingBalance] = useState(0);
-  useEffect(() => {
-    const nonCreditAccounts = (accounts || []).filter((acc) => acc.accountType !== "credit");
-    let cancelled = false;
-    (async () => {
-      const toFetch = fetcher();
-      let total = 0;
-      for (const acc of nonCreditAccounts) {
-        const accountCurrency = acc.currency || walletPrimaryCurrency;
-        if (accountCurrency === walletPrimaryCurrency) {
-          total += acc.amount || 0;
-          continue;
-        }
-        try {
-          const res = await toFetch.post("general-data/fx/quote", {
-            amountMinor: majorToMinor(acc.amount || 0, accountCurrency),
-            fromCurrency: accountCurrency,
-            toCurrency: walletPrimaryCurrency,
-          });
-          // No cached/live rate available - never fake one. This Account's
-          // balance is simply left out of the total rather than guessed.
-          if (res.ok) total += minorToMajor(res.data.amountMinor, walletPrimaryCurrency);
-        } catch (e) {
-          // Same as above - skip rather than guess.
-        }
-      }
-      if (!cancelled) setStartingBalance(total);
-    })();
-    return () => { cancelled = true; };
-  }, [accounts, walletPrimaryCurrency]);
-
-  const rowsWithBalance = useMemo(() => {
-    let runningBalance = startingBalance;
-    let reachedCurrent = false;
-    return rows.map((row, index) => {
-      const net =
-        row.type === "current"
-          ? row.projectedIncome - row.projectedExpense
-          : row.income - row.expense;
-      const isCurrentOrLater = year > today.getFullYear() || row.type !== "actual";
-      const manualEntry = monthlyBalances.find((m) => m.month === index);
-      if (!isCurrentOrLater) {
-        return { ...row, net, balance: manualEntry ? manualEntry.balance : null, manualBalance: manualEntry?.balance };
-      }
-      if (row.type === "current") {
-        reachedCurrent = true;
-        // Calcular lo que falta por ingresar y gastar en el resto del mes actual
-        const remainingNet = (row.projectedIncome - row.actualIncome) - (row.projectedExpense - row.actualExpense);
-        // El balance final de este mes incluirá el dinero de hoy más el remanente
-        runningBalance += remainingNet;
-        return { ...row, net, balance: runningBalance };
-      }
-      if (reachedCurrent || row.type === "estimate") {
-        runningBalance += net;
-        return { ...row, net, balance: runningBalance };
-      }
-      return { ...row, net, balance: manualEntry ? manualEntry.balance : null, manualBalance: manualEntry?.balance };
-    });
-  }, [rows, startingBalance, year, monthlyBalances]);
-
-  const monthRanges = useMemo(() => getYearMonthDateRange(new Date(year, 0, 1)), [year]);
-
-  const rowsWithEstimates = useMemo(() => {
-    const monthStarts = [...monthRanges.values()].map((r) => r.start);
-    return estimateHistoricalBalances(rowsWithBalance, monthStarts, projectionBaselineConverted);
-  }, [rowsWithBalance, monthRanges, projectionBaselineConverted]);
+  // Fetch + currency-conversion + running-balance pipeline lives in
+  // useProjectionTable (shared with /dashboard/history's own projections
+  // table) - see that hook for the full breakdown of what it does.
+  const {
+    rows: rowsWithEstimates,
+    accuracyRows,
+    startingBalance,
+    incomeSources,
+    incomeSourcesConverted,
+    projectionSettings,
+    setProjectionSettings,
+    projectionBaseline,
+    monthlyBuffers,
+    monthRanges,
+    isLoading: settingsLoading,
+    reloadSettings: loadSettings,
+    reloadBaseline: loadBaseline,
+  } = useProjectionTable({
+    mail: mcSession,
+    year,
+    transactions: transacciones,
+    budgets,
+    accounts,
+    walletPrimaryCurrency,
+  });
 
   const selectedRow = rowsWithEstimates.find((r) => r.monthName === selectedMonthName) || null;
   const selectedMonthIndex = rowsWithEstimates.findIndex((r) => r.monthName === selectedMonthName);
@@ -379,7 +174,7 @@ function ProjectionsClient({ mcSession }) {
           defaultOpen={
             (projectionBaseline?.incomeHistory?.length || 0) === 0 &&
             (projectionBaseline?.expenseHistory?.length || 0) === 0 &&
-            rows.some((r) => r.type === "actual" && r.hasTransactions === false)
+            rowsWithEstimates.some((r) => r.type === "actual" && r.hasTransactions === false)
           }
         />
 

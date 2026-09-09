@@ -587,11 +587,17 @@ body {
 .wallet{
   width: 100%;
 } */
+/* Same reasoning as .profile-img/.content-wallet-glass below - this used to
+   paint its own flat light-purple gradient behind the ENTIRE Profile page,
+   which was missed in the app-wide dark pass (every other route relies on
+   the shared .walllet-bg mesh showing through instead). Dropping to
+   transparent lets that mesh show through here too; light mode keeps the
+   original gradient, unaffected. */
 .profile-component-container{
-  /* background: linear-gradient(0deg, rgba(187,71,255,1) 80%, rgba(0,98,255,1) 100%); */
-  /* background: linear-gradient(0deg, rgba(201,184,255,1) 69%, rgba(169,141,255,1) 100%); */
+  background: transparent;
+}
+:root[data-theme="light"] .profile-component-container {
   background: linear-gradient(0deg, rgba(144,107,255,1) 0%, rgba(198,181,255,1) 90%, rgba(160,129,255,1) 100%);
-
 }
 .default-gradient{
   /* background: linear-gradient(0deg, rgba(187,71,255,1) 80%, rgba(0,98,255,1) 100%); */
@@ -822,9 +828,55 @@ box-shadow: -1px 0px 20px 5px rgba(142, 142, 142, 0.7);
   border-radius: 0.80rem !important;
 }
 
+/* Both the read-only "view mode" value boxes and the edit-mode plain native
+   inputs on Profile (full name, mail, disabled password placeholder) - a
+   sunken glass fill instead of the browser's own default white input
+   background, with real padding instead of the previous px-2-only. */
+.gf-profile-field {
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.4), inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+  color: var(--gf-text);
+}
+.gf-profile-field::placeholder {
+  color: var(--gf-text-muted);
+}
+.gf-profile-field:focus {
+  outline: none;
+  border-color: rgb(216, 180, 254);
+}
+.gf-profile-field:disabled {
+  color: var(--gf-text-muted);
+  cursor: not-allowed;
+}
+:root[data-theme="light"] .gf-profile-field {
+  background: #fff;
+  box-shadow: none;
+  color: #1b103d;
+}
+
 .react-international-phone-input-container{
   border-radius: 50px !important;
   border: 2px solid rgb(192 132 252) !important;
+  background: transparent !important;
+}
+/* The library ships its own white fill on the selector button and the text
+   input - the wrapping container's border above was themed already, but
+   these two inner elements weren't, so they still rendered as a glaring
+   white pill against the dark page. */
+.react-international-phone-input-container .react-international-phone-country-selector-button,
+.react-international-phone-input-container .react-international-phone-input {
+  background: rgba(0, 0, 0, 0.18) !important;
+  color: var(--gf-text) !important;
+}
+.react-international-phone-country-selector-dropdown {
+  background: var(--gf-surface) !important;
+  color: var(--gf-text) !important;
+  border: 1px solid var(--gf-border) !important;
+}
+:root[data-theme="light"] .react-international-phone-input-container .react-international-phone-country-selector-button,
+:root[data-theme="light"] .react-international-phone-input-container .react-international-phone-input {
+  background: #fff !important;
+  color: #1b103d !important;
 }
 .react-international-phone-input{
   border: none !important;

@@ -1,4 +1,4 @@
-import { getPeriodLabel, timeperiodRangesArray } from "@/helpers/timeFunctions/timeFunctions";
+import { getPeriodLabel } from "@/helpers/timeFunctions/timeFunctions";
 import {
   filterBillsOrIncomes,
   getTransactionsFromTimeRange,
@@ -12,7 +12,7 @@ import {
   setTransacctions,
 } from "@/lib/features/transacctionsSlice";
 import { fetchUser, setUser } from "@/lib/features/userSlice";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ResponsiveBarsChartComponent from "../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
 import HistoricalComparativeCategoriesView from "./view/HistoricalComparativeCategoriesView";
@@ -20,25 +20,10 @@ import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 
-const today = new Date();
-
-function HistoricalComparativeCategories() {
+function HistoricalComparativeCategories({ periodState }) {
   const [isLoading, setIsLoading] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [transactionCategories, setTransactionCategories] = useState([]);
-  const [timePeriod, setTimePeriod] = useState([
-    new Date(today.getFullYear(), today.getMonth() - 2, 1),
-    today,
-  ]);
-  const [compareEnabled, setCompareEnabled] = useState(false);
-  const [comparePeriod, setComparePeriod] = useState(() => [
-    new Date(
-      today.getFullYear() - 1,
-      today.getMonth() - 2,
-      1
-    ),
-    new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()),
-  ]);
   const [compareCategoryData, setCompareCategoryData] = useState(null);
   // Redux
   const dispatch = useDispatch();
@@ -49,20 +34,20 @@ function HistoricalComparativeCategories() {
 
   const { email } = useGetUserSession();
   const { close, modalContent, renderModal, handleClose } = useModal();
-  // Stable across the component's lifetime (only depends on the
-  // module-level `today`) - memoized so it can safely sit in the compare
-  // effect's dependency array below without a new array reference on every
-  // render re-triggering that effect in a loop.
-  const timePeriodsForSelecter = useMemo(
-    () => [
-      {
-        value: `${new Date(today.getFullYear(), today.getMonth() - 2, 1)}*${today}`,
-        name: "Last 3 months",
-      },
-      ...timeperiodRangesArray,
-    ],
-    []
-  );
+  // Period state (timePeriod/comparePeriod/compareEnabled + selector
+  // options/handlers) is owned by HistoryClient via usePeriodComparison and
+  // shared across every /dashboard/history section - see that hook for why.
+  const {
+    timePeriod,
+    comparePeriod,
+    compareEnabled,
+    setCompareEnabled,
+    timePeriodsForSelecter,
+    getValueFromSelecter,
+    handleRangeDate,
+    getCompareValueFromSelecter,
+    handleCompareRangeDate,
+  } = periodState;
   // USE EFFECTS:
   useEffect(() => {
     // User
@@ -227,29 +212,6 @@ function HistoricalComparativeCategories() {
       }
     );
     tabs.push("Compare bills", "Compare incomes");
-  }
-
-  // FUNCTIONS
-  function getValueFromSelecter(v) {
-    const [start, end] = v.split("*");
-    setTimePeriod([new Date(start), new Date(end)]);
-  }
-
-  function handleRangeDate(dateStart, dateEnd) {
-    if (dateStart && dateEnd) {
-      setTimePeriod([dateStart, dateEnd]);
-    }
-  }
-
-  function getCompareValueFromSelecter(v) {
-    const [start, end] = v.split("*");
-    setComparePeriod([new Date(start), new Date(end)]);
-  }
-
-  function handleCompareRangeDate(dateStart, dateEnd) {
-    if (dateStart && dateEnd) {
-      setComparePeriod([dateStart, dateEnd]);
-    }
   }
 
   // PROPS

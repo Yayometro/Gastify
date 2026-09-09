@@ -5,13 +5,10 @@ import { useSelector } from "react-redux";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import useModal from "@/hooks/useModalBasic";
 import fetcher from "@/helpers/fetcher";
-import { timeperiodRangesArray } from "@/helpers/timeFunctions/timeFunctions";
 import { buildBudgetHistoricalComparative } from "@/helpers/transformers/budgetHistoricalComparative";
 import HistoricalBudgetsComparativeView from "./HistoricalBudgetsComparativeView";
 import BudgetHistoricalDetailModal from "./BudgetHistoricalDetailModal";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
-
-const today = new Date();
 
 // New (not yet on this page before) - lets you see how your spending
 // budgets behaved month by month across whatever range you pick, same as
@@ -20,11 +17,14 @@ const today = new Date();
 // budget/get-historical/route.js) rather than the app's usual /budget/get,
 // since an archived budget's past months would otherwise disappear from a
 // historical view even though its data was never deleted.
-function HistoricalBudgetsComparative() {
-  const [timePeriod, setTimePeriod] = useState([
-    new Date(today.getFullYear(), today.getMonth() - 2, 1),
-    today,
-  ]);
+//
+// Period state (timePeriod + selector options/handlers) is owned by
+// HistoryClient via usePeriodComparison and shared across every
+// /dashboard/history section, so this table always shows the same range as
+// the rest of the page - it doesn't render its own compare-period table
+// (period-vs-period budget changes live in HistoricalWalletAnalyzer instead).
+function HistoricalBudgetsComparative({ periodState }) {
+  const { timePeriod, timePeriodsForSelecter, getValueFromSelecter, handleRangeDate } = periodState;
   const [budgets, setBudgets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,25 +66,6 @@ function HistoricalBudgetsComparative() {
           endDate: timePeriod[1],
         })
       : [];
-
-  function getValueFromSelecter(v) {
-    const [start, end] = v.split("*");
-    setTimePeriod([new Date(start), new Date(end)]);
-  }
-
-  function handleRangeDate(dateStart, dateEnd) {
-    if (dateStart && dateEnd) {
-      setTimePeriod([dateStart, dateEnd]);
-    }
-  }
-
-  const timePeriodsForSelecter = [
-    {
-      value: `${new Date(today.getFullYear(), today.getMonth() - 2, 1)}*${today}`,
-      name: "Last 3 months",
-    },
-    ...timeperiodRangesArray,
-  ];
 
   return (
     <>

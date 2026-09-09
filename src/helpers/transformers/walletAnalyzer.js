@@ -23,6 +23,77 @@ export function getPreviousMonthRange(referenceDate) {
   return getMonthRange(new Date(d.getFullYear(), d.getMonth() - 1, 1));
 }
 
+// ---- Arbitrary-width period generalization ----
+// The functions above (and most of this file) are month-shaped by design -
+// perfect for the Dashboard's single-month Wallet Analyzer. History's
+// period-vs-period Wallet Analyzer needs the same depth of analysis for a
+// period of ANY width (a quarter, "last 3 months", a full year) - these
+// primitives, and the *ForRange sibling functions below that use them, are
+// that generalization. Existing month-based functions are left completely
+// untouched (not rewritten as thin wrappers around these) because a
+// calendar month's day-count varies (28-31) - a fixed-day-width "preceding
+// period" does NOT reproduce "the previous calendar month" exactly, so
+// silently swapping one for the other would subtly change already-tested
+// Dashboard behavior. Kept as fully independent, parallel implementations.
+function startOfDay(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfDay(date) {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+// `range.end` is conventionally end-of-day (23:59:59.999), not a clean day
+// boundary - normalizing it down to start-of-day before dividing (then
+// adding 1 back for inclusive counting) avoids overcounting by a day,
+// which dividing the raw end-of-day timestamp directly does.
+function getRangeWidthDays(range) {
+  return Math.round((startOfDay(range.end) - startOfDay(range.start)) / 86400000) + 1;
+}
+
+function formatShortDate(date) {
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+
+// A period's display label: "Julio 2026" when it happens to be exactly one
+// calendar month (the common case - matches the existing month-based
+// labeling convention elsewhere in this file), a short date range otherwise.
+function formatPeriodLabel(period) {
+  const sameCalendarMonth =
+    period.start.getDate() === 1 &&
+    period.start.getMonth() === period.end.getMonth() &&
+    period.start.getFullYear() === period.end.getFullYear();
+  if (sameCalendarMonth) return `${months[period.start.getMonth()]} ${period.start.getFullYear()}`;
+  return `${formatShortDate(period.start)} - ${formatShortDate(period.end)}`;
+}
+
+// `count` equal-width ranges (same width as `range`), ending immediately
+// before `range.start` - oldest first, matching computeTrend's existing
+// oldest->newest ordering convention. The arbitrary-width sibling of "N
+// calendar months back from a reference date."
+export function getPrecedingPeriods(range, count) {
+  const widthDays = getRangeWidthDays(range);
+  const periods = [];
+  let cursorEnd = endOfDay(addDays(range.start, -1));
+  for (let i = 0; i < count; i++) {
+    const end = cursorEnd;
+    const start = startOfDay(addDays(end, -(widthDays - 1)));
+    periods.unshift({ start, end });
+    cursorEnd = endOfDay(addDays(start, -1));
+  }
+  return periods;
+}
+
 // 1. Income / expense / balance / savings-rate for one month.
 export function getMonthTotals(transactions, monthStart, monthEnd) {
   const monthTx = getTransactionsFromTimeRange(transactions, monthStart, monthEnd);
@@ -131,6 +202,29 @@ export function computeCategoryHistoryAverage(transactions, categoryName, isBill
   return { average, monthsOfHistory, monthlyTotals: monthlyTotalsLabeled };
 }
 
+// Arbitrary-width sibling - a category's trailing-N-period average
+// (periods the same width as `range`, immediately preceding it), instead
+// of always trailing calendar months. Same field names as the month-based
+// version above (`monthsOfHistory`/`monthlyTotals`) so downstream
+// rendering (categoryAnomaly cards/modals) works with either unchanged.
+export function computeCategoryHistoryAverageForRange(transactions, categoryName, isBill, range, periodsBack = 6) {
+  const periods = getPrecedingPeriods(range, periodsBack);
+  const totals = [];
+  const totalsLabeled = [];
+  periods.forEach((period) => {
+    const tx = getTransactionsFromTimeRange(transactions, period.start, period.end);
+    const set = isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes;
+    const total = set
+      .filter((t) => (t.category?.name || "No category") === categoryName)
+      .reduce((a, t) => a + getPrimaryAmount(t), 0);
+    totals.push(total);
+    totalsLabeled.push({ label: formatPeriodLabel(period), amount: total });
+  });
+  const monthsOfHistory = totals.filter((v) => v > 0).length;
+  const average = totals.reduce((a, b) => a + b, 0) / (totals.length || 1);
+  return { average, monthsOfHistory, monthlyTotals: totalsLabeled };
+}
+
 // 3. Top individual transactions for the current month and, separately,
 // the previous month - transactions don't repeat month to month the way
 // categories do, so this is two independent top-N lists, not a joined one.
@@ -183,6 +277,24 @@ export function computeTrend(transactions, referenceDate, monthsBack = 6) {
   return result;
 }
 
+// Arbitrary-width sibling of computeTrend - `periodsBack` equal-width
+// periods (same width as `range`), oldest first, `range` itself last. Feeds
+// the same trend-chart shape ({label, income, expense, transactionCount}),
+// so computeMonthlyAverages below works on either unchanged.
+export function computeTrendForRange(transactions, range, periodsBack = 6) {
+  const periods = [...getPrecedingPeriods(range, periodsBack - 1), range];
+  return periods.map((period) => {
+    const tx = getTransactionsFromTimeRange(transactions, period.start, period.end);
+    const { incomes, bills } = filterBillsOrIncomes(tx);
+    return {
+      label: formatPeriodLabel(period),
+      income: incomes.reduce((a, t) => a + getPrimaryAmount(t), 0),
+      expense: bills.reduce((a, t) => a + getPrimaryAmount(t), 0),
+      transactionCount: bills.length,
+    };
+  });
+}
+
 // Average monthly income/expense across the same trend window - reuses
 // `trend`'s already-computed whole-month totals instead of re-deriving them.
 export function computeMonthlyAverages(trend) {
@@ -215,6 +327,12 @@ export function computeBudgetStreaks(budgets, transactions, referenceDate, lookb
     const last = series[series.length - 1] || { actual: 0, goal: 0 };
     const pct = last.goal > 0 ? (last.actual / last.goal) * 100 : 0;
     return {
+      // Two different Budgets can share the same category name (e.g. a
+      // spending budget and a separate one, both tagged "Clothes") - this
+      // is one row per BUDGET, not per category name, so callers rendering
+      // a list need `budgetId` (unique) as the key, not `category` (only
+      // unique in the common case).
+      budgetId: String(row.budget._id),
       category: row.budget.category?.name || row.budget.name || "Budget",
       limit: last.goal,
       spent: last.actual,
@@ -273,6 +391,29 @@ export function detectSubscriptions(transactions, referenceDate, lookbackMonths 
     const occurrences = [...recentTx]
       .sort((a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt))
       .map((t) => ({ date: t.date || t.createdAt, amount: getPrimaryAmount(t) }));
+
+    // A real recurring subscription fires once per billing cycle - two
+    // occurrences less than 48h apart, in the current month, are far more
+    // likely a duplicate charge (a retry, a double-submit) than the provider
+    // actually billing twice - worth surfacing explicitly rather than relying
+    // on the AI to notice it while eyeballing raw dates, which is how this
+    // was caught in the first place (inconsistently, only by some models).
+    const { start: currentMonthStart, end: currentMonthEnd } = getMonthRange(ref);
+    const occurrencesThisMonth = occurrences.filter((o) => {
+      const d = new Date(o.date);
+      return d >= currentMonthStart && d <= currentMonthEnd;
+    });
+    let possibleDuplicateInMonth = false;
+    for (let i = 0; i < occurrencesThisMonth.length && !possibleDuplicateInMonth; i++) {
+      for (let j = i + 1; j < occurrencesThisMonth.length; j++) {
+        const hoursApart = Math.abs(new Date(occurrencesThisMonth[i].date) - new Date(occurrencesThisMonth[j].date)) / 36e5;
+        if (hoursApart <= 48) {
+          possibleDuplicateInMonth = true;
+          break;
+        }
+      }
+    }
+
     results.push({
       name: latest.name,
       categoryName: latest.category?.name || "No category",
@@ -281,6 +422,7 @@ export function detectSubscriptions(transactions, referenceDate, lookbackMonths 
       color: latest.category?.color || "#ABABAB",
       icon: latest.category?.icon || "MdFilterNone",
       isNew,
+      possibleDuplicateInMonth,
       occurrences,
     });
   });
@@ -294,11 +436,12 @@ export function detectSubscriptions(transactions, referenceDate, lookbackMonths 
 // checks for whether they're actually related - whether a category's
 // total is dominated by one big one-off vs. accumulated from many
 // smaller, recurring transactions, and whether tags tie them together.
-export function findBiggestSpendPatterns(transactions, referenceDate, monthsBack = 12) {
-  const ref = new Date(referenceDate);
-  const start = new Date(ref.getFullYear(), ref.getMonth() - (monthsBack - 1), 1, 0, 0, 0, 0);
-  const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
-  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, start, end)).bills;
+// Shared by findBiggestSpendPatterns (month-based) and
+// findBiggestSpendPatternsForRange (arbitrary range) - everything after
+// resolving the bills-in-range set is identical either way, so this is the
+// one place that logic lives.
+function computeBiggestSpendPatternsCore(transactions, range) {
+  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills;
   if (bills.length === 0) return null;
 
   const totalSpend = bills.reduce((a, t) => a + getPrimaryAmount(t), 0);
@@ -374,9 +517,22 @@ export function findBiggestSpendPatterns(transactions, referenceDate, monthsBack
     biggestSubcategory,
     mostCommonCategoryTag,
     analysis,
-    monthsBack,
-    lookbackRange: { start, end },
+    lookbackRange: range,
   };
+}
+
+export function findBiggestSpendPatterns(transactions, referenceDate, monthsBack = 12) {
+  const ref = new Date(referenceDate);
+  const start = new Date(ref.getFullYear(), ref.getMonth() - (monthsBack - 1), 1, 0, 0, 0, 0);
+  const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
+  const core = computeBiggestSpendPatternsCore(transactions, { start, end });
+  return core && { ...core, monthsBack };
+}
+
+// Arbitrary-width sibling - the range IS the lookback window, no monthsBack
+// concept (the caller already chose the window's width by picking `range`).
+export function findBiggestSpendPatternsForRange(transactions, range) {
+  return computeBiggestSpendPatternsCore(transactions, range);
 }
 
 // Per-month version of findBiggestSpendPatterns - instead of one winner
@@ -402,10 +558,11 @@ export function computeMonthlyChampions(transactions, referenceDate, monthsBack 
     const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills;
 
     if (bills.length === 0) {
-      monthEntries.push({ label, range, biggestTransaction: null, biggestCategory: null, biggestSubcategory: null });
+      monthEntries.push({ label, range, total: 0, biggestTransaction: null, biggestCategory: null, biggestSubcategory: null });
       continue;
     }
 
+    const total = bills.reduce((a, t) => a + getPrimaryAmount(t), 0);
     const biggestTransactionRaw = [...bills].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))[0];
 
     const byCategory = new Map();
@@ -436,6 +593,7 @@ export function computeMonthlyChampions(transactions, referenceDate, monthsBack 
     monthEntries.push({
       label,
       range,
+      total,
       biggestTransaction: {
         _id: biggestTransactionRaw._id,
         name: biggestTransactionRaw.name || "Transaction",
@@ -456,6 +614,64 @@ export function computeMonthlyChampions(transactions, referenceDate, monthsBack 
   }
 
   return { months: monthEntries, windowTotal, monthsBack };
+}
+
+// History's Wallet Analyzer always analyzes an arbitrary multi-month
+// range (never a single month), so it needs the champions window to
+// exactly cover the SELECTED range - not "N months back from an anchor
+// date" like computeMonthlyChampions (built for the Dashboard's one-month
+// view, where "anchor + lookback" and "the analyzed period" are the same
+// thing by construction). Reusing computeMonthlyChampions here with
+// monthsBack=someGuess would misalign the window with `range` whenever
+// `range` doesn't happen to end at `today` (e.g. "all 2026" picked in
+// September: the real range is Jan-Dec, but a lookback from today would
+// cover Oct(previous year)-Sept instead). This walks calendar months from
+// range.start through min(range.end, today) directly.
+export function computeMonthlyChampionsForRange(transactions, range, today = new Date()) {
+  const effectiveEnd = range.end < today ? range.end : today;
+  if (effectiveEnd < range.start) {
+    return { months: [], windowTotal: 0, monthsBack: 0 };
+  }
+  const monthsBack =
+    (effectiveEnd.getFullYear() - range.start.getFullYear()) * 12 + (effectiveEnd.getMonth() - range.start.getMonth()) + 1;
+  return computeMonthlyChampions(transactions, effectiveEnd, monthsBack);
+}
+
+// The single busiest calendar month inside a champions window - the
+// concrete answer to "mes del período en el que más se gastó".
+export function findPeakMonth(monthlyChampions) {
+  const withSpend = monthlyChampions.months.filter((m) => m.total > 0);
+  if (withSpend.length === 0) return null;
+  return withSpend.reduce((best, m) => (m.total > best.total ? m : best));
+}
+
+// Buckets a champions window's months into real calendar quarters (Q1
+// Jan-Mar ... Q4 Oct-Dec), so "período del año en el que más se gastó"
+// reads as an actual season/quarter rather than an arbitrary 3-month
+// slice - meaningful once a period spans enough months to compare more
+// than one quarter against another (a 3-month "last quarter" selection
+// only ever touches one bucket, so there's nothing to compare there).
+export function computeQuarterTotals(monthlyChampions) {
+  const byQuarter = new Map();
+  monthlyChampions.months.forEach((m) => {
+    const monthDate = m.range.start;
+    const year = monthDate.getFullYear();
+    const quarter = Math.floor(monthDate.getMonth() / 3) + 1;
+    const key = `${year}-Q${quarter}`;
+    if (!byQuarter.has(key)) {
+      byQuarter.set(key, { label: `Q${quarter} ${year}`, year, quarter, total: 0, months: [] });
+    }
+    const entry = byQuarter.get(key);
+    entry.total += m.total;
+    entry.months.push({ label: m.label, total: m.total });
+  });
+  return [...byQuarter.values()].sort((a, b) => (a.year - b.year) || (a.quarter - b.quarter));
+}
+
+export function findPeakQuarter(quarterTotals) {
+  const withSpend = quarterTotals.filter((q) => q.total > 0);
+  if (withSpend.length === 0) return null;
+  return withSpend.reduce((best, q) => (q.total > best.total ? q : best));
 }
 
 // 7. How this month's spend-through-today compares to the same
@@ -501,6 +717,45 @@ export function computeSpendingPace(transactions, referenceDate, isBill = true, 
     avgPaceForSameDay,
     deltaPct: avgPaceForSameDay > 0 ? ((spentSoFar - avgPaceForSameDay) / avgPaceForSameDay) * 100 : null,
     dayOfMonth,
+    monthlyDetail,
+  };
+}
+
+// Arbitrary-width sibling - "day of month" becomes "day elapsed into the
+// period" (capped at the period's own width for an already-closed period),
+// compared against the same elapsed-day mark in `periodsBack` preceding
+// periods of the same width. Same field names as computeSpendingPace
+// (`dayOfMonth`/`monthlyDetail`) so existing pace-card rendering works with
+// either - "day of month" reads fine as "day of period" too.
+export function computeSpendingPaceForRange(transactions, range, isBill = true, periodsBack = 6, today = new Date()) {
+  const widthDays = getRangeWidthDays(range);
+  const isCurrentPeriod = today >= range.start && today <= range.end;
+  const elapsedDays = isCurrentPeriod ? Math.floor((startOfDay(today) - range.start) / 86400000) + 1 : widthDays;
+  const soFarEnd = endOfDay(addDays(range.start, elapsedDays - 1));
+  const currentSet = isBill
+    ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, soFarEnd)).bills
+    : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, soFarEnd)).incomes;
+  const spentSoFar = currentSet.reduce((a, t) => a + getPrimaryAmount(t), 0);
+
+  const pastPaces = [];
+  const monthlyDetail = [];
+  getPrecedingPeriods(range, periodsBack).forEach((period) => {
+    const cappedDays = Math.min(elapsedDays, getRangeWidthDays(period));
+    const pastEnd = endOfDay(addDays(period.start, cappedDays - 1));
+    const pastSet = isBill
+      ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, period.start, pastEnd)).bills
+      : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, period.start, pastEnd)).incomes;
+    const amount = pastSet.reduce((a, t) => a + getPrimaryAmount(t), 0);
+    pastPaces.push(amount);
+    monthlyDetail.push({ label: formatPeriodLabel(period), throughDay: cappedDays, amount });
+  });
+  const avgPaceForSameDay = pastPaces.length > 0 ? pastPaces.reduce((a, b) => a + b, 0) / pastPaces.length : 0;
+  return {
+    spentSoFar,
+    avgPaceForSameDay,
+    deltaPct: avgPaceForSameDay > 0 ? ((spentSoFar - avgPaceForSameDay) / avgPaceForSameDay) * 100 : null,
+    dayOfMonth: elapsedDays,
+    periodWidthDays: widthDays,
     monthlyDetail,
   };
 }
@@ -620,6 +875,97 @@ export function computeSpendingByWeekday(transactions, referenceDate) {
   return { days, insight, weekdayAvg, weekendAvg, overallMean, weeks, dailyBreakdown };
 }
 
+// Arbitrary-width sibling - iterates the whole `range` day by day instead
+// of one calendar month's days, so the pattern reflects the entire
+// selected period (e.g. "last 3 months"), not just its final month.
+export function computeSpendingByWeekdayForRange(transactions, range) {
+  const widthDays = getRangeWidthDays(range);
+  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills;
+
+  const totals = new Array(7).fill(0);
+  const counts = new Array(7).fill(0);
+  bills.forEach((t) => {
+    const idx = mondayFirstIndex(new Date(t.date || t.createdAt).getDay());
+    totals[idx] += getPrimaryAmount(t);
+    counts[idx] += 1;
+  });
+
+  const occurrences = new Array(7).fill(0);
+  for (let i = 0; i < widthDays; i++) {
+    occurrences[mondayFirstIndex(addDays(range.start, i).getDay())] += 1;
+  }
+
+  const days = WEEKDAY_NAMES.map((dayName, i) => ({
+    dayIndex: i,
+    dayName,
+    total: totals[i],
+    count: counts[i],
+    occurrences: occurrences[i],
+    avgPerOccurrence: occurrences[i] > 0 ? totals[i] / occurrences[i] : 0,
+  }));
+
+  const hasAnySpend = totals.some((t) => t > 0);
+  const weekdayDays = days.slice(0, 5);
+  const weekendDays = days.slice(5);
+  const weekdayAvg = weekdayDays.reduce((a, d) => a + d.avgPerOccurrence, 0) / weekdayDays.length;
+  const weekendAvg = weekendDays.reduce((a, d) => a + d.avgPerOccurrence, 0) / weekendDays.length;
+  const overallMean = days.reduce((a, d) => a + d.avgPerOccurrence, 0) / days.length;
+
+  const sortedByAvg = [...days].sort((a, b) => b.avgPerOccurrence - a.avgPerOccurrence);
+  const standout = sortedByAvg[0];
+  const runnerUp = sortedByAvg[1];
+
+  let insight;
+  if (!hasAnySpend) {
+    insight = "Sin gastos en este periodo para detectar un patrón.";
+  } else if (standout.avgPerOccurrence > 0 && (runnerUp.avgPerOccurrence === 0 || standout.avgPerOccurrence > runnerUp.avgPerOccurrence * 1.5)) {
+    insight = `Los ${WEEKDAY_PLURAL[standout.dayName]} destacan como tu día de mayor gasto en este periodo.`;
+  } else if (weekendAvg > weekdayAvg * 1.2) {
+    insight = "Sueles gastar más los fines de semana en este periodo.";
+  } else if (weekdayAvg > weekendAvg * 1.2) {
+    insight = "Sueles gastar más entre semana en este periodo.";
+  } else if (overallMean > 0 && standout.avgPerOccurrence > overallMean * 1.3) {
+    insight = `Los ${WEEKDAY_PLURAL[standout.dayName]} destacan como tu día de mayor gasto en este periodo.`;
+  } else {
+    insight = "Sin un patrón claro por día de la semana en este periodo.";
+  }
+
+  const dailyTotalsByKey = new Map();
+  for (let i = 0; i < widthDays; i++) {
+    dailyTotalsByKey.set(addDays(range.start, i).toDateString(), { total: 0, count: 0 });
+  }
+  bills.forEach((t) => {
+    const d = new Date(t.date || t.createdAt);
+    const entry = dailyTotalsByKey.get(d.toDateString());
+    if (entry) {
+      entry.total += getPrimaryAmount(t);
+      entry.count += 1;
+    }
+  });
+  const dailyBreakdown = [];
+  for (let i = 0; i < widthDays; i++) {
+    const day = addDays(range.start, i);
+    const { total, count } = dailyTotalsByKey.get(day.toDateString());
+    dailyBreakdown.push({ date: day, dayName: WEEKDAY_NAMES[mondayFirstIndex(day.getDay())], total, count });
+  }
+
+  // Simple day-range weeks (day 1-7, 8-14, ...) across the whole span,
+  // rather than calendar weeks - same convention as the month-based
+  // version, just not clipped to one month's days.
+  const weeks = [];
+  for (let weekStartIdx = 0; weekStartIdx < widthDays; weekStartIdx += 7) {
+    const weekEndIdx = Math.min(weekStartIdx + 6, widthDays - 1);
+    const weekDays = dailyBreakdown.slice(weekStartIdx, weekEndIdx + 1);
+    weeks.push({
+      label: `${formatShortDate(addDays(range.start, weekStartIdx))} - ${formatShortDate(addDays(range.start, weekEndIdx))}`,
+      total: weekDays.reduce((a, d) => a + d.total, 0),
+      count: weekDays.reduce((a, d) => a + d.count, 0),
+    });
+  }
+
+  return { days, insight, weekdayAvg, weekendAvg, overallMean, weeks, dailyBreakdown };
+}
+
 // 8. Rule-based highlight cards - deliberately NOT an LLM call: every
 // number here is already computed exactly, so a template just has to word
 // it, not derive it. Ranked warnings-first, capped so the strip stays
@@ -631,7 +977,13 @@ const INSIGHT_PRIORITY = { warning: 0, positive: 1, info: 2 };
 // currency-agnostic transformer layer intentionally doesn't know about.
 // The View renders both the card's one-line detail AND the "why" modal's
 // expanded breakdown from this same `data`, keyed by `type`.
-export function generateInsights(facts) {
+// `extraInsights` and `maxInsights` let buildPeriodSnapshot append
+// period-native insights (peak month/quarter, etc. - things that only
+// make sense across a multi-month range) without duplicating this
+// function's sort/priority logic; both default away to nothing so every
+// existing single-month caller (buildWalletAnalyzerSnapshot, the
+// Dashboard) behaves exactly as before.
+export function generateInsights(facts, extraInsights = [], maxInsights = 5) {
   const insights = [];
 
   const worstBudget = facts.budgetRows.find((b) => b.status === "over");
@@ -713,7 +1065,7 @@ export function generateInsights(facts) {
     }
   }
 
-  return insights.sort((a, b) => INSIGHT_PRIORITY[a.tone] - INSIGHT_PRIORITY[b.tone]).slice(0, 5);
+  return [...insights, ...extraInsights].sort((a, b) => INSIGHT_PRIORITY[a.tone] - INSIGHT_PRIORITY[b.tone]).slice(0, maxInsights);
 }
 
 // Orchestrator - composes every sync computation above into one snapshot.
@@ -861,5 +1213,288 @@ export function buildMonthComparison({ transactions, monthADate, monthBDate, top
     categoriesBills: compareCategoriesAcrossMonths(transactions, true, rangeA, rangeB, topN),
     categoriesIncomes: compareCategoriesAcrossMonths(transactions, false, rangeA, rangeB, topN),
     transactionsBills: compareTransactionsAcrossMonths(transactions, true, rangeA, rangeB, topN),
+  };
+}
+
+// Compares every spending Budget's limit/spend between two arbitrary
+// ranges (a quarter, a half, a year - not just a single month) - reuses
+// buildBudgetHistoricalComparative's own per-month goal resolution (it
+// already walks each budget's history[] to know what the limit WAS during
+// a given past month, and applies the period-type monthly divisor) rather
+// than re-deriving any of that, once per range, then merges the two
+// month-series into one row per budget by summing across each range.
+// A budget with no tracked months in one of the two ranges (created after
+// range A ended, or archived before range B started) still gets a row -
+// its data for that side is just `null` instead of being silently dropped.
+// Keeps `monthlySeries` (not just the summed totals) so a click on a
+// period-comparison budget row can open the same month-by-month detail
+// view BudgetHistoricalDetailModal already renders for a single period -
+// one per side here, via the new BudgetPeriodDetailModal.
+function sumBudgetSeries(row) {
+  return {
+    actual: row.monthlySeries.reduce((a, m) => a + m.actual, 0),
+    goal: row.monthlySeries.reduce((a, m) => a + m.goal, 0),
+    monthsTracked: row.monthsTracked,
+    monthsMet: row.monthsMet,
+    complianceRate: row.complianceRate,
+    monthlySeries: row.monthlySeries,
+  };
+}
+
+export function buildBudgetPeriodChanges(budgets, transactions, rangeA, rangeB) {
+  const rowsA = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeA.start, endDate: rangeA.end });
+  const rowsB = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeB.start, endDate: rangeB.end });
+
+  const byId = (rows) => new Map(rows.map((row) => [String(row.budget._id), row]));
+  const mapA = byId(rowsA);
+  const mapB = byId(rowsB);
+  const allIds = new Set([...mapA.keys(), ...mapB.keys()]);
+
+  const results = [];
+  allIds.forEach((id) => {
+    const rowA = mapA.get(id);
+    const rowB = mapB.get(id);
+    const budget = (rowA || rowB).budget;
+    results.push({
+      budgetId: id,
+      budget,
+      category: budget.category?.name || budget.name || "Budget",
+      periodA: rowA ? sumBudgetSeries(rowA) : null,
+      periodB: rowB ? sumBudgetSeries(rowB) : null,
+    });
+  });
+  return results;
+}
+
+// Compares two arbitrary date RANGES against each other - a quarter vs. the
+// same quarter last year, this year vs. last year, any 3/6-month window vs.
+// another - not just two single calendar months (see buildMonthComparison
+// above for that narrower case, still used by the MCP tools).
+// getMonthTotals/compareCategoriesAcrossMonths/compareTransactionsAcrossMonths
+// already accept a range of any width on each side, so this is a pure
+// orchestrator - no new comparison math beyond the budget merge above.
+export function buildPeriodComparison({ transactions, budgets, rangeA, rangeB, labelA, labelB, topN = 12 }) {
+  return {
+    periodA: { label: labelA, totals: getMonthTotals(transactions, rangeA.start, rangeA.end) },
+    periodB: { label: labelB, totals: getMonthTotals(transactions, rangeB.start, rangeB.end) },
+    categoriesBills: compareCategoriesAcrossMonths(transactions, true, rangeA, rangeB, topN),
+    categoriesIncomes: compareCategoriesAcrossMonths(transactions, false, rangeA, rangeB, topN),
+    transactionsBills: compareTransactionsAcrossMonths(transactions, true, rangeA, rangeB, topN),
+    budgetChanges: buildBudgetPeriodChanges(budgets, transactions, rangeA, rangeB),
+  };
+}
+
+// Arbitrary-width sibling of buildWalletAnalyzerSnapshot - the orchestrator
+// behind History's standalone Wallet Analyzer (one period at a time, no
+// "Compare" required). `previousRange` is auto-computed as the immediately
+// preceding equal-width period, so every current-vs-previous figure below
+// already has trend context without the caller needing to opt into an
+// explicit comparison. Reuses every *ForRange function above for stats
+// that are genuinely sensitive to the selected period's own width (trend,
+// pace, weekday pattern, biggest-spend, category anomaly) - and reuses the
+// EXISTING month-based functions unchanged, anchored at `range.end`, for
+// stats that are inherently monthly regardless of the display width
+// (budget limits, subscription billing cycles, "which calendar month
+// spent the most"): generalizing those to the display period's own width
+// would be answering a question nobody asked.
+export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack, topN = 12, today = new Date() }) {
+  const previousRange = getPrecedingPeriods(range, 1)[0];
+
+  // A fixed periodsBack (the original month-based Wallet Analyzer always
+  // used 6) doesn't scale: 6 PRECEDING periods of the SAME width as `range`
+  // means 6 months back for a 1-month range (fine, matches the original),
+  // but 6 YEARS back for a full-year range - most accounts don't have 6
+  // years of history, so trend/pace/anomaly would come back empty not
+  // because anything's broken, but because that much history genuinely
+  // doesn't exist. Scaling the default so the total lookback horizon stays
+  // roughly "about a year" regardless of the selected width keeps this
+  // asking for a realistic amount of history - capped at 6 (matches the
+  // original monthly behavior exactly for a 1-month range) and floored at
+  // 2 (need at least two points to show anything resembling a trend).
+  const widthDays = getRangeWidthDays(range);
+  const resolvedPeriodsBack = periodsBack ?? Math.max(2, Math.min(6, Math.round(365 / widthDays)));
+
+  const currentTotals = getMonthTotals(transactions, range.start, range.end);
+  const previousTotals = getMonthTotals(transactions, previousRange.start, previousRange.end);
+
+  const topCategoriesBills = compareCategoriesAcrossMonths(transactions, true, range, previousRange, topN);
+  const topCategoriesIncomes = compareCategoriesAcrossMonths(transactions, false, range, previousRange, topN);
+  const topCategoriesBillsPrevious = rankCategoriesForRange(transactions, true, previousRange, topN);
+  const topTransactionsBills = compareTransactionsAcrossMonths(transactions, true, range, previousRange, topN);
+
+  const trend = computeTrendForRange(transactions, range, resolvedPeriodsBack);
+  const monthlyAverages = computeMonthlyAverages(trend);
+  // Budget streaks/subscriptions/"biggest month" are inherently monthly
+  // (budget limits and billing cycles don't stretch to match a wide
+  // selected range) and are anchored at range.end - but when `range` is
+  // the current, still-in-progress period (e.g. "All 2026" picked while
+  // today is still September), range.end is a FUTURE date. Anchoring
+  // there asked these month-based functions about months that haven't
+  // happened yet, which is why they came back empty even though real data
+  // exists earlier in the very same range - clamping to "today" instead
+  // fixes that without changing anything for a fully-closed past range.
+  const monthAnchor = range.end < today ? range.end : today;
+  const budgetRows = computeBudgetStreaks(budgets, transactions, monthAnchor, 12);
+  const subscriptions = detectSubscriptions(transactions, monthAnchor, 3, 6);
+  const pace = computeSpendingPaceForRange(transactions, range, true, resolvedPeriodsBack, today);
+  const biggestSpendPatterns = findBiggestSpendPatternsForRange(transactions, range);
+  // Scoped exactly to the selected range (see computeMonthlyChampionsForRange's
+  // own comment) - and computed for the previous equivalent range too, so
+  // "peak month"/"peak quarter" can be compared period-over-period below,
+  // matching what History always needs: this section only ever analyzes
+  // periods of 3+ months, never a single calendar month.
+  const monthlyChampions = computeMonthlyChampionsForRange(transactions, range, today);
+  const previousMonthlyChampions = computeMonthlyChampionsForRange(transactions, previousRange, today);
+  const quarterTotals = computeQuarterTotals(monthlyChampions);
+  const weekdaySpending = computeSpendingByWeekdayForRange(transactions, range);
+
+  // savingsHistory[0] is the CURRENT period (matching generateInsights'
+  // `facts.savingsHistory[0]` = current convention), oldest last - the
+  // labeled array stays chronological (oldest first) for the trend chart.
+  const savingsHistory = [];
+  const savingsHistoryLabeled = [];
+  const orderedPeriods = [range, ...getPrecedingPeriods(range, resolvedPeriodsBack - 1).reverse()];
+  orderedPeriods.forEach((period) => {
+    const rate = getMonthTotals(transactions, period.start, period.end).savingsRate;
+    savingsHistory.push(rate);
+    savingsHistoryLabeled.unshift({ label: formatPeriodLabel(period), rate });
+  });
+
+  // Among the top few categories, whichever deviates most (in either
+  // direction) from its own trailing average is the one worth calling out.
+  let categoryAnomaly = null;
+  topCategoriesBills.slice(0, 5).forEach((c) => {
+    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverageForRange(transactions, c.name, true, range, resolvedPeriodsBack);
+    if (average <= 0 || monthsOfHistory < 3) return;
+    const changePct = ((c.current - average) / average) * 100;
+    if (!categoryAnomaly || Math.abs(changePct) > Math.abs(categoryAnomaly.changePct)) {
+      if (Math.abs(changePct) >= 25) {
+        categoryAnomaly = { name: c.name, current: c.current, average, changePct, monthlyTotals };
+      }
+    }
+  });
+
+  // Insights that only make sense across a genuinely multi-month range -
+  // "which month/quarter within the period spent the most", and how that
+  // compares to the equivalent previous period. History's Wallet Analyzer
+  // always analyzes 3+ months, so these are the period-native complement
+  // to generateInsights' month-anchored ones (budget streaks, anomalies,
+  // savings-rate swings) - without them, a wide range like a full year
+  // came back nearly empty since most of those single-month-flavored
+  // conditions rarely fire over a long span.
+  const periodInsights = [];
+  const peakMonth = findPeakMonth(monthlyChampions);
+  if (peakMonth && monthlyChampions.months.length > 1) {
+    periodInsights.push({
+      icon: "📊",
+      tone: "info",
+      title: `${peakMonth.label} fue el mes con más gasto del período`,
+      type: "peak_month",
+      data: { peakMonth },
+    });
+
+    const previousPeakMonth = findPeakMonth(previousMonthlyChampions);
+    if (previousPeakMonth) {
+      const samePosition = peakMonth.range.start.getMonth() === previousPeakMonth.range.start.getMonth();
+      periodInsights.push({
+        icon: "🔁",
+        tone: "info",
+        title: samePosition
+          ? `${months[peakMonth.range.start.getMonth()]} también fue el mes de mayor gasto en el período anterior`
+          : `El período anterior gastó más en ${previousPeakMonth.label}, este período en ${peakMonth.label}`,
+        type: "peak_month_vs_previous",
+        data: { current: peakMonth, previous: previousPeakMonth },
+      });
+    }
+  }
+
+  const peakQuarter = findPeakQuarter(quarterTotals);
+  if (peakQuarter && quarterTotals.length >= 2) {
+    periodInsights.push({
+      icon: "🗓️",
+      tone: "info",
+      title: `${peakQuarter.label} concentró el mayor gasto del período`,
+      type: "peak_quarter",
+      data: { peakQuarter },
+    });
+  }
+
+  const facts = {
+    currentTotals,
+    previousTotals,
+    topCategoriesBills,
+    topCategoriesIncomes,
+    topCategoriesBillsPrevious,
+    topTransactionsBills,
+    trend,
+    monthlyAverages,
+    budgetRows,
+    subscriptions,
+    pace,
+    biggestSpendPatterns,
+    monthlyChampions,
+    previousMonthlyChampions,
+    quarterTotals,
+    weekdaySpending,
+    savingsHistory,
+    savingsHistoryLabeled,
+    categoryAnomaly,
+  };
+
+  return { ...facts, insights: generateInsights(facts, periodInsights, 8), currentRange: range, previousRange };
+}
+
+// The MCP tools fetch transactions fresh from the database on every call
+// (not from an already-loaded Redux store), so they need to know up front
+// how far back to query. buildPeriodSnapshot's own resolvedPeriodsBack caps
+// at 6 (see its own comment) regardless of range width, so 6 preceding
+// periods of the same width as `range` is always enough - the arbitrary-
+// range sibling of getSnapshotLookbackStart, which does the same thing for
+// the single-month snapshot.
+export function getPeriodSnapshotLookbackStart(range) {
+  return getPrecedingPeriods(range, 6)[0].start;
+}
+
+// Trims a full buildPeriodSnapshot() result down to what an AI-facing MCP
+// tool needs - same rationale and shape as buildCuratedWalletSummary
+// (dropping each budget's monthlySeries, the heaviest field, and capping
+// top-N lists), plus the period-native additions buildCuratedWalletSummary
+// doesn't have: monthlyChampions is trimmed to just {label, total,
+// topCategory} per month (dropping the full biggestTransaction/
+// biggestSubcategory detail, which the AI can get via get_period_summary_
+// detailed if it actually needs it) and quarterTotals is kept as-is since
+// it's already small.
+export function buildCuratedPeriodSummary(snapshot) {
+  return {
+    currentTotals: snapshot.currentTotals,
+    previousTotals: snapshot.previousTotals,
+    insights: snapshot.insights.map((insight) =>
+      insight.type === "budget" && insight.data?.monthlySeries
+        ? { ...insight, data: (({ monthlySeries, ...rest }) => rest)(insight.data) }
+        : insight
+    ),
+    budgetRows: snapshot.budgetRows.map(({ monthlySeries, ...rest }) => rest),
+    topCategoriesBills: snapshot.topCategoriesBills.slice(0, 6),
+    topCategoriesIncomes: snapshot.topCategoriesIncomes.slice(0, 6),
+    topTransactionsBills: {
+      current: snapshot.topTransactionsBills.current.slice(0, 6),
+      previous: snapshot.topTransactionsBills.previous.slice(0, 6),
+    },
+    subscriptions: snapshot.subscriptions,
+    pace: snapshot.pace,
+    weekdaySpending: snapshot.weekdaySpending,
+    savingsHistoryLabeled: snapshot.savingsHistoryLabeled,
+    monthlyAverages: snapshot.monthlyAverages,
+    categoryAnomaly: snapshot.categoryAnomaly,
+    monthlyChampions: {
+      months: snapshot.monthlyChampions.months.map((m) => ({
+        label: m.label,
+        total: m.total,
+        topCategory: m.biggestCategory ? { name: m.biggestCategory.name, total: m.biggestCategory.total } : null,
+      })),
+    },
+    quarterTotals: snapshot.quarterTotals,
+    currentRange: snapshot.currentRange,
+    previousRange: snapshot.previousRange,
   };
 }

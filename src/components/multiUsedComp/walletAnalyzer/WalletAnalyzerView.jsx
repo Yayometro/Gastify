@@ -23,7 +23,7 @@ import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
 // `invert`: for expense-side metrics (spending), up is the warm/notable
 // direction (red) - for income/balance/savings-rate/FX-value, up is the
 // good direction (green), so those pass invert to flip the colors.
-function ChangePill({ changePct, isNew, unit = "%", invert = false }) {
+export function ChangePill({ changePct, isNew, unit = "%", invert = false }) {
   if (isNew) {
     return (
       <span className="text-[11px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>
@@ -53,7 +53,7 @@ function CategoryDot({ color }) {
 // `onClick`, when present, drives the same drill-down modal used for the
 // "top elements by month" section elsewhere in the app - a category row
 // opens that category's transactions, a transaction row opens itself.
-function RankRow({ index, item, currency, subtitle, onClick }) {
+export function RankRow({ index, item, currency, subtitle, onClick }) {
   return (
     <div
       className={`flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 transition-colors ${
@@ -90,7 +90,7 @@ function RankRow({ index, item, currency, subtitle, onClick }) {
 // bullets - every claim here is a direct readout of a computed boolean/
 // percentage, not an inference, so it stays consistent with the rest of
 // Wallet Analyzer's "no AI" rule-based approach.
-function buildSpendPatternAnalysis(patterns) {
+export function buildSpendPatternAnalysis(patterns) {
   const { biggestTransaction, biggestCategory, biggestSubcategory, mostCommonCategoryTag, analysis } = patterns;
   const bullets = [];
 
@@ -100,7 +100,7 @@ function buildSpendPatternAnalysis(patterns) {
       : `La transacción más grande NO pertenece a la categoría con más gasto — está en ${biggestTransaction.categoryName}, mientras que la categoría con más gasto es ${biggestCategory.name}.`
   );
 
-  bullets.push(`${biggestCategory.name} representa el ${Math.round(analysis.categoryShareOfTotal)}% de tu gasto total en los últimos ${patterns.monthsBack} meses.`);
+  bullets.push(`${biggestCategory.name} representa el ${Math.round(analysis.categoryShareOfTotal)}% de tu gasto total en este periodo.`);
 
   bullets.push(
     analysis.transactionShareOfCategory >= 50
@@ -542,7 +542,7 @@ function WalletAnalyzerView({
               const ratio = b.limit > 0 ? b.spent / b.limit : 0;
               return (
                 <div
-                  key={b.category}
+                  key={b.budgetId}
                   onClick={() =>
                     setActiveInsight({
                       icon: b.status === "over" ? "⚠️" : "📊",

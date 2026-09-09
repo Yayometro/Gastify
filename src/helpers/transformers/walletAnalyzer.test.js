@@ -15,12 +15,27 @@ import {
   computeSpendingPace,
   findBiggestSpendPatterns,
   computeMonthlyChampions,
+  computeMonthlyChampionsForRange,
+  findPeakMonth,
+  computeQuarterTotals,
+  findPeakQuarter,
   computeSpendingByWeekday,
   generateInsights,
   buildWalletAnalyzerSnapshot,
   getSnapshotLookbackStart,
   buildCuratedWalletSummary,
   buildMonthComparison,
+  buildPeriodComparison,
+  buildBudgetPeriodChanges,
+  getPrecedingPeriods,
+  computeTrendForRange,
+  computeSpendingPaceForRange,
+  findBiggestSpendPatternsForRange,
+  computeCategoryHistoryAverageForRange,
+  computeSpendingByWeekdayForRange,
+  buildPeriodSnapshot,
+  getPeriodSnapshotLookbackStart,
+  buildCuratedPeriodSummary,
 } from "./walletAnalyzer";
 
 const CAT_FOOD = { _id: "cat-food", name: "Food", color: "#f00", icon: "md/MdFastfood" };
@@ -398,7 +413,88 @@ describe("computeMonthlyChampions", () => {
     const transactions = [tx({ amount: 1000, date: new Date(2026, 7, 5), category: CAT_FOOD })];
     const result = computeMonthlyChampions(transactions, new Date(2026, 7, 20), 2);
     expect(result.months[0].biggestTransaction).toBeNull();
+    expect(result.months[0].total).toBe(0);
     expect(result.months[1].biggestTransaction).toMatchObject({ amount: 1000 });
+    expect(result.months[1].total).toBe(1000);
+  });
+});
+
+describe("computeMonthlyChampionsForRange", () => {
+  it("windows exactly the selected range's calendar months, not a lookback from an unrelated anchor", () => {
+    // Range is Q3 (Jul-Sep) 2026; a July transaction and one just outside
+    // the range (June) confirm the window starts at range.start's month,
+    // not "N months back from today."
+    const range = { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30, 23, 59, 59, 999) };
+    const today = new Date(2027, 0, 1); // long after the range - shouldn't clamp anything here
+    const transactions = [
+      tx({ amount: 100, date: new Date(2026, 5, 15), category: CAT_FOOD }), // June - outside range
+      tx({ amount: 500, date: new Date(2026, 6, 10), category: CAT_FOOD }), // July - inside range
+    ];
+    const result = computeMonthlyChampionsForRange(transactions, range, today);
+    expect(result.months).toHaveLength(3); // Jul, Aug, Sep
+    expect(result.months[0].label).toBe("July 2026");
+    expect(result.months[0].total).toBe(500);
+    expect(result.windowTotal).toBe(500);
+  });
+
+  it("clamps the window to today when range.end is still in the future", () => {
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const today = new Date(2026, 2, 15); // March 15 - only Jan/Feb/Mar have happened
+    const transactions = [tx({ amount: 100, date: new Date(2026, 1, 5), category: CAT_FOOD })];
+    const result = computeMonthlyChampionsForRange(transactions, range, today);
+    expect(result.months).toHaveLength(3); // Jan, Feb, Mar - not all 12
+  });
+
+  it("returns an empty window when the range hasn't started yet", () => {
+    const range = { start: new Date(2027, 0, 1), end: new Date(2027, 11, 31, 23, 59, 59, 999) };
+    const today = new Date(2026, 5, 1);
+    const result = computeMonthlyChampionsForRange([], range, today);
+    expect(result.months).toEqual([]);
+  });
+});
+
+describe("findPeakMonth", () => {
+  it("picks the month with the highest total, ignoring months with no spend", () => {
+    const monthlyChampions = {
+      months: [
+        { label: "July 2026", range: { start: new Date(2026, 6, 1) }, total: 500 },
+        { label: "August 2026", range: { start: new Date(2026, 7, 1) }, total: 0 },
+        { label: "September 2026", range: { start: new Date(2026, 8, 1) }, total: 1200 },
+      ],
+    };
+    expect(findPeakMonth(monthlyChampions).label).toBe("September 2026");
+  });
+
+  it("returns null when every month has zero spend", () => {
+    const monthlyChampions = { months: [{ label: "July 2026", range: { start: new Date(2026, 6, 1) }, total: 0 }] };
+    expect(findPeakMonth(monthlyChampions)).toBeNull();
+  });
+});
+
+describe("computeQuarterTotals / findPeakQuarter", () => {
+  it("buckets months into real calendar quarters and finds the busiest one", () => {
+    const monthlyChampions = {
+      months: [
+        { label: "January 2026", range: { start: new Date(2026, 0, 1) }, total: 100 },
+        { label: "April 2026", range: { start: new Date(2026, 3, 1) }, total: 900 },
+        { label: "May 2026", range: { start: new Date(2026, 4, 1) }, total: 300 },
+      ],
+    };
+    const quarters = computeQuarterTotals(monthlyChampions);
+    expect(quarters).toEqual([
+      { label: "Q1 2026", year: 2026, quarter: 1, total: 100, months: [{ label: "January 2026", total: 100 }] },
+      {
+        label: "Q2 2026",
+        year: 2026,
+        quarter: 2,
+        total: 1200,
+        months: [
+          { label: "April 2026", total: 900 },
+          { label: "May 2026", total: 300 },
+        ],
+      },
+    ]);
+    expect(findPeakQuarter(quarters).label).toBe("Q2 2026");
   });
 });
 
@@ -716,5 +812,318 @@ describe("buildMonthComparison", () => {
     });
     expect(comparison.monthB.totals.expense).toBe(0);
     expect(comparison.categoriesBills.length).toBeGreaterThan(0);
+  });
+});
+
+describe("buildBudgetPeriodChanges", () => {
+  function monthlyBudget(overrides = {}) {
+    return {
+      _id: "b1",
+      budgetType: "spending",
+      period: "monthly",
+      goalAmount: 1000,
+      category: CAT_FOOD,
+      createdAt: new Date(2025, 0, 1),
+      history: [],
+      ...overrides,
+    };
+  }
+
+  it("sums actual/goal across each range and reports compliance per period", () => {
+    const transactions = [
+      // Q1 2026 - Jan/Feb/Mar, each under the 1000 monthly goal
+      tx({ amount: 500, date: new Date(2026, 0, 10), category: CAT_FOOD }),
+      tx({ amount: 500, date: new Date(2026, 1, 10), category: CAT_FOOD }),
+      tx({ amount: 500, date: new Date(2026, 2, 10), category: CAT_FOOD }),
+      // Q1 2025 (comparison period) - Feb exceeds the goal
+      tx({ amount: 400, date: new Date(2025, 0, 10), category: CAT_FOOD }),
+      tx({ amount: 1500, date: new Date(2025, 1, 10), category: CAT_FOOD }),
+      tx({ amount: 400, date: new Date(2025, 2, 10), category: CAT_FOOD }),
+    ];
+    const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) };
+    const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 2, 31, 23, 59, 59, 999) };
+
+    const [row] = buildBudgetPeriodChanges([monthlyBudget()], transactions, rangeA, rangeB);
+
+    expect(row.category).toBe("Food");
+    expect(row.periodA).toMatchObject({ actual: 1500, goal: 3000, monthsTracked: 3, monthsMet: 3 });
+    expect(row.periodB).toMatchObject({ actual: 2300, goal: 3000, monthsTracked: 3, monthsMet: 2 });
+  });
+
+  it("still includes a budget with no tracked months in one of the two ranges", () => {
+    // buildBudgetHistoricalComparative excludes months that haven't
+    // started yet - a rangeB entirely in the future has nothing to track,
+    // while rangeA (the past) has real data.
+    const budget = monthlyBudget();
+    const transactions = [tx({ amount: 200, date: new Date(2026, 5, 10), category: CAT_FOOD })];
+    const rangeA = { start: new Date(2026, 5, 1), end: new Date(2026, 5, 30, 23, 59, 59, 999) };
+    const rangeB = { start: new Date(2099, 0, 1), end: new Date(2099, 11, 31, 23, 59, 59, 999) };
+
+    const [row] = buildBudgetPeriodChanges([budget], transactions, rangeA, rangeB);
+    expect(row.periodA).not.toBeNull();
+    expect(row.periodB).toBeNull();
+  });
+});
+
+describe("buildPeriodComparison", () => {
+  it("compares two arbitrary multi-month ranges (a quarter vs. the same quarter last year)", () => {
+    const transactions = [
+      tx({ amount: 1000, date: new Date(2026, 0, 5), category: CAT_FOOD, name: "Groceries" }),
+      tx({ amount: 500, date: new Date(2026, 2, 5), category: CAT_FOOD, name: "Groceries" }),
+      tx({ amount: 4000, date: new Date(2026, 1, 1), isBill: false, name: "Salary" }),
+      tx({ amount: 300, date: new Date(2025, 0, 5), category: CAT_FOOD, name: "Groceries" }),
+    ];
+    const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) };
+    const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 2, 31, 23, 59, 59, 999) };
+
+    const comparison = buildPeriodComparison({
+      transactions,
+      budgets: [],
+      rangeA,
+      rangeB,
+      labelA: "Q1 2026",
+      labelB: "Q1 2025",
+    });
+
+    expect(comparison.periodA.label).toBe("Q1 2026");
+    expect(comparison.periodB.label).toBe("Q1 2025");
+    expect(comparison.periodA.totals.expense).toBe(1500);
+    expect(comparison.periodA.totals.income).toBe(4000);
+    expect(comparison.periodB.totals.expense).toBe(300);
+
+    const food = comparison.categoriesBills.find((c) => c.name === "Food");
+    expect(food.current).toBe(1500);
+    expect(food.previous).toBe(300);
+    expect(comparison.budgetChanges).toEqual([]);
+  });
+
+  it("includes budgetChanges when budgets are passed", () => {
+    const budget = {
+      _id: "b1",
+      budgetType: "spending",
+      period: "monthly",
+      goalAmount: 1000,
+      category: CAT_FOOD,
+      createdAt: new Date(2020, 0, 1),
+      history: [],
+    };
+    const transactions = [tx({ amount: 500, date: new Date(2026, 0, 10), category: CAT_FOOD })];
+    const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31, 23, 59, 59, 999) };
+    const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 0, 31, 23, 59, 59, 999) };
+
+    const comparison = buildPeriodComparison({
+      transactions,
+      budgets: [budget],
+      rangeA,
+      rangeB,
+      labelA: "January 2026",
+      labelB: "January 2025",
+    });
+
+    expect(comparison.budgetChanges).toHaveLength(1);
+    expect(comparison.budgetChanges[0].periodA).toMatchObject({ actual: 500, goal: 1000 });
+  });
+});
+
+describe("getPrecedingPeriods", () => {
+  it("builds N equal-width periods immediately before the given range, oldest first", () => {
+    const range = { start: new Date(2026, 6, 1), end: new Date(2026, 6, 31, 23, 59, 59, 999) }; // July (31 days)
+    const periods = getPrecedingPeriods(range, 2);
+    expect(periods).toHaveLength(2);
+    // June (30 days) immediately before July - same 31-day width as `range`,
+    // so it reaches back into May.
+    expect(periods[1].end).toEqual(new Date(2026, 5, 30, 23, 59, 59, 999));
+    expect(periods[1].start).toEqual(new Date(2026, 4, 31, 0, 0, 0, 0));
+    // No gap and no overlap between consecutive periods.
+    expect(periods[0].end.getTime() + 1).toBe(periods[1].start.getTime());
+    expect(periods[1].end.getTime() + 1).toBe(range.start.getTime());
+  });
+
+  it("works for a non-month-width range (a quarter)", () => {
+    const q3 = { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30, 23, 59, 59, 999) }; // Q3: Jul-Sep
+    const [q2] = getPrecedingPeriods(q3, 1);
+    const widthDays = Math.round((q3.end - q3.start) / 86400000) + 1;
+    const q2WidthDays = Math.round((q2.end - q2.start) / 86400000) + 1;
+    expect(q2WidthDays).toBe(widthDays);
+    expect(q2.end.getTime() + 1).toBe(q3.start.getTime());
+  });
+});
+
+describe("computeTrendForRange", () => {
+  it("buckets a quarter-width range into periodsBack quarters, oldest first", () => {
+    const q3 = { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30, 23, 59, 59, 999) };
+    const transactions = [
+      tx({ amount: 100, date: new Date(2026, 7, 15), category: CAT_FOOD }), // inside Q3
+      tx({ amount: 50, date: new Date(2026, 3, 15), category: CAT_FOOD }), // ~1 quarter before Q3
+    ];
+    const trend = computeTrendForRange(transactions, q3, 2);
+    expect(trend).toHaveLength(2);
+    expect(trend[1].expense).toBe(100); // Q3 itself, last
+    expect(trend[0].expense).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("computeSpendingPaceForRange", () => {
+  it("compares spend-so-far against the same elapsed-day mark in preceding periods", () => {
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) }; // Q1 2026, closed
+    const transactions = [
+      tx({ amount: 100, date: new Date(2026, 0, 10), category: CAT_FOOD }),
+      tx({ amount: 40, date: new Date(2025, 9, 10), category: CAT_FOOD }), // same elapsed-day mark, preceding period
+    ];
+    const pace = computeSpendingPaceForRange(transactions, range, true, 1, new Date(2027, 0, 1));
+    expect(pace.spentSoFar).toBe(100);
+    expect(pace.avgPaceForSameDay).toBe(40);
+    expect(pace.periodWidthDays).toBe(90);
+  });
+});
+
+describe("findBiggestSpendPatternsForRange", () => {
+  it("finds the biggest transaction/category within an arbitrary range", () => {
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) };
+    const transactions = [
+      tx({ amount: 5000, date: new Date(2026, 1, 5), category: CAT_HEALTH, name: "Surgery" }),
+      tx({ amount: 100, date: new Date(2026, 1, 6), category: CAT_FOOD }),
+    ];
+    const patterns = findBiggestSpendPatternsForRange(transactions, range);
+    expect(patterns.biggestTransaction.name).toBe("Surgery");
+    expect(patterns.biggestCategory.name).toBe("Health");
+    expect(patterns.lookbackRange).toEqual(range);
+  });
+
+  it("returns null when there are no bills in range", () => {
+    expect(findBiggestSpendPatternsForRange([], { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) })).toBeNull();
+  });
+});
+
+describe("computeCategoryHistoryAverageForRange", () => {
+  it("averages a category's spend across periodsBack periods preceding the range", () => {
+    const range = { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30, 23, 59, 59, 999) }; // Q3
+    const transactions = [
+      tx({ amount: 300, date: new Date(2026, 3, 15), category: CAT_FOOD }), // Q2 (preceding)
+      tx({ amount: 900, date: new Date(2026, 7, 15), category: CAT_FOOD }), // inside Q3 itself - excluded
+    ];
+    const { average, monthsOfHistory } = computeCategoryHistoryAverageForRange(transactions, "Food", true, range, 1);
+    expect(average).toBe(300);
+    expect(monthsOfHistory).toBe(1);
+  });
+});
+
+describe("computeSpendingByWeekdayForRange", () => {
+  it("spans the whole multi-month range, not just one calendar month", () => {
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) };
+    const transactions = [
+      tx({ amount: 100, date: new Date(2026, 0, 5), category: CAT_FOOD }),
+      tx({ amount: 200, date: new Date(2026, 2, 20), category: CAT_FOOD }),
+    ];
+    const result = computeSpendingByWeekdayForRange(transactions, range);
+    const totalAcrossDays = result.days.reduce((a, d) => a + d.total, 0);
+    expect(totalAcrossDays).toBe(300);
+    expect(result.weeks.length).toBeGreaterThan(4); // spans ~13 weeks, not ~4
+  });
+});
+
+describe("buildPeriodSnapshot", () => {
+  it("auto-computes the immediately preceding equal-width period, no explicit compare needed", () => {
+    const range = { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30, 23, 59, 59, 999) }; // Q3
+    const transactions = [
+      tx({ amount: 1000, date: new Date(2026, 7, 5), category: CAT_FOOD }),
+      tx({ amount: 3000, date: new Date(2026, 8, 1), isBill: false, name: "Salary" }),
+      tx({ amount: 400, date: new Date(2026, 4, 5), category: CAT_FOOD }), // Q2, the preceding period
+    ];
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range, periodsBack: 2 });
+    expect(snapshot.currentTotals.expense).toBe(1000);
+    expect(snapshot.currentTotals.income).toBe(3000);
+    expect(snapshot.previousTotals.expense).toBe(400);
+    expect(snapshot.currentRange).toEqual(range);
+    expect(snapshot.trend).toHaveLength(2);
+    expect(snapshot.insights).toBeInstanceOf(Array);
+  });
+
+  it("clamps budget/subscription/champion analysis to today when range.end is in the future", () => {
+    // "All 2026" picked while today is still September - range.end (Dec
+    // 31) is a future date. Real data exists Jan-Sep; anchoring at
+    // range.end instead of today would ask these month-based functions
+    // about months that haven't happened yet and come back empty even
+    // though Sep has real, complete data.
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const today = new Date(2026, 8, 15); // September 15, 2026 - still mid-year
+    const budget = {
+      _id: "b1",
+      budgetType: "spending",
+      period: "monthly",
+      goalAmount: 1000,
+      category: CAT_FOOD,
+      createdAt: new Date(2025, 0, 1),
+      history: [],
+    };
+    const transactions = [
+      tx({ amount: 500, date: new Date(2026, 8, 10), category: CAT_FOOD, name: "Netflix" }),
+      tx({ amount: 500, date: new Date(2026, 7, 10), category: CAT_FOOD, name: "Netflix" }),
+    ];
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [budget], range, periodsBack: 2, today });
+    const [row] = snapshot.budgetRows;
+    expect(row.spent).toBeGreaterThan(0); // not 0/0 from a future "last" month
+    expect(snapshot.subscriptions.length).toBeGreaterThan(0); // Netflix detected
+  });
+
+  it("scales the default lookback down for a wide range instead of asking for 6x its width", () => {
+    const yearRange = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const transactions = [tx({ amount: 100, date: new Date(2026, 5, 15), category: CAT_FOOD })];
+    // No periodsBack override - if the default still blindly used 6, this
+    // would ask for 6 preceding YEARS; asserting it doesn't throw and
+    // produces a small (not 6-long) trend confirms the scaled-down default.
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range: yearRange });
+    expect(snapshot.trend.length).toBeLessThan(6);
+    expect(snapshot.trend.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("surfaces peak-month/peak-quarter insights for a wide range instead of coming back nearly empty", () => {
+    // A full-year selection previously surfaced almost nothing in "Lo más
+    // destacado del período" because generateInsights' conditions
+    // (budget-over-limit, category anomaly, new category/subscription,
+    // best streak, savings-rate swing) rarely fire across a long span.
+    // These new period-native insights are the fix: they're derived
+    // straight from monthlyChampions, which is always populated whenever
+    // there's any spend in the range.
+    const yearRange = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const today = new Date(2026, 8, 15); // mid-September - year still in progress
+    const transactions = [
+      tx({ amount: 100, date: new Date(2026, 1, 10), category: CAT_FOOD }), // Feb
+      tx({ amount: 5000, date: new Date(2026, 6, 10), category: CAT_FOOD }), // Jul - the peak
+      tx({ amount: 200, date: new Date(2026, 7, 10), category: CAT_FOOD }), // Aug
+    ];
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range: yearRange, today });
+    expect(snapshot.monthlyChampions.months).toHaveLength(9); // Jan-Sep, clamped to today
+    expect(findPeakMonth(snapshot.monthlyChampions).label).toBe("July 2026");
+    const types = snapshot.insights.map((i) => i.type);
+    expect(types).toContain("peak_month");
+    expect(types).toContain("peak_quarter");
+  });
+});
+
+describe("getPeriodSnapshotLookbackStart", () => {
+  it("starts 6 preceding periods of the same width before the range", () => {
+    const range = { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30, 23, 59, 59, 999) }; // Q3, ~92 days
+    const start = getPeriodSnapshotLookbackStart(range);
+    // 6 preceding ~92-day periods back from July 1 lands in the second half
+    // of the previous year - just assert it's well before the range, not an
+    // exact date (getPrecedingPeriods' own tests cover the exact math).
+    expect(start.getTime()).toBeLessThan(range.start.getTime());
+    expect(start.getFullYear()).toBeLessThan(2026);
+  });
+});
+
+describe("buildCuratedPeriodSummary", () => {
+  it("trims monthlySeries/topN and reduces monthlyChampions to label+total+topCategory", () => {
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) }; // Q1
+    const transactions = [
+      tx({ amount: 500, date: new Date(2026, 1, 5), category: CAT_FOOD, name: "Groceries" }),
+    ];
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range, periodsBack: 2 });
+    const curated = buildCuratedPeriodSummary(snapshot);
+    expect(curated.budgetRows.every((b) => !("monthlySeries" in b))).toBe(true);
+    expect(curated.monthlyChampions.months[1]).toMatchObject({ label: "February 2026", total: 500, topCategory: { name: "Food", total: 500 } });
+    expect(curated.monthlyChampions.months[1].biggestTransaction).toBeUndefined();
+    expect(curated.currentRange).toEqual(range);
   });
 });

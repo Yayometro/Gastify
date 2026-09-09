@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import HistoricalMovementsView from "./HistoricalMovementsView";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser, setUser } from "@/lib/features/userSlice";
@@ -21,12 +21,9 @@ import {
   getPeriodLabel,
   orderItemsInTheirMonth,
   slicedAndReduceNewValuesForMonths,
-  timeperiodRangesArray,
 } from "@/helpers/timeFunctions/timeFunctions";
 import TopMonthContainer from "../top3/topMonthContainer/TopMonthContainer";
 import TopElementsCompareTable from "../top3/topMonthContainer/TopElementsCompareTable";
-
-const today = new Date();
 
 // Slices each relative-month bucket down to its top N highest-value
 // transactions, for the compare table (same "top N" idea as the single-period
@@ -47,20 +44,11 @@ function sliceTopCategoryMonths(monthsArr, n) {
   }));
 }
 
-function HistoricalMovementsController() {
+function HistoricalMovementsController({ periodState }) {
   const [isLoading, setIsLoading] = useState(false);
   const [elementsToDisplay, setElementsToDisplay] = useState(6);
   const [transactionsLocal, setTransactionsLocal] = useState([]);
   const [transactionCategories, setTransactionCategories] = useState([]);
-  const [timePeriod, setTimePeriod] = useState([
-    new Date(today.getFullYear(), today.getMonth() - 2, 1),
-    today,
-  ]);
-  const [compareEnabled, setCompareEnabled] = useState(false);
-  const [comparePeriod, setComparePeriod] = useState(() => [
-    new Date(today.getFullYear() - 1, today.getMonth() - 2, 1),
-    new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()),
-  ]);
   const [compareTables, setCompareTables] = useState(null);
   // Redux
   const dispatch = useDispatch();
@@ -68,20 +56,20 @@ function HistoricalMovementsController() {
   const ccTransacciones = useSelector((state) => state.transacctionsReducer);
 
   const { email } = useGetUserSession();
-  // Stable across the component's lifetime (only depends on the
-  // module-level `today`) - memoized so it can safely sit in the compare
-  // effect's dependency array below without a new array reference on every
-  // render re-triggering that effect in a loop.
-  const timePeriodsForSelecter = useMemo(
-    () => [
-      {
-        value: `${new Date(today.getFullYear(), today.getMonth() - 2, 1)}*${today}`,
-        name: "Last 3 months",
-      },
-      ...timeperiodRangesArray,
-    ],
-    []
-  );
+  // Period state (timePeriod/comparePeriod/compareEnabled + selector
+  // options/handlers) is owned by HistoryClient via usePeriodComparison and
+  // shared across every /dashboard/history section - see that hook for why.
+  const {
+    timePeriod,
+    comparePeriod,
+    compareEnabled,
+    setCompareEnabled,
+    timePeriodsForSelecter,
+    getValueFromSelecter,
+    handleRangeDate,
+    getCompareValueFromSelecter,
+    handleCompareRangeDate,
+  } = periodState;
 
   // USE EFFECTS:
   useEffect(() => {
@@ -267,30 +255,9 @@ function HistoricalMovementsController() {
   }
 
   // FUNCTIONS
-  function getValueFromSelecter(v) {
-    const [start, end] = v.split("*");
-    setTimePeriod([new Date(start), new Date(end)]);
-  }
-
-  function handleRangeDate(dateStart, dateEnd) {
-    if (dateStart && dateEnd) {
-      setTimePeriod([dateStart, dateEnd]);
-    }
-  }
   const getValueFromItems = React.useCallback((e) => {
     setElementsToDisplay(+e)
   }, [])
-
-  function getCompareValueFromSelecter(v) {
-    const [start, end] = v.split("*");
-    setComparePeriod([new Date(start), new Date(end)]);
-  }
-
-  function handleCompareRangeDate(dateStart, dateEnd) {
-    if (dateStart && dateEnd) {
-      setComparePeriod([dateStart, dateEnd]);
-    }
-  }
 
   return (
     <HistoricalMovementsView
