@@ -8,6 +8,7 @@ import {
   buildYearProjectionTable,
   buildProjectionAccuracyReport,
   estimateHistoricalBalances,
+  computeYearRowsWithBalance,
 } from "@/helpers/transformers/projectionsChange";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 
@@ -215,27 +216,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
   const today = new Date();
   const rowsWithBalance = useMemo(() => {
     if (!year) return [];
-    let runningBalance = startingBalance;
-    let reachedCurrent = false;
-    return rows.map((row, index) => {
-      const net = row.type === "current" ? row.projectedIncome - row.projectedExpense : row.income - row.expense;
-      const isCurrentOrLater = year > today.getFullYear() || row.type !== "actual";
-      const manualEntry = monthlyBalances.find((m) => m.month === index);
-      if (!isCurrentOrLater) {
-        return { ...row, net, balance: manualEntry ? manualEntry.balance : null, manualBalance: manualEntry?.balance };
-      }
-      if (row.type === "current") {
-        reachedCurrent = true;
-        const remainingNet = (row.projectedIncome - row.actualIncome) - (row.projectedExpense - row.actualExpense);
-        runningBalance += remainingNet;
-        return { ...row, net, balance: runningBalance };
-      }
-      if (reachedCurrent || row.type === "estimate") {
-        runningBalance += net;
-        return { ...row, net, balance: runningBalance };
-      }
-      return { ...row, net, balance: manualEntry ? manualEntry.balance : null, manualBalance: manualEntry?.balance };
-    });
+    return computeYearRowsWithBalance(rows, monthlyBalances, startingBalance, year, today);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, startingBalance, year, monthlyBalances]);
 

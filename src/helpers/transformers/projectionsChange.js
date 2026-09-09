@@ -469,3 +469,40 @@ export function estimateHistoricalBalances(rows, monthStarts, projectionBaseline
 
   return result;
 }
+
+// Walks one year's buildYearProjectionTable() rows and attaches `net` plus a
+// running `balance` - extracted from useProjectionTable's own useMemo (the
+// projections page and History's own projections table both need this exact
+// math, and the MCP get_projections tool needs it a third time, server-side
+// where there's no React hook to reuse) so all three read one implementation
+// instead of drifting apart. A past, already-closed month only gets a real
+// `balance` if a manual entry exists for it (`monthlyBalances`) - there's no
+// way to know a real historical total otherwise. From the current month
+// onward, `balance` walks forward from `startingBalance` (today's real
+// account total): the current month absorbs whatever's left of its own
+// shadow projection beyond what's already actually happened
+// (`projected - actual`, both directions), and every month after that just
+// adds its own net.
+export function computeYearRowsWithBalance(rows, monthlyBalances, startingBalance, year, today) {
+  let runningBalance = startingBalance;
+  let reachedCurrent = false;
+  return rows.map((row, index) => {
+    const net = row.type === "current" ? row.projectedIncome - row.projectedExpense : row.income - row.expense;
+    const isCurrentOrLater = year > today.getFullYear() || row.type !== "actual";
+    const manualEntry = (monthlyBalances || []).find((m) => m.month === index);
+    if (!isCurrentOrLater) {
+      return { ...row, net, balance: manualEntry ? manualEntry.balance : null, manualBalance: manualEntry?.balance };
+    }
+    if (row.type === "current") {
+      reachedCurrent = true;
+      const remainingNet = (row.projectedIncome - row.actualIncome) - (row.projectedExpense - row.actualExpense);
+      runningBalance += remainingNet;
+      return { ...row, net, balance: runningBalance };
+    }
+    if (reachedCurrent || row.type === "estimate") {
+      runningBalance += net;
+      return { ...row, net, balance: runningBalance };
+    }
+    return { ...row, net, balance: manualEntry ? manualEntry.balance : null, manualBalance: manualEntry?.balance };
+  });
+}

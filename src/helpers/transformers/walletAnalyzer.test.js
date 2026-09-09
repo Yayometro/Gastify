@@ -34,6 +34,8 @@ import {
   computeCategoryHistoryAverageForRange,
   computeSpendingByWeekdayForRange,
   buildPeriodSnapshot,
+  getPeriodSnapshotLookbackStart,
+  buildCuratedPeriodSummary,
 } from "./walletAnalyzer";
 
 const CAT_FOOD = { _id: "cat-food", name: "Food", color: "#f00", icon: "md/MdFastfood" };
@@ -1096,5 +1098,32 @@ describe("buildPeriodSnapshot", () => {
     const types = snapshot.insights.map((i) => i.type);
     expect(types).toContain("peak_month");
     expect(types).toContain("peak_quarter");
+  });
+});
+
+describe("getPeriodSnapshotLookbackStart", () => {
+  it("starts 6 preceding periods of the same width before the range", () => {
+    const range = { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30, 23, 59, 59, 999) }; // Q3, ~92 days
+    const start = getPeriodSnapshotLookbackStart(range);
+    // 6 preceding ~92-day periods back from July 1 lands in the second half
+    // of the previous year - just assert it's well before the range, not an
+    // exact date (getPrecedingPeriods' own tests cover the exact math).
+    expect(start.getTime()).toBeLessThan(range.start.getTime());
+    expect(start.getFullYear()).toBeLessThan(2026);
+  });
+});
+
+describe("buildCuratedPeriodSummary", () => {
+  it("trims monthlySeries/topN and reduces monthlyChampions to label+total+topCategory", () => {
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) }; // Q1
+    const transactions = [
+      tx({ amount: 500, date: new Date(2026, 1, 5), category: CAT_FOOD, name: "Groceries" }),
+    ];
+    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range, periodsBack: 2 });
+    const curated = buildCuratedPeriodSummary(snapshot);
+    expect(curated.budgetRows.every((b) => !("monthlySeries" in b))).toBe(true);
+    expect(curated.monthlyChampions.months[1]).toMatchObject({ label: "February 2026", total: 500, topCategory: { name: "Food", total: 500 } });
+    expect(curated.monthlyChampions.months[1].biggestTransaction).toBeUndefined();
+    expect(curated.currentRange).toEqual(range);
   });
 });

@@ -1443,3 +1443,58 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
 
   return { ...facts, insights: generateInsights(facts, periodInsights, 8), currentRange: range, previousRange };
 }
+
+// The MCP tools fetch transactions fresh from the database on every call
+// (not from an already-loaded Redux store), so they need to know up front
+// how far back to query. buildPeriodSnapshot's own resolvedPeriodsBack caps
+// at 6 (see its own comment) regardless of range width, so 6 preceding
+// periods of the same width as `range` is always enough - the arbitrary-
+// range sibling of getSnapshotLookbackStart, which does the same thing for
+// the single-month snapshot.
+export function getPeriodSnapshotLookbackStart(range) {
+  return getPrecedingPeriods(range, 6)[0].start;
+}
+
+// Trims a full buildPeriodSnapshot() result down to what an AI-facing MCP
+// tool needs - same rationale and shape as buildCuratedWalletSummary
+// (dropping each budget's monthlySeries, the heaviest field, and capping
+// top-N lists), plus the period-native additions buildCuratedWalletSummary
+// doesn't have: monthlyChampions is trimmed to just {label, total,
+// topCategory} per month (dropping the full biggestTransaction/
+// biggestSubcategory detail, which the AI can get via get_period_summary_
+// detailed if it actually needs it) and quarterTotals is kept as-is since
+// it's already small.
+export function buildCuratedPeriodSummary(snapshot) {
+  return {
+    currentTotals: snapshot.currentTotals,
+    previousTotals: snapshot.previousTotals,
+    insights: snapshot.insights.map((insight) =>
+      insight.type === "budget" && insight.data?.monthlySeries
+        ? { ...insight, data: (({ monthlySeries, ...rest }) => rest)(insight.data) }
+        : insight
+    ),
+    budgetRows: snapshot.budgetRows.map(({ monthlySeries, ...rest }) => rest),
+    topCategoriesBills: snapshot.topCategoriesBills.slice(0, 6),
+    topCategoriesIncomes: snapshot.topCategoriesIncomes.slice(0, 6),
+    topTransactionsBills: {
+      current: snapshot.topTransactionsBills.current.slice(0, 6),
+      previous: snapshot.topTransactionsBills.previous.slice(0, 6),
+    },
+    subscriptions: snapshot.subscriptions,
+    pace: snapshot.pace,
+    weekdaySpending: snapshot.weekdaySpending,
+    savingsHistoryLabeled: snapshot.savingsHistoryLabeled,
+    monthlyAverages: snapshot.monthlyAverages,
+    categoryAnomaly: snapshot.categoryAnomaly,
+    monthlyChampions: {
+      months: snapshot.monthlyChampions.months.map((m) => ({
+        label: m.label,
+        total: m.total,
+        topCategory: m.biggestCategory ? { name: m.biggestCategory.name, total: m.biggestCategory.total } : null,
+      })),
+    },
+    quarterTotals: snapshot.quarterTotals,
+    currentRange: snapshot.currentRange,
+    previousRange: snapshot.previousRange,
+  };
+}

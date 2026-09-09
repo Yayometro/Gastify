@@ -4,6 +4,7 @@ import {
   buildProjectionAccuracyReport,
   buildProjectionComparisonForMonth,
   estimateHistoricalBalances,
+  computeYearRowsWithBalance,
   getMonthBucketBreakdown,
   getMonthCurrencyBreakdown,
 } from "./projectionsChange";
@@ -459,6 +460,48 @@ describe("estimateHistoricalBalances", () => {
     const september = table.find((r) => r.monthName === "september");
     expect(september.historicalIncome).toBe(133000);
     expect(september.historicalExpense).toBe(45000);
+  });
+});
+
+describe("computeYearRowsWithBalance", () => {
+  it("leaves past closed months at null balance unless a manual entry exists, then walks forward from the current month", () => {
+    const rows = [
+      { monthName: "january", type: "actual", income: 1000, expense: 400 },
+      { monthName: "february", type: "actual", income: 1000, expense: 400 },
+      { monthName: "march", type: "current", shadowIncome: 1000, actualIncome: 600, projectedIncome: 1000, shadowExpense: 400, actualExpense: 200, projectedExpense: 400 },
+      { monthName: "april", type: "estimate", income: 1000, expense: 400 },
+    ];
+    const today = new Date(2026, 2, 15); // mid-March
+    const result = computeYearRowsWithBalance(rows, [], 5000, 2026, today);
+    expect(result[0].balance).toBeNull(); // January - closed, no manual entry
+    expect(result[1].balance).toBeNull(); // February - same
+    // March (current): remaining = (1000-600) - (400-200) = 200; 5000+200=5200
+    expect(result[2].balance).toBe(5200);
+    // April (estimate): net = 1000-400 = 600; 5200+600=5800
+    expect(result[3].balance).toBe(5800);
+  });
+
+  it("uses a manual monthly balance for a past closed month instead of leaving it null", () => {
+    const rows = [
+      { monthName: "january", type: "actual", income: 1000, expense: 400 },
+      { monthName: "february", type: "actual", income: 1000, expense: 400 },
+    ];
+    const monthlyBalances = [{ month: 0, balance: 12345 }];
+    const result = computeYearRowsWithBalance(rows, monthlyBalances, 5000, 2026, new Date(2026, 5, 1));
+    expect(result[0].balance).toBe(12345);
+    expect(result[0].manualBalance).toBe(12345);
+    expect(result[1].balance).toBeNull();
+  });
+
+  it("treats every month of a fully past year as actual-or-later so estimates still chain forward", () => {
+    const rows = [{ monthName: "december", type: "actual", income: 1000, expense: 400 }];
+    // year (2020) is before today's year (2026) - every row in a past year is
+    // still historical `actual`, but isCurrentOrLater's `year > today.getFullYear()`
+    // branch only helps a FUTURE year; a past year's actual months fall
+    // through to the manual-entry-or-null branch, same as the current year's
+    // own past months.
+    const result = computeYearRowsWithBalance(rows, [], 5000, 2020, new Date(2026, 0, 1));
+    expect(result[0].balance).toBeNull();
   });
 });
 
