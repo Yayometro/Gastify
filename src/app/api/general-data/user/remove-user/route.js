@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Wallet from "@/model/Wallet";
@@ -27,6 +28,16 @@ export async function POST(request){
             if(!removeSubCategories) throw new Error("SubCategories not removed, please verify the email");
         const removeTags = await Tag.deleteMany({user: removedUser._id})
             if(!removeTags) throw new Error("Tags not removed, please verify the email");
+        // Better Auth's own collections (created outside a Mongoose model,
+        // on purpose - see src/lib/auth/betterAuth.js) aren't cleaned up by
+        // deleting the User document itself. `userId` on each of these is a
+        // real Mongo ObjectId (the adapter's default id generator, not a
+        // string - see betterAuth.js's own comment on why no custom
+        // generateId is set), so a direct match against removedUser._id
+        // works without any string conversion.
+        await mongoose.connection.collection("account").deleteMany({ userId: removedUser._id });
+        await mongoose.connection.collection("session").deleteMany({ userId: removedUser._id });
+        await mongoose.connection.collection("passkey").deleteMany({ userId: removedUser._id });
         //
         return NextResponse.json({
             data: removedUser,

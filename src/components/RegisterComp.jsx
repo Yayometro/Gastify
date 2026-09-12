@@ -1,12 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import fetcher from "@/helpers/fetcher"; // (verb, path, content )
-import bcryptjs from "bcryptjs";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { authClient } from "@/lib/auth/authClient";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 
 export default function RegisterComp({ params }) {
   const [formData, setFormData] = useState({
@@ -58,18 +56,10 @@ export default function RegisterComp({ params }) {
   const googleSignIn = async () => {
     try{
       setLoading(true)
-      const reqGoogle = await signIn("google");
+      await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
     } catch(e){
       console.log(e)
-      throw new Error(e)
-    }
-  };
-  const githubSignIn = async () => {
-    try{
-      setLoading(true)
-      const reqGithub = await signIn("github");
-    } catch(e){
-      console.log(e)
+      setLoading(false)
     }
   };
 
@@ -126,7 +116,7 @@ export default function RegisterComp({ params }) {
        <div className="loader">
       {
               !loading ? ('') : (
-                <div className="w-full h-full flex flex-col justify-center items-center bg-gf-bg/90 z-50 absolute text-center p-4 gap-4 left-0">
+                <div className="w-full h-full flex flex-col justify-center items-center gf-loading-overlay z-50 absolute top-0 left-0 rounded-2xl text-center p-4 gap-4">
                   <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
                   <p className=" text-xl text-purple-200">We are building up your dashboard and data</p>
                   <p className=" text-xl text-purple-200">Please wait a moment 🤓</p>
@@ -139,7 +129,7 @@ export default function RegisterComp({ params }) {
           Register
         </h1>
       </div>
-      <div className="form-container bg-gf-surface w-full rounded-t-[100px] h-full m-auto">
+      <div className="form-container w-full rounded-t-[100px] h-full m-auto">
         <form
           className="form-login w-full h-full text-center flex flex-col gap-4 justify-start items-center pt-5 sm:pt-10"
           onSubmit={handleSubmit}
@@ -235,22 +225,16 @@ export default function RegisterComp({ params }) {
                 </div>
               )}
           </div>
-          <button type="submit" className="social-btn-lf">
+          <button type="submit" className="social-btn-lf gf-glass-button">
             Submit
           </button>
           <div className="divider border-t-2 border-gf-border w-[70%] mt-5"></div>
           <div className="bts-fast w-[100%] pt-5  flex flex-col gap-8 justify-center items-center">
-            <div className="social-btn-lf" onClick={googleSignIn}>
+            <div className="social-btn-lf gf-glass-button" onClick={googleSignIn}>
               <div className="sblf-icon-cont">
                 <FcGoogle size={25} />
               </div>
               <p>Google </p>
-            </div>
-            <div className="social-btn-lf " onClick={githubSignIn}>
-              <div className="sblf-icon-cont">
-                <FaGithub size={25} />
-              </div>
-              <p> GitHub</p>
             </div>
             <div className="text-purple-300 w-[90%] text-xs hover:underline pb-[30px]">
               <Link href="/login">

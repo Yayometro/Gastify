@@ -137,7 +137,7 @@ function VoiceRecognicionComponent() {
       {!isLoading ? (
         ""
       ) : (
-        <div className="loader absolute top-0 left-0 w-full h-full flex justify-center items-center flex-col gap-2 bg-gf-bg/90 z-50 rounded-[60px]">
+        <div className="loader absolute top-0 left-0 w-full h-full flex justify-center items-center flex-col gap-2 gf-loading-overlay z-50 rounded-[60px]">
           <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
           <p className=" text-xl text-purple-300">
             We are creating your new transaction, please wait 🤓

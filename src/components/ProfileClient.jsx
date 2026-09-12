@@ -14,6 +14,8 @@ import "react-international-phone/style.css";
 import { fetchUser, updateUser } from "@/lib/features/userSlice";
 import { CldUploadWidget } from "next-cloudinary";
 import ApiTokensPanel from "./multiUsedComp/ApiTokensPanel";
+import PasskeysPanel from "./multiUsedComp/PasskeysPanel";
+import TwoFactorPanel from "./multiUsedComp/TwoFactorPanel";
 
 function ProfileClient({ pcSession }) {
   const [onEdition, setOnEdition] = useState(false);
@@ -65,6 +67,25 @@ function ProfileClient({ pcSession }) {
   const onEditPassword = (val) => {
     setOnEditPasswordState(val);
   };
+
+  // TwoFactorPanel's "¿No conoces tu contraseña?" link (shown when 2FA
+  // needs a password confirmation this account doesn't actually know)
+  // points here. TwoFactorPanel only ever renders in the READ-ONLY profile
+  // view (!onEdition) - the "Change password?" toggle only exists in the
+  // EDIT view further down this same file - so reaching it needs BOTH
+  // switching views (setOnEdition) AND opening the toggle within that view
+  // (setOnEditPasswordState), not just the toggle alone.
+  useEffect(() => {
+    const openChangePassword = () => {
+      setOnEdition(true);
+      setOnEditPasswordState(true);
+      setTimeout(() => {
+        document.getElementById("gf-change-password-toggle")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
+    };
+    window.addEventListener("gf:open-change-password", openChangePassword);
+    return () => window.removeEventListener("gf:open-change-password", openChangePassword);
+  }, []);
   const handleChange = (e, tp) => {
     if (tp === "phone") {
       setUserInfo({ ...userInfo, phone: e });
@@ -246,6 +267,8 @@ function ProfileClient({ pcSession }) {
                 </div>
               </div>
               <div className="w-full px-4 sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
+                <PasskeysPanel />
+                <TwoFactorPanel />
                 <ApiTokensPanel mail={pcSession} />
               </div>
               <div className="remove-account-prof w-full pt-8 pb-[100px] flex justify-center">
@@ -291,7 +314,7 @@ function ProfileClient({ pcSession }) {
                       onChange={handleChange}
                     />
                   </div>
-                  <div className=" w-full cpc-name flex gap-2 justify-start items-center">
+                  <div id="gf-change-password-toggle" className=" w-full cpc-name flex gap-2 justify-start items-center">
                     <p className="text-[11px]">Change password?:</p>
                     <ConfigProvider
                       theme={{

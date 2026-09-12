@@ -2,7 +2,7 @@
 import dbConnection from "../../../dbConnection"
 import { NextResponse } from "next/server"
 import User from "@/model/User"
-import bcryptjs from 'bcryptjs'
+import { auth } from "@/lib/auth/betterAuth"
 // export async function POST(request){
 //     try{
 
@@ -24,18 +24,10 @@ export async function GET(){
 }
 
 export async function POST(request){
-    try{    
-        if(!request) throw new Error("No data in request on GENERAL-DATA POST") 
+    try{
+        if(!request) throw new Error("No data in request on GENERAL-DATA POST")
         const dataRequest = await request.json()
         console.log(dataRequest)
-        //Password check
-        let encryptPassword;
-        if(dataRequest.password){
-            console.log(dataRequest.password)
-            const salt = await bcryptjs.genSalt(10)
-            encryptPassword = await bcryptjs.hash(dataRequest.password, salt)
-        }
-        console.log(encryptPassword)
         let parsedPhone
         if(typeof dataRequest.phone === "string"){
             console.log(dataRequest.phone)
@@ -46,6 +38,20 @@ export async function POST(request){
         let userFounded = await User.findOne({mail: dataRequest.mail}).lean()
         if(!userFounded) throw new Error({error: "User not found, review the email provided in GENERAL-DATA POST"});
 
+        // Credential logins are checked against the `account` collection now
+        // (see src/lib/auth/betterAuth.js), not `User.password` - writing a
+        // new hash there instead of here is what makes the new password
+        // actually take effect on the next login. Uses the requester's own
+        // session (forwarded via the request's cookies) rather than
+        // Better Auth's self-service changePassword, which would also
+        // require the current password - a UX change out of scope here.
+        if(dataRequest.password){
+            await auth.api.setPassword({
+                body: { newPassword: dataRequest.password },
+                headers: request.headers,
+            });
+        }
+
         // const userUpdated = await userFounded.save();
         const userUpdated = await User.findOneAndUpdate(
             { mail: userFounded.mail },
@@ -53,7 +59,6 @@ export async function POST(request){
               $set: {
                 fullName: dataRequest.fullName || userFounded.fullName,
                 mail: dataRequest.mail || userFounded.mail,
-                password: encryptPassword || userFounded.password,
                 image: dataRequest.image || userFounded.image,
                 phone: parsedPhone || userFounded.phone,
               }

@@ -2,16 +2,20 @@
 
 import Dashboard from "@/components/Dashboard";
 import React from 'react'
-import { getServerSession } from "next-auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth/betterAuth";
 import fetcher from "@/helpers/fetcher";
 
 export const dynamic = 'force-dynamic';
 
 async function DashboardPage() {
-  const sesion = await getServerSession();
-  // console.log(sesion)
-  if (!sesion) throw new Error('No session on General Data Api Redux Middleware')
-  if (!sesion.user.email) throw new Error('No email on session user in General Data Api Redux Middleware')
+  const sesion = await auth.api.getSession({ headers: await headers() });
+  // dashboard/layout.js already redirects to /login before this page ever
+  // renders, so this is defense in depth, not the primary guard - but it
+  // should fail the same way that one does (redirect, not throw) rather
+  // than a raw error page if it's ever somehow reached without a session.
+  if (!sesion || !sesion.user?.email) redirect("/login");
   const emailSession = sesion.user.email
 
   return (
