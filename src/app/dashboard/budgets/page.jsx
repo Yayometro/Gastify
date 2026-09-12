@@ -1,14 +1,15 @@
 
 import BudgetsClient from '@/components/multiUsedComp/Budgets/BudgetsClient'
 import React from 'react'
-import { getServerSession } from "next-auth";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth/betterAuth";
+import { redirect } from "next/navigation";
 
 export const dynamic = 'force-dynamic';
 
 async function page() {
-  const sesion = await getServerSession();
-  if (!sesion) throw new Error('No session on General Data Api Redux Middleware')
-  if (!sesion.user.email) throw new Error('No email on session user in General Data')
+  const sesion = await auth.api.getSession({ headers: await headers() });
+  if (!sesion || !sesion.user?.email) redirect("/login");
 
   return (
     <div className=' w-full h-full min-[768px]:pl-[80px]'>

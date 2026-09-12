@@ -66,6 +66,27 @@ body {
   background-color: var(--gf-bg);
   color: var(--gf-text);
 }
+/* Full-screen "working on it" loading overlays (LoginComponent, RegisterComp,
+   VoiceRecognicionComponent) used `bg-gf-bg/90` for a dimmed backdrop -
+   Tailwind's opacity-modifier syntax needs a color it can decompose at
+   build time, and `gf-bg` is registered as a bare `var(--gf-bg)` reference
+   (confirmed: that utility never even makes it into the compiled CSS), so
+   the overlay had NO background at all - fully transparent, the page
+   underneath fully visible and legible right through the spinner. A real
+   class instead of a Tailwind arbitrary-opacity trick, and - since this was
+   being rebuilt anyway - an actual blur over what's behind it, not just a
+   dark wash, so the loading state reads as its own layer instead of a
+   sloppy see-through one. */
+.gf-loading-overlay {
+  background: linear-gradient(160deg, rgba(24, 15, 46, 0.93) 0%, rgba(12, 7, 24, 0.96) 100%);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+:root[data-theme="light"] .gf-loading-overlay {
+  background: rgba(244, 242, 250, 0.94);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
 /* The sidebar/bottom nav (Navbar.jsx). Dark mode only, by design: frosted
    glass instead of a flat fill - translucent + blurred, so the mesh
    gradient behind it (.walllet-bg, now fixed-attachment so it runs behind
@@ -119,6 +140,23 @@ body {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: none;
+}
+/* Verify2FAClient's step-up card sits over a busy fixed photo background
+   (.walllet-bg), and .gf-glass-card's own pale, barely-there wash left the
+   white text sitting almost directly on that photo - hard to read. A
+   near-opaque purple-black "smoked glass" gradient reads as deliberate
+   instead of translucent, so the text stays legible regardless of what's
+   underneath; the button inside gets bumped a shade lighter (below) so it
+   still visibly pops off this darker card. Both unguarded/dark-only, like
+   every other glass surface here - .gf-glass-card's own light override
+   above already wins by specificity in light mode, so this needs no light
+   counterpart. */
+.verify-2fa-cont {
+  background: linear-gradient(160deg, rgba(40, 22, 82, 0.94) 0%, rgba(13, 7, 26, 0.96) 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 12px 32px -10px rgba(0, 0, 0, 0.65);
+}
+.verify-2fa-cont .gf-glass-button {
+  background: linear-gradient(160deg, rgba(196, 138, 252, 0.95) 0%, rgba(155, 60, 240, 0.95) 100%) !important;
 }
 /* Tab-header strips (Treemap/Bubble/Nested Pie, Bills/Incomes, ...) used
    bg-gf-accent-soft-bg as a soft pink/purple band behind the tab labels -
@@ -768,45 +806,66 @@ body {
   display: none;
 }
 
+/* Same sunken-glass pill every other form input in the app uses
+   (.form-trans-edit input, .gf-profile-field) - the old flat
+   --gf-surface-2 fill with a loud magenta border read as a completely
+   different, older visual language next to the rest of Gastify. */
 .form-login input {
-  border: 1px solid rgb(169, 32, 169);
-  border-radius: 20px;
+  border: none;
+  border-radius: 1000px;
   width: 80%;
   color: var(--gf-text);
-  background-color: var(--gf-surface-2);
-  padding: 5px 12px;
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.4), inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
 }
+.form-login input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+/* These field labels sit directly on the login/register card's own
+   translucent glass background (see .login-componnt-cont above) - the
+   standard muted text token reads fine on a flat opaque surface but
+   washes out here, blending into the busy photo bleeding through the
+   blur. The app's own light lavender accent (already used for emphasis
+   text elsewhere, e.g. --gf-accent-soft-text) reads as a deliberate
+   highlight instead of dim, unreadable filler. */
 .form-login label {
   font-size: 18px;
-  font-weight: 500;
-  color: var(--gf-text-muted);
+  font-weight: 600;
+  color: var(--gf-accent-soft-text);
 }
+/* Login/Register's own social/submit buttons, restyled onto the same
+   raised 3D glass language as .gf-glass-button (used everywhere else -
+   PasskeysPanel, TwoFactorPanel, Verify2FAClient) instead of the flat,
+   dated pill these used to be. Layout (flex/gap/width/radius) stays here;
+   .gf-glass-button (added alongside this in the JSX) supplies the actual
+   glass background/shadow/hover-brighten. */
 .social-btn-lf {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 10px;
   width: 80%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  padding: 5px 10px;
+  border-radius: 1000px;
+  padding: 8px 10px;
   font-size: 16px;
   font-weight: 500;
-  color: var(--gf-text);
+  color: #fff;
   cursor: pointer;
 }
-.social-btn-lf:hover{
-  background-color: var(--gf-surface-2);
-}
-/* .social-btn-lf .sblf-icon-cont{
-  font-size: 40px;
-} */
+/* Deliberately translucent + blurred instead of the old flat 3-stop
+   linear-gradient (a jarring bright-blue slice at its 16% stop) - tinted
+   toward the same wine/violet-into-near-black base as the dashboard's own
+   .walllet-bg mesh (#140b26 ground, magenta/violet blobs) instead of an
+   unrelated purple-to-sky-blue sweep, so login/register read as part of
+   the same app instead of a leftover older screen. The background photo
+   (infoOne.jpg) shows through softly via the blur, rather than being
+   fully covered by a flat panel. */
 .login-componnt-cont{
-  background: linear-gradient(180deg, rgba(72,0,103,1) 0%, rgba(143,0,176,1) 0%, rgba(77,172,255,1) 16%);
-  -webkit-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.31);
--moz-box-shadow: -1px 0px 20px 5px rgba(77,77,77,0.31);
-box-shadow: -1px 0px 20px 5px rgba(143, 143, 143, 0.7);
+  background: linear-gradient(165deg, rgba(94, 20, 90, 0.6) 0%, rgba(20, 11, 38, 0.88) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 16px 40px -12px rgba(0, 0, 0, 0.65);
 }
 .modal-gradient{
   

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { signOut } from "next-auth/react"; //only ones need it
-import { useSession } from "next-auth/react"; //too
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/authClient";
 import Link from "next/link";
 import Image from "next/image";
 import "animate.css";
@@ -31,6 +31,12 @@ function Navbar({ sesion }) {
   const [toggleNav, setToggleNav] = useState(false);
   const [isAddTrans, setIsAddTrans] = useState(false);
   const { mode, toggleMode } = useThemeMode();
+  const router = useRouter();
+  const handleSignOut = () => {
+    authClient.signOut({
+      fetchOptions: { onSuccess: () => router.push("/login") },
+    });
+  };
   const handleToggleNav = () => {
     setToggleNav(!toggleNav);
   };
@@ -135,7 +141,7 @@ function Navbar({ sesion }) {
           </button>
         </li>
         <li className=" flash">
-          <button onClick={() => signOut()}>
+          <button onClick={handleSignOut}>
             <IoMdExit size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Sign Out</p>
           </button>
