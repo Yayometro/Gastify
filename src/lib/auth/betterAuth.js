@@ -14,7 +14,13 @@ import { provisionNewUserData } from "./provisionNewUserData";
 // `dbConnection()` exactly as before; this is a second, independent
 // connection to the same database. The `dnsFix` import above guarantees the
 // DNS-resolver override runs before either client tries to connect.
-const client = new MongoClient(process.env.DB_URI);
+// serverSelectionTimeoutMS shortens the driver's default 30s wait - if
+// Mongo is genuinely unreachable this fails with a clear error inside
+// Vercel's function timeout window instead of the request just hanging
+// until Vercel kills it (exactly what happened live: every request through
+// this client timed out at Vercel's own 10s/30s limit with no Mongo error
+// at all, just silence).
+const client = new MongoClient(process.env.DB_URI, { serverSelectionTimeoutMS: 8000 });
 const db = client.db();
 
 async function bcryptHash(password) {
