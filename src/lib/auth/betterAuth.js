@@ -17,10 +17,20 @@ import { provisionNewUserData } from "./provisionNewUserData";
 // serverSelectionTimeoutMS shortens the driver's default 30s wait - if
 // Mongo is genuinely unreachable this fails with a clear error inside
 // Vercel's function timeout window instead of the request just hanging
-// until Vercel kills it (exactly what happened live: every request through
-// this client timed out at Vercel's own 10s/30s limit with no Mongo error
-// at all, just silence).
-const client = new MongoClient(process.env.DB_URI, { serverSelectionTimeoutMS: 8000 });
+// until Vercel kills it.
+//
+// maxPoolSize matters even more: the driver's own default is up to 100
+// connections PER MongoClient instance, and this module-level `client` gets
+// re-created on every cold serverless start - Vercel can have many
+// concurrent function instances alive at once, each holding its own
+// MongoClient (this one) *and* Mongoose's separate one from dbConnection.js.
+// Confirmed live: Atlas's free M0 tier hit "approaching connection limit
+// 100%" and started refusing new connections, which is what actually made
+// every sign-in hang (not the DNS override from the earlier fix - that was
+// real but not the whole story). Capping this client's own pool keeps its
+// footprint small regardless of how many serverless instances are alive at
+// once.
+const client = new MongoClient(process.env.DB_URI, { serverSelectionTimeoutMS: 8000, maxPoolSize: 5 });
 const db = client.db();
 
 async function bcryptHash(password) {
