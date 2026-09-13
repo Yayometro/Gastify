@@ -1,36 +1,21 @@
-import "@/lib/db/dnsFix";
-import { MongoClient } from "mongodb";
 import bcryptjs from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { passkey } from "@better-auth/passkey";
 import { twoFactor } from "better-auth/plugins/two-factor";
 import { provisionNewUserData } from "./provisionNewUserData";
+import { getSharedMongoClient } from "@/lib/db/mongoClient";
 
-// A plain native MongoClient, not Mongoose's connection - matches Better
-// Auth's own canonical setup (the driver connects lazily on first use, so
-// no async-singleton dance is needed for a synchronous top-level `auth`
-// export). Every business-logic route keeps using Mongoose's own
-// `dbConnection()` exactly as before; this is a second, independent
-// connection to the same database. The `dnsFix` import above guarantees the
-// DNS-resolver override runs before either client tries to connect.
-// serverSelectionTimeoutMS shortens the driver's default 30s wait - if
-// Mongo is genuinely unreachable this fails with a clear error inside
-// Vercel's function timeout window instead of the request just hanging
-// until Vercel kills it.
-//
-// maxPoolSize matters even more: the driver's own default is up to 100
-// connections PER MongoClient instance, and this module-level `client` gets
-// re-created on every cold serverless start - Vercel can have many
-// concurrent function instances alive at once, each holding its own
-// MongoClient (this one) *and* Mongoose's separate one from dbConnection.js.
-// Confirmed live: Atlas's free M0 tier hit "approaching connection limit
-// 100%" and started refusing new connections, which is what actually made
-// every sign-in hang (not the DNS override from the earlier fix - that was
-// real but not the whole story). Capping this client's own pool keeps its
-// footprint small regardless of how many serverless instances are alive at
-// once.
-const client = new MongoClient(process.env.DB_URI, { serverSelectionTimeoutMS: 8000, maxPoolSize: 5 });
+// Reuses the exact same MongoClient/connection pool that Mongoose's own
+// dbConnection() uses (see src/lib/db/mongoClient.js), instead of opening a
+// second independent one. Both used to default to up to 100 connections
+// PER instance, and every cold serverless start created fresh copies of
+// both - doubling the sockets Vercel opened against Atlas and driving the
+// free-tier cluster to "approaching connection limit 100%" in production.
+// `client.db()` stays lazy exactly as before: it queues operations until
+// the shared connection is actually established, so this remains a
+// synchronous top-level `auth` export with no async-singleton dance.
+const client = getSharedMongoClient();
 const db = client.db();
 
 async function bcryptHash(password) {
