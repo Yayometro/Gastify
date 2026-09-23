@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { STEP_UP_TTL_MS } from "@/lib/auth/stepUpConfig";
 
-const ACTIVITY_EVENTS = ["mousemove", "keydown", "touchstart", "click", "scroll"];
+const ACTIVITY_EVENTS = ["mousemove", "keydown", "touchstart", "click", "scroll"] as const;
 
 // Proactive half of the step-up freshness gate (see dashboard/layout.js for
 // the authoritative server-side half). Without this, a dashboard page left
@@ -14,9 +14,9 @@ const ACTIVITY_EVENTS = ["mousemove", "keydown", "touchstart", "click", "scroll"
 // overlay on top of the still-mounted page - a blurred overlay is cosmetic
 // only, the real transaction/balance data would still sit in the DOM and
 // JS memory underneath it. Renders nothing; this is pure behavior.
-function IdleStepUpGuard() {
+function IdleStepUpGuard(): null {
   const router = useRouter();
-  const timeoutRef = useRef(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const resetTimer = () => {

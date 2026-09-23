@@ -114,8 +114,23 @@
           ]
         },
         "src/components/multiUsedComp/IdleStepUpGuard.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T05:32:45.153Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T05:34:02.569Z",
+              "event": "submitted",
+              "notes": "Migrado `src/components/multiUsedComp/IdleStepUpGuard.jsx` a `src/components/multiUsedComp/IdleStepUpGuard.tsx`. Se tipó el retorno del componente como `null`, la referencia del timeout como `useRef<ReturnType<typeof setTimeout> | null>(null)`, y el array `ACTIVITY_EVENTS` con `as const` para inferir correctamente los eventos de ventana en `addEventListener`/`removeEventListener`. Se preservó intacta la lógica, el reseteo pasivo de eventos, los comentarios explicativos y la directiva de eslint. Verificado con compilación limpia en `tsc --noEmit`, cero advertencias en `eslint`, y la suite completa de tests de vitest pasando (281/281)."
+            },
+            {
+              "ts": "2026-09-23T05:34:56.064Z",
+              "event": "approved",
+              "notes": "Archivo pequeño, diff mínimo y completamente fiel (mismo tamaño de línea antes/después). tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/auth/betterAuth.js": {
           "status": "pending",
