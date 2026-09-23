@@ -3,12 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import QRCode from "qrcode";
 import { authClient } from "@/lib/auth/authClient";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
+import { store } from "@/lib/store";
 import { fetchUser } from "@/lib/features/userSlice";
 import { fetchWallet } from "@/lib/features/walletSlice";
 import { fetchAccounts } from "@/lib/features/accountsSlice";
@@ -34,7 +35,7 @@ const LOOP_GUARD_KEY = "gf_verify2fa_loop_guard";
 const LOOP_GUARD_WINDOW_MS = 20000;
 const LOOP_GUARD_MAX_MOUNTS = 4;
 
-function clearLoopGuard() {
+function clearLoopGuard(): void {
   try {
     sessionStorage.removeItem(LOOP_GUARD_KEY);
   } catch {
@@ -43,11 +44,13 @@ function clearLoopGuard() {
 }
 
 // Returns true if this mount pushed the count past the loop threshold.
-function registerLoopGuardMount() {
+function registerLoopGuardMount(): boolean {
   try {
     const now = Date.now();
     const raw = sessionStorage.getItem(LOOP_GUARD_KEY);
-    const timestamps = (raw ? JSON.parse(raw) : []).filter((t) => now - t < LOOP_GUARD_WINDOW_MS);
+    const timestamps: number[] = (raw ? JSON.parse(raw) : []).filter(
+      (t: number) => now - t < LOOP_GUARD_WINDOW_MS
+    );
     timestamps.push(now);
     sessionStorage.setItem(LOOP_GUARD_KEY, JSON.stringify(timestamps));
     return timestamps.length > LOOP_GUARD_MAX_MOUNTS;
@@ -55,6 +58,39 @@ function registerLoopGuardMount() {
     return false;
   }
 }
+
+type Phase =
+  | "loading"
+  | "onboard-choose"
+  | "onboard-totp-scan-pending"
+  | "onboard-totp-password"
+  | "onboard-totp-scan"
+  | "onboard-backup-reveal"
+  | "challenge"
+  | "challenge-totp"
+  | "challenge-backup";
+
+interface TotpSetupData {
+  totpURI: string;
+  backupCodes: string[];
+}
+
+interface AuthUser {
+  id?: string;
+  email?: string;
+  name?: string;
+  image?: string;
+  twoFactorEnabled?: boolean;
+}
+
+interface AuthSession {
+  user?: AuthUser;
+  session?: unknown;
+}
+
+type AppDispatch = typeof store.dispatch;
+// Unmigrated JS Redux thunk action creators infer ThunkArg as void; typed helper for dispatching with email parameter
+type ThunkWithEmail = (email: string) => Parameters<AppDispatch>[0];
 
 // The single screen every sign-in method funnels through when the current
 // session hasn't proven a step-up check (passkey/TOTP/backup code) within
@@ -68,23 +104,24 @@ function registerLoopGuardMount() {
 //   passkey ceremony fires automatically the moment this mode is reached
 //   (no click needed first) - the fingerprint/Face ID/PIN prompt itself IS
 //   the security gate, an extra click in front of it doesn't add anything.
-function Verify2FAClient() {
+function Verify2FAClient(): React.JSX.Element {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const dispatch = useDispatch<AppDispatch>();
+  const { data: rawSession, isPending: sessionPending } = authClient.useSession();
+  const session = rawSession as unknown as AuthSession | null;
   const { data: passkeys, isPending: passkeysPending } = authClient.useListPasskeys();
 
-  const [phase, setPhase] = useState("loading");
-  const [loading, setLoading] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [totpSetup, setTotpSetup] = useState(null); // { totpURI, backupCodes }
-  const [qrDataUrl, setQrDataUrl] = useState(null);
-  const [code, setCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [loopBroken, setLoopBroken] = useState(false);
-  const autoTriggered = useRef(false);
-  const prefetchTriggered = useRef(false);
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [redirecting, setRedirecting] = useState<boolean>(false);
+  const [attempts, setAttempts] = useState<number>(0);
+  const [totpSetup, setTotpSetup] = useState<TotpSetupData | null>(null); // { totpURI, backupCodes }
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [code, setCode] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [loopBroken, setLoopBroken] = useState<boolean>(false);
+  const autoTriggered = useRef<boolean>(false);
+  const prefetchTriggered = useRef<boolean>(false);
 
   useEffect(() => {
     import("ldrs").then(({ quantum }) => quantum.register());
@@ -96,7 +133,7 @@ function Verify2FAClient() {
     if (registerLoopGuardMount()) {
       setLoopBroken(true);
       clearLoopGuard();
-      authClient.signOut().finally(() => {
+      (authClient.signOut as unknown as () => Promise<unknown>)().finally(() => {
         router.push("/login?securityCheckFailed=1");
       });
     }
@@ -110,11 +147,11 @@ function Verify2FAClient() {
   // step handlers below had just navigated to, bouncing the user back to
   // onboard-choose/challenge in the middle of a flow. Every phase change
   // after the first is owned entirely by those handlers now.
-  const phaseDetermined = useRef(false);
+  const phaseDetermined = useRef<boolean>(false);
   useEffect(() => {
     if (loopBroken || sessionPending || passkeysPending || phaseDetermined.current) return;
     phaseDetermined.current = true;
-    const hasAnySecondFactor = (passkeys && passkeys.length > 0) || session?.user?.twoFactorEnabled;
+    const hasAnySecondFactor = (passkeys && passkeys.length > 0) || Boolean(session?.user?.twoFactorEnabled);
     setPhase(hasAnySecondFactor ? "challenge" : "onboard-choose");
   }, [loopBroken, sessionPending, passkeysPending, passkeys, session]);
 
@@ -133,16 +170,16 @@ function Verify2FAClient() {
     const email = session?.user?.email;
     if (!email || prefetchTriggered.current) return;
     prefetchTriggered.current = true;
-    dispatch(fetchUser(email));
-    dispatch(fetchWallet(email));
-    dispatch(fetchAccounts(email));
-    dispatch(fetchCategories(email));
-    dispatch(fetchSubCat(email));
-    dispatch(fetchTrans(email));
-    dispatch(fetchBudget(email));
+    dispatch((fetchUser as unknown as ThunkWithEmail)(email));
+    dispatch((fetchWallet as unknown as ThunkWithEmail)(email));
+    dispatch((fetchAccounts as unknown as ThunkWithEmail)(email));
+    dispatch((fetchCategories as unknown as ThunkWithEmail)(email));
+    dispatch((fetchSubCat as unknown as ThunkWithEmail)(email));
+    dispatch((fetchTrans as unknown as ThunkWithEmail)(email));
+    dispatch((fetchBudget as unknown as ThunkWithEmail)(email));
   }, [session, dispatch]);
 
-  async function finishStepUp() {
+  async function finishStepUp(): Promise<void> {
     setRedirecting(true);
     clearLoopGuard();
     // Tried firing this write and the navigation concurrently (not
@@ -159,13 +196,13 @@ function Verify2FAClient() {
     router.push("/dashboard");
   }
 
-  async function failAttempt(message) {
+  async function failAttempt(message?: string): Promise<void> {
     const next = attempts + 1;
     setAttempts(next);
     if (next >= MAX_ATTEMPTS) {
       runNotify("error", "No pudimos verificar tu identidad después de 3 intentos. Por seguridad cerramos tu sesión.");
       clearLoopGuard();
-      await authClient.signOut();
+      await (authClient.signOut as unknown as () => Promise<unknown>)();
       router.push("/login?securityCheckFailed=1");
       return;
     }
@@ -173,7 +210,7 @@ function Verify2FAClient() {
   }
 
   // --- Onboarding: register a passkey right here ---
-  async function handleOnboardPasskey() {
+  async function handleOnboardPasskey(): Promise<void> {
     try {
       setLoading(true);
       const { error } = await authClient.passkey.addPasskey({ name: "Passkey principal" });
@@ -195,11 +232,11 @@ function Verify2FAClient() {
   // password - an account can be password-less, e.g. right after clearing
   // one) - so every attempt is optimistic, fired with no password first,
   // and only asks for one on an actual INVALID_PASSWORD response.
-  function startOnboardTotp() {
+  function startOnboardTotp(): void {
     setPhase("onboard-totp-scan-pending");
   }
 
-  async function handleOnboardTotpStart(e) {
+  async function handleOnboardTotpStart(e?: React.FormEvent<HTMLFormElement>): Promise<void> {
     e?.preventDefault?.();
     // Reads the form's own current value rather than trusting the
     // React-controlled `password` state alone - found live in
@@ -208,7 +245,9 @@ function Verify2FAClient() {
     // firing, so the request silently went out with no password at all and
     // came back "Contraseña incorrecta" for a password that was actually
     // correct.
-    const currentPassword = e?.target?.elements?.password?.value || password;
+    const form = e?.target as HTMLFormElement | undefined;
+    const passwordInput = form?.elements?.namedItem("password") as HTMLInputElement | null | undefined;
+    const currentPassword = passwordInput?.value || password;
     try {
       setLoading(true);
       const { data, error } = await authClient.twoFactor.enable({ method: "totp", password: currentPassword || undefined });
@@ -225,8 +264,9 @@ function Verify2FAClient() {
         return;
       }
       setPassword("");
-      setTotpSetup(data);
-      const dataUrl = await QRCode.toDataURL(data.totpURI);
+      const setupData = data as unknown as TotpSetupData;
+      setTotpSetup(setupData);
+      const dataUrl = await QRCode.toDataURL(setupData.totpURI);
       setQrDataUrl(dataUrl);
       setPhase("onboard-totp-scan");
     } finally {
@@ -242,7 +282,7 @@ function Verify2FAClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  async function handleOnboardTotpConfirm(e) {
+  async function handleOnboardTotpConfirm(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     try {
       setLoading(true);
@@ -258,7 +298,7 @@ function Verify2FAClient() {
   }
 
   // --- Challenge (already has a second factor) ---
-  async function handleChallengePasskey() {
+  async function handleChallengePasskey(): Promise<void> {
     try {
       setLoading(true);
       const { error } = await authClient.signIn.passkey();
@@ -284,7 +324,7 @@ function Verify2FAClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  async function handleChallengeTotp(e) {
+  async function handleChallengeTotp(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     try {
       setLoading(true);
@@ -300,7 +340,7 @@ function Verify2FAClient() {
     }
   }
 
-  async function handleChallengeBackupCode(e) {
+  async function handleChallengeBackupCode(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     try {
       setLoading(true);
@@ -371,7 +411,7 @@ function Verify2FAClient() {
               autoComplete="current-password"
               placeholder="Tu contraseña"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               autoFocus
               required
             />
@@ -409,7 +449,7 @@ function Verify2FAClient() {
               inputMode="numeric"
               placeholder="Código de 6 dígitos"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
               className="form-control text-center"
               required
             />
@@ -486,7 +526,7 @@ function Verify2FAClient() {
               inputMode="numeric"
               placeholder="Código de tu app autenticadora"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
               className="form-control text-center"
               required
             />
@@ -508,7 +548,7 @@ function Verify2FAClient() {
               type="text"
               placeholder="Código de respaldo"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
               className="form-control text-center"
               required
             />
