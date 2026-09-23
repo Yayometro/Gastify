@@ -1,5 +1,5 @@
 import "./dnsFix";
-import mongoose from "mongoose";
+import mongoose, { type Mongoose } from "mongoose";
 
 const connectionString = process.env.DB_URI;
 
@@ -23,9 +23,9 @@ if (!connectionString || connectionString.length === 0) {
 // client/pool Mongoose itself uses, instead of a second one - preserving
 // the existing lazy-connect pattern (no async singleton dance needed for
 // betterAuth.js's synchronous top-level `auth` export).
-let connectPromise = null;
+let connectPromise: Promise<Mongoose> | null = null;
 
-export function ensureMongooseConnection() {
+export function ensureMongooseConnection(): Promise<Mongoose> {
   if (!connectPromise) {
     connectPromise = mongoose.connect(connectionString, {
       maxPoolSize: 5,
@@ -35,7 +35,7 @@ export function ensureMongooseConnection() {
   return connectPromise;
 }
 
-export function getSharedMongoClient() {
+export function getSharedMongoClient(): ReturnType<typeof mongoose.connection.getClient> {
   ensureMongooseConnection();
   return mongoose.connection.getClient();
 }

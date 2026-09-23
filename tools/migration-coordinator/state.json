@@ -228,8 +228,23 @@
           ]
         },
         "src/lib/db/mongoClient.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T06:24:33.605Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T06:26:44.471Z",
+              "event": "submitted",
+              "notes": "Migración de `src/lib/db/mongoClient.js` a `src/lib/db/mongoClient.ts`.\n\n1. Tipado e imports:\n- Se importó el tipo `type { Mongoose }` desde `mongoose`.\n- Se tipó la variable del singleton de conexión `connectPromise: Promise<Mongoose> | null = null`.\n- Se tipó la firma de `ensureMongooseConnection(): Promise<Mongoose>`.\n- Se tipó `getSharedMongoClient(): ReturnType<typeof mongoose.connection.getClient>` para retornar con precisión el `MongoClient` del driver nativo subyacente manejado por Mongoose, manteniendo la interoperabilidad con `src/lib/auth/betterAuth.ts` y evitando discrepancias de declaraciones privadas entre paquetes de driver anidados.\n\n2. Preservación estricta de lógica y comentarios:\n- Cero cambios a la lógica de inicialización y pooling (`maxPoolSize: 5`, `serverSelectionTimeoutMS: 8000`).\n- Se mantuvieron intactos el 100% de los comentarios de documentación sobre la reutilización de sockets compartidos para evitar agotar el límite de conexiones en Atlas.\n\n3. Observaciones / Sugerencias (no aplicadas):\n- Ninguna; el módulo es limpio, conciso y opera correctamente como singleton para Mongoose y Better Auth.\n\n4. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npm run lint`: 0 errores o advertencias en `src/lib/db/mongoClient.ts`.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests).\n- `npm run build`: 73/73 páginas y rutas generadas con éxito."
+            },
+            {
+              "ts": "2026-09-23T06:27:38.070Z",
+              "event": "approved",
+              "notes": "Buena eleccion tipar getSharedMongoClient con ReturnType<typeof mongoose.connection.getClient> en vez de importar MongoClient directo - evita el mismo choque de tipos por paquete duplicado que sí necesito un cast en betterAuth.ts. Confirmé que betterAuth.ts sigue compilando bien con esto (su cast as unknown as ya blindaba contra cualquier tipo de origen). tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/db/dnsFix.js": {
           "status": "pending",
