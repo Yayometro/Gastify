@@ -190,8 +190,23 @@
           ]
         },
         "src/lib/auth/stepUpConfig.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T06:16:06.543Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T06:17:54.042Z",
+              "event": "submitted",
+              "notes": "Migración de `src/lib/auth/stepUpConfig.js` a `src/lib/auth/stepUpConfig.ts`.\n\n1. Tipado:\n- Se agregaron anotaciones de tipo explícitas (`: number`) a las constantes exportadas `STEP_UP_TTL_MINUTES` y `STEP_UP_TTL_MS`.\n\n2. Cero cambios de comportamiento o lógica:\n- Se preservaron intactos los valores constantes (`15` y `15 * 60 * 1000`) y los comentarios explicativos de arquitectura sobre la ventana de frescura de step-up y la sincronización cliente/servidor.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx vitest run`: 25/25 suites pasadas, 281/281 tests pasados.\n- `npm run lint`: 0 errores o advertencias atribuibles a este archivo.\n- `npm run build`: 73/73 páginas compiladas exitosamente sin errores."
+            },
+            {
+              "ts": "2026-09-23T06:18:45.086Z",
+              "event": "approved",
+              "notes": "Diff trivial de 2 lineas, correcto. tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/auth/provisionNewUserData.js": {
           "status": "pending",
