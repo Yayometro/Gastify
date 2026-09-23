@@ -1,7 +1,6 @@
 "use client";
-import React, { useEffect } from "react";
-import { useState } from "react";
-import { useRouter, useSearchParams, useParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaKey } from "react-icons/fa";
 import { authClient } from "@/lib/auth/authClient";
@@ -9,15 +8,21 @@ import Link from "next/link";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 
+
 const MAX_TWO_FACTOR_ATTEMPTS = 3;
 
-function LoginComponent() {
-  const [formData, setFormData] = useState({
+interface LoginFormState {
+  mail: string;
+  password: string;
+}
+
+function LoginComponent(): React.JSX.Element {
+  const [formData, setFormData] = useState<LoginFormState>({
     mail: "",
     password: "",
   });
-  const [errorForm, setErrorForm] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [errorForm] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   // Password login's own inline 2FA step - Better Auth's twoFactor plugin
   // gates /sign-in/email natively (its one stable, never-reverted sign-in
   // gating path - see the plan's Context section), so a password user with
@@ -25,15 +30,15 @@ function LoginComponent() {
   // instead of a session. Handled as a small step within this same card
   // (no page navigation) rather than sending them to /verify-2fa, so they
   // aren't asked twice in a row.
-  const [pendingTwoFactor, setPendingTwoFactor] = useState(false);
-  const [twoFactorCode, setTwoFactorCode] = useState("");
-  const [twoFactorAttempts, setTwoFactorAttempts] = useState(0);
+  const [pendingTwoFactor, setPendingTwoFactor] = useState<boolean>(false);
+  const [twoFactorCode, setTwoFactorCode] = useState<string>("");
+  const [twoFactorAttempts, setTwoFactorAttempts] = useState<number>(0);
 
   const router = useRouter();
   const searchParamas = useSearchParams();
-  const email = searchParamas.get("mail");
+  const email = searchParamas ? searchParamas.get("mail") : null;
 
-  async function markStepUpVerifiedAndGo() {
+  async function markStepUpVerifiedAndGo(): Promise<void> {
     const toFetch = fetcher();
     await toFetch.post("auth-extra/mark-step-up", {});
     router.push("/dashboard");
@@ -43,7 +48,7 @@ function LoginComponent() {
     if (email) {
       runNotify("ok", `${email} was created successfully 🤓`);
     }
-    if (searchParamas.get("securityCheckFailed")) {
+    if (searchParamas && searchParamas.get("securityCheckFailed")) {
       runNotify("error", "No pudimos verificar tu identidad, así que cerramos tu sesión por seguridad. Inicia sesión de nuevo.");
     }
   }, []);
@@ -53,11 +58,11 @@ function LoginComponent() {
     import("ldrs").then(({ quantum }) => quantum.register());
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  const googleSignIn = async () => {
+  const googleSignIn = async (): Promise<void> => {
     try {
       setLoading(true);
       // Straight to /verify-2fa, not /dashboard - dashboard/layout.js would
@@ -70,7 +75,7 @@ function LoginComponent() {
       setLoading(false);
     }
   };
-  const passkeySignIn = async () => {
+  const passkeySignIn = async (): Promise<void> => {
     try {
       setLoading(true);
       const { error } = await authClient.signIn.passkey();
@@ -88,7 +93,7 @@ function LoginComponent() {
       setLoading(false);
     }
   };
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     try {
       e.preventDefault();
       setLoading(true);
@@ -106,7 +111,7 @@ function LoginComponent() {
         setLoading(false);
         return;
       }
-      if (data?.twoFactorRedirect) {
+      if ((data as { twoFactorRedirect?: boolean } | null | undefined)?.twoFactorRedirect) {
         // This account already has TOTP enabled - stay on this same card
         // and ask for the code inline instead of navigating away.
         setPendingTwoFactor(true);
@@ -125,7 +130,7 @@ function LoginComponent() {
     }
   };
 
-  const handleTwoFactorSubmit = async (e) => {
+  const handleTwoFactorSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     try {
       setLoading(true);
@@ -196,7 +201,7 @@ function LoginComponent() {
               inputMode="numeric"
               placeholder="Código de 6 dígitos"
               value={twoFactorCode}
-              onChange={(e) => setTwoFactorCode(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTwoFactorCode(e.target.value)}
               className="form-control text-center"
               autoFocus
               required
