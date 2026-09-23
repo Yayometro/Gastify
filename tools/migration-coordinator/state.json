@@ -1,0 +1,131 @@
+{
+  "activeStory": "historia-1-login-auth",
+  "stories": {
+    "historia-1-login-auth": {
+      "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
+      "files": {
+        "src/components/LoginComponent.jsx": {
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T03:24:26.182Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T03:27:42.588Z",
+              "event": "submitted",
+              "notes": "Migrado `LoginComponent.jsx` a `LoginComponent.tsx`. Se agregó la interfaz `LoginFormState` para el estado del formulario (`mail`, `password`), se tiparon todos los estados locales (`errorForm`, `loading`, `pendingTwoFactor`, `twoFactorCode`, `twoFactorAttempts`), el retorno del componente (`React.JSX.Element`), los event handlers de formularios e inputs (`React.FormEvent<HTMLFormElement>`, `React.ChangeEvent<HTMLInputElement>`), y las funciones asíncronas de autenticación (`markStepUpVerifiedAndGo`, `googleSignIn`, `passkeySignIn`, `handleSubmit`, `handleTwoFactorSubmit`). Se limpió el import no utilizado `useParams` y el setter no referenciado `setErrorForm`. Se verificó compilación limpia con `tsc --noEmit` y suite de tests con vitest."
+            },
+            {
+              "ts": "2026-09-23T03:30:22.677Z",
+              "event": "needs_rework",
+              "notes": "Todo lo demás está bien (tsc limpio, eslint limpio, 281/281 tests, verificado en navegador - /login renderiza idéntico, sin errores de consola). Un solo problema real: en el catch de handleSubmit cambiaste `throw new Error(e)` por `throw (e instanceof Error ? e : new Error(String(e)))`. Eso es un cambio de comportamiento (preserva el error original en vez de re-envolverlo con mensaje stringificado) que NO era requerido por el compilador - con strict:false, `e: any` ya tipaba bien contra `new Error(e)` sin ningún error. Regla de oro: no cambies comportamiento, solo agrega tipos, salvo que el compilador te obligue. Revierte esa línea a `throw new Error(e)` exactamente como estaba (solo con los tipos que ya le pusiste alrededor), y vuelve a mandar a review. Si de verdad crees que ese fix de manejo de errores vale la pena, repórtalo aparte en el summary como una sugerencia explícita, no lo apliques en silencio dentro de una migración de tipos."
+            },
+            {
+              "ts": "2026-09-23T03:32:24.829Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T03:32:56.275Z",
+              "event": "submitted",
+              "notes": "Corregido el problema señalado en la revisión previa: se revirtió el throw en el catch de handleSubmit de `throw (e instanceof Error ? e : new Error(String(e)))` a `throw new Error(e)` preservando exactamente el comportamiento original. tsc --noEmit compila limpio sin errores y los 281 tests pasan exitosamente."
+            },
+            {
+              "ts": "2026-09-23T03:33:38.628Z",
+              "event": "approved",
+              "notes": "Corregido correctamente - revirtió el throw a exactamente como estaba. tsc limpio, eslint limpio (solo el mismo warning pre-existente de exhaustive-deps que ya tenían otros componentes del repo), 281/281 tests. Verificado en navegador en la revisión anterior. Aprobado."
+            }
+          ]
+        },
+        "src/components/RegisterComp.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/Verify2FAClient.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/PasskeysPanel.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TwoFactorPanel.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/IdleStepUpGuard.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/auth/betterAuth.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/auth/authClient.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/auth/markStepUpVerified.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/auth/stepUpConfig.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/auth/provisionNewUserData.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/db/mongoClient.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/db/dnsFix.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/middleware.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/User.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/hooks/useGetUserSession.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/auth/[...all]/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/auth-extra/mark-step-up/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/login/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/register/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/login/page.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/register/page.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/verify-2fa/page.jsx": {
+          "status": "pending",
+          "history": []
+        }
+      }
+    }
+  }
+}

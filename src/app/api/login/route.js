@@ -34,7 +34,7 @@ export async function GET(){
 
 export async function POST(request){
     try{
-        if(!request) return {error: "no data in request"}
+        if(!request) return NextResponse.json({error: "no data in request"}, {status: 400})
         const dataRequest = await request.json()
         console.log(dataRequest)
         await dbConnection()
