@@ -8,7 +8,7 @@ import dbConnection from "@/app/api/dbConnection";
 // rather than any Better Auth API, since this has nothing to do with the
 // sign-in response machinery (the session already exists and is valid;
 // this only records a freshness timestamp on it).
-export async function markStepUpVerified(sessionToken) {
+export async function markStepUpVerified(sessionToken: string): Promise<void> {
   await dbConnection();
   await mongoose.connection
     .collection("session")

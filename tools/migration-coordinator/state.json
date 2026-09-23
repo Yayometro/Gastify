@@ -171,8 +171,23 @@
           ]
         },
         "src/lib/auth/markStepUpVerified.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T05:44:36.338Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T05:46:04.992Z",
+              "event": "submitted",
+              "notes": "Migración de `src/lib/auth/markStepUpVerified.js` a `src/lib/auth/markStepUpVerified.ts`.\n\n1. Tipado:\n- Se tipó el parámetro `sessionToken: string` y el valor de retorno explícito `Promise<void>` en la función `markStepUpVerified`.\n- Mongoose y la colección nativa `session` son inferidos correctamente sin necesidad de casteos ni supresiones de tipos.\n\n2. Cero cambios de lógica o comportamiento:\n- Se mantiene idéntico el comportamiento en tiempo de ejecución: conexión a la base de datos vía `await dbConnection()` y actualización con `$set: { stepUpVerifiedAt: new Date() }`.\n- Se preservaron intactos los comentarios de documentación sobre el diseño de persistencia de step-up freshness.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npm run lint`: 0 errores o advertencias en el archivo.\n- `npm test` (vitest): 25 suites pasadas (281/281 tests).\n- `npm run build`: 73/73 rutas generadas correctamente sin errores."
+            },
+            {
+              "ts": "2026-09-23T05:46:39.701Z",
+              "event": "approved",
+              "notes": "Diff mínimo, fiel. tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/auth/stepUpConfig.js": {
           "status": "pending",
