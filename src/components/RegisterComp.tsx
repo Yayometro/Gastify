@@ -6,35 +6,60 @@ import { authClient } from "@/lib/auth/authClient";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 
-export default function RegisterComp({ params }) {
-  const [formData, setFormData] = useState({
+interface RegisterFormData {
+  fullName: string;
+  mail: string;
+  password: string;
+  termnsYes: boolean;
+  formError: string;
+  name?: string;
+  [key: string]: string | boolean | undefined;
+}
+
+interface ValidationMessagesState {
+  passLength: string;
+  passCapital: string;
+  passSpecial: string;
+}
+
+interface RegisterApiResponse {
+  error?: string;
+  errorUser?: boolean;
+  userCreatedStatus?: boolean;
+  data?: unknown;
+  message?: string;
+  status?: number;
+}
+
+export default function RegisterComp(): React.JSX.Element {
+  const [formData, setFormData] = useState<RegisterFormData>({
     fullName: "",
     mail: "",
     password: "",
     termnsYes: false,
     formError: "",
   });
-  const [validationMessages, setValidationMessages] = useState({
+  const [validationMessages, setValidationMessages] = useState<ValidationMessagesState>({
     passLength: "hidden",
     passCapital: "hidden",
     passSpecial: "hidden",
   });
   const router = useRouter();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<boolean>(false);
 
   //Loader
   useEffect(() => {
     import("ldrs").then(({ quantum }) => quantum.register());
   }, []);
 
-  const passString =
+  const passString: string =
     'The password must have at least one special character "!@#$%^&*(),.?":{}|<>".';
-  const regexCapital = /[A-Z]/;
-  const regexSpecial = /[!@#$%^&*(),.?":_{}|<>]/;
+  const regexCapital: RegExp = /[A-Z]/;
+  const regexSpecial: RegExp = /[!@#$%^&*(),.?":_{}|<>]/;
 
   useEffect(() => {
-    const updateValidationMessages = () => {
-      const newMessages = {
+    const updateValidationMessages = (): void => {
+      const newMessages: ValidationMessagesState = {
         passLength: formData.password.length < 8 ? "" : "hidden",
         passCapital: regexCapital.test(formData.password) ? "hidden" : "",
         passSpecial: regexSpecial.test(formData.password) ? "hidden" : "",
@@ -47,30 +72,30 @@ export default function RegisterComp({ params }) {
     }
   }, [formData.password]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
     setFormData({ ...formData, [name]: newValue });
   };
 
-  const googleSignIn = async () => {
-    try{
-      setLoading(true)
+  const googleSignIn = async (): Promise<void> => {
+    try {
+      setLoading(true);
       await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
-    } catch(e){
-      console.log(e)
-      setLoading(false)
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void | boolean> => {
     try {
       e.preventDefault();
       setLoading(true);
       // Send data to backend using fetcher(formData)
       if (formData.termnsYes === false) {
         window.alert("Accept the terms and conditions");
-        setLoading(false)
+        setLoading(false);
       }
       //password validation:
       if (
@@ -82,23 +107,23 @@ export default function RegisterComp({ params }) {
           "Verify that password length is higher than 8, that also includes min one capital letter and has at least one special character"
         );
         setFormData({ ...formData, password: "" });
-        setLoading(false)
+        setLoading(false);
         return false;
       }
 
       const toBack = fetcher();
-      const response = await toBack.post("register", formData);
+      const response: RegisterApiResponse = await toBack.post("register", formData);
       //
       if (response.error) {
         if (response.errorUser) {
           setFormData({ ...formData, formError: "Email already exist" });
-          setLoading(false)
+          setLoading(false);
           return;
         }
         //Some other error aside user in use
         window.alert(response.error);
         setFormData({ ...formData, mail: "" });
-        setLoading(false)
+        setLoading(false);
         return;
       }
       if (response.userCreatedStatus) {
@@ -106,7 +131,7 @@ export default function RegisterComp({ params }) {
       }
     } catch (e) {
       console.log(e);
-      setLoading(false)
+      setLoading(false);
       throw new Error(e);
     }
   };

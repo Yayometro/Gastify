@@ -38,8 +38,23 @@
           ]
         },
         "src/components/RegisterComp.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T03:35:07.406Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T03:36:53.648Z",
+              "event": "submitted",
+              "notes": "Migrado `src/components/RegisterComp.jsx` a `src/components/RegisterComp.tsx`. Se definieron las interfaces `RegisterFormData` (con campos `fullName`, `mail`, `password`, `termnsYes`, `formError`, `name?` e index signature), `ValidationMessagesState` (`passLength`, `passCapital`, `passSpecial`), y `RegisterApiResponse` para la respuesta del endpoint de registro. Se tiparon explícitamente todos los estados de React (`useState<RegisterFormData>`, `useState<ValidationMessagesState>`, `useState<boolean>`), el tipo de retorno del componente (`React.JSX.Element`), los event handlers (`React.ChangeEvent<HTMLInputElement>`, `React.FormEvent<HTMLFormElement>`) y las funciones asíncronas (`googleSignIn: Promise<void>`, `handleSubmit: Promise<void | boolean>`). Se eliminó el parámetro no utilizado `params` para cumplir con las reglas de linter sin cambiar ninguna lógica. Verificado con `tsc --noEmit` limpio, `eslint` limpio y suite de tests de `vitest` (281/281 pasando).\n\n[Sugerencia / Reporte de bug preexistente para evaluación separada]: En el input de nombre completo (línea ~167 en TSX), el atributo `name` es `\"fullName\"`, pero `value` está vinculado a `formData.name` (el cual no está definido en el estado inicial y `handleChange` escribe en `formData.fullName`), por lo que el input actúa como no controlado o desincronizado con `formData.fullName`. Se preservó exactamente la lógica original sin alteraciones según las reglas de migración."
+            },
+            {
+              "ts": "2026-09-23T03:38:27.922Z",
+              "event": "approved",
+              "notes": "Migración limpia y fiel al original - confirmé que el `params` removido nunca se usaba ni se pasaba (su único caller, app/register/page.jsx, lo invoca sin props). tsc limpio, eslint limpio (mismo tipo de warning pre-existente de exhaustive-deps), 281/281 tests, /register verificado en navegador sin errores de consola. Buen hallazgo del bug preexistente (value={formData.name} vs fullName) reportado sin tocarlo - correcto. Aprobado."
+            }
+          ]
         },
         "src/components/Verify2FAClient.jsx": {
           "status": "pending",
