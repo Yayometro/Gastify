@@ -2,8 +2,51 @@
 
 import { authClient } from "@/lib/auth/authClient";
 
-function useGetUserSession() {
-  const { data: session, isPending } = authClient.useSession();
+export interface AuthSessionUser {
+  id: string;
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  emailVerified?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  [key: string]: unknown;
+}
+
+export interface AuthSessionData {
+  session: {
+    id: string;
+    userId: string;
+    expiresAt: Date | string;
+    [key: string]: unknown;
+  };
+  user: AuthSessionUser;
+}
+
+export type UserSessionStatus = "loading" | "authenticated" | "unauthenticated";
+
+export type UserSession =
+  | {
+      user: null;
+      email: null;
+      status: "loading";
+    }
+  | {
+      user: AuthSessionUser;
+      email: string;
+      status: "authenticated";
+    }
+  | {
+      user: null;
+      email: null;
+      status: "unauthenticated";
+    };
+
+function useGetUserSession(): UserSession {
+  // Better Auth's createAuthClient without $InferAuth types useSession().data as never;
+  // bridge to AuthSessionData to safely access the reactive session user.
+  const { data, isPending } = authClient.useSession();
+  const session = data as unknown as AuthSessionData | null;
 
   if (isPending) {
     return {
