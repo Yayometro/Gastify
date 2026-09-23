@@ -12,7 +12,6 @@ interface RegisterFormData {
   password: string;
   termnsYes: boolean;
   formError: string;
-  name?: string;
   [key: string]: string | boolean | undefined;
 }
 
@@ -170,7 +169,7 @@ export default function RegisterComp(): React.JSX.Element {
               id="nameForm"
               aria-describedby="nameH"
               placeholder="Type your full name or alias."
-              value={formData.name}
+              value={formData.fullName}
               onChange={handleChange}
               required
               autoFocus
