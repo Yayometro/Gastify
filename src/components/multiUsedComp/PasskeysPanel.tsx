@@ -7,17 +7,31 @@ import { authClient } from "@/lib/auth/authClient";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "./CategoIcon";
 
+// Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
+const TypedCategoIcon = CategoIcon as React.ComponentType<{
+  type: string;
+  siz?: number;
+  className?: string;
+}>;
+
+interface PasskeyItem {
+  id: string;
+  name?: string | null;
+  createdAt: string | number | Date;
+  [key: string]: unknown;
+}
+
 // Same collapsible-panel pattern as ApiTokensPanel - register/list/remove a
 // passkey (Face ID, Touch ID, Windows Hello, or a physical security key) for
 // this account. `useListPasskeys` is the auto-generated React hook for
 // Better Auth's `listPasskeys` atom (see @better-auth/passkey/client).
-function PasskeysPanel() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [newPasskeyName, setNewPasskeyName] = useState("");
+function PasskeysPanel(): React.JSX.Element {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [newPasskeyName, setNewPasskeyName] = useState<string>("");
   const { data: passkeys, isPending } = authClient.useListPasskeys();
 
-  const handleAdd = async (e) => {
+  const handleAdd = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (!newPasskeyName.trim()) return;
     try {
@@ -36,7 +50,7 @@ function PasskeysPanel() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string): Promise<void> => {
     try {
       setIsLoading(true);
       const { error } = await authClient.passkey.deletePasskey({ id });
@@ -59,7 +73,7 @@ function PasskeysPanel() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <h2 className="text-xl text-purple-300 font-normal">Passkeys</h2>
-        <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
+        <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
         <div className="mt-3">
@@ -75,7 +89,7 @@ function PasskeysPanel() {
             ) : !passkeys || passkeys.length === 0 ? (
               <li className="text-xs text-gf-text-muted italic">No passkeys yet.</li>
             ) : (
-              passkeys.map((p) => (
+              (passkeys as PasskeyItem[]).map((p: PasskeyItem) => (
                 <li
                   key={p.id}
                   className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
@@ -90,7 +104,7 @@ function PasskeysPanel() {
                     className="cursor-pointer text-red-500"
                     onClick={() => handleDelete(p.id)}
                   >
-                    <CategoIcon type="MdClose" siz={20} />
+                    <TypedCategoIcon type="MdClose" siz={20} />
                   </div>
                 </li>
               ))
@@ -106,7 +120,7 @@ function PasskeysPanel() {
               <input
                 type="text"
                 value={newPasskeyName}
-                onChange={(e) => setNewPasskeyName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPasskeyName(e.target.value)}
                 placeholder="e.g. My iPhone"
                 required
               />

@@ -76,8 +76,23 @@
           ]
         },
         "src/components/multiUsedComp/PasskeysPanel.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T05:23:39.573Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T05:26:19.635Z",
+              "event": "submitted",
+              "notes": "Migración de src/components/multiUsedComp/PasskeysPanel.jsx a src/components/multiUsedComp/PasskeysPanel.tsx.\n\n1. Tipado completo:\n- Se definió la interfaz PasskeyItem (id: string, name?: string | null, createdAt: string | number | Date, [key: string]: unknown) para estructurar los elementos retornados por el hook useListPasskeys.\n- Se creó el puente de tipado TypedCategoIcon (React.ComponentType<{ type: string; siz?: number; className?: string }>) para el componente unmigrated CategoIcon.jsx.\n- Se tiparon explícitamente los estados locales (useState<boolean>(false), useState<boolean>(false), useState<string>(\\\"\\\")), el valor de retorno del componente (React.JSX.Element), los eventos de formulario e input (React.FormEvent<HTMLFormElement>, React.ChangeEvent<HTMLInputElement>) y los handlers asíncronos (handleAdd: Promise<void>, handleDelete: Promise<void>).\n\n2. Cero cambios de comportamiento:\n- Se mantuvieron exactamente la estructura DOM, estilos de Tailwind, lógica de colapsado, llamadas a authClient.passkey.addPasskey / deletePasskey, notificaciones con runNotify, manejo de errores en try/catch/finally con String(err), y reseteo de inputs.\n\n3. Verificación:\n- npx tsc --noEmit: 0 errores.\n- npm run lint: 0 errores/warnings en el archivo migrado.\n- npm test (vitest): 25/25 suites passed, 281/281 tests passed.\n- npm run build: 73/73 páginas compiladas con éxito."
+            },
+            {
+              "ts": "2026-09-23T05:27:03.687Z",
+              "event": "approved",
+              "notes": "Diff pequeño y fiel al original, mismo patrón de puentes de tipado (CategoIcon.jsx y el array de passkeys de authClient sin migrar todavía). tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/TwoFactorPanel.jsx": {
           "status": "pending",
