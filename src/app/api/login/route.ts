@@ -1,26 +1,40 @@
-
-
-import { NextResponse } from "next/server";
-import mongoose from "mongoose";
+import { NextResponse, type NextRequest } from "next/server";
+import type mongoose from "mongoose";
 import dbConnection from "../dbConnection";
-import bcryptjs from 'bcryptjs'
 
-import User from "@/model/User";
-import Wallet from "@/model/Wallet";
-import Account from "@/model/Account";
-import Transaction from "@/model/Transaction";
-import Category from "@/model/Category";
-import Tag from "@/model/Tag";
+import User, { type IUser } from "@/model/User";
+import "@/model/Wallet";
+import "@/model/Account";
+import "@/model/Transaction";
+import "@/model/Category";
+import "@/model/Tag";
+// import bcryptjs from 'bcryptjs'
 // import defCategoriesCreator from "../defCategoriesCreator.js";
 
+export interface LoginGetResponse {
+    message: string;
+    status: number;
+    successData: boolean;
+}
 
+export interface LoginPostSuccessResponse {
+    data: mongoose.FlattenMaps<IUser> | null;
+    message: string;
+    status: number;
+    ok: boolean;
+}
 
+export interface LoginPostErrorResponse {
+    error: string;
+}
 
-export async function GET(){
+export type LoginPostResponse = LoginPostSuccessResponse | LoginPostErrorResponse;
+
+export async function GET(): Promise<NextResponse<LoginGetResponse>> {
     try {
         console.log('Funciona el get de login')
         console.log('Funciona despues de Auth')
-        const data = {
+        const data: LoginGetResponse = {
             message: "Usuario encontrado",
             status: 201,
             successData: true
@@ -32,10 +46,12 @@ export async function GET(){
     }
 }
 
-export async function POST(request){
+export async function POST(
+    request: NextRequest | Request
+): Promise<NextResponse<LoginPostResponse>> {
     try{
         if(!request) return NextResponse.json({error: "no data in request"}, {status: 400})
-        const dataRequest = await request.json()
+        const dataRequest: string = await request.json()
         console.log(dataRequest)
         await dbConnection()
         // // Check DEF CARTEGORIES:
