@@ -386,8 +386,23 @@
           ]
         },
         "src/app/api/register/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T06:58:03.471Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T07:01:05.657Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`src/app/api/register/route.ts`). Agregadas interfaces `RegisterBody` (body esperado con `fullName`, `mail`, `password`, `image?`), `RegisterSuccessResponse`, `RegisterErrorResponse` y unión `RegisterResponse`. Tipado `request: NextRequest | Request` y retorno `Promise<NextResponse<RegisterResponse>>`. Se preservó `catch(e)` sin anotar según las reglas de strict:false y la lógica original de throw/logging. Verificado con `tsc --noEmit` (limpio), `eslint` (limpio), `vitest run` (281/281 pasados) y `npm run build` (build completo exitoso).\n\nObservaciones reportadas (sin cambios de código aplicados):\n1. La respuesta de error por correo existente retorna HTTP 200 con `{ error, errorUser: true }`, y la respuesta exitosa retorna `{ status: 201 }` en el cuerpo JSON pero también con HTTP 200 por defecto. Se mantuvieron intactos para preservar compatibilidad exacta.\n2. No se realiza sanitización/normalización manual de lowercase en `dataFront.mail` antes de `User.findOne`, delegando la creación a `auth.api.signUpEmail`.\n3. Esta ruta parece ser la vía manual de registro que ahora delega en `auth.api.signUpEmail` (disparando el hook de provisión de datos)."
+            },
+            {
+              "ts": "2026-09-23T07:01:58.698Z",
+              "event": "approved",
+              "notes": "Excelente - catch(e) se dejo sin anotar como se pidio explicitamente. Buen uso de Awaited<ReturnType<typeof auth.api.signUpEmail>>[\"user\"] para derivar el tipo real en vez de inventar uno. tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/app/login/page.jsx": {
           "status": "pending",
