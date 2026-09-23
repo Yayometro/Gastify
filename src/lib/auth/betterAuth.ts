@@ -1,3 +1,4 @@
+import type { Db, MongoClient } from "mongodb";
 import bcryptjs from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
@@ -15,15 +16,15 @@ import { getSharedMongoClient } from "@/lib/db/mongoClient";
 // `client.db()` stays lazy exactly as before: it queues operations until
 // the shared connection is actually established, so this remains a
 // synchronous top-level `auth` export with no async-singleton dance.
-const client = getSharedMongoClient();
-const db = client.db();
+const client = getSharedMongoClient() as unknown as MongoClient;
+const db: Db = client.db();
 
-async function bcryptHash(password) {
+async function bcryptHash(password: string): Promise<string> {
   const salt = await bcryptjs.genSalt(10);
   return bcryptjs.hash(password, salt);
 }
 
-async function bcryptVerify({ hash, password }) {
+async function bcryptVerify({ hash, password }: { hash: string; password: string }): Promise<boolean> {
   return bcryptjs.compare(password, hash);
 }
 

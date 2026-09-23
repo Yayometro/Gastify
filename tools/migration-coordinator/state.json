@@ -133,8 +133,23 @@
           ]
         },
         "src/lib/auth/betterAuth.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T05:36:04.941Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T05:38:44.120Z",
+              "event": "submitted",
+              "notes": "Migración de `src/lib/auth/betterAuth.js` a `src/lib/auth/betterAuth.ts`.\n\n1. Tipado y compatibilidad:\n- Se importaron `type { Db, MongoClient } from \"mongodb\"`.\n- Se tipó `client` como `MongoClient` mediante un puente de tipos (`getSharedMongoClient() as unknown as MongoClient`) para reconciliar la divergencia de tipos nominales entre la copia interna del driver de mongodb de Mongoose y los tipos del paquete raíz `mongodb` requeridos por `@better-auth/mongo-adapter`.\n- Se tipó `db` explícitamente como `Db`.\n- Se tipó `bcryptHash(password: string): Promise<string>`.\n- Se tipó `bcryptVerify({ hash, password }: { hash: string; password: string }): Promise<boolean>`.\n\n2. Preservación estricta de lógica y comentarios:\n- Se mantuvieron intactos y al 100% todos los comentarios explicativos de arquitectura (reutilización de pool de conexiones Mongo, mapeo de campos `mail`/`fullName`, compatibilidad de hashes bcrypt, no uso de `generateId` para preservar ObjectIds nativos, hook `user.create.after` con `provisionNewUserData`, y configuración de plugins de `passkey` y `twoFactor`).\n- Cero alteraciones a la lógica de ejecución o configuración en runtime.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npm run lint`: 0 errores o advertencias atribuibles a este archivo.\n- `npm test` (vitest): 25/25 suites pasadas, 281/281 tests pasados.\n- `npm run build`: 73/73 páginas compiladas exitosamente."
+            },
+            {
+              "ts": "2026-09-23T05:40:20.744Z",
+              "event": "approved",
+              "notes": "Diff mínimo. Confirmé por qué hace falta el cast `as unknown as MongoClient`: hay dos copias distintas del paquete mongodb instaladas (node_modules/mongodb y node_modules/mongoose/node_modules/mongodb), asi que el MongoClient que infiere mongoose no es nominalmente el mismo tipo que el que importa este archivo directamente - son la misma clase en runtime, solo un choque de tipos por paquetes duplicados. Cero efecto en runtime. Verificado ademas en vivo: /api/auth/passkey/generate-authenticate-options responde correctamente con el adapter de Mongo funcionando. tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/auth/authClient.js": {
           "status": "pending",
