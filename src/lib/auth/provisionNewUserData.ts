@@ -1,3 +1,4 @@
+import type { Types } from "mongoose";
 import User from "@/model/User";
 import Wallet from "@/model/Wallet";
 import Account from "@/model/Account";
@@ -7,6 +8,20 @@ import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
 import Budget from "@/model/Budget";
 
+export interface ProvisionUserParam {
+  _id?: string | Types.ObjectId;
+  id?: string;
+  fullName?: string | null;
+  name?: string | null;
+  [key: string]: unknown;
+}
+
+export interface ProvisionNewUserDataResult {
+  // Typed as any because the Wallet model (src/model/Wallet.js) has not yet been migrated to TypeScript.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  wallet: any;
+}
+
 // The starter Wallet/Account/Category/SubCategory/Tag/Budget/Transaction a
 // brand-new user needs to land on a non-empty dashboard - extracted out of
 // the old `/api/register` route (which only ran for the manual email/
@@ -15,8 +30,8 @@ import Budget from "@/model/Budget";
 // first-login provisioning was a second, hand-maintained copy of this same
 // logic inside the old NextAuth `signIn` callback (a `fetch("/api/register")`
 // call) - one function now, shared by every signup path.
-export async function provisionNewUserData(user) {
-  const fullName = user.fullName || user.name || "New user";
+export async function provisionNewUserData(user: ProvisionUserParam): Promise<ProvisionNewUserDataResult> {
+  const fullName: string = user.fullName || user.name || "New user";
   // Better Auth's own user objects expose the id as `.id` (a string), not
   // Mongoose's `._id` - `user._id` is silently `undefined` here, and
   // Mongoose drops an undefined value from a save instead of throwing,
@@ -71,7 +86,9 @@ export async function provisionNewUserData(user) {
   newAssociateAccount.user = userId;
   newAssociateAccount.wallet = newAssociateWallet._id;
 
-  firstBudget.user = userId;
+  // Casting userId as unknown as Types.ObjectId because Budget model schema infers Types.ObjectId,
+  // but Mongoose accepts string | ObjectId in runtime assignments.
+  firstBudget.user = userId as unknown as Types.ObjectId;
   firstBudget.wallet = newAssociateWallet._id;
   firstBudget.category = fisrtAssociateCategory._id;
   firstBudget.subCategory = fisrtAssociateSubCategory._id;
@@ -115,7 +132,9 @@ export async function provisionNewUserData(user) {
   // runs (unlike the old /api/register flow, which set `newUser.wallet`
   // before the user's own first save) - so the wallet link is a follow-up
   // update instead.
-  await User.findByIdAndUpdate(userId, { wallet: savedWallet._id });
+  // User model (src/model/User.js) is unmigrated JS; cast to any resolves the union type callable signature mismatch from mongoose.models.User || mongoose.model(...)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (User as any).findByIdAndUpdate(userId, { wallet: savedWallet._id });
 
   return { wallet: savedWallet };
 }

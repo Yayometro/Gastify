@@ -209,8 +209,23 @@
           ]
         },
         "src/lib/auth/provisionNewUserData.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T06:19:46.035Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T06:22:54.456Z",
+              "event": "submitted",
+              "notes": "Migración de `src/lib/auth/provisionNewUserData.js` a `src/lib/auth/provisionNewUserData.ts`.\n\n1. Tipado e interfaces:\n- Se definió la interfaz `ProvisionUserParam` con campos opcionales `_id?: string | Types.ObjectId`, `id?: string`, `fullName?: string | null`, `name?: string | null`, y `[key: string]: unknown` para aceptar de forma segura los objetos de usuario provistos por Better Auth (`databaseHooks.user.create.after`) o Mongoose.\n- Se definió la interfaz `ProvisionNewUserDataResult` tipando `{ wallet: any }` con comentario explicativo debido a que el modelo `Wallet.js` aún no ha sido migrado a TypeScript.\n- Se tipó la firma de la función `provisionNewUserData(user: ProvisionUserParam): Promise<ProvisionNewUserDataResult>` y la variable `fullName: string`.\n- Se aplicó un cast documentado en `firstBudget.user = userId as unknown as Types.ObjectId` para alinear con los tipos inferidos del schema de `Budget` preservando la coerción automática de Mongoose en runtime.\n- Se aplicó un cast documentado en `(User as any).findByIdAndUpdate(...)` para resolver la incompatibilidad de firma invocable generada por la unión `mongoose.models.User || mongoose.model(...)` en el modelo JS no migrado `User.js`.\n\n2. Preservación estricta de lógica y comentarios:\n- Cero cambios a la lógica de inicialización, creación y enlace de documentos (`Wallet`, `Account`, `Transaction`, `Category`, `SubCategory`, `Tag`, `Budget`, `User`).\n- Se preservaron intactos el 100% de los comentarios de documentación sobre el aprovisionamiento de primer login para OAuth y credenciales.\n- Se mantuvieron intactos los nombres originales de variables internas (incluyendo `fisrtAssociateCategory`, `fisrtAssociateSubCategory`, `fisrtAssociateTag`).\n\n3. Sugerencias / Observaciones (no aplicadas):\n- Existen nombres de variables internas con typos heredados (`fisrt*` en lugar de `first*`) que podrían corregirse en una refactorización posterior si se desea.\n\n4. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npm run lint`: 0 errores o advertencias en el archivo.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests).\n- `npm run build`: 73/73 páginas y rutas estáticas/dinámicas generadas con éxito."
+            },
+            {
+              "ts": "2026-09-23T06:23:48.640Z",
+              "event": "approved",
+              "notes": "Los dos `any` (en User.findByIdAndUpdate y en ProvisionNewUserDataResult.wallet) estan bien justificados y comentados - son puentes temporales por User.js y Wallet.js sin migrar todavia, no un escape generico. Buena disciplina dejando intactos los typos preexistentes (fisrtAssociateCategory, etc) y reportandolos aparte. tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/db/mongoClient.js": {
           "status": "pending",
