@@ -334,8 +334,23 @@
           ]
         },
         "src/app/api/auth-extra/mark-step-up/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-23T06:46:56.291Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-23T06:49:02.087Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/auth-extra/mark-step-up/route.js` a `src/app/api/auth-extra/mark-step-up/route.ts`.\n\n1. Tipado e interfaces:\n- Se importó `type { NextRequest }` desde `next/server`.\n- Se definió la interfaz `MarkStepUpResponse` (`{ ok: boolean; message?: string }`) para modelar la estructura de respuesta del endpoint.\n- Se tipó la firma del handler de ruta de Next.js: `export async function POST(request: NextRequest | Request): Promise<NextResponse<MarkStepUpResponse>>`.\n\n2. Cero cambios de comportamiento o lógica:\n- No requiere validación de body mediante zod ya que el endpoint no consume payload en el body; únicamente inspecciona los headers de la solicitud para resolver la sesión activa de Better Auth vía `auth.api.getSession({ headers: request.headers })`.\n- Se preservó exactamente la lógica original de validación de sesión (retorno 401 `{ ok: false, message: \"No session\" }` si no existe sesión), la actualización de frescura con `markStepUpVerified(sesion.session.token)` y el retorno exitoso `{ ok: true }`.\n- Se conservaron intactos el 100% de los comentarios explicativos de arquitectura sobre step-up freshness.\n\n3. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx eslint src/app/api/auth-extra/mark-step-up/route.ts`: 0 errores o advertencias.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- `npm run build`: 73/73 páginas y rutas generadas y validadas exitosamente."
+            },
+            {
+              "ts": "2026-09-23T06:49:34.972Z",
+              "event": "approved",
+              "notes": "Diff fiel, ambas ramas (401 sin sesion, 200 con markStepUpVerified) intactas. tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/app/api/login/route.js": {
           "status": "pending",
