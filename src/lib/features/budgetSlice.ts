@@ -1,16 +1,70 @@
-import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
 
-const budgets = {
+export interface BudgetCategoryItem {
+  category?: string | unknown;
+  subCategory?: string | unknown;
+  [key: string]: unknown;
+}
+
+export interface BudgetHistoryItem {
+  goalAmount?: number;
+  savingAmount?: number;
+  goalMoney?: unknown;
+  savingMoney?: unknown;
+  effectiveFrom?: Date | string;
+  effectiveTo?: Date | string;
+  [key: string]: unknown;
+}
+
+export interface BudgetData {
+  _id?: string;
+  name?: string;
+  isSaving?: boolean;
+  savingAmount?: number;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  goalAmount?: number;
+  isSurpassed?: boolean;
+  category?: string | unknown;
+  subCategory?: string | unknown;
+  categories?: BudgetCategoryItem[];
+  period?: "monthly" | "quarterly" | "biannual" | "yearly" | string;
+  budgetType?: "spending" | "saving" | "project" | string;
+  icon?: string;
+  eventStartDate?: Date | string;
+  eventEndDate?: Date | string;
+  linkedTags?: (string | unknown)[];
+  linkedAccounts?: (string | unknown)[];
+  archived?: boolean;
+  history?: BudgetHistoryItem[];
+  goalMoney?: unknown;
+  savingMoney?: unknown;
+  currency?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  [key: string]: unknown;
+}
+
+export type BudgetsStatus = "idle" | "loading" | "succeeded" | "failed";
+
+export interface BudgetsState {
+  data: BudgetData[];
+  status: BudgetsStatus;
+  error: string | null | undefined;
+  [key: string]: unknown;
+}
+
+const budgets: BudgetsState = {
   data: [],
   status: "idle", //'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };
 export const fetchBudget = createAsyncThunk(
   "transacctions/fetchBudget",
-  async (mail) => {
+  async (mail?: unknown) => {
     // console.log(mail);
     try {
       const response = await toFetch.post(
@@ -35,10 +89,10 @@ export const budgetsSlice = createSlice({
   initialState: budgets,
   reducers: {
     //here are the acctions that willl update this initialState
-    setBudget: (state, action) => {
+    setBudget: (_state, action: PayloadAction<BudgetsState>) => {
       return action.payload; //Is the argument returned later when invoke the function
     },
-    removeBudget: (state, action) => {
+    removeBudget: (state, action: PayloadAction<string>) => {
       if (state.data && state.data.length > 0) {
         //Filter the array directly using "Inmer" to handle the inmutability
         const index = state.data.findIndex(
@@ -50,7 +104,7 @@ export const budgetsSlice = createSlice({
         }
       }
     },
-    addNewBudget: (state, action) => {
+    addNewBudget: (state, action: PayloadAction<BudgetData | BudgetData[]>) => {
       if (Array.isArray(action.payload)) {
         action.payload.forEach((element) => {
           state.data.push(element);
@@ -59,7 +113,7 @@ export const budgetsSlice = createSlice({
         state.data.push(action.payload);
       }
     },
-    updateBudget: (state, action) => {
+    updateBudget: (state, action: PayloadAction<BudgetData>) => {
       const index = state.data.findIndex(
         (transaction) => transaction._id === action.payload._id
       );
@@ -71,7 +125,7 @@ export const budgetsSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchBudget.pending, (state, action) => {
+      .addCase(fetchBudget.pending, (state) => {
         state.status = "loading";
       })
       .addCase(fetchBudget.fulfilled, (state, action) => {

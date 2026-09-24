@@ -699,8 +699,23 @@
           ]
         },
         "src/lib/features/budgetSlice.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T04:23:18.037Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:25:09.648Z",
+              "event": "submitted",
+              "notes": "Migrado `src/lib/features/budgetSlice.js` a TypeScript (`src/lib/features/budgetSlice.ts`).\n\n1. Tipado e interfaces:\n- Se definieron las interfaces `BudgetCategoryItem`, `BudgetHistoryItem`, `BudgetData`, el tipo `BudgetsStatus` ('idle' | 'loading' | 'succeeded' | 'failed') y `BudgetsState`.\n- Se tiparon explícitamente los reducers (`setBudget`, `removeBudget`, `addNewBudget`, `updateBudget`) utilizando `PayloadAction`.\n- Se tipó el async thunk `fetchBudget` con parámetro `mail?: unknown` preservando `catch(e)` sin anotar de acuerdo a `strict:false` y sin sobre-especificar el error en `throw new Error(e)`.\n- Se removió el import no utilizado `nanoid` para cumplir con las reglas de ESLint.\n- No se utilizó `any` en ninguna parte del archivo, recurriendo a `unknown` cuando se requirió flexibilidad estructural.\n\n2. Cero cambios de comportamiento o lógica:\n- Se preservaron íntegramente la inmutabilidad y lógica en Immer en todos los reducers (`setBudget`, `removeBudget`, `addNewBudget`, `updateBudget`), así como los comentarios y código comentado.\n- Cero alteraciones en nombres de variables o flujo en runtime.\n\n3. Verificación ejecutada:\n- `npx eslint src/lib/features/budgetSlice.ts`: salida limpia, 0 errores, 0 warnings.\n- `npx tsc --noEmit`: 0 errores de compilación TypeScript.\n- `npx vitest run`: 25 suites pasadas, 281/281 tests exitosos."
+            },
+            {
+              "ts": "2026-09-24T04:25:55.334Z",
+              "event": "approved",
+              "notes": "Diff completo revisado, addNewBudget correctamente tipado como BudgetData | BudgetData[] reflejando su propio Array.isArray check. Selectores comentados siguen comentados igual. eslint exit 0 confirmado, tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/features/transacctionsSlice.js": {
           "status": "pending",
