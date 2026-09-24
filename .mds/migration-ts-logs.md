@@ -117,3 +117,17 @@ de cualquier usuario dado solo su correo, sin verificar que ese correo
 fuera el de la sesión autenticada (IDOR). Corregido derivando el correo de
 `auth.api.getSession()` en vez de confiar en el body del cliente - commit
 `1370e56`. Verificado en vivo, sin regresión.
+
+## 2026-09-24 — Historia 2 (Dashboard) en curso
+
+Probablemente pre-existente, reportado por el usuario probando en vivo: el
+dropdown de periodo en el Dashboard (`SelecterFilter.jsx`, sin migrar
+todavía) se queda mostrando "This Month" visualmente aunque seleccionar
+"Last 3 Months" o "Q3" sí cambia los datos mostrados correctamente - solo
+"Last Month" actualiza el label bien. `SelecterFilter.jsx` maneja su label
+con un `useState` interno propio, separado del callback `getValue` que
+sí dispara el cambio de datos - candidato claro para el bug, y no forma
+parte de esta historia todavía. Confirmado que `getValueFromSelecter` en
+`Dashboard.tsx` (ya migrado) quedó idéntico al original - no parece ser
+una regresión de la migración. Pendiente de revisión a fondo por el
+usuario al cerrar la historia.
