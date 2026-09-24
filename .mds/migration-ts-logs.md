@@ -100,4 +100,20 @@ partir de aquí, Claude deja de correr `npm run build` con el dev server
 activo — solo `tsc --noEmit` + `vitest` durante el trabajo normal, build de
 producción solo con el dev server apagado.
 
-**Historia 1 probada end-to-end por el usuario**: pendiente (siguiente paso).
+**Historia 1 probada end-to-end por el usuario**: password+2FA, Google y
+passkey confirmados funcionando. Registro y login por password puro
+quedaron pendientes de probar (se harán después).
+
+**Limpieza post-Historia 1**: se confirmó con el usuario y se borraron dos
+archivos muertos - `api/searchUser.js/route.js` y el `api/login/route.ts`
+legacy (el segundo tenía 3 bugs reales, incluyendo cero verificación de
+credencial - ver commits `4e30237` y `5445acc`).
+
+**Fix de seguridad fuera de alcance, atacado de inmediato por prioridad
+(hecho por Claude directamente, no por Antigravity)**: revisando la ruta
+huérfana de arriba se encontró que `general-data/user/get-user/route.js`
+(que SÍ está en uso) tenía el mismo problema de fondo - regresaba el perfil
+de cualquier usuario dado solo su correo, sin verificar que ese correo
+fuera el de la sesión autenticada (IDOR). Corregido derivando el correo de
+`auth.api.getSession()` en vez de confiar en el body del cliente - commit
+`1370e56`. Verificado en vivo, sin regresión.
