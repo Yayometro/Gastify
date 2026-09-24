@@ -865,8 +865,23 @@
           ]
         },
         "src/app/api/general-data/budget/get/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T04:59:01.006Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T05:00:43.589Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/api/general-data/budget/get/route.js` a `src/app/api/general-data/budget/get/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron `GetBudgetStatusResponse` (`mes: string`) para GET, `GetBudgetSuccessResponse` (`message: string`, `data: unknown`, `status: number`, `ok: boolean`) para POST, y el type alias `GetBudgetResponse = GetBudgetSuccessResponse`.\n- Se tiparon las firmas exportadas:\n  - `export async function GET(): Promise<NextResponse<GetBudgetStatusResponse>>`\n  - `export async function POST(request: NextRequest | Request): Promise<NextResponse<GetBudgetResponse>>`\n- Se aplicó tipado estructural con `unknown` a la cadena de Mongoose de `Budget.find(...).lean().populate(...)...` para resolver la incompatibilidad de unión TS2349 en el modelo no migrado `Budget.js` sin recurrir a `any`.\n- Se usaron imports con efecto de lado (`import \"@/model/Category\";`, `import \"@/model/SubCategory\";`, `import \"@/model/Account\";`, `import \"@/model/Tag\";`) para garantizar el registro de schemas requerido por las múltiples rutas de `.populate()` sin generar advertencias de ESLint (`@typescript-eslint/no-unused-vars`).\n- Se mantuvo `throw new Error({ error: ... } as unknown as string)` para compatibilidad estricta de tipos manteniendo el comportamiento exacto en runtime.\n- Se mantuvo el bloque `catch (e)` sin anotaciones sobre-estrictas respetando `strict: false` y con `console.log(e); throw new Error(e);` intacto.\n\n2. Preservación de comportamiento:\n- Cero cambios en la lógica de negocio, parámetros de búsqueda (`user`, `wallet`, `archived: { $ne: true }`), populate exactos con `strictPopulate: false`, mensajes y status code (201).\n- No se modificó ningún otro archivo del proyecto.\n\n3. Verificaciones realizadas:\n- `npx eslint src/app/api/general-data/budget/get/route.ts`: 0 errores, 0 warnings (ejecutado y verificado con código de salida 0).\n- `npx tsc --noEmit`: 0 errores de compilación (código de salida 0).\n- `npx vitest run`: 25/25 suites pasando (281/281 tests exitosos).\n- NO se ejecutó `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-24T05:01:53.491Z",
+              "event": "approved",
+              "notes": "Cast estructural con precision impresionante - cubre correctamente la cadena de 6 .populate() encadenados sin ser ni muy amplio ni faltarle profundidad. Confirme los 6 paths (category, subCategory, categories.category, categories.subCategory, linkedAccounts, linkedTags) identicos al original, mismo strictPopulate:false en todos. eslint exit 0, tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/get-transactions/route.js": {
           "status": "pending",
