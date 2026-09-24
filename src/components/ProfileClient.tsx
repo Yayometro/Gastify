@@ -6,22 +6,60 @@ import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./multiUsedComp/EmptyModule";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
 import "@/components/styles/animations.css";
-import { Switch, Spin, ConfigProvider, Space, Input, Button } from "antd";
+import { Switch, Spin, ConfigProvider, Space, Input } from "antd";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
-import { fetchUser, updateUser } from "@/lib/features/userSlice";
-import { CldUploadWidget } from "next-cloudinary";
+import { fetchUser, updateUser, type UserData } from "@/lib/features/userSlice";
+import { CldUploadWidget, type CloudinaryUploadWidgetResults } from "next-cloudinary";
 import ApiTokensPanel from "./multiUsedComp/ApiTokensPanel";
 import PasskeysPanel from "./multiUsedComp/PasskeysPanel";
 import TwoFactorPanel from "./multiUsedComp/TwoFactorPanel";
+import type { RootState, AppDispatch } from "@/lib/store";
 
-function ProfileClient({ pcSession }) {
-  const [onEdition, setOnEdition] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [onEditPasswordState, setOnEditPasswordState] = useState(false);
-  const [userInfo, setUserInfo] = useState({
+// Typed bridge components for unmigrated JS components
+const TypedEmptyModule = EmptyModule as React.ComponentType<{
+  emMessage?: string;
+}>;
+
+const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
+  type: string;
+  siz?: number;
+  colore?: string;
+  className?: string;
+}>;
+
+const TypedApiTokensPanel = ApiTokensPanel as React.ComponentType<{
+  mail?: string;
+}>;
+
+interface ProfileClientProps {
+  pcSession?: string;
+}
+
+interface ProfileUserInfo {
+  fullName?: string | null;
+  mail?: string | null;
+  password?: string | null;
+  passwordConfirm?: string | null;
+  image?: string | null;
+  phone?: string | number | null;
+  [key: string]: unknown;
+}
+
+interface UpdateUserApiResponse {
+  ok?: boolean;
+  message?: string;
+  data?: UserData;
+  [key: string]: unknown;
+}
+
+function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
+  const [onEdition, setOnEdition] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [onEditPasswordState, setOnEditPasswordState] = useState<boolean>(false);
+  const [userInfo, setUserInfo] = useState<ProfileUserInfo>({
     fullName: "",
     mail: "",
     password: "",
@@ -29,11 +67,11 @@ function ProfileClient({ pcSession }) {
     image: "",
     phone: "",
   });
-  const [imageUrl, setImageUrl] = useState();
+  const [, setImageUrl] = useState<string | undefined>();
   // Redux
-  const dispatch = useDispatch();
-  const ccUser = useSelector((state) => state.userReducer);
-  let userData = ccUser.data;
+  const dispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: RootState) => state.userReducer);
+  const userData = ccUser.data as UserData;
   //FETCHER
   const toFetch = fetcher();
   //USE EFFECTS
@@ -42,6 +80,7 @@ function ProfileClient({ pcSession }) {
     if (ccUser.status == "idle") {
       dispatch(fetchUser(pcSession));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
     if (ccUser.status == "loading") {
@@ -62,9 +101,10 @@ function ProfileClient({ pcSession }) {
       });
       setImageUrl(userData.image);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData]);
 
-  const onEditPassword = (val) => {
+  const onEditPassword = (val: boolean) => {
     setOnEditPasswordState(val);
   };
 
@@ -86,16 +126,19 @@ function ProfileClient({ pcSession }) {
     window.addEventListener("gf:open-change-password", openChangePassword);
     return () => window.removeEventListener("gf:open-change-password", openChangePassword);
   }, []);
-  const handleChange = (e, tp) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement> | string,
+    tp?: string
+  ) => {
     if (tp === "phone") {
-      setUserInfo({ ...userInfo, phone: e });
+      setUserInfo({ ...userInfo, phone: e as string });
     } else {
-      const { name, value } = e.target;
+      const { name, value } = (e as React.ChangeEvent<HTMLInputElement>).target;
       setUserInfo({ ...userInfo, [name]: value });
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     try {
       e.preventDefault();
       setIsLoading(true);
@@ -145,7 +188,7 @@ function ProfileClient({ pcSession }) {
           setIsLoading(false);
         }
       }
-      const res = await toFetch.post("general-data/user/update-user", userInfo);
+      const res = (await toFetch.post("general-data/user/update-user", userInfo)) as UpdateUserApiResponse;
       if (res.ok) {
         runNotify("ok", `${res.message}`);
         //UPDATE REDUX FRONT END
@@ -158,8 +201,8 @@ function ProfileClient({ pcSession }) {
     }
   };
   //IMAGE PROCESSING
-  const onImgHandling = (res) => {
-    if (res.info.secure_url) {
+  const onImgHandling = (res: CloudinaryUploadWidgetResults) => {
+    if (typeof res.info === "object" && res.info && "secure_url" in res.info && res.info.secure_url) {
       setUserInfo({ ...userInfo, image: res.info.secure_url });
       runNotify(
         "ok",
@@ -172,7 +215,7 @@ function ProfileClient({ pcSession }) {
     <div className="profile-component-container w-full h-full sm:pr-2">
       {!userData ? (
         <div className="flex justify-center items-center content-wallet-glass rounded-2xl h-screen">
-          <EmptyModule
+          <TypedEmptyModule
             emMessage={`Ups! No user data please refresh de page or try again later... 🤕`}
           />
         </div>
@@ -183,11 +226,11 @@ function ProfileClient({ pcSession }) {
             onClick={() => setOnEdition(!onEdition)}
           >
             {!onEdition ? (
-              <UniversalCategoIcon type={"md/MdOutlineEdit"} siz={30} />
+              <TypedUniversalCategoIcon type={"md/MdOutlineEdit"} siz={30} />
             ) : (
               <div className="onedit-btn border-2 rounded-full px-2 py-1 flex justify-center items-center gap-2">
                 <p className="">Off</p>
-                <UniversalCategoIcon type={"md/MdEditNote"} siz={30} />
+                <TypedUniversalCategoIcon type={"md/MdEditNote"} siz={30} />
               </div>
             )}
           </div>
@@ -269,7 +312,7 @@ function ProfileClient({ pcSession }) {
               <div className="w-full px-4 sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
                 <PasskeysPanel />
                 <TwoFactorPanel />
-                <ApiTokensPanel mail={pcSession} />
+                <TypedApiTokensPanel mail={pcSession} />
               </div>
               <div className="remove-account-prof w-full pt-8 pb-[100px] flex justify-center">
                 <button type="button" className="remove-acc gf-glass-button-danger text-white text-sm font-medium rounded-full px-6 py-2">
@@ -328,7 +371,7 @@ function ProfileClient({ pcSession }) {
                         },
                       }}
                     >
-                      <Space direction="" size={12}>
+                      <Space size={12}>
                         <div className="switch-profile-password rounded-full">
                           <Switch
                             onChange={(value) => onEditPassword(value)}
