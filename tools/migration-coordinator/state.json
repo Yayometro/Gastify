@@ -505,8 +505,23 @@
           ]
         },
         "src/app/dashboard/page.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T02:18:19.850Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T02:20:34.468Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/dashboard/page.jsx` a `src/app/dashboard/page.tsx`.\n\n1. Tipado:\n- Se renombró el archivo a `.tsx` preservando el historial con git.\n- Se tipó la firma del Server Component asíncrono de Next.js (`async function DashboardPage(): Promise<React.JSX.Element>`).\n- Se eliminó el import no utilizado `fetcher` para satisfacer la regla `@typescript-eslint/no-unused-vars`.\n- Se especificó `dataServ={undefined}` en el llamado a `<Dashboard />` para satisfacer la inferencia de props de TypeScript con respecto a `Dashboard.jsx` aún en JS, sin modificar el comportamiento en tiempo de ejecución.\n\n2. Cero cambios de comportamiento o lógica:\n- Se mantuvo idéntica la obtención de sesión con Better Auth y `next/headers`.\n- Se conservó la guarda de defensa en profundidad `if (!sesion || !sesion.user?.email) redirect(\"/login\")` y la redirección.\n- Se mantuvieron intactos los comentarios explicativos de arquitectura y la estructura JSX.\n- Se preservó la exportación de configuración `export const dynamic = \"force-dynamic\"`.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx eslint src/app/dashboard/page.tsx`: 0 errores y 0 warnings.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- No se ejecutó `npm run build` para evitar corromper la caché del dev server activo.\n- No se tocó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-24T02:21:58.562Z",
+              "event": "approved",
+              "notes": "Confirme que dataServ nunca se usa en Dashboard.jsx (grep, unico match es la destructuracion) - pasar undefined es 100% inerte, se resuelve solo cuando migremos Dashboard.jsx. Guard de sesion intacto. tsc limpio, eslint limpio, 281/281 tests. Aprobado (no pude verificar visualmente el dashboard renderizado ahora mismo porque el step-up freshness expiro y no puedo completar la biometria yo mismo - se vera en el siguiente check con sesion fresca)."
+            }
+          ]
         },
         "src/components/Dashboard.jsx": {
           "status": "pending",
