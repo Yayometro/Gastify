@@ -3,11 +3,22 @@
 import dbConnection from "../../../dbConnection"
 import { NextResponse } from "next/server"
 import User from "@/model/User"
+import { auth } from "@/lib/auth/betterAuth"
 
 export async function POST(request){
-    try{   
-        if(!request) throw new Error("No data in request on GENERAL-DATA POST") 
-        const mail = await request.json()
+    try{
+        if(!request) throw new Error("No data in request on GENERAL-DATA POST")
+        // Security fix: this used to trust whatever `mail` the client sent in
+        // the body, returning ANY user's profile to ANY authenticated caller
+        // (an IDOR - nothing verified the requested email belonged to the
+        // caller's own session). Every real call site (grepped across the
+        // repo) already only ever asks for its own session's email, so
+        // deriving it server-side from the authenticated session instead of
+        // trusting the request body closes the hole with no change to any
+        // legitimate caller's behavior.
+        const sesion = await auth.api.getSession({ headers: request.headers })
+        if(!sesion) throw new Error("No session")
+        const mail = sesion.user.email
         //
         await dbConnection()
         let userFounded = await User.findOne({mail}).lean()
