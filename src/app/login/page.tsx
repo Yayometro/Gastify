@@ -1,12 +1,11 @@
-
 import React from 'react'
 import LoginComponent from '@/components/LoginComponent'
 //
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/betterAuth";
-import {redirect} from 'next/navigation'
+import { redirect } from 'next/navigation'
 
-async function Login() {
+async function Login(): Promise<React.JSX.Element> {
     const session = await auth.api.getSession({ headers: await headers() }); //If user logged then redirect
     if(session) redirect("/dashboard")
   return (
