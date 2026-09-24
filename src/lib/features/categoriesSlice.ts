@@ -1,10 +1,38 @@
-import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import fetcher from "@/helpers/fetcher";
-import { getServerSession } from "next-auth";
 
 const toFetch = fetcher();
 
-const categories = {
+export interface CategoryData {
+  _id?: string;
+  name?: string;
+  icon?: string;
+  color?: string;
+  isDefaultCatego?: boolean;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  accounts?: (string | unknown)[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  [key: string]: unknown;
+}
+
+export interface CategoriesStateData {
+  user: CategoryData[];
+  default: CategoryData[];
+  [key: string]: unknown;
+}
+
+export type CategoriesStatus = "idle" | "loading" | "succeeded" | "failed";
+
+export interface CategoriesState {
+  data: CategoriesStateData;
+  status: CategoriesStatus;
+  error: string | null | undefined;
+  [key: string]: unknown;
+}
+
+const categories: CategoriesState = {
   data: {
     user: [],
     default: [],
@@ -15,7 +43,7 @@ const categories = {
 
 export const fetchCategories = createAsyncThunk(
   "categoriesState/fetchCategories",
-  async (mail) => {
+  async (mail?: unknown) => {
     try {
       const response = await toFetch.post(
         "general-data/categories/get-categories",
@@ -37,15 +65,15 @@ export const categoriesSlice = createSlice({
   initialState: categories,
   reducers: {
     //here are the acctions that willl update this initialState
-    setCategories: (state, action) => {
+    setCategories: (_state, action: PayloadAction<CategoriesState>) => {
       return action.payload; //Is the argument returned later when invoke the function
     },
-    addNewCategory: (state, action) => {
+    addNewCategory: (state, action: PayloadAction<CategoryData>) => {
       if (action.payload) {
         state.data.user.push(action.payload);
       }
     },
-    removeOneCategory: (state, action) => {
+    removeOneCategory: (state, action: PayloadAction<string>) => {
       console.log("first");
       if (state.data.user && state.data.user.length > 0) {
         console.log("first");
@@ -59,7 +87,7 @@ export const categoriesSlice = createSlice({
         }
       }
     },
-    updateCategory: (state, action) => {
+    updateCategory: (state, action: PayloadAction<CategoryData>) => {
       const index = state.data.user.findIndex(
         (cat) => cat._id === action.payload._id
       );
@@ -71,7 +99,7 @@ export const categoriesSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchCategories.pending, (state, action) => {
+      .addCase(fetchCategories.pending, (state) => {
         state.status = "loading";
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
@@ -89,9 +117,9 @@ export const categoriesSlice = createSlice({
   },
 });
 
-export const getRedxCategories = (state) => state.categories;
-export const getRedxCategoriesEstatus = (state) => state.ca;
-export const getRedxCategoriesError = (state) => state.categories.error;
+export const getRedxCategories = (state: { categories: CategoriesState }) => state.categories;
+export const getRedxCategoriesEstatus = (state: { ca?: unknown }) => state.ca;
+export const getRedxCategoriesError = (state: { categories: CategoriesState }) => state.categories.error;
 // export const changeCategoriesRdxState = (state) =>
 
 export const {
