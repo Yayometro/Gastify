@@ -808,8 +808,23 @@
           ]
         },
         "src/app/api/general-data/accounts/get-account/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T04:49:33.982Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:51:09.418Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/api/general-data/accounts/get-account/route.js` a `src/app/api/general-data/accounts/get-account/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron `GetAccountSuccessResponse` (`data: unknown`, `message: string`, `status: number`, `ok: boolean`) y el type alias `GetAccountResponse = GetAccountSuccessResponse`.\n- Se tipó la firma del handler: `export async function POST(request: NextRequest | Request): Promise<NextResponse<GetAccountResponse>>`.\n- Se tipó estructuralmente la llamada a `Account.find({...}).sort({...}).lean()` mediante cast con `unknown` (`Account as unknown as { find: (filter: unknown) => { sort: (sortObj: unknown) => { lean: () => Promise<unknown> } } }`) para resolver la incompatibilidad de firmas del modelo no migrado `Account.js` sin usar `any` y cumpliendo estrictamente con ESLint.\n- Se preservó el comportamiento de `throw new Error({ error: ... })` preexistente utilizando `as unknown as string` para complacer al compilador de TS sin alterar el comportamiento en runtime.\n- Se mantuvo `catch (e)` sin anotaciones sobre-estrictas según `strict: false`.\n\n2. Preservación de comportamiento:\n- 0 cambios de lógica, flujo, comentarios o strings de respuesta ('Accoutns founded') y código HTTP 201.\n\n3. Verificaciones realizadas:\n- `npx eslint src/app/api/general-data/accounts/get-account/route.ts`: 0 errores, 0 warnings (ejecutado y verificado).\n- `npx tsc --noEmit`: 0 errores en el proyecto.\n- `npx vitest run`: 25/25 suites pasando (281/281 tests).\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo.\n- Ningún otro archivo de código fue modificado."
+            },
+            {
+              "ts": "2026-09-24T04:51:45.386Z",
+              "event": "approved",
+              "notes": "Mismo patron correcto: cast a Account bien acotado (find/sort/lean, exactamente lo usado), new Error({...}) preexistente preservado. eslint exit 0, tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/categories/get-categories/route.js": {
           "status": "pending",
