@@ -770,8 +770,23 @@
           ]
         },
         "src/app/api/general-data/user/get-user/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T04:39:23.696Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:41:10.932Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/user/get-user/route.js` a `src/app/api/general-data/user/get-user/route.ts`.\n\n1. Tipado e interfaces:\n- Se importaron `NextResponse` y `type { NextRequest }` desde `next/server`.\n- Se importó `User` y `type { IUser }` desde `@/model/User`.\n- Se definieron las interfaces `GetUserSuccessResponse` (`{ message: string; data: IUser | Record<string, unknown>; status: number; ok: boolean; }`) y el alias `GetUserResponse`.\n- Se tipó la firma del handler de ruta de Next.js: `export async function POST(request: NextRequest | Request): Promise<NextResponse<GetUserResponse>>`.\n\n2. Preservación estricta de lógica y comportamiento:\n- Cero alteraciones en la lógica de resolución de sesión vía `auth.api.getSession`, validación de `mail`, conexión a base de datos, búsqueda con `User.findOne({ mail }).lean()`, sanitización de `userFounded.password = \"\"` y retorno JSON con `{ message, data, status: 201, ok: true }`.\n- `catch(e)` se dejó sin anotar conforme a las reglas de `strict: false`, preservando `console.log(e)` y `throw new Error(e)`.\n- El error preexistente `throw new Error({ error: ... })` fue tipado mediante `as unknown as string` para satisfacer al compilador de TS sin alterar el comportamiento en tiempo de ejecución ni recurrir a `any`.\n\n3. Observaciones reportadas (sin cambios aplicados):\n- Pre-existente: `new Error({ error: \"User not found...\" })` pasa un objeto al constructor de `Error` en JavaScript (produciendo `Error: [object Object]` en runtime). Se mantuvo tal cual para respetar la regla de no cambiar lógica.\n\n4. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/user/get-user/route.ts`: verificado línea por línea, 0 errores y 0 warnings (exit code 0).\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- No se ejecutó `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-24T04:44:47.300Z",
+              "event": "approved",
+              "notes": "Diff fiel, el cast as unknown as string en el throw solo preserva el comportamiento raro pre-existente (pasar un objeto a new Error()) sin arreglarlo. eslint exit 0, tsc limpio, 281/281 tests. Verificado en vivo: /dashboard carga y get-user responde 200 consistentemente tras el restart del dev server. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/wallet/get-wallet/route.js": {
           "status": "pending",
