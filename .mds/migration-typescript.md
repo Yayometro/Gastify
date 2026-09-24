@@ -71,13 +71,29 @@ revisión/aprobado) vive en `tools/migration-coordinator/state.json`, servida
 por el MCP server `gastify-ts-migration-coordinator` — consúltalo con
 `list_files`/`get_story_status`, no asumas el estado leyendo este documento.
 
-**Historia 1 — Login y autenticación completa: COMPLETA (23/23 aprobados,
-2026-09-23).** Pendiente de prueba end-to-end del usuario. NO reclames
-archivos de una historia nueva hasta que el usuario confirme cuál sigue y
-alguien la agregue a `tools/migration-coordinator/state.json` - todavía no
-existe una historia activa después de esta.
+**Historia 1 — Login y autenticación completa: COMPLETA** (23/23 aprobados,
+2026-09-23). Password+2FA, Google y passkey confirmados por el usuario en
+vivo; registro y login por password puro quedaron pendientes de probar
+(se harán después, no bloquean seguir). Dos archivos muertos/huérfanos
+encontrados en el camino se borraron con aprobación del usuario, y un bug
+de seguridad real fuera de alcance (IDOR en
+`general-data/user/get-user/route.js`) se corrigió aparte de inmediato por
+prioridad alta.
 
-Historias siguientes (orden real a confirmar, Dashboard es solo ejemplo):
-Dashboard, Profile, History, y luego el resto (Accounts, Budgets,
-Categories, Movements, Projections, Wallet/Analyzer, MCP tools). `scripts/`
-sueltos al final.
+**Historia activa: Historia 2 — Dashboard** (shell + Redux plumbing que
+carga directamente: `dashboard/layout.js`, `dashboard/page.jsx`,
+`Dashboard.jsx`, los slices de Redux, `useFetchAndGetAllReduxInfo`, y las
+rutas de API de `get-user`/`get-wallet`/`get-account`/`get-categories`/
+`get-sub-categories`/`budget/get`/`get-transactions`). Deliberadamente NO
+incluye los sub-componentes grandes que Dashboard.jsx renderiza
+(`Movements.jsx`, `WalletAnalyzer`, `BudgetCont`, etc.) - esos son
+suficientemente grandes/independientes como para ser su propia historia
+más adelante. Reclama archivos solo de esta historia.
+
+Historias siguientes (orden real a confirmar): Movements/Transacciones,
+Wallet Analyzer, Profile, Budgets, Categories, Accounts, History,
+Projections, MCP tools. Los modelos Mongoose que aún faltan (Wallet,
+Account, Category, SubCategory, Budget, Transaction, Tag, IncomeSource,
+CategoryRule, ProjectionSettings, ProjectionBaseline, FxRateSnapshot) se
+migran conforme cada historia los necesite, no todos de un jalón.
+`scripts/` sueltos al final.

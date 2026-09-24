@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-1-login-auth",
+  "activeStory": "historia-2-dashboard",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -461,6 +461,32 @@
             }
           ]
         }
+      }
+    },
+    "historia-2-dashboard": {
+      "label": "Dashboard (shell + Redux plumbing que carga directamente)",
+      "files": {
+        "src/app/dashboard/layout.js": { "status": "pending", "history": [] },
+        "src/app/dashboard/loading.js": { "status": "pending", "history": [] },
+        "src/app/dashboard/page.jsx": { "status": "pending", "history": [] },
+        "src/components/Dashboard.jsx": { "status": "pending", "history": [] },
+        "src/lib/store.js": { "status": "pending", "history": [] },
+        "src/lib/asyncThunk.js": { "status": "pending", "history": [] },
+        "src/lib/features/userSlice.js": { "status": "pending", "history": [] },
+        "src/lib/features/walletSlice.js": { "status": "pending", "history": [] },
+        "src/lib/features/accountsSlice.js": { "status": "pending", "history": [] },
+        "src/lib/features/categoriesSlice.js": { "status": "pending", "history": [] },
+        "src/lib/features/subCategorySlice.js": { "status": "pending", "history": [] },
+        "src/lib/features/budgetSlice.js": { "status": "pending", "history": [] },
+        "src/lib/features/transacctionsSlice.js": { "status": "pending", "history": [] },
+        "src/hooks/getAllInfo/useFetchAndGetAllReduxInfo.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/user/get-user/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/wallet/get-wallet/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/accounts/get-account/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/categories/get-categories/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/subcategory/get-sub-categories/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/budget/get/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/transactions/get-transactions/route.js": { "status": "pending", "history": [] }
       }
     }
   }
