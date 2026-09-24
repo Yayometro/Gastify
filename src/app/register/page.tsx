@@ -1,14 +1,12 @@
-
+import React from 'react'
 import RegisterComp from "@/components/RegisterComp";
 
 // For auth
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/betterAuth";
-import {redirect} from 'next/navigation'
+import { redirect } from 'next/navigation'
 
-import React from 'react'
-
-export default async function Register() {
+export default async function Register(): Promise<React.JSX.Element> {
     //
     const session = await auth.api.getSession({ headers: await headers() }); //If user logged then redirect
     if(session) redirect("/dashboard")
