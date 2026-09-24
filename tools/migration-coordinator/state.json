@@ -846,8 +846,23 @@
           ]
         },
         "src/app/api/general-data/subcategory/get-sub-categories/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T04:55:53.061Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:57:20.721Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/api/general-data/subcategory/get-sub-categories/route.js` a `src/app/api/general-data/subcategory/get-sub-categories/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron `GetSubCategoriesSuccessResponse` (`data: { subCategories: unknown; defSubCategories: unknown; }`, `message: string`, `status: number`, `ok: boolean`) y el type alias `GetSubCategoriesResponse = GetSubCategoriesSuccessResponse`.\n- Se tipó la firma del handler: `export async function POST(request: NextRequest | Request): Promise<NextResponse<GetSubCategoriesResponse>>`.\n- Se aplicó tipado estructural con `unknown` a las llamadas de `SubCategory.find(...).lean().populate(...)` (`SubCategory as unknown as { find: (filter: unknown) => { lean: () => { populate: (pop: unknown) => Promise<unknown> } } }`) para resolver la incompatibilidad de unión TS2349 en el modelo no migrado `SubCategory.js` sin usar `any`.\n- Se usó import con efecto de lado `import \"@/model/Category\";` para garantizar el registro del schema de Mongoose requerido por `.populate({ path: \"fatherCategory\" })` sin generar advertencias de variables no usadas (`@typescript-eslint/no-unused-vars`).\n- Se mantuvo `throw new Error({ error: ... } as unknown as string)` para compatibilidad de tipos con el patrón de errores preexistente sin cambiar el comportamiento en runtime.\n- Se mantuvo `catch (e)` sin anotaciones sobre-estrictas respetando `strict: false` y con `throw new Error(e)` intacto.\n\n2. Preservación de comportamiento:\n- Cero cambios en la lógica de negocio, consultas a la base de datos (incluyendo flags y parámetros exactos), respuestas JSON y códigos de estado (201).\n- No se modificó ningún otro archivo del repositorio.\n\n3. Verificaciones realizadas:\n- `npx eslint src/app/api/general-data/subcategory/get-sub-categories/route.ts`: 0 errores, 0 warnings (ejecutado y comprobado exit code 0).\n- `npx tsc --noEmit`: 0 errores (ejecutado y verificado exit code 0).\n- `npx vitest run`: 25/25 suites pasando (281/281 tests).\n- NO se ejecutó `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-24T04:58:06.487Z",
+              "event": "approved",
+              "notes": "Confirme que el import de Category ya existia en el original (solo para el side-effect de registro de schema antes de .populate) - cambiarlo a import sin binding es identico en efecto, solo mas honesto sobre su proposito real. Casts bien acotados en ambas llamadas find/lean/populate. eslint exit 0, tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/budget/get/route.js": {
           "status": "pending",
