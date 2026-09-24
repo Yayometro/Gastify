@@ -827,8 +827,23 @@
           ]
         },
         "src/app/api/general-data/categories/get-categories/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T04:52:32.788Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:54:02.979Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/api/general-data/categories/get-categories/route.js` a `src/app/api/general-data/categories/get-categories/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron `GetCategoriesSuccessResponse` (`data: { categories: unknown; defCat: unknown; }`, `message: string`, `status: number`, `ok: boolean`) y el type alias `GetCategoriesResponse = GetCategoriesSuccessResponse`.\n- Se tipó la firma del handler: `export async function POST(request: NextRequest | Request): Promise<NextResponse<GetCategoriesResponse>>`.\n- Se tipó estructuralmente la llamada a `Category.find({...}).lean()` mediante cast con `unknown` (`Category as unknown as { find: (filter: unknown) => { lean: () => Promise<unknown> } }`) para resolver la incompatibilidad de firmas en el modelo no migrado `Category.js` sin usar `any` y cumpliendo estrictamente con ESLint.\n- Se preservó el comportamiento de `throw new Error({ error: ... })` preexistente utilizando `as unknown as string` para el compilador de TS sin alterar el comportamiento en tiempo de ejecución.\n- Se mantuvo `catch (e)` sin anotaciones sobre-estrictas según `strict: false` y con `throw new Error(e)` intacto.\n\n2. Preservación de comportamiento:\n- 0 cambios en la lógica de negocio, consultas a la base de datos, mensajes, códigos HTTP (201) o estructura de datos retornada (`categories`, `defCat`).\n\n3. Verificaciones realizadas:\n- `npx eslint src/app/api/general-data/categories/get-categories/route.ts`: 0 errores, 0 warnings (ejecutado y verificado línea por línea).\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx vitest run`: 25/25 suites pasando (281/281 tests).\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo.\n- Ningún otro archivo de código fue modificado."
+            },
+            {
+              "ts": "2026-09-24T04:54:35.098Z",
+              "event": "approved",
+              "notes": "Mismo patron correcto aplicado consistentemente en las 2 llamadas a Category.find(). eslint exit 0, tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/subcategory/get-sub-categories/route.js": {
           "status": "pending",
