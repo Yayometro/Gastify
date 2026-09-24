@@ -961,11 +961,36 @@
         },
         "src/components/multiUsedComp/ApiTokensPanel.jsx": {
           "status": "pending",
-          "history": []
+          "history": [
+            {
+              "ts": "2026-09-24T07:04:12.159Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T07:15:00.000Z",
+              "event": "needs_rework",
+              "notes": "Claim manual de Claude por error (reclamado directo en el MCP para inspeccionar el flujo, sin invocar a Antigravity). Cero cambios en disco - confirmado via git status. Reseteado a pending para que la proxima invocacion de agy lo reclame normalmente."
+            }
+          ]
         },
         "src/app/api/general-data/user/update-user/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T07:05:04.385Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T07:07:13.594Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`route.ts`). Tipados los handlers GET y POST con `NextRequest | Request` y `Promise<NextResponse<...>>`. Exportadas interfaces para request body (`UpdateUserRequestBody`), responses de GET (`UpdateUserGetResponse`) y POST (`UpdateUserSuccessResponse`, `UpdateUserResponse`), e integrado con el tipo `IUser` del modelo User. Preservado comportamiento exacto de errores y lógica de parseo.\nVerificaciones:\n- `npx eslint src/app/api/general-data/user/update-user/route.ts`: 0 errores, 0 warnings.\n- `npx tsc --noEmit`: compila limpio con 0 errores.\n- `npx vitest run`: 25 suites pasadas (281 tests).\n\nSugerencias de bugs/mejoras detectados (sin aplicar):\n1. Si el cliente envía `phone` como número en vez de string, `typeof dataRequest.phone === \"string\"` evalúa a falso y `parsedPhone` queda `undefined`, causando que caiga en el fallback `userFounded.phone` en lugar de actualizarse.\n2. `throw new Error({ error: \"...\" })` genera un Error con mensaje `\"[object Object]\"`.\n3. `update-user` actualiza el usuario basándose en `dataRequest.mail` del body; se sugiere evaluar si debería validar la sesión con `auth.api.getSession` para asegurar que el email pertenezca al usuario autenticado."
+            },
+            {
+              "ts": "2026-09-24T07:08:01.434Z",
+              "event": "approved",
+              "notes": "Verificación independiente de Claude: diff completo revisado, cambios puramente aditivos de tipos, cero cambios de comportamiento. tsc --noEmit limpio, eslint limpio, 281/281 tests. El cast `as unknown as string` en los throw new Error({...}) preserva exactamente el bug preexistente (pasar un objeto al constructor de Error, que da \"[object Object]\") sin alterarlo, solo lo hace compilar - correcto. catch(e) sin anotar + throw new Error(e) intacto. 3 bugs reales reportados como sugerencia (no aplicados): phone numérico no se parsea si no es string, Error con objeto en vez de string, y falta validar mail contra la sesión activa (mismo patrón IDOR ya corregido en get-user - anotado para decisión del usuario, no es parte de esta historia)."
+            }
+          ]
         },
         "src/app/api/general-data/api-tokens/list/route.js": {
           "status": "pending",
