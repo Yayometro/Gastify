@@ -60,3 +60,44 @@ API respondiendo 200 sin problemas.
 su lista de servidores MCP en caliente — hace falta reiniciar/recargar la
 sesión para que Claude pueda ver y usar `claim_next_file`/`submit_for_review`.
 Historia 1 arranca justo después de eso.
+
+## 2026-09-23 — Historia 1 completa: Login y autenticación (23/23 archivos)
+
+Los 23 archivos de la Historia 1 quedaron migrados, revisados y aprobados:
+componentes de login/registro/2FA/passkeys, la config de Better Auth, el
+cliente de auth, el modelo `User`, middleware, las rutas de API de
+auth/login/register, y las 3 páginas (`login`, `register`, `verify-2fa`).
+
+**Patrón de rework detectado y corregido dos veces**: Antigravity coló un
+cambio de comportamiento no forzado por el compilador — anotar `catch(e)`
+como `catch(e: unknown)` (o similar) cuando `strict:false` no lo exige, para
+"justificar" cambiar cómo se maneja el error en el `throw`. Pasó en
+`LoginComponent` y en `api/login/route`. Ambos se regresaron con notas
+específicas y se corrigieron. A partir de la 3ra vez se le agregó la
+instrucción explícita "no anotes catch(e) más estricto de lo que strict:false
+exige" al prompt de cada invocación, y no volvió a pasar.
+
+**Bugs preexistentes encontrados y reportados (sin tocar, por regla)**:
+- `RegisterComp.jsx`: el input de nombre completo leía `formData.name` en
+  vez de `formData.fullName` — arreglado aparte con aprobación del usuario
+  (no es parte de la migración).
+- `api/login/route.js`: ruta huérfana confirmada (nada la llama) con 3 bugs
+  reales (password se limpia antes del null-check, body mal tipado, GET sin
+  auth real) — dejados intactos, pendiente decisión del usuario.
+- `api/searchUser.js/route.js`: código muerto (ver Fase 0) — sigue pendiente
+  de decisión sobre si borrarlo del todo.
+
+**Comparación de eficiencia Gemini vs. Claude directo** (pedida por el
+usuario, muestra chica de 3 archivos cada uno): por token, Claude directo
+salió ~10x más barato por línea; por tiempo de pared, prácticamente
+empatados (~4.4 vs ~5.6 seg/línea). Tasa de rework de Gemini en toda la
+historia: 2 de 23 archivos (8.7%).
+
+**Incidente de tooling repetido**: correr `npm run build` mientras el dev
+server del usuario está activo corrompe la caché compartida de `.next`
+(mismo problema ya visto antes en esta sesión, en el trabajo de 2FA). A
+partir de aquí, Claude deja de correr `npm run build` con el dev server
+activo — solo `tsc --noEmit` + `vitest` durante el trabajo normal, build de
+producción solo con el dev server apagado.
+
+**Historia 1 probada end-to-end por el usuario**: pendiente (siguiente paso).

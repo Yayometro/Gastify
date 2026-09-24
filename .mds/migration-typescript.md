@@ -71,10 +71,11 @@ revisión/aprobado) vive en `tools/migration-coordinator/state.json`, servida
 por el MCP server `gastify-ts-migration-coordinator` — consúltalo con
 `list_files`/`get_story_status`, no asumas el estado leyendo este documento.
 
-**Historia activa: Historia 1 — Login y autenticación completa** (password,
-Google, passkeys/biométricos, 2FA con TOTP/backup codes). No reclames
-archivos de otra historia todavía; el orden después de esta se define junto
-con el usuario al cerrarla.
+**Historia 1 — Login y autenticación completa: COMPLETA (23/23 aprobados,
+2026-09-23).** Pendiente de prueba end-to-end del usuario. NO reclames
+archivos de una historia nueva hasta que el usuario confirme cuál sigue y
+alguien la agregue a `tools/migration-coordinator/state.json` - todavía no
+existe una historia activa después de esta.
 
 Historias siguientes (orden real a confirmar, Dashboard es solo ejemplo):
 Dashboard, Profile, History, y luego el resto (Accounts, Budgets,
