@@ -907,13 +907,49 @@
     "historia-3-profile": {
       "label": "Profile (ProfileClient + ApiTokensPanel + rutas de API que usa)",
       "files": {
-        "src/app/dashboard/profile/page.jsx": { "status": "pending", "history": [] },
-        "src/components/ProfileClient.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/ApiTokensPanel.jsx": { "status": "pending", "history": [] },
-        "src/app/api/general-data/user/update-user/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/api-tokens/list/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/api-tokens/new/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/api-tokens/remove/route.js": { "status": "pending", "history": [] }
+        "src/app/dashboard/profile/page.jsx": {
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T06:50:57.517Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T06:52:13.044Z",
+              "event": "submitted",
+              "notes": "Migrated src/app/dashboard/profile/page.jsx to page.tsx. Typed return type Promise<React.JSX.Element>, preserved exact session validation and redirect logic. Verified with tsc --noEmit (clean), eslint (clean), vitest (281/281 tests passing)."
+            },
+            {
+              "ts": "2026-09-24T06:52:35.998Z",
+              "event": "approved",
+              "notes": "Diff minimo y fiel, mismo patron que login/register/verify-2fa pages. eslint exit 0, tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
+        },
+        "src/components/ProfileClient.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/ApiTokensPanel.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/user/update-user/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/api-tokens/list/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/api-tokens/new/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/api-tokens/remove/route.js": {
+          "status": "pending",
+          "history": []
+        }
       }
     }
   }
