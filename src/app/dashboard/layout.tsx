@@ -8,7 +8,13 @@ import AllDataProvider from "@/components/Providers/AllDataProvider";
 import ToolsFab from "@/components/multiUsedComp/ToolsFab";
 import IdleStepUpGuard from "@/components/multiUsedComp/IdleStepUpGuard";
 
-async function DashboardLayout({ children }) {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+async function DashboardLayout({
+  children,
+}: DashboardLayoutProps): Promise<React.JSX.Element> {
   const sesion = await auth.api.getSession({ headers: await headers() });
   // Redirect, don't throw: middleware.js only checks that a session COOKIE
   // is present (cheap, spoofable-by-design - see its own comment), not that
