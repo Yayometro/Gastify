@@ -789,8 +789,23 @@
           ]
         },
         "src/app/api/general-data/wallet/get-wallet/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T04:45:34.055Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:48:07.195Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/api/general-data/wallet/get-wallet/route.js` a `src/app/api/general-data/wallet/get-wallet/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron `GetWalletSuccessResponse` (`data: unknown`, `message: string`, `status: number`, `ok: boolean`) y el type alias `GetWalletResponse = GetWalletSuccessResponse`.\n- Se tipó la firma del handler: `export async function POST(request: NextRequest | Request): Promise<NextResponse<GetWalletResponse>>`.\n- Se tipó estructuralmente la llamada a `Wallet.findById(walletId).lean()` mediante cast con `unknown` (`Wallet as unknown as { findById: (id: unknown) => { lean: () => Promise<unknown> } }`) para resolver la incompatibilidad de unión de firmas TS2349 del modelo no migrado `Wallet.js` sin usar `any` y pasando limpiamente ESLint.\n- Se preservó el comportamiento de `throw new Error({ error: ... })` tipando el objeto como `as unknown as string` para complacer al compilador de TS sin cambiar el valor en runtime.\n- Se mantuvo `catch (e)` sin anotaciones sobre-estrictas y con `throw new Error(e)` intacto.\n\n2. Preservación de comportamiento:\n- 0 cambios de lógica, flujo, strings de mensajes o códigos de estado HTTP (201).\n- Comentarios originales conservados.\n\n3. Verificaciones realizadas:\n- `npx eslint src/app/api/general-data/wallet/get-wallet/route.ts`: 0 errores, 0 warnings (verificado en línea de comandos).\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx vitest run`: 25/25 suites pasando (281/281 tests).\n- No se corrió `npm run build` para proteger el dev server del usuario.\n- Ningún otro archivo fue modificado."
+            },
+            {
+              "ts": "2026-09-24T04:48:48.247Z",
+              "event": "approved",
+              "notes": "Cast a Wallet bien acotado (solo expone findById/lean, exactamente lo usado) - legitimo mientras Wallet.js siga sin migrar, mismo patron ya visto con User.js antes de migrarlo. Mismo tratamiento del new Error({...}) preexistente que en get-user. eslint exit 0, tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/accounts/get-account/route.js": {
           "status": "pending",
