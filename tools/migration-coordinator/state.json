@@ -543,8 +543,23 @@
           ]
         },
         "src/lib/store.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T02:33:19.465Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T02:34:51.033Z",
+              "event": "submitted",
+              "notes": "Migración de `src/lib/store.js` a `src/lib/store.ts`.\n\n1. Tipado completo:\n- Se exportaron los tipos esenciales de Redux: `RootState` (`ReturnType<typeof store.getState>`), `AppDispatch` (`typeof store.dispatch`) y `AppStore` (`typeof store`).\n- Se tipó la creación del wrapper de `next-redux-wrapper` con `createWrapper<AppStore>(() => store)` para satisfacer la firma de `MakeStore` en TypeScript sin alterar el comportamiento en runtime.\n- Se removió el import no utilizado `import { apiSlice } from './services/apiSlice';` (archivo actualmente comentado que no exporta ningún módulo y generaba error TS2306).\n\n2. Cero cambios de comportamiento o lógica:\n- Se mantuvo la configuración exacta de reducers (`userReducer`, `walletReducer`, `accountsReducer`, `transacctionsReducer`, `categoriesReducer`, `subCategoryReducer`, `tagsReducer`, `budgetReducer`, `generalDataReducer`).\n- Se mantuvo `setupListeners(store.dispatch)`.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx vitest run`: 25 suites pasadas, 281/281 tests pasados.\n- `npx eslint src/lib/store.ts`: 0 errores/warnings."
+            },
+            {
+              "ts": "2026-09-24T02:35:46.659Z",
+              "event": "approved",
+              "notes": "Confirme que apiSlice no tenia usos reales (solo en middleware ya comentado) y ademas era un error real del compilador (TS2306, apiSlice.js no exporta nada). RootState/AppDispatch/AppStore son adiciones utiles para el resto de la historia. tsc limpio, eslint limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/asyncThunk.js": {
           "status": "pending",
