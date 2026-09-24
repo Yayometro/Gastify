@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 // Next.js route-segment loading UI: without a file like this, `router.push`
 // keeps showing the PREVIOUS page - here, Verify2FAClient's "¡Listo!
@@ -13,7 +13,7 @@ import { useEffect } from "react";
 // streams in behind it - the goal explicitly asked for: get the user
 // looking at their Wallet as fast as possible, loaded or not, rather than
 // making them wait on a separate screen first.
-function DashboardLoading() {
+function DashboardLoading(): React.JSX.Element {
   useEffect(() => {
     import("ldrs").then(({ quantum }) => quantum.register());
   }, []);
