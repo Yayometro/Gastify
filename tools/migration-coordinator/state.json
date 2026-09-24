@@ -524,8 +524,23 @@
           ]
         },
         "src/components/Dashboard.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T02:23:01.194Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T02:27:52.197Z",
+              "event": "submitted",
+              "notes": "Migración de src/components/Dashboard.jsx a src/components/Dashboard.tsx (~600 líneas).\n\n1. Tipado completo y co-localizado:\n- Se renombró el archivo a `.tsx` preservando el historial en git (`git mv`).\n- Se definió `interface DashboardProps` con `dataServ?: unknown; session?: string;` tipando el retorno del componente `Wallet: React.JSX.Element`.\n- Se definieron interfaces de datos locales: `DashboardUser`, `DashboardWallet`, `DashboardAccount`, `DashboardTransaction`, `DashboardCategory`, `ReduxSliceState<T>`, `CategoriesSliceData`, `SubCategoriesSliceData`, `ReduxStoreState`.\n- Se tipó `useDispatch<AppDispatch>()` con `store.dispatch` y el helper `ThunkWithSession = (session?: string) => Parameters<AppDispatch>[0]` para despachar thunks de Redux Toolkit en JS de forma segura.\n- Se definieron interfaces de props explícitas para sub-componentes JS aún no migrados (`SelecterFilterComp`, `TimeRangeComp`, `UniversalCategoIconComp`, `MultiCreditCardComp`, `ResumeTabsTransComp`, `BudgetContComp`) para evitar que el destructuring de JS sea inferido erróneamente como propiedades obligatorias.\n- Se tiparon estados de fechas (`Date`), numéricos (`number`), booleanos (`boolean`), referencias (`useRef<HTMLDivElement | null>`), eventos de React (`React.UIEvent<HTMLDivElement>`) y funciones auxiliares (`renderDeltaRow`, `handleRangeDate`, `getValueFromSelecter`, `toggleIsLoading`, `handleHeaderCarouselScroll`, `goToHeaderSlide`).\n\n2. Cero cambios de comportamiento o lógica:\n- Se preservaron íntegras todas las ramas de lógica y hooks de Redux en los `useEffect` de carga inicial (`fetchUser`, `fetchWallet`, `fetchAccounts`, `fetchCategories`, `fetchSubCat`, `fetchTrans`, `fetchBudget` condicionados a `status === 'idle'`).\n- Se conservó la reactividad a los estados de Redux (`succeeded`) actualizando los estados locales.\n- Se mantuvo idéntica la lógica de filtrado de transacciones por fechas, ordenamiento descendente, cálculo de balance/ingresos/gastos con `getPrimaryAmount`, y comparación contra el mes anterior.\n- Se preservaron todos los paneles (`accountsPanel`, `summaryPanel`, `comparisonPanel`), el carrusel de cabecera móvil (`headerCarouselRef`, scroll snapping, paginación con dots y flechas), y todos los subcomponentes renderizados (`WalletAnalyzerTeaser`, `MultiCreditCard`, `ResumeTabsTrans`, `TopElementsContainer`, `TransDetailsGrandContainer`, `Movements`, `BudgetCont`, `WalletAnalyzer`).\n- Se limpiaron imports de action creators colisionantes y variables huérfanas sin lectura para cumplir con `@typescript-eslint/no-unused-vars` con 0 impacto en tiempo de ejecución.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx eslint src/components/Dashboard.tsx`: 0 errores y 0 warnings.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- NO se ejecutó `npm run build` para proteger el dev server activo del usuario.\n- No se tocó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-24T02:32:07.023Z",
+              "event": "approved",
+              "notes": "Revision extremadamente cuidadosa dado el tamano (600->717 lineas). Verifique 3 cosas que parecian sospechosas y las tres resultaron correctas: (1) los imports setUser/setWallet/setAccounts/setCategories/setSubCategories de Redux removidos estaban sombreados por useState locales del mismo nombre, nunca se ejecutaban - remocion segura. (2) allBills/allIncomes perdieron su binding de lectura pero solo se usaban dentro de un bloque JSX YA comentado en el original (confirmado con grep en el archivo viejo) - nunca ejecutaban en runtime. (3) handleDurationChange y setSelectedDuration se eliminaron pero confirme que handleDurationChange nunca estaba conectado a ningun elemento del DOM - codigo muerto real. El fix de dateB.getTime()-dateA.getTime() en vez de dateB-dateA es identico en runtime (JS ya coercia Date a numero), solo requerido por el compilador. dataServ se dropeo del destructuring, confirmado que nunca se leia. tsc limpio, eslint limpio, 281/281 tests. No pude verificar el render visual (requiere pasar 2FA biometrico que no puedo hacer yo) - pendiente para cuando el usuario haga su prueba de fin de historia. Aprobado con alta confianza dado lo exhaustivo de la revision de diff."
+            }
+          ]
         },
         "src/lib/store.js": {
           "status": "pending",

@@ -11,11 +11,12 @@ import Movements from "./multiUsedComp/Movements";
 import BudgetCont from "./multiUsedComp/BudgetCont";
 //REDUX
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUser, setUser } from "@/lib/features/userSlice";
-import { fetchWallet, setWallet } from "@/lib/features/walletSlice";
-import { fetchAccounts, setAccounts } from "@/lib/features/accountsSlice";
-import { fetchCategories, setCategories } from "@/lib/features/categoriesSlice";
-import { fetchSubCat, setSubCategories } from "@/lib/features/subCategorySlice";
+import { store } from "@/lib/store";
+import { fetchUser } from "@/lib/features/userSlice";
+import { fetchWallet } from "@/lib/features/walletSlice";
+import { fetchAccounts } from "@/lib/features/accountsSlice";
+import { fetchCategories } from "@/lib/features/categoriesSlice";
+import { fetchSubCat } from "@/lib/features/subCategorySlice";
 import {
   fetchTrans,
 } from "@/lib/features/transacctionsSlice";
@@ -44,103 +45,222 @@ import {
 import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
 
+interface DashboardProps {
+  dataServ?: unknown;
+  session?: string;
+}
+
+interface DashboardUser {
+  fullName?: string;
+  mail?: string;
+  [key: string]: unknown;
+}
+
+interface DashboardWallet {
+  primaryCurrency?: string;
+  [key: string]: unknown;
+}
+
+interface DashboardAccount {
+  _id?: string;
+  name?: string;
+  amount?: number | string;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+interface DashboardTransaction {
+  _id?: string;
+  date?: string | Date;
+  createdAt?: string | Date;
+  isBill?: boolean;
+  isIncome?: boolean;
+  amount?: number | string;
+  value?: number;
+  displayMoney?: {
+    primary?: {
+      amountMinor: number;
+      currency: string;
+    };
+  };
+  [key: string]: unknown;
+}
+
+interface DashboardCategory {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+interface ReduxSliceState<T> {
+  data: T;
+  status: string;
+  error?: string | null;
+}
+
+interface CategoriesSliceData {
+  user: DashboardCategory[];
+  default: DashboardCategory[];
+}
+
+interface SubCategoriesSliceData {
+  subCat: DashboardCategory[];
+}
+
+interface ReduxStoreState {
+  userReducer: ReduxSliceState<DashboardUser>;
+  walletReducer: ReduxSliceState<DashboardWallet>;
+  accountsReducer: ReduxSliceState<DashboardAccount[]>;
+  categoriesReducer: ReduxSliceState<CategoriesSliceData>;
+  subCategoryReducer: ReduxSliceState<SubCategoriesSliceData>;
+  transacctionsReducer: ReduxSliceState<DashboardTransaction[]>;
+  budgetReducer: ReduxSliceState<unknown[]>;
+}
+
+type AppDispatch = typeof store.dispatch;
+// Unmigrated JS Redux thunk action creators infer ThunkArg as void; typed helper for dispatching with session parameter
+type ThunkWithSession = (session?: string) => Parameters<AppDispatch>[0];
+
+// Unmigrated JS sub-components whose JS parameter destructuring is inferred by TS as requiring all parameters
+const SelecterFilterComp = SelecterFilter as React.ComponentType<{
+  getValue: (v: string | undefined) => void;
+  periodOverride?: unknown;
+  periodFromFather?: unknown;
+  styles?: string;
+}>;
+
+const TimeRangeComp = TimeRange as React.ComponentType<{
+  rpDate: (sDate: Date, eDate: Date) => void;
+  rpResponse?: string;
+  styles?: string;
+  startDateValue?: unknown;
+  endDateValue?: unknown;
+}>;
+
+const UniversalCategoIconComp = UniversalCategoIcon as React.ComponentType<{
+  type: string;
+  siz?: number;
+  colore?: string;
+  className?: string;
+}>;
+
+const MultiCreditCardComp = MultiCreditCard as React.ComponentType<{
+  acc?: DashboardAccount[];
+  user?: string;
+  trans?: DashboardTransaction[];
+  mccSession?: unknown;
+  walletPrimaryCurrency?: string;
+  mail?: string;
+}>;
+
+const ResumeTabsTransComp = ResumeTabsTrans as React.ComponentType<{
+  timePeriodFromFather?: Date[];
+  rttTrans?: unknown;
+}>;
+
+const BudgetContComp = BudgetCont as React.ComponentType<{
+  bWallet?: unknown;
+  bTransactions?: unknown;
+  bBudgets?: unknown;
+  bcSession?: string;
+}>;
+
 const today = new Date();
 
-function Wallet({ dataServ, session }) {
-  const [sed, setSed] = useState([]);
-  const [totalDataFromServer, setTotalDataFromServer] = useState({});
-  const [user, setUser] = useState([]);
-  const [wallet, setWallet] = useState([]);
-  const [accounts, setAccounts] = useState([]);
-  const [budgets, setBudgets] = useState([]);
-  const [transactions, setTransacctions] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
+function Wallet({ session }: DashboardProps): React.JSX.Element {
+  const [user, setUser] = useState<DashboardUser>({});
+  const [wallet, setWallet] = useState<DashboardWallet>({});
+  const [accounts, setAccounts] = useState<DashboardAccount[]>([]);
+  const [, setBudgets] = useState<unknown[]>([]);
+  const [transactions, setTransacctions] = useState<DashboardTransaction[]>([]);
+  const [categories, setCategories] = useState<DashboardCategory[]>([]);
+  const [, setSubCategories] = useState<DashboardCategory[]>([]);
   // DATES
-  let [selectedDuration, setSelectedDuration] = useState(30);
-  let [startDate, setStartDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  let [endDate, setEndDate] = useState(getLastDayOfMonth(today.getFullYear(), today.getMonth()));
+  const [selectedDuration] = useState<number>(30);
+  const [startDate, setStartDate] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [endDate, setEndDate] = useState<Date>(getLastDayOfMonth(today.getFullYear(), today.getMonth()));
   //TRANSACTIONS and TYPES OF
-  let [allTransactions, setAllTransacctions] = useState([]);
-  let [allBills, setAllBills] = useState([]);
-  let [allIncomes, setAllIncomes] = useState([]);
-  let [totalAmountBalance, setTotalAmountBalance] = useState(0);
-  let [totalBill, setTotalBill] = useState(0);
-  let [totalIncome, setTotalIncome] = useState(0);
-  let [prevTotalBill, setPrevTotalBill] = useState(0);
-  let [prevTotalIncome, setPrevTotalIncome] = useState(0);
+  const [allTransactions, setAllTransacctions] = useState<DashboardTransaction[]>([]);
+  const [, setAllBills] = useState<DashboardTransaction[]>([]);
+  const [, setAllIncomes] = useState<DashboardTransaction[]>([]);
+  const [totalAmountBalance, setTotalAmountBalance] = useState<number>(0);
+  const [totalBill, setTotalBill] = useState<number>(0);
+  const [totalIncome, setTotalIncome] = useState<number>(0);
+  const [prevTotalBill, setPrevTotalBill] = useState<number>(0);
+  const [prevTotalIncome, setPrevTotalIncome] = useState<number>(0);
   // Mobile header carousel: accounts / summary / vs-last-month, one at a
   // time. Starts centered on the summary panel (today's default view).
-  const headerCarouselRef = useRef(null);
-  const [headerActiveSlide, setHeaderActiveSlide] = useState(1);
+  const headerCarouselRef = useRef<HTMLDivElement | null>(null);
+  const [headerActiveSlide, setHeaderActiveSlide] = useState<number>(1);
   useEffect(() => {
     if (headerCarouselRef.current) {
       headerCarouselRef.current.scrollLeft = headerCarouselRef.current.clientWidth;
     }
   }, []);
-  const handleHeaderCarouselScroll = (e) => {
-    const el = e.target;
+  const handleHeaderCarouselScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
     if (!el.clientWidth) return;
     setHeaderActiveSlide(Math.round(el.scrollLeft / el.clientWidth));
   };
-  const goToHeaderSlide = (index) => {
+  const goToHeaderSlide = (index: number) => {
     const el = headerCarouselRef.current;
     if (!el) return;
     const clamped = Math.max(0, Math.min(2, index));
     el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
   };
   //LOADER
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   //Loader
   useEffect(() => {
     import("ldrs").then(({ quantum }) => quantum.register());
   }, []);
   // Redux
-  const dispatch = useDispatch();
-  const ccUser = useSelector((state) => state.userReducer);
-  const ccWallet = useSelector((state) => state.walletReducer);
-  const ccAccounts = useSelector((state) => state.accountsReducer);
-  const ccCategories = useSelector((state) => state.categoriesReducer);
-  const ccSubCategories = useSelector((state) => state.subCategoryReducer);
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
-  const ccBudgets = useSelector((state) => state.budgetReducer);
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const dispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: ReduxStoreState) => state.userReducer);
+  const ccWallet = useSelector((state: ReduxStoreState) => state.walletReducer);
+  const ccAccounts = useSelector((state: ReduxStoreState) => state.accountsReducer);
+  const ccCategories = useSelector((state: ReduxStoreState) => state.categoriesReducer);
+  const ccSubCategories = useSelector((state: ReduxStoreState) => state.subCategoryReducer);
+  const ccTransacciones = useSelector((state: ReduxStoreState) => state.transacctionsReducer);
+  const ccBudgets = useSelector((state: ReduxStoreState) => state.budgetReducer);
+  const walletPrimaryCurrency: string = useSelector((state: ReduxStoreState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
 
   //
   useEffect(() => {
     // User
     if (ccUser.status == "idle") {
-      dispatch(fetchUser(session));
+      dispatch((fetchUser as unknown as ThunkWithSession)(session));
     }
     // Wallet
     if (ccWallet.status == "idle") {
-      dispatch(fetchWallet(session));
+      dispatch((fetchWallet as unknown as ThunkWithSession)(session));
     }
     // Account
     if (ccAccounts.status == "idle") {
-      dispatch(fetchAccounts(session));
+      dispatch((fetchAccounts as unknown as ThunkWithSession)(session));
     }
     //Categories
     if (ccCategories.status == "idle") {
-      dispatch(fetchCategories(session));
+      dispatch((fetchCategories as unknown as ThunkWithSession)(session));
     }
     // //Sub-categories
     if (ccSubCategories.status == "idle") {
-      dispatch(fetchSubCat(session));
+      dispatch((fetchSubCat as unknown as ThunkWithSession)(session));
     }
     //Transactions
     if (ccTransacciones.status == "idle" && session) {
-      dispatch(fetchTrans(session));
+      dispatch((fetchTrans as unknown as ThunkWithSession)(session));
     }
     //Budget
     if (ccBudgets.status == "idle" && session) {
-      dispatch(fetchBudget(session));
+      dispatch((fetchBudget as unknown as ThunkWithSession)(session));
     }
     //
     const start = new Date(today.getFullYear(), today.getMonth(), 1);
     const end = getLastDayOfMonth(today.getFullYear(), today.getMonth());
     setStartDate(start);
     setEndDate(end); //
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -192,8 +312,8 @@ function Wallet({ dataServ, session }) {
 
   useEffect(() => {
     //DATE
-    let startFilterDate;
-    let endFilterDate;
+    let startFilterDate: Date;
+    let endFilterDate: Date;
     if (startDate && endDate) {
       startFilterDate = startDate;
       endFilterDate = endDate;
@@ -213,10 +333,10 @@ function Wallet({ dataServ, session }) {
         );
       });
       total = total.sort((a, b) => {
-        let dateA = new Date(a.date || a.createdAt);
-        let dateB = new Date(b.date || b.createdAt);
+        const dateA = new Date(a.date || a.createdAt);
+        const dateB = new Date(b.date || b.createdAt);
 
-        return dateB - dateA;
+        return dateB.getTime() - dateA.getTime();
       });
       const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
       const accIncomes = total.filter((bill) => bill.isIncome && !bill.isBill);
@@ -228,7 +348,7 @@ function Wallet({ dataServ, session }) {
         (current, income) => current + getPrimaryAmount(income),
         0
       );
-      let finalAmount = finalIncome - finalBill;
+      const finalAmount = finalIncome - finalBill;
       setAllTransacctions(total);
       setAllBills(accBills);
       setAllIncomes(accIncomes);
@@ -265,10 +385,7 @@ function Wallet({ dataServ, session }) {
     startDate,
   ]);
 
-  const handleDurationChange = (event) => {
-    setSelectedDuration(parseInt(event.target.value, 10));
-  };
-  const handleRangeDate = (sDate, eDate) => {
+  const handleRangeDate = (sDate: Date, eDate: Date) => {
     setStartDate(sDate);
     setEndDate(eDate);
   };
@@ -277,7 +394,7 @@ function Wallet({ dataServ, session }) {
     setLoading((prev) => !prev);
   }, []);
 
-  function getValueFromSelecter(v) {
+  function getValueFromSelecter(v: string | undefined): void {
     if (!v || !v.includes("*")) return; // Seguridad para evitar errores si el valor no es el esperado
 
     const [start, end] = v.split("*");
@@ -295,7 +412,7 @@ function Wallet({ dataServ, session }) {
   const EXPENSE_COLOR = "#FF8A8A";
   const BALANCE_COLOR = "#7EC8FF";
 
-  function renderDeltaRow(label, current, previous, colorHex) {
+  function renderDeltaRow(label: string, current: number, previous: number, colorHex: string): React.JSX.Element {
     const delta = current - previous;
     const pct = previous ? (delta / Math.abs(previous)) * 100 : null;
     const sign = delta > 0 ? "+" : delta < 0 ? "-" : "";
@@ -476,7 +593,7 @@ function Wallet({ dataServ, session }) {
               </div>
             </div>
             <div className="filters flex items-center justify-center gap-2">
-              <SelecterFilter
+              <SelecterFilterComp
                 getValue={getValueFromSelecter}
                 periodOverride={generate_timeperiod_ranges_array_for_dashboard(
                   new Date().getFullYear()
@@ -485,13 +602,13 @@ function Wallet({ dataServ, session }) {
                   "gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
                 }
               />
-              <TimeRange
+              <TimeRangeComp
                 rpDate={handleRangeDate}
                 rpResponse={""}
               />
               <Tooltip title="Filter de date by generic filter or selecting a specific range 🤓">
                 <div className="text-white w-[10px]">
-                  <UniversalCategoIcon
+                  <UniversalCategoIconComp
                     type={`${"fa/FaRegQuestionCircle"}`}
                     siz={15}
                   />
@@ -502,7 +619,7 @@ function Wallet({ dataServ, session }) {
           <div className="content-wallet content-wallet-glass px-2 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px] flex flex-col gap-8">
             <WalletAnalyzerTeaser timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
             <div className="multi-container lg:flex lg:item">
-              <MultiCreditCard
+              <MultiCreditCardComp
                 acc={accounts}
                 user={user.fullName}
                 trans={transactions}
@@ -515,7 +632,7 @@ function Wallet({ dataServ, session }) {
                   <Skeleton active />
                 </div>
               ) : (
-                <ResumeTabsTrans timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
+                <ResumeTabsTransComp timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
               )}
             </div>
             <div className="top-3-general-container w-full">
@@ -575,7 +692,7 @@ function Wallet({ dataServ, session }) {
                    
                 </div>
                 <div className="budget w-full">
-                  <BudgetCont bcSession={session} />
+                  <BudgetContComp bcSession={session} />
                 </div>
               </div>
             </div>
