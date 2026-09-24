@@ -680,8 +680,23 @@
           ]
         },
         "src/lib/features/subCategorySlice.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-24T04:20:09.522Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:21:53.797Z",
+              "event": "submitted",
+              "notes": "Migrado src/lib/features/subCategorySlice.js a TypeScript (.ts).\n- Definidas interfaces: SubCategoryData, SubCategoriesStateData, SubCategoriesStatus, SubCategoriesState.\n- Tipado el thunk fetchSubCat con argumento opcional (mail?: unknown) manteniendo el manejo de errores original.\n- Tipados reducers (setSubCategories, addNewSubCategory, removeSubCategory, updateSubCategory) usando PayloadAction.\n- Tipados los reducers asíncronos en extraReducers (pending, fulfilled, rejected).\n- Tipados los selectores getRedxSubCategories, getRedxSubCategoriesEstatus, getRedxSubCategoriesError sin alterar lógica.\n- Removido import no utilizado 'nanoid' para cumplir con ESLint.\n- Verificado: npx eslint sin errores ni advertencias, npx tsc --noEmit limpio (0 errores), suite de vitest ejecutada (25 suites, 281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-24T04:22:27.907Z",
+              "event": "approved",
+              "notes": "Otro selector roto preexistente: getRedxSubCategories/Estatus/Error los tres regresan el state completo sin filtrar - tipado fielmente como (state: unknown) => state sin arreglar. eslint exit 0 confirmado, tsc limpio, 281/281 tests. Aprobado."
+            }
+          ]
         },
         "src/lib/features/budgetSlice.js": {
           "status": "pending",

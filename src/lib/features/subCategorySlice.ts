@@ -1,9 +1,38 @@
-import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
 
-const subCategories = {
+export interface SubCategoryData {
+  _id?: string;
+  name?: string;
+  icon?: string;
+  color?: string;
+  isDefaultSubCatego?: boolean;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  fatherCategory?: string | unknown;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  [key: string]: unknown;
+}
+
+export interface SubCategoriesStateData {
+  subCat: SubCategoryData[];
+  default: SubCategoryData[];
+  [key: string]: unknown;
+}
+
+export type SubCategoriesStatus = "idle" | "loading" | "succeeded" | "failed";
+
+export interface SubCategoriesState {
+  data: SubCategoriesStateData;
+  status: SubCategoriesStatus;
+  error: string | null | undefined;
+  [key: string]: unknown;
+}
+
+const subCategories: SubCategoriesState = {
   data: {
     subCat: [],
     default: [],
@@ -14,7 +43,7 @@ const subCategories = {
 
 export const fetchSubCat = createAsyncThunk(
   "subCategories/fetchSubCat",
-  async (mail) => {
+  async (mail?: unknown) => {
     // console.log(mail)
     try {
       const response = await toFetch.post(
@@ -38,15 +67,15 @@ export const subCategoriesSlice = createSlice({
   initialState: subCategories,
   reducers: {
     //here are the acctions that willl update this initialState
-    setSubCategories: (state, action) => {
+    setSubCategories: (_state, action: PayloadAction<SubCategoriesState>) => {
       return action.payload; //Is the argument returned later when invoke the function
     },
-    addNewSubCategory: (state, action) => {
+    addNewSubCategory: (state, action: PayloadAction<SubCategoryData>) => {
       if (action.payload) {
         state.data.subCat.push(action.payload);
       }
     },
-    removeSubCategory: (state, action) => {
+    removeSubCategory: (state, action: PayloadAction<string>) => {
       if (state.data.subCat && state.data.subCat.length > 0) {
         //Filter the array directly using "Inmer" to handle the inmutability
         const index = state.data.subCat.findIndex(
@@ -58,7 +87,7 @@ export const subCategoriesSlice = createSlice({
         }
       }
     },
-    updateSubCategory: (state, action) => {
+    updateSubCategory: (state, action: PayloadAction<SubCategoryData>) => {
       const index = state.data.subCat.findIndex(
         (cat) => cat._id === action.payload._id
       );
@@ -70,7 +99,7 @@ export const subCategoriesSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchSubCat.pending, (state, action) => {
+      .addCase(fetchSubCat.pending, (state) => {
         state.status = "loading";
       })
       .addCase(fetchSubCat.fulfilled, (state, action) => {
@@ -88,9 +117,9 @@ export const subCategoriesSlice = createSlice({
   },
 });
 
-export const getRedxSubCategories = (state) => state;
-export const getRedxSubCategoriesEstatus = (state) => state;
-export const getRedxSubCategoriesError = (state) => state;
+export const getRedxSubCategories = (state: unknown) => state;
+export const getRedxSubCategoriesEstatus = (state: unknown) => state;
+export const getRedxSubCategoriesError = (state: unknown) => state;
 
 export const {
   setSubCategories,
