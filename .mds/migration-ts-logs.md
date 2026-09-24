@@ -131,3 +131,46 @@ parte de esta historia todavía. Confirmado que `getValueFromSelecter` en
 `Dashboard.tsx` (ya migrado) quedó idéntico al original - no parece ser
 una regresión de la migración. Pendiente de revisión a fondo por el
 usuario al cerrar la historia.
+
+## 2026-09-24 — Historia 2 (Dashboard) completa: 21/21 archivos
+
+Shell del Dashboard (layout/loading/page/Dashboard.tsx), los 7 slices de
+Redux, el hook central de fetch, y las 7 rutas de API que carga
+directamente - todos migrados, revisados y aprobados.
+
+**3 rondas de rework por el mismo patrón repetido**: Antigravity sigue
+auto-imponiéndose anotaciones más estrictas de lo que `strict:false`
+exige (esta vez `| undefined` en un cast de `ccTags` en
+`useFetchAndGetAllReduxInfo.ts`, cascadeando a optional chaining no
+autorizado) y una vez más reportó "eslint limpio" sin haberlo corrido de
+verdad (`userSlice.ts`, 6 errores reales encontrados). Desde ahí se
+reforzó el prompt de cada invocación con instrucciones explícitas sobre
+ambos puntos, y no volvió a pasar en los ~15 archivos siguientes.
+
+**Interrupciones de sesión recuperadas sin pérdida de trabajo**: dos veces
+la sesión se cortó a mitad de una invocación de `agy` (una vez justo
+después del `claim`, sin trabajo real hecho - se reseteó a `pending`; otra
+vez con el archivo ya migrado en disco pero sin que el `submit_for_review`
+llegara al coordinador - se verificó y registró manualmente).
+
+**Bugs preexistentes encontrados y confirmados como código muerto/sin
+impacto (todos preservados sin tocar)**: selectores rotos en
+`walletSlice`/`categoriesSlice`/`subCategorySlice`/`transacctionsSlice`
+que leen la ruta equivocada del state o regresan el state completo sin
+filtrar; varias llamadas `setUser`/`setWallet`/etc que nunca se despachan
+de verdad (crean la acción pero no la disparan).
+
+**Patrón de tipado consolidado para modelos Mongoose sin migrar**: en
+lugar de `any`, cada ruta usa un cast estructural acotado exactamente a
+los métodos/cadenas usadas (ej. `Budget as unknown as { find: ... }`
+replicando la profundidad exacta de una cadena de 6 `.populate()`) - cero
+`any` en las 7 rutas de esta historia.
+
+**Bug de UI reportado por el usuario probando en vivo, muy probablemente
+pre-existente** (ver entrada anterior): el dropdown de periodo del
+Dashboard no siempre actualiza su label visual aunque los datos sí
+cambien correctamente - pendiente de la revisión a fondo del usuario, no
+bloquea seguir.
+
+**Historia 2 probada end-to-end por el usuario**: pendiente (siguiente
+paso, igual que con la Historia 1).
