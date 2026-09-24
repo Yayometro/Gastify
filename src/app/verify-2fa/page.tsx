@@ -7,7 +7,7 @@ import Verify2FAClient from "@/components/Verify2FAClient";
 
 export const dynamic = "force-dynamic";
 
-async function Verify2FAPage() {
+async function Verify2FAPage(): Promise<React.JSX.Element> {
   const sesion = await auth.api.getSession({ headers: await headers() });
   if (!sesion) redirect("/login");
 
