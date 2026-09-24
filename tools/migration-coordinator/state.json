@@ -614,7 +614,7 @@
           ]
         },
         "src/lib/features/walletSlice.js": {
-          "status": "pending",
+          "status": "approved",
           "history": [
             {
               "ts": "2026-09-24T04:02:41.072Z",
@@ -624,6 +624,20 @@
               "ts": "2026-09-24T04:05:00.000Z",
               "event": "needs_rework",
               "notes": "Sesion de Claude se interrumpio justo despues del claim, antes de que Antigravity hiciera trabajo real (archivo confirmado intacto en disco). Reseteado a pending para reclamar de nuevo desde cero."
+            },
+            {
+              "ts": "2026-09-24T04:06:18.940Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:08:06.757Z",
+              "event": "submitted",
+              "notes": "Migración de src/lib/features/walletSlice.js a src/lib/features/walletSlice.ts.\n\n1. Tipado e interfaces:\n- Renombrado de .js a .ts preservando historial en git (`git mv`).\n- Definidas interfaces `WalletBudget`, `WalletData` (con soporte para campos legacy y multi-currency `primaryCurrency`, `currencyUpdatedAt`), `WalletStatus` ('idle' | 'loading' | 'succeeded' | 'failed') y `WalletState`.\n- Tipado del thunk `fetchWallet` con `mail?: unknown`.\n- Tipadas acciones de slice: `setWallet` con `PayloadAction<WalletState>` y `updateWallet` con `PayloadAction<WalletData | Record<string, unknown>>`.\n- Tipado de extraReducers para pending, fulfilled y rejected de `fetchWallet`.\n- Removido import no utilizado `nanoid` para cumplir con `@typescript-eslint/no-unused-vars`.\n- `catch (e)` preservado sin anotación estricta conforme a `strict: false`.\n- Sin uso de `any` injustificado (usado `unknown` para tipado estructural seguro).\n\n2. Preservación estricta de lógica y comportamiento:\n- Se mantuvieron intactos el reducer, actions y selectors.\n- Nota de bug preexistente preservado: `getRedxWallet`, `getRedxWalletEstatus` y `getRedxWalletError` en el código original acceden a `state.accounts.*` (posible copy-paste histórico desde `accountsSlice.js`). Siguiendo la regla de oro de la migración, NO se alteró la lógica/acceso y se mantuvo exactamente igual.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx eslint src/lib/features/walletSlice.ts`: 0 errores y 0 warnings.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- NO se ejecutó `npm run build` para proteger el dev server activo.\n- Ningún otro archivo fue modificado."
+            },
+            {
+              "ts": "2026-09-24T04:09:01.909Z",
+              "event": "approved",
+              "notes": "Eslint verificado por mi con exit code 0 real esta vez, tsc limpio, 281/281 tests. Buen hallazgo: getRedxWallet/Estatus/Error leen de state.accounts en vez de state.wallet en el original - confirme que es 100% preexistente y ademas nada en el repo llama a estos selectores (grep vacio), asi que es un bug muerto sin impacto. Preservado sin tocar, correcto segun la regla. Aprobado."
             }
           ]
         },
