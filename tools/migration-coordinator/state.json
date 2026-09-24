@@ -615,7 +615,17 @@
         },
         "src/lib/features/walletSlice.js": {
           "status": "pending",
-          "history": []
+          "history": [
+            {
+              "ts": "2026-09-24T04:02:41.072Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-24T04:05:00.000Z",
+              "event": "needs_rework",
+              "notes": "Sesion de Claude se interrumpio justo despues del claim, antes de que Antigravity hiciera trabajo real (archivo confirmado intacto en disco). Reseteado a pending para reclamar de nuevo desde cero."
+            }
+          ]
         },
         "src/lib/features/accountsSlice.js": {
           "status": "pending",
