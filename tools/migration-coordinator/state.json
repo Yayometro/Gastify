@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-2-dashboard",
+  "activeStory": "historia-3-profile",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -902,6 +902,18 @@
             }
           ]
         }
+      }
+    },
+    "historia-3-profile": {
+      "label": "Profile (ProfileClient + ApiTokensPanel + rutas de API que usa)",
+      "files": {
+        "src/app/dashboard/profile/page.jsx": { "status": "pending", "history": [] },
+        "src/components/ProfileClient.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/ApiTokensPanel.jsx": { "status": "pending", "history": [] },
+        "src/app/api/general-data/user/update-user/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/api-tokens/list/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/api-tokens/new/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/api-tokens/remove/route.js": { "status": "pending", "history": [] }
       }
     }
   }
