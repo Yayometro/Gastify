@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Wallet from "@/model/Wallet";
+import { auth } from "@/lib/auth/betterAuth";
 
 export interface GetWalletSuccessResponse {
   data: unknown;
@@ -18,12 +19,19 @@ export async function POST(
   try {
     if (!request)
       throw new Error("No request received from get-wallet in Wallet");
-    const userMail = await request.json();
-    // console.log(userMail);
+    // Security fix: this used to trust whatever `mail` the client sent in
+    // the body, letting ANY authenticated caller read ANOTHER user's whole
+    // wallet (budget, cash, primaryCurrency, etc.) - an IDOR, same
+    // underlying issue already fixed in get-user. The only real call site
+    // (walletSlice.ts's fetchWallet) always sends its own session's email,
+    // so deriving it server-side instead closes the hole with no change to
+    // any legitimate caller's behavior.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();
     // User find
-    const userFound = await User.findOne({ mail: userMail }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
       throw new Error(
         {

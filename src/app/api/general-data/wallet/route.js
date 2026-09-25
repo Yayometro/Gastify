@@ -1,7 +1,9 @@
 import Wallet from "@/model/Wallet";
+import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { auth } from "@/lib/auth/betterAuth";
 
 export async function GET() {
   return NextResponse.json({ mes: "Work" });
@@ -11,7 +13,6 @@ export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on REMOVE-ACCOUNT POST");
     const {
-      walletId,
       name,
       cash,
       totalBudget,
@@ -20,7 +21,20 @@ export async function POST(request) {
       isSaved,
       primaryCurrency,
     } = await request.json();
+    // Security fix: this route had zero session check - it updated whatever
+    // Wallet matched the client-sent walletId (name/cash/budget/currency),
+    // and this endpoint isn't covered by middleware.ts's matcher, so it was
+    // reachable by ANY caller, authenticated or not, to modify ANY user's
+    // wallet. Now walletId is always derived from the caller's own session
+    // instead of trusted from the body. The only real call site
+    // (PrimaryCurrencySelector.jsx) always sends the caller's own wallet id
+    // anyway.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     await dbConnection();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
+    if (!userFound) throw new Error("User not found on WALLET POST");
+    const walletId = userFound.wallet;
     // FIND WALLET
     const findWallet = await Wallet.findById(walletId);
     //IF ERROR

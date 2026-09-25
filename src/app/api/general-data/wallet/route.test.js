@@ -1,16 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// No real DB/network: Wallet is mocked, dbConnection is a no-op. Covers
+// No real DB/network: Wallet/User are mocked, dbConnection is a no-op, and
+// the session is mocked as always-authenticated with wallet "w1". Covers
 // Phase 4's primaryCurrency mutation - presentation only, never touches
 // already-stored native Account/Transaction money.
 vi.mock("@/app/api/dbConnection", () => ({ default: vi.fn() }));
 vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
+vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
+vi.mock("@/lib/auth/betterAuth", () => ({
+  auth: { api: { getSession: vi.fn() } },
+}));
 
 import Wallet from "@/model/Wallet";
+import User from "@/model/User";
+import { auth } from "@/lib/auth/betterAuth";
 import { POST } from "./route";
 
 function mockRequest(body) {
-  return { json: vi.fn().mockResolvedValue(body) };
+  return { json: vi.fn().mockResolvedValue(body), headers: new Headers() };
 }
 
 function makeWallet({ primaryCurrency = "MXN" } = {}) {
@@ -29,6 +36,8 @@ function makeWallet({ primaryCurrency = "MXN" } = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.api.getSession.mockResolvedValue({ user: { email: "owner@example.com" } });
+  User.findOne.mockReturnValue({ lean: vi.fn().mockResolvedValue({ wallet: "w1" }) });
 });
 
 describe("wallet primaryCurrency mutation", () => {
