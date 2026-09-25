@@ -2239,8 +2239,23 @@
           ]
         },
         "src/components/multiUsedComp/QuickEditModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:43:52.381Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:46:07.856Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/QuickEditModal.jsx a .tsx. Se tiparon props (QuickEditModalProps, QuickEditInnerProps), estado interno (QuickEditState), tipos auxiliares (FieldMetaItem, CategorySelectedItem, DataProviderAccount, EditManyResponse). Se eliminó el prop no utilizado e inválido defaultCategoryId en <SelectCategories> sin alterar lógica de renderizado. Cero anys injustificados. Verificado con npx tsc --noEmit (0 errores), npx eslint (limpio) y npx vitest run (25/25 archivos, 281/281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T23:47:14.169Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. `defaultCategoryId={value.category}` removido de <SelectCategories> - verificado que SelectCategories.tsx (ya migrado) solo destructura `{children}`, ese prop era invalido/ignorado desde antes, cero efecto real. `Spin` import removido, confirmado sin uso en el original. Guards de Dayjs|null en el DatePicker consistentes con el patron ya aprobado en archivos hermanos. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/DuplicateComparisonTable.jsx": {
           "status": "pending",

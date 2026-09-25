@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useState, useContext } from "react";
-import { Modal, Switch, ConfigProvider, Space, Spin } from "antd";
-import dayjs from "dayjs";
+import { Modal, Switch, ConfigProvider, Space } from "antd";
+import dayjs, { type Dayjs } from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/lib/store";
 import runNotify from "@/helpers/gastifyNotifier";
-import { updateManyTransactions } from "@/lib/features/transacctionsSlice";
+import { updateManyTransactions, type TransactionData } from "@/lib/features/transacctionsSlice";
 import SelectCategories from "../categories/SelectCategoryProvider/SelectCategories";
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
@@ -19,7 +20,17 @@ import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategor
 import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 
-const FIELD_META = {
+const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.ComponentType<{
+  onClose?: () => void;
+  [key: string]: unknown;
+}>;
+
+export interface FieldMetaItem {
+  label: string;
+  description: string;
+}
+
+export const FIELD_META: Record<string, FieldMetaItem> = {
   name:     { label: "Rename",        description: "Change the name for all selected transactions." },
   date:     { label: "Change date",   description: "Set a new date for all selected transactions." },
   type:     { label: "Change type",   description: "Set Bill or Income for all selected transactions." },
@@ -28,15 +39,62 @@ const FIELD_META = {
   tags:     { label: "Change tags",    description: "Set tags (separated by comma) for all selected transactions." },
 };
 
-function QuickEditInner({ field, transIds, onClose }) {
+export type QuickEditField = "name" | "date" | "type" | "category" | "account" | "tags" | string;
+
+export interface DataProviderAccount {
+  _id: string;
+  name?: string;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface CategorySelectedItem {
+  _id?: string;
+  fatherCategory?: { _id?: string; [key: string]: unknown } | string | null;
+  [key: string]: unknown;
+}
+
+export interface QuickEditState {
+  name: string;
+  date: Date;
+  isIncome: boolean;
+  isBill: boolean;
+  category: string;
+  subCategory: string;
+  account: string | null;
+  tags: string;
+}
+
+interface EditManyResponse {
+  data?: TransactionData[];
+  message?: string;
+  [key: string]: unknown;
+}
+
+export interface QuickEditInnerProps {
+  field: QuickEditField;
+  transIds: (string | unknown)[];
+  onClose: () => void;
+}
+
+export interface QuickEditModalProps {
+  field?: QuickEditField | null;
+  transIds?: (string | unknown)[];
+  onClose: () => void;
+}
+
+function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): React.JSX.Element {
   const toFetch = fetcher();
-  const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { close, handleClose } = useModal();
   const { handleClean } = useContext(SelectCategoryContext);
-  const { accounts } = useGetDataFromProvider();
+  const { accounts } = useGetDataFromProvider() as {
+    accounts?: DataProviderAccount[];
+    [key: string]: unknown;
+  };
 
-  const [value, setValue] = useState({
+  const [value, setValue] = useState<QuickEditState>({
     name: "",
     date: new Date(),
     isIncome: false,
@@ -47,21 +105,21 @@ function QuickEditInner({ field, transIds, onClose }) {
     tags: "",
   });
 
-  const handleCategory = (cat) => {
+  const handleCategory = (cat?: CategorySelectedItem | null) => {
     if (!cat) return;
     const fatherId = cat?.fatherCategory
       ? (typeof cat.fatherCategory === "object" ? cat.fatherCategory?._id : cat.fatherCategory)
       : null;
     if (fatherId) {
-      setValue((v) => ({ ...v, subCategory: cat._id, category: fatherId }));
+      setValue((v) => ({ ...v, subCategory: cat._id || "", category: fatherId }));
     } else {
-      setValue((v) => ({ ...v, category: cat._id, subCategory: "" }));
+      setValue((v) => ({ ...v, category: cat._id || "", subCategory: "" }));
     }
   };
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    let payload = { transactions: transIds };
+    let payload: Record<string, unknown> = { transactions: transIds };
 
     if (field === "name") {
       if (!value.name.trim()) { runNotify("error", "Name cannot be empty"); setIsLoading(false); return; }
@@ -82,11 +140,11 @@ function QuickEditInner({ field, transIds, onClose }) {
     }
 
     try {
-      const response = await toFetch.post("general-data/transactions/edit-many", payload);
+      const response = (await toFetch.post("general-data/transactions/edit-many", payload)) as EditManyResponse;
       if (response.data) {
         runNotify("ok", response.message);
         dispatch(updateManyTransactions(response.data));
-        if (field === "category") handleClean();
+        if (field === "category" && handleClean) handleClean();
         setIsLoading(false); // set before unmount to avoid setState-on-unmounted warning
         onClose();
       } else {
@@ -101,13 +159,13 @@ function QuickEditInner({ field, transIds, onClose }) {
 
   const meta = FIELD_META[field];
 
-  const renderInput = () => {
+  const renderInput = (): React.ReactNode => {
     if (field === "name") return (
       <input
         autoFocus
         type="text"
         value={value.name}
-        onChange={(e) => setValue((v) => ({ ...v, name: e.target.value }))}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue((v) => ({ ...v, name: e.target.value }))}
         placeholder="New name for all selected transactions"
         className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
       />
@@ -124,7 +182,11 @@ function QuickEditInner({ field, transIds, onClose }) {
                 mobilePaper: { sx: { zIndex: 35000 } },
               }}
               value={dayjs(value.date)}
-              onChange={(v) => setValue((prev) => ({ ...prev, date: new Date(v.format()) }))}
+              onChange={(v: Dayjs | null) => {
+                if (v) {
+                  setValue((prev) => ({ ...prev, date: new Date(v.format()) }));
+                }
+              }}
               sx={{
                 "& .MuiInputBase-root": { width: "100%", padding: "0px", border: "none", borderRadius: "12px" },
                 "& .MuiInputBase-input": { border: "1px solid rgb(176,23,176)", borderRadius: "12px", padding: "8px 12px" },
@@ -142,14 +204,14 @@ function QuickEditInner({ field, transIds, onClose }) {
           <div className="flex items-center gap-3">
             <Switch
               checked={value.isIncome}
-              onChange={(checked) => setValue((v) => ({ ...v, isIncome: checked, isBill: !checked }))}
+              onChange={(checked: boolean) => setValue((v) => ({ ...v, isIncome: checked, isBill: !checked }))}
             />
             <span className="text-sm text-gf-text-muted">Income</span>
           </div>
           <div className="flex items-center gap-3">
             <Switch
               checked={value.isBill}
-              onChange={(checked) => setValue((v) => ({ ...v, isBill: checked, isIncome: !checked }))}
+              onChange={(checked: boolean) => setValue((v) => ({ ...v, isBill: checked, isIncome: !checked }))}
             />
             <span className="text-sm text-gf-text-muted">Bill / Expense</span>
           </div>
@@ -158,9 +220,9 @@ function QuickEditInner({ field, transIds, onClose }) {
     );
 
     if (field === "category") return (
-      <SelectCategories defaultCategoryId={value.category}>
+      <SelectCategories>
         <div className="flex flex-col gap-2">
-          <BtnSelectCategoryContext onClose={handleClose} />
+          <TypedBtnSelectCategoryContext onClose={handleClose} />
         </div>
         {close && (
           <BasicModal
@@ -178,7 +240,7 @@ function QuickEditInner({ field, transIds, onClose }) {
       <select
         className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm bg-gf-surface outline-none focus:border-purple-400"
         value={value.account || ""}
-        onChange={(e) => setValue((v) => ({ ...v, account: e.target.value || null }))}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setValue((v) => ({ ...v, account: e.target.value || null }))}
       >
         <option value="">No account</option>
         {accounts?.map((acc) => (
@@ -192,11 +254,13 @@ function QuickEditInner({ field, transIds, onClose }) {
         autoFocus
         type="text"
         value={value.tags || ""}
-        onChange={(e) => setValue((v) => ({ ...v, tags: e.target.value }))}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue((v) => ({ ...v, tags: e.target.value }))}
         placeholder="Tags separated by comma (e.g. food, vacation, monthly)"
         className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
       />
     );
+
+    return null;
   };
 
   return (
@@ -231,7 +295,7 @@ function QuickEditInner({ field, transIds, onClose }) {
   );
 }
 
-function QuickEditModal({ field, transIds, onClose }) {
+function QuickEditModal({ field, transIds, onClose }: QuickEditModalProps): React.JSX.Element | null {
   if (!field || !transIds?.length) return null;
   return (
     <SelectCategories>
