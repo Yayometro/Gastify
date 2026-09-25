@@ -198,3 +198,63 @@ legítima), solo el lookup de A QUIÉN actualizar ya no confía en el
 cliente. Verificado en vivo en Chrome: actualizar y revertir el nombre
 del perfil funciona igual que antes (toast confirmado, nombre
 persistido en la sidebar).
+
+**3er, 4to y 5to fix de seguridad urgente, mismo día, misma prioridad
+(hechos por Claude directamente, no por Antigravity)**: antes de migrar
+las 3 rutas de API tokens de esta historia, se revisaron a mano y
+resultó que las 3 tenían exactamente el mismo bug de fondo:
+
+- `api-tokens/list/route.js`: devolvía los tokens de CUALQUIER usuario
+  cuyo `mail` se mandara en el body.
+- `api-tokens/remove/route.js`: revocaba un token de CUALQUIER usuario
+  cuyo `mail` se mandara en el body (denegación de servicio del
+  conector de otra persona).
+- `api-tokens/new/route.js`: el más grave de los cinco - generaba un
+  token de API nuevo, de acceso completo, para el `mail` que mandara el
+  cliente en el body. Cualquier usuario autenticado podía crearse un
+  token permanente para operar la cuenta de otra persona vía el
+  conector MCP (crear transacciones, leer resúmenes, etc.) sin que la
+  víctima se enterara.
+
+Las 3 rutas quedaron corregidas igual que `get-user`/`update-user`:
+derivan el usuario objetivo de `auth.api.getSession(request.headers)`
+en vez de confiar en el `mail` del body. El único call site real
+(`ApiTokensPanel.tsx`) siempre manda el correo de su propia sesión, así
+que no cambia ningún comportamiento legítimo. Verificado en vivo en
+Chrome de punta a punta: se listaron los 3 conectores reales del
+usuario (Claude, ChatGPT, Gemini, intactos), se creó un token de prueba
+("TS Migration Test") vía `new/` y se revocó vía `remove/`
+correctamente, quedando los 3 conectores reales sin tocar.
+
+### Resumen consolidado — todos los bugs de seguridad encontrados y corregidos en esta migración (hasta ahora)
+
+| # | Ruta | Tipo | Commit | Severidad |
+|---|------|------|--------|-----------|
+| 1 | `general-data/user/get-user` (GET) | IDOR de lectura - cualquiera podía leer el perfil de otro usuario dando su correo | `1370e56` | Alta |
+| 2 | `general-data/user/update-user` (POST) | IDOR de escritura - cualquiera podía editar fullName/mail/image/phone de otro usuario | `bb8f987` | Alta |
+| 3 | `general-data/api-tokens/list` (POST) | IDOR de lectura - cualquiera podía listar los tokens de conector de otro usuario | `a9e8f17` | Media |
+| 4 | `general-data/api-tokens/remove` (POST) | IDOR de escritura - cualquiera podía revocar tokens de conector de otro usuario | `a9e8f17` | Media |
+| 5 | `general-data/api-tokens/new` (POST) | IDOR de escritura, la más grave - cualquiera podía crear un token de acceso completo a la cuenta de otro usuario | `a9e8f17` | Crítica |
+
+Todas comparten la misma causa raíz (confiar en un `mail` mandado por
+el cliente en vez de derivar el usuario de la sesión autenticada vía
+`auth.api.getSession()`) y el mismo patrón de fix. Ninguna requirió
+cambiar el comportamiento de ningún call site real ya existente.
+
+**Otros bugs (no de seguridad) encontrados y corregidos durante la
+migración, fuera de las rutas de arriba**:
+- `RegisterComp.jsx`: el input de nombre completo leía `formData.name`
+  en vez de `formData.fullName` (Historia 1, arreglado con aprobación
+  del usuario, no forma parte del alcance normal de migración).
+- Código muerto borrado con aprobación del usuario: `api/searchUser.js/
+  route.js` (commit `4e30237`) y el `api/login/route` legacy, huérfano,
+  con 3 bugs reales incluyendo cero verificación de credencial (commit
+  `5445acc`).
+
+**Bugs preexistentes encontrados y reportados, sin tocar (fuera del
+alcance de "solo agregar tipos", pendientes de decisión del usuario)**:
+ver las entradas de Historia 1 y 2 arriba (dropdown de periodo del
+Dashboard, selectores rotos de Redux en varios slices, `parsedPhone` no
+se calcula si el cliente manda `phone` como número en vez de string en
+`update-user`, `throw new Error({...})` con un objeto en vez de un
+string en varias rutas).
