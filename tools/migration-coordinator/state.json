@@ -1531,8 +1531,23 @@
           ]
         },
         "src/model/SubCategory.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T06:55:00.000Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T06:56:17.900Z",
+              "event": "submitted",
+              "notes": "Migración de `src/model/SubCategory.js` a `src/model/SubCategory.ts` siguiendo exactamente el patrón establecido en `src/model/Category.ts`, `src/model/User.ts` y `src/model/Account.ts`. Se definió y exportó la interfaz `ISubCategory extends mongoose.Document` reflejando los campos del schema (`name`, `icon`, `color`, `isDefaultSubCatego`, `user`, `wallet`, `fatherCategory`, `createdAt`, `updatedAt`), se tipó el schema con `new Schema<ISubCategory>(...)` preservando idénticos todos los campos y opciones originales, y se exportó `const SubCategory: mongoose.Model<ISubCategory> = mongoose.models.SubCategory || mongoose.model<ISubCategory>(\"SubCategory\", subCategorySchema)`. Se removió el import no utilizado `model` de `mongoose`. Verificado con `npx eslint src/model/SubCategory.ts` (0 errores, 0 warnings en salida real), `npx tsc --noEmit` (0 errores) y `npx vitest run` (25/25 suites, 281/281 tests pasados)."
+            },
+            {
+              "ts": "2026-09-25T06:56:51.116Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. ISubCategory siguiendo el patron de Category.ts, Schema<ISubCategory>, mongoose.Model<ISubCategory>. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/categories/get-all/route.js": {
           "status": "pending",
