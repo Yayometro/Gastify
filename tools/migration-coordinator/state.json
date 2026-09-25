@@ -1059,8 +1059,23 @@
           ]
         },
         "src/app/api/general-data/api-tokens/remove/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T03:57:44.669Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T03:59:27.820Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/api/general-data/api-tokens/remove/route.js` a `src/app/api/general-data/api-tokens/remove/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron las interfaces `RemoveApiTokenRequestBody` (con `tokenId?: string`, `mail?: string`, `[key: string]: unknown`), `RemoveApiTokenSuccessResponse` y el alias `RemoveApiTokenResponse`.\n- Se tipó la firma del handler: `export async function POST(request: NextRequest | Request): Promise<NextResponse<RemoveApiTokenResponse>>`.\n- Tipado del body deserializado mediante cast directo `(await request.json()) as RemoveApiTokenRequestBody`, sin agregar fallbacks arbitrarios como `|| {}`.\n- Se usó coerción estructural segura con `unknown` para acceder al subdocumento `_id` en el filter (`(t as unknown as { _id?: unknown })._id`), evitando el uso de `any`.\n- Se conservó `catch (e)` sin anotación explícita (compatible con `strict: false`) y `throw new Error(e)` exactamente idéntico al original.\n\n2. Preservación estricta de lógica y fix de seguridad:\n- Se mantuvo completamente intacto el fix de seguridad IDOR que obtiene el usuario autenticado desde `auth.api.getSession({ headers: request.headers })` en vez del body, preservando todos los comentarios explicativos y branches de validación.\n- Cero alteraciones en el cálculo de tokens antes/después, chequeos de error ni payload de respuesta HTTP 200.\n\n3. Verificaciones realizadas:\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx eslint src/app/api/general-data/api-tokens/remove/route.ts`: 0 errores, 0 warnings (verificado línea por línea).\n- `npx vitest run`: 25 suites pasadas (281/281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T03:59:58.581Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Diff revisado: cambios puramente aditivos de tipos, sin fallbacks artificiales (aprendio de la ronda de rework de new/route.js). Fix de seguridad IDOR intacto con su comentario. tsc --noEmit limpio, eslint limpio, 281/281 tests. Ultimo archivo de Historia 3 - historia completa."
+            }
+          ]
         }
       }
     }
