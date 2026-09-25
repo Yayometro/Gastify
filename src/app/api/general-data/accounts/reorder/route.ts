@@ -1,13 +1,29 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Account from "@/model/Account";
 import { auth } from "@/lib/auth/betterAuth";
 
-export async function POST(request) {
+export interface ReorderAccountsRequestBody {
+  orderedIds?: string[];
+  mail?: string;
+  [key: string]: unknown;
+}
+
+export interface ReorderAccountsSuccessResponse {
+  message: string;
+  status: number;
+  ok: boolean;
+}
+
+export type ReorderAccountsResponse = ReorderAccountsSuccessResponse;
+
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<ReorderAccountsResponse>> {
   try {
     if (!request) throw new Error("No data in request on ACCOUNTS REORDER POST");
-    const { orderedIds } = await request.json();
+    const { orderedIds } = (await request.json()) as ReorderAccountsRequestBody;
     if (!Array.isArray(orderedIds) || orderedIds.length === 0)
       throw new Error("No orderedIds provided on ACCOUNTS REORDER POST");
     // Security fix: this route had zero session verification - it trusted

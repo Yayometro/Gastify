@@ -1327,8 +1327,23 @@
           ]
         },
         "src/app/api/general-data/accounts/reorder/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T05:34:26.347Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T05:36:26.059Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/accounts/reorder/route.js` a `src/app/api/general-data/accounts/reorder/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron y exportaron `ReorderAccountsRequestBody` (`orderedIds?: string[]`, `mail?: string`, `[key: string]: unknown`), `ReorderAccountsSuccessResponse` (`message: string`, `status: number`, `ok: boolean`) y el alias `ReorderAccountsResponse`.\n- Se tipó la firma del handler: `export async function POST(request: NextRequest | Request): Promise<NextResponse<ReorderAccountsResponse>>`.\n- Se casteó el payload de `request.json()` hacia `ReorderAccountsRequestBody` y se preservó `catch (e)` sin anotación explícita según las directivas de `strict: false`.\n\n2. Preservación estricta de comportamiento y seguridad:\n- Se preservó al 100% el fix de seguridad reciente que resuelve la sesión server-side vía `auth.api.getSession({ headers: request.headers })` y valida pertenencia a `userFound.wallet`.\n- Cero alteraciones a la lógica de actualización en lote con `Promise.all` y `Account.updateOne`.\n- Cero operadores de optional chaining o fallbacks no forzados por el compilador.\n- Todos los comentarios de contexto de seguridad preservados intactos.\n\n3. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/accounts/reorder/route.ts`: 0 errores, 0 warnings (verificado salida real línea por línea).\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo del usuario."
+            },
+            {
+              "ts": "2026-09-25T05:37:00.681Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. ReorderAccountsRequestBody/SuccessResponse, fix de seguridad de sesion intacto con su comentario. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/accounts/update-account/route.js": {
           "status": "pending",
