@@ -1938,8 +1938,23 @@
           ]
         },
         "src/app/api/general-data/budget/remove/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:22:29.043Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:23:51.746Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`src/app/api/general-data/budget/remove/route.ts`). Se definieron las interfaces `RemoveBudgetGetStatusResponse`, `RemoveBudgetRequestBody`, `RemoveBudgetSuccessResponse` y `RemoveBudgetResponse`. Se tiparon handlers GET y POST con NextRequest/Request y NextResponse. Se importaron los modelos tipados `Budget` (con `IBudget`) y `User`. Para `Transaction.updateMany` se utilizó el puente tipado `Transaction as unknown as { updateMany: (filter: unknown, update: unknown) => Promise<unknown> }`. Se preservó intacto el fix de seguridad de sesión/búsqueda con wallet, el soft-delete con `archived: true`, la actualización del timestamp `effectiveTo` en `history`, y el desvinculado de transacciones para presupuestos tipo proyecto. Verificado con `npx tsc --noEmit`, `npx eslint` y `npx vitest run` (281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T22:24:25.232Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Interfaces completas con IBudget, bridge acotado exacto para Transaction.updateMany. Logica de soft-delete (archived=true), cierre de history[] y el updateMany condicional por budgetType=project preservados exactamente. Fix de seguridad intacto. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/budget/get-historical/route.js": {
           "status": "pending",
