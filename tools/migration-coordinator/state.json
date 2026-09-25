@@ -2172,8 +2172,23 @@
           ]
         },
         "src/components/multiUsedComp/Movements.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:19:23.771Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:25:00.152Z",
+              "event": "submitted",
+              "notes": "Migración completa de Movements.jsx a Movements.tsx (~1466 líneas):\n1. Tipado estricto y explícito sin 'any' injustificado: interfaces MovementCategory, MovementSubCategory, MovementAccount, MovementTag, MovementMoneyNative, MovementMoneyPrimary, MovementMoneyMerchant, MovementDisplayMoney, MovementItem, DupCriteria, DuplicatePairItem, MovementsProps.\n2. Tipado de estados, refs, filtros, parámetros de funciones, eventos de React y hooks de Redux (RootState, AppDispatch, WalletData, CategoryData, SubCategoryData).\n3. Respeto estricto de reglas de migración:\n   - Preservación exacta de todos los operadores `||` (sin cambiar a `??`).\n   - Remoción de props inválidos con typo `size` en CategoIcon y UniversalCategoIcon (sin renombrarlos a `siz`).\n   - Typed wrappers para componentes JSX no migrados (`TypedEditMultipleTransModal`, `TypedDuplicateComparisonTable`).\n   - Limpieza de imports no usados (`PiFileCsvDuotone`, `toast`, `getLastDayOfMonth`, `BtnSelectCategoryContext`) y estados no leídos/escritos (`removedElement`, `showMultipleTransEdit`, `isSelected`).\n   - Reemplazo de expresiones `itemSele && itemSele.classList...` por `if (itemSele) itemSele.classList...` para ESLint limpio.\n4. Bug preexistente identificado y preservado:\n   - `handleMultiTransEdit`: recibe `ids` (array de strings con IDs desde `selectedTrans`), pero intenta acceder a `ids[0]._id` generando `\"editMultiModal-undefined\"` como key. Se preservó el comportamiento runtime con cast tipado `(ids[0] as unknown as { _id?: string })?._id` para que Claude lo evalúe.\n5. Verificaciones:\n   - `npx tsc --noEmit`: 0 errores.\n   - `npx eslint src/components/multiUsedComp/Movements.tsx`: 0 errores.\n   - `npx vitest run`: 25 suites pasadas, 281 tests pasados.\n   - No se ejecutó `npm run build` ni se modificó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-25T23:28:25.246Z",
+              "event": "approved",
+              "notes": "Revision exhaustiva del diff completo (1466->1586 lineas), sin rework. Puntos verificados especificamente:\n- size/siz: se quitaron los 4 props invalidos `size` en CategoIcon/UniversalCategoIcon (no se renombraron a siz), correcto.\n- `selectedTrans as unknown as string` en showRemoveModal(\"many\", selectedTrans): verificado en el original que showRemoveModal ignora completamente el param `id` cuando kind===\"many\" (solo hace setIsRemoveModalMany(true)), asi que el cast es inerte, sin efecto real.\n- Bug real preexistente en handleMultiTransEdit preservado correctamente: `ids[0]._id` en el original accede `.{_id}` sobre un string (ids es string[]), siempre da undefined -> key `editMultiModal-undefined` repetida entre modals. Se preservo exacto con `(ids[0] as unknown as {_id?:string})?._id`, reportado en el summary, no se toco.\n- Imports muertos removidos (`PiFileCsvDuotone`, `toast`, `import \"react-toastify/dist/ReactToastify.css\"`): confirmado que ninguno se usaba en el original, y la CSS de react-toastify ya se carga via gastifyNotifier.js (que este archivo tambien importa) - cero efecto.\n- Variables de estado muertas removidas (`removedElement`/`setRemovedElement`, `isSelected`/`setIsSelected`): confirmado que no se usaban en ningun otro lado del original.\n- `setCategoryFilter(String(cat._id || \"\"))`/`setSubCategoryFilter(...)`: compiler-required (state tipado string), verificado que categoryFilter/subCategoryFilter solo se usan en checks truthy o comparaciones dentro de esos mismos checks - \"\" y undefined se comportan igual ahi.\n- `if (!id) return;` agregado en handleSelectedItem: no forzado por el compilador realmente (fue el propio bridge tipado de agy el que lo hizo opcional), pero verificado en DuplicateComparisonTable.jsx que onToggleSelect SIEMPRE se llama con un _id real (nunca undefined) - el guard nunca se activa en la practica, sin diferencia observable.\n- `{showEquivalent && primary && (...)}`: showEquivalent ya se define como `Boolean(native && primary && ...)`, o sea primary siempre es truthy cuando showEquivalent es true - el `&& primary` extra es puramente narrowing para TS, cero diferencia en runtime.\n- Eslint reporta 2 warnings de react-hooks/exhaustive-deps preexistentes (verifique corriendo eslint sobre el .jsx original con una copia: los mismos 2 warnings ya existian ahi, no los introdujo la migracion).\ntsc --noEmit 0 errores, eslint 0 errores (2 warnings preexistentes, no nuevos), vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/EditSingleTransModal.jsx": {
           "status": "pending",

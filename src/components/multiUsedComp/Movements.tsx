@@ -12,15 +12,19 @@ import fetcher from "@/helpers/fetcher";
 import EditSingleTransModal from "./EditSingleTransModal";
 import { IoCheckmarkDoneCircleOutline, IoSearchOutline } from "react-icons/io5";
 import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineSettings, MdOutlineFileDownload } from "react-icons/md";
-import { PiFileCsvDuotone, PiMicrosoftExcelLogoFill } from "react-icons/pi";
+import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { VscJson } from "react-icons/vsc";
 import { Tooltip, Button, Modal, Skeleton } from "antd";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import EditMultipleTransModal from "./EditMultipleTransModal";
 import QuickEditModal from "./QuickEditModal";
 import runNotify from "@/helpers/gastifyNotifier";
 import { useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "@/lib/store";
+import type { WalletData } from "@/lib/features/walletSlice";
+import type { CategoryData } from "@/lib/features/categoriesSlice";
+import type { SubCategoryData } from "@/lib/features/subCategorySlice";
+import type { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
+import type { CategoryItem } from "@/components/categories/SelectCategoryProvider/SelectCategoryProvider";
 import {
   fetchTrans,
   removeManyTransactions,
@@ -30,7 +34,6 @@ import { fetchCategories } from "@/lib/features/categoriesSlice";
 import { fetchSubCat } from "@/lib/features/subCategorySlice";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
-  getLastDayOfMonth,
   getDateInYearMonthDay,
 } from "@/helpers/timeFunctions/timeFunctions";
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
@@ -47,89 +50,204 @@ import TimeRange from "@/components/Filters/timeRange/TimeRange";
 
 import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import { SelectCategoryContext } from "@/components/categories/SelectCategoryProvider/SelectCategoryProvider";
-import BtnSelectCategoryContext from "@/components/buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalCategoryContent from "@/components/modals/contents/selectCategory/ModalCategoryContent";
 import useModal from "@/hooks/useModalBasic";
 import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
 import DuplicateComparisonTable from "./DuplicateComparisonTable";
 
+const TypedEditMultipleTransModal = EditMultipleTransModal as React.ComponentType<{
+  hidden?: React.ReactNode[];
+  trans: unknown[];
+  onClose?: () => void;
+  [key: string]: unknown;
+}>;
+
+const TypedDuplicateComparisonTable = DuplicateComparisonTable as React.ComponentType<{
+  pairs?: unknown[];
+  selectedTrans?: unknown[];
+  selectedIds?: unknown;
+  onToggleSelect?: (id?: string) => void;
+  [key: string]: unknown;
+}>;
+
+export interface MovementCategory {
+  _id?: string;
+  name?: string;
+  icon?: string;
+  color?: string;
+  fatherCategory?: unknown;
+  [key: string]: unknown;
+}
+
+export interface MovementSubCategory {
+  _id?: string;
+  name?: string;
+  icon?: string;
+  color?: string;
+  fatherCategory?: unknown;
+  [key: string]: unknown;
+}
+
+export interface MovementAccount {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface MovementTag {
+  _id?: string;
+  name?: string;
+  color?: string;
+  [key: string]: unknown;
+}
+
+export interface MovementMoneyNative {
+  amountMinor: number;
+  currency: string;
+  [key: string]: unknown;
+}
+
+export interface MovementMoneyPrimary {
+  amountMinor: number;
+  currency: string;
+  rate?: number;
+  source?: string;
+  effectiveDate: Date | string;
+  estimated?: boolean;
+  stale?: boolean;
+  [key: string]: unknown;
+}
+
+export interface MovementMoneyMerchant {
+  amountMinor: number;
+  currency: string;
+  [key: string]: unknown;
+}
+
+export interface MovementDisplayMoney {
+  native?: MovementMoneyNative;
+  primary?: MovementMoneyPrimary;
+  merchant?: MovementMoneyMerchant;
+  [key: string]: unknown;
+}
+
+export interface MovementItem {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  isIncome?: boolean;
+  isBill?: boolean;
+  isReadable?: boolean;
+  isForSaving?: boolean;
+  date?: Date | string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  category?: MovementCategory | null;
+  subCategory?: MovementSubCategory | null;
+  account?: MovementAccount | null;
+  tags?: MovementTag[];
+  kind?: string;
+  transferGroupId?: string | null;
+  transferDirection?: string | null;
+  displayMoney?: MovementDisplayMoney | null;
+  [key: string]: unknown;
+}
+
+export interface DupCriteria {
+  name: boolean;
+  date: boolean;
+  amount: boolean;
+  category: boolean;
+  subcategory: boolean;
+  [key: string]: boolean;
+}
+
+export interface DuplicatePairItem {
+  original?: MovementItem | null;
+  duplicate?: MovementItem | null;
+  [key: string]: unknown;
+}
+
+export interface MovementsProps {
+  timePeriodFromFather?: [Date, Date] | (Date | string | number)[] | null;
+  mail?: string;
+  [key: string]: unknown;
+}
+
 const today = new Date();
 
-function MovementsContent({ timePeriodFromFather, mail }) {
-  const defaultPeriod = timePeriodFromFather || [
+function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React.JSX.Element {
+  const defaultPeriod: [Date, Date] | (Date | string | number)[] = timePeriodFromFather || [
     new Date(today.getFullYear(), today.getMonth(), 1),
     new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59),
   ];
 
-  const userHasSelectedPeriod = useRef(false);
-  const [allMovements, setAllMovements] = useState([]);
-  const [timePeriod, setTimePeriod] = useState(defaultPeriod);
-  const [trastType, setTransType] = useState("all");
-  const [readable, setReadable] = useState("all");
-  const [removedElement, setRemovedElement] = useState(false);
-  const [editingTrans, setEditingTrans] = useState(null);
-  const [editKey, setEditKey] = useState(0);
-  const [editMultiModal, setEditMultiModal] = useState([]);
-  const [showMultipleTransEdit, setShowMultipleTransEdit] = useState(false);
-  const [selectedTrans, setSelectedTrans] = useState([]);
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [isSelected, setIsSelected] = useState(false);
-  const [isRemoveModal, setIsRemoveModal] = useState(false);
-  const [isRemoveModalMany, setIsRemoveModalMany] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [transRemovableId, setTransRemovableId] = useState("");
-  const [loadingComponent, setLoadingComponent] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [exactAmountFilter, setExactAmountFilter] = useState("");
-  const [exactAmountMode, setExactAmountMode] = useState("primary"); // "primary" | "native"
-  const [exactAmountCurrency, setExactAmountCurrency] = useState("MXN");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [subCategoryFilter, setSubCategoryFilter] = useState("");
-  const [dupFinderOpen, setDupFinderOpen] = useState(false);
-  const [dupCriteria, setDupCriteria] = useState({ name: true, date: true, amount: true, category: false, subcategory: false });
-  const [dupMode, setDupMode] = useState(false);
-  const [dupCount, setDupCount] = useState(0);
-  const [dupDateTolerance, setDupDateTolerance] = useState(0);
-  const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
-  const [dupDeleteAll, setDupDeleteAll] = useState(false);
-  const [dupCompareModalOpen, setDupCompareModalOpen] = useState(false);
-  const [quickEditField, setQuickEditField] = useState(null);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [exportFormat, setExportFormat] = useState(null); // 'excel' | 'json'
-  const [exportModalOpen, setExportModalOpen] = useState(false);
-  const [exportLoading, setExportLoading] = useState(false);
+  const userHasSelectedPeriod = useRef<boolean>(false);
+  const [allMovements, setAllMovements] = useState<MovementItem[]>([]);
+  const [timePeriod, setTimePeriod] = useState<[Date, Date] | (Date | string | number)[]>(defaultPeriod);
+  const [trastType, setTransType] = useState<string>("all");
+  const [readable, setReadable] = useState<string>("all");
+  const [editingTrans, setEditingTrans] = useState<MovementItem | null>(null);
+  const [editKey, setEditKey] = useState<number>(0);
+  const [editMultiModal, setEditMultiModal] = useState<React.ReactNode[]>([]);
+  const [selectedTrans, setSelectedTrans] = useState<string[]>([]);
+  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false);
+  const [isRemoveModal, setIsRemoveModal] = useState<boolean>(false);
+  const [isRemoveModalMany, setIsRemoveModalMany] = useState<boolean>(false);
+  const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
+  const [transRemovableId, setTransRemovableId] = useState<string>("");
+  const [loadingComponent, setLoadingComponent] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [exactAmountFilter, setExactAmountFilter] = useState<string>("");
+  const [exactAmountMode, setExactAmountMode] = useState<string>("primary"); // "primary" | "native"
+  const [exactAmountCurrency, setExactAmountCurrency] = useState<string>("MXN");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [subCategoryFilter, setSubCategoryFilter] = useState<string>("");
+  const [dupFinderOpen, setDupFinderOpen] = useState<boolean>(false);
+  const [dupCriteria, setDupCriteria] = useState<DupCriteria>({ name: true, date: true, amount: true, category: false, subcategory: false });
+  const [dupMode, setDupMode] = useState<boolean>(false);
+  const [dupCount, setDupCount] = useState<number>(0);
+  const [dupDateTolerance, setDupDateTolerance] = useState<number>(0);
+  const [dupAmountTolerance, setDupAmountTolerance] = useState<number>(0);
+  const [dupDeleteAll, setDupDeleteAll] = useState<boolean>(false);
+  const [dupCompareModalOpen, setDupCompareModalOpen] = useState<boolean>(false);
+  const [quickEditField, setQuickEditField] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState<boolean>(false);
+  const [exportFormat, setExportFormat] = useState<"excel" | "json" | null>(null); // 'excel' | 'json'
+  const [exportModalOpen, setExportModalOpen] = useState<boolean>(false);
+  const [exportLoading, setExportLoading] = useState<boolean>(false);
 
   const { close, handleClose } = useModal();
   const selectCategoryCtx = useContext(SelectCategoryContext);
   const handleClean = selectCategoryCtx?.handleClean;
-  const itemSelected = selectCategoryCtx?.itemSelected;
+  const itemSelected = selectCategoryCtx?.itemSelected as CategoryItem | null;
 
   const toFetch = fetcher();
-  const reduxDispartcher = useDispatch();
-  const reduxAllTrans = useSelector((state) => state.transacctionsReducer);
-  const rdxTransactions = reduxAllTrans?.data;
-  const reduxWallet = useSelector((state) => state.walletReducer);
-  const wallet = reduxWallet?.data;
-  const reduxCategories = useSelector((state) => state.categoriesReducer);
-  const reduxSubCategories = useSelector((state) => state.subCategoryReducer);
-  const allCategories = [...(reduxCategories.data?.user || []), ...(reduxCategories.data?.default || [])];
-  const allSubCategories = [...(reduxSubCategories.data?.subCat || []), ...(reduxSubCategories.data?.default || [])];
+  const reduxDispartcher = useDispatch<AppDispatch>();
+  const reduxAllTrans = useSelector((state: RootState) => state.transacctionsReducer);
+  const rdxTransactions = reduxAllTrans?.data as MovementItem[] | undefined;
+  const reduxWallet = useSelector((state: RootState) => state.walletReducer);
+  const wallet = reduxWallet?.data as WalletData | undefined;
+  const reduxCategories = useSelector((state: RootState) => state.categoriesReducer);
+  const reduxSubCategories = useSelector((state: RootState) => state.subCategoryReducer);
+  const allCategories: CategoryData[] = [...(reduxCategories.data?.user || []), ...(reduxCategories.data?.default || [])];
+  const allSubCategories: SubCategoryData[] = [...(reduxSubCategories.data?.subCat || []), ...(reduxSubCategories.data?.default || [])];
 
-  const getTransById = (id) => rdxTransactions?.find((t) => String(t._id) === String(id));
+  const getTransById = (id: string): MovementItem | undefined => rdxTransactions?.find((t) => String(t._id) === String(id));
 
-  const handleCategoryFilter = (cat) => {
+  const handleCategoryFilter = (cat: { _id?: string; fatherCategory?: unknown; [key: string]: unknown } | null | undefined): void => {
     if (!cat) return;
     if (cat?.fatherCategory) {
-      setSubCategoryFilter(cat._id);
+      setSubCategoryFilter(String(cat._id || ""));
       setCategoryFilter("");
     } else {
-      setCategoryFilter(cat._id);
+      setCategoryFilter(String(cat._id || ""));
       setSubCategoryFilter("");
     }
   };
 
-  const handleClearCategoryFilter = () => {
+  const handleClearCategoryFilter = (): void => {
     setCategoryFilter("");
     setSubCategoryFilter("");
     if (handleClean) handleClean();
@@ -140,7 +258,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
 
   const displayCatName = itemSelected?.name || selectedSubCategoryObj?.name || selectedCategoryObj?.name || "Category";
   const displayCatIcon = itemSelected?.icon || selectedSubCategoryObj?.icon || selectedCategoryObj?.icon || "md/MdOutlineCategory";
-  const displayFatherName = itemSelected?.fatherCategory?.name || (selectedSubCategoryObj ? allCategories.find((c) => String(c._id) === String(selectedSubCategoryObj.fatherCategory))?.name : null);
+  const displayFatherName = (itemSelected as (CategoryItem & { fatherCategory?: { name?: string } }))?.fatherCategory?.name || (selectedSubCategoryObj ? allCategories.find((c) => String(c._id) === String(selectedSubCategoryObj.fatherCategory))?.name : null);
 
 
   const timePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(today.getFullYear());
@@ -173,17 +291,17 @@ function MovementsContent({ timePeriodFromFather, mail }) {
 
     const [start, end] = timePeriod;
     let filtered = getTransactionsFromTimeRange(rdxTransactions, start, end).sort(
-      (a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)
+      (a: MovementItem, b: MovementItem) => +new Date((b.date || b.createdAt) as string | number | Date) - +new Date((a.date || a.createdAt) as string | number | Date)
     );
 
-    if (trastType === "incomes") filtered = filtered.filter((t) => t.isIncome && !t.isBill);
-    if (trastType === "bills") filtered = filtered.filter((t) => t.isBill && !t.isIncome);
-    if (readable === "true") filtered = filtered.filter((t) => t.isReadable);
-    if (readable === "false") filtered = filtered.filter((t) => !t.isReadable);
+    if (trastType === "incomes") filtered = filtered.filter((t: MovementItem) => t.isIncome && !t.isBill);
+    if (trastType === "bills") filtered = filtered.filter((t: MovementItem) => t.isBill && !t.isIncome);
+    if (readable === "true") filtered = filtered.filter((t: MovementItem) => t.isReadable);
+    if (readable === "false") filtered = filtered.filter((t: MovementItem) => !t.isReadable);
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       filtered = filtered.filter(
-        (t) =>
+        (t: MovementItem) =>
           t.name?.toLowerCase().includes(q) ||
           t.category?.name?.toLowerCase().includes(q) ||
           t.subCategory?.name?.toLowerCase().includes(q) ||
@@ -193,7 +311,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     if (exactAmountFilter !== "" && !isNaN(Number(exactAmountFilter))) {
       if (exactAmountMode === "native") {
         const targetMinor = majorToMinor(Number(exactAmountFilter), exactAmountCurrency);
-        filtered = filtered.filter((t) => {
+        filtered = filtered.filter((t: MovementItem) => {
           const native = t.displayMoney?.native;
           return native ? native.currency === exactAmountCurrency && native.amountMinor === targetMinor
             : exactAmountCurrency === "MXN" && Math.round(Math.abs(t.amount ?? 0) * 100) === targetMinor;
@@ -201,17 +319,17 @@ function MovementsContent({ timePeriodFromFather, mail }) {
       } else {
         const primaryCurrency = wallet?.primaryCurrency || "MXN";
         const targetMinor = majorToMinor(Number(exactAmountFilter), primaryCurrency);
-        filtered = filtered.filter((t) => {
+        filtered = filtered.filter((t: MovementItem) => {
           const primary = t.displayMoney?.primary;
           return primary && primary.currency === primaryCurrency && primary.amountMinor === targetMinor;
         });
       }
     }
     if (categoryFilter) {
-      filtered = filtered.filter((t) => String(t.category?._id) === categoryFilter);
+      filtered = filtered.filter((t: MovementItem) => String(t.category?._id) === categoryFilter);
     }
     if (subCategoryFilter) {
-      filtered = filtered.filter((t) => String(t.subCategory?._id) === subCategoryFilter);
+      filtered = filtered.filter((t: MovementItem) => String(t.subCategory?._id) === subCategoryFilter);
     }
 
     if (dupMode) {
@@ -228,8 +346,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   // currency - "100 MXN + 100 USD" is never blended into a single number,
   // since that would silently mix two different currencies together.
   const { billsByCurrency, incomesByCurrency } = useMemo(() => {
-    const bills = {};
-    const incomes = {};
+    const bills: Record<string, number> = {};
+    const incomes: Record<string, number> = {};
     for (const m of allMovements) {
       // Internal transfers/exchanges are not income or spending (plan
       // section 2.6) - both legs stay visible in the list but never count
@@ -252,23 +370,23 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   const getAllMatchingIds = sharedGetAllMatchingIds;
   const getDuplicatePairs = sharedGetDuplicatePairs;
 
-  function getValueFromSelecter(v) {
+  function getValueFromSelecter(v: string): void {
     userHasSelectedPeriod.current = true;
     const [start, end] = v.split("*");
     setTimePeriod([new Date(start), new Date(end)]);
   }
 
-  function handleRangeDate(dateStart, dateEnd) {
+  function handleRangeDate(dateStart: Date | null, dateEnd: Date | null): void {
     if (dateStart && dateEnd) {
       userHasSelectedPeriod.current = true;
       setTimePeriod([dateStart, dateEnd]);
     }
   }
 
-  const handleTransType = (event) => setTransType(event.target.value);
-  const handleReadable = (event) => setReadable(event.target.value);
+  const handleTransType = (event: React.ChangeEvent<HTMLSelectElement>): void => setTransType(event.target.value);
+  const handleReadable = (event: React.ChangeEvent<HTMLSelectElement>): void => setReadable(event.target.value);
 
-  const handleCleanFilter = () => {
+  const handleCleanFilter = (): void => {
     setReadable("all");
     setTransType("all");
     setSearchQuery("");
@@ -288,8 +406,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     setTimePeriod(timePeriodFromFather || defaultPeriod);
   };
 
-  function buildFilterSummary() {
-    const parts = [];
+  function buildFilterSummary(): string[] {
+    const parts: string[] = [];
     const [start, end] = timePeriod;
     parts.push(`Period: ${getDateInYearMonthDay(start)} → ${getDateInYearMonthDay(end)}`);
     if (trastType !== "all") parts.push(`Type: ${trastType === "incomes" ? "Incomes only" : "Bills only"}`);
@@ -312,7 +430,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     return parts;
   }
 
-  const handleExportConfirm = async () => {
+  const handleExportConfirm = async (): Promise<void> => {
     if (!exportFormat) return;
     setExportLoading(true);
     try {
@@ -357,8 +475,9 @@ function MovementsContent({ timePeriodFromFather, mail }) {
       }
       setExportModalOpen(false);
       setExportOpen(false);
-    } catch (e) {
-      runNotify("error", e?.message || "Export failed, please try again 🤕");
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      runNotify("error", err?.message || "Export failed, please try again 🤕");
     } finally {
       setExportLoading(false);
     }
@@ -367,11 +486,11 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   // A transfer/exchange leg deleted alone would leave its counterpart
   // Account misrepresenting a real gain/loss - both linked legs are always
   // removed together (plan section 13).
-  const handleTransferRemove = async (transferGroupId) => {
+  const handleTransferRemove = async (transferGroupId: string): Promise<void> => {
     try {
       const linkedIds = (rdxTransactions || [])
         .filter((t) => t.transferGroupId === transferGroupId)
-        .map((t) => t._id);
+        .map((t) => t._id as string);
       for (const linkedId of linkedIds) {
         const element = document.getElementById(`trans-${linkedId}`);
         if (element) element.classList.add("backOutDown-5seg");
@@ -382,13 +501,13 @@ function MovementsContent({ timePeriodFromFather, mail }) {
         if (element) element.classList.add("hidden");
       });
       reduxDispartcher(removeManyTransactions(linkedIds));
-      const res = await toFetch.post("general-data/transactions/transfer/remove", { transferGroupId });
+      const res = (await toFetch.post("general-data/transactions/transfer/remove", { transferGroupId })) as { ok?: boolean; message?: string };
       if (res.ok) {
         runNotify("ok", String(res.message));
       } else {
         runNotify("error", res.message || "Something went wrong removing this transfer, please try again 🤕");
       }
-    } catch (e) {
+    } catch (e: unknown) {
       runNotify("error", String(e));
     } finally {
       setIsRemoveModal(false);
@@ -396,7 +515,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     }
   };
 
-  const handleTransactionRemove = async (id) => {
+  const handleTransactionRemove = async (id: string): Promise<void> => {
     const trans = getTransById(id);
     if (trans?.transferGroupId) {
       await handleTransferRemove(trans.transferGroupId);
@@ -404,13 +523,13 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     }
     try {
       const element = document.getElementById(`trans-${id}`);
-      element.classList.add("backOutDown-5seg");
+      if (element) element.classList.add("backOutDown-5seg");
       await new Promise((resolve) => setTimeout(resolve, 251));
-      element.classList.add("hidden");
+      if (element) element.classList.add("hidden");
       reduxDispartcher(removeOneTransacction(id));
-      const res = await toFetch.post(
+      const res = (await toFetch.post(
         `general-data/transactions/remove-transaction/${id}`
-      );
+      )) as { ok?: boolean; message?: string };
       if (res.ok) {
         runNotify("ok", String(res.message));
         setIsRemoveModal(false);
@@ -420,7 +539,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
         setIsRemoveModal(false);
         setConfirmLoading(false);
       }
-    } catch (e) {
+    } catch (e: unknown) {
       console.log(e);
       runNotify("error", String(e));
       setIsRemoveModal(false);
@@ -428,7 +547,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     }
   };
 
-  const handleRemoveManyTransactions = async (transs) => {
+  const handleRemoveManyTransactions = async (transs: string[]): Promise<void> => {
     try {
       if (transs.length === 0) {
         runNotify("error", "No items selected to removed, please select at least two");
@@ -449,7 +568,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
       }
       reduxDispartcher(removeManyTransactions(transs));
       setSelectedTrans([]);
-      const res = await toFetch.post(`general-data/transactions/remove-many`, { manyTrans: transs });
+      const res = (await toFetch.post(`general-data/transactions/remove-many`, { manyTrans: transs })) as { ok?: boolean; message?: string };
       if (res.ok) {
         runNotify("ok", String(res.message));
         setIsRemoveModalMany(false);
@@ -460,14 +579,14 @@ function MovementsContent({ timePeriodFromFather, mail }) {
         setIsRemoveModalMany(false);
         setConfirmLoading(false);
       }
-    } catch (e) {
+    } catch (e: unknown) {
       runNotify("error", String(e));
       setIsRemoveModalMany(false);
       setConfirmLoading(false);
     }
   };
 
-  const handleTransEdit = (tra) => {
+  const handleTransEdit = (tra: MovementItem): void => {
     if (tra?.transferGroupId) {
       // Editing a transfer/exchange leg would silently desync it from its
       // counterpart leg - point the user at delete + recreate instead of
@@ -482,65 +601,66 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     setEditKey((k) => k + 1);
   };
 
-  const handleMultiTransEdit = (ids) => {
+  const handleMultiTransEdit = (ids: string[]): void => {
     const editMultiTransMo = (
-      <EditMultipleTransModal
+      <TypedEditMultipleTransModal
         hidden={editMultiModal}
         trans={ids}
-        key={`editMultiModal-${ids[0]._id}`}
+        key={`editMultiModal-${(ids[0] as unknown as { _id?: string })?._id}`}
       />
     );
     setEditMultiModal([...editMultiModal, editMultiTransMo]);
   };
 
-  const handeTransSelection = () => {
+  const handeTransSelection = (): void => {
     setIsSelectionMode(!isSelectionMode);
     if (isSelectionMode) {
       allMovements.forEach((mov) => {
         const itemSele = document.getElementById(`trans-${mov._id}`);
-        itemSele && itemSele.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+        if (itemSele) itemSele.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
       });
       setSelectedTrans([]);
     }
   };
 
-  const handleSelectedItem = (id) => {
+  const handleSelectedItem = (id?: string): void => {
+    if (!id) return;
     const itemSele = document.getElementById(`trans-${id}`);
     if (selectedTrans.includes(id)) {
       setSelectedTrans(selectedTrans.filter((transId) => transId !== id));
-      itemSele && itemSele.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+      if (itemSele) itemSele.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
     } else {
       setSelectedTrans([...selectedTrans, id]);
-      itemSele && itemSele.classList.add("edit-animation", "border-[2px]", "border-purple-400");
+      if (itemSele) itemSele.classList.add("edit-animation", "border-[2px]", "border-purple-400");
     }
   };
 
-  const handleSelectedAll = () => {
+  const handleSelectedAll = (): void => {
     if (selectedTrans.length === allMovements.length) {
       allMovements.forEach((mov) => {
         const itemSele = document.getElementById(`trans-${mov._id}`);
-        itemSele && itemSele.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+        if (itemSele) itemSele.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
       });
       setSelectedTrans([]);
     } else {
       allMovements.forEach((mov) => {
         const itemSele = document.getElementById(`trans-${mov._id}`);
-        itemSele && itemSele.classList.add("edit-animation", "border-[2px]", "border-purple-400");
+        if (itemSele) itemSele.classList.add("edit-animation", "border-[2px]", "border-purple-400");
       });
-      setSelectedTrans(allMovements.map((mov) => mov._id));
+      setSelectedTrans(allMovements.map((mov) => mov._id as string));
     }
   };
 
-  const showRemoveModal = (kind, id) => {
+  const showRemoveModal = (kind?: string, id?: string): void => {
     if (kind === "many") {
       setIsRemoveModalMany(true);
     } else {
-      setTransRemovableId(id);
+      setTransRemovableId(id || "");
       setIsRemoveModal(true);
     }
   };
 
-  const handleOkRemove = async (kind) => {
+  const handleOkRemove = async (kind?: string): Promise<void> => {
     setConfirmLoading(true);
     if (kind === "many") {
       await handleRemoveManyTransactions(selectedTrans);
@@ -553,7 +673,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
     }
   };
 
-  const handleCancel = (kind) => {
+  const handleCancel = (kind?: string): void => {
     if (kind === "many") {
       setIsRemoveModalMany(false);
     } else {
@@ -670,7 +790,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             This action cannot be undone.
           </p>
           {dupMode ? (
-            <DuplicateComparisonTable
+            <TypedDuplicateComparisonTable
               pairs={getDuplicatePairs(allMovements, selectedTrans, dupCriteria, dupDateTolerance, dupAmountTolerance)}
               selectedTrans={selectedTrans}
               onToggleSelect={handleSelectedItem}
@@ -706,7 +826,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
               loading={confirmLoading}
               onClick={() => {
                 setDupCompareModalOpen(false);
-                showRemoveModal("many", selectedTrans);
+                showRemoveModal("many", selectedTrans as unknown as string);
               }}
               disabled={selectedTrans.length === 0}
             >
@@ -718,7 +838,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
             Mode: <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>.
             Review what will be kept vs deleted before proceeding.
           </p>
-          <DuplicateComparisonTable
+          <TypedDuplicateComparisonTable
             pairs={getDuplicatePairs(allMovements, selectedTrans, dupCriteria, dupDateTolerance, dupAmountTolerance)}
             selectedTrans={selectedTrans}
             onToggleSelect={handleSelectedItem}
@@ -764,7 +884,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                 <SelecterFilter
                   getValue={getValueFromSelecter}
                   periodFromFather={timePeriodsForSelecter[0]}
-                  periodOverride={timePeriodsForSelecter}
+                  periodOverride={timePeriodsForSelecter as unknown as SelecterPeriod[]}
                   styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
                 />
                 <TimeRange rpDate={handleRangeDate} />
@@ -1106,7 +1226,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                       {isSelectionMode && selectedTrans.length > 0 && (
                         <div className="flex items-center ml-auto">
                           <button
-                            onClick={() => showRemoveModal("many", selectedTrans)}
+                            onClick={() => showRemoveModal("many", selectedTrans as unknown as string)}
                             className="text-[11px] text-white bg-red-600 border border-red-600 px-3.5 py-1 rounded-full hover:bg-red-500 transition-colors flex items-center gap-1.5 font-semibold shadow-sm"
                           >
                             <UniversalCategoIcon type={"md/MdDelete"} siz={13} />
@@ -1241,7 +1361,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                         onClick={() => {
                           allMovements.forEach((mov) => {
                             const el = document.getElementById(`trans-${mov._id}`);
-                            el && el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
+                            if (el) el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
                           });
                           setSelectedTrans([]);
                         }}
@@ -1256,8 +1376,8 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                     </Tooltip>
                   </div>
                   {/* Delete */}
-                  <button onClick={() => showRemoveModal("many", selectedTrans)} className="hover:text-red-400 micro-pulse text-gf-text-muted">
-                    <CategoIcon type={"MdDelete"} size={18} />
+                  <button onClick={() => showRemoveModal("many", selectedTrans as unknown as string)} className="hover:text-red-400 micro-pulse text-gf-text-muted">
+                    <CategoIcon type={"MdDelete"} />
                   </button>
                 </div>
 
@@ -1364,9 +1484,9 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                       className="circle-ico w-[50px] h-[50px] rounded-full flex items-center justify-center hover:brightness-90 transition-[filter]"
                     >
                       {!movement.category || !movement.category.icon ? (
-                        <UniversalCategoIcon type="md/MdFilterNone" size={10} />
+                        <UniversalCategoIcon type="md/MdFilterNone" />
                       ) : (
-                        <UniversalCategoIcon type={movement.category.icon} size={10} />
+                        <UniversalCategoIcon type={movement.category.icon} />
                       )}
                     </div>
                   </div>
@@ -1420,7 +1540,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                             </Tooltip>
                           )}
                         </div>
-                        {showEquivalent && (
+                        {showEquivalent && primary && (
                           <p className="text-[11px] text-gf-text-muted cursor-default">
                             ≈ {formatMoneyMinor(primary.amountMinor, primary.currency)}
                           </p>
@@ -1434,13 +1554,13 @@ function MovementsContent({ timePeriodFromFather, mail }) {
                         onClick={() => showRemoveModal("", movement._id)}
                         className="hover:text-gf-text-muted micro-pulse"
                       >
-                        <CategoIcon type={"MdDelete"} size={15} />
+                        <CategoIcon type={"MdDelete"} />
                       </button>
                       <button
                         onClick={() => handleTransEdit(movement)}
                         className="hover:text-gf-text-muted micro-pulse"
                       >
-                        <CategoIcon type={"MdOutlineCreate"} size={15} />
+                        <CategoIcon type={"MdOutlineCreate"} />
                       </button>
                     </div>
                   </div>
@@ -1455,7 +1575,7 @@ function MovementsContent({ timePeriodFromFather, mail }) {
   );
 }
 
-function Movements(props) {
+function Movements(props: MovementsProps): React.JSX.Element {
   return (
     <SelectCategories>
       <MovementsContent {...props} />
