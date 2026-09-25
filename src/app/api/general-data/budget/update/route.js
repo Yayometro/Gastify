@@ -3,8 +3,10 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
 import Tag from "@/model/Tag";
+import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/betterAuth";
 
 export async function GET() {
   return NextResponse.json({ mes: "Work" });
@@ -15,11 +17,20 @@ export async function POST(request) {
     if (!request) throw new Error("No data in request on NEW BUDGET POST");
     const { id, name, goalAmount, category, subCategory, isSurpassed, isSaving, savingAmount, categories, period, linkedAccounts, budgetType, eventStartDate, eventEndDate, linkedTags, icon, currency } =
       await request.json();
-    await dbConnection();
-    // NO ID FILTER
     if (!id) throw new Error(`No ID  was provided to update budget 🤕`);
+    // Security fix: this used to look up the Budget by id alone, with zero
+    // ownership check - this endpoint isn't covered by middleware.ts's
+    // matcher, so any caller could edit any other user's budget. Now the
+    // lookup is scoped to the caller's own wallet (session-derived), so an
+    // id belonging to someone else's budget fails the same "not found"
+    // check as a bogus id.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
+    await dbConnection();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
+    if (!userFound) throw new Error("User not found on UPDATE BUDGET");
     // FIND WALLET and UPDATE
-    const updateBudget = await Budget.findById(id);
+    const updateBudget = await Budget.findOne({ _id: id, wallet: userFound.wallet });
     //IF ERROR
     if (!updateBudget) throw new Error(`No Budget was identified to update 🤕`);
     // VERSION HISTORY if goalAmount/savingAmount is actually changing

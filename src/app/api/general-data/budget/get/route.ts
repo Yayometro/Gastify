@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Budget from "@/model/Budget";
 import User from "@/model/User";
+import { auth } from "@/lib/auth/betterAuth";
 import "@/model/Category";
 import "@/model/SubCategory";
 import "@/model/Account";
@@ -29,12 +30,18 @@ export async function POST(
 ): Promise<NextResponse<GetBudgetResponse>> {
   try {
     if (!request) throw new Error("No data in request on NEW BUDGET POST");
-    const id = await request.json();
-    // NO ID FILTER
-    if (!id) throw new Error(`No ID  was provided to update budget 🤕`);
+    // Security fix: this used to trust whatever mail the client sent in the
+    // body (confusingly named `id`), letting any caller (this endpoint
+    // isn't covered by middleware.ts's matcher) read another user's
+    // budgets - an IDOR, same underlying issue already fixed in
+    // get-user/get-wallet/get-categories/get-sub-categories. The only real
+    // call site (budgetSlice.ts's fetchBudget) always sends its own
+    // session's email.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     await dbConnection();
     // User find
-    const userFound = await User.findOne({ mail: id }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
       throw new Error(
         {

@@ -3,8 +3,10 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
 import Tag from "@/model/Tag";
+import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth/betterAuth";
 
 export async function GET() {
   return NextResponse.json({ mes: "Work" });
@@ -14,8 +16,6 @@ export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on NEW BUDGET POST");
     const {
-      user,
-      wallet,
       name,
       goalAmount,
       category,
@@ -32,12 +32,19 @@ export async function POST(request) {
       icon,
       currency,
     } = await request.json();
+    // Security fix: this used to trust whatever user/wallet the client sent
+    // in the body, letting any caller (this endpoint isn't covered by
+    // middleware.ts's matcher) plant a budget inside ANY OTHER user's
+    // wallet. Now they're always derived from the caller's own session
+    // instead. The only real call site (BudgetEditModal.jsx) already sends
+    // the caller's own ids anyway.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     await dbConnection();
-    // NO USER/WALLET FILTER
-    if (!user && !wallet)
-      throw new Error(
-        `No User and Wallet was provided to create a new Budget 🤕`
-      );
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
+    if (!userFound) throw new Error("User not found on NEW BUDGET");
+    const user = userFound._id;
+    const wallet = userFound.wallet;
     // FIND WALLET
     const resolvedBudgetType = budgetType || (isSaving ? "saving" : "spending");
     const newBudget = new Budget({
