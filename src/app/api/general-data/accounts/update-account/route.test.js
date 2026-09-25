@@ -1,18 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// No real DB/network: Account/Transaction are mocked, and dbConnection is a
-// no-op. Covers the Phase 4 currency-change restriction (Account currency
-// cannot change once Transactions are linked to it).
+// No real DB/network: Account/Transaction/User are mocked, dbConnection is a
+// no-op, and the session is mocked as always-authenticated as "acc-owner".
+// Covers the Phase 4 currency-change restriction (Account currency cannot
+// change once Transactions are linked to it).
 vi.mock("@/app/api/dbConnection", () => ({ default: vi.fn() }));
-vi.mock("@/model/Account", () => ({ default: { findById: vi.fn() } }));
+vi.mock("@/model/Account", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/Transaction", () => ({ default: { countDocuments: vi.fn() } }));
+vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
+vi.mock("@/lib/auth/betterAuth", () => ({
+  auth: { api: { getSession: vi.fn() } },
+}));
 
 import Account from "@/model/Account";
 import Transaction from "@/model/Transaction";
+import User from "@/model/User";
+import { auth } from "@/lib/auth/betterAuth";
 import { POST } from "./route";
 
 function mockRequest(body) {
-  return { json: vi.fn().mockResolvedValue(body) };
+  return { json: vi.fn().mockResolvedValue(body), headers: new Headers() };
 }
 
 function makeFindAccountResult({ currency = "MXN", amount = 100, name = "Checking" } = {}) {
@@ -30,12 +37,14 @@ function makeFindAccountResult({ currency = "MXN", amount = 100, name = "Checkin
 
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.api.getSession.mockResolvedValue({ user: { email: "owner@example.com" } });
+  User.findOne.mockReturnValue({ lean: vi.fn().mockResolvedValue({ wallet: "wallet1" }) });
 });
 
 describe("update-account currency-change restriction", () => {
   it("blocks changing currency when Transactions are already linked to the Account", async () => {
     const account = makeFindAccountResult({ currency: "MXN" });
-    Account.findById.mockResolvedValue(account);
+    Account.findOne.mockResolvedValue(account);
     Transaction.countDocuments.mockResolvedValue(3);
 
     await expect(
@@ -48,7 +57,7 @@ describe("update-account currency-change restriction", () => {
 
   it("allows changing currency when no Transactions are linked", async () => {
     const account = makeFindAccountResult({ currency: "MXN" });
-    Account.findById.mockResolvedValue(account);
+    Account.findOne.mockResolvedValue(account);
     Transaction.countDocuments.mockResolvedValue(0);
 
     const res = await POST(mockRequest({ accountId: "acc1", currency: "USD" }));
@@ -61,7 +70,7 @@ describe("update-account currency-change restriction", () => {
 
   it("does not touch currency or count linked Transactions when currency is unchanged", async () => {
     const account = makeFindAccountResult({ currency: "MXN" });
-    Account.findById.mockResolvedValue(account);
+    Account.findOne.mockResolvedValue(account);
 
     await POST(mockRequest({ accountId: "acc1", currency: "MXN", amount: 250 }));
 
@@ -72,7 +81,7 @@ describe("update-account currency-change restriction", () => {
 
   it("rejects an unsupported currency before saving", async () => {
     const account = makeFindAccountResult({ currency: "MXN" });
-    Account.findById.mockResolvedValue(account);
+    Account.findOne.mockResolvedValue(account);
 
     await expect(
       POST(mockRequest({ accountId: "acc1", currency: "GBP" }))
@@ -83,7 +92,7 @@ describe("update-account currency-change restriction", () => {
 
   it("keeps balanceMinor and amount in sync in the account's own currency", async () => {
     const account = makeFindAccountResult({ currency: "JPY", amount: 500 });
-    Account.findById.mockResolvedValue(account);
+    Account.findOne.mockResolvedValue(account);
 
     const res = await POST(mockRequest({ accountId: "acc1", amount: 1500 }));
     await res.json();

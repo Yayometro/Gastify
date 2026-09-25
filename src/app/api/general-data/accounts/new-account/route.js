@@ -1,15 +1,31 @@
 
 import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
+import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse } from "next/server";
 import { SUPPORTED_CURRENCIES, majorToMinor } from "@/lib/money/currencies";
+import { auth } from "@/lib/auth/betterAuth";
 
 export async function POST(request){
     try{
         if(!request) throw new Error("No data in request on NEW-ACCOUNT POST")
-        const {userId, walletId, name, amount, accountType, currency } = await request.json()
+        const { name, amount, accountType, currency } = await request.json()
+        // Security fix: this route had zero session check - it created the
+        // new Account under whatever userId/walletId the client sent in the
+        // body, so ANY caller (authenticated or not - this endpoint isn't
+        // covered by middleware.ts's matcher) could plant a bogus account
+        // inside a completely different user's wallet. Now userId/walletId
+        // are always derived from the caller's own session instead of
+        // trusted from the body. The only real call site
+        // (EditAccountModal.jsx) always sends the caller's own ids anyway.
+        const sesion = await auth.api.getSession({ headers: request.headers });
+        if (!sesion) throw new Error("No session");
         await dbConnection();
+        const userFound = await User.findOne({ mail: sesion.user.email }).lean();
+        if (!userFound) throw new Error("User not found on NEW-ACCOUNT POST");
+        const userId = userFound._id;
+        const walletId = userFound.wallet;
         //
         // New Account currency defaults to the Wallet's primary currency
         // when not explicitly chosen.
