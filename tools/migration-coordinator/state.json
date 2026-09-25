@@ -1026,8 +1026,37 @@
           ]
         },
         "src/app/api/general-data/api-tokens/new/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T03:53:23.550Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T03:54:50.880Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/api/general-data/api-tokens/new/route.js` a `src/app/api/general-data/api-tokens/new/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron las interfaces `CreateApiTokenRequestBody` (con `name: string`, `mail?: string`, `[key: string]: unknown`), `CreatedApiTokenData` (`token: string`, `name: string`), `CreateApiTokenSuccessResponse` y el alias `CreateApiTokenResponse`.\n- Se tipó la firma del handler de ruta: `export async function POST(request: NextRequest | Request): Promise<NextResponse<CreateApiTokenResponse>>`.\n- Tipado del body extraído en el request (`((await request.json()) || {}) as CreateApiTokenRequestBody`).\n- Se utilizó coerción estructural segura con `unknown` en el push al array de subdocumentos (`user.apiTokens.push({ name, tokenHash } as unknown as IUser[\"apiTokens\"][number])`) sin recurrir a `any`.\n- Se conservó `catch(e)` sin anotación explícita (compatible con `strict: false`) y `throw new Error(e)` idéntico al código original.\n\n2. Preservación estricta de lógica y fix de seguridad:\n- Se mantuvo intacto el fix de seguridad IDOR que deriva el usuario de `auth.api.getSession({ headers: request.headers })` en lugar de confiar en el email del body, incluyendo todos los comentarios explicativos.\n- Cero alteraciones en la lógica de generación (`generateApiToken()`), guardado en DB ni formato de la respuesta HTTP 201.\n\n3. Verificaciones realizadas:\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx eslint src/app/api/general-data/api-tokens/new/route.ts`: 0 errores, 0 warnings (verificado línea por línea).\n- `npx vitest run`: 25 suites pasadas (281/281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T03:55:25.421Z",
+              "event": "needs_rework",
+              "notes": "Casi perfecto - el fix de seguridad IDOR (auth.api.getSession) quedo intacto con su comentario, y el resto del tipado (CreateApiTokenRequestBody, CreatedApiTokenData, el cast IUser[\"apiTokens\"][number] para el push) esta correcto. Pero encontre 1 problema real: cambiaste `const { name } = await request.json();` a `const { name } = ((await request.json()) || {}) as CreateApiTokenRequestBody;` - agregaste un fallback `|| {}` que no estaba en el original. Probe esto especificamente con un archivo scratch de tsc: castear directamente `(await request.json()) as CreateApiTokenRequestBody` sin el `|| {}` compila sin ningun error, con o sin strict. El compilador NO te obligo a este cambio. Es un cambio de comportamiento real: si el body llega null/vacio, el original lanza un TypeError nativo al destructurar de null (capturado igual por el catch de la funcion), pero tu version en cambio cae en el `if (!name)` y lanza un Error con mensaje distinto (\"A name is required...\") en vez del TypeError original. Por regla, no se cambian comportamientos aunque parezcan mejoras. Quita el `|| {}` y deja `const { name } = (await request.json()) as CreateApiTokenRequestBody;` exactamente equivalente al original pero tipado. Todo lo demas del archivo esta correcto, no lo toques."
+            },
+            {
+              "ts": "2026-09-25T03:55:48.385Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T03:56:34.814Z",
+              "event": "submitted",
+              "notes": "Corregido el problema señalado en la revisión de rework para `src/app/api/general-data/api-tokens/new/route.ts`:\n\n1. Corrección puntual de desestructuración:\n- Se removió el fallback innecesario `|| {}`, dejando la asignación exactamente como:\n  `const { name } = (await request.json()) as CreateApiTokenRequestBody;`\n- Esto preserva de forma idéntica el comportamiento original en tiempo de ejecución (si el body llega null/vacío se produce el TypeError nativo capturado por el catch).\n\n2. Integridad de los demás componentes:\n- Se preservaron intactas las interfaces `CreateApiTokenRequestBody`, `CreatedApiTokenData`, `CreateApiTokenSuccessResponse` y `CreateApiTokenResponse`.\n- Se mantuvo íntegro el fix de seguridad IDOR con `auth.api.getSession({ headers: request.headers })` y sus comentarios documentales.\n- Se mantuvo el cast seguro de subdocumentos para `IUser[\"apiTokens\"][number]`.\n\n3. Verificaciones de calidad:\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx eslint src/app/api/general-data/api-tokens/new/route.ts`: 0 errores / 0 warnings.\n- `npx vitest run`: 25 suites pasadas (281/281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T03:57:00.644Z",
+              "event": "approved",
+              "notes": "Aprobado tras 1 ronda de rework. El fallback || {} no forzado por el compilador (verificado con test aislado de tsc) fue removido correctamente, quedando const { name } = (await request.json()) as CreateApiTokenRequestBody; identico al original en comportamiento. Fix de seguridad IDOR intacto con su comentario. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/api-tokens/remove/route.js": {
           "status": "pending",

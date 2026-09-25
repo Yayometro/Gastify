@@ -1,13 +1,35 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
-import User from "@/model/User";
+import User, { type IUser } from "@/model/User";
 import { generateApiToken } from "@/lib/auth/apiTokens";
 import { auth } from "@/lib/auth/betterAuth";
 
-export async function POST(request) {
+export interface CreateApiTokenRequestBody {
+  name: string;
+  mail?: string;
+  [key: string]: unknown;
+}
+
+export interface CreatedApiTokenData {
+  token: string;
+  name: string;
+}
+
+export interface CreateApiTokenSuccessResponse {
+  message: string;
+  data: CreatedApiTokenData;
+  status: number;
+  ok: boolean;
+}
+
+export type CreateApiTokenResponse = CreateApiTokenSuccessResponse;
+
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<CreateApiTokenResponse>> {
   try {
     if (!request) throw new Error("No data in request on API-TOKENS NEW POST");
-    const { name } = await request.json();
+    const { name } = (await request.json()) as CreateApiTokenRequestBody;
     if (!name) throw new Error("A name is required to create an API token");
     // Security fix: this used to trust whatever `mail` the client sent in
     // the body, letting ANY authenticated caller mint a full-access API
@@ -26,7 +48,7 @@ export async function POST(request) {
     if (!user) throw new Error("User not found on API-TOKENS NEW POST");
 
     const { token, tokenHash } = generateApiToken();
-    user.apiTokens.push({ name, tokenHash });
+    user.apiTokens.push({ name, tokenHash } as unknown as IUser["apiTokens"][number]);
     await user.save();
 
     return NextResponse.json({
