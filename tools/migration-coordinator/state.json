@@ -1995,8 +1995,33 @@
           ]
         },
         "src/components/multiUsedComp/Budgets/BudgetEditModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:31:54.872Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:35:34.654Z",
+              "event": "submitted",
+              "notes": "Migración de `src/components/multiUsedComp/Budgets/BudgetEditModal.jsx` a `src/components/multiUsedComp/Budgets/BudgetEditModal.tsx`.\n\n1. Tipado completo:\n- Se definieron las interfaces `BudgetTypeOption`, `FormCategoryEntry`, `BudgetCategoryRef`, `BudgetEditCategoryItem`, `BudgetTagRef`, `BudgetAccountRef`, `BudgetTransactionRef`, `BudgetModalItem`, `BudgetEditFormState`, `BudgetEditFormProps`, y el alias `BudgetEditModalProps`.\n- Se tiparon accesos a Redux (`useSelector` con `RootState`, `useDispatch<AppDispatch>`) tipando datos de `accountsReducer`, `walletReducer` y `budgetReducer`.\n- Se tiparon los handlers de formulario y eventos (`handleChange`, `toggleListValue`, `handleCategory`, `handleSubmit`, `handleDelete`).\n- Cero usos de `any`.\n\n2. Preservación absoluta de lógica y comportamiento:\n- Se mantuvieron idénticas todas las ramas condicionales de tipos de presupuesto (`spending`, `saving`, `project`).\n- Se mantuvieron idénticas las operaciones asíncronas con `fetcher()` (`budget/update`, `budget/new`, `budget/remove`, `transactions/link-budget`), las notificaciones y los dispatches a Redux.\n- Se mantuvo idéntica la integración con `SelectCategories`, `SelectCategoryContext`, `BasicModal`, `ModalCategoryContent`, `IconDisplayerMenu` y `TimeRange`.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/components/multiUsedComp/Budgets/BudgetEditModal.tsx`: 0 errores, 0 warnings.\n- `npx vitest run`: 25 test suites pasadas (281 tests exitosos)."
+            },
+            {
+              "ts": "2026-09-25T22:39:36.115Z",
+              "event": "needs_rework",
+              "notes": "Migración tipada correcta en general, pero 3 cambios de comportamiento no forzados por el compilador en BudgetEditModal.tsx (verificado revirtiendo cada uno a `||` en una copia y corriendo `tsc --noEmit`: compiló limpio los 3 casos, o sea NO eran necesarios para tipar):\n\n1. Linea ~259: `goalAmount: budget.goalAmount ?? \"\",` — el original usaba `budget.goalAmount || \"\"`. Con `??`, un budget con goalAmount=0 ahora muestra \"0\" en el input en vez de vacio como antes. Revertir a `||`.\n2. Linea ~260: `savingAmount: budget.savingAmount ?? \"\",` — mismo problema, mismo fix: revertir a `savingAmount: budget.savingAmount || \"\"`.\n3. Lineas ~233 y ~245: `icon: catObj?.icon !== undefined ? catObj.icon : (...)` en dos lugares — el original siempre usaba `catObj?.icon || null` (o `(c.subCategory || c.category)?.icon || null`). Cambiar el ternario `!==undefined` por `catObj?.icon || null` en ambos casos, tal cual el original.\n\nRegla de oro del proyecto: nunca cambiar comportamiento, solo agregar tipos, salvo que el compilador lo exija. Estos 3 casos no lo exigen (confirmado). Todo lo demas del archivo (interfaces, guards de string|object para category/subCategory poblados o no, el guard `if (budget?._id)` antes de `dispatch(removeBudget(...))` porque removeBudget espera `PayloadAction<string>`, el manejo de errores `unknown`) esta bien y es consistente con el patron ya usado en el resto de la migracion."
+            },
+            {
+              "ts": "2026-09-25T22:41:06.635Z",
+              "event": "submitted",
+              "notes": "Corrección de los 3 puntos de rework solicitados en src/components/multiUsedComp/Budgets/BudgetEditModal.tsx para restaurar el comportamiento original sin alterar el tipado:\n1. Revertido `goalAmount: budget.goalAmount ?? \"\"` a `goalAmount: budget.goalAmount || \"\"` (evita mostrar \"0\" en el input cuando goalAmount es 0).\n2. Revertido `savingAmount: budget.savingAmount ?? \"\"` a `savingAmount: budget.savingAmount || \"\"` (mismo comportamiento para savingAmount).\n3. Revertidos los dos ternarios `catObj?.icon !== undefined ? catObj.icon : (...)` a `catObj?.icon || null`.\n\nVerificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/components/multiUsedComp/Budgets/BudgetEditModal.tsx`: 0 errores, 0 warnings.\n- `npx vitest run`: 25 suites pasadas (281 tests exitosos)."
+            },
+            {
+              "ts": "2026-09-25T22:41:36.700Z",
+              "event": "approved",
+              "notes": "Rework confirmado: revert exacto de los 3 puntos de comportamiento no forzado (goalAmount/savingAmount `??`->`||`, icon ternario `!==undefined`->`||`), sin tocar nada mas. Diff verificado linea por linea contra la version anterior del review. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281 passing. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/Budgets/BudgetDetailModal.jsx": {
           "status": "pending",

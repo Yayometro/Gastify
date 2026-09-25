@@ -9,22 +9,35 @@ import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import IconDisplayerMenu from "../IconDisplayerMenu";
 import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
-import { SelectCategoryContext } from "@/components/categories/SelectCategoryProvider/SelectCategoryProvider";
+import {
+  SelectCategoryContext,
+  type CategoryItem,
+} from "@/components/categories/SelectCategoryProvider/SelectCategoryProvider";
 import BtnSelectCategoryContext from "@/components/buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalCategoryContent from "@/components/modals/contents/selectCategory/ModalCategoryContent";
 import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
-import { addNewBudget, updateBudget, removeBudget } from "@/lib/features/budgetSlice";
-import { updateTransaction } from "@/lib/features/transacctionsSlice";
+import { addNewBudget, updateBudget, removeBudget, type BudgetData } from "@/lib/features/budgetSlice";
+import { updateTransaction, type TransactionData } from "@/lib/features/transacctionsSlice";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { findCoverageConflicts } from "@/helpers/transformers/budgetCoverage";
 import { BUDGET_TYPES, getBudgetType } from "@/helpers/transformers/budgetTypes";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@/lib/money/currencies";
+import type { RootState, AppDispatch } from "@/lib/store";
+import type { WalletData } from "@/lib/features/walletSlice";
+import type { AccountData } from "@/lib/features/accountsSlice";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
-const typeOptions = [
+export interface BudgetTypeOption {
+  value: string;
+  title: string;
+  copy: string;
+  icon: string;
+}
+
+const typeOptions: BudgetTypeOption[] = [
   { value: BUDGET_TYPES.SPENDING, title: "Spending", copy: "A recurring limit for categories", icon: "md/MdAccountBalanceWallet" },
   { value: BUDGET_TYPES.SAVING, title: "Saving", copy: "Track progress toward a savings goal", icon: "fa/FaPiggyBank" },
   { value: BUDGET_TYPES.PROJECT, title: "Project", copy: "A one-time plan made of specific movements", icon: "md/MdFlightTakeoff" },
@@ -32,45 +45,168 @@ const typeOptions = [
 
 const DEFAULT_PROJECT_ICON = "md/MdFlightTakeoff";
 
-const dateInputValue = (value) => {
+const dateInputValue = (value?: string | Date | null): string => {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 10);
 };
 
-const localDateFromInput = (value) => {
+const localDateFromInput = (value?: string | null): Date | null => {
   if (!value) return null;
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day, 12, 0, 0);
 };
 
-const inputValueFromLocalDate = (value) => {
+const inputValueFromLocalDate = (value?: Date | null): string => {
   if (!value || Number.isNaN(value.getTime())) return "";
-  const pad = (part) => String(part).padStart(2, "0");
+  const pad = (part: number): string => String(part).padStart(2, "0");
   return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
 };
 
-function BudgetEditForm({ mode, budget, onClose, onBack }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [form, setForm] = useState({
-    name: "", goalAmount: "", savingAmount: "", budgetType: BUDGET_TYPES.SPENDING,
-    category: "", subCategory: "", period: "monthly", categories: [], linkedAccounts: [],
-    eventStartDate: "", eventEndDate: "", linkedTags: [],
-    icon: DEFAULT_PROJECT_ICON, currency: "MXN",
+export interface FormCategoryEntry {
+  category: string;
+  subCategory: string;
+  name?: string;
+  color?: string;
+  icon?: string | null;
+}
+
+export interface BudgetCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string | null;
+  isSub?: boolean;
+  fatherCategory?: string | BudgetCategoryRef | null;
+  [key: string]: unknown;
+}
+
+export interface BudgetEditCategoryItem {
+  category?: string | BudgetCategoryRef | null;
+  subCategory?: string | BudgetCategoryRef | null;
+  name?: string;
+  color?: string;
+  icon?: string | null;
+  [key: string]: unknown;
+}
+
+export interface BudgetTagRef {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface BudgetAccountRef {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface BudgetTransactionRef {
+  _id?: string;
+  isBill?: boolean;
+  tags?: BudgetTagRef[];
+  budget?: string | { _id?: string } | null;
+  [key: string]: unknown;
+}
+
+export interface BudgetModalItem {
+  _id?: string;
+  name?: string;
+  goalAmount?: number | string;
+  savingAmount?: number | string;
+  budgetType?: string;
+  isSaving?: boolean;
+  period?: "monthly" | "quarterly" | "biannual" | "yearly" | string;
+  category?: string | BudgetCategoryRef | null;
+  subCategory?: string | BudgetCategoryRef | null;
+  categories?: BudgetEditCategoryItem[];
+  linkedAccounts?: (string | BudgetAccountRef)[];
+  eventStartDate?: Date | string | null;
+  eventEndDate?: Date | string | null;
+  linkedTags?: (string | BudgetTagRef)[];
+  icon?: string;
+  currency?: string;
+  pendingCategory?: FormCategoryEntry;
+  draftCategories?: FormCategoryEntry[];
+  draftName?: string;
+  draftBudgetType?: string;
+  draftLinkedTags?: (string | BudgetTagRef)[];
+  draftIcon?: string;
+  draftTransactions?: BudgetTransactionRef[];
+  user?: string | unknown;
+  wallet?: string | unknown;
+  referenceSpent?: number | string;
+  [key: string]: unknown;
+}
+
+export interface BudgetEditFormState {
+  name: string;
+  goalAmount: number | string;
+  savingAmount: number | string;
+  budgetType: string;
+  category: string;
+  subCategory: string;
+  period: "monthly" | "quarterly" | "biannual" | "yearly" | string;
+  categories: FormCategoryEntry[];
+  linkedAccounts: string[];
+  eventStartDate: string;
+  eventEndDate: string;
+  linkedTags: string[];
+  icon: string;
+  currency: string;
+}
+
+export type BudgetEditModalMode = "creation" | "edition" | string;
+
+export interface BudgetEditFormProps {
+  mode: BudgetEditModalMode;
+  budget?: BudgetModalItem | null;
+  onClose: () => void;
+  onBack?: (() => void) | null;
+}
+
+export type BudgetEditModalProps = BudgetEditFormProps;
+
+interface ProviderData {
+  transacciones?: BudgetTransactionRef[];
+  wallet?: { primaryCurrency?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps): React.JSX.Element {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [form, setForm] = useState<BudgetEditFormState>({
+    name: "",
+    goalAmount: "",
+    savingAmount: "",
+    budgetType: BUDGET_TYPES.SPENDING,
+    category: "",
+    subCategory: "",
+    period: "monthly",
+    categories: [],
+    linkedAccounts: [],
+    eventStartDate: "",
+    eventEndDate: "",
+    linkedTags: [],
+    icon: DEFAULT_PROJECT_ICON,
+    currency: "MXN",
   });
-  const [isIconMenuOpen, setIsIconMenuOpen] = useState(false);
+  const [isIconMenuOpen, setIsIconMenuOpen] = useState<boolean>(false);
   const toFetch = fetcher();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { close, handleClose } = useModal();
   const { setItemSelected } = useContext(SelectCategoryContext);
-  const { transacciones = [], wallet } = useGetDataFromProvider();
-  const ccAccounts = useSelector((state) => state.accountsReducer?.data || []);
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
-  const ccBudgets = useSelector((state) => state.budgetReducer?.data || []);
+  const { transacciones = [], wallet } = useGetDataFromProvider() as ProviderData;
+  const ccAccounts = useSelector((state: RootState) => (state.accountsReducer?.data || []) as AccountData[]);
+  const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
+  const ccBudgets = useSelector((state: RootState) => (state.budgetReducer?.data || []) as BudgetData[]);
 
   const availableTags = useMemo(() => {
-    const tags = new Map();
+    const tags = new Map<string, BudgetTagRef>();
     transacciones.forEach((transaction) => (transaction.tags || []).forEach((tag) => {
       if (tag?._id) tags.set(String(tag._id), tag);
     }));
@@ -81,48 +217,83 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
 
   useEffect(() => {
     if (mode === "edition" && budget) {
-      let initialCategories = [];
+      let initialCategories: FormCategoryEntry[] = [];
       if (Array.isArray(budget.categories) && budget.categories.length) {
-        initialCategories = budget.categories.map((c) => ({
-          category: c.category?._id || c.category || "",
-          subCategory: c.subCategory?._id || c.subCategory || "",
-          name: (c.subCategory || c.category)?.name || "Category",
-          color: (c.subCategory || c.category)?.color || "#DADADA",
-          icon: (c.subCategory || c.category)?.icon || null,
-        }));
+        initialCategories = budget.categories.map((c) => {
+          const categoryRef = typeof c.category === "object" && c.category !== null ? (c.category as BudgetCategoryRef) : null;
+          const subCategoryRef = typeof c.subCategory === "object" && c.subCategory !== null ? (c.subCategory as BudgetCategoryRef) : null;
+          const categoryId = categoryRef?._id || (typeof c.category === "string" ? c.category : "") || "";
+          const subCategoryId = subCategoryRef?._id || (typeof c.subCategory === "string" ? c.subCategory : "") || "";
+          const catObj = subCategoryRef || categoryRef;
+          return {
+            category: categoryId,
+            subCategory: subCategoryId,
+            name: catObj?.name || (c.name as string) || "Category",
+            color: catObj?.color || (c.color as string) || "#DADADA",
+            icon: catObj?.icon || null,
+          };
+        });
       } else if (budget.subCategory || budget.category) {
-        const catObj = budget.subCategory || budget.category;
+        const subCategoryRef = typeof budget.subCategory === "object" && budget.subCategory !== null ? (budget.subCategory as BudgetCategoryRef) : null;
+        const categoryRef = typeof budget.category === "object" && budget.category !== null ? (budget.category as BudgetCategoryRef) : null;
+        const catObj = subCategoryRef || categoryRef;
         initialCategories = [{
-          category: budget.category?._id || budget.category || "",
-          subCategory: budget.subCategory?._id || budget.subCategory || "",
-          name: catObj?.name || "Category", color: catObj?.color || "#DADADA", icon: catObj?.icon || null,
+          category: categoryRef?._id || (typeof budget.category === "string" ? budget.category : "") || "",
+          subCategory: subCategoryRef?._id || (typeof budget.subCategory === "string" ? budget.subCategory : "") || "",
+          name: catObj?.name || "Category",
+          color: catObj?.color || "#DADADA",
+          icon: catObj?.icon || null,
         }];
       }
       if (budget.pendingCategory) initialCategories.push(budget.pendingCategory);
+
+      const categoryId = typeof budget.category === "string"
+        ? budget.category
+        : (budget.category && typeof budget.category === "object" && "_id" in budget.category ? String(budget.category._id || "") : "");
+      const subCategoryId = typeof budget.subCategory === "string"
+        ? budget.subCategory
+        : (budget.subCategory && typeof budget.subCategory === "object" && "_id" in budget.subCategory ? String(budget.subCategory._id || "") : "");
+
       setForm({
-        name: budget.name || "", goalAmount: budget.goalAmount || "", savingAmount: budget.savingAmount || "",
-        budgetType: getBudgetType(budget), category: budget.category?._id || budget.category || "",
-        subCategory: budget.subCategory?._id || budget.subCategory || "", period: budget.period || "monthly",
+        name: budget.name || "",
+        goalAmount: budget.goalAmount || "",
+        savingAmount: budget.savingAmount || "",
+        budgetType: getBudgetType(budget),
+        category: categoryId,
+        subCategory: subCategoryId,
+        period: budget.period || "monthly",
         categories: initialCategories,
-        linkedAccounts: (budget.linkedAccounts || []).map((a) => String(a?._id || a)),
-        eventStartDate: dateInputValue(budget.eventStartDate), eventEndDate: dateInputValue(budget.eventEndDate),
-        linkedTags: (budget.linkedTags || []).map((tag) => String(tag?._id || tag)),
+        linkedAccounts: (budget.linkedAccounts || []).map((a) => String((typeof a === "object" && a !== null && "_id" in a ? a._id : a) || "")),
+        eventStartDate: dateInputValue(budget.eventStartDate),
+        eventEndDate: dateInputValue(budget.eventEndDate),
+        linkedTags: (budget.linkedTags || []).map((tag) => String((typeof tag === "object" && tag !== null && "_id" in tag ? tag._id : tag) || "")),
         icon: budget.icon || DEFAULT_PROJECT_ICON,
         currency: budget.currency || wallet?.primaryCurrency || "MXN",
       });
-      setItemSelected(budget.subCategory || budget.category || null);
+      if (setItemSelected) {
+        setItemSelected(budget.subCategory || budget.category || null);
+      }
     } else if (mode === "creation") {
       const draftCategories = Array.isArray(budget?.draftCategories) ? budget.draftCategories : [];
       setForm({
-        name: budget?.draftName || "", goalAmount: "", savingAmount: "",
+        name: budget?.draftName || "",
+        goalAmount: "",
+        savingAmount: "",
         budgetType: budget?.draftBudgetType || BUDGET_TYPES.SPENDING,
-        category: draftCategories[0]?.category || "", subCategory: draftCategories[0]?.subCategory || "",
-        period: "monthly", categories: draftCategories, linkedAccounts: [], eventStartDate: "", eventEndDate: "",
-        linkedTags: (budget?.draftLinkedTags || []).map((tag) => String(tag?._id || tag)),
+        category: draftCategories[0]?.category || "",
+        subCategory: draftCategories[0]?.subCategory || "",
+        period: "monthly",
+        categories: draftCategories,
+        linkedAccounts: [],
+        eventStartDate: "",
+        eventEndDate: "",
+        linkedTags: (budget?.draftLinkedTags || []).map((tag) => String((typeof tag === "object" && tag !== null && "_id" in tag ? tag._id : tag) || "")),
         icon: budget?.draftIcon || DEFAULT_PROJECT_ICON,
         currency: wallet?.primaryCurrency || "MXN",
       });
-      setItemSelected(null);
+      if (setItemSelected) {
+        setItemSelected(null);
+      }
     }
   }, [mode, budget, setItemSelected, wallet]);
 
@@ -130,29 +301,35 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
     ? findCoverageConflicts(form.categories, ccBudgets, mode === "edition" ? budget?._id : null)
     : [], [form.budgetType, form.categories, ccBudgets, mode, budget?._id]);
 
-  const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  const toggleListValue = (field, value) => setForm((prev) => ({
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const toggleListValue = (field: "linkedAccounts" | "linkedTags", value: string | unknown) => setForm((prev) => ({
     ...prev,
     [field]: prev[field].some((id) => String(id) === String(value))
       ? prev[field].filter((id) => String(id) !== String(value))
       : [...prev[field], String(value)],
   }));
 
-  const handleCategory = (cat) => {
-    const fatherId = cat.isSub ? cat.fatherCategory?._id || cat.fatherCategory : null;
-    const entry = fatherId
-      ? { subCategory: cat._id, category: fatherId, name: cat.name, color: cat.color, icon: cat.icon }
-      : { category: cat._id, subCategory: "", name: cat.name, color: cat.color, icon: cat.icon };
+  const handleCategory = (cat: CategoryItem | BudgetCategoryRef | unknown) => {
+    const categoryItem = cat as (CategoryItem & BudgetCategoryRef) | null | undefined;
+    if (!categoryItem) return;
+    const fatherId = categoryItem.isSub
+      ? (typeof categoryItem.fatherCategory === "object" && categoryItem.fatherCategory !== null && "_id" in categoryItem.fatherCategory
+          ? (categoryItem.fatherCategory as BudgetCategoryRef)._id
+          : categoryItem.fatherCategory) || null
+      : null;
+    const entry: FormCategoryEntry = fatherId
+      ? { subCategory: String(categoryItem._id || ""), category: String(fatherId), name: categoryItem.name, color: categoryItem.color, icon: categoryItem.icon }
+      : { category: String(categoryItem._id || ""), subCategory: "", name: categoryItem.name, color: categoryItem.color, icon: categoryItem.icon };
     setForm((prev) => {
       const exists = prev.categories.some((c) => fatherId
-        ? String(c.subCategory) === String(cat._id)
-        : String(c.category) === String(cat._id) && !c.subCategory);
+        ? String(c.subCategory) === String(categoryItem._id)
+        : String(c.category) === String(categoryItem._id) && !c.subCategory);
       const categories = exists ? prev.categories : [...prev.categories, entry];
       return { ...prev, categories, category: categories[0]?.category || "", subCategory: categories[0]?.subCategory || "" };
     });
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       setIsLoading(true);
@@ -160,8 +337,12 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
       const isSaving = form.budgetType === BUDGET_TYPES.SAVING;
       const isProject = form.budgetType === BUDGET_TYPES.PROJECT;
       const payload = {
-        name: form.name, goalAmount: Number(form.goalAmount), savingAmount: isSaving ? Number(form.savingAmount) || 0 : 0,
-        budgetType: form.budgetType, isSaving, period: isSpending ? form.period : "monthly",
+        name: form.name,
+        goalAmount: Number(form.goalAmount),
+        savingAmount: isSaving ? Number(form.savingAmount) || 0 : 0,
+        budgetType: form.budgetType,
+        isSaving,
+        period: isSpending ? form.period : "monthly",
         category: isSpending ? form.categories[0]?.category || null : null,
         subCategory: isSpending ? form.categories[0]?.subCategory || null : null,
         categories: isSpending ? form.categories.map((c) => ({ category: c.category || null, subCategory: c.subCategory || null })) : [],
@@ -173,7 +354,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
         currency: form.currency || "MXN",
       };
       const res = mode === "edition"
-        ? await toFetch.post("general-data/budget/update", { ...payload, id: budget._id })
+        ? await toFetch.post("general-data/budget/update", { ...payload, id: budget?._id })
         : await toFetch.post("general-data/budget/new", { ...payload, user: budget?.user, wallet: budget?.wallet });
 
       if (!res.ok || !res.data) throw new Error(res.message || "Operation failed 🤕");
@@ -184,12 +365,13 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
         const linked = await Promise.all(budget.draftTransactions.map((transaction) =>
           toFetch.post("general-data/transactions/link-budget", { transactionId: transaction._id, budgetId: res.data._id })
         ));
-        linked.filter((item) => item.ok && item.data).forEach((item) => dispatch(updateTransaction(item.data)));
+        linked.filter((item: { ok?: boolean; data?: TransactionData }) => item.ok && item.data).forEach((item: { data?: TransactionData }) => dispatch(updateTransaction(item.data as TransactionData)));
       }
       runNotify("ok", res.message);
       onClose();
-    } catch (err) {
-      runNotify("error", err?.message || String(err));
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : typeof err === "object" && err !== null && "message" in err ? String((err as { message: unknown }).message) : String(err);
+      runNotify("error", errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -198,19 +380,27 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      const res = await toFetch.post("general-data/budget/remove", { id: budget._id });
+      const res = await toFetch.post("general-data/budget/remove", { id: budget?._id });
       if (!res.ok) throw new Error(res.message || "Could not delete budget");
-      dispatch(removeBudget(budget._id));
+      if (budget?._id) dispatch(removeBudget(budget._id));
       if (getBudgetType(budget) === BUDGET_TYPES.PROJECT) {
         transacciones
-          .filter((transaction) => String(transaction.budget?._id || transaction.budget || "") === String(budget._id))
+          .filter((transaction) => {
+            const transBudgetId = typeof transaction.budget === "object" && transaction.budget !== null && "_id" in transaction.budget
+              ? (transaction.budget as { _id?: string })._id
+              : transaction.budget;
+            return String(transBudgetId || "") === String(budget?._id);
+          })
           .forEach((transaction) => dispatch(updateTransaction({ ...transaction, budget: null })));
       }
       runNotify("ok", res.message);
       onClose();
-    } catch (err) {
-      runNotify("error", err?.message || String(err));
-    } finally { setIsLoading(false); }
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : typeof err === "object" && err !== null && "message" in err ? String((err as { message: unknown }).message) : String(err);
+      runNotify("error", errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isProject = form.budgetType === BUDGET_TYPES.PROJECT;
@@ -229,7 +419,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
         <form onSubmit={handleSubmit} className="form-trans-edit flex flex-col gap-3">
           <p className="label-tfp">Name</p>
           <input type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? "e.g. Japan 2027" : "Budget name"} required className="w-full" />
-          {mode === "creation" && Number(budget?.referenceSpent) > 0 && <p className="text-xs text-amber-400 bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2">You already spent <strong>{usdFormatChanger(budget.referenceSpent)}</strong>. The linked movements will count toward this project.</p>}
+          {mode === "creation" && Number(budget?.referenceSpent) > 0 && <p className="text-xs text-amber-400 bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2">You already spent <strong>{usdFormatChanger(budget?.referenceSpent)}</strong>. The linked movements will count toward this project.</p>}
 
           <p className="label-tfp mt-1">Type</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -249,9 +439,9 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
                 onChange={handleChange}
                 className="h-10 shrink-0 bg-gf-accent-soft-bg border border-purple-300 text-purple-300 text-xs font-semibold rounded-full px-3 cursor-pointer outline-none"
               >
-                {SUPPORTED_CURRENCIES.map((code) => (
+                {SUPPORTED_CURRENCIES.map((code: string) => (
                   <option key={code} value={code}>
-                    {code} ({CURRENCY_META[code].symbol})
+                    {code} ({(CURRENCY_META as Record<string, { symbol: string }>)[code]?.symbol || "$"})
                   </option>
                 ))}
               </select>
@@ -283,7 +473,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
               </button>
               <IconDisplayerMenu
                 idmActive={isIconMenuOpen}
-                idmIcon={(icon) => setForm((prev) => ({ ...prev, icon }))}
+                idmIcon={(icon: string) => setForm((prev) => ({ ...prev, icon }))}
                 idmClose={setIsIconMenuOpen}
               />
             </div>
@@ -312,7 +502,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
             <select name="period" value={form.period} onChange={handleChange} className="etm-selector bg-gf-surface"><option value="monthly">Monthly</option><option value="quarterly">Quarterly (3 months)</option><option value="biannual">Biannual (6 months)</option><option value="yearly">Yearly (12 months)</option></select>
             <p className="label-tfp mt-1">Categories ({form.categories.length})</p>
             {!!form.categories.length && <div className="flex flex-wrap gap-1.5">{form.categories.map((c, index) => <div key={`${c.category}:${c.subCategory}:${index}`} className="flex items-center gap-1 bg-gf-accent-soft-bg text-purple-300 rounded-full px-2.5 py-1 text-xs"><span>{c.name}</span><button type="button" onClick={() => setForm((prev) => ({ ...prev, categories: prev.categories.filter((_, i) => i !== index) }))}>×</button></div>)}</div>}
-            {!!categoryConflicts.length && <div className="bg-amber-500/15 border border-amber-300 text-amber-400 rounded-2xl px-3 py-2 text-xs"><p className="font-bold">This coverage already exists</p><p>Also covered by {categoryConflicts.map((item) => item.name || "Unnamed budget").join(", ")}.</p></div>}
+            {!!categoryConflicts.length && <div className="bg-amber-500/15 border border-amber-300 text-amber-400 rounded-2xl px-3 py-2 text-xs"><p className="font-bold">This coverage already exists</p><p>Also covered by {(categoryConflicts as BudgetData[]).map((item) => item.name || "Unnamed budget").join(", ")}.</p></div>}
             <BtnSelectCategoryContext onClose={handleClose} />
             {close && <BasicModal close={handleClose} renderContent={<ModalCategoryContent close={handleClose} getSelected={handleCategory} />} />}
           </>}
@@ -325,6 +515,6 @@ function BudgetEditForm({ mode, budget, onClose, onBack }) {
   } />;
 }
 
-export default function BudgetEditModal(props) {
+export default function BudgetEditModal(props: BudgetEditModalProps): React.JSX.Element {
   return <SelectCategories><BudgetEditForm {...props} /></SelectCategories>;
 }
