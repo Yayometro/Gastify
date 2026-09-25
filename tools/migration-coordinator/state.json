@@ -2110,8 +2110,23 @@
           ]
         },
         "src/app/dashboard/budgets/page.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:04:45.537Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:05:47.480Z",
+              "event": "submitted",
+              "notes": "Migrado src/app/dashboard/budgets/page.jsx a src/app/dashboard/budgets/page.tsx. Se tipó la función asíncrona del server component page con tipo de retorno explícito Promise<React.JSX.Element>, validando la sesión de auth y pasando mcSession={sesion.user.email} al componente BudgetsClient (que ya exporta BudgetsClientProps). Comportamiento en runtime idéntico, sin uso de any. npx tsc --noEmit pasó sin errores, npx eslint pasó limpio sin advertencias ni errores, y npx vitest run pasó los 281 tests en 25 archivos."
+            },
+            {
+              "ts": "2026-09-25T23:06:16.661Z",
+              "event": "approved",
+              "notes": "Trivial y limpio: unico cambio es la anotacion de retorno Promise<React.JSX.Element>. Logica identica, ya tenia getSession/redirect correcto (era pagina protegida, no ruta API). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado. Historia 7 (Budgets) completa: 12/12."
+            }
+          ]
         }
       }
     }
