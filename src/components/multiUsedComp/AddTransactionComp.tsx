@@ -1,19 +1,19 @@
 "use client";
 
-import { useContext, useEffect, useState } from "react";
-import dayjs from "dayjs";
+import React, { useContext, useEffect, useState } from "react";
+import dayjs, { type Dayjs } from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
-import { Switch } from "antd";
-import {  ConfigProvider, Space, Spin } from "antd";
+import { Switch, ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/lib/store";
 import runNotify from "@/helpers/gastifyNotifier";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
-import { addNewTransacction } from "@/lib/features/transacctionsSlice";
+import { addNewTransacction, type TransactionData } from "@/lib/features/transacctionsSlice";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "../modals/basicModal/BasicModal";
@@ -26,10 +26,91 @@ import AmountEquivalentPreview from "./AmountEquivalentPreview";
 import ChargedElsewhereSection from "./ChargedElsewhereSection";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 
-function AddTransactionComp({ initialBudgetId = "", onCreated }) {
+export interface AddTransactionCompProps {
+  initialBudgetId?: string;
+  onCreated?: (data?: TransactionData | unknown) => void;
+}
+
+export interface TransactionFormState {
+  name: string;
+  amount: string;
+  isIncome: boolean;
+  isBill: boolean;
+  isReadable: boolean;
+  isForSaving: boolean;
+  date: Date;
+  account: string | null;
+  category: string;
+  subCategory: string;
+  tags: string;
+  budget: string;
+  user: string;
+  wallet: string;
+  [key: string]: unknown;
+}
+
+interface UserData {
+  _id?: string;
+  wallet?: string;
+  [key: string]: unknown;
+}
+
+interface WalletData {
+  primaryCurrency?: string;
+  [key: string]: unknown;
+}
+
+interface AccountItem {
+  _id?: string;
+  name?: string;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+interface BudgetItem {
+  _id?: string;
+  name?: string;
+  archived?: boolean;
+  budgetType?: string;
+  isSaving?: boolean;
+  [key: string]: unknown;
+}
+
+interface ProviderData {
+  user?: UserData | null;
+  wallet?: WalletData | null;
+  accounts?: AccountItem[];
+  budgets?: BudgetItem[];
+  [key: string]: unknown;
+}
+
+export interface CategorySelection {
+  _id?: string;
+  name?: string;
+  fatherCategory?: { _id?: string; [key: string]: unknown } | string | null;
+  [key: string]: unknown;
+}
+
+const TypedAmountEquivalentPreview = AmountEquivalentPreview as React.ComponentType<{
+  quote?: unknown;
+  [key: string]: unknown;
+}>;
+
+const TypedChargedElsewhereSection = ChargedElsewhereSection as React.ComponentType<{
+  enabled?: boolean;
+  onToggle?: (checked: boolean) => void;
+  merchantAmount?: string;
+  merchantCurrency?: string;
+  onMerchantAmountChange?: (value: string) => void;
+  onMerchantCurrencyChange?: (value: string) => void;
+  quoting?: boolean;
+  [key: string]: unknown;
+}>;
+
+function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionCompProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
-  let [transactionInfo, setTransactionInfo] = useState({
+  const [transactionInfo, setTransactionInfo] = useState<TransactionFormState>({
     name: "",
     amount: "",
     isIncome: false,
@@ -58,9 +139,9 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
 
   const { close, handleClose } = useModal();
   //REDUX
-  const {user, wallet, accounts, budgets = []} = useGetDataFromProvider();
+  const { user, wallet, accounts, budgets = [] } = useGetDataFromProvider() as ProviderData;
   const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   // Multi-currency: the Amount field is always in the selected Account's
   // native currency (or the Wallet's primary currency when no Account is
   // chosen) - never a second, separately-tracked currency.
@@ -73,7 +154,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
     accountCurrency,
     walletPrimaryCurrency: wallet?.primaryCurrency || "MXN",
   });
-    const {handleClean} = useContext(SelectCategoryContext)
+  const { handleClean } = useContext(SelectCategoryContext);
 
   // Auto-suggest the Account Amount from the merchant amount whenever they
   // differ in currency - debounced, and only while the user hasn't typed
@@ -101,7 +182,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
         if (!cancelled && res.ok && !amountTouchedManually) {
           setTransactionInfo((t) => ({ ...t, amount: String(minorToMajor(res.data.amountMinor, accountCurrency)) }));
         }
-      } catch (e) {
+      } catch {
         // Silently unavailable - the user can still enter the Account Amount manually.
       } finally {
         if (!cancelled) setMerchantQuoting(false);
@@ -119,20 +200,20 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
     if (user) {
       setTransactionInfo((current) => ({
         ...current,
-        user: user._id,
-        wallet: user.wallet,
+        user: (user._id as string) || "",
+        wallet: (user.wallet as string) || "",
         budget: initialBudgetId || "",
       }));
     }
   }, [user, initialBudgetId]);
   //Handlers:
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === "amount") setAmountTouchedManually(true);
     setTransactionInfo({ ...transactionInfo, [name]: value });
   };
 
-  const onChangeSwitch = (checked, typeBoolean) => {
+  const onChangeSwitch = (checked: boolean, typeBoolean: string) => {
     if (typeBoolean === "income") {
       setTransactionInfo({
         ...transactionInfo,
@@ -152,7 +233,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
       });
     }
   };
-  const handleDefAccount = (event) => {
+  const handleDefAccount = (event: React.ChangeEvent<HTMLSelectElement>) => {
     if (event.target.value === "No account") {
       setTransactionInfo({
         ...transactionInfo,
@@ -165,7 +246,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
       });
     }
   };
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     const trimmedName = transactionInfo.name.trim();
@@ -189,17 +270,17 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
         onCreated?.(response.data);
         setIsLoading(false);
         clearForm();
-        handleClean()
+        handleClean?.();
       }
     } catch (e) {
       runNotify("error", String(e));
       clearForm();
-      handleClean()
-      throw new Error(e);
+      handleClean?.();
+      throw new Error(String(e));
     }
   };
   //DATE
-  function hanleDatePickerChange(newDate) {
+  function hanleDatePickerChange(newDate: string) {
     setTransactionInfo({ ...transactionInfo, date: new Date(newDate) });
   }
   // Clear FORM
@@ -217,8 +298,8 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
       subCategory: "",
       tags: "",
       budget: initialBudgetId || "",
-      user: user._id,
-      wallet: user.wallet,
+      user: (user?._id as string) || "",
+      wallet: (user?.wallet as string) || "",
     });
     setChargedElsewhere(false);
     setMerchantAmount("");
@@ -226,8 +307,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
     setAmountTouchedManually(false);
   };
 
-
-  function handleCategory(cat) {
+  function handleCategory(cat?: CategorySelection | null) {
     if (!cat) return;
     const fatherId = cat?.fatherCategory
       ? (typeof cat.fatherCategory === "object" ? cat.fatherCategory?._id : cat.fatherCategory)
@@ -235,14 +315,14 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
     if (fatherId) {
       setTransactionInfo({
         ...transactionInfo,
-        subCategory: cat._id,
-        category: fatherId
+        subCategory: (cat._id as string) || "",
+        category: (fatherId as string) || "",
       });
     } else {
       setTransactionInfo({
         ...transactionInfo,
-        category: cat._id,
-        subCategory: ""
+        category: (cat._id as string) || "",
+        subCategory: "",
       });
     }
   }
@@ -297,8 +377,8 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               onChange={handleChange}
               placeholder="Amount"
             />
-            <AmountEquivalentPreview quote={amountEquivalent} />
-            <ChargedElsewhereSection
+            <TypedAmountEquivalentPreview quote={amountEquivalent} />
+            <TypedChargedElsewhereSection
               enabled={chargedElsewhere}
               onToggle={setChargedElsewhere}
               merchantAmount={merchantAmount}
@@ -318,7 +398,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
                     },
                   }}
                 >
-                  <Space direction="" size={12}>
+                  <Space direction={("" as unknown) as "horizontal"} size={12}>
                     <div className="switch-int-cont">
                       <p className="label-tfp ">Is Income:</p>
                       <Switch
@@ -352,9 +432,11 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
                     <MobileDateTimePicker
                       className="text-center flex items-center justify-between border-2"
                       slotProps={{ textField: { size: "small" } }}
-                      onChange={(newValue) =>
-                        hanleDatePickerChange(newValue.format())
-                      }
+                      onChange={(newValue: Dayjs | null) => {
+                        if (newValue) {
+                          hanleDatePickerChange(newValue.format());
+                        }
+                      }}
                       value={dayjs(transactionInfo?.date)}
                       sx={{
                         "& .MuiInputBase-root": {
@@ -392,7 +474,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
             <input
               type="text"
               name="tags"
-              value={transactionInfo.tags || null}
+              value={(transactionInfo.tags || null) as unknown as string}
               onChange={handleChange}
               placeholder="Tags (separated by comma)"
             />
@@ -401,11 +483,11 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }) {
               <select
                 className=" bg-transparent appearance-none w-full pr-4"
                 name="DateSelector"
-                value={transactionInfo?.account || null}
+                value={(transactionInfo?.account || null) as unknown as string}
                 onChange={handleDefAccount}
               >
-                <option value={null}>No account</option>
-                {accounts.length > 0 ? (
+                <option value={(null as unknown as string)}>No account</option>
+                {accounts && accounts.length > 0 ? (
                   accounts.map((acc) => (
                     <option value={acc._id} key={`option-acc-${acc._id}`}>
                       {acc.name}{" "}

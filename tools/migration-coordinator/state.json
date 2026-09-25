@@ -2296,8 +2296,23 @@
           ]
         },
         "src/components/multiUsedComp/AddTransactionComp.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:52:54.720Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:55:47.424Z",
+              "event": "submitted",
+              "notes": "Migrado AddTransactionComp.jsx a AddTransactionComp.tsx.\n- Definidas interfaces tipadas: AddTransactionCompProps (compatible con ProjectBudgetDetailModal.tsx y AddTransactionModal.jsx), TransactionFormState, UserData, WalletData, AccountItem, BudgetItem, ProviderData, CategorySelection.\n- Bridges tipados para componentes auxiliares: TypedAmountEquivalentPreview y TypedChargedElsewhereSection.\n- Tipado estricto para Redux (useDispatch<AppDispatch>, addNewTransacction) y Contexts (SelectCategoryContext, useGetDataFromProvider).\n- Preservación 100% fiel de comportamiento en runtime:\n  * Sin reemplazo indebido de `||` por `??` (accountCurrency, fallback de divisas, initialBudgetId, project selection).\n  * Preservado `direction={(\"\" as unknown as \"horizontal\")}` en Space de Ant Design.\n  * Preservados casts de strings/nulls en select de cuentas e inputs sin alterar el comportamiento en el DOM.\n  * Preservados nombres y lógica interna de handlers (hanleDatePickerChange, handleCategory, handleDefAccount, handleChange, onChangeSwitch, handleSubmit).\n- Verificado con `npx tsc --noEmit` (0 errores), `npx eslint src/components/multiUsedComp/AddTransactionComp.tsx` (0 errores/warnings) y `npx vitest run` (281/281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T23:57:07.294Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. `direction={(\"\" as unknown) as \"horizontal\"}` preservado correctamente para el mismo bug de Space. El `<option value={(null as unknown as string)}>No account</option>` NO es el mismo bug que el de EditMultipleTransModal - aqui el original ya usaba `value={null}` (no `\"\"`), y React omite el atributo `value` del DOM cuando es `null`, haciendo que el navegador use el texto interno \"No account\" como valor implicito, que SI coincide con el check `event.target.value === \"No account\"` del handler - confirmado que funciona correctamente, no es un bug, y el cast preserva el mismo `null` en runtime. `user._id`/`user.wallet` con fallback `|| \"\"` y optional chaining donde `user` no esta dentro de un guard `if(user)` (en clearForm) son compiler-required y no se disparan distinto en la practica. AddTransactionCompProps es compatible con el uso ya existente en ProjectBudgetDetailModal.tsx. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/ReadFileComp.jsx": {
           "status": "pending",
