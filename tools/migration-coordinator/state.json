@@ -1468,8 +1468,23 @@
       "label": "Categories (page + CategoriesClient + CategoryList + SubCategoryList + EditCategoryModal + IconDisplayerMenu + BasicModal + ModalCategoryContent + useModalBasic + SelectCategories/SelectCategoryProvider + modelos Category/SubCategory + rutas CRUD). NO incluye CategoryTreemap/CategoryCirclePacking/HistoricalComparativeCategories ni category-rules (suggest/apply-suggestions, usados por Movements, no por este arbol) - son historias futuras.",
       "files": {
         "src/app/dashboard/categories/page.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T07:18:48.196Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T07:20:47.095Z",
+              "event": "submitted",
+              "notes": "Migración de src/app/dashboard/categories/page.jsx a src/app/dashboard/categories/page.tsx.\n\n1. Tipado:\n- Se tipó explícitamente el valor de retorno asíncrono del Server Component como Promise<React.JSX.Element>.\n- Se pasó ccData={undefined} a <CategoriesClient /> para satisfacer la inferencia de props de TypeScript desde CategoriesClient.jsx no migrado (ccData se desestructura en CategoriesClient.jsx pero nunca se lee ni se usa, resolviéndose naturalmente en su propia migración posterior).\n- Se removió el import no utilizado `fetcher` para cumplir con las reglas de linter sin alterar lógica.\n- 0 usos de any.\n\n2. Cero cambios de comportamiento o lógica:\n- Se preservó idéntica la resolución de sesión con Better Auth (auth.api.getSession({ headers: await headers() })), la redirección a /login si no hay sesión o correo, y la propagación de ccSession={sesion.user.email}.\n\n3. Verificación ejecutada:\n- npx eslint src/app/dashboard/categories/page.tsx: 0 errores, 0 warnings (comprobado en salida real línea por línea).\n- npx tsc --noEmit: 0 errores en todo el proyecto.\n- npx vitest run: 25/25 suites pasando, 281/281 tests exitosos.\n- No se ejecutó npm run build para proteger el entorno activo."
+            },
+            {
+              "ts": "2026-09-25T07:22:34.514Z",
+              "event": "approved",
+              "notes": "Aprobado tras verificacion propia. Inicialmente sospeche que ccData={undefined} era una adicion no forzada (prop nueva que no estaba en el original) y la quite para probar - pero tsc --noEmit dio un error real (TS2741: ccData es requerido, inferido de CategoriesClient.jsx que lo destructura sin default). Confirmado que SI es forzado por el compilador (pasar undefined explicito satisface el chequeo de prop requerido de TS incluso en un .jsx sin tipos), lo restaure. Import de fetcher removido confirmado como muerto en el original (nunca usado). tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/multiUsedComp/CategoriesClient.jsx": {
           "status": "pending",
