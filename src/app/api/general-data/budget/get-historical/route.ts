@@ -1,15 +1,28 @@
+import { NextResponse, type NextRequest } from "next/server";
+import dbConnection from "@/app/api/dbConnection";
 import Budget from "@/model/Budget";
 import User from "@/model/User";
-import dbConnection from "@/app/api/dbConnection";
-import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/betterAuth";
+import "@/model/Category";
+import "@/model/SubCategory";
+
+export interface GetHistoricalBudgetsSuccessResponse {
+  message: string;
+  data: unknown;
+  status: number;
+  ok: boolean;
+}
+
+export type GetHistoricalBudgetsResponse = GetHistoricalBudgetsSuccessResponse;
 
 // Unlike /budget/get, this deliberately does NOT exclude archived budgets -
 // archiving a Budget only flips a display flag, it never deletes the
 // document or its history[] config log, so a historical/period-over-period
 // comparative (dashboard/history) needs every budget that was ever active
 // during the requested range, not just the ones still shown day-to-day.
-export async function POST(request) {
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<GetHistoricalBudgetsResponse>> {
   try {
     if (!request) throw new Error("No data in request on BUDGET GET-HISTORICAL POST");
     // Security fix: this used to trust whatever mail the client sent in the

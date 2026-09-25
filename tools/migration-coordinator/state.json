@@ -1957,8 +1957,23 @@
           ]
         },
         "src/app/api/general-data/budget/get-historical/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:24:57.918Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:26:49.289Z",
+              "event": "submitted",
+              "notes": "Migrado src/app/api/general-data/budget/get-historical/route.js a route.ts. Se definieron las interfaces GetHistoricalBudgetsSuccessResponse y GetHistoricalBudgetsResponse para tipar la respuesta de POST. Se tipó el parámetro request como NextRequest | Request y el retorno como Promise<NextResponse<GetHistoricalBudgetsResponse>>. Se usan directamente los modelos tipados Budget y User (con IUser y populate de category/subCategory). Se preservó intacto el fix de seguridad de sesión con auth.api.getSession y los comentarios que documentan el comportamiento intencional de no excluir presupuestos archivados. Sin uso de any. Verificado con tsc --noEmit, npx eslint (0 errores/warnings) y npx vitest run (25 archivos / 281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T22:27:23.373Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Interfaces correctas, comentario explicativo sobre no excluir budgets archivados preservado exacto. Category/SubCategory agregados como side-effect imports para el populate - no cambia comportamiento, solo hace explicito el registro de schema. Fix de seguridad intacto. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/multiUsedComp/Budgets/BudgetBarRow.jsx": {
           "status": "pending",
