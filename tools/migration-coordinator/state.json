@@ -2134,8 +2134,23 @@
       "label": "Movements/Transacciones (page + MovementsClient + Movements [1466 lineas, el mas grande de toda la migracion] + EditSingleTransModal + EditMultipleTransModal + QuickEditModal + DuplicateComparisonTable + BtnSelectCategoryContext + AddTransactionComp + ReadFileComp + CategorySuggestions [3 archivos] + modelos Transaction y Tag + 10 rutas de transactions [[id], edit-many, get-all, link-budget, new-transaction, remove-many, remove-transaction/[id], speech-add, transfer, transfer/remove] - get-transactions YA esta migrada a .ts). Aprovechar cada ruta migrada para auditar y corregir en el momento el bug de auth.api.getSession() si aplica (checklist en .mds/api-security-audit-checklist.md, grupo Transactions). NO incluye: HistoricalMovementsController/HistoricalMovementsView ni el arbol top3/ (analytics pesado de agregacion, historia futura); AddTransactionModal ni TransferExchangeModal (flujo aparte de alta rapida desde el Navbar, no parte de la pagina de Movements); UnbudgetedSpending.jsx (ya excluido en Historia 7, sigue pendiente); buildGastifyMcpServer.js (su propia historia futura de MCP tools). EditTransModal.jsx y VoiceRecognicionComponent.jsx son codigo huerfano sin importadores en todo el repo - NO se migran, son candidatos a borrar con aprobacion del usuario, igual que los huerfanos encontrados en Historia 1.",
       "files": {
         "src/app/dashboard/movements/page.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:12:06.962Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:13:03.913Z",
+              "event": "submitted",
+              "notes": "Migrado src/app/dashboard/movements/page.jsx a TypeScript (src/app/dashboard/movements/page.tsx). Se tipó la función de la página como `Promise<React.JSX.Element>`, se eliminó el import no utilizado `fetcher`, se preservó intacto el chequeo de sesión con `auth.api.getSession({ headers: await headers() })` y redirección a `/login`, y se pasó `mcData={undefined}` para satisfacer los tipos de TypeScript con MovementsClient.jsx aún no migrado. Verificaciones: `npx tsc --noEmit` limpio (0 errores), `npx eslint src/app/dashboard/movements/page.tsx` limpio (0 errores/warnings), y suite de pruebas `npx vitest run` pasada al 100% (25 archivos, 281 tests). Sin cambios de comportamiento ni lógica."
+            },
+            {
+              "ts": "2026-09-25T23:13:55.761Z",
+              "event": "approved",
+              "notes": "Limpio. Unico cambio no trivial es `mcData={undefined}` agregado al render de MovementsClient - verificado quitandolo y corriendo tsc: da TS2741 (mismo patron ya confirmado antes con `ccData` en categories/page.tsx), compiler-required porque MovementsClient.jsx sigue sin migrar y su destructuring `{ mcData, mcSession }` sin defaults infiere ambos props como requeridos. El import no usado de `fetcher` se quito (correcto, dead code, sin uso en el original). Sesion/redirect preservados igual. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/MovementsClient.jsx": {
           "status": "pending",
