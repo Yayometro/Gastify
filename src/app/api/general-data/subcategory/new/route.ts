@@ -1,15 +1,35 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
-import SubCategory from "@/model/SubCategory";
-import Category from "@/model/Category";
+import SubCategory, { type ISubCategory } from "@/model/SubCategory";
+import "@/model/Category";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import type mongoose from "mongoose";
 
-export async function POST(request) {
+export interface NewSubCategoryRequestBody {
+  name?: string;
+  icon?: string;
+  color?: string;
+  fatherCategory?: mongoose.Types.ObjectId | string;
+  [key: string]: unknown;
+}
+
+export interface NewSubCategorySuccessResponse {
+  message: string;
+  data: ISubCategory | null;
+  ok: boolean;
+  status: number;
+}
+
+export type NewSubCategoryResponse = NewSubCategorySuccessResponse;
+
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<NewSubCategoryResponse>> {
   try {
     if (!request) throw new Error("No request received from NEW CATEGORY");
     const { name, icon, color, fatherCategory } =
-      await request.json();
+      (await request.json()) as NewSubCategoryRequestBody;
     if (!fatherCategory)
       throw new Error("No FATHER category received for NEW SUB-CATEGORY");
     // Security fix: this used to trust whatever user/wallet the client sent
@@ -32,11 +52,11 @@ export async function POST(request) {
       name: !name ? "write a name for this sub-category 🤨" : name,
       icon: !icon ? null : icon,
       color: !color ? null : color,
-    })
+    });
 
     const saveSub = await newSubCategory.save();
     const populatedSubCategory = await SubCategory.findById(saveSub._id)
-      .populate('fatherCategory');
+      .populate("fatherCategory");
     if (!saveSub) throw new Error("New sub-category not saved 🤕");
     return NextResponse.json({
       message: `${saveSub.name} was created successfully 🤓`,

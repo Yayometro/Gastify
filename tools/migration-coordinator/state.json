@@ -1626,8 +1626,23 @@
           ]
         },
         "src/app/api/general-data/subcategory/new/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T07:10:00.000Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T07:11:28.188Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/subcategory/new/route.js` a `src/app/api/general-data/subcategory/new/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron las interfaces `NewSubCategoryRequestBody` (`name?`, `icon?`, `color?`, `fatherCategory?`, `[key: string]: unknown`), `NewSubCategorySuccessResponse` (`message: string`, `data: ISubCategory | null`, `ok: boolean`, `status: number`) y el type alias `NewSubCategoryResponse` para tipar la respuesta `NextResponse<NewSubCategoryResponse>`.\n- Se tipó la firma del handler de Next.js: `export async function POST(request: NextRequest | Request): Promise<NextResponse<NewSubCategoryResponse>>`.\n- Se importaron y utilizaron directamente los modelos TypeScript ya migrados `SubCategory.ts` (junto con `type { ISubCategory }`), `User.ts` y registro de schema de `Category.ts` sin bridges.\n- Se preservó `catch (e)` sin anotación explícita y `throw new Error(e)` de acuerdo con las directivas de `strict: false`.\n\n2. Cero cambios de comportamiento:\n- Se preservó íntegramente el fix de seguridad de sesión con Better Auth (`auth.api.getSession({ headers: request.headers })`) y la derivación de `user` y `wallet` desde la sesión (`userFound._id` y `userFound.wallet`), junto con todos sus comentarios explicativos intactos.\n- Cero alteraciones en la lógica de creación, guardado, población (`populate(\"fatherCategory\")`) y estructura de la respuesta JSON.\n- No se introdujo ningún `any`.\n\n3. Verificación ejecutada:\n- `npx eslint src/app/api/general-data/subcategory/new/route.ts`: 0 errores, 0 warnings (salida completamente limpia revisada línea por línea).\n- `npx tsc --noEmit`: 0 errores de compilación en el proyecto.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests pasados).\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-25T07:12:09.520Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. NewSubCategoryRequestBody/SuccessResponse con ISubCategory, data tipado como ISubCategory | null (findById puede devolver null, tipado preciso sin cambio de comportamiento). Category importado como side-effect import (bare) para registro de schema requerido por el populate - patron ya establecido. Fix de seguridad intacto. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/subcategory/update/route.js": {
           "status": "pending",
