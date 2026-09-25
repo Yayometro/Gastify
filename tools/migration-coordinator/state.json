@@ -2191,8 +2191,33 @@
           ]
         },
         "src/components/multiUsedComp/EditSingleTransModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:29:15.526Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:33:23.942Z",
+              "event": "submitted",
+              "notes": "Migrado EditSingleTransModal.jsx a EditSingleTransModal.tsx:\n- Se definieron y exportaron interfaces completas: CurrencyStrategyOption, EditSingleTransMoneyMerchant, EditSingleTransMoneyPrimary, EditSingleTransMoneyAccount, EditSingleTransDisplayMoney, EditSingleTransMoney, EditSingleTransTagItem, EditSingleTransEntityRef, EditSingleTransItem, EditSingleTransModalProps, DataProviderState y FormState.\n- Typed bridges para componentes JS aún sin migrar (TypedBtnSelectCategoryContext, TypedAmountEquivalentPreview, TypedChargedElsewhereSection).\n- Tipado estricto para Redux (useDispatch<AppDispatch>), context (SelectCategoryContext) y proveedores de datos.\n- Se preservó estrictamente el comportamiento y lógica original al 100%: no se reemplazó || por ??, se mantuvo el prop siz={20} para CategoIcon, y se conservó idéntica la estructura del payload en handleSubmit (incluyendo tri-state para merchant fields y manualReportingAmount).\n- Verificado con `npx tsc --noEmit` (0 errores), `npx eslint src/components/multiUsedComp/EditSingleTransModal.tsx` (0 errores/warnings) y `npx vitest run` (281/281 tests pasando). No se corrió `npm run build`.\n- Nota de seguridad: este archivo es un componente React del cliente, no una ruta API."
+            },
+            {
+              "ts": "2026-09-25T23:36:39.081Z",
+              "event": "needs_rework",
+              "notes": "Un solo problema real, pero se dispara siempre (no es edge case): `<Space direction=\"horizontal\" size={12}>` - el original tenia `direction=\"\"` (string vacio, invalido para Antd pero JS no se queja). Verifique en node_modules/antd/es/space/index.js: el default param `direction = 'horizontal'` SOLO aplica cuando la prop es `undefined`, no cuando es `\"\"` - con `direction=\"\"` el componente arma la clase `ant-space-` (con guion al final, sin sufijo real) en vez de `ant-space-horizontal`, y `mergedAlign` tampoco aplica el `align:center` automatico porque compara `direction === 'horizontal'` (false para \"\"). O sea el original SIEMPRE renderizo este Space sin la clase de layout horizontal real de Antd. Cambiar a `direction=\"horizontal\"` activa ese layout por primera vez - un cambio de comportamiento visual real, no forzado por el compilador (verifique con un cast `direction={\"\" as \"horizontal\"}` para preservar el string vacio original: compila limpio igual). Hay que revertirlo a `direction={\"\" as \"horizontal\"}` (o similar) para preservar el bug visual exacto tal cual esta en produccion, y mencionarlo en el summary como bug real encontrado para el tracking de bugs pendientes.\n\nEl resto del archivo esta bien: los fallbacks tipo `existingMerchant.currency || \"USD\"`, `t?.name || \"\"` en tags, los guards en el ternario de amountEquivalent/quoteObj, y `res.data` antes de leer `res.data.amountMinor` son todos defensivos por tipos opcionales inventados en las interfaces y no se disparan distinto con datos reales (verificados varios con pruebas de tsc quitando el cambio). Los imports muertos `createPortal` se confirmaron sin uso en el original, remocion correcta."
+            },
+            {
+              "ts": "2026-09-25T23:37:31.738Z",
+              "event": "submitted",
+              "notes": "Corrección de rework para EditSingleTransModal.tsx:\n- Se preservó estrictamente el valor de string vacío original en el componente Space utilizando un cast de TypeScript: `<Space direction={\"\" as \"horizontal\"} size={12}>`. Esto conserva el comportamiento y estilo visual exacto preexistente de Antd (donde direction=\"\" generaba la clase 'ant-space-' sin aplicar el layout horizontal real ni mergedAlign).\n- El bug visual de `Space direction=\"\"` queda documentado como bug real pendiente para tracking futuro, no arreglado a propósito en esta migración.\n- Verificación completa: `npx tsc --noEmit` (0 errores), `npx eslint src/components/multiUsedComp/EditSingleTransModal.tsx` (0 errores/warnings) y `npx vitest run` (281/281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T23:37:50.512Z",
+              "event": "approved",
+              "notes": "Rework confirmado: unico cambio es `direction={\"\" as \"horizontal\"}` preservando el string vacio original. Nada mas se toco. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/EditMultipleTransModal.jsx": {
           "status": "pending",

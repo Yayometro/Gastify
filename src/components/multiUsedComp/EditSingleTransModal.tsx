@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
-import { createPortal } from "react-dom";
+import React, { useState, useEffect, useContext } from "react";
 import { Switch, ConfigProvider, Space, Spin } from "antd";
-import dayjs from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/lib/store";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import { updateTransaction } from "@/lib/features/transacctionsSlice";
+import { updateTransaction, type TransactionData } from "@/lib/features/transacctionsSlice";
 import SelectCategories from "../categories/SelectCategoryProvider/SelectCategories";
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
@@ -27,42 +27,187 @@ import AmountEquivalentPreview from "./AmountEquivalentPreview";
 import ChargedElsewhereSection from "./ChargedElsewhereSection";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 
-const CURRENCY_STRATEGIES = [
+const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.ComponentType<{
+  onClose?: () => void;
+  [key: string]: unknown;
+}>;
+
+const TypedAmountEquivalentPreview = AmountEquivalentPreview as React.ComponentType<{
+  quote?: unknown;
+  [key: string]: unknown;
+}>;
+
+const TypedChargedElsewhereSection = ChargedElsewhereSection as React.ComponentType<{
+  enabled?: boolean;
+  onToggle?: (checked: boolean) => void;
+  merchantAmount?: string;
+  merchantCurrency?: string;
+  onMerchantAmountChange?: (value: string) => void;
+  onMerchantCurrencyChange?: (value: string) => void;
+  quoting?: boolean;
+  [key: string]: unknown;
+}>;
+
+export interface CurrencyStrategyOption {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export const CURRENCY_STRATEGIES: CurrencyStrategyOption[] = [
   { value: "convert", label: "Convert", description: "Recalculate the amount to preserve the same reported value." },
   { value: "reinterpret", label: "Keep number", description: "Keep the same number, just relabel the currency." },
   { value: "manual", label: "Enter manually", description: "Type the exact amount in the new currency." },
 ];
 
-function EditSingleTransModalInner({ trans, onClose }) {
-  const dispatch = useDispatch();
+export interface EditSingleTransMoneyMerchant {
+  amountMinor?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface EditSingleTransMoneyPrimary {
+  amountMinor?: number;
+  currency?: string;
+  rate?: number;
+  source?: string;
+  effectiveDate?: Date | string;
+  estimated?: boolean;
+  stale?: boolean;
+  [key: string]: unknown;
+}
+
+export interface EditSingleTransMoneyAccount {
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface EditSingleTransDisplayMoney {
+  primary?: EditSingleTransMoneyPrimary;
+  merchant?: EditSingleTransMoneyMerchant;
+  [key: string]: unknown;
+}
+
+export interface EditSingleTransMoney {
+  account?: EditSingleTransMoneyAccount;
+  merchant?: EditSingleTransMoneyMerchant;
+  primary?: EditSingleTransMoneyPrimary;
+  [key: string]: unknown;
+}
+
+export interface EditSingleTransTagItem {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface EditSingleTransEntityRef {
+  _id?: string;
+  name?: string;
+  fatherCategory?: unknown;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface EditSingleTransItem {
+  _id?: string;
+  name?: string;
+  amount?: number | string;
+  isIncome?: boolean;
+  isBill?: boolean;
+  isReadable?: boolean;
+  date?: Date | string;
+  category?: EditSingleTransEntityRef | string | null;
+  subCategory?: EditSingleTransEntityRef | string | null;
+  tags?: (string | EditSingleTransTagItem)[] | null;
+  account?: EditSingleTransEntityRef | string | null;
+  budget?: EditSingleTransEntityRef | string | null;
+  money?: EditSingleTransMoney | null;
+  displayMoney?: EditSingleTransDisplayMoney | null;
+  [key: string]: unknown;
+}
+
+export interface EditSingleTransModalProps {
+  trans?: EditSingleTransItem | null;
+  onClose: () => void;
+}
+
+interface DataProviderBudget {
+  _id: string;
+  name?: string;
+  archived?: boolean;
+  budgetType?: string;
+  isSaving?: boolean;
+  [key: string]: unknown;
+}
+
+interface DataProviderAccount {
+  _id: string;
+  name?: string;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+interface DataProviderCategory {
+  _id: string;
+  name?: string;
+  fatherCategory?: unknown;
+  [key: string]: unknown;
+}
+
+interface DataProviderState {
+  wallet?: { primaryCurrency?: string; [key: string]: unknown } | null;
+  accounts?: DataProviderAccount[];
+  categories?: DataProviderCategory[];
+  subCategories?: DataProviderCategory[];
+  budgets?: DataProviderBudget[];
+  [key: string]: unknown;
+}
+
+interface FormState {
+  name: string;
+  amount: string | number;
+  isIncome: boolean;
+  isBill: boolean;
+  isReadable: boolean;
+  date: Date;
+  category: string;
+  subCategory: string;
+  tags: string;
+  account: string | null;
+  budget: string | null;
+}
+
+function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransItem; onClose: () => void }): React.JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { close, handleClose } = useModal();
   const { handleClean, setItemSelected } = useContext(SelectCategoryContext);
-  const { wallet, accounts, categories, subCategories, budgets = [] } = useGetDataFromProvider();
-  const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
-  const [currencyStrategy, setCurrencyStrategy] = useState(null);
+  const { wallet, accounts, categories, subCategories, budgets = [] } = (useGetDataFromProvider() as unknown) as DataProviderState;
+  const projectBudgets = (budgets || []).filter((budget) => !budget.archived && isProjectBudget(budget));
+  const [currencyStrategy, setCurrencyStrategy] = useState<string | null>(null);
   // Advanced "Charged in another currency" disclosure (plan section 12.2) -
   // see ChargedElsewhereSection for the shared UI/behavior with AddTransactionComp.
-  const [chargedElsewhere, setChargedElsewhere] = useState(false);
-  const [merchantAmount, setMerchantAmount] = useState("");
-  const [merchantCurrency, setMerchantCurrency] = useState("USD");
-  const [amountTouchedManually, setAmountTouchedManually] = useState(false);
-  const [merchantQuoting, setMerchantQuoting] = useState(false);
+  const [chargedElsewhere, setChargedElsewhere] = useState<boolean>(false);
+  const [merchantAmount, setMerchantAmount] = useState<string>("");
+  const [merchantCurrency, setMerchantCurrency] = useState<string>("USD");
+  const [amountTouchedManually, setAmountTouchedManually] = useState<boolean>(false);
+  const [merchantQuoting, setMerchantQuoting] = useState<boolean>(false);
   // Distinguishes "user never touched this section" (preserve whatever
   // merchant money already existed) from "user turned it off on purpose"
   // (clear it) - both look identical as chargedElsewhere=false otherwise.
-  const [merchantSectionTouched, setMerchantSectionTouched] = useState(false);
+  const [merchantSectionTouched, setMerchantSectionTouched] = useState<boolean>(false);
   // Lets the user correct the reported (Wallet-primary-currency) equivalent
   // by hand when the automatic ECB estimate doesn't match their bank's
   // actual rate - buildTransactionMoney() already supports this via
   // manualReportingAmount (used elsewhere for Account-currency reassignment
   // and Excel import), this just exposes it directly on every foreign-
   // currency transaction instead of only those two narrower paths.
-  const [reportedOverrideOpen, setReportedOverrideOpen] = useState(false);
-  const [reportedOverrideAmount, setReportedOverrideAmount] = useState("");
+  const [reportedOverrideOpen, setReportedOverrideOpen] = useState<boolean>(false);
+  const [reportedOverrideAmount, setReportedOverrideAmount] = useState<string>("");
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     name: "",
     amount: "",
     isIncome: false,
@@ -85,17 +230,17 @@ function EditSingleTransModalInner({ trans, onClose }) {
         isBill: trans.isBill ?? true,
         isReadable: trans.isReadable ?? false,
         date: trans.date ? new Date(trans.date) : new Date(),
-        category: trans.category?._id || trans.category || "",
-        subCategory: trans.subCategory?._id || trans.subCategory || "",
-        tags: trans.tags?.map((t) => (typeof t === "string" ? t : t.name)).join(", ") || "",
-        account: trans.account?._id || trans.account || "",
-        budget: trans.budget?._id || trans.budget || "",
+        category: (typeof trans.category === "object" && trans.category?._id) || (typeof trans.category === "string" ? trans.category : "") || "",
+        subCategory: (typeof trans.subCategory === "object" && trans.subCategory?._id) || (typeof trans.subCategory === "string" ? trans.subCategory : "") || "",
+        tags: trans.tags?.map((t) => (typeof t === "string" ? t : t?.name || "")).join(", ") || "",
+        account: (typeof trans.account === "object" && trans.account?._id) || (typeof trans.account === "string" ? trans.account : "") || "",
+        budget: (typeof trans.budget === "object" && trans.budget?._id) || (typeof trans.budget === "string" ? trans.budget : "") || "",
       });
       const existingMerchant = trans.displayMoney?.merchant || trans.money?.merchant;
       if (existingMerchant) {
         setChargedElsewhere(true);
-        setMerchantAmount(String(minorToMajor(existingMerchant.amountMinor, existingMerchant.currency)));
-        setMerchantCurrency(existingMerchant.currency);
+        setMerchantAmount(String(minorToMajor(existingMerchant.amountMinor ?? 0, existingMerchant.currency ?? "USD")));
+        setMerchantCurrency(existingMerchant.currency || "USD");
       } else {
         setChargedElsewhere(false);
         setMerchantAmount("");
@@ -104,21 +249,24 @@ function EditSingleTransModalInner({ trans, onClose }) {
       setAmountTouchedManually(false);
       setMerchantSectionTouched(false);
 
-      const subCatId = trans.subCategory?._id || trans.subCategory;
-      const catId = trans.category?._id || trans.category;
+      const subCatId = (typeof trans.subCategory === "object" && trans.subCategory?._id) || trans.subCategory;
+      const catId = (typeof trans.category === "object" && trans.category?._id) || trans.category;
 
       if (subCatId && subCategories?.length) {
         const found = subCategories.find((s) => String(s._id) === String(subCatId));
-        if (found) { setItemSelected(found); return; }
+        if (found) {
+          if (setItemSelected) setItemSelected(found);
+          return;
+        }
       }
       if (catId && categories?.length) {
         const found = categories.find((c) => String(c._id) === String(catId));
-        if (found) setItemSelected(found);
+        if (found && setItemSelected) setItemSelected(found);
       }
     }
-  }, [trans, categories, subCategories]);
+  }, [trans, categories, subCategories, setItemSelected]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "amount") setAmountTouchedManually(true);
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -159,15 +307,15 @@ function EditSingleTransModalInner({ trans, onClose }) {
       try {
         setMerchantQuoting(true);
         const amountMinor = majorToMinor(numericMerchant, merchantCurrency);
-        const res = await toFetch.post("general-data/fx/quote", {
+        const res = (await toFetch.post("general-data/fx/quote", {
           amountMinor,
           fromCurrency: merchantCurrency,
           toCurrency: selectedAccountCurrency,
-        });
-        if (!cancelled && res.ok && !amountTouchedManually) {
+        })) as { ok?: boolean; data?: { amountMinor: number } };
+        if (!cancelled && res?.ok && !amountTouchedManually && res.data) {
           setForm((f) => ({ ...f, amount: String(minorToMajor(res.data.amountMinor, selectedAccountCurrency)) }));
         }
-      } catch (e) {
+      } catch {
         // Silently unavailable - the user can still enter the Account Amount manually.
       } finally {
         if (!cancelled) setMerchantQuoting(false);
@@ -180,25 +328,28 @@ function EditSingleTransModalInner({ trans, onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chargedElsewhere, merchantAmount, merchantCurrency, selectedAccountCurrency]);
 
-  const onChangeSwitch = (checked, type) => {
+  const onChangeSwitch = (checked: boolean, type: "income" | "bill" | "readable") => {
     if (type === "income") setForm((p) => ({ ...p, isIncome: checked, isBill: !checked }));
     else if (type === "bill") setForm((p) => ({ ...p, isBill: checked, isIncome: !checked }));
     else if (type === "readable") setForm((p) => ({ ...p, isReadable: checked }));
   };
 
-  const handleCategory = (cat) => {
+  const handleCategory = (cat: unknown) => {
     if (!cat) return;
-    const fatherId = cat?.fatherCategory
-      ? (typeof cat.fatherCategory === "object" ? cat.fatherCategory?._id : cat.fatherCategory)
+    const catObj = cat as { _id?: string; fatherCategory?: unknown };
+    const fatherId = catObj?.fatherCategory
+      ? typeof catObj.fatherCategory === "object"
+        ? (catObj.fatherCategory as { _id?: string })?._id
+        : catObj.fatherCategory
       : null;
     if (fatherId) {
-      setForm((p) => ({ ...p, subCategory: cat._id, category: fatherId }));
+      setForm((p) => ({ ...p, subCategory: catObj._id || "", category: String(fatherId) }));
     } else {
-      setForm((p) => ({ ...p, category: cat._id, subCategory: "" }));
+      setForm((p) => ({ ...p, category: catObj._id || "", subCategory: "" }));
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (needsCurrencyStrategy && !currencyStrategy) {
       runNotify("error", "Choose how to handle the currency change before saving");
@@ -226,15 +377,19 @@ function EditSingleTransModalInner({ trans, onClose }) {
         : {}),
     };
     try {
-      const response = await toFetch.post(`general-data/transactions/${trans._id}`, payload);
-      if (response.data) {
-        runNotify("ok", response.message);
+      const response = (await toFetch.post(`general-data/transactions/${trans?._id}`, payload)) as {
+        data?: TransactionData;
+        message?: string;
+        [key: string]: unknown;
+      };
+      if (response?.data) {
+        runNotify("ok", response.message || "");
         dispatch(updateTransaction(response.data));
-        handleClean();
+        if (handleClean) handleClean();
         setIsLoading(false);
         onClose();
       } else {
-        runNotify("error", response.message || "Something went wrong");
+        runNotify("error", response?.message || "Something went wrong");
         setIsLoading(false);
       }
     } catch (e) {
@@ -275,7 +430,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
             onChange={handleChange}
             placeholder="Amount"
           />
-          <AmountEquivalentPreview quote={amountEquivalent} />
+          <TypedAmountEquivalentPreview quote={amountEquivalent} />
           {selectedAccountCurrency !== (wallet?.primaryCurrency || "MXN") && (
             <div className="-mt-1">
               {!reportedOverrideOpen ? (
@@ -283,10 +438,11 @@ function EditSingleTransModalInner({ trans, onClose }) {
                   type="button"
                   className="text-[11px] text-purple-500 hover:underline cursor-pointer"
                   onClick={() => {
+                    const quoteObj = amountEquivalent as { amountMinor?: number; currency?: string } | null;
                     const prefill =
-                      amountEquivalent?.amountMinor !== undefined
-                        ? minorToMajor(amountEquivalent.amountMinor, amountEquivalent.currency)
-                        : trans?.displayMoney?.primary
+                      quoteObj?.amountMinor !== undefined && quoteObj?.currency
+                        ? minorToMajor(quoteObj.amountMinor, quoteObj.currency)
+                        : trans?.displayMoney?.primary?.amountMinor !== undefined && trans?.displayMoney?.primary?.currency
                         ? minorToMajor(trans.displayMoney.primary.amountMinor, trans.displayMoney.primary.currency)
                         : "";
                     setReportedOverrideAmount(String(prefill));
@@ -305,7 +461,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
                       type="number"
                       step="0.01"
                       value={reportedOverrideAmount}
-                      onChange={(e) => setReportedOverrideAmount(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportedOverrideAmount(e.target.value)}
                       placeholder="Exact amount"
                       className="flex-1"
                     />
@@ -324,19 +480,19 @@ function EditSingleTransModalInner({ trans, onClose }) {
               )}
             </div>
           )}
-          <ChargedElsewhereSection
+          <TypedChargedElsewhereSection
             enabled={chargedElsewhere}
-            onToggle={(checked) => {
+            onToggle={(checked: boolean) => {
               setMerchantSectionTouched(true);
               setChargedElsewhere(checked);
             }}
             merchantAmount={merchantAmount}
             merchantCurrency={merchantCurrency}
-            onMerchantAmountChange={(v) => {
+            onMerchantAmountChange={(v: string) => {
               setMerchantSectionTouched(true);
               setMerchantAmount(v);
             }}
-            onMerchantCurrencyChange={(v) => {
+            onMerchantCurrencyChange={(v: string) => {
               setMerchantSectionTouched(true);
               setMerchantCurrency(v);
             }}
@@ -345,7 +501,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
 
           <div className="switchers-cont flex gap-3">
             <ConfigProvider theme={{ token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" } }}>
-              <Space direction="" size={12}>
+              <Space direction={"" as "horizontal"} size={12}>
                 <div className="switch-int-cont">
                   <p className="label-tfp">Is Income:</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "income")} value={form.isIncome} />
@@ -374,7 +530,11 @@ function EditSingleTransModalInner({ trans, onClose }) {
                       mobilePaper: { sx: { zIndex: 35000 } },
                     }}
                     value={dayjs(form.date)}
-                    onChange={(v) => setForm((p) => ({ ...p, date: new Date(v.format()) }))}
+                    onChange={(v: Dayjs | null) => {
+                      if (v) {
+                        setForm((p) => ({ ...p, date: new Date(v.format()) }));
+                      }
+                    }}
                     sx={{
                       "& .MuiInputBase-root": { width: "100%", padding: "0px", border: "none", borderRadius: "12px" },
                       "& .MuiInputBase-input": { border: "none", borderRadius: "12px", padding: "8px 12px" },
@@ -387,7 +547,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
           </div>
 
           <p className="label-tfp">Category</p>
-          <BtnSelectCategoryContext onClose={handleClose} />
+          <TypedBtnSelectCategoryContext onClose={handleClose} />
           {close && (
             <BasicModal
               close={handleClose}
@@ -410,7 +570,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
             <select
               className="bg-transparent appearance-none w-full pr-4"
               value={form.account || ""}
-              onChange={(e) => setForm((p) => ({ ...p, account: e.target.value || null }))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setForm((p) => ({ ...p, account: e.target.value || null }))}
             >
               <option value="">No account</option>
               {accounts?.map((acc) => (
@@ -447,7 +607,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
             <select
               className="bg-transparent appearance-none w-full pr-4"
               value={form.budget || ""}
-              onChange={(e) => setForm((p) => ({ ...p, budget: e.target.value || null }))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setForm((p) => ({ ...p, budget: e.target.value || null }))}
             >
               <option value="">No project</option>
               {projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}
@@ -484,7 +644,7 @@ function EditSingleTransModalInner({ trans, onClose }) {
   );
 }
 
-function EditSingleTransModal({ trans, onClose }) {
+function EditSingleTransModal({ trans, onClose }: EditSingleTransModalProps): React.JSX.Element | null {
   if (!trans) return null;
   return (
     <SelectCategories>
