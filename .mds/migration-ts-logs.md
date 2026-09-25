@@ -277,5 +277,40 @@ esta historia (ver tabla consolidada arriba) fueron encontrados y
 corregidos por Claude directamente, fuera del flujo normal de
 migración, por prioridad urgente pedida por el usuario en cada caso.
 
-**Historia 3 probada end-to-end por el usuario**: pendiente (siguiente
+**Historia 3 probada end-to-end por el usuario**: confirmado por el
+usuario ("al parece jala bien").
+
+## 2026-09-24 — Historia 4 (Componentes compartidos pequeños) completa: 10/10 archivos
+
+`CategoIcon.tsx`, `UniversalCategoIcon.tsx`, `EmptyModule.tsx`,
+`Tag.tsx`, `SelecterFilter.tsx`, `SelecterItemsToDisplay.tsx`,
+`TimeRange.tsx`, `MultiCreditCard.tsx`, `GoalBudget.tsx`,
+`DeletePreviewRow.tsx` - todos migrados, revisados y aprobados. Elegida
+esta historia antes que Movements/WalletAnalyzer/Budgets/Categories
+(todos 1000+ líneas y muy entrelazados) a propósito: estos 10 archivos
+son pequeños y se usan como bridge tipado en casi todo lo ya migrado.
+
+**2 rondas de rework**, mismo patrón de fondo en ambas (auto-imponerse
+comportamiento no forzado por el compilador bajo `strict:false`):
+- `TimeRange.tsx`: se agregó optional chaining (`?.()`) a dos llamadas
+  (`rpDateRef.current(...)`, `rpDate(...)`) que no lo tenían. Verificado
+  con test aislado de tsc que no era forzado - cambia un TypeError real
+  por un no-op silencioso si `rpDate` no se pasa. Revertido.
+- (la otra ronda fue en Historia 3, `api-tokens/new`, ver arriba - se
+  repite el patrón aquí por completitud del conteo total de la
+  migración: van 5 rondas de rework en total en las 4 historias).
+
+**Hallazgo de bug preexistente confirmado con causa raíz exacta** (no
+arreglado, fuera de alcance): en `SelecterFilter.jsx`, dos entradas del
+arreglo `periods` por defecto comparten `value: 30` ("Last 30 days" y
+"Last 90 days" - typo de copy-paste). Como el `<select>` nativo de HTML
+selecciona visualmente la primera `<option>` cuyo `value` coincide, la
+etiqueta mostrada queda pegada en "Last 30 days" aunque el usuario elija
+"Last 90 days" (los datos sí cambian bien, solo el label visual es
+incorrecto). Esto explica el bug del dropdown de periodo del Dashboard
+reportado por el usuario en Historia 2. Preservado intacto en la
+migración por instrucción explícita - pendiente de que el usuario
+decida si lo arregla.
+
+**Historia 4 probada end-to-end por el usuario**: pendiente (siguiente
 paso).
