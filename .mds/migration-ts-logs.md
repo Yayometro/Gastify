@@ -430,3 +430,32 @@ de `accounts/*`, y `get-wallet`/`wallet` (ver tabla consolidada arriba);
 **Pendiente aparte, no bloquea la migración**: auditoría completa de
 todos los endpoints de la API pedida por el usuario - ver
 [`api-security-audit-checklist.md`](api-security-audit-checklist.md).
+
+## 2026-09-25 — Historia 5 (Accounts) completa: 9/9 archivos
+
+`Account.ts` (modelo), las 4 rutas de API (`reorder`, `update-account`,
+`new-account`, `remove-account`, todas con el fix de seguridad ya
+intacto), `PrimaryCurrencySelector.tsx`, `EditAccountModal.tsx`,
+`AccountClient.tsx` (el archivo más grande de esta historia, 447
+líneas) y `accounts/page.tsx` - todos migrados, revisados y aprobados,
+0 rondas de rework.
+
+**2 fixes de seguridad más encontrados en el camino** (7mo y 8vo de la
+migración, ver tabla consolidada): `get-wallet` (IDOR de lectura, un
+review miss real de Historia 2) y `wallet/route.js` (cero sesión). Ver
+sección anterior para el detalle completo.
+
+**Limpieza de código muerto confirmada en `AccountClient.tsx`**: un
+import de `TransDetailsGrandContainer` nunca usado, variables
+`accBills`/`accIncomes` calculadas pero nunca leídas, y un
+`handleChange` que nunca se llamaba y referenciaba variables
+(`userInfo`/`setUserInfo`) que ni siquiera existían en el archivo -
+hubiera sido un `ReferenceError` en tiempo de ejecución si alguna vez
+se hubiera invocado. Los tres confirmados como código 100% muerto antes
+de aprobar su eliminación.
+
+**Historia 5 probada end-to-end en vivo por Claude durante los propios
+fixes de seguridad** (crear/editar/borrar cuenta, cambiar moneda
+primaria, ver el resumen de transacciones y el treemap de categorías) -
+pendiente de que el usuario la pruebe también por su cuenta cuando
+quiera.
