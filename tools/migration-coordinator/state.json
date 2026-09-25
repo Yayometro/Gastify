@@ -1159,8 +1159,23 @@
           ]
         },
         "src/components/Filters/selecterFilter/SelecterFilter.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T04:35:07.863Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T04:36:46.689Z",
+              "event": "submitted",
+              "notes": "Migración de `src/components/Filters/selecterFilter/SelecterFilter.jsx` a `src/components/Filters/selecterFilter/SelecterFilter.tsx`.\n\n1. Tipado e interfaces:\n- Se definieron y exportaron `SelecterPeriod` (`value: string | number`, `name: string`, `[key: string]: unknown`) y `SelecterFilterProps` (`getValue?: (val: string) => void`, `periodOverride?: SelecterPeriod[]`, `periodFromFather?: SelecterPeriod | string | number`, `styles?: string`).\n- Se tiparon el hook `useState<SelecterPeriod | string | number>`, el evento de selección `event: React.ChangeEvent<HTMLSelectElement>` y el valor de retorno del componente `React.JSX.Element`.\n- Se usó `unknown` en vez de `any` para index signatures y coerciones de tipo hacia JSX attributes.\n\n2. Cero cambios de comportamiento y preservación de lógica/bugs preexistentes:\n- Se preservó estrictamente el bug preexistente reportado sin alteración alguna: las dos entradas de `periods` que comparten `value: 30` (\"Last 30 days\" y \"Last 90 days\") se mantuvieron intactas.\n- Cero adición de fallbacks no forzados por el compilador. Cero modificaciones a la lógica interna de selección o invocación de `getValue`.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores en el proyecto.\n- `npx eslint src/components/Filters/selecterFilter/SelecterFilter.tsx`: 0 errores y 0 warnings (ejecutado y verificado con salida limpia).\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests OK).\n- NO se corrió `npm run build` para proteger el servidor de desarrollo activo.\n- No se tocó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-25T04:37:21.456Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. SelecterPeriod/SelecterFilterProps, bug preexistente del value:30 duplicado preservado intacto tal como se pidio explicitamente. El cast `internalPeriod as unknown as string | number` en el value del select es legitimo y forzado por el compilador (internalPeriod puede ser un SelecterPeriod completo via periodFromFather, no asignable directamente al tipo del value de un <select>) - no cambia comportamiento en runtime. Reformateo de la clase con template literal multi-linea es solo estilistico (prettier), contenido identico. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/Filters/selecterItemsToDisplay/SelecterItemsToDisplay.jsx": {
           "status": "pending",
