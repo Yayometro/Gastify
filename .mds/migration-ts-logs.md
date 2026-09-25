@@ -429,18 +429,23 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 5 | `walletSlice.ts`, `categoriesSlice.ts`, `subCategorySlice.ts`, `transacctionsSlice.ts` | Varios selectores de Redux rotos: leen la ruta equivocada del state (ej. `state.accounts.*` en vez de `state.wallet.*`) o regresan el state completo sin filtrar. Parecen no usarse en ningún lado activo (o el bug nunca se manifestó), pero están mal. | Historia 2 |
 | 6 | `lib/asyncThunk.ts` | Archivo 100% boilerplate de tutorial de Redux Toolkit, nunca conectado al store real - candidato a borrar por completo. | Historia 2 |
 | 7 | `Dashboard.tsx` (ya migrado, comportamiento preservado) | `allBills`/`allIncomes` solo se referencian dentro de un bloque JSX ya comentado; `handleDurationChange`/`setSelectedDuration` están completamente muertos. No se tocaron por regla, pero son candidatos a limpieza. | Historia 2 |
-| 8 | `CategoriesClient.tsx` | `setCategories(allCategories)`/`setSubCategories(subCategoriesData)` se llaman como funciones normales, sin `dispatch(...)` - nunca actualizan el store de Redux de verdad. | Historia 6 |
-| 9 | `CategoriesClient.tsx` | 4 condiciones `algo.length < 0 ? ... : ...` que nunca pueden ser true (`.length` nunca es negativo) - la rama "vacío" nunca se muestra. | Historia 6 |
-| 10 | `CategoriesClient.tsx` | La sección "Default Sub Categories" renderiza `<CategoryList clCategories={filteredDefCategoriesData} .../>` - el mismo componente y el mismo dato que la sección "Default Categories" de arriba (copy-paste bug), en vez de una lista de subcategorías por defecto. | Historia 6 |
-| 11 | `UniversalCategoIcon` (llamadas en `CategoryList.tsx`/`SubCategoryList.tsx`/`EditCategoryModal.tsx`) | Varias llamadas mandan `size={40}` en vez de `siz={40}` (el prop real que espera `UniversalCategoIcon`) - typo preexistente, el ícono nunca recibe tamaño explícito. Se preservó tal cual en las 3 migraciones, no se corrigió. | Historia 6 |
-| 12 | `subcategory/remove/route.ts` | Si `removeSub` es `null`, `removeSub.name` dentro del `if (!removeSub)` lanza un `TypeError` real (atrapado por el catch) antes de llegar al fallback `|| "SubCategory"`. | Historia 6 |
+| 8 | `UniversalCategoIcon` (llamadas en `CategoryList.tsx`/`SubCategoryList.tsx`/`EditCategoryModal.tsx`) | Varias llamadas mandan `size={40}` en vez de `siz={40}` (el prop real que espera `UniversalCategoIcon`) - typo preexistente, el ícono nunca recibe tamaño explícito. Se preservó tal cual en las 3 migraciones, no se corrigió. | Historia 6 |
+| 9 | `subcategory/remove/route.ts` | Si `removeSub` es `null`, `removeSub.name` dentro del `if (!removeSub)` lanza un `TypeError` real (atrapado por el catch) antes de llegar al fallback `|| "SubCategory"`. | Historia 6 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 17 bugs de seguridad de control de acceso en `get-user`, `update-user`,
 `api-tokens/list`, `api-tokens/new`, `api-tokens/remove`, las 4 rutas
 de `accounts/*`, `get-wallet`/`wallet`, las 7 rutas de
 `categories/*`/`subcategory/*`, y `get-categories`/`get-sub-categories`
-(ver tabla consolidada arriba); 2 archivos muertos borrados
+(ver tabla consolidada arriba); 2 archivos muertos borrados; **3 bugs
+reales de `CategoriesClient.tsx` arreglados a petición explícita del
+usuario el 2026-09-25 (commit `ef2059c`)** - dispatch faltante en
+`setCategories`/`setSubCategories` (resuelto ordenando localmente en
+vez de tocar el store compartido, para no arriesgar un loop infinito ni
+afectar a Dashboard/Movements que leen el mismo state), las 4
+condiciones `.length < 0` cambiadas a `.length === 0`, y "Default Sub
+Categories" ahora lee `ccSubCategories.data.default` (que sí se
+guardaba pero nunca se leía) en vez de duplicar "Default Categories"
 (`api/searchUser.js`, `api/login` legacy); 1 bug de UI en
 `RegisterComp.jsx` (`formData.name` → `formData.fullName`).
 
