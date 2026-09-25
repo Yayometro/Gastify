@@ -3,15 +3,52 @@ import React, { useEffect, useState } from "react";
 import CategoIcon from "./CategoIcon";
 import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
-import { set } from "mongoose";
 import { useDispatch } from "react-redux";
 import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/accountsSlice";
 import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
 
-function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [active, setActive] = useState(false);
-  const [formAccount, setFormAccount] = useState({
+export type EditAccountModalMode = "edition" | "creation" | boolean | string | null | undefined;
+
+export interface EditAccountModalAccount {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  accountType?: "debit" | "credit" | "cash" | "savings" | string;
+  user?: unknown;
+  wallet?: unknown;
+  currency?: string;
+  allTransactionsList?: unknown[];
+  [key: string]: unknown;
+}
+
+export interface EditAccountModalWallet {
+  _id?: string;
+  primaryCurrency?: string;
+  [key: string]: unknown;
+}
+
+export interface FormAccountState {
+  accountId?: string;
+  name?: string;
+  amount?: number | string;
+  accountType?: string;
+  currency?: string;
+  userId?: unknown;
+  walletId?: unknown;
+  [key: string]: unknown;
+}
+
+export interface EditAccountModalProps {
+  eamMode?: EditAccountModalMode;
+  eamAccount?: EditAccountModalAccount | null;
+  eamWallet?: EditAccountModalWallet | null;
+  eamClose: (state: boolean) => void;
+}
+
+function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAccountModalProps): React.JSX.Element {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [active, setActive] = useState<unknown>(false);
+  const [formAccount, setFormAccount] = useState<FormAccountState>({
     accountId: "",
     name: "",
     amount: 0,
@@ -20,7 +57,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
   });
   const toFetch = fetcher();
   //REDUX
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   // Account currency cannot be changed once Transactions are linked to it -
   // the user must create a correctly denominated Account instead.
   const hasLinkedTransactions = (eamAccount?.allTransactionsList?.length || 0) > 0;
@@ -61,7 +98,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
   const handleDeletation = async () => {
     try {
       setIsLoading(true);
-      let accountId = eamAccount._id;
+      const accountId = eamAccount._id;
       const res = await toFetch.post(
         "general-data/accounts/remove-account",
         accountId
@@ -69,12 +106,12 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
       if (res.ok) {
         runNotify("ok", `${res.message}`);
         //REDUX UPDATE
-        dispatch(removeAccount(accountId))
+        dispatch(removeAccount(accountId));
         setIsLoading(false);
         handleClose();
         return null;
       } else {
-        console.log(res)
+        console.log(res);
       }
     } catch (e) {
       runNotify("error", String(e));
@@ -82,12 +119,12 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
       handleClose();
     }
   };
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormAccount({ ...formAccount, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
       e.preventDefault();
       setIsLoading(true);
@@ -117,9 +154,9 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }) {
         runNotify("ok", `${res.message}`);
         //REDUX
         if (eamMode === "edition"){
-          dispatch(updateAccount(res.data))
+          dispatch(updateAccount(res.data));
         } else {
-          dispatch(addNewAccount(res.data))
+          dispatch(addNewAccount(res.data));
         }
         setIsLoading(false);
         handleClose();
