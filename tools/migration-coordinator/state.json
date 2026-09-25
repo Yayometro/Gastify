@@ -1346,8 +1346,23 @@
           ]
         },
         "src/app/api/general-data/accounts/update-account/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T05:38:00.000Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T05:39:40.923Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/accounts/update-account/route.js` a `src/app/api/general-data/accounts/update-account/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron y exportaron `UpdateAccountRequestBody` (`accountId?: string`, `name?: string`, `amount?: number`, `accountType?: string`, `currency?: string`, `[key: string]: unknown`), `UpdateAccountSuccessResponse` (`message: string`, `data: IAccount`, `status: number`, `ok: boolean`) y el alias `UpdateAccountResponse`.\n- Se tipó la firma del handler: `export async function POST(request: NextRequest | Request): Promise<NextResponse<UpdateAccountResponse>>`.\n- Se casteó el payload de `request.json()` hacia `UpdateAccountRequestBody`.\n- Se preservó `catch (e)` sin anotación explícita bajo `strict: false` y con el throw idéntico al original (`throw new Error(e)`).\n- Cero uso de `any`.\n\n2. Preservación estricta de lógica y seguridad:\n- Se preservó íntegramente el fix de seguridad de sesión (`auth.api.getSession({ headers: request.headers })`) y la búsqueda scoped al wallet (`Account.findOne({ _id: accountId, wallet: userFound.wallet })`).\n- Se conservaron todas las restricciones de multi-currency (validación de moneda soportada y bloqueo si existen transacciones vinculadas).\n- Se conservó idéntico el cálculo de `balanceMinor` con `majorToMinor(findAccount.amount || 0, findAccount.currency)` y la fecha `balanceUpdatedAt`.\n- Cero operadores de optional chaining o fallbacks artificiales no requeridos.\n- Todos los comentarios explicativos de seguridad y multi-currency se preservaron intactos.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/accounts/update-account/route.ts`: 0 errores y 0 warnings (verificado salida real línea por línea).\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests pasados), incluyendo `route.test.js` con 5/5 tests en verde.\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-25T05:40:17.146Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. UpdateAccountRequestBody/SuccessResponse con IAccount, fix de seguridad (session + Account.findOne({_id, wallet})) intacto con su comentario. La coma reemplazada por punto y coma en findAccount.name=...,/amount=.../accountType=... es equivalente (operador coma de JS sin efecto observable, statement expression descartado) - cero cambio de comportamiento. tsc --noEmit limpio, eslint limpio, 281/281 tests incluyendo los 5 del route.test.js actualizado."
+            }
+          ]
         },
         "src/app/api/general-data/accounts/new-account/route.js": {
           "status": "pending",
