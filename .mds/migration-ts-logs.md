@@ -576,3 +576,48 @@ categoría de prueba completa (nombre, ícono vía `IconDisplayerMenu`,
 color vía `ColorPicker`) y borrarla - toasts de éxito confirmados en
 cada paso, sin errores de consola. Pendiente de que el usuario la
 pruebe también por su cuenta.
+
+## 2026-09-25 — Historia 7 (Budgets) completa: 12/12 archivos
+
+Modelo `Budget.ts` (se preservó a propósito su patrón inusual de
+re-registro con `delete mongoose.models.Budget` antes de
+`mongoose.model(...)`, distinto al resto de modelos del proyecto), las
+4 rutas `budget/new`/`update`/`remove`/`get-historical` (`budget/get`
+ya estaba migrada desde Historia 2), `BudgetBarRow.tsx`,
+`BudgetEditModal.tsx`, `BudgetDetailModal.tsx`,
+`ProjectBudgetDetailModal.tsx`, `SpendingSummaryDetailModal.tsx`,
+`BudgetsClient.tsx` (la más grande de la historia, ~500 líneas) y
+`dashboard/budgets/page.tsx` - todos migrados, revisados y aprobados.
+
+**2 rondas de rework:**
+- `BudgetEditModal.tsx`: 3 cambios de comportamiento no forzados por el
+  compilador (verificado revirtiendo cada uno y corriendo `tsc`
+  limpio): `goalAmount`/`savingAmount` cambiados de `|| ""` a `?? ""`
+  (un budget con monto exactamente 0 pasaría de mostrar el input vacío
+  a mostrar "0"), y dos ocurrencias de un ternario `catObj?.icon !==
+  undefined ? catObj.icon : (...)` en vez del `catObj?.icon || null`
+  original. Los tres se revirtieron.
+- `BudgetDetailModal.tsx`: reapareció el bug de typo `size`→`siz` en
+  `CategoIcon` (mismo patrón ya visto 3 veces en Historia 6, a pesar de
+  la advertencia explícita en el prompt) - se revirtió quitando el prop
+  en vez de renombrarlo. Más importante: Antigravity encontró un bug
+  real preexistente en `handleRemoveTrans` (el botón "Delete
+  transaction" llamaba `fetcher.post(...)` directo sobre el módulo
+  importado en vez de sobre la instancia `fetcher()`, algo que siempre
+  ha lanzado `TypeError` en runtime) y lo arregló solo, violando la
+  regla de oro de "reportar, no arreglar". Se revirtió a un bridge
+  tipado que preserva el `TypeError` original exacto, y el bug quedó
+  documentado en la tabla de bugs pendientes (fila 10) para que el
+  usuario decida si arreglarlo aparte.
+
+**Bug real nuevo, NO arreglado** (ver tabla de bugs pendientes, fila
+10): en `BudgetDetailModal.tsx`, borrar un movimiento desde ese modal
+específico nunca ha funcionado - el backend nunca recibe la petición de
+borrado (tira `TypeError` atrapado por el catch, solo muestra un toast
+de error), pero el movimiento sí desaparece de la UI porque el
+`dispatch(removeOneTransacction(id))` optimista ya se ejecutó antes.
+Reaparece al refrescar la página.
+
+`BudgetsClient.tsx` y `ProjectBudgetDetailModal.tsx` y
+`SpendingSummaryDetailModal.tsx` y `dashboard/budgets/page.tsx` no
+tuvieron rework - limpios a la primera.

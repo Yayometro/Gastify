@@ -111,15 +111,23 @@ explicita del usuario, se corrigieron 3 bugs reales preexistentes en
 `CategoriesClient.tsx` (dispatch faltante, condiciones `.length < 0`,
 seccion "Default Sub Categories" duplicada) - commit `ef2059c`.
 
-**Historia activa: Historia 7 — Budgets** (`dashboard/budgets/page.jsx`,
-`BudgetsClient.jsx`, `BudgetBarRow.jsx`, `BudgetEditModal.jsx`,
-`BudgetDetailModal.jsx`, `ProjectBudgetDetailModal.jsx`,
-`SpendingSummaryDetailModal.jsx`, modelo `Budget.js`, y las 4 rutas que
-usa directamente: `budget/new`, `budget/update`, `budget/remove`,
-`budget/get-historical` - `budget/get` ya esta migrada desde Historia 2
-(y se le corrigio ahi mismo el review-miss de IDOR, junto con
-`get-historical`, `new`, `update`, `remove` - 5 fixes de seguridad mas,
-ver tabla consolidada). Deliberadamente NO incluye
+**Historia 7 (Budgets) completa** - 12/12 archivos (`dashboard/budgets/page`,
+`BudgetsClient`, `BudgetBarRow`, `BudgetEditModal`, `BudgetDetailModal`,
+`ProjectBudgetDetailModal`, `SpendingSummaryDetailModal`, modelo `Budget`,
+y las 4 rutas `budget/new`/`update`/`remove`/`get-historical` -
+`budget/get` ya estaba migrada desde Historia 2, donde tambien se
+corrigio su review-miss de IDOR junto con las otras 4 rutas - 5 fixes de
+seguridad mas, ver tabla consolidada). 2 rondas de rework: en
+`BudgetEditModal` se revirtieron 3 cambios de comportamiento no forzados
+(`||`->`??` en goalAmount/savingAmount, un ternario de icon); en
+`BudgetDetailModal` se revirtio el typo `size`->`siz` repetido en
+`CategoIcon` (otra vez, mismo patron de historias anteriores) y, mas
+importante, se descubrio y se dejo documentado sin arreglar un bug real
+preexistente: el boton "Delete transaction" de ese modal llama
+`fetcher.post(...)` directo sobre el modulo en vez de la instancia
+`fetcher()`, asi que siempre ha tirado `TypeError` y nunca borra en el
+backend (el movimiento solo desaparece optimistamente del Redux) - ver
+tabla de bugs pendientes. Deliberadamente NO incluye
 `UnbudgetedSpending.jsx` ni el arbol de
 `HistoricalBudgetsComparative`/`HistoricalWalletAnalyzer` (analytics
 pesado, su propia historia futura).
