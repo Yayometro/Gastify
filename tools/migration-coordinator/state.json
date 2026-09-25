@@ -1467,26 +1467,101 @@
     "historia-6-categories": {
       "label": "Categories (page + CategoriesClient + CategoryList + SubCategoryList + EditCategoryModal + IconDisplayerMenu + BasicModal + ModalCategoryContent + useModalBasic + SelectCategories/SelectCategoryProvider + modelos Category/SubCategory + rutas CRUD). NO incluye CategoryTreemap/CategoryCirclePacking/HistoricalComparativeCategories ni category-rules (suggest/apply-suggestions, usados por Movements, no por este arbol) - son historias futuras.",
       "files": {
-        "src/app/dashboard/categories/page.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/CategoriesClient.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/CategoryList.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/SubCategoryList.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/EditCategoryModal.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/IconDisplayerMenu.jsx": { "status": "pending", "history": [] },
-        "src/hooks/useModalBasic.js": { "status": "pending", "history": [] },
-        "src/components/modals/basicModal/BasicModal.jsx": { "status": "pending", "history": [] },
-        "src/components/modals/contents/selectCategory/ModalCategoryContent.jsx": { "status": "pending", "history": [] },
-        "src/components/categories/SelectCategoryProvider/SelectCategories.jsx": { "status": "pending", "history": [] },
-        "src/components/categories/SelectCategoryProvider/SelectCategoryProvider.jsx": { "status": "pending", "history": [] },
-        "src/model/Category.js": { "status": "pending", "history": [] },
-        "src/model/SubCategory.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/categories/get-all/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/categories/new-category/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/categories/update-category/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/categories/remove-category/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/subcategory/new/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/subcategory/update/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/subcategory/remove/route.js": { "status": "pending", "history": [] }
+        "src/app/dashboard/categories/page.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CategoriesClient.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CategoryList.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/SubCategoryList.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/EditCategoryModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/IconDisplayerMenu.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/hooks/useModalBasic.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/modals/basicModal/BasicModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/modals/contents/selectCategory/ModalCategoryContent.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/categories/SelectCategoryProvider/SelectCategories.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/categories/SelectCategoryProvider/SelectCategoryProvider.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/Category.js": {
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T06:52:00.000Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T06:53:35.551Z",
+              "event": "submitted",
+              "notes": "Migración de `src/model/Category.js` a `src/model/Category.ts` siguiendo el patrón establecido en `src/model/User.ts` y `src/model/Account.ts`. Se definió la interfaz `ICategory extends mongoose.Document` reflejando los campos del schema (`name`, `icon`, `color`, `isDefaultCatego`, `user`, `wallet`, `accounts`, `createdAt`, `updatedAt`), se tipó el schema con `new Schema<ICategory>(...)` preservando idénticos todos los campos y opciones originales, y se exportó `const Category: mongoose.Model<ICategory> = mongoose.models.Category || mongoose.model<ICategory>(\"Category\", categorySchema)`. Se removió el import no utilizado `model` de `mongoose`. Verificado con `npx tsc --noEmit` (0 errores), `npx eslint src/model/Category.ts` (0 errores/warnings en salida real) y `npx vitest run` (25/25 suites, 281/281 tests pasados)."
+            },
+            {
+              "ts": "2026-09-25T06:54:05.783Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. ICategory siguiendo exactamente el patron de User.ts/Account.ts, Schema<ICategory>, mongoose.Model<ICategory>. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
+        },
+        "src/model/SubCategory.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/categories/get-all/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/categories/new-category/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/categories/update-category/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/categories/remove-category/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/subcategory/new/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/subcategory/update/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/subcategory/remove/route.js": {
+          "status": "pending",
+          "history": []
+        }
       }
     }
   }
