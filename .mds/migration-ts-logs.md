@@ -247,11 +247,16 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 15 | `general-data/subcategory/remove` (POST) | Cero verificación de sesión - mismo problema que `remove-category`. | `83956d1` | Crítica |
 | 16 | `general-data/categories/get-categories` (POST) | IDOR de lectura - ya migrada en Historia 2, mismo review miss que `get-wallet`. | `e49f66e` | Alta |
 | 17 | `general-data/subcategory/get-sub-categories` (POST) | IDOR de lectura - ya migrada en Historia 2, mismo review miss que `get-wallet`. | `e49f66e` | Alta |
+| 18 | `general-data/budget/get` (POST) | IDOR de lectura - ya migrada en Historia 2, mismo review miss que `get-wallet` (variable confusamente nombrada `id`, en realidad es el mail). | `414893b` | Alta |
+| 19 | `general-data/budget/get-historical` (POST) | IDOR de lectura, usada por `HistoricalBudgetsComparative.jsx`/`HistoricalWalletAnalyzer.jsx`. | `414893b` | Alta |
+| 20 | `general-data/budget/new` (POST) | Cero verificación de sesión - se podía plantar un presupuesto en el wallet de cualquier usuario. | `414893b` | Alta |
+| 21 | `general-data/budget/update` (POST) | Cero verificación de sesión - se podía editar el presupuesto de cualquier usuario dando su id. | `414893b` | Alta |
+| 22 | `general-data/budget/remove` (POST) | Cero verificación de sesión - se podía archivar el presupuesto de cualquier usuario y desvincular las transacciones de sus proyectos. | `414893b` | Crítica |
 
-Los #1-5, #7, #9, #16 y #17 comparten la misma causa raíz (confiar en un `mail`
+Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
-autenticada vía `auth.api.getSession()`). El resto (#6, #8, #10-15) son
-la categoría más grave (cero verificación, ni siquiera de sesión) pero
+autenticada vía `auth.api.getSession()`). El resto (#6, #8, #10-15,
+#20-22) son la categoría más grave (cero verificación, ni siquiera de sesión) pero
 se corrigen
 con el mismo
 patrón. Ninguno requirió cambiar el comportamiento de ningún call site
@@ -433,11 +438,12 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 9 | `subcategory/remove/route.ts` | Si `removeSub` es `null`, `removeSub.name` dentro del `if (!removeSub)` lanza un `TypeError` real (atrapado por el catch) antes de llegar al fallback `|| "SubCategory"`. | Historia 6 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
-17 bugs de seguridad de control de acceso en `get-user`, `update-user`,
+22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
 `api-tokens/list`, `api-tokens/new`, `api-tokens/remove`, las 4 rutas
 de `accounts/*`, `get-wallet`/`wallet`, las 7 rutas de
-`categories/*`/`subcategory/*`, y `get-categories`/`get-sub-categories`
-(ver tabla consolidada arriba); 2 archivos muertos borrados; **3 bugs
+`categories/*`/`subcategory/*`, `get-categories`/`get-sub-categories`,
+y las 5 rutas de `budget/*` (ver tabla consolidada arriba); 2 archivos
+muertos borrados; **3 bugs
 reales de `CategoriesClient.tsx` arreglados a petición explícita del
 usuario el 2026-09-25 (commit `ef2059c`)** - dispatch faltante en
 `setCategories`/`setSubCategories` (resuelto ordenando localmente en

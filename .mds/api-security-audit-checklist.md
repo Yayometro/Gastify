@@ -3,7 +3,7 @@
 > **Esto NO es parte de la migración a TypeScript.** Es una tarea aparte,
 > pedida explícitamente por el usuario el 2026-09-25 después de que la
 > migración destapó bugs de control de acceso reales (ver
-> `migration-ts-logs.md`, ya van 17) en rutas que ya se habían tocado por
+> `migration-ts-logs.md`, ya van 22) en rutas que ya se habían tocado por
 > casualidad.
 > La migración solo revisa a fondo el archivo que le toca en cada historia -
 > este documento existe para, en algún momento aparte, revisar **absolutamente
@@ -16,7 +16,7 @@
 `middleware.ts` solo protege páginas (`matcher: ["/dashboard/:path*"]`) - las
 rutas de API NO están cubiertas por el middleware. Eso significa que un
 endpoint sin su propio `auth.api.getSession()` es alcanzable por cualquiera,
-autenticado o no, no solo por "el usuario equivocado". Se encontraron 17
+autenticado o no, no solo por "el usuario equivocado". Se encontraron 22
 instancias de esta familia de bug (IDOR o directamente cero autenticación)
 sin buscarlas deliberadamente - solo revisando de paso los archivos que la
 migración fue tocando (3 de ellas, `get-wallet`/`get-categories`/
@@ -26,7 +26,7 @@ userMail})` - vale la pena tenerla en mente al revisar lo que falta). Es
 muy probable que haya más entre las ~38 rutas que todavía no se han
 revisado a fondo.
 
-## Los 17 ya confirmados y corregidos (no hace falta re-revisarlos)
+## Los 22 ya confirmados y corregidos (no hace falta re-revisarlos)
 
 | Ruta | Problema | Commit |
 |------|----------|--------|
@@ -50,6 +50,11 @@ revisado a fondo.
 | `general-data/subcategory/remove` | Cero sesión (crítico - borrado) | `83956d1` |
 | `general-data/categories/get-categories` | IDOR de lectura (review miss de Historia 2) | `e49f66e` |
 | `general-data/subcategory/get-sub-categories` | IDOR de lectura (review miss de Historia 2) | `e49f66e` |
+| `general-data/budget/get` | IDOR de lectura (review miss de Historia 2) | `414893b` |
+| `general-data/budget/get-historical` | IDOR de lectura | `414893b` |
+| `general-data/budget/new` | Cero sesión | `414893b` |
+| `general-data/budget/update` | Cero sesión | `414893b` |
+| `general-data/budget/remove` | Cero sesión (crítico - archiva + desvincula transacciones) | `414893b` |
 
 ## Metodología sugerida para la auditoría completa
 
@@ -102,6 +107,11 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - `general-data/subcategory/remove`
 - `general-data/categories/get-categories`
 - `general-data/subcategory/get-sub-categories`
+- `general-data/budget/get`
+- `general-data/budget/get-historical`
+- `general-data/budget/new`
+- `general-data/budget/update`
+- `general-data/budget/remove`
 - `auth-extra/mark-step-up`
 
 ### Probablemente OK sin `getSession()` propio (confirmar de todas formas)
@@ -113,13 +123,6 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 
 **Accounts (parcial)**
 - [ ] `general-data/accounts/get-account` (GET/POST) - ¿confía en un mail/id del body?
-
-**Budget**
-- [ ] `general-data/budget/get`
-- [ ] `general-data/budget/get-historical`
-- [ ] `general-data/budget/new`
-- [ ] `general-data/budget/remove`
-- [ ] `general-data/budget/update`
 
 **Categories / SubCategories / Category Rules** (el CRUD y las 2 rutas
 de lectura ya se arreglaron - ver tabla de arriba; falta lo de reglas,
