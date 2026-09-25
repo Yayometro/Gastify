@@ -7,19 +7,38 @@ import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "./CategoIcon";
 
+// Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
+const TypedCategoIcon = CategoIcon as React.ComponentType<{
+  type: string;
+  siz?: number;
+  className?: string;
+}>;
+
+export interface ApiTokenItem {
+  _id: string;
+  name: string;
+  createdAt: string | number | Date;
+  lastUsedAt?: string | number | Date | null;
+  [key: string]: unknown;
+}
+
+export interface ApiTokensPanelProps {
+  mail?: string | null;
+}
+
 // Lets the user generate/revoke personal access tokens for third-party AI
 // agent connectors (Claude, later ChatGPT). See
 // .mds/AI_AGENT_CONNECTOR_PLAN.md for the full architecture this feeds.
-function ApiTokensPanel({ mail }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [tokens, setTokens] = useState([]);
-  const [newTokenName, setNewTokenName] = useState("");
+function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [tokens, setTokens] = useState<ApiTokenItem[]>([]);
+  const [newTokenName, setNewTokenName] = useState<string>("");
   // Shown exactly once, right after creation - never persisted or re-fetchable.
-  const [justCreatedToken, setJustCreatedToken] = useState(null);
+  const [justCreatedToken, setJustCreatedToken] = useState<string | null>(null);
   const toFetch = fetcher();
 
-  const loadTokens = async () => {
+  const loadTokens = async (): Promise<void> => {
     try {
       const res = await toFetch.post("general-data/api-tokens/list", mail);
       if (res.ok) setTokens(res.data || []);
@@ -33,7 +52,7 @@ function ApiTokensPanel({ mail }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const handleCreate = async (e) => {
+  const handleCreate = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (!newTokenName.trim()) return;
     try {
@@ -54,7 +73,7 @@ function ApiTokensPanel({ mail }) {
     }
   };
 
-  const handleRevoke = async (tokenId) => {
+  const handleRevoke = async (tokenId: string): Promise<void> => {
     try {
       setIsLoading(true);
       const res = await toFetch.post("general-data/api-tokens/remove", { mail, tokenId });
@@ -76,7 +95,7 @@ function ApiTokensPanel({ mail }) {
         onClick={() => setIsOpen(!isOpen)}
       >
         <h2 className="text-xl text-purple-300 font-normal">Connector access tokens</h2>
-        <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
+        <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
         <div className="mt-3">
@@ -120,7 +139,7 @@ function ApiTokensPanel({ mail }) {
             {tokens.length === 0 ? (
               <li className="text-xs text-gf-text-muted italic">No tokens yet.</li>
             ) : (
-              tokens.map((t) => (
+              tokens.map((t: ApiTokenItem) => (
                 <li
                   key={t._id}
                   className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
@@ -136,7 +155,7 @@ function ApiTokensPanel({ mail }) {
                     className="cursor-pointer text-red-500"
                     onClick={() => handleRevoke(t._id)}
                   >
-                    <CategoIcon type="MdClose" siz={20} />
+                    <TypedCategoIcon type="MdClose" siz={20} />
                   </div>
                 </li>
               ))
@@ -152,7 +171,7 @@ function ApiTokensPanel({ mail }) {
               <input
                 type="text"
                 value={newTokenName}
-                onChange={(e) => setNewTokenName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTokenName(e.target.value)}
                 placeholder="e.g. Claude connector"
                 required
               />
