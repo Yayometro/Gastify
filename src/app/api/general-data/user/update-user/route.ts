@@ -59,8 +59,22 @@ export async function POST(
       parsedPhone = Number(dataRequest.phone);
     }
     console.log(parsedPhone);
+    // Security fix: this used to look up (and then update) the user by
+    // whatever `mail` the client sent in the body, so ANY authenticated
+    // caller could edit ANY OTHER user's fullName/mail/image/phone (an
+    // IDOR - nothing verified the target email belonged to the caller's
+    // own session; same underlying issue already fixed in get-user's
+    // GET). The only real call site (ProfileClient.tsx) always sends the
+    // caller's own profile, so deriving the target from the authenticated
+    // session instead of trusting the body closes the hole with no change
+    // to any legitimate caller's behavior. `dataRequest.mail` is still
+    // honored below as the new email value being requested (changing your
+    // own email is a legitimate feature) - only the lookup of WHICH user
+    // to update no longer trusts the client.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     await dbConnection();
-    const userFounded = await User.findOne({ mail: dataRequest.mail }).lean();
+    const userFounded = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFounded)
       throw new Error(
         {
