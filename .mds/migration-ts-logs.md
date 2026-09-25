@@ -174,3 +174,27 @@ bloquea seguir.
 
 **Historia 2 probada end-to-end por el usuario**: pendiente (siguiente
 paso, igual que con la Historia 1).
+
+## 2026-09-24 — Historia 3 (Profile) en curso + 2do fix de seguridad urgente
+
+`dashboard/profile/page.tsx` y `ProfileClient.tsx` migrados y aprobados
+(1 ronda de rework en este último - mismo patrón de auto-imponerse
+cambios de comportamiento no forzados por el compilador, ver Historia 2).
+
+**Fix de seguridad fuera de alcance, atacado de inmediato por prioridad
+ultra alta (hecho por Claude directamente, no por Antigravity)**: al
+migrar `general-data/user/update-user/route.js` se encontró la misma
+familia de bug que el IDOR ya corregido en `get-user` - el POST buscaba
+y actualizaba al usuario por el `mail` que mandaba el cliente en el
+body, sin verificar que fuera el de la sesión autenticada. Esta vez es
+de escritura: cualquier usuario autenticado podía editar
+`fullName`/`mail`/`image`/`phone` de CUALQUIER OTRO usuario mandando su
+correo en el body (el cambio de contraseña ya estaba a salvo, usa
+`auth.api.setPassword` con la sesión del caller). Corregido derivando
+el usuario objetivo de `auth.api.getSession()` en vez de confiar en el
+body - `dataRequest.mail` se sigue honrando como el nuevo valor de
+correo solicitado (cambiar tu propio correo sigue siendo una feature
+legítima), solo el lookup de A QUIÉN actualizar ya no confía en el
+cliente. Verificado en vivo en Chrome: actualizar y revertir el nombre
+del perfil funciona igual que antes (toast confirmado, nombre
+persistido en la sidebar).
