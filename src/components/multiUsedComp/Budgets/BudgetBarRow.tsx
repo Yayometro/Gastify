@@ -7,9 +7,47 @@ import { getBudgetBarGradient, getBudgetMoodEmoji, getBudgetBarColor } from "@/h
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { isProjectBudget, isSavingBudget } from "@/helpers/transformers/budgetTypes";
 import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
+import type { RootState } from "@/lib/store";
+import type { WalletData } from "@/lib/features/walletSlice";
 
-function BudgetBarRow({ budget, actual, onClick }) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+export interface BudgetCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  isSub?: boolean;
+}
+
+export interface BudgetCategoryItem {
+  category?: BudgetCategoryRef;
+  subCategory?: BudgetCategoryRef;
+}
+
+export interface BudgetBarRowBudgetItem {
+  _id?: string;
+  name?: string;
+  isSaving?: boolean;
+  savingAmount?: number | string;
+  goalAmount?: number;
+  period?: "monthly" | "quarterly" | "biannual" | "yearly" | string;
+  budgetType?: "spending" | "saving" | "project" | string;
+  icon?: string;
+  currency?: string;
+  linkedAccounts?: unknown[] | null;
+  category?: BudgetCategoryRef;
+  subCategory?: BudgetCategoryRef;
+  categories?: BudgetCategoryItem[];
+  [key: string]: unknown;
+}
+
+export interface BudgetBarRowProps {
+  budget: BudgetBarRowBudgetItem;
+  actual?: number | string;
+  onClick: (budget: BudgetBarRowBudgetItem) => void;
+}
+
+function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX.Element {
+  const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const budgetCurrency = budget.currency || walletPrimaryCurrency;
   const goalAmount = budget.goalAmount || 0;
   const isSaving = isSavingBudget(budget);
@@ -36,7 +74,6 @@ function BudgetBarRow({ budget, actual, onClick }) {
   const gradient = getBudgetBarGradient(ratio, isSaving);
   const barColor = getBudgetBarColor(ratio, isSaving);
   const moodEmoji = getBudgetMoodEmoji(ratio, isSaving);
-  const widthPct = Math.min(ratio, 1) * 100;
   const pctNum = Math.round(ratio * 100);
   const balance = goalAmount - value; // spending: positive = remaining, negative = exceeded
 

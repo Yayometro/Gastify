@@ -1976,8 +1976,23 @@
           ]
         },
         "src/components/multiUsedComp/Budgets/BudgetBarRow.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:28:07.517Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:30:38.332Z",
+              "event": "submitted",
+              "notes": "Migración de `src/components/multiUsedComp/Budgets/BudgetBarRow.jsx` a `src/components/multiUsedComp/Budgets/BudgetBarRow.tsx`.\n\n1. Tipado completo:\n- Se definieron las interfaces `BudgetCategoryRef` (_id, name, color, icon, isSub), `BudgetCategoryItem` (category, subCategory), `BudgetBarRowBudgetItem` (_id, name, isSaving, savingAmount, goalAmount, period, budgetType, icon, currency, linkedAccounts, category, subCategory, categories, [key: string]: unknown) y `BudgetBarRowProps` (budget, actual?, onClick).\n- Se tipó el acceso al estado de Redux (`state: RootState`) extrayendo `primaryCurrency` desde `state.walletReducer?.data as WalletData`.\n- Se tipó el retorno del componente como `React.JSX.Element`.\n- Se eliminó la variable no utilizada `widthPct` para cumplir con las reglas de eslint (`@typescript-eslint/no-unused-vars`).\n\n2. Cero cambios de comportamiento o lógica:\n- Se mantuvieron exactamente la estructura DOM, estilos de Tailwind, clases de glassmorphism (`gf-glass-row`), cálculo de progreso/ratios, fórmulas de centrado de badge clamp, emojis de estado de ánimo y llamadas a helpers/transformers.\n\n3. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/components/multiUsedComp/Budgets/BudgetBarRow.tsx`: 0 errores o advertencias.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests pasados)."
+            },
+            {
+              "ts": "2026-09-25T22:31:17.826Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. BudgetCategoryRef/BudgetCategoryItem/BudgetBarRowBudgetItem/BudgetBarRowProps completos. widthPct removido - confirme via grep que nunca se usaba en ningun otro lado del original. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/multiUsedComp/Budgets/BudgetEditModal.jsx": {
           "status": "pending",
