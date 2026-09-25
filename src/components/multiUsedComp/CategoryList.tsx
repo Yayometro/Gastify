@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { Spin, Tooltip } from "antd";
 import EditCategoryModal from "./EditCategoryModal";
 import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import runNotify from "@/helpers/gastifyNotifier";
+import type { CategoryData } from "@/lib/features/categoriesSlice";
+import type { UserData } from "@/lib/features/userSlice";
 
-function CategoryList({ clCategories ,clUser }) {
-  const [onEdition, setOnEdition] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState({});
+export interface CategoryListProps {
+  clCategories?: CategoryData[] | null;
+  clUser?: UserData | Record<string, unknown> | null;
+}
 
-  
+function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.Element {
+  const [onEdition, setOnEdition] = useState<string | boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryData>({});
+
   return (
     <div className="category-list-component w-full h-full flex gap-2 flex-wrap justify-center items-center">
       <SelectCategories>
@@ -64,13 +69,11 @@ function CategoryList({ clCategories ,clUser }) {
                     {!category.icon ? (
                       <UniversalCategoIcon
                         type={"md/MdFilterNone"}
-                        size={40}
                         className={`w-[100px] min-[400px]:w-[150px]`}
                       />
                     ) : (
                       <UniversalCategoIcon
                         type={`${category.icon}`}
-                        size={40}
                         className={`w-[28px] h-[28px] min-[400px]:w-[35px] min-[400px]:h-[35px] `}
                       />
                     )}
