@@ -1,11 +1,29 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
 
-export async function POST(request) {
+export interface CategoriesGetAllData {
+  user: unknown;
+  categories: unknown;
+  defCat: unknown;
+  subCategories: unknown;
+}
+
+export interface CategoriesGetAllSuccessResponse {
+  data: CategoriesGetAllData;
+  message: string;
+  status: number;
+  ok: boolean;
+}
+
+export type CategoriesGetAllResponse = CategoriesGetAllSuccessResponse;
+
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<CategoriesGetAllResponse>> {
   try {
     if (!request) throw new Error("No request received from NEW CATEGORY");
     // Security fix: this used to trust whatever mail the client sent in the
@@ -22,9 +40,12 @@ export async function POST(request) {
     // User find
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error({
-        error: "User not found, review the email provided in GENERAL-DATA POST",
-      });
+      throw new Error(
+        {
+          error:
+            "User not found, review the email provided in GENERAL-DATA POST",
+        } as unknown as string
+      );
     const userId = userFound._id;
     const walletId = userFound.wallet;
     userFound.password = null;
@@ -71,7 +92,7 @@ export async function POST(request) {
       ok: true,
     });
   } catch (e) {
-    console.log(e)
+    console.log(e);
     throw new Error(e);
   }
 }
