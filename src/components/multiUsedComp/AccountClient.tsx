@@ -1,149 +1,187 @@
 "use client";
 
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import EmptyModule from "./EmptyModule";
-import UniversalCategoIcon from "./UniversalCategoIcon";
+import { Spin, Tooltip, Skeleton } from "antd";
 import "@/components/styles/animations.css";
-import { Switch, Spin, ConfigProvider, Space, Input, Tooltip, Skeleton } from "antd";
-import runNotify from "@/helpers/gastifyNotifier";
-import fetcher from "@/helpers/fetcher";
+
 import MultiCreditCard from "./MultiCreditCard";
 import CategoIcon from "./CategoIcon";
+import UniversalCategoIcon from "./UniversalCategoIcon";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
-import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
+import SelecterFilter, { type SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
+import EditAccountModal, { type EditAccountModalMode } from "./EditAccountModal";
+import PrimaryCurrencySelector from "./PrimaryCurrencySelector";
+
+import ResumeTabsTrans from "./ResumeTabsTrans";
+import DisplayerCategoryTreemap from "./DisplayerCategoryTreemap";
+
 import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
   getDateInYearMonthDay,
 } from "@/helpers/timeFunctions/timeFunctions";
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
-import ResumeTabsTrans from "./ResumeTabsTrans";
-import TransDetailsGrandContainer from "./TransDetailsGrandContainer";
-import DisplayerCategoryTreemap from "./DisplayerCategoryTreemap";
-import EditAccountModal from "./EditAccountModal";
-import PrimaryCurrencySelector from "./PrimaryCurrencySelector";
-import { fetchUser } from "@/lib/features/userSlice";
-import { fetchWallet } from "@/lib/features/walletSlice";
-import { fetchCategories } from "@/lib/features/categoriesSlice";
-import { fetchSubCat } from "@/lib/features/subCategorySlice";
-import { fetchAccounts } from "@/lib/features/accountsSlice";
-import { fetchTrans } from "@/lib/features/transacctionsSlice";
 
-function AccountClient({acSession}) {
-  const [onEdition, setOnEdition] = useState(false);
+import { fetchUser, type UserData } from "@/lib/features/userSlice";
+import { fetchWallet, type WalletData } from "@/lib/features/walletSlice";
+import { fetchAccounts, type AccountData } from "@/lib/features/accountsSlice";
+import { fetchTrans } from "@/lib/features/transacctionsSlice";
+import type { RootState, AppDispatch } from "@/lib/store";
+
+// Typed bridge components for unmigrated JS components
+const TypedResumeTabsTrans = ResumeTabsTrans as React.ComponentType<{
+  timePeriodFromFather?: Date[];
+  rttTrans?: unknown;
+}>;
+
+const TypedDisplayerCategoryTreemap = DisplayerCategoryTreemap as React.ComponentType<{
+  dccpIncomes?: unknown;
+  dccoBills?: unknown;
+}>;
+
+export interface AccountClientProps {
+  acSession?: string;
+}
+
+export interface AccountTransaction {
+  _id?: string;
+  name?: string;
+  amount?: number | string;
+  isBill?: boolean;
+  isIncome?: boolean;
+  date?: string | Date;
+  createdAt?: string | Date;
+  account?: {
+    _id?: string;
+    [key: string]: unknown;
+  } | string | unknown;
+  displayMoney?: {
+    primary?: {
+      amountMinor: number;
+      currency: string;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface ExtendedAccount extends AccountData {
+  allTransactionsList?: AccountTransaction[];
+  billsList?: AccountTransaction[];
+  incomesList?: AccountTransaction[];
+  [key: string]: unknown;
+}
+
+function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
+  const [onEdition, setOnEdition] = useState<EditAccountModalMode>(false);
   // DATES
-  let [selectedDuration, setSelectedDuration] = useState(30);
-  let [startDate, setStartDate] = useState(null);
-  let [endDate, setEndDate] = useState(null);
-  //TRANSACTIONS and TYPES OF
-  let [allTransactions, setAllTransacctions] = useState([]);
-  let [finalAccounts, setFinalAccounts] = useState([]);
-  let [carruselCurrent, setCarruselCurrent] = useState(0);
+  const [selectedDuration, setSelectedDuration] = useState<number>(30);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  // TRANSACTIONS and TYPES OF
+  const [, setAllTransacctions] = useState<AccountTransaction[]>([]);
+  const [finalAccounts, setFinalAccounts] = useState<ExtendedAccount[]>([]);
+  const [carruselCurrent, setCarruselCurrent] = useState<number>(0);
   // Independent time-period filter for "Account movements details" (the
   // Treemap) - same pattern as ResumeTabsTrans's own local filter, so this
   // section can be scoped to a different range than the page-level filter
   // above without moving it.
   const today = new Date();
-  const [treemapTimePeriod, setTreemapTimePeriod] = useState([
+  const [treemapTimePeriod, setTreemapTimePeriod] = useState<[Date, Date]>([
     new Date(today.getFullYear(), today.getMonth(), 1),
     getLastDayOfMonth(today.getFullYear(), today.getMonth()),
   ]);
-  const treemapTimePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(today.getFullYear());
+  const treemapTimePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(
+    today.getFullYear()
+  ) as SelecterPeriod[];
   const searchParams = useSearchParams();
   const targetAccountId = searchParams.get("accountId");
   // Redux
-  const dispatch = useDispatch()
-  const ccUser = useSelector((state) => state.userReducer)
-  const ccWallet = useSelector((state) => state.walletReducer)
-  const ccAccounts = useSelector((state) => state.accountsReducer)
-  const ccCategories = useSelector((state) => state.categoriesReducer)
-  const ccSubCategories = useSelector((state) => state.subCategoryReducer)
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer)
+  const dispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: RootState) => state.userReducer);
+  const ccWallet = useSelector((state: RootState) => state.walletReducer);
+  const ccAccounts = useSelector((state: RootState) => state.accountsReducer);
+  const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
 
-  const userData = ccUser.data;
-  const walletData = ccWallet.data;
+  const userData = ccUser.data as UserData;
+  const walletData = ccWallet.data as WalletData;
   const accountData = ccAccounts.data;
-  const transactionData = ccTransacciones.data;
-  
-  let nameGeneral = userData?.fullName;
-  
-  // FETCHER
-  const toFetch = fetcher();
+  const transactionData = ccTransacciones.data as AccountTransaction[];
+
+  const nameGeneral = userData?.fullName;
+
   // START USE EFFECTS
   useEffect(() => {
     // User
-    if(ccUser.status == 'idle'){
-      dispatch(fetchUser(acSession))
+    if (ccUser.status === "idle") {
+      dispatch(fetchUser(acSession));
     }
     // Wallet
-    if(ccWallet.status == 'idle'){
-      dispatch(fetchWallet(acSession))
+    if (ccWallet.status === "idle") {
+      dispatch(fetchWallet(acSession));
     }
     // Account
-    if(ccAccounts.status == 'idle'){
-      dispatch(fetchAccounts(acSession))
+    if (ccAccounts.status === "idle") {
+      dispatch(fetchAccounts(acSession));
     }
-    //Transactions
-    if(ccTransacciones.status == 'idle'){
+    // Transactions
+    if (ccTransacciones.status === "idle") {
       // console.log('first')
-      dispatch(fetchTrans(acSession))
+      dispatch(fetchTrans(acSession));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  //Use effect for range
+  // Use effect for range
   useEffect(() => {
-    const today = new Date();
-    const start = new Date(today.setDate(today.getDate() - selectedDuration));
+    const todayDate = new Date();
+    const start = new Date(todayDate.setDate(todayDate.getDate() - selectedDuration));
     setStartDate(start);
     setEndDate(new Date()); //
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  //Use effect for select duration
+  // Use effect for select duration
   useEffect(() => {
-    const today = new Date();
-    const start = new Date(today.setDate(today.getDate() - selectedDuration));
+    const todayDate = new Date();
+    const start = new Date(todayDate.setDate(todayDate.getDate() - selectedDuration));
     setStartDate(start);
   }, [selectedDuration]);
-  //Use effect to SET data
+  // Use effect to SET data
   useEffect(() => {
     if (accountData) {
-      //DATE
-      let startFilterDate;
-      let endFilterDate;
+      // DATE
+      let startFilterDate: Date;
+      let endFilterDate: Date;
       if (startDate && endDate) {
         startFilterDate = startDate;
         endFilterDate = endDate;
       } else {
-        const today = new Date();
+        const todayDate = new Date();
         startFilterDate = new Date(
-          today.setDate(today.getDate() - selectedDuration)
+          todayDate.setDate(todayDate.getDate() - selectedDuration)
         );
         endFilterDate = new Date();
       }
-      //TRANS
-      if (transactionData.length > 0 && accountData) {
+      // TRANS
+      if (transactionData && transactionData.length > 0 && accountData) {
         let total = transactionData.filter((tra) => {
-          const transactionDate = new Date(tra.date || tra.createdAt);
+          const transactionDate = new Date(tra.date || tra.createdAt || "");
           return (
             transactionDate >= startFilterDate &&
             transactionDate <= endFilterDate
           );
         });
         total = total.sort((a, b) => {
-          let dateA = new Date(a.date || a.createdAt);
-          let dateB = new Date(b.date || b.createdAt);
+          const dateA = new Date(a.date || a.createdAt || "");
+          const dateB = new Date(b.date || b.createdAt || "");
 
-          return dateB - dateA;
+          return dateB.getTime() - dateA.getTime();
         });
-        const accBills = total.filter((bill) => bill.isBill && !bill.isIncome);
-        const accIncomes = total.filter(
-          (bill) => bill.isIncome && !bill.isBill
-        );
         setAllTransacctions(total);
-        //Divide by the number of accounts
-        const accToObject = accountData.reduce((obj, acc) => {
-          if (!obj[acc._id]) {
+        // Divide by the number of accounts
+        const accToObject = accountData.reduce<Record<string, ExtendedAccount>>((obj, acc) => {
+          if (acc._id && !obj[acc._id]) {
             obj[acc._id] = {
               ...acc,
               allTransactionsList: [],
@@ -156,12 +194,16 @@ function AccountClient({acSession}) {
         const dividedArr = Object.values(accToObject);
         dividedArr.forEach((acc) => {
           total.forEach((tra) => {
-            if (tra?.account?._id === acc._id) {
-              acc.allTransactionsList.push(tra);
+            const traAccId =
+              typeof tra?.account === "object" && tra?.account !== null
+                ? (tra.account as { _id?: string })._id
+                : tra?.account;
+            if (traAccId === acc._id) {
+              acc.allTransactionsList?.push(tra);
               if (tra.isBill) {
-                acc.billsList.push(tra);
+                acc.billsList?.push(tra);
               } else {
-                acc.incomesList.push(tra);
+                acc.incomesList?.push(tra);
               }
             }
           });
@@ -171,26 +213,21 @@ function AccountClient({acSession}) {
     }
   }, [accountData, transactionData, selectedDuration, startDate, endDate]);
 
-  function getTreemapValueFromSelecter(v) {
+  function getTreemapValueFromSelecter(v: string): void {
     const [start, end] = v.split("*");
     setTreemapTimePeriod([new Date(start), new Date(end)]);
   }
 
-  function handleTreemapRangeDate(dateStart, dateEnd) {
+  function handleTreemapRangeDate(dateStart: Date | null, dateEnd: Date | null): void {
     if (dateStart && dateEnd) {
       setTreemapTimePeriod([dateStart, dateEnd]);
     }
   }
 
-  const handleChange = (e, tp) => {
-    const { name, value } = e.target;
-    console.log(name, value);
-    setUserInfo({ ...userInfo, [name]: value });
-  };
-  const handleDurationChange = (event) => {
+  const handleDurationChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     setSelectedDuration(parseInt(event.target.value, 10));
   };
-  const handleRangeDate = (sDate, eDate) => {
+  const handleRangeDate = (sDate: Date | null, eDate: Date | null): void => {
     setStartDate(sDate);
     setEndDate(eDate);
   };
@@ -221,10 +258,10 @@ function AccountClient({acSession}) {
           <div className="w-full profile-img py-4 text-center text-white">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
               {
-                nameGeneral == undefined || nameGeneral == '' ? (<Spin />) : 
+                nameGeneral === undefined || nameGeneral === "" ? (<Spin />) : 
                 (`${nameGeneral} `)
               }
-              {' '}Accounts
+              {" "}Accounts
             </h1>
           </div>
           <div className="filters flex items-center justify-center gap-2">
@@ -271,7 +308,7 @@ function AccountClient({acSession}) {
                 />
             </div>
             <div className="ac-dashboard-client w-full-h-full">
-              {!finalAccounts.length > 0 ? (
+              {!finalAccounts.length ? (
                 <div className="w-full h-[500px]">
                   <Skeleton active />
                   <Skeleton active />
@@ -321,7 +358,7 @@ function AccountClient({acSession}) {
                   <div className="w-full flex justify-center items-center gap-2 mb-6">
                     <div
                         className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
-                        onClick={() => setOnEdition('edition')}
+                        onClick={() => setOnEdition("edition")}
                     >
                         <p className="text-white">Edit Account</p>
                         <div className=" flex justify-center items-center">
@@ -330,7 +367,7 @@ function AccountClient({acSession}) {
                     </div>
                     <div
                         className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
-                        onClick={() => setOnEdition('creation')}
+                        onClick={() => setOnEdition("creation")}
                     >
                         <p className="text-white">New Account</p>
                         <div className=" flex justify-center items-center">
@@ -343,7 +380,7 @@ function AccountClient({acSession}) {
                       finalAccounts.length <= 0 ? (
                         <Skeleton active />
                       ) : (
-                        <ResumeTabsTrans
+                        <TypedResumeTabsTrans
                           rttTrans={
                             finalAccounts[carruselCurrent]?.allTransactionsList
                           }
@@ -383,7 +420,7 @@ function AccountClient({acSession}) {
                       <Skeleton active/>
                     ) : (
                       <div className="w-full h-full">
-                        <DisplayerCategoryTreemap
+                        <TypedDisplayerCategoryTreemap
                           dccpIncomes={getTransactionsFromTimeRange(
                             finalAccounts[carruselCurrent]?.incomesList || [],
                             treemapTimePeriod[0],

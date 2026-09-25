@@ -1330,8 +1330,23 @@
           ]
         },
         "src/components/multiUsedComp/AccountClient.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T06:25:02.195Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T06:29:10.813Z",
+              "event": "submitted",
+              "notes": "Migración de AccountClient.jsx a AccountClient.tsx. Se definieron las interfaces AccountClientProps, AccountTransaction y ExtendedAccount (que extiende AccountData con allTransactionsList, billsList, incomesList). Se crearon typed bridges para componentes JS fuera de alcance de esta historia (ResumeTabsTrans, DisplayerCategoryTreemap). Se tiparon el estado de Redux, dispatch, hooks y manejadores de eventos. Se eliminó el handler muerto handleChange que no estaba en uso y referenciaba variables no declaradas (userInfo, setUserInfo). Verificado con tsc --noEmit (0 errores), npx eslint (0 errores, 0 warnings) y vitest (25/25 suites pasando, 281 tests)."
+            },
+            {
+              "ts": "2026-09-25T06:32:50.703Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Diff completo revisado a mano (447 lineas nuevas): AccountClientProps/AccountTransaction/ExtendedAccount, bridges tipados TypedResumeTabsTrans/TypedDisplayerCategoryTreemap para componentes sin migrar fuera de alcance. 3 remociones de codigo confirmadas como muertas via grep del original: import TransDetailsGrandContainer (nunca usado en JSX), accBills/accIncomes (calculados pero nunca leidos despues), handleChange (nunca llamado, referenciaba userInfo/setUserInfo que ni siquiera existian en el archivo - hubiera sido ReferenceError si se llamaba). !finalAccounts.length>0 -> !finalAccounts.length verificado como equivalente exacto para todos los valores posibles de length (entero no negativo). dateB-dateA -> dateB.getTime()-dateA.getTime() es el patron ya confirmado como forzado por el compilador. tsc --noEmit limpio, eslint limpio, 281/281 tests. Verificado en vivo en Chrome: pagina de accounts, ResumeTabsTrans y el treemap de categorias renderizan correctamente, sin errores de consola atribuibles al cambio (solo un warning preexistente de @nivo/core sobre defaultProps, libreria de terceros)."
+            }
+          ]
         },
         "src/app/dashboard/accounts/page.jsx": {
           "status": "pending",
