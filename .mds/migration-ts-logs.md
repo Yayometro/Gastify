@@ -429,6 +429,11 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 5 | `walletSlice.ts`, `categoriesSlice.ts`, `subCategorySlice.ts`, `transacctionsSlice.ts` | Varios selectores de Redux rotos: leen la ruta equivocada del state (ej. `state.accounts.*` en vez de `state.wallet.*`) o regresan el state completo sin filtrar. Parecen no usarse en ningún lado activo (o el bug nunca se manifestó), pero están mal. | Historia 2 |
 | 6 | `lib/asyncThunk.ts` | Archivo 100% boilerplate de tutorial de Redux Toolkit, nunca conectado al store real - candidato a borrar por completo. | Historia 2 |
 | 7 | `Dashboard.tsx` (ya migrado, comportamiento preservado) | `allBills`/`allIncomes` solo se referencian dentro de un bloque JSX ya comentado; `handleDurationChange`/`setSelectedDuration` están completamente muertos. No se tocaron por regla, pero son candidatos a limpieza. | Historia 2 |
+| 8 | `CategoriesClient.tsx` | `setCategories(allCategories)`/`setSubCategories(subCategoriesData)` se llaman como funciones normales, sin `dispatch(...)` - nunca actualizan el store de Redux de verdad. | Historia 6 |
+| 9 | `CategoriesClient.tsx` | 4 condiciones `algo.length < 0 ? ... : ...` que nunca pueden ser true (`.length` nunca es negativo) - la rama "vacío" nunca se muestra. | Historia 6 |
+| 10 | `CategoriesClient.tsx` | La sección "Default Sub Categories" renderiza `<CategoryList clCategories={filteredDefCategoriesData} .../>` - el mismo componente y el mismo dato que la sección "Default Categories" de arriba (copy-paste bug), en vez de una lista de subcategorías por defecto. | Historia 6 |
+| 11 | `UniversalCategoIcon` (llamadas en `CategoryList.tsx`/`SubCategoryList.tsx`/`EditCategoryModal.tsx`) | Varias llamadas mandan `size={40}` en vez de `siz={40}` (el prop real que espera `UniversalCategoIcon`) - typo preexistente, el ícono nunca recibe tamaño explícito. Se preservó tal cual en las 3 migraciones, no se corrigió. | Historia 6 |
+| 12 | `subcategory/remove/route.ts` | Si `removeSub` es `null`, `removeSub.name` dentro del `if (!removeSub)` lanza un `TypeError` real (atrapado por el catch) antes de llegar al fallback `|| "SubCategory"`. | Historia 6 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 17 bugs de seguridad de control de acceso en `get-user`, `update-user`,
@@ -511,3 +516,51 @@ la sesion correctamente.
 
 Con esto van 15 rutas con este mismo bug de fondo corregidas en la
 migracion (ver tabla consolidada mas abajo, actualizada).
+
+Al revisar `get-categories`/`get-sub-categories` (ya migradas en
+Historia 2) por el mismo motivo, se confirmó el mismo review miss que
+`get-wallet` - IDOR de lectura idéntico, mismas dos rutas corregidas
+(16to y 17mo fix, commit `e49f66e`).
+
+## 2026-09-25 — Historia 6 (Categories) completa: 20/20 archivos
+
+Modelos `Category.ts`/`SubCategory.ts`, las 7 rutas CRUD (ya con los
+fixes de seguridad intactos), `useModalBasic.ts`,
+`SelectCategories.tsx`/`SelectCategoryProvider.tsx`,
+`IconDisplayerMenu.tsx`, `BasicModal.tsx`, `ModalCategoryContent.tsx`,
+`CategoryList.tsx`, `SubCategoryList.tsx`, `EditCategoryModal.tsx` (el
+más grande de la historia, 527 líneas), `CategoriesClient.tsx` y
+`categories/page.tsx` - todos migrados, revisados y aprobados.
+
+**2 rondas de rework, mismo bug de fondo nuevo en esta historia**: en
+`CategoryList.tsx`, Antigravity cambió `size={40}` a `siz={40}` en una
+llamada a `UniversalCategoIcon` - parecía un simple rename de tipos,
+pero `UniversalCategoIcon` real espera `siz`, no `size`; el original
+SIEMPRE tuvo el typo `size` (ignorado silenciosamente, el ícono nunca
+tenía tamaño explícito), así que renombrarlo activaba visualmente el
+tamaño por primera vez - un cambio de comportamiento real. Se verificó
+que quitar la prop por completo (sin reemplazo) también compila limpio,
+confirmando que el rename no era forzado. El mismo problema volvió a
+aparecer en `EditCategoryModal.tsx` con una prop `color` inválida en
+otra llamada a `UniversalCategoIcon` - ahí Antigravity ya lo hizo bien
+solo (quitarla, no renombrarla a `colore`), y en `SubCategoryList.tsx`
+tras advertirle explícitamente del patrón, también lo hizo bien a la
+primera. `EditCategoryModal.tsx` tuvo además su propia ronda de rework
+por el patrón de siempre (auto-imponerse `|| ""` en vez de `|| null`, y
+un `setActive(ecmMode || false)` no forzado que habría normalizado
+cualquier valor falsy de `ecmMode` a `false` en vez de dejarlo pasar
+tal cual).
+
+**4 bugs reales preexistentes encontrados y confirmados en
+`CategoriesClient.tsx`** (ver tabla de bugs pendientes, filas 8-10):
+`setCategories`/`setSubCategories` llamados sin `dispatch(...)` (nunca
+actualizan el store de verdad), 4 condiciones `.length < 0` que nunca
+se cumplen, y la sección "Default Sub Categories" que renderiza
+exactamente el mismo componente y dato que "Default Categories" arriba
+(copy-paste bug real). Ninguno se tocó, todos preservados y reportados.
+
+**Historia 6 probada end-to-end en vivo por Claude**: crear una
+categoría de prueba completa (nombre, ícono vía `IconDisplayerMenu`,
+color vía `ColorPicker`) y borrarla - toasts de éxito confirmados en
+cada paso, sin errores de consola. Pendiente de que el usuario la
+pruebe también por su cuenta.
