@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-4-shared-leaf-components",
+  "activeStory": "historia-5-accounts",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -1286,6 +1286,20 @@
             }
           ]
         }
+      }
+    },
+    "historia-5-accounts": {
+      "label": "Accounts (page + AccountClient + EditAccountModal + PrimaryCurrencySelector + modelo Account + rutas de API que usa). NO incluye ResumeTabsTrans/TransDetailsGrandContainer/DisplayerCategoryTreemap (arrastran CategoryTreemap y el arbol de analytics de categorias completo - son su propia historia futura). AccountClient necesitara bridges tipados para esos, igual que con Movements/WalletAnalyzer en Historia 2.",
+      "files": {
+        "src/app/dashboard/accounts/page.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/AccountClient.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/EditAccountModal.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/PrimaryCurrencySelector.jsx": { "status": "pending", "history": [] },
+        "src/model/Account.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/accounts/reorder/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/accounts/update-account/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/accounts/new-account/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/accounts/remove-account/route.js": { "status": "pending", "history": [] }
       }
     }
   }

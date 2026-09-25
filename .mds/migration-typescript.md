@@ -88,29 +88,31 @@ seguridad IDOR reales fuera del flujo normal de migración (ver tabla en
 `migration-ts-logs.md`) - mismo patron que el IDOR de `get-user` ya
 corregido en Historia 1.
 
-**Historia activa: Historia 4 — Componentes compartidos pequeños**
-(`CategoIcon`, `UniversalCategoIcon`, `EmptyModule`, `Tag`,
+**Historia 4 (Componentes compartidos pequeños) completa** - 10/10
+archivos (`CategoIcon`, `UniversalCategoIcon`, `EmptyModule`, `Tag`,
 `SelecterFilter`, `SelecterItemsToDisplay`, `TimeRange`,
-`MultiCreditCard`, `GoalBudget`, `DeletePreviewRow`). Elegida a
-proposito antes de atacar Movements/WalletAnalyzer/Budgets/Categories
-(todos con 1000+ lineas y muchas dependencias entrelazadas) porque estos
-10 archivos son pequeños, de bajo riesgo, y se usan como bridge tipado
-(`Typed<Componente>`) en casi todos los componentes ya migrados - migrarlos
-de raiz reduce la deuda de esos bridges en las historias grandes que
-siguen. De paso, revisando `SelecterFilter.jsx` se confirmo la causa raiz
-del bug del dropdown de periodo reportado por el usuario en Historia 2:
-dos entradas del arreglo de periodos por defecto comparten
-`value: 30` ("Last 30 days" y "Last 90 days" - typo de copy-paste), asi
-que el `<select>` nativo siempre muestra la etiqueta de la primera
-opcion que matchea ese value aunque el dato subyacente cambie bien. No
-se toca en esta historia (no es parte del alcance de "solo tipos" y no
-es de seguridad) - reportado, pendiente de que el usuario decida
-arreglarlo.
+`MultiCreditCard`, `GoalBudget`, `DeletePreviewRow`). Ver
+`migration-ts-logs.md` para la tabla consolidada de bugs pendientes
+encontrados en el camino (no arreglados, fuera de alcance), incluyendo
+la causa raiz confirmada del bug del dropdown de periodo del Dashboard
+(`SelecterFilter.jsx`: `value: 30` duplicado entre "Last 30 days" y
+"Last 90 days").
+
+**Historia activa: Historia 5 — Accounts** (`dashboard/accounts/page.jsx`,
+`AccountClient.jsx`, `EditAccountModal.jsx`, `PrimaryCurrencySelector.jsx`,
+modelo `Account.js`, y las 4 rutas de API que usa directamente:
+`reorder`, `update-account`, `new-account`, `remove-account`).
+Deliberadamente NO incluye `ResumeTabsTrans`/`TransDetailsGrandContainer`/
+`DisplayerCategoryTreemap` que renderiza `AccountClient.jsx` - esos
+arrastran `CategoryTreemap` (666 lineas) y todo el arbol de analytics de
+categorias, son su propia historia futura. `AccountClient.jsx` necesitara
+bridges tipados para esos componentes sin migrar, mismo patron ya usado
+con Movements/WalletAnalyzer en Historia 2.
 
 Historias siguientes (orden real a confirmar): Movements/Transacciones,
-Wallet Analyzer, Budgets, Categories, Accounts, History, Projections,
-MCP tools. Los modelos Mongoose que aún faltan (Wallet, Account,
-Category, SubCategory, Budget, Transaction, Tag, IncomeSource,
+Wallet Analyzer, Budgets, Categories (+ su arbol de analytics/treemap),
+History, Projections, MCP tools. Los modelos Mongoose que aún faltan
+(Wallet, Category, SubCategory, Budget, Transaction, Tag, IncomeSource,
 CategoryRule, ProjectionSettings, ProjectionBaseline, FxRateSnapshot) se
 migran conforme cada historia los necesite, no todos de un jalón.
 `scripts/` sueltos al final.
