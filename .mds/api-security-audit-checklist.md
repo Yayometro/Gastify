@@ -2,8 +2,9 @@
 
 > **Esto NO es parte de la migración a TypeScript.** Es una tarea aparte,
 > pedida explícitamente por el usuario el 2026-09-25 después de que la
-> migración destapó 8 bugs de control de acceso reales (ver
-> `migration-ts-logs.md`) en rutas que ya se habían tocado por casualidad.
+> migración destapó bugs de control de acceso reales (ver
+> `migration-ts-logs.md`, ya van 17) en rutas que ya se habían tocado por
+> casualidad.
 > La migración solo revisa a fondo el archivo que le toca en cada historia -
 > este documento existe para, en algún momento aparte, revisar **absolutamente
 > todos** los endpoints de `src/app/api/`, reciban o envíen la información que
@@ -15,13 +16,17 @@
 `middleware.ts` solo protege páginas (`matcher: ["/dashboard/:path*"]`) - las
 rutas de API NO están cubiertas por el middleware. Eso significa que un
 endpoint sin su propio `auth.api.getSession()` es alcanzable por cualquiera,
-autenticado o no, no solo por "el usuario equivocado". Se encontraron 8
+autenticado o no, no solo por "el usuario equivocado". Se encontraron 17
 instancias de esta familia de bug (IDOR o directamente cero autenticación)
 sin buscarlas deliberadamente - solo revisando de paso los archivos que la
-migración fue tocando. Es muy probable que haya más entre las ~47 rutas que
-todavía no se han revisado a fondo.
+migración fue tocando (3 de ellas, `get-wallet`/`get-categories`/
+`get-sub-categories`, eran review misses de Historia 2, todas con la
+forma exacta `const userMail = await request.json(); User.findOne({mail:
+userMail})` - vale la pena tenerla en mente al revisar lo que falta). Es
+muy probable que haya más entre las ~38 rutas que todavía no se han
+revisado a fondo.
 
-## Los 8 ya confirmados y corregidos (no hace falta re-revisarlos)
+## Los 17 ya confirmados y corregidos (no hace falta re-revisarlos)
 
 | Ruta | Problema | Commit |
 |------|----------|--------|
@@ -36,6 +41,15 @@ todavía no se han revisado a fondo.
 | `general-data/accounts/remove-account` | Cero sesión (crítico - borrado) | `94723a3` |
 | `general-data/wallet/get-wallet` | IDOR de lectura (review miss de Historia 2) | `b8897fc` |
 | `general-data/wallet` (POST) | Cero sesión | `b8897fc` |
+| `general-data/categories/get-all` | IDOR de lectura (sin call site real) | `83956d1` |
+| `general-data/categories/new-category` | Cero sesión | `83956d1` |
+| `general-data/categories/update-category` | Cero sesión | `83956d1` |
+| `general-data/categories/remove-category` | Cero sesión (crítico - borrado) | `83956d1` |
+| `general-data/subcategory/new` | Cero sesión | `83956d1` |
+| `general-data/subcategory/update` | Cero sesión (crítico - re-parenteo cascadea a Transaction.updateMany) | `83956d1` |
+| `general-data/subcategory/remove` | Cero sesión (crítico - borrado) | `83956d1` |
+| `general-data/categories/get-categories` | IDOR de lectura (review miss de Historia 2) | `e49f66e` |
+| `general-data/subcategory/get-sub-categories` | IDOR de lectura (review miss de Historia 2) | `e49f66e` |
 
 ## Metodología sugerida para la auditoría completa
 
@@ -79,6 +93,15 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - `general-data/user/update-user`
 - `general-data/wallet/get-wallet`
 - `general-data/wallet` (POST)
+- `general-data/categories/get-all`
+- `general-data/categories/new-category`
+- `general-data/categories/update-category`
+- `general-data/categories/remove-category`
+- `general-data/subcategory/new`
+- `general-data/subcategory/update`
+- `general-data/subcategory/remove`
+- `general-data/categories/get-categories`
+- `general-data/subcategory/get-sub-categories`
 - `auth-extra/mark-step-up`
 
 ### Probablemente OK sin `getSession()` propio (confirmar de todas formas)
@@ -98,18 +121,11 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - [ ] `general-data/budget/remove`
 - [ ] `general-data/budget/update`
 
-**Categories / SubCategories / Category Rules**
-- [ ] `general-data/categories/get-all`
-- [ ] `general-data/categories/get-categories`
-- [ ] `general-data/categories/new-category`
-- [ ] `general-data/categories/remove-category`
-- [ ] `general-data/categories/update-category`
+**Categories / SubCategories / Category Rules** (el CRUD y las 2 rutas
+de lectura ya se arreglaron - ver tabla de arriba; falta lo de reglas,
+que usa `Movements.jsx`, no este árbol)
 - [ ] `general-data/category-rules/apply-suggestions`
 - [ ] `general-data/category-rules/suggest`
-- [ ] `general-data/subcategory/get-sub-categories`
-- [ ] `general-data/subcategory/new`
-- [ ] `general-data/subcategory/remove`
-- [ ] `general-data/subcategory/update`
 
 **Files**
 - [ ] `general-data/files/deduplicate/[id]`

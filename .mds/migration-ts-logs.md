@@ -238,11 +238,21 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 6 | `general-data/accounts/*` (reorder, update-account, new-account, remove-account) | Cero verificación de sesión (no solo "mail equivocado" - directamente sin auth), y sin cobertura del middleware por ser rutas de API. `remove-account` permitía borrar cualquier cuenta de la base de datos sin ninguna autenticación. | `94723a3` | Crítica |
 | 7 | `general-data/wallet/get-wallet` (POST) | IDOR de lectura - ya migrada en Historia 2, se me pasó en esa revisión. Cualquiera podía leer el wallet completo (presupuesto, cash, moneda) de otro usuario. | `b8897fc` | Alta |
 | 8 | `general-data/wallet` (POST) | Cero verificación de sesión - cualquiera podía editar nombre/cash/presupuesto/moneda de CUALQUIER wallet dado su id. | `b8897fc` | Crítica |
+| 9 | `general-data/categories/get-all` (POST) | IDOR de lectura - sin call site real, pero alcanzable por HTTP directo. | `83956d1` | Media |
+| 10 | `general-data/categories/new-category` (POST) | Cero verificación de sesión - se podía plantar una categoría en el wallet de cualquier usuario. | `83956d1` | Alta |
+| 11 | `general-data/categories/update-category` (POST) | Cero verificación de sesión - se podía editar la categoría de cualquier usuario dando su id. | `83956d1` | Alta |
+| 12 | `general-data/categories/remove-category` (POST) | Cero verificación de sesión - se podía borrar la categoría de cualquier usuario dando su id. | `83956d1` | Crítica |
+| 13 | `general-data/subcategory/new` (POST) | Cero verificación de sesión - mismo problema que `new-category`. | `83956d1` | Alta |
+| 14 | `general-data/subcategory/update` (POST) | Cero verificación de sesión, la más delicada del lote - re-parentear una subcategoría ajena dispara `Transaction.updateMany`, pudiendo re-etiquetar transacciones de otro usuario. | `83956d1` | Crítica |
+| 15 | `general-data/subcategory/remove` (POST) | Cero verificación de sesión - mismo problema que `remove-category`. | `83956d1` | Crítica |
+| 16 | `general-data/categories/get-categories` (POST) | IDOR de lectura - ya migrada en Historia 2, mismo review miss que `get-wallet`. | `e49f66e` | Alta |
+| 17 | `general-data/subcategory/get-sub-categories` (POST) | IDOR de lectura - ya migrada en Historia 2, mismo review miss que `get-wallet`. | `e49f66e` | Alta |
 
-Los #1-5 y #7 comparten la misma causa raíz (confiar en un `mail`
+Los #1-5, #7, #9, #16 y #17 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
-autenticada vía `auth.api.getSession()`). Los #6 y #8 son la categoría
-más grave (cero verificación, ni siquiera de sesión) pero se corrigen
+autenticada vía `auth.api.getSession()`). El resto (#6, #8, #10-15) son
+la categoría más grave (cero verificación, ni siquiera de sesión) pero
+se corrigen
 con el mismo
 patrón. Ninguno requirió cambiar el comportamiento de ningún call site
 real ya existente.
@@ -421,11 +431,21 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 7 | `Dashboard.tsx` (ya migrado, comportamiento preservado) | `allBills`/`allIncomes` solo se referencian dentro de un bloque JSX ya comentado; `handleDurationChange`/`setSelectedDuration` están completamente muertos. No se tocaron por regla, pero son candidatos a limpieza. | Historia 2 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
-8 bugs de seguridad de control de acceso en `get-user`, `update-user`,
+17 bugs de seguridad de control de acceso en `get-user`, `update-user`,
 `api-tokens/list`, `api-tokens/new`, `api-tokens/remove`, las 4 rutas
-de `accounts/*`, y `get-wallet`/`wallet` (ver tabla consolidada arriba);
-2 archivos muertos borrados (`api/searchUser.js`, `api/login` legacy);
-1 bug de UI en `RegisterComp.jsx` (`formData.name` → `formData.fullName`).
+de `accounts/*`, `get-wallet`/`wallet`, las 7 rutas de
+`categories/*`/`subcategory/*`, y `get-categories`/`get-sub-categories`
+(ver tabla consolidada arriba); 2 archivos muertos borrados
+(`api/searchUser.js`, `api/login` legacy); 1 bug de UI en
+`RegisterComp.jsx` (`formData.name` → `formData.fullName`).
+
+**Nota sobre los review misses repetidos**: `get-wallet`,
+`get-categories` y `get-sub-categories` fueron los 3 migrados en
+Historia 2 sin que Claude cachara el mismo patrón de IDOR que sí se
+detectó en Historia 1 (`get-user`). Los 3 comparten la misma forma
+exacta (`const userMail = await request.json(); User.findOne({mail:
+userMail})`) - un patrón que ya debería reconocerse a simple vista de
+aquí en adelante.
 
 **Pendiente aparte, no bloquea la migración**: auditoría completa de
 todos los endpoints de la API pedida por el usuario - ver
@@ -459,3 +479,35 @@ fixes de seguridad** (crear/editar/borrar cuenta, cambiar moneda
 primaria, ver el resumen de transacciones y el treemap de categorías) -
 pendiente de que el usuario la pruebe también por su cuenta cuando
 quiera.
+
+## 2026-09-25 — Historia 6 (Categories) en curso + 9no al 15vo fix de seguridad
+
+Antes de migrar las 7 rutas de categorías/subcategorías de esta
+historia, se revisaron a mano (mismo hábito que en Historias 3 y 5) y
+las 7 tenían el mismo problema de fondo, cero verificación de sesión:
+
+- `categories/get-all`: confiaba en un `mail` del body (IDOR de
+  lectura). Sin call site real en el frontend (código muerto desde ese
+  punto de vista), pero sigue siendo alcanzable por HTTP directo.
+- `categories/new-category`, `subcategory/new`: tomaban `user`/`wallet`
+  directo del body del cliente - se podia plantar una categoria/
+  subcategoria dentro del wallet de CUALQUIER OTRO usuario.
+- `categories/update-category`, `categories/remove-category`,
+  `subcategory/update`, `subcategory/remove`: buscaban el recurso solo
+  por `id`, cero verificacion de dueño - se podia editar o borrar la
+  categoria/subcategoria de CUALQUIER usuario. `subcategory/update` es
+  el mas delicado: cambiar el `fatherCategory` dispara un
+  `Transaction.updateMany` que re-etiqueta todas las transacciones bajo
+  esa subcategoria - sin verificar dueño, alguien podria re-categorizar
+  transacciones ajenas.
+
+Las 7 corregidas con el mismo patron ya usado 8 veces antes: derivar
+usuario/wallet de `auth.api.getSession()`, y las rutas que mutan
+acotan su busqueda de `Category`/`SubCategory` a `{ _id, wallet }`
+propio. Verificado en vivo en Chrome de punta a punta: se creo, edito
+y borro una categoria de prueba, y se creo, re-parenteo (cambio de
+categoria padre) y borro una subcategoria de prueba - todo respetando
+la sesion correctamente.
+
+Con esto van 15 rutas con este mismo bug de fondo corregidas en la
+migracion (ver tabla consolidada mas abajo, actualizada).
