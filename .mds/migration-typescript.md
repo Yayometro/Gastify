@@ -102,26 +102,33 @@ la causa raiz confirmada del bug del dropdown de periodo del Dashboard
 2 fixes de seguridad mas encontrados en el camino (`get-wallet`,
 `wallet/route.js` - ver tabla consolidada en `migration-ts-logs.md`).
 
-**Historia activa: Historia 6 — Categories** (`dashboard/categories/page.jsx`,
-`CategoriesClient.jsx`, `CategoryList.jsx`, `SubCategoryList.jsx`,
-`EditCategoryModal.jsx`, `IconDisplayerMenu.jsx`, `useModalBasic.js`,
-`BasicModal.jsx`, `ModalCategoryContent.jsx`, `SelectCategories.jsx`/
-`SelectCategoryProvider.jsx`, modelos `Category.js`/`SubCategory.js`, y
-las 7 rutas CRUD que usa directamente: `categories/get-all`,
-`categories/new-category`, `categories/update-category`,
-`categories/remove-category`, `subcategory/new`, `subcategory/update`,
-`subcategory/remove`). Deliberadamente NO incluye
-`CategoryTreemap`/`CategoryCirclePacking`/`HistoricalComparativeCategories`
-(analytics pesado, ~1000+ lineas, su propia historia futura) ni
-`category-rules/suggest`/`apply-suggestions` (los usa `Movements.jsx`,
-no este arbol - se migran con la historia de Movements).
-`SelectCategoryProvider` se usa ampliamente en Movements/Budgets/etc,
-migrarlo ahora reduce bridges futuros ahi tambien.
+**Historia 6 (Categories) completa** - 20/20 archivos, 3 rondas de
+rework (mismo bug del typo `size`/`siz` en `UniversalCategoIcon`
+repitiendose 3 veces + el patron de siempre en `EditCategoryModal`). 2
+fixes de seguridad mas (`get-categories`/`get-sub-categories`, ver
+tabla consolidada en `migration-ts-logs.md`). Ademas, a peticion
+explicita del usuario, se corrigieron 3 bugs reales preexistentes en
+`CategoriesClient.tsx` (dispatch faltante, condiciones `.length < 0`,
+seccion "Default Sub Categories" duplicada) - commit `ef2059c`.
+
+**Historia activa: Historia 7 — Budgets** (`dashboard/budgets/page.jsx`,
+`BudgetsClient.jsx`, `BudgetBarRow.jsx`, `BudgetEditModal.jsx`,
+`BudgetDetailModal.jsx`, `ProjectBudgetDetailModal.jsx`,
+`SpendingSummaryDetailModal.jsx`, modelo `Budget.js`, y las 4 rutas que
+usa directamente: `budget/new`, `budget/update`, `budget/remove`,
+`budget/get-historical` - `budget/get` ya esta migrada desde Historia 2
+(y se le corrigio ahi mismo el review-miss de IDOR, junto con
+`get-historical`, `new`, `update`, `remove` - 5 fixes de seguridad mas,
+ver tabla consolidada). Deliberadamente NO incluye
+`UnbudgetedSpending.jsx` ni el arbol de
+`HistoricalBudgetsComparative`/`HistoricalWalletAnalyzer` (analytics
+pesado, su propia historia futura).
 
 Historias siguientes (orden real a confirmar): Movements/Transacciones,
-Wallet Analyzer, Budgets, Categories - analytics (Treemap/Circle
-Packing/comparativas historicas), History, Projections, MCP tools. Los
-modelos Mongoose que aún faltan (Wallet, Budget, Transaction, Tag,
-IncomeSource, CategoryRule, ProjectionSettings, ProjectionBaseline,
-FxRateSnapshot) se migran conforme cada historia los necesite, no todos
-de un jalón. `scripts/` sueltos al final.
+Wallet Analyzer, Categories - analytics (Treemap/Circle
+Packing/comparativas historicas), Budgets - analytics (comparativas
+historicas), History, Projections, MCP tools. Los modelos Mongoose que
+aún faltan (Wallet, Transaction, Tag, IncomeSource, CategoryRule,
+ProjectionSettings, ProjectionBaseline, FxRateSnapshot) se migran
+conforme cada historia los necesite, no todos de un jalón. `scripts/`
+sueltos al final.

@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-6-categories",
+  "activeStory": "historia-7-budgets",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -1875,6 +1875,23 @@
             }
           ]
         }
+      }
+    },
+    "historia-7-budgets": {
+      "label": "Budgets (page + BudgetsClient + BudgetBarRow + BudgetEditModal + BudgetDetailModal + ProjectBudgetDetailModal + SpendingSummaryDetailModal + modelo Budget + rutas new/update/remove/get-historical - budget/get YA esta migrada desde Historia 2). NO incluye UnbudgetedSpending.jsx ni el arbol de HistoricalBudgetsComparative/HistoricalWalletAnalyzer (analytics pesado, historia futura).",
+      "files": {
+        "src/app/dashboard/budgets/page.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/Budgets/BudgetsClient.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/Budgets/BudgetBarRow.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/Budgets/BudgetEditModal.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/Budgets/BudgetDetailModal.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/Budgets/ProjectBudgetDetailModal.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/Budgets/SpendingSummaryDetailModal.jsx": { "status": "pending", "history": [] },
+        "src/model/Budget.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/budget/new/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/budget/update/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/budget/remove/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/budget/get-historical/route.js": { "status": "pending", "history": [] }
       }
     }
   }
