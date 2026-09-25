@@ -1648,8 +1648,23 @@
           ]
         },
         "src/components/modals/contents/selectCategory/ModalCategoryContent.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T08:28:48.804Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T08:30:14.375Z",
+              "event": "submitted",
+              "notes": "Migrado ModalCategoryContent.jsx a TypeScript (.tsx). Se definió la interfaz ModalCategoryContentProps para sus props (getSelected, close, onlyFathers). Se implementaron bridges tipados TypedCategoriesModalList y TypedRenderCategoriesSearch usando React.ComponentType<{...}>. Se consumió directamente SelectCategoryContext y CategoryItem de SelectCategoryProvider.tsx sin bridge. Se removieron variables muertas no utilizadas en JSX (handleSelectedCategory y searchCat) para cumplir con ESLint. Se preservó idéntica la lógica y comportamiento. Verificado con tsc --noEmit (0 errores), npx eslint (0 errores/warnings) y npx vitest run (25 suites, 281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T08:31:01.777Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. ModalCategoryContentProps, bridges tipados acotados para CategoriesModalList/RenderCategoriesSearch (fuera de alcance), uso directo de SelectCategoryContext/CategoryItem ya migrados sin bridge. handleSelectedCategory y searchCat removidos - confirme via grep que ambos eran codigo muerto real en el original (nunca llamados/usados). handleSelect(cat, getSelected, close) preservado exacto sin narrowing nuevo pese a que el tipo del contexto permite null. tsc --noEmit limpio, eslint limpio, 281/281 tests. Ultimo archivo de Historia 6 - historia completa."
+            }
+          ]
         },
         "src/components/categories/SelectCategoryProvider/SelectCategories.jsx": {
           "status": "approved",
