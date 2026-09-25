@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-7-budgets",
+  "activeStory": "historia-8-movements",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -2127,6 +2127,111 @@
               "notes": "Trivial y limpio: unico cambio es la anotacion de retorno Promise<React.JSX.Element>. Logica identica, ya tenia getSession/redirect correcto (era pagina protegida, no ruta API). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado. Historia 7 (Budgets) completa: 12/12."
             }
           ]
+        }
+      }
+    },
+    "historia-8-movements": {
+      "label": "Movements/Transacciones (page + MovementsClient + Movements [1466 lineas, el mas grande de toda la migracion] + EditSingleTransModal + EditMultipleTransModal + QuickEditModal + DuplicateComparisonTable + BtnSelectCategoryContext + AddTransactionComp + ReadFileComp + CategorySuggestions [3 archivos] + modelos Transaction y Tag + 10 rutas de transactions [[id], edit-many, get-all, link-budget, new-transaction, remove-many, remove-transaction/[id], speech-add, transfer, transfer/remove] - get-transactions YA esta migrada a .ts). Aprovechar cada ruta migrada para auditar y corregir en el momento el bug de auth.api.getSession() si aplica (checklist en .mds/api-security-audit-checklist.md, grupo Transactions). NO incluye: HistoricalMovementsController/HistoricalMovementsView ni el arbol top3/ (analytics pesado de agregacion, historia futura); AddTransactionModal ni TransferExchangeModal (flujo aparte de alta rapida desde el Navbar, no parte de la pagina de Movements); UnbudgetedSpending.jsx (ya excluido en Historia 7, sigue pendiente); buildGastifyMcpServer.js (su propia historia futura de MCP tools). EditTransModal.jsx y VoiceRecognicionComponent.jsx son codigo huerfano sin importadores en todo el repo - NO se migran, son candidatos a borrar con aprobacion del usuario, igual que los huerfanos encontrados en Historia 1.",
+      "files": {
+        "src/app/dashboard/movements/page.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/MovementsClient.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Movements.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/EditSingleTransModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/EditMultipleTransModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/QuickEditModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/DuplicateComparisonTable.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/AddTransactionComp.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/ReadFileComp.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CategorySuggestions/CategorySuggestionsSection.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CategorySuggestions/SuggestionsList.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/Transaction.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/Tag.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/[id]/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/edit-many/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/get-all/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/link-budget/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/new-transaction/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/remove-many/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/remove-transaction/[id]/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/speech-add/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/transfer/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/transactions/transfer/remove/route.js": {
+          "status": "pending",
+          "history": []
         }
       }
     }

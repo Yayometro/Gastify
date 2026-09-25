@@ -132,11 +132,31 @@ tabla de bugs pendientes. Deliberadamente NO incluye
 `HistoricalBudgetsComparative`/`HistoricalWalletAnalyzer` (analytics
 pesado, su propia historia futura).
 
-Historias siguientes (orden real a confirmar): Movements/Transacciones,
-Wallet Analyzer, Categories - analytics (Treemap/Circle
-Packing/comparativas historicas), Budgets - analytics (comparativas
-historicas), History, Projections, MCP tools. Los modelos Mongoose que
-aún faltan (Wallet, Transaction, Tag, IncomeSource, CategoryRule,
-ProjectionSettings, ProjectionBaseline, FxRateSnapshot) se migran
-conforme cada historia los necesite, no todos de un jalón. `scripts/`
-sueltos al final.
+**Historia activa: Historia 8 — Movements/Transacciones** (25 archivos:
+`dashboard/movements/page.jsx`, `MovementsClient.jsx`, `Movements.jsx`
+[1466 líneas, el más grande de toda la migración], `EditSingleTransModal`,
+`EditMultipleTransModal`, `QuickEditModal`, `DuplicateComparisonTable`,
+`BtnSelectCategoryContext`, `AddTransactionComp`, `ReadFileComp`,
+`CategorySuggestions/` [3 archivos: `CategorySuggestionsSection`,
+`SuggestionsList`, `UncategorizedSuggestionsTab`], modelos `Transaction.js`
+y `Tag.js`, y 10 rutas de `transactions/*` - `get-transactions` ya estaba
+migrada a `.ts`). Aprovechar cada ruta para auditar en el momento el bug
+de `auth.api.getSession()` (grupo Transactions del checklist de
+seguridad, es el grupo más grande y sensible que queda pendiente).
+Deliberadamente NO incluye: `HistoricalMovementsController`/
+`HistoricalMovementsView` ni el árbol `top3/` (analytics pesado de
+agregación, historia futura); `AddTransactionModal`/`TransferExchangeModal`
+(flujo aparte de alta rápida desde el Navbar); `UnbudgetedSpending.jsx`
+(ya excluido en Historia 7). `EditTransModal.jsx` y
+`VoiceRecognicionComponent.jsx` son código huérfano sin importadores en
+todo el repo - no se migran, son candidatos a borrar con aprobación del
+usuario (igual que los huérfanos de Historia 1).
+
+Historias siguientes (orden real a confirmar): Wallet Analyzer,
+Categories - analytics (Treemap/Circle Packing/comparativas históricas),
+Budgets - analytics (comparativas históricas), Navbar/alta rápida
+(AddTransactionModal/TransferExchangeModal), History, Projections, MCP
+tools (`buildGastifyMcpServer.js`). Los modelos Mongoose que aún faltan
+(Wallet, IncomeSource, CategoryRule, ProjectionSettings,
+ProjectionBaseline, FxRateSnapshot) se migran conforme cada historia los
+necesite, no todos de un jalón. `scripts/` sueltos al final.
