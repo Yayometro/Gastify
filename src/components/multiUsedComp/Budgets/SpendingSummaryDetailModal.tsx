@@ -4,15 +4,65 @@ import React, { useMemo } from "react";
 import CategoIcon from "../CategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
+export interface SpendingBudgetSummaryItem {
+  _id?: string;
+  name?: string;
+  goalAmount?: number;
+  [key: string]: unknown;
+}
+
+export interface SpendingSummaryCoverageGroup {
+  key: string;
+  name: string;
+  color?: string;
+  amount: number;
+  [key: string]: unknown;
+}
+
+export interface SpendingSummaryCoverage {
+  totalSpent: number;
+  unbudgetedSpent: number;
+  unbudgetedPercentage: number;
+  groups: SpendingSummaryCoverageGroup[];
+  [key: string]: unknown;
+}
+
+export interface SpendingTotals {
+  fixed: number;
+  [key: string]: unknown;
+}
+
+export interface SpendingSummaryDetailModalProps {
+  close: () => void;
+  spendingBudgets?: SpendingBudgetSummaryItem[];
+  actualByBudgetId?: Record<string, number>;
+  coverage: SpendingSummaryCoverage;
+  spendingTotals: SpendingTotals;
+}
+
+export interface SpendingSummaryRow {
+  id?: string;
+  name: string;
+  actual: number;
+  goal: number;
+  ratio: number;
+}
+
 // Detail view opened from the Planned / Total spent / Unbudgeted summary
 // cards on the Budgets page - those three numbers alone don't say WHERE the
 // money went, so this breaks each one down: planned vs. actually spent per
 // budget (bars), and the unbudgeted total split back out by category.
-function SpendingSummaryDetailModal({ close, spendingBudgets, actualByBudgetId, coverage, spendingTotals }) {
-  const rows = useMemo(() => {
+function SpendingSummaryDetailModal({
+  close,
+  spendingBudgets,
+  actualByBudgetId,
+  coverage,
+  spendingTotals,
+}: SpendingSummaryDetailModalProps): React.JSX.Element {
+  const rows: SpendingSummaryRow[] = useMemo(() => {
     return (spendingBudgets || [])
       .map((budget) => {
-        const actual = actualByBudgetId?.[budget._id] || 0;
+        const actual = (budget._id ? actualByBudgetId?.[budget._id] : undefined) || 0;
         const goal = budget.goalAmount || 0;
         const ratio = goal > 0 ? actual / goal : 0;
         return { id: budget._id, name: budget.name || "Unnamed budget", actual, goal, ratio };

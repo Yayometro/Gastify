@@ -2072,8 +2072,23 @@
           ]
         },
         "src/components/multiUsedComp/Budgets/SpendingSummaryDetailModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:55:24.486Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:57:07.577Z",
+              "event": "submitted",
+              "notes": "Migrado `src/components/multiUsedComp/Budgets/SpendingSummaryDetailModal.jsx` a `SpendingSummaryDetailModal.tsx`.\n\nCambios y tipos implementados:\n- Definidas y exportadas las interfaces:\n  * `SpendingBudgetSummaryItem`: `_id?: string`, `name?: string`, `goalAmount?: number`, `[key: string]: unknown`\n  * `SpendingSummaryCoverageGroup`: `key: string`, `name: string`, `color?: string`, `amount: number`, `[key: string]: unknown`\n  * `SpendingSummaryCoverage`: `totalSpent: number`, `unbudgetedSpent: number`, `unbudgetedPercentage: number`, `groups: SpendingSummaryCoverageGroup[]`, `[key: string]: unknown`\n  * `SpendingTotals`: `fixed: number`, `[key: string]: unknown`\n  * `SpendingSummaryDetailModalProps`: `close: () => void`, `spendingBudgets?: SpendingBudgetSummaryItem[]`, `actualByBudgetId?: Record<string, number>`, `coverage: SpendingSummaryCoverage`, `spendingTotals: SpendingTotals`\n  * `SpendingSummaryRow`: `id?: string`, `name: string`, `actual: number`, `goal: number`, `ratio: number`\n- Tipado el retorno del componente como `React.JSX.Element` y el memo `rows: SpendingSummaryRow[]`.\n- Preservados al 100% todos los comportamientos, operadores lógicos `||` y ordenamientos originales.\n- El prop `siz={20}` en `CategoIcon` coincide perfectamente con la interfaz existente de `CategoIconProps`.\n\nVerificaciones ejecutadas:\n- `npx tsc --noEmit`: 0 errores, compilación limpia.\n- `npx eslint src/components/multiUsedComp/Budgets/SpendingSummaryDetailModal.tsx`: 0 errores, 0 warnings.\n- `npx vitest run`: 25 suites pasadas, 281 tests pasados.\n- No se encontraron bugs funcionales nuevos ni se modificó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-25T22:57:43.207Z",
+              "event": "approved",
+              "notes": "Migracion limpia, sin rework. Diff revisado linea por linea: unico cambio real es el guard `budget._id ? actualByBudgetId?.[budget._id] : undefined` antes del `|| 0`, compiler-required (Record<string,number> no acepta indexar con string|undefined) y sin diferencia observable de comportamiento (el caso _id undefined ya devolvia 0 en el original via key \"undefined\" inexistente). Interfaces razonables, siz preservado correctamente, todos los `||` intactos. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/Budgets/BudgetsClient.jsx": {
           "status": "pending",
