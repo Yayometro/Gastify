@@ -312,5 +312,31 @@ reportado por el usuario en Historia 2. Preservado intacto en la
 migración por instrucción explícita - pendiente de que el usuario
 decida si lo arregla.
 
-**Historia 4 probada end-to-end por el usuario**: pendiente (siguiente
-paso).
+**Historia 4 probada end-to-end por el usuario**: el usuario decidió
+posponer las pruebas manuales de esta historia para más adelante (son
+componentes chicos, de bajo riesgo, transversales a toda la app) y
+seguir avanzando la migración. Pendiente de prueba, no bloquea.
+
+---
+
+## Bugs pendientes (encontrados, NO arreglados, para revisión posterior del usuario)
+
+Esta tabla se actualiza cada vez que se encuentra un bug real fuera del
+alcance de "solo agregar tipos" (regla de oro de esta migración). Nada
+de aquí se toca sin que el usuario lo pida explícitamente.
+
+| # | Dónde | Bug | Historia donde se encontró |
+|---|-------|-----|------|
+| 1 | `SelecterFilter.jsx` (ahora `.tsx`) | Dropdown de periodo del Dashboard muestra la etiqueta equivocada - dos opciones del arreglo por defecto comparten `value: 30` ("Last 30 days" y "Last 90 days", typo de copy-paste). El `<select>` nativo pinta la etiqueta de la primera opción que matchea ese value, aunque los datos sí cambien bien. | Historia 2 (reportado) / Historia 4 (causa raíz confirmada) |
+| 2 | `update-user/route.ts` | Si el cliente manda `phone` como número en vez de string, `parsedPhone` queda `undefined` y cae al valor previo (nunca se actualiza el teléfono en ese caso). | Historia 3 |
+| 3 | Varias rutas (`update-user`, `get-user`, etc.) | `throw new Error({...})` pasa un objeto en vez de un string al constructor de `Error`, dando `"[object Object]"` como mensaje real en vez de un mensaje legible. | Historia 1 / Historia 3 |
+| 4 | `ProfileClient.tsx` | El botón de "Upload an Image" dentro de `<CldUploadWidget>` no tiene `type` explícito y está dentro del `<form>` del perfil - por defecto es `type="submit"`, así que dar click ahí probablemente también dispara el submit del formulario. | Historia 3 |
+| 5 | `walletSlice.ts`, `categoriesSlice.ts`, `subCategorySlice.ts`, `transacctionsSlice.ts` | Varios selectores de Redux rotos: leen la ruta equivocada del state (ej. `state.accounts.*` en vez de `state.wallet.*`) o regresan el state completo sin filtrar. Parecen no usarse en ningún lado activo (o el bug nunca se manifestó), pero están mal. | Historia 2 |
+| 6 | `lib/asyncThunk.ts` | Archivo 100% boilerplate de tutorial de Redux Toolkit, nunca conectado al store real - candidato a borrar por completo. | Historia 2 |
+| 7 | `Dashboard.tsx` (ya migrado, comportamiento preservado) | `allBills`/`allIncomes` solo se referencian dentro de un bloque JSX ya comentado; `handleDurationChange`/`setSelectedDuration` están completamente muertos. No se tocaron por regla, pero son candidatos a limpieza. | Historia 2 |
+
+Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
+5 IDOR de seguridad en `get-user`, `update-user`, `api-tokens/list`,
+`api-tokens/new`, `api-tokens/remove` (ver tabla de Historia 3 arriba);
+2 archivos muertos borrados (`api/searchUser.js`, `api/login` legacy);
+1 bug de UI en `RegisterComp.jsx` (`formData.name` → `formData.fullName`).
