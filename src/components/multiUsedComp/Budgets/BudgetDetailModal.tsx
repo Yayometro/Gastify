@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useMemo, useState } from "react";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
@@ -19,6 +20,106 @@ import currencyFormatter from "currency-formatter";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 import CurrencyBreakdownChips from "@/components/multiUsedComp/CurrencyBreakdownChips";
+import type { RootState, AppDispatch } from "@/lib/store";
+import type { WalletData } from "@/lib/features/walletSlice";
+
+// Unmigrated JS components typed bridges
+interface CurrencyBreakdownChipsProps {
+  breakdown?: { isMultiCurrency?: boolean; breakdown: unknown[] } | null;
+  walletPrimaryCurrency?: string;
+  className?: string;
+}
+const TypedCurrencyBreakdownChips = CurrencyBreakdownChips as React.ComponentType<CurrencyBreakdownChipsProps>;
+
+interface EditSingleTransModalProps {
+  trans?: BudgetDetailTransactionItem | null;
+  onClose: () => void;
+}
+const TypedEditSingleTransModal = EditSingleTransModal as React.ComponentType<EditSingleTransModalProps>;
+
+export interface BudgetCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string | null;
+  isSub?: boolean;
+  [key: string]: unknown;
+}
+
+export interface BudgetCategoryItem {
+  category?: BudgetCategoryRef | string | null;
+  subCategory?: BudgetCategoryRef | string | null;
+  [key: string]: unknown;
+}
+
+export interface BudgetLinkedAccount {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface BudgetDetailItem {
+  _id?: string;
+  name?: string;
+  isSaving?: boolean;
+  savingAmount?: number | string;
+  goalAmount?: number | string;
+  period?: "monthly" | "quarterly" | "biannual" | "yearly" | string;
+  budgetType?: string;
+  icon?: string;
+  currency?: string;
+  linkedAccounts?: BudgetLinkedAccount[] | null;
+  category?: BudgetCategoryRef | string | null;
+  subCategory?: BudgetCategoryRef | string | null;
+  categories?: BudgetCategoryItem[];
+  [key: string]: unknown;
+}
+
+export interface BudgetTagRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  [key: string]: unknown;
+}
+
+export interface BudgetAccountRef {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface BudgetDetailTransactionItem {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  date?: Date | string;
+  createdAt?: Date | string;
+  isBill?: boolean;
+  isIncome?: boolean;
+  category?: BudgetCategoryRef | null;
+  subCategory?: BudgetCategoryRef | null;
+  account?: BudgetAccountRef | null;
+  tags?: BudgetTagRef[];
+  [key: string]: unknown;
+}
+
+export interface CategoryBreakdownItem {
+  name: string;
+  color: string;
+  icon: string;
+  amount: number;
+}
+
+export interface BudgetDetailModalProps {
+  budget?: BudgetDetailItem | null;
+  transacciones?: BudgetDetailTransactionItem[];
+  startDate?: Date | string | null;
+  endDate?: Date | string | null;
+  onClose: () => void;
+  onEdit?: ((budget: BudgetDetailItem) => void) | null;
+}
 
 function BudgetDetailModal({
   budget,
@@ -27,24 +128,24 @@ function BudgetDetailModal({
   endDate,
   onClose,
   onEdit,
-}) {
-  const dispatch = useDispatch();
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+}: BudgetDetailModalProps): React.JSX.Element | null {
+  const dispatch = useDispatch<AppDispatch>();
+  const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const { total: linkedAccountsTotal, breakdown: linkedAccountsBreakdown } = useLinkedAccountsTotal(
     budget?.linkedAccounts,
     walletPrimaryCurrency
   );
   const budgetCurrency = budget?.currency || walletPrimaryCurrency;
-  const [editingTrans, setEditingTrans] = useState(null);
-  const [editKey, setEditKey] = useState(0);
+  const [editingTrans, setEditingTrans] = useState<BudgetDetailTransactionItem | null>(null);
+  const [editKey, setEditKey] = useState<number>(0);
 
   const { matchingTransactions, totalSpent, categoryBreakdown, expenseCurrencyBreakdown } = useMemo(() => {
     if (!budget) return { matchingTransactions: [], totalSpent: 0, categoryBreakdown: [], expenseCurrencyBreakdown: null };
 
-    let effectiveStart = startDate;
-    let effectiveEnd = endDate;
+    let effectiveStart: Date | string | null | undefined = startDate;
+    let effectiveEnd: Date | string | null | undefined = endDate;
     if (budget.period && budget.period !== "monthly") {
-      const refDate = startDate || new Date();
+      const refDate = new Date(startDate || new Date());
       const range = getBudgetPeriodRange(budget, refDate, startDate, endDate);
       effectiveStart = range.startDate;
       effectiveEnd = range.endDate;
@@ -55,12 +156,12 @@ function BudgetDetailModal({
       ? new Date(effectiveEnd).setHours(23, 59, 59, 999)
       : Infinity;
 
-    const matched = [];
+    const matched: BudgetDetailTransactionItem[] = [];
     let spent = 0;
-    const catMap = {};
+    const catMap: Record<string, CategoryBreakdownItem> = {};
 
     for (const t of transacciones) {
-      const tMs = new Date(t.date).getTime();
+      const tMs = t.date ? new Date(t.date).getTime() : 0;
       if (tMs >= startMs && tMs <= endMs) {
         if (matchBillToBudget(t, budget)) {
           matched.push(t);
@@ -79,9 +180,13 @@ function BudgetDetailModal({
       }
     }
 
-    matched.sort((a, b) => new Date(b.date) - new Date(a.date));
+    matched.sort((a, b) => {
+      const aTime = a.date ? new Date(a.date).getTime() : 0;
+      const bTime = b.date ? new Date(b.date).getTime() : 0;
+      return bTime - aTime;
+    });
 
-    const breakdown = Object.values(catMap).sort((a, b) => b.amount - a.amount);
+    const breakdown = (Object.values(catMap) as CategoryBreakdownItem[]).sort((a, b) => b.amount - a.amount);
 
     return {
       matchingTransactions: matched,
@@ -106,7 +211,6 @@ function BudgetDetailModal({
   }
 
   const ratio = goalAmount > 0 ? effectiveAmount / goalAmount : 0;
-  const widthPct = Math.min(Math.max(ratio * 100, 0), 100);
   const pctNum = Math.round(ratio * 100);
   const isExceeded = effectiveAmount > goalAmount;
   const gradient = getBudgetBarGradient(ratio, isSaving);
@@ -132,7 +236,7 @@ function BudgetDetailModal({
     ? ` / ${budget.period === "yearly" ? "year" : budget.period === "quarterly" ? "quarter" : budget.period === "biannual" ? "6m" : "month"}`
     : " / month";
 
-  const getEmojiTooltipMessage = (r, saving) => {
+  const getEmojiTooltipMessage = (r: number, saving: boolean): string => {
     const safeRatio = Number.isFinite(r) ? r : 0;
     if (saving) {
       if (safeRatio >= 0.85) return "🤩 Amazing! You are at or very close to your savings goal!";
@@ -148,7 +252,8 @@ function BudgetDetailModal({
 
   const emojiTooltip = getEmojiTooltipMessage(ratio, isSaving);
 
-  const handleRemoveTrans = (id) => {
+  const handleRemoveTrans = (id?: string) => {
+    if (!id) return;
     Modal.confirm({
       title: "Delete this movement?",
       content: "Are you sure you want to remove this transaction?",
@@ -158,7 +263,7 @@ function BudgetDetailModal({
       onOk: async () => {
         try {
           dispatch(removeOneTransacction(id));
-          const res = await fetcher.post(
+          const res = await (fetcher as unknown as { post: (path: string) => Promise<{ ok?: boolean }> }).post(
             `general-data/transactions/remove-transaction/${id}`
           );
           if (res.ok) {
@@ -166,7 +271,7 @@ function BudgetDetailModal({
           } else {
             runNotify("error", "Error removing transaction.");
           }
-        } catch (e) {
+        } catch (e: unknown) {
           runNotify("error", String(e));
         }
       },
@@ -220,7 +325,7 @@ function BudgetDetailModal({
                     {periodLabel}
                   </span>
                 </div>
-                <CurrencyBreakdownChips
+                <TypedCurrencyBreakdownChips
                   breakdown={isSaving ? linkedAccountsBreakdown : expenseCurrencyBreakdown}
                   walletPrimaryCurrency={walletPrimaryCurrency}
                 />
@@ -406,14 +511,14 @@ function BudgetDetailModal({
                               <div className="text-red-500 flex gap-1 items-center font-bold text-xs">
                                 <CategoIcon type="MdKeyboardDoubleArrowDown" />
                                 <span>
-                                  {currencyFormatter.format(movement.amount, { locale: "en-US" })}
+                                  {currencyFormatter.format(movement.amount || 0, { locale: "en-US" })}
                                 </span>
                               </div>
                             ) : (
                               <div className="text-green-500 flex gap-1 items-center font-bold text-xs">
                                 <CategoIcon type="MdKeyboardDoubleArrowUp" />
                                 <span>
-                                  {currencyFormatter.format(movement.amount, { locale: "en-US" })}
+                                  {currencyFormatter.format(movement.amount || 0, { locale: "en-US" })}
                                 </span>
                               </div>
                             )}
@@ -428,7 +533,7 @@ function BudgetDetailModal({
                               className="text-gf-text-muted hover:text-red-400 transition-colors p-1 cursor-pointer"
                               title="Delete transaction"
                             >
-                              <CategoIcon type="MdDelete" size={15} />
+                              <CategoIcon type="MdDelete" />
                             </button>
                             <button
                               type="button"
@@ -436,7 +541,7 @@ function BudgetDetailModal({
                               className="text-gf-text-muted hover:text-purple-600 transition-colors p-1 cursor-pointer"
                               title="Edit transaction"
                             >
-                              <CategoIcon type="MdOutlineCreate" size={15} />
+                              <CategoIcon type="MdOutlineCreate" />
                             </button>
                           </div>
                         </div>
@@ -469,7 +574,7 @@ function BudgetDetailModal({
         }
       />
       {editingTrans && (
-        <EditSingleTransModal
+        <TypedEditSingleTransModal
           key={editKey}
           trans={editingTrans}
           onClose={() => {
