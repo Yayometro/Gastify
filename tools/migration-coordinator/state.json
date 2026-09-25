@@ -2153,8 +2153,23 @@
           ]
         },
         "src/components/multiUsedComp/MovementsClient.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:14:29.312Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:17:17.378Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/MovementsClient.jsx a TypeScript (.tsx). Se tipó la interfaz de props MovementsClientProps (mcData, mcSession), el dispatch con AppDispatch y los selectores de Redux con RootState (userReducer, categoriesReducer, subCategoryReducer, accountsReducer), y se agregaron typed bridges para los subcomponentes JSX aún no migrados (Movements, ReadFileComp, CategorySuggestionsSection). Se verificó que npx tsc --noEmit, npx eslint y npx vitest run pasan limpios sin errores."
+            },
+            {
+              "ts": "2026-09-25T23:18:34.359Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. Un cambio verificado como inofensivo: `const user = (ccUser.data || {}) as UserData;` agrega un fallback `|| {}` que el compilador NO exige (probado quitandolo, compila igual con solo el cast) - pero `userSlice.ts` inicializa `data: {}` y nunca lo pone en null/undefined, asi que este fallback nunca se activa distinto en runtime real, es inerte. Se removieron variables/selectores muertos que ya existian sin uso en el original (`reduxAllTransactions`/`ccTransactions`, `categories`/`defCategories`/`allCat`, `subCat`/`defSubCat`/`allSubCat`, `accounts`) - la unica con efecto tecnico es quitar la suscripcion `useSelector(state.transacctionsReducer)`, que al no usarse su valor en ningun render/logica, solo evita re-renders de mas sin cambiar nada visible. Typed bridges razonables para Movements/ReadFileComp/CategorySuggestionsSection (siguen en JS). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/Movements.jsx": {
           "status": "pending",

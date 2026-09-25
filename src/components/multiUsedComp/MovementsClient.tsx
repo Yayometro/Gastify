@@ -1,58 +1,62 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Movements from "./Movements";
 import { Spin } from "antd";
-import AddTransactionComp from "./AddTransactionComp";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "@/lib/features/categoriesSlice";
 import { fetchSubCat } from "@/lib/features/subCategorySlice";
-import { fetchUser } from "@/lib/features/userSlice";
+import { fetchUser, type UserData } from "@/lib/features/userSlice";
 import { fetchAccounts } from "@/lib/features/accountsSlice";
-import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import ReadFileComp from "./ReadFileComp";
 import CategorySuggestionsSection from "./CategorySuggestions/CategorySuggestionsSection";
+import type { AppDispatch, RootState } from "@/lib/store";
 
-function MovementsClient({ mcData, mcSession }) {
+// Typed bridges for unmigrated child JSX components
+const TypedMovements = Movements as React.ComponentType<{
+  mail?: string | null;
+  timePeriodFromFather?: Date[];
+}>;
+
+const TypedReadFileComp = ReadFileComp as React.ComponentType<Record<string, never>>;
+
+const TypedCategorySuggestionsSection = CategorySuggestionsSection as React.ComponentType<{
+  mail?: string | null;
+}>;
+
+export interface MovementsClientProps {
+  mcData?: unknown;
+  mcSession?: string | null;
+}
+
+function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element {
   // Redux
-  const dispatch = useDispatch();
-  const ccUser = useSelector((state) => state.userReducer);
-  const ccTransactions = useSelector((state) => state.transacctionsReducer);
-  const ccategories = useSelector((state) => state.categoriesReducer);
-  const ccSubCategories = useSelector((state) => state.subCategoryReducer);
-  const ccAccounts = useSelector((state) => state.accountsReducer);
-  //
-  // console.log(ccSubCategories)
-  // console.log(mcData);
-  const user = ccUser.data; //
-  const reduxAllTransactions = ccTransactions?.data;
-  const categories = ccategories.data.user;
-  const defCategories = ccategories.data.default;
-  const allCat = categories.concat(defCategories); //
-  const subCat = ccSubCategories.data.subCat; //
-  const defSubCat = ccSubCategories.data?.default || [];
-  const allSubCat = subCat.concat(defSubCat);
-  const accounts = ccAccounts.data; //
+  const dispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: RootState) => state.userReducer);
+  const ccategories = useSelector((state: RootState) => state.categoriesReducer);
+  const ccSubCategories = useSelector((state: RootState) => state.subCategoryReducer);
+  const ccAccounts = useSelector((state: RootState) => state.accountsReducer);
+
+  const user = (ccUser.data || {}) as UserData;
 
   useEffect(() => {
     // User
-    if (ccUser.status == "idle") {
+    if (ccUser.status === "idle") {
       dispatch(fetchUser(mcSession));
     }
-    //Categories
-    if (ccategories.status == "idle") {
+    // Categories
+    if (ccategories.status === "idle") {
       dispatch(fetchCategories(mcSession));
     }
-    //Sub-categories
-    if (ccSubCategories.status == "idle") {
+    // Sub-categories
+    if (ccSubCategories.status === "idle") {
       dispatch(fetchSubCat(mcSession));
     }
-    if (ccAccounts.status == "idle") {
+    if (ccAccounts.status === "idle") {
       dispatch(fetchAccounts(mcSession));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-  
 
   return (
     <div className=" w-full h-full sm:pr-2">
@@ -78,15 +82,15 @@ function MovementsClient({ mcData, mcSession }) {
           </div>
           <div className="movements-panels-cont w-full grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
             <div className="add-file-trans w-full h-full flex justify-center items-center">
-              <ReadFileComp />
+              <TypedReadFileComp />
             </div>
             <div className="category-suggestions w-full h-full flex justify-center items-center">
-              <CategorySuggestionsSection mail={mcSession} />
+              <TypedCategorySuggestionsSection mail={mcSession} />
             </div>
           </div>
           <div className="mov-grans-cont w-full flex justify-center items-center ">
             <div className="w-full h-full min-[810px]:w-[800px] max-h-[1000px]  px-1 relative">
-              <Movements mail={mcSession} />
+              <TypedMovements mail={mcSession} />
             </div>
           </div>
         </div>
