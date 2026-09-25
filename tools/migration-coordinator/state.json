@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-5-accounts",
+  "activeStory": "historia-6-categories",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -1462,6 +1462,31 @@
             }
           ]
         }
+      }
+    },
+    "historia-6-categories": {
+      "label": "Categories (page + CategoriesClient + CategoryList + SubCategoryList + EditCategoryModal + IconDisplayerMenu + BasicModal + ModalCategoryContent + useModalBasic + SelectCategories/SelectCategoryProvider + modelos Category/SubCategory + rutas CRUD). NO incluye CategoryTreemap/CategoryCirclePacking/HistoricalComparativeCategories ni category-rules (suggest/apply-suggestions, usados por Movements, no por este arbol) - son historias futuras.",
+      "files": {
+        "src/app/dashboard/categories/page.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/CategoriesClient.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/CategoryList.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/SubCategoryList.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/EditCategoryModal.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/IconDisplayerMenu.jsx": { "status": "pending", "history": [] },
+        "src/hooks/useModalBasic.js": { "status": "pending", "history": [] },
+        "src/components/modals/basicModal/BasicModal.jsx": { "status": "pending", "history": [] },
+        "src/components/modals/contents/selectCategory/ModalCategoryContent.jsx": { "status": "pending", "history": [] },
+        "src/components/categories/SelectCategoryProvider/SelectCategories.jsx": { "status": "pending", "history": [] },
+        "src/components/categories/SelectCategoryProvider/SelectCategoryProvider.jsx": { "status": "pending", "history": [] },
+        "src/model/Category.js": { "status": "pending", "history": [] },
+        "src/model/SubCategory.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/categories/get-all/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/categories/new-category/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/categories/update-category/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/categories/remove-category/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/subcategory/new/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/subcategory/update/route.js": { "status": "pending", "history": [] },
+        "src/app/api/general-data/subcategory/remove/route.js": { "status": "pending", "history": [] }
       }
     }
   }

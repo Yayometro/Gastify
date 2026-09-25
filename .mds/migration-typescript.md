@@ -98,21 +98,30 @@ la causa raiz confirmada del bug del dropdown de periodo del Dashboard
 (`SelecterFilter.jsx`: `value: 30` duplicado entre "Last 30 days" y
 "Last 90 days").
 
-**Historia activa: Historia 5 — Accounts** (`dashboard/accounts/page.jsx`,
-`AccountClient.jsx`, `EditAccountModal.jsx`, `PrimaryCurrencySelector.jsx`,
-modelo `Account.js`, y las 4 rutas de API que usa directamente:
-`reorder`, `update-account`, `new-account`, `remove-account`).
-Deliberadamente NO incluye `ResumeTabsTrans`/`TransDetailsGrandContainer`/
-`DisplayerCategoryTreemap` que renderiza `AccountClient.jsx` - esos
-arrastran `CategoryTreemap` (666 lineas) y todo el arbol de analytics de
-categorias, son su propia historia futura. `AccountClient.jsx` necesitara
-bridges tipados para esos componentes sin migrar, mismo patron ya usado
-con Movements/WalletAnalyzer en Historia 2.
+**Historia 5 (Accounts) completa** - 9/9 archivos, 0 rondas de rework.
+2 fixes de seguridad mas encontrados en el camino (`get-wallet`,
+`wallet/route.js` - ver tabla consolidada en `migration-ts-logs.md`).
+
+**Historia activa: Historia 6 — Categories** (`dashboard/categories/page.jsx`,
+`CategoriesClient.jsx`, `CategoryList.jsx`, `SubCategoryList.jsx`,
+`EditCategoryModal.jsx`, `IconDisplayerMenu.jsx`, `useModalBasic.js`,
+`BasicModal.jsx`, `ModalCategoryContent.jsx`, `SelectCategories.jsx`/
+`SelectCategoryProvider.jsx`, modelos `Category.js`/`SubCategory.js`, y
+las 7 rutas CRUD que usa directamente: `categories/get-all`,
+`categories/new-category`, `categories/update-category`,
+`categories/remove-category`, `subcategory/new`, `subcategory/update`,
+`subcategory/remove`). Deliberadamente NO incluye
+`CategoryTreemap`/`CategoryCirclePacking`/`HistoricalComparativeCategories`
+(analytics pesado, ~1000+ lineas, su propia historia futura) ni
+`category-rules/suggest`/`apply-suggestions` (los usa `Movements.jsx`,
+no este arbol - se migran con la historia de Movements).
+`SelectCategoryProvider` se usa ampliamente en Movements/Budgets/etc,
+migrarlo ahora reduce bridges futuros ahi tambien.
 
 Historias siguientes (orden real a confirmar): Movements/Transacciones,
-Wallet Analyzer, Budgets, Categories (+ su arbol de analytics/treemap),
-History, Projections, MCP tools. Los modelos Mongoose que aún faltan
-(Wallet, Category, SubCategory, Budget, Transaction, Tag, IncomeSource,
-CategoryRule, ProjectionSettings, ProjectionBaseline, FxRateSnapshot) se
-migran conforme cada historia los necesite, no todos de un jalón.
-`scripts/` sueltos al final.
+Wallet Analyzer, Budgets, Categories - analytics (Treemap/Circle
+Packing/comparativas historicas), History, Projections, MCP tools. Los
+modelos Mongoose que aún faltan (Wallet, Budget, Transaction, Tag,
+IncomeSource, CategoryRule, ProjectionSettings, ProjectionBaseline,
+FxRateSnapshot) se migran conforme cada historia los necesite, no todos
+de un jalón. `scripts/` sueltos al final.
