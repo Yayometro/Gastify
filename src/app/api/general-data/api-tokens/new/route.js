@@ -2,13 +2,24 @@ import { NextResponse } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import { generateApiToken } from "@/lib/auth/apiTokens";
+import { auth } from "@/lib/auth/betterAuth";
 
 export async function POST(request) {
   try {
     if (!request) throw new Error("No data in request on API-TOKENS NEW POST");
-    const { mail, name } = await request.json();
-    if (!mail) throw new Error("No mail provided on API-TOKENS NEW POST");
+    const { name } = await request.json();
     if (!name) throw new Error("A name is required to create an API token");
+    // Security fix: this used to trust whatever `mail` the client sent in
+    // the body, letting ANY authenticated caller mint a full-access API
+    // token for ANOTHER user's account (an IDOR - and the most severe of
+    // this family, since the resulting token grants ongoing programmatic
+    // access, same underlying issue fixed in get-user/update-user/list).
+    // The only real call site (ApiTokensPanel.tsx) always sends its own
+    // session's email, so deriving it server-side instead closes the hole
+    // with no change to any legitimate caller's behavior.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
+    const mail = sesion.user.email;
     await dbConnection();
 
     const user = await User.findOne({ mail });
