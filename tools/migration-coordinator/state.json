@@ -1629,8 +1629,23 @@
           ]
         },
         "src/components/modals/basicModal/BasicModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T08:26:01.566Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T08:27:43.425Z",
+              "event": "submitted",
+              "notes": "Migración de src/components/modals/basicModal/BasicModal.jsx a BasicModal.tsx:\n1. Renombrado a .tsx usando git mv para preservar el historial.\n2. Definición y exportación de la interfaz `BasicModalProps`:\n   - `close?: React.MouseEventHandler<HTMLElement> | (() => void);`\n   - `renderContent?: React.ReactNode;`\n   - `renderBodyContent?: React.ReactNode;`\n   - `renderHeader?: React.ReactNode;`\n   - `zIndexClass?: string;`\n3. Tipado de la función del componente `BasicModal({ close, renderContent, renderBodyContent, renderHeader, zIndexClass = \"z-[5000]\" }: BasicModalProps): React.ReactPortal | null`.\n4. Tipado explícito de estado local `mounted` como `useState<boolean>(false)`.\n5. Se preservó toda la lógica, comentarios y comportamiento sin alteraciones (incluyendo el uso dual de `close` como condición truthy y como handler de click, sin agregar encadenamiento opcional ni fallbacks no forzados). Cero uso de `any`.\n6. Verificaciones ejecutadas:\n   - `npx tsc --noEmit`: 0 errores en todo el proyecto.\n   - `npx eslint src/components/modals/basicModal/BasicModal.tsx`: 0 errores / 0 warnings.\n   - `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos)."
+            },
+            {
+              "ts": "2026-09-25T08:28:09.871Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. BasicModalProps con union type para close que cubre correctamente su doble uso (condicion truthy y onClick handler directo), preservado exactamente sin agregar narrowing nuevo. Diff puramente aditivo. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/modals/contents/selectCategory/ModalCategoryContent.jsx": {
           "status": "pending",

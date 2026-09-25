@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import { lockBodyScroll, unlockBodyScroll } from "@/helpers/scrollLock";
+
+export interface BasicModalProps {
+  close?: React.MouseEventHandler<HTMLElement> | (() => void);
+  renderContent?: React.ReactNode;
+  renderBodyContent?: React.ReactNode;
+  renderHeader?: React.ReactNode;
+  zIndexClass?: string;
+}
 
 // Navbar.jsx's own <ul> surfaces sit at z-[1001]/z-[1002] (so the mobile
 // bottom nav stays above scrolled page content) - a modal backdrop at the
@@ -14,7 +22,13 @@ import { lockBodyScroll, unlockBodyScroll } from "@/helpers/scrollLock";
 // scroll-lock stuck on "hidden" instead of being restored. Comfortably
 // above every navbar z-index fixes both the click-through and the stuck
 // scroll lock it caused.
-function BasicModal({ close, renderContent, renderBodyContent, renderHeader, zIndexClass = "z-[5000]" }) {
+function BasicModal({
+  close,
+  renderContent,
+  renderBodyContent,
+  renderHeader,
+  zIndexClass = "z-[5000]",
+}: BasicModalProps): React.ReactPortal | null {
   // Every glass-card container uses backdrop-filter, which - per spec, same
   // as transform/filter/perspective - makes that ancestor a new containing
   // block for `position: fixed` descendants. A modal rendered inline inside
@@ -24,7 +38,7 @@ function BasicModal({ close, renderContent, renderBodyContent, renderHeader, zIn
   // rendering behind later glass cards, and it appearing mispositioned
   // with the page still scrolling behind it. Porting straight to
   // document.body escapes every such ancestor.
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState<boolean>(false);
   useEffect(() => {
     setMounted(true);
   }, []);
