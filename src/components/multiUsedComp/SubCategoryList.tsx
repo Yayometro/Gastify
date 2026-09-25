@@ -1,22 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { Spin, Tooltip } from "antd";
 import EditCategoryModal from "./EditCategoryModal";
 import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import runNotify from "@/helpers/gastifyNotifier";
+import type { SubCategoryData } from "@/lib/features/subCategorySlice";
+import type { CategoryData } from "@/lib/features/categoriesSlice";
+import type { UserData } from "@/lib/features/userSlice";
 
-function SubCategoryList({sclSubCategory ,clUser, sclCategories}) {
-  const [onEdition, setOnEdition] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState({});
+export interface SubCategoryListProps {
+  sclSubCategory?: SubCategoryData[] | null;
+  clUser?: UserData | Record<string, unknown> | null;
+  sclCategories?: CategoryData[] | null;
+}
+
+function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryListProps): React.JSX.Element {
+  const [onEdition, setOnEdition] = useState<string | boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<SubCategoryData>({});
+
   return (
     <div className="category-list-component w-full h-full flex gap-2 flex-wrap justify-center items-center">
       <SelectCategories>
         <EditCategoryModal
           ecmMode={onEdition}
           ecmCategory={selectedCategory}
-          ecmClose={(e) => setOnEdition(e)}
+          ecmClose={(e: string | boolean) => setOnEdition(e)}
           ecmData={{ user: clUser, categories: sclCategories }}
         />
       </SelectCategories>
@@ -33,59 +42,57 @@ function SubCategoryList({sclSubCategory ,clUser, sclCategories}) {
             <p className="">Loading...</p>
           </div>
         ) : (
-            sclSubCategory.map((subCategory) => (
-                <Tooltip
-                  title={`${subCategory?.name || "No name..."}`}
-                  key={`cc-clist-key-sub${subCategory._id}`}
-                >
+          sclSubCategory.map((subCategory) => (
+            <Tooltip
+              title={`${subCategory?.name || "No name..."}`}
+              key={`cc-clist-key-sub${subCategory._id}`}
+            >
+              <div
+                style={{
+                  backgroundColor: subCategory.color || "#ABABAB",
+                  border: `10px solid ${(subCategory.fatherCategory as CategoryData | undefined)?.color || "#ABABAB"}`,
+                  "--gf-tile-border": "10px",
+                } as React.CSSProperties}
+                className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] border-[10px] sm:border-[20px]  flex flex-col justify-center items-center rounded-full px-2 py-1 hover:brightness-90 cursor-pointer`}
+                onClick={() => {
+                  if (subCategory.isDefaultSubCatego) {
+                    runNotify(
+                      "warning",
+                      `"${
+                        subCategory?.name || "This"
+                      }" is a default SubCategory and can't be modified in any way 🚨`
+                    );
+                  } else {
+                    setOnEdition(`edition`);
+                    setSelectedCategory(subCategory);
+                  }
+                }}
+              >
+                <div className="subCategory-list-icon-container w-full flex items-center justify-center">
                   <div
-                    style={{
-                      backgroundColor: subCategory.color || "#ABABAB",
-                      border: `10px solid ${subCategory.fatherCategory?.color || "#ABABAB"}`,
-                      "--gf-tile-border": "10px",
-                    }}
-                    className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] border-[10px] sm:border-[20px]  flex flex-col justify-center items-center rounded-full px-2 py-1 hover:brightness-90 cursor-pointer`}
-                    onClick={() => {
-                      if (subCategory.isDefaultSubCatego) {
-                        runNotify(
-                          "warning",
-                          `"${
-                            subCategory?.name || "This"
-                          }" is a default SubCategory and can't be modified in any way 🚨`
-                        );
-                      } else {
-                        setOnEdition(`edition`);
-                        setSelectedCategory(subCategory);
-                      }
-                    }}
+                    className={`cat-ico-cont  flex justify-center items-center`}
                   >
-                    <div className="subCategory-list-icon-container w-full flex items-center justify-center">
-                      <div
-                        className={`cat-ico-cont  flex justify-center items-center`}
-                      >
-                        {!subCategory.icon ? (
-                          <UniversalCategoIcon
-                            type={"md/MdFilterNone"}
-                            size={40}
-                            className={`w-[100px] min-[400px]:w-[150px]`}
-                          />
-                        ) : (
-                          <UniversalCategoIcon
-                            type={`${subCategory.icon}`}
-                            size={40}
-                            className={`w-[28px] h-[28px] min-[400px]:w-[35px] min-[400px]:h-[35px] `}
-                          />
-                        )}
-                      </div>
-                    </div>
-                    <div className="cc-list-content-subCategory w-full flex items-center justify-center truncate">
-                      <p className="w-full min-[400px]:text-lg min-[600px]:text-xl truncate px-2">
-                        {subCategory?.name || "No name..."}
-                      </p>
-                    </div>
+                    {!subCategory.icon ? (
+                      <UniversalCategoIcon
+                        type={"md/MdFilterNone"}
+                        className={`w-[100px] min-[400px]:w-[150px]`}
+                      />
+                    ) : (
+                      <UniversalCategoIcon
+                        type={`${subCategory.icon}`}
+                        className={`w-[28px] h-[28px] min-[400px]:w-[35px] min-[400px]:h-[35px] `}
+                      />
+                    )}
                   </div>
-                </Tooltip>
-              ))
+                </div>
+                <div className="cc-list-content-subCategory w-full flex items-center justify-center truncate">
+                  <p className="w-full min-[400px]:text-lg min-[600px]:text-xl truncate px-2">
+                    {subCategory?.name || "No name..."}
+                  </p>
+                </div>
+              </div>
+            </Tooltip>
+          ))
         )
       }
     </div>

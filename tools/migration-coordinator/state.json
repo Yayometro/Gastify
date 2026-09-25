@@ -1539,8 +1539,23 @@
           ]
         },
         "src/components/multiUsedComp/SubCategoryList.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T07:43:29.227Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T07:44:50.118Z",
+              "event": "submitted",
+              "notes": "Migrado SubCategoryList.jsx a TypeScript (SubCategoryList.tsx). Se definió la interfaz `SubCategoryListProps` con tipado explícito para `sclSubCategory`, `clUser` y `sclCategories` usando `SubCategoryData`, `CategoryData` y `UserData`, sin uso de `any`. Se tiparon los estados internos (`onEdition`, `selectedCategory`). Se eliminaron las props inválidas `size={40}` de las llamadas a `UniversalCategoIcon` (dejándolo sin esa prop para preservar exactamente el comportamiento original en runtime en lugar de renombrar a `siz`). Se removieron imports/estados no utilizados (`useEffect`, `isLoading`). Sugerencia aparte: si en el futuro se desea cambiar visualmente el tamaño del icono de subcategoría mediante prop en vez de clases Tailwind, se puede evaluar pasar `siz={40}` a `UniversalCategoIcon.tsx`. Verificado con `npx eslint`, `npx tsc --noEmit` y `npx vitest run`."
+            },
+            {
+              "ts": "2026-09-25T07:45:27.330Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework - esta vez siguio la advertencia correctamente y quito size={40} por completo en vez de renombrarla a siz, preservando el comportamiento exacto. SubCategoryListProps completo, cast tipado en fatherCategory?.color preservando el optional chaining preexistente. useEffect/isLoading confirmados muertos en el original. Reformateo de indentacion es solo estilistico (prettier), contenido identico. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/multiUsedComp/EditCategoryModal.jsx": {
           "status": "pending",
