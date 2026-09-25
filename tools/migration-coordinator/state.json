@@ -2053,8 +2053,23 @@
           ]
         },
         "src/components/multiUsedComp/Budgets/ProjectBudgetDetailModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:50:57.300Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:53:49.746Z",
+              "event": "submitted",
+              "notes": "Migrado ProjectBudgetDetailModal.jsx a ProjectBudgetDetailModal.tsx.\n- Se definieron interfaces tipadas completas: ProjectBudgetTagRef, ProjectBudgetItem, ProjectBudgetTransactionItem, ProjectBudgetDetailModalProps.\n- Se agregaron bridges tipados para componentes aún en JS (TypedEditSingleTransModal, TypedAddTransactionComp).\n- Tipado estricto para Redux (useDispatch<AppDispatch>, useSelector con RootState y WalletData) y fetcher/notificaciones.\n- Se preservó el comportamiento 100% fiel al original: sin reemplazo de `||` por `??`, props `siz` preservadas intactas para CategoIcon y UniversalCategoIcon, manejo de tags (como IDs string o como objetos con _id/name), y ordenamiento por fechas con .getTime().\n- Verificado con `npx tsc --noEmit` (0 errores), `npx eslint` limpio (0 errores/warnings) y `npx vitest run` (281/281 tests pasando).\n- Bugs preexistentes detectados (no modificados, preservados):\n  1. `usdFormatChanger` se usa para todos los montos (spent, goal, saldo restante y montos de transacciones) hardcodeando el formato en-US ($) sin tomar en cuenta `budget.currency` ni normalizar transacciones multimoneda.\n  2. En el ordenamiento de candidatos (candidates), solo se usa `b.date`/`a.date` sin fallback a `createdAt` (a diferencia del ordenamiento de `linked` que usa `date || createdAt`).\n  3. En el cálculo de `spent` y listas de transacciones se suma/muestra `transaction.amount` directo sin conversión de divisas."
+            },
+            {
+              "ts": "2026-09-25T22:54:45.143Z",
+              "event": "approved",
+              "notes": "Migracion limpia, sin rework. Diff completo revisado linea por linea contra el original: todos los `||` se preservaron intactos, la asimetria preexistente entre `linked` (usa `date || createdAt`) y `candidates` (usa solo `date`) se mantuvo igual, siz se preservo correctamente en todos los CategoIcon/UniversalCategoIcon (sin el bug size/siz esta vez). Los .getTime() agregados en los sorts son compiler-required (Date|string|undefined no soporta resta aritmetica directa) y preservan el mismo resultado NaN/Invalid Date que el original para valores faltantes. Los 3 \"bugs preexistentes\" que reporto agy (usdFormatChanger con locale fijo en-US, candidates sin fallback a createdAt, spent sin conversion de moneda) ya existian en el .jsx original identicos - no son bugs introducidos por la migracion, agy solo los señalo sin tocarlos, correcto. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/Budgets/SpendingSummaryDetailModal.jsx": {
           "status": "pending",
