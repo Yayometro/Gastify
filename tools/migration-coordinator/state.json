@@ -2258,8 +2258,23 @@
           ]
         },
         "src/components/multiUsedComp/DuplicateComparisonTable.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:47:56.107Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:49:07.942Z",
+              "event": "submitted",
+              "notes": "Migración de DuplicateComparisonTable.jsx a DuplicateComparisonTable.tsx:\n1. Interfaces explícitas exportadas: `DuplicatePair` (usando `DeletePreviewRowTransaction` de DeletePreviewRow.tsx) y `DuplicateComparisonTableProps` (pairs, selectedTrans, selectedIds, onToggleSelect) sin uso de 'any'.\n2. Tipado del componente con retorno explícito React.JSX.Element.\n3. Preservación estricta al 100% de la lógica y runtime:\n   - Operadores `||` intactos sin cambios a `??`.\n   - Prop `siz={15}` en UniversalCategoIcon preservado sin modificaciones (coincide con la interface de UniversalCategoIconProps).\n   - Sin componentes de Antd ni props inválidos.\n4. Verificaciones ejecutadas:\n   - `npx tsc --noEmit`: 0 errores.\n   - `npx eslint src/components/multiUsedComp/DuplicateComparisonTable.tsx`: 0 errores y 0 warnings.\n   - `npx vitest run`: 25 suites pasadas, 281 tests pasados.\n   - Ningún otro archivo modificado y no se ejecutó npm run build."
+            },
+            {
+              "ts": "2026-09-25T23:49:40.983Z",
+              "event": "approved",
+              "notes": "Trivial y perfecto: diff completo son solo interfaces (DuplicatePair reutilizando DeletePreviewRowTransaction, DuplicateComparisonTableProps) y la firma tipada del componente. Cero cambios de logica. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext.jsx": {
           "status": "pending",

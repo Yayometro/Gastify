@@ -1,9 +1,29 @@
 "use client";
 import React from "react";
 import UniversalCategoIcon from "./UniversalCategoIcon";
-import DeletePreviewRow from "./DeletePreviewRow";
+import DeletePreviewRow, {
+  type DeletePreviewRowTransaction,
+} from "./DeletePreviewRow";
 
-function DuplicateComparisonTable({ pairs, selectedTrans = [], selectedIds, onToggleSelect }) {
+export interface DuplicatePair {
+  original?: DeletePreviewRowTransaction | null;
+  duplicate?: DeletePreviewRowTransaction | null;
+  [key: string]: unknown;
+}
+
+export interface DuplicateComparisonTableProps {
+  pairs?: DuplicatePair[] | null;
+  selectedTrans?: (string | number)[];
+  selectedIds?: Set<string | number> | (string | number)[] | Iterable<string | number> | null;
+  onToggleSelect?: (id?: string) => void;
+}
+
+function DuplicateComparisonTable({
+  pairs,
+  selectedTrans = [],
+  selectedIds,
+  onToggleSelect,
+}: DuplicateComparisonTableProps): React.JSX.Element {
   if (!pairs || pairs.length === 0) {
     return <p className="text-xs text-gf-text-muted italic text-center py-4">No duplicate pairs to compare</p>;
   }
