@@ -4,7 +4,53 @@ import currencyFormatter from "currency-formatter";
 import dayjs from "dayjs";
 import { formatMoneyMinor } from "@/lib/money/currencies";
 
-function DeletePreviewRow({ transaction }) {
+export interface DeletePreviewRowCategory {
+  color?: string;
+  icon?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface DeletePreviewRowSubCategory {
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface DeletePreviewRowAccount {
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface DeletePreviewRowNativeMoney {
+  amountMinor: number;
+  currency: string;
+  [key: string]: unknown;
+}
+
+export interface DeletePreviewRowDisplayMoney {
+  native?: DeletePreviewRowNativeMoney;
+  [key: string]: unknown;
+}
+
+export interface DeletePreviewRowTransaction {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  isBill?: boolean;
+  date?: string | Date;
+  createdAt?: string | Date;
+  category?: DeletePreviewRowCategory | null;
+  subCategory?: DeletePreviewRowSubCategory | null;
+  account?: DeletePreviewRowAccount | null;
+  displayMoney?: DeletePreviewRowDisplayMoney | null;
+  [key: string]: unknown;
+}
+
+export interface DeletePreviewRowProps {
+  transaction?: DeletePreviewRowTransaction | null;
+}
+
+function DeletePreviewRow({ transaction }: DeletePreviewRowProps): React.JSX.Element | null {
   if (!transaction) return null;
   const native = transaction.displayMoney?.native;
   const amountLabel = native

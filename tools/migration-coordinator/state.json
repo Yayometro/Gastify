@@ -1268,8 +1268,23 @@
           ]
         },
         "src/components/multiUsedComp/DeletePreviewRow.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T04:52:00.788Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T04:53:35.747Z",
+              "event": "submitted",
+              "notes": "Migración de src/components/multiUsedComp/DeletePreviewRow.jsx a src/components/multiUsedComp/DeletePreviewRow.tsx.\n\n1. Tipado e interfaces:\n- Se renombró el archivo a `.tsx` preservando el historial con `git mv`.\n- Se definieron y exportaron interfaces explícitas: `DeletePreviewRowCategory`, `DeletePreviewRowSubCategory`, `DeletePreviewRowAccount`, `DeletePreviewRowNativeMoney`, `DeletePreviewRowDisplayMoney`, `DeletePreviewRowTransaction`, `DeletePreviewRowProps`.\n- Se tipó el retorno del componente `DeletePreviewRow` como `React.JSX.Element | null`.\n- Cero uso de `any`; se utilizaron tipos específicos y `unknown` en index signatures para compatibilidad estructural.\n\n2. Preservación absoluta de comportamiento y lógica:\n- Se preservó idéntica la lógica de `amountLabel` usando `formatMoneyMinor` para `native` y `currencyFormatter.format` como fallback.\n- No se agregaron operadores de optional chaining (`?.`) ni fallbacks (`||`, `??`) que no estuvieran exactamente presentes en el código original.\n- Cero cambios en el árbol JSX, clases de Tailwind, estilos inline o renderizado de `UniversalCategoIcon`.\n\n3. Verificación ejecutada:\n- `npx eslint src/components/multiUsedComp/DeletePreviewRow.tsx`: 0 errores, 0 warnings (verificado salida real línea por línea).\n- `npx tsc --noEmit`: 0 errores de compilación TypeScript.\n- `npx vitest run`: 25/25 suites pasadas, 281/281 tests exitosos.\n- No se ejecutó `npm run build` (para proteger el servidor de desarrollo activo).\n- No se tocó ningún otro archivo del proyecto."
+            },
+            {
+              "ts": "2026-09-25T04:54:01.251Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Interfaces completas y correctas para transaction/category/subCategory/account/displayMoney, diff puramente aditivo. tsc --noEmit limpio, eslint limpio, 281/281 tests. Ultimo archivo de Historia 4 - historia completa."
+            }
+          ]
         }
       }
     }
