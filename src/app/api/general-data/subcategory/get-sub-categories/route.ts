@@ -3,6 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import SubCategory from "@/model/SubCategory";
 import "@/model/Category";
 import User from "@/model/User";
+import { auth } from "@/lib/auth/betterAuth";
 
 export interface GetSubCategoriesSuccessResponse {
   data: {
@@ -21,12 +22,18 @@ export async function POST(
 ): Promise<NextResponse<GetSubCategoriesResponse>> {
   try {
     if (!request) throw new Error("No request received from NEW CATEGORY");
-    const userMail = await request.json();
-    // console.log(userMail);
+    // Security fix: this used to trust whatever mail the client sent in the
+    // body, letting any caller (this endpoint isn't covered by
+    // middleware.ts's matcher) read another user's sub-categories - an
+    // IDOR, same underlying issue already fixed in get-user/get-wallet/
+    // get-categories. The only real call site (subCategorySlice.ts's
+    // fetchSubCat) always sends its own session's email.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();
     // User find
-    const userFound = await User.findOne({ mail: userMail }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
       throw new Error(
         {

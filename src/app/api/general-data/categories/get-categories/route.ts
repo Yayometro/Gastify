@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Category from "@/model/Category";
 import User from "@/model/User";
+import { auth } from "@/lib/auth/betterAuth";
 
 export interface GetCategoriesSuccessResponse {
   data: {
@@ -20,11 +21,18 @@ export async function POST(
 ): Promise<NextResponse<GetCategoriesResponse>> {
   try {
     if (!request) throw new Error("No request received from NEW CATEGORY");
-    const userMail = await request.json();
+    // Security fix: this used to trust whatever mail the client sent in the
+    // body, letting any caller (this endpoint isn't covered by
+    // middleware.ts's matcher) read another user's categories - an IDOR,
+    // same underlying issue already fixed in get-user/get-wallet. The only
+    // real call site (categoriesSlice.ts's fetchCategories) always sends
+    // its own session's email.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();
     // User find
-    const userFound = await User.findOne({ mail: userMail }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
       throw new Error(
         {
