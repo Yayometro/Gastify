@@ -4,7 +4,7 @@ import React, { useState, useEffect, useContext } from "react";
 import CategoIcon from "./CategoIcon";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
-import dayjs from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -12,8 +12,9 @@ import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { Switch, ConfigProvider, Space, Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/lib/store";
 import runNotify from "@/helpers/gastifyNotifier";
-import { updateManyTransactions } from "@/lib/features/transacctionsSlice";
+import { updateManyTransactions, type TransactionData } from "@/lib/features/transacctionsSlice";
 import SelectCategories from "../categories/SelectCategoryProvider/SelectCategories";
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
@@ -22,18 +23,78 @@ import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategor
 import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 
-function EditMultipleTransModalInner({ trans, onClose }) {
+const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.ComponentType<{
+  onClose?: () => void;
+  [key: string]: unknown;
+}>;
+
+export interface DataProviderAccount {
+  _id: string;
+  name?: string;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface EditMultipleTransItem {
+  _id?: string;
+  [key: string]: unknown;
+}
+
+export type EditMultipleTransInput = string | EditMultipleTransItem | unknown;
+
+export interface EditMultipleTransModalProps {
+  trans?: EditMultipleTransInput[] | unknown;
+  onClose?: () => void;
+  hidden?: unknown;
+  [key: string]: unknown;
+}
+
+export interface EditMultipleTransModalInnerProps {
+  trans?: EditMultipleTransInput[] | unknown;
+  onClose: () => void;
+}
+
+interface TransactionInfoState {
+  transactions: unknown[];
+  name: string;
+  amount: string;
+  isIncome: boolean;
+  isBill: boolean;
+  isReadable: boolean;
+  date: Date | string;
+  category: string;
+  subCategory: string;
+  tags: string;
+  account: string | null;
+}
+
+interface CategorySelectedItem {
+  _id?: string;
+  fatherCategory?: { _id?: string; [key: string]: unknown } | string | null;
+  [key: string]: unknown;
+}
+
+interface EditManyResponse {
+  data?: TransactionData[];
+  message?: string;
+  [key: string]: unknown;
+}
+
+function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalInnerProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { close, handleClose } = useModal();
   const { handleClean } = useContext(SelectCategoryContext);
-  const { accounts } = useGetDataFromProvider();
+  const { accounts } = useGetDataFromProvider() as {
+    accounts?: DataProviderAccount[];
+    [key: string]: unknown;
+  };
 
   const [typeTouched, setTypeTouched] = useState(false);
   const [readableTouched, setReadableTouched] = useState(false);
 
-  const [transactionInfo, setTransactionInfo] = useState({
+  const [transactionInfo, setTransactionInfo] = useState<TransactionInfoState>({
     transactions: [],
     name: "",
     amount: "",
@@ -49,16 +110,16 @@ function EditMultipleTransModalInner({ trans, onClose }) {
 
   useEffect(() => {
     if (trans) {
-      setTransactionInfo((prev) => ({ ...prev, transactions: trans }));
+      setTransactionInfo((prev) => ({ ...prev, transactions: trans as unknown[] }));
     }
   }, [trans]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setTransactionInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const onChangeSwitch = (checked, typeBoolean) => {
+  const onChangeSwitch = (checked: boolean, typeBoolean: string): void => {
     if (typeBoolean === "income") {
       setTypeTouched(true);
       setTransactionInfo((prev) => ({ ...prev, isIncome: checked, isBill: !checked }));
@@ -71,41 +132,48 @@ function EditMultipleTransModalInner({ trans, onClose }) {
     }
   };
 
-  const handleCategory = (cat) => {
+  const handleCategory = (cat: unknown): void => {
     if (!cat) return;
-    const fatherId = cat?.fatherCategory
-      ? (typeof cat.fatherCategory === "object" ? cat.fatherCategory?._id : cat.fatherCategory)
+    const categoryItem = cat as CategorySelectedItem;
+    const fatherId = categoryItem?.fatherCategory
+      ? typeof categoryItem.fatherCategory === "object"
+        ? (categoryItem.fatherCategory as { _id?: string })?._id
+        : categoryItem.fatherCategory
       : null;
     if (fatherId) {
       setTransactionInfo((prev) => ({
         ...prev,
-        subCategory: cat._id,
-        category: fatherId,
+        subCategory: categoryItem._id || "",
+        category: fatherId as string,
       }));
     } else {
-      setTransactionInfo((prev) => ({ ...prev, category: cat._id, subCategory: "" }));
+      setTransactionInfo((prev) => ({
+        ...prev,
+        category: categoryItem._id || "",
+        subCategory: "",
+      }));
     }
   };
 
-  const handleDefAccount = (e) => {
+  const handleDefAccount = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     setTransactionInfo((prev) => ({
       ...prev,
       account: e.target.value === "No account" ? null : e.target.value,
     }));
   };
 
-  const hanleDatePickerChange = (newDate) => {
+  const hanleDatePickerChange = (newDate: string): void => {
     setTransactionInfo((prev) => ({ ...prev, date: new Date(newDate) }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setIsLoading(true);
     const tagsArr = transactionInfo.tags
       ? transactionInfo.tags.split(",").map((t) => t.trim()).filter(Boolean)
       : [];
 
-    const fields = [];
+    const fields: string[] = [];
     if (transactionInfo.name.trim()) fields.push("name");
     if (transactionInfo.amount !== "") fields.push("amount");
     if (typeTouched) { fields.push("isIncome"); fields.push("isBill"); }
@@ -122,17 +190,20 @@ function EditMultipleTransModalInner({ trans, onClose }) {
       fields,
     };
     try {
-      const response = await toFetch.post("general-data/transactions/edit-many", payload);
+      const response = (await toFetch.post(
+        "general-data/transactions/edit-many",
+        payload
+      )) as EditManyResponse;
       if (response.data) {
-        runNotify("ok", response.message);
+        runNotify("ok", response.message || "");
         dispatch(updateManyTransactions(response.data));
         handleClean();
         onClose();
       } else {
         runNotify("error", response.message || "Something went wrong");
       }
-    } catch (e) {
-      runNotify("error", String(e));
+    } catch (err) {
+      runNotify("error", String(err));
       handleClean();
       onClose();
     } finally {
@@ -186,7 +257,7 @@ function EditMultipleTransModalInner({ trans, onClose }) {
                 token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" },
               }}
             >
-              <Space direction="" size={12}>
+              <Space direction={"" as "horizontal"} size={12}>
                 <div className="switch-int-cont">
                   <p className="label-tfp">Is Income:</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "income")} value={transactionInfo.isIncome} />
@@ -214,7 +285,11 @@ function EditMultipleTransModalInner({ trans, onClose }) {
                       dialog: { sx: { zIndex: 35000 } },
                       mobilePaper: { sx: { zIndex: 35000 } },
                     }}
-                    onChange={(v) => hanleDatePickerChange(v.format())}
+                    onChange={(v: Dayjs | null) => {
+                      if (v && typeof v.format === "function") {
+                        hanleDatePickerChange(v.format());
+                      }
+                    }}
                     value={transactionInfo.date ? dayjs(transactionInfo.date) : null}
                     sx={{
                       "& .MuiInputBase-root": { width: "100%", height: "100%", padding: "0px", border: "none" },
@@ -227,7 +302,7 @@ function EditMultipleTransModalInner({ trans, onClose }) {
           </div>
 
           <p className="label-tfp">Category</p>
-          <BtnSelectCategoryContext onClose={handleClose} />
+          <TypedBtnSelectCategoryContext onClose={handleClose} />
           {close && (
             <BasicModal
               close={handleClose}
@@ -277,10 +352,10 @@ function EditMultipleTransModalInner({ trans, onClose }) {
   );
 }
 
-function EditMultipleTransModal({ trans, onClose }) {
+function EditMultipleTransModal({ trans, onClose }: EditMultipleTransModalProps): React.JSX.Element | null {
   const [active, setActive] = useState(false);
   if (active) return null;
-  const handleClose = () => {
+  const handleClose = (): void => {
     setActive(true);
     onClose?.();
   };

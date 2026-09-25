@@ -2220,8 +2220,23 @@
           ]
         },
         "src/components/multiUsedComp/EditMultipleTransModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:38:59.997Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:41:16.019Z",
+              "event": "submitted",
+              "notes": "Migración completa de EditMultipleTransModal.jsx a EditMultipleTransModal.tsx:\n1. Tipado explícito y exhaustivo:\n   - Interfaces exportadas `EditMultipleTransModalProps`, `EditMultipleTransModalInnerProps`, `DataProviderAccount`, `EditMultipleTransItem`, `EditMultipleTransInput`.\n   - Interfaces internas `TransactionInfoState`, `CategorySelectedItem`, `EditManyResponse`.\n   - Tipado explícito de React hooks, Redux dispatch (`AppDispatch`), y handlers con eventos reales (`React.ChangeEvent<HTMLInputElement>`, `React.ChangeEvent<HTMLSelectElement>`, `React.FormEvent<HTMLFormElement>`, `Dayjs | null`).\n   - Typed wrapper para `BtnSelectCategoryContext`.\n2. Cumplimiento estricto de reglas de migración:\n   - Preservación exacta de todos los operadores `||` (sin mutar a `??`).\n   - Preservación de `siz={20}` en `CategoIcon`.\n   - Preservación del prop de antd `direction=\"\"` en `Space` mediante cast `direction={\"\" as \"horizontal\"}` sin cambiar su valor en runtime.\n3. Bug preexistente identificado y preservado:\n   - En `handleDefAccount`: la función evalúa `e.target.value === \"No account\" ? null : e.target.value`, pero el `<option>` de \"No account\" tiene `value=\"\"`. Por lo tanto, seleccionar \"No account\" deja `account: \"\"` en el estado local en vez de `null`, y consecuentemente en `handleSubmit` `if (transactionInfo.account)` evalúa falsy sin añadir `\"account\"` al array `fields`, impidiendo limpiar la cuenta asignada a las transacciones seleccionadas. Se preservó el comportamiento runtime intacto sin modificar para evaluación de Claude.\n4. Verificaciones:\n   - `npx tsc --noEmit`: 0 errores.\n   - `npx eslint src/components/multiUsedComp/EditMultipleTransModal.tsx`: 0 errores.\n   - `npx vitest run`: 25 suites pasadas, 281 tests pasados.\n   - No se ejecutó `npm run build` ni se tocó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-25T23:42:08.655Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. Esta vez si aplico correctamente el patron `direction={\"\" as \"horizontal\"}` para el mismo bug de Space visto hoy en EditSingleTransModal. Verificado: guard `if (fatherId)` en handleCategory preservado igual que en archivos hermanos, bug real de \"No account\" (`value=\"\"` en el option vs comparacion `=== \"No account\"` en el handler, nunca coincide) confirmado preservado identico al original. El guard `if (v && typeof v.format === \"function\")` en el DatePicker es compiler-required (Dayjs|null) y consistente con el mismo patron ya aprobado en EditSingleTransModal.tsx. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/QuickEditModal.jsx": {
           "status": "pending",
