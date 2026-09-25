@@ -10,9 +10,9 @@ import EditCategoryModal from "./EditCategoryModal";
 import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import SubCategoryList from "./SubCategoryList";
 
-import { fetchCategories, setCategories, type CategoryData, type CategoriesState } from "@/lib/features/categoriesSlice";
+import { fetchCategories, type CategoryData } from "@/lib/features/categoriesSlice";
 import { fetchUser, type UserData } from "@/lib/features/userSlice";
-import { fetchSubCat, setSubCategories, type SubCategoryData, type SubCategoriesState } from "@/lib/features/subCategorySlice";
+import { fetchSubCat, type SubCategoryData } from "@/lib/features/subCategorySlice";
 import type { AppDispatch, RootState } from "@/lib/store";
 
 export interface CategoriesClientProps {
@@ -35,13 +35,20 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
   const categoriesData: CategoryData[] = ccategories.data.user;
   const defCategoriesData: CategoryData[] = ccategories.data.default;
   const subCategoriesData: SubCategoryData[] = ccSubCategories.data.subCat;
-  
+  const defSubCategoriesData: SubCategoryData[] = ccSubCategories.data.default;
+
   const allCategoriesData = categoriesData.concat(defCategoriesData);
 
+  const sortByName = (a: { name?: string }, b: { name?: string }) =>
+    (a?.name || "").localeCompare(b?.name || "");
+  const sortedCategoriesData = [...categoriesData].sort(sortByName);
+  const sortedDefCategoriesData = [...defCategoriesData].sort(sortByName);
+
   const matchesQuery = (name?: string) => (name || "").toLowerCase().includes(searchQuery.trim().toLowerCase());
-  const filteredCategoriesData = categoriesData.filter((c) => matchesQuery(c.name));
+  const filteredCategoriesData = sortedCategoriesData.filter((c) => matchesQuery(c.name));
   const filteredSubCategoriesData = subCategoriesData.filter((c) => matchesQuery(c.name));
-  const filteredDefCategoriesData = defCategoriesData.filter((c) => matchesQuery(c.name));
+  const filteredDefCategoriesData = sortedDefCategoriesData.filter((c) => matchesQuery(c.name));
+  const filteredDefSubCategoriesData = defSubCategoriesData.filter((c) => matchesQuery(c.name));
 
   const nameGeneral = (ccUser?.data as UserData)?.fullName;
   
@@ -59,22 +66,6 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
       dispatch(fetchSubCat(ccSession));
     }
   }, []);
-
-  useEffect(() => {
-    if (categoriesData) {
-      if (categoriesData.length > 0) {
-        const allCategories = [...categoriesData].sort((a, b) => {
-          const firstName = a?.name;
-          const secondName = b?.name;
-          return firstName.localeCompare(secondName);
-        });
-        setCategories(allCategories as unknown as CategoriesState);
-      }
-    }
-    if (subCategoriesData) {
-      setSubCategories(subCategoriesData as unknown as SubCategoriesState);
-    }
-  }, [categoriesData, subCategoriesData]);
 
   return (
     <div className=" w-full h-full sm:pr-2">
@@ -120,7 +111,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
               <div className="cc-categoryList-cont-suv flex gap-2 flex-col flex-wrap">
                 <div className="category-list-container">
                   <h1 className="text-2xl font-thin py-2">Your Categories List</h1>
-                  {categoriesData.length < 0 ? (
+                  {categoriesData.length === 0 ? (
                     <EmptyModule
                       emMessage={`Ups! No categories to show. Ad a new category or try again later... 🤕`}
                     />
@@ -130,7 +121,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                 </div>
                 <div className="category-list-container">
                   <h1 className="text-2xl font-thin py-2">Your Sub Categories List</h1>
-                  {subCategoriesData.length < 0 ? (
+                  {subCategoriesData.length === 0 ? (
                     <EmptyModule
                       emMessage={`Ups! No subcategory to show. Ad a new subcategory or try again later... 🤕`}
                     />
@@ -142,7 +133,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                   <h1 className="text-2xl font-thin py-2">
                     Default Categories
                   </h1>
-                  {defCategoriesData.length < 0 ? (
+                  {defCategoriesData.length === 0 ? (
                     <EmptyModule
                       emMessage={`Ups! No categories to show. Ad a new category or try again later... 🤕`}
                     />
@@ -154,12 +145,12 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                   <h1 className="text-2xl font-thin py-2">
                     Default Sub Categories
                   </h1>
-                  {defCategoriesData.length < 0 ? (
+                  {defSubCategoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No categories to show. Ad a new category or try again later... 🤕`}
+                      emMessage={`Ups! No subcategory to show. Ad a new subcategory or try again later... 🤕`}
                     />
                   ) : (
-                    <CategoryList clCategories={filteredDefCategoriesData} clUser={userData}/>
+                    <SubCategoryList sclSubCategory={filteredDefSubCategoriesData} clUser={userData} sclCategories={categoriesData} />
                   )}
                 </div>
               </div>
