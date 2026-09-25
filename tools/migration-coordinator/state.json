@@ -1249,8 +1249,23 @@
           ]
         },
         "src/components/multiUsedComp/GoalBudget.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T04:49:21.041Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T04:50:54.639Z",
+              "event": "submitted",
+              "notes": "Migración de src/components/multiUsedComp/GoalBudget.jsx a src/components/multiUsedComp/GoalBudget.tsx.\n\n1. Tipado e interfaces:\n- Se renombró el archivo a `.tsx` preservando el historial con `git mv`.\n- Se definió y exportó la interfaz `GoalBudgetProps` con `budge?: unknown; color?: string;`.\n- Se tipó el retorno del componente `GoalBudget` como `React.JSX.Element`.\n- Se mantuvo el dynamic import de `@ant-design/plots` con `{ ssr: false }`.\n- Cero uso de `any`; se usó `unknown` para tipar la prop `budge`.\n\n2. Preservación de comportamiento y lógica:\n- No se agregaron operadores de optional chaining (`?.`) ni fallbacks (`||`, `??`) innecesarios.\n- Se omitió `budge` de la desestructuración de parámetros para cumplir limpiamente con `@typescript-eslint/no-unused-vars` sin alterar la interfaz de props aceptada en `GoalBudgetProps` ni la renderización runtime.\n- Cero cambios en la lógica o configuración del componente `TinyRing`.\n\n3. Verificación ejecutada:\n- `npx eslint src/components/multiUsedComp/GoalBudget.tsx`: 0 errores, 0 warnings (verificado línea por línea).\n- `npx tsc --noEmit`: 0 errores de compilación TypeScript.\n- `npx vitest run`: 25/25 suites pasadas, 281/281 tests exitosos.\n- No se ejecutó `npm run build` (para proteger el servidor de desarrollo activo).\n- No se tocó ningún otro archivo del proyecto."
+            },
+            {
+              "ts": "2026-09-25T04:51:26.443Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. GoalBudgetProps, budge tipado como unknown (nunca usado en el cuerpo, confirmado en el original tampoco). Diff sin cambios funcionales, solo formato de comillas y tipos. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/multiUsedComp/DeletePreviewRow.jsx": {
           "status": "pending",
