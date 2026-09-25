@@ -1880,18 +1880,69 @@
     "historia-7-budgets": {
       "label": "Budgets (page + BudgetsClient + BudgetBarRow + BudgetEditModal + BudgetDetailModal + ProjectBudgetDetailModal + SpendingSummaryDetailModal + modelo Budget + rutas new/update/remove/get-historical - budget/get YA esta migrada desde Historia 2). NO incluye UnbudgetedSpending.jsx ni el arbol de HistoricalBudgetsComparative/HistoricalWalletAnalyzer (analytics pesado, historia futura).",
       "files": {
-        "src/app/dashboard/budgets/page.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/Budgets/BudgetsClient.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/Budgets/BudgetBarRow.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/Budgets/BudgetEditModal.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/Budgets/BudgetDetailModal.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/Budgets/ProjectBudgetDetailModal.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/Budgets/SpendingSummaryDetailModal.jsx": { "status": "pending", "history": [] },
-        "src/model/Budget.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/budget/new/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/budget/update/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/budget/remove/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/budget/get-historical/route.js": { "status": "pending", "history": [] }
+        "src/model/Budget.js": {
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:14:13.763Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:15:37.713Z",
+              "event": "submitted",
+              "notes": "Migración de `src/model/Budget.js` a `src/model/Budget.ts`.\n1. Tipado e interfaces:\n- Se definió la interfaz `IBudget` que extiende `mongoose.Document` cubriendo todos los campos del schema: `name`, `isSaving`, `savingAmount`, `user`, `wallet`, `goalAmount`, `isSurpassed`, `category`, `subCategory`, `categories`, `period`, `budgetType`, `icon`, `eventStartDate`, `eventEndDate`, `linkedTags`, `linkedAccounts`, `archived`, `history`, `goalMoney`, `savingMoney`, `currency`, `createdAt`, `updatedAt`.\n- Se definieron y exportaron interfaces auxiliares: `IBudgetCategoryEntry` (con `category` y `subCategory` como `mongoose.Types.ObjectId | string`) e `IBudgetHistoryEntry` (con `goalAmount`, `savingAmount`, `goalMoney`, `savingMoney`, `effectiveFrom`, `effectiveTo`).\n- Se tipó el schema genérico `new Schema<IBudget>({...})`.\n- Se tipó la constante del modelo como `const Budget: mongoose.Model<IBudget>`.\n\n2. Preservación estricta de lógica y comentarios:\n- Se preservó EXACTAMENTE el patrón de re-registro intencional del modelo: `if (mongoose.models && mongoose.models.Budget) { delete mongoose.models.Budget; } const Budget = mongoose.model<IBudget>('Budget', budgetSchema);`.\n- Se conservaron todos los comentarios de documentación sobre legacy major-unit amounts, multi-currency additions y display-only currency label.\n- Cero cambios de comportamiento o lógica en tiempo de ejecución.\n\n3. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx eslint src/model/Budget.ts`: 0 errores / advertencias.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos)."
+            },
+            {
+              "ts": "2026-09-25T22:16:16.470Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. IBudget con IBudgetCategoryEntry/IBudgetHistoryEntry completos, patron de re-registro delete+model preservado exactamente tal cual (no se cambio al patron mongoose.models.X || mongoose.model(...) de los demas modelos, siguiendo la instruccion explicita). tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
+        },
+        "src/app/dashboard/budgets/page.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Budgets/BudgetsClient.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Budgets/BudgetBarRow.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Budgets/BudgetEditModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Budgets/BudgetDetailModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Budgets/ProjectBudgetDetailModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Budgets/SpendingSummaryDetailModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/budget/new/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/budget/update/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/budget/remove/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/budget/get-historical/route.js": {
+          "status": "pending",
+          "history": []
+        }
       }
     }
   }
