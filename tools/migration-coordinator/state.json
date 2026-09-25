@@ -1291,15 +1291,57 @@
     "historia-5-accounts": {
       "label": "Accounts (page + AccountClient + EditAccountModal + PrimaryCurrencySelector + modelo Account + rutas de API que usa). NO incluye ResumeTabsTrans/TransDetailsGrandContainer/DisplayerCategoryTreemap (arrastran CategoryTreemap y el arbol de analytics de categorias completo - son su propia historia futura). AccountClient necesitara bridges tipados para esos, igual que con Movements/WalletAnalyzer en Historia 2.",
       "files": {
-        "src/app/dashboard/accounts/page.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/AccountClient.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/EditAccountModal.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/PrimaryCurrencySelector.jsx": { "status": "pending", "history": [] },
-        "src/model/Account.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/accounts/reorder/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/accounts/update-account/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/accounts/new-account/route.js": { "status": "pending", "history": [] },
-        "src/app/api/general-data/accounts/remove-account/route.js": { "status": "pending", "history": [] }
+        "src/app/dashboard/accounts/page.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/AccountClient.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/EditAccountModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/PrimaryCurrencySelector.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/Account.js": {
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T05:01:51.967Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T05:03:31.328Z",
+              "event": "submitted",
+              "notes": "Migración de `src/model/Account.js` a `src/model/Account.ts` siguiendo el patrón establecido en `src/model/User.ts`. Se definió la interfaz `IAccount extends mongoose.Document` reflejando los campos del schema (`name`, `amount`, `accountType`, `user`, `wallet`, `currency`, `balanceMinor`, `institution`, `balanceUpdatedAt`, `schemaVersion`, `order`, `createdAt`, `updatedAt`), se tipó el schema con `new Schema<IAccount>(...)` preservando idénticos todos los campos y opciones originales (incluyendo `require: true` preexistente y comentarios de documentación multi-currency), y se exportó `const Account: mongoose.Model<IAccount> = mongoose.models.Account || mongoose.model<IAccount>('Account', accountSchema)`. Se removió el import no utilizado `model` de `mongoose`. Verificado con `npx tsc --noEmit` (0 errores), `npx eslint src/model/Account.ts` (0 errores/warnings), y `npx vitest run` (25/25 suites, 281/281 tests pasados)."
+            },
+            {
+              "ts": "2026-09-25T05:04:02.058Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. IAccount siguiendo exactamente el patron de User.ts, Schema<IAccount>, mongoose.Model<IAccount>. Comentarios originales preservados. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
+        },
+        "src/app/api/general-data/accounts/reorder/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/accounts/update-account/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/accounts/new-account/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/accounts/remove-account/route.js": {
+          "status": "pending",
+          "history": []
+        }
       }
     }
   }

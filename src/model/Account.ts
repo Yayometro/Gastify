@@ -1,7 +1,32 @@
-import mongoose, {Schema, model} from 'mongoose'
+import mongoose, {Schema} from 'mongoose'
 import { SUPPORTED_CURRENCIES } from '@/lib/money/currencies'
 
-const accountSchema = new Schema({
+export interface IAccount extends mongoose.Document {
+    name?: string;
+    // Legacy major-unit balance. Kept as the source of truth until the
+    // migration populates balanceMinor; new money-aware code should prefer
+    // balanceMinor once it has been migrated.
+    amount?: number;
+    accountType?: "debit" | "credit" | "cash" | "savings" | string;
+    user?: mongoose.Types.ObjectId | string;
+    wallet?: mongoose.Types.ObjectId | string;
+    // Multi-currency: each Account has exactly one native currency. A
+    // Revolut-style multi-currency relationship maps to multiple Accounts,
+    // not one Account holding several currencies.
+    currency?: string;
+    balanceMinor?: number | null;
+    institution?: string | null;
+    balanceUpdatedAt?: Date | null;
+    schemaVersion?: number;
+    // User-controlled display order for the Accounts resume cards. Accounts
+    // without one yet (legacy) fall back to creation order via the
+    // secondary sort in the get-account route.
+    order?: number;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const accountSchema = new Schema<IAccount>({
     name: {type: String},
     // Legacy major-unit balance. Kept as the source of truth until the
     // migration populates balanceMinor; new money-aware code should prefer
@@ -38,7 +63,7 @@ const accountSchema = new Schema({
 
 }, {timestamps: true})
 
-const Account = mongoose.models.Account || mongoose.model('Account', accountSchema);
+const Account: mongoose.Model<IAccount> = mongoose.models.Account || mongoose.model<IAccount>("Account", accountSchema);
 
 export default Account
 
