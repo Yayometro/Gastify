@@ -1082,16 +1082,61 @@
     "historia-4-shared-leaf-components": {
       "label": "Componentes compartidos pequenos (CategoIcon, UniversalCategoIcon, EmptyModule, Tag, SelecterFilter, SelecterItemsToDisplay, TimeRange, MultiCreditCard, GoalBudget, DeletePreviewRow) - usados en casi toda la app, migrarlos primero reduce los bridges tipados necesarios en historias futuras",
       "files": {
-        "src/components/multiUsedComp/CategoIcon.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/UniversalCategoIcon.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/EmptyModule.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/Tag.jsx": { "status": "pending", "history": [] },
-        "src/components/Filters/selecterFilter/SelecterFilter.jsx": { "status": "pending", "history": [] },
-        "src/components/Filters/selecterItemsToDisplay/SelecterItemsToDisplay.jsx": { "status": "pending", "history": [] },
-        "src/components/Filters/timeRange/TimeRange.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/MultiCreditCard.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/GoalBudget.jsx": { "status": "pending", "history": [] },
-        "src/components/multiUsedComp/DeletePreviewRow.jsx": { "status": "pending", "history": [] }
+        "src/components/multiUsedComp/CategoIcon.jsx": {
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T04:25:29.383Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T04:27:03.275Z",
+              "event": "submitted",
+              "notes": "Migración de CategoIcon a TypeScript (src/components/multiUsedComp/CategoIcon.tsx). Se tiparon las props con la interfaz CategoIconProps ({ type: string; siz?: number | string; className?: string }) y se indexó el namespace de iconos mediante Record<string, IconType>. Comportamiento y lógica 100% intactos sin cambios ni fallbacks agregados. Verificado con tsc --noEmit limpio, eslint línea por línea limpio y 281/281 tests en Vitest pasando."
+            },
+            {
+              "ts": "2026-09-25T04:27:29.018Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Diff minimo y correcto: CategoIconProps, cast estructural (icons as Record<string, IconType>)[type] sin any (IconType real de react-icons). tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
+        },
+        "src/components/multiUsedComp/UniversalCategoIcon.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/EmptyModule.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Tag.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/Filters/selecterFilter/SelecterFilter.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/Filters/selecterItemsToDisplay/SelecterItemsToDisplay.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/Filters/timeRange/TimeRange.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/MultiCreditCard.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/GoalBudget.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/DeletePreviewRow.jsx": {
+          "status": "pending",
+          "history": []
+        }
       }
     }
   }
