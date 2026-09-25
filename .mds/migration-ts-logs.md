@@ -236,11 +236,14 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 4 | `general-data/api-tokens/remove` (POST) | IDOR de escritura - cualquiera podía revocar tokens de conector de otro usuario | `a9e8f17` | Media |
 | 5 | `general-data/api-tokens/new` (POST) | IDOR de escritura, la más grave de la familia "mail equivocado" - cualquiera podía crear un token de acceso completo a la cuenta de otro usuario | `a9e8f17` | Crítica |
 | 6 | `general-data/accounts/*` (reorder, update-account, new-account, remove-account) | Cero verificación de sesión (no solo "mail equivocado" - directamente sin auth), y sin cobertura del middleware por ser rutas de API. `remove-account` permitía borrar cualquier cuenta de la base de datos sin ninguna autenticación. | `94723a3` | Crítica |
+| 7 | `general-data/wallet/get-wallet` (POST) | IDOR de lectura - ya migrada en Historia 2, se me pasó en esa revisión. Cualquiera podía leer el wallet completo (presupuesto, cash, moneda) de otro usuario. | `b8897fc` | Alta |
+| 8 | `general-data/wallet` (POST) | Cero verificación de sesión - cualquiera podía editar nombre/cash/presupuesto/moneda de CUALQUIER wallet dado su id. | `b8897fc` | Crítica |
 
-Los #1-5 comparten la misma causa raíz (confiar en un `mail` mandado por
-el cliente en vez de derivar el usuario de la sesión autenticada vía
-`auth.api.getSession()`). El #6 es una categoría más grave (cero
-verificación, ni siquiera de sesión) pero se corrige con el mismo
+Los #1-5 y #7 comparten la misma causa raíz (confiar en un `mail`
+mandado por el cliente en vez de derivar el usuario de la sesión
+autenticada vía `auth.api.getSession()`). Los #6 y #8 son la categoría
+más grave (cero verificación, ni siquiera de sesión) pero se corrigen
+con el mismo
 patrón. Ninguno requirió cambiar el comportamiento de ningún call site
 real ya existente.
 
@@ -365,6 +368,40 @@ respetando la sesión correctamente. `reorder` comparte exactamente el
 mismo patrón y pasa sus tests, no se probó con drag-and-drop en vivo
 por tiempo.
 
+Migradas las 4 rutas de `accounts/*` a TypeScript (con el fix de
+seguridad ya intacto): `reorder.ts`, `update-account.ts` (la comparación
+`,` → `;` en las asignaciones de `findAccount` es el operador coma de
+JS, cero cambio de comportamiento), `new-account.ts` (bridge tipado
+para `Wallet.js` sin migrar), `remove-account.ts`.
+
+**7mo y 8vo fix de seguridad, encontrados al revisar la dependencia de
+`PrimaryCurrencySelector.jsx` antes de migrarlo (hechos por Claude
+directamente)**: el componente llama a `general-data/wallet/get-wallet`
+y `general-data/wallet` (POST) - ambas rutas tenían el mismo problema:
+
+- `get-wallet` (ya migrada en Historia 2 - **se me pasó en esa
+  revisión**): confiaba en el `mail` del body, mismo IDOR de lectura ya
+  visto en `get-user`. Cualquier usuario autenticado podía leer el
+  wallet completo (presupuesto, cash, moneda) de cualquier otro.
+- `wallet/route.js` (POST, sin migrar todavía): cero verificación de
+  sesión - actualizaba nombre/cash/presupuesto/moneda de CUALQUIER
+  wallet dado su `walletId` del body, sin auth de ningún tipo.
+
+Ambas corregidas con el mismo patrón (`auth.api.getSession()` +
+resolver el wallet del lado del servidor). Se actualizó
+`wallet/route.test.js` para mockear `User`/`betterAuth`. Verificado en
+vivo en Chrome: `get-wallet` cargó bien el wallet real, y se cambió la
+moneda primaria de MXN a USD y de vuelta a MXN vía
+`PrimaryCurrencySelector`, ambos confirmados con toast.
+
+**El usuario pidió, aparte de la migración, una auditoría completa de
+TODOS los endpoints de la API** para confirmar que tienen la
+verificación de sesión correcta - se creó
+[`api-security-audit-checklist.md`](api-security-audit-checklist.md)
+con un escaneo heurístico de las ~65 rutas existentes y una lista de
+pendientes por revisar manualmente. Es una tarea aparte, no bloquea
+seguir con la migración.
+
 ---
 
 ## Bugs pendientes (encontrados, NO arreglados, para revisión posterior del usuario)
@@ -384,8 +421,12 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 7 | `Dashboard.tsx` (ya migrado, comportamiento preservado) | `allBills`/`allIncomes` solo se referencian dentro de un bloque JSX ya comentado; `handleDurationChange`/`setSelectedDuration` están completamente muertos. No se tocaron por regla, pero son candidatos a limpieza. | Historia 2 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
-6 bugs de seguridad de control de acceso en `get-user`, `update-user`,
-`api-tokens/list`, `api-tokens/new`, `api-tokens/remove`, y las 4 rutas
-de `accounts/*` (ver tabla consolidada arriba); 2 archivos muertos
-borrados (`api/searchUser.js`, `api/login` legacy); 1 bug de UI en
-`RegisterComp.jsx` (`formData.name` → `formData.fullName`).
+8 bugs de seguridad de control de acceso en `get-user`, `update-user`,
+`api-tokens/list`, `api-tokens/new`, `api-tokens/remove`, las 4 rutas
+de `accounts/*`, y `get-wallet`/`wallet` (ver tabla consolidada arriba);
+2 archivos muertos borrados (`api/searchUser.js`, `api/login` legacy);
+1 bug de UI en `RegisterComp.jsx` (`formData.name` → `formData.fullName`).
+
+**Pendiente aparte, no bloquea la migración**: auditoría completa de
+todos los endpoints de la API pedida por el usuario - ver
+[`api-security-audit-checklist.md`](api-security-audit-checklist.md).
