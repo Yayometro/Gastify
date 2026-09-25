@@ -1007,8 +1007,23 @@
           ]
         },
         "src/app/api/general-data/api-tokens/list/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T03:51:00.293Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T03:52:23.250Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/api/general-data/api-tokens/list/route.js` a `src/app/api/general-data/api-tokens/list/route.ts`.\n\n1. Tipado e interfaces:\n- Se agregaron las interfaces `ApiTokenListItem` (con `_id?: unknown`, `name: string`, `createdAt: Date | string | number`, `lastUsedAt: Date | string | number | null`), `ApiTokensListSuccessResponse` y el alias de tipo `ApiTokensListResponse`.\n- Se tipó la firma del handler de ruta: `export async function POST(request: NextRequest | Request): Promise<NextResponse<ApiTokensListResponse>>`.\n- Se tipó el mapeo de tokens `tokens: ApiTokenListItem[]` utilizando coerción estructural segura con `unknown` en `(t as unknown as { _id?: unknown })._id` sin recurrir a `any`.\n- Se mantuvo `catch(e)` sin anotación explícita acorde a `strict: false` y `throw new Error(e)` idéntico al original.\n\n2. Preservación estricta de lógica y fix de seguridad:\n- Se preservó íntegramente la derivación del correo del usuario desde la sesión autenticada (`auth.api.getSession({ headers: request.headers })`) y el comentario explicativo del fix de IDOR.\n- Se mantuvieron intactas todas las comprobaciones de error (`!request`, `!sesion`, `!user`), la conexión a la base de datos y la respuesta JSON (`message: \"API tokens found\"`, `status: 200`, `ok: true`).\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/api-tokens/list/route.ts`: 0 errores / 0 advertencias.\n- `npx vitest run`: 25 suites pasadas (281/281 tests pasados)."
+            },
+            {
+              "ts": "2026-09-25T03:52:46.727Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Diff revisado: cambios puramente aditivos de tipos (ApiTokenListItem, ApiTokensListSuccessResponse), el fix de seguridad IDOR aplicado por Claude (auth.api.getSession en vez de confiar en el mail del body) quedo intacto incluyendo su comentario explicativo. Cast estructural acotado (t as unknown as {_id?: unknown})._id sin any, correcto ya que apiTokens del modelo User aun no esta tipado a ese nivel de detalle. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/api-tokens/new/route.js": {
           "status": "pending",
