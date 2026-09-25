@@ -1384,8 +1384,23 @@
           ]
         },
         "src/app/api/general-data/accounts/remove-account/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T05:45:19.112Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T05:46:43.581Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/accounts/remove-account/route.js` a `src/app/api/general-data/accounts/remove-account/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron y exportaron `RemoveAccountRequestBody` (`string`), `RemoveAccountSuccessResponse` (`message: string`, `data: IAccount`, `status: number`, `ok: boolean`) y el alias de tipo `RemoveAccountResponse`.\n- Se tipó la firma del handler de Next.js: `export async function POST(request: NextRequest | Request): Promise<NextResponse<RemoveAccountResponse>>`.\n- Se casteó el payload de `request.json()` hacia `RemoveAccountRequestBody`.\n- Se preservó `catch (e)` sin anotación explícita bajo `strict: false` y con el throw idéntico al original (`throw new Error(e)`).\n- Cero uso de `any`.\n\n2. Preservación estricta de lógica y seguridad:\n- Se preservó íntegramente el fix de seguridad reciente aplicado por Claude: validación de sesión con `auth.api.getSession({ headers: request.headers })`, resolución de usuario en BD (`User.findOne({ mail: sesion.user.email }).lean()`) y borrado atómico acotado al wallet del usuario (`Account.findOneAndDelete({ _id: accountId, wallet: userFound.wallet })`).\n- Cero operadores de optional chaining o fallbacks artificiales no forzados por el compilador.\n- Todos los comentarios de seguridad y contexto se conservaron intactos.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/accounts/remove-account/route.ts`: 0 errores y 0 warnings (verificado salida real línea por línea).\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests pasados).\n- No se ejecutó `npm run build` para proteger el servidor de desarrollo activo del usuario."
+            },
+            {
+              "ts": "2026-09-25T05:47:14.735Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. RemoveAccountRequestBody (string, matches el body real)/SuccessResponse con IAccount, fix de seguridad (session + findOneAndDelete({_id, wallet})) intacto con su comentario. Diff puramente aditivo. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         }
       }
     }
