@@ -2091,8 +2091,23 @@
           ]
         },
         "src/components/multiUsedComp/Budgets/BudgetsClient.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:58:28.819Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T23:02:46.450Z",
+              "event": "submitted",
+              "notes": "Migrado `BudgetsClient.jsx` a `BudgetsClient.tsx` (TypeScript):\n- Tipado de props (`BudgetsClientProps`), estados locales (`startDate`, `endDate`, `editingBudget`, `selectedDetailBudget`, `returnToDetailBudget`, `modalMode`, `showUnbudgeted`, `returnToUnbudgeted`, `showSpendingSummary`), y funciones auxiliares (`categoryEntryFromGroup`, `getBudgetRangeLabel`, `addGroupToProject`, handlers de modal).\n- Integración con tipos exportados de componentes hijos migrados (`BudgetBarRowBudgetItem`, `BudgetModalItem`, `BudgetEditModalMode`, `FormCategoryEntry`, `BudgetDetailItem`, `BudgetDetailTransactionItem`, `ProjectBudgetItem`, `ProjectBudgetTransactionItem`, `SpendingBudgetSummaryItem`, `SpendingSummaryCoverage`, `SpendingTotals`) y de Redux/models (`BudgetData`, `TransactionData`, `UserData`, `WalletData`, `CategoryData`, `AppDispatch`).\n- Interfaces dedicadas para grupos no presupuestados (`UnbudgetedGroup`, `UnbudgetedGroupMovement`, `UnbudgetedGroupCategoryRef`).\n- Preservada la lógica y comportamiento en tiempo de ejecución al 100% sin modificaciones lógicas (mantenido `||` original, sin renombres de props válidos como `siz`).\n- Verificaciones: `npx tsc --noEmit` limpio (0 errores), `npx eslint src/components/multiUsedComp/Budgets/BudgetsClient.tsx` limpio (0 errores, 0 warnings), y `npx vitest run` con 281/281 tests pasando.\n- Observaciones de código preexistente: (1) `openEdit` está definido en el componente pero nunca se utiliza ni se pasa a ningún hijo (en su lugar `BudgetBarRow` usa `openDetail` y el flujo de edición pasa por `openEditFromDetail`); (2) el prop `mcSession` lo pasa `dashboard/budgets/page.jsx`, pero `BudgetsClient` obtiene su estado desde `useGetDataFromProvider()`, por lo que el prop no se consume internamente. Ambos se preservaron intactos con anotaciones eslint correspondientes."
+            },
+            {
+              "ts": "2026-09-25T23:04:17.123Z",
+              "event": "approved",
+              "notes": "Migracion grande pero limpia, sin rework. Diff completo revisado linea por linea: todos los cambios son (1) anotaciones de tipo, (2) casts hacia los tipos ya exportados por los hijos migrados (BudgetBarRowBudgetItem, BudgetModalItem, BudgetDetailItem, ProjectBudgetItem, SpendingSummaryCoverage, etc.) o hacia helpers/hooks que siguen en JS (getBudgetCoverage, useGetDataFromProvider), y (3) guards defensivos compiler-required (`if (budget._id)`, `id &&`, `group.movements || []`) que no cambian el comportamiento real para los datos que efectivamente llegan (budgets siempre tienen _id, movements siempre viene poblado desde donde se llama). Cero cambios de `||`->`??`, cero renombres de props invalidas. Los dos eslint-disable para variables sin usar (`mcSession`, `openEdit`) preservan exactamente el codigo muerto que ya existia en el original (prop nunca leido, funcion nunca invocada). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/app/dashboard/budgets/page.jsx": {
           "status": "pending",
