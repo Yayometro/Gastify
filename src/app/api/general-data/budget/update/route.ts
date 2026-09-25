@@ -1,22 +1,76 @@
-import Budget from "@/model/Budget";
-import Category from "@/model/Category";
-import SubCategory from "@/model/SubCategory";
-import Account from "@/model/Account";
-import Tag from "@/model/Tag";
-import User from "@/model/User";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
-import { NextResponse } from "next/server";
+import Budget, { type IBudget, type IBudgetCategoryEntry } from "@/model/Budget";
+import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import type mongoose from "mongoose";
+import "@/model/Category";
+import "@/model/SubCategory";
+import "@/model/Account";
+import "@/model/Tag";
 
-export async function GET() {
+export interface UpdateBudgetGetStatusResponse {
+  mes: string;
+}
+
+export interface UpdateBudgetRequestBody {
+  id?: mongoose.Types.ObjectId | string;
+  name?: string | null;
+  goalAmount?: number | string;
+  category?: mongoose.Types.ObjectId | string | null;
+  subCategory?: mongoose.Types.ObjectId | string | null;
+  isSurpassed?: boolean;
+  isSaving?: boolean;
+  savingAmount?: number | string;
+  categories?: IBudgetCategoryEntry[];
+  period?: "monthly" | "quarterly" | "biannual" | "yearly" | string;
+  linkedAccounts?: (mongoose.Types.ObjectId | string)[];
+  budgetType?: "spending" | "saving" | "project" | string;
+  eventStartDate?: string | Date | null;
+  eventEndDate?: string | Date | null;
+  linkedTags?: (mongoose.Types.ObjectId | string)[];
+  icon?: string | null;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface UpdateBudgetSuccessResponse {
+  message: string;
+  data: IBudget;
+  status: number;
+  ok: boolean;
+}
+
+export type UpdateBudgetResponse = UpdateBudgetSuccessResponse;
+
+export async function GET(): Promise<NextResponse<UpdateBudgetGetStatusResponse>> {
   return NextResponse.json({ mes: "Work" });
 }
 
-export async function POST(request) {
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<UpdateBudgetResponse>> {
   try {
     if (!request) throw new Error("No data in request on NEW BUDGET POST");
-    const { id, name, goalAmount, category, subCategory, isSurpassed, isSaving, savingAmount, categories, period, linkedAccounts, budgetType, eventStartDate, eventEndDate, linkedTags, icon, currency } =
-      await request.json();
+    const {
+      id,
+      name,
+      goalAmount,
+      category,
+      subCategory,
+      isSurpassed,
+      isSaving,
+      savingAmount,
+      categories,
+      period,
+      linkedAccounts,
+      budgetType,
+      eventStartDate,
+      eventEndDate,
+      linkedTags,
+      icon,
+      currency,
+    } = (await request.json()) as UpdateBudgetRequestBody;
     if (!id) throw new Error(`No ID  was provided to update budget 🤕`);
     // Security fix: this used to look up the Budget by id alone, with zero
     // ownership check - this endpoint isn't covered by middleware.ts's

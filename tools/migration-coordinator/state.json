@@ -1919,8 +1919,23 @@
           ]
         },
         "src/app/api/general-data/budget/update/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:20:00.194Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:21:12.489Z",
+              "event": "submitted",
+              "notes": "Migración de src/app/api/general-data/budget/update/route.js a route.ts. Se tiparon los contratos UpdateBudgetRequestBody, UpdateBudgetGetStatusResponse, UpdateBudgetSuccessResponse y los handlers GET y POST con NextRequest/Response. Se importaron directamente Budget.ts (con IBudget e IBudgetCategoryEntry) y User.ts sin bridges. Se preservaron los imports de efecto secundario para Category/SubCategory/Account/Tag. Se preservó íntegramente el security fix (verificación de sesión con auth.api.getSession y búsqueda con Budget.findOne({_id: id, wallet: userFound.wallet})) así como toda la lógica de control de versiones del historial (history[]), comparaciones !== undefined vs falsy y actualización condicional de campos. Verificado con npx tsc --noEmit (0 errores), npx eslint (0 errores, 0 warnings) y npx vitest run (25 archivos pasados, 281 tests exitosos)."
+            },
+            {
+              "ts": "2026-09-25T22:21:48.437Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Interfaces completas con IBudget/IBudgetCategoryEntry sin bridges. Diff completo revisado (90 lineas): la logica de version history (amountIsChanging, cierre de effectiveTo, push de nueva entrada) y todas las comparaciones !== undefined vs falsy quedaron intactas sin simplificar. Fix de seguridad (session + Budget.findOne({_id, wallet})) intacto. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/budget/remove/route.js": {
           "status": "pending",
