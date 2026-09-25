@@ -1645,8 +1645,23 @@
           ]
         },
         "src/app/api/general-data/subcategory/update/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T07:13:13.756Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T07:14:15.249Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/subcategory/update/route.js` a `src/app/api/general-data/subcategory/update/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron las interfaces `UpdateSubCategoryRequestBody` (`id?`, `name?`, `icon?`, `color?`, `fatherCategory?`, `[key: string]: unknown`), `UpdateSubCategorySuccessResponse` (`message: string`, `data: ISubCategory | null`, `ok: boolean`, `status: number`) y el type alias `UpdateSubCategoryResponse` para tipar la respuesta `NextResponse<UpdateSubCategoryResponse>`.\n- Se tipó la firma del handler de Next.js: `export async function POST(request: NextRequest | Request): Promise<NextResponse<UpdateSubCategoryResponse>>`.\n- Se importaron y utilizaron directamente los modelos TypeScript ya migrados `SubCategory.ts` (con `type { ISubCategory }`), `User.ts` y registro de schema con `import \"@/model/Category\";` para el `.populate(\"fatherCategory\")`.\n- Para el modelo `Transaction.js` aún no migrado, se implementó el puente de tipado estructural seguro sin `any`: `(Transaction as unknown as { updateMany: (filter: unknown, update: unknown) => Promise<unknown> }).updateMany(...)`.\n- Se preservó `catch (e)` sin anotación explícita y `throw new Error(e)` según las directivas de `strict: false`.\n\n2. Cero cambios de comportamiento:\n- Se preservó íntegramente el fix de seguridad de sesión con Better Auth (`auth.api.getSession({ headers: request.headers })`) y la búsqueda acotada al wallet del usuario (`SubCategory.findOne({ _id: id, wallet: userFound.wallet })`), junto con todos sus comentarios explicativos intactos.\n- Cero alteraciones en la lógica de actualización de campos, propagación de re-parenting en transacciones históricas (`Transaction.updateMany`), población (`populate(\"fatherCategory\")`) y estructura de la respuesta JSON.\n- No se agregaron optional chainings ni fallbacks innecesarios.\n\n3. Verificación ejecutada:\n- `npx eslint src/app/api/general-data/subcategory/update/route.ts`: 0 errores, 0 warnings (comprobado con salida limpia línea por línea).\n- `npx tsc --noEmit`: 0 errores de compilación en el proyecto.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests pasados).\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-25T07:14:46.813Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Interfaces correctas, bridge acotado exacto para Transaction.updateMany (modelo aun sin migrar) sin any. Fix de seguridad intacto, incluyendo la logica de re-parenteo en cascada hacia Transaction preservada exactamente. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/subcategory/remove/route.js": {
           "status": "pending",
