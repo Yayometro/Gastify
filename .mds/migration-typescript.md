@@ -80,20 +80,37 @@ de seguridad real fuera de alcance (IDOR en
 `general-data/user/get-user/route.js`) se corrigió aparte de inmediato por
 prioridad alta.
 
-**Historia activa: Historia 2 — Dashboard** (shell + Redux plumbing que
-carga directamente: `dashboard/layout.js`, `dashboard/page.jsx`,
-`Dashboard.jsx`, los slices de Redux, `useFetchAndGetAllReduxInfo`, y las
-rutas de API de `get-user`/`get-wallet`/`get-account`/`get-categories`/
-`get-sub-categories`/`budget/get`/`get-transactions`). Deliberadamente NO
-incluye los sub-componentes grandes que Dashboard.jsx renderiza
-(`Movements.jsx`, `WalletAnalyzer`, `BudgetCont`, etc.) - esos son
-suficientemente grandes/independientes como para ser su propia historia
-más adelante. Reclama archivos solo de esta historia.
+**Historia 1 (Login/Auth) y Historia 2 (Dashboard) completas.**
+
+**Historia 3 (Profile) completa** - ProfileClient, ApiTokensPanel y sus 4
+rutas de API. En el camino se encontraron y corrigieron 4 bugs de
+seguridad IDOR reales fuera del flujo normal de migración (ver tabla en
+`migration-ts-logs.md`) - mismo patron que el IDOR de `get-user` ya
+corregido en Historia 1.
+
+**Historia activa: Historia 4 — Componentes compartidos pequeños**
+(`CategoIcon`, `UniversalCategoIcon`, `EmptyModule`, `Tag`,
+`SelecterFilter`, `SelecterItemsToDisplay`, `TimeRange`,
+`MultiCreditCard`, `GoalBudget`, `DeletePreviewRow`). Elegida a
+proposito antes de atacar Movements/WalletAnalyzer/Budgets/Categories
+(todos con 1000+ lineas y muchas dependencias entrelazadas) porque estos
+10 archivos son pequeños, de bajo riesgo, y se usan como bridge tipado
+(`Typed<Componente>`) en casi todos los componentes ya migrados - migrarlos
+de raiz reduce la deuda de esos bridges en las historias grandes que
+siguen. De paso, revisando `SelecterFilter.jsx` se confirmo la causa raiz
+del bug del dropdown de periodo reportado por el usuario en Historia 2:
+dos entradas del arreglo de periodos por defecto comparten
+`value: 30` ("Last 30 days" y "Last 90 days" - typo de copy-paste), asi
+que el `<select>` nativo siempre muestra la etiqueta de la primera
+opcion que matchea ese value aunque el dato subyacente cambie bien. No
+se toca en esta historia (no es parte del alcance de "solo tipos" y no
+es de seguridad) - reportado, pendiente de que el usuario decida
+arreglarlo.
 
 Historias siguientes (orden real a confirmar): Movements/Transacciones,
-Wallet Analyzer, Profile, Budgets, Categories, Accounts, History,
-Projections, MCP tools. Los modelos Mongoose que aún faltan (Wallet,
-Account, Category, SubCategory, Budget, Transaction, Tag, IncomeSource,
+Wallet Analyzer, Budgets, Categories, Accounts, History, Projections,
+MCP tools. Los modelos Mongoose que aún faltan (Wallet, Account,
+Category, SubCategory, Budget, Transaction, Tag, IncomeSource,
 CategoryRule, ProjectionSettings, ProjectionBaseline, FxRateSnapshot) se
 migran conforme cada historia los necesite, no todos de un jalón.
 `scripts/` sueltos al final.

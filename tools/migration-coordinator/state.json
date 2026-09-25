@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-3-profile",
+  "activeStory": "historia-4-shared-leaf-components",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -1077,6 +1077,21 @@
             }
           ]
         }
+      }
+    },
+    "historia-4-shared-leaf-components": {
+      "label": "Componentes compartidos pequenos (CategoIcon, UniversalCategoIcon, EmptyModule, Tag, SelecterFilter, SelecterItemsToDisplay, TimeRange, MultiCreditCard, GoalBudget, DeletePreviewRow) - usados en casi toda la app, migrarlos primero reduce los bridges tipados necesarios en historias futuras",
+      "files": {
+        "src/components/multiUsedComp/CategoIcon.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/UniversalCategoIcon.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/EmptyModule.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/Tag.jsx": { "status": "pending", "history": [] },
+        "src/components/Filters/selecterFilter/SelecterFilter.jsx": { "status": "pending", "history": [] },
+        "src/components/Filters/selecterItemsToDisplay/SelecterItemsToDisplay.jsx": { "status": "pending", "history": [] },
+        "src/components/Filters/timeRange/TimeRange.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/MultiCreditCard.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/GoalBudget.jsx": { "status": "pending", "history": [] },
+        "src/components/multiUsedComp/DeletePreviewRow.jsx": { "status": "pending", "history": [] }
       }
     }
   }
