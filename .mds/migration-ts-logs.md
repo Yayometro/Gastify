@@ -257,4 +257,25 @@ ver las entradas de Historia 1 y 2 arriba (dropdown de periodo del
 Dashboard, selectores rotos de Redux en varios slices, `parsedPhone` no
 se calcula si el cliente manda `phone` como número en vez de string en
 `update-user`, `throw new Error({...})` con un objeto en vez de un
-string en varias rutas).
+string en varias rutas). Se suma de esta historia: el botón de subida
+de imagen dentro de `<CldUploadWidget>` en `ProfileClient.tsx` no tiene
+`type` explícito y está dentro del `<form>` del perfil, por lo que por
+defecto es `type="submit"` - dar click ahí probablemente también
+dispara el submit del formulario (ver ronda de rework de
+`ProfileClient.tsx` arriba).
+
+## 2026-09-24 — Historia 3 (Profile) completa: 7/7 archivos
+
+`dashboard/profile/page.tsx`, `ProfileClient.tsx`, `ApiTokensPanel.tsx`
+y las 4 rutas de API que usa (`update-user`, `api-tokens/list`,
+`api-tokens/new`, `api-tokens/remove`) - todos migrados, revisados y
+aprobados. 2 rondas de rework en total (`ProfileClient.tsx` por el
+patrón de `|| null`→`|| ""` y el `type="button"` no autorizado;
+`api-tokens/new/route.ts` por un fallback `|| {}` no forzado por el
+compilador, mismo patrón de fondo). Los 5 bugs de seguridad IDOR de
+esta historia (ver tabla consolidada arriba) fueron encontrados y
+corregidos por Claude directamente, fuera del flujo normal de
+migración, por prioridad urgente pedida por el usuario en cada caso.
+
+**Historia 3 probada end-to-end por el usuario**: pendiente (siguiente
+paso).
