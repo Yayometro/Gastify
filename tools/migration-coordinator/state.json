@@ -1899,11 +1899,34 @@
             }
           ]
         },
-        "src/app/dashboard/budgets/page.jsx": {
+        "src/app/api/general-data/budget/new/route.js": {
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T22:17:31.028Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T22:18:40.298Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/budget/new/route.js` a `src/app/api/general-data/budget/new/route.ts`.\n\n1. Tipado e interfaces:\n- Se importaron directamente el modelo `Budget` junto con sus interfaces exportadas `{ type IBudget, type IBudgetCategoryEntry }` desde `@/model/Budget` y `User` desde `@/model/User` sin puentes de tipo ni aserciones innecesarias.\n- Se mantuvieron las importaciones de `Category`, `SubCategory`, `Account` y `Tag` como importaciones de efectos secundarios (`import \"@/model/...\";`) para asegurar el registro de schemas requerido por el método `.populate()` de Mongoose sin causar advertencias de variables no usadas en ESLint.\n- Se definieron las interfaces `NewBudgetGetStatusResponse`, `NewBudgetRequestBody`, `NewBudgetSuccessResponse` y el alias de tipo `NewBudgetResponse`.\n- Se tiparon explícitamente los handlers de Next.js: `GET(): Promise<NextResponse<NewBudgetGetStatusResponse>>` y `POST(request: NextRequest | Request): Promise<NextResponse<NewBudgetResponse>>`.\n- Se preservó el bloque `catch (e)` sin anotaciones sobre-estrictas y su respectivo `throw new Error(e)`.\n\n2. Preservación estricta de lógica y seguridad:\n- Se preservó íntegramente el fix de seguridad reciente: autenticación obligatoria vía `auth.api.getSession({ headers: request.headers })` y derivación de `user` y `wallet` a partir del usuario autenticado en BD (`User.findOne({ mail: sesion.user.email }).lean()`).\n- Se conservaron todas las ramificaciones de lógica para `resolvedBudgetType`, construcción de `newBudget`, fechas (`eventStartDate`/`eventEndDate`), `history`, asignación de `categories` y population options con `strictPopulate: false`.\n- Cero alteraciones a la lógica de ejecución en runtime.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/budget/new/route.ts`: 0 errores y 0 warnings.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests pasando)."
+            },
+            {
+              "ts": "2026-09-25T22:19:24.743Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Interfaces completas usando IBudget/IBudgetCategoryEntry de Budget.ts sin bridges. Category/SubCategory/Account/Tag correctamente como side-effect imports (registro de schema para populate). Fix de seguridad intacto. Diff puramente aditivo. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
+        },
+        "src/app/api/general-data/budget/update/route.js": {
           "status": "pending",
           "history": []
         },
-        "src/components/multiUsedComp/Budgets/BudgetsClient.jsx": {
+        "src/app/api/general-data/budget/remove/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/budget/get-historical/route.js": {
           "status": "pending",
           "history": []
         },
@@ -1927,19 +1950,11 @@
           "status": "pending",
           "history": []
         },
-        "src/app/api/general-data/budget/new/route.js": {
+        "src/components/multiUsedComp/Budgets/BudgetsClient.jsx": {
           "status": "pending",
           "history": []
         },
-        "src/app/api/general-data/budget/update/route.js": {
-          "status": "pending",
-          "history": []
-        },
-        "src/app/api/general-data/budget/remove/route.js": {
-          "status": "pending",
-          "history": []
-        },
-        "src/app/api/general-data/budget/get-historical/route.js": {
+        "src/app/dashboard/budgets/page.jsx": {
           "status": "pending",
           "history": []
         }

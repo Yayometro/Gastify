@@ -1,18 +1,53 @@
-import Budget from "@/model/Budget";
-import Category from "@/model/Category";
-import SubCategory from "@/model/SubCategory";
-import Account from "@/model/Account";
-import Tag from "@/model/Tag";
-import User from "@/model/User";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
-import { NextResponse } from "next/server";
+import Budget, { type IBudget, type IBudgetCategoryEntry } from "@/model/Budget";
+import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import type mongoose from "mongoose";
+import "@/model/Category";
+import "@/model/SubCategory";
+import "@/model/Account";
+import "@/model/Tag";
 
-export async function GET() {
+export interface NewBudgetGetStatusResponse {
+  mes: string;
+}
+
+export interface NewBudgetRequestBody {
+  name?: string | null;
+  goalAmount?: number;
+  category?: mongoose.Types.ObjectId | string | null;
+  subCategory?: mongoose.Types.ObjectId | string | null;
+  savingAmount?: number;
+  isSaving?: boolean;
+  categories?: IBudgetCategoryEntry[];
+  period?: "monthly" | "quarterly" | "biannual" | "yearly" | string;
+  linkedAccounts?: (mongoose.Types.ObjectId | string)[];
+  budgetType?: "spending" | "saving" | "project" | string;
+  eventStartDate?: string | Date | null;
+  eventEndDate?: string | Date | null;
+  linkedTags?: (mongoose.Types.ObjectId | string)[];
+  icon?: string | null;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface NewBudgetSuccessResponse {
+  message: string;
+  data: IBudget;
+  status: number;
+  ok: boolean;
+}
+
+export type NewBudgetResponse = NewBudgetSuccessResponse;
+
+export async function GET(): Promise<NextResponse<NewBudgetGetStatusResponse>> {
   return NextResponse.json({ mes: "Work" });
 }
 
-export async function POST(request) {
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<NewBudgetResponse>> {
   try {
     if (!request) throw new Error("No data in request on NEW BUDGET POST");
     const {
@@ -31,7 +66,7 @@ export async function POST(request) {
       linkedTags,
       icon,
       currency,
-    } = await request.json();
+    } = (await request.json()) as NewBudgetRequestBody;
     // Security fix: this used to trust whatever user/wallet the client sent
     // in the body, letting any caller (this endpoint isn't covered by
     // middleware.ts's matcher) plant a budget inside ANY OTHER user's
