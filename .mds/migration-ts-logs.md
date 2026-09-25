@@ -234,12 +234,15 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 2 | `general-data/user/update-user` (POST) | IDOR de escritura - cualquiera podía editar fullName/mail/image/phone de otro usuario | `bb8f987` | Alta |
 | 3 | `general-data/api-tokens/list` (POST) | IDOR de lectura - cualquiera podía listar los tokens de conector de otro usuario | `a9e8f17` | Media |
 | 4 | `general-data/api-tokens/remove` (POST) | IDOR de escritura - cualquiera podía revocar tokens de conector de otro usuario | `a9e8f17` | Media |
-| 5 | `general-data/api-tokens/new` (POST) | IDOR de escritura, la más grave - cualquiera podía crear un token de acceso completo a la cuenta de otro usuario | `a9e8f17` | Crítica |
+| 5 | `general-data/api-tokens/new` (POST) | IDOR de escritura, la más grave de la familia "mail equivocado" - cualquiera podía crear un token de acceso completo a la cuenta de otro usuario | `a9e8f17` | Crítica |
+| 6 | `general-data/accounts/*` (reorder, update-account, new-account, remove-account) | Cero verificación de sesión (no solo "mail equivocado" - directamente sin auth), y sin cobertura del middleware por ser rutas de API. `remove-account` permitía borrar cualquier cuenta de la base de datos sin ninguna autenticación. | `94723a3` | Crítica |
 
-Todas comparten la misma causa raíz (confiar en un `mail` mandado por
+Los #1-5 comparten la misma causa raíz (confiar en un `mail` mandado por
 el cliente en vez de derivar el usuario de la sesión autenticada vía
-`auth.api.getSession()`) y el mismo patrón de fix. Ninguna requirió
-cambiar el comportamiento de ningún call site real ya existente.
+`auth.api.getSession()`). El #6 es una categoría más grave (cero
+verificación, ni siquiera de sesión) pero se corrige con el mismo
+patrón. Ninguno requirió cambiar el comportamiento de ningún call site
+real ya existente.
 
 **Otros bugs (no de seguridad) encontrados y corregidos durante la
 migración, fuera de las rutas de arriba**:
@@ -317,6 +320,51 @@ posponer las pruebas manuales de esta historia para más adelante (son
 componentes chicos, de bajo riesgo, transversales a toda la app) y
 seguir avanzando la migración. Pendiente de prueba, no bloquea.
 
+## 2026-09-24/25 — Historia 5 (Accounts) en curso + 6to fix de seguridad urgente, distinto de los anteriores
+
+Migrado el modelo `Account.ts` (mismo patrón que `User.ts`: `IAccount`,
+`Schema<IAccount>`, `mongoose.Model<IAccount>`).
+
+**Fix de seguridad crítico, categoría nueva (hecho por Claude
+directamente, no por Antigravity)**: revisando las 4 rutas de API de
+Accounts antes de migrarlas se encontró que NINGUNA verificaba sesión
+en absoluto - a diferencia de los IDOR anteriores (que al menos
+confiaban en un `mail` del body), estas simplemente no chequeaban nada.
+Y a diferencia de las páginas del dashboard, `middleware.ts` solo
+protege `/dashboard/:path*` - las rutas de API no están cubiertas por
+el matcher - así que las 4 eran alcanzables por cualquiera, ni siquiera
+hacía falta estar autenticado:
+
+- `remove-account`: borraba CUALQUIER cuenta de la base de datos dado
+  solo su id, sin ninguna verificación. El más grave: borrado
+  destructivo sin ningún control de acceso.
+- `update-account`: editaba nombre/monto/tipo/moneda de CUALQUIER
+  cuenta, sin ninguna verificación.
+- `new-account`: creaba una cuenta falsa dentro del wallet de
+  CUALQUIER OTRO usuario (el cliente mandaba `userId`/`walletId`
+  directo en el body).
+- `reorder`: ya acotaba su `Account.updateOne` a un `walletId`, pero
+  ese `walletId` salía de un `mail` del body sin verificar sesión -
+  mismo patrón que los IDOR anteriores, menos grave que los otros 3.
+
+Las 4 rutas ahora exigen `auth.api.getSession(request.headers)` y
+resuelven el wallet/usuario del caller del lado del servidor;
+`update-account`/`remove-account` además acotan el `Account` buscado a
+`{ _id, wallet }` propio, así que un id de la cuenta de otra persona
+falla con el mismo "no encontrado" que un id inventado. Los call sites
+reales (`EditAccountModal.jsx`, `MultiCreditCard.tsx`) siempre operan
+sobre la cuenta/wallet propios, cero cambio de comportamiento legítimo.
+Se actualizaron los tests unitarios existentes de `update-account` y
+`new-account` para mockear las nuevas dependencias (`User`,
+`betterAuth`) y el cambio de `Account.findById` a `Account.findOne`.
+
+Verificado en vivo en Chrome de punta a punta: se creó una cuenta de
+prueba ("TS Security Test Account") vía `new-account`, se editó su
+balance vía `update-account`, y se borró vía `remove-account` - las 3
+respetando la sesión correctamente. `reorder` comparte exactamente el
+mismo patrón y pasa sus tests, no se probó con drag-and-drop en vivo
+por tiempo.
+
 ---
 
 ## Bugs pendientes (encontrados, NO arreglados, para revisión posterior del usuario)
@@ -336,7 +384,8 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 7 | `Dashboard.tsx` (ya migrado, comportamiento preservado) | `allBills`/`allIncomes` solo se referencian dentro de un bloque JSX ya comentado; `handleDurationChange`/`setSelectedDuration` están completamente muertos. No se tocaron por regla, pero son candidatos a limpieza. | Historia 2 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
-5 IDOR de seguridad en `get-user`, `update-user`, `api-tokens/list`,
-`api-tokens/new`, `api-tokens/remove` (ver tabla de Historia 3 arriba);
-2 archivos muertos borrados (`api/searchUser.js`, `api/login` legacy);
-1 bug de UI en `RegisterComp.jsx` (`formData.name` → `formData.fullName`).
+6 bugs de seguridad de control de acceso en `get-user`, `update-user`,
+`api-tokens/list`, `api-tokens/new`, `api-tokens/remove`, y las 4 rutas
+de `accounts/*` (ver tabla consolidada arriba); 2 archivos muertos
+borrados (`api/searchUser.js`, `api/login` legacy); 1 bug de UI en
+`RegisterComp.jsx` (`formData.name` → `formData.fullName`).
