@@ -3,15 +3,24 @@ import dbConnection from "@/app/api/dbConnection";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import User from "@/model/User";
+import { auth } from "@/lib/auth/betterAuth";
 
 export async function POST(request) {
   try {
     if (!request) throw new Error("No request received from NEW CATEGORY");
-    const userMail = await request.json();
+    // Security fix: this used to trust whatever mail the client sent in the
+    // body, letting any authenticated (or unauthenticated - this endpoint
+    // isn't covered by middleware.ts's matcher) caller read another user's
+    // categories/subcategories. No real call site was found for this route
+    // (dead code from the frontend's point of view), but it's still
+    // reachable directly over HTTP, so it gets the same fix as every other
+    // route in this family.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();
     // User find
-    const userFound = await User.findOne({ mail: userMail }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
       throw new Error({
         error: "User not found, review the email provided in GENERAL-DATA POST",
