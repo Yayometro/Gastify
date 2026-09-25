@@ -1664,8 +1664,23 @@
           ]
         },
         "src/app/api/general-data/subcategory/remove/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T07:15:53.958Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T07:17:23.797Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/subcategory/remove/route.js` a `src/app/api/general-data/subcategory/remove/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron las interfaces `RemoveSubCategorySuccessResponse` (`message: string`, `data: mongoose.FlattenMaps<ISubCategory> | null`, `ok: boolean`, `status: number`) y el type alias `RemoveSubCategoryResponse` para tipar la respuesta `NextResponse<RemoveSubCategoryResponse>`.\n- Se tipó la firma del Route Handler de Next.js: `export async function POST(request: NextRequest | Request): Promise<NextResponse<RemoveSubCategoryResponse>>`.\n- Se tipó la variable `id = (await request.json()) as string`.\n- Se importaron y utilizaron directamente los modelos TypeScript ya migrados `SubCategory.ts` (con `type { ISubCategory }`) y `User.ts` sin bridges ni `any`.\n- Se preservó `catch (e)` sin anotación explícita y `throw new Error(e)` según las directivas de `strict: false`.\n\n2. Cero cambios de comportamiento:\n- Se preservó íntegramente el fix de seguridad de sesión con Better Auth (`auth.api.getSession({ headers: request.headers })`) y la eliminación acotada al wallet del usuario (`SubCategory.findOneAndDelete({ _id: id, wallet: userFound.wallet }).lean()`), manteniendo todos sus comentarios explicativos intactos.\n- Cero alteraciones en la lógica de retorno JSON, mensajes de éxito y manejo de errores.\n\n3. Observaciones / Reporte de bug preexistente (no alterado en código):\n- En la línea del throw de error (`if (!removeSub) throw new Error(\\`${removeSub.name || \"SubCategory\"} not removed 🤕\\`)`), si `removeSub` es `null`, la evaluación en runtime de `removeSub.name` provocaría un `TypeError` (`Cannot read properties of null`) antes del fallback `|| \"SubCategory\"`, el cual es atrapado por el bloque `catch`. Se preservó exactamente la lógica original sin alterar.\n\n4. Verificación ejecutada:\n- `npx eslint src/app/api/general-data/subcategory/remove/route.ts`: 0 errores, 0 warnings (verificado línea por línea).\n- `npx tsc --noEmit`: 0 errores de compilación.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-25T07:17:59.820Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. RemoveSubCategorySuccessResponse con mongoose.FlattenMaps<ISubCategory> | null (tipado preciso del resultado de .lean()). Bug preexistente real (removeSub.name accedido dentro de if(!removeSub), causaria TypeError atrapado por el catch) correctamente preservado intacto y reportado sin arreglar, tal como pide la regla. Fix de seguridad intacto. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         }
       }
     }
