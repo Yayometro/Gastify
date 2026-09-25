@@ -2,13 +2,26 @@
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import React, { useState } from "react";
 
+export interface SelecterDisplayItem {
+  value: string | number;
+  name: string;
+  [key: string]: unknown;
+}
+
+export interface SelecterItemsToDisplayProps {
+  getValue?: (val: string) => void;
+  itemsOverride?: SelecterDisplayItem[];
+  itemFromFather?: SelecterDisplayItem | string | number;
+  styles?: string;
+}
+
 function SelecterItemsToDisplay({
   getValue,
   itemsOverride,
   itemFromFather,
   styles,
-}) {
-  const items = itemsOverride || [
+}: SelecterItemsToDisplayProps): React.JSX.Element {
+  const items: SelecterDisplayItem[] = itemsOverride || [
     { value: 2, name: "2 items" },
     { value: 3, name: "3 items" },
     { value: 4, name: "4 items" },
@@ -17,8 +30,10 @@ function SelecterItemsToDisplay({
     { value: 12, name: "12 items" },
     { value: 24, name: "24 items" },
   ];
-  const [curentItem, setCurentItem] = useState(itemFromFather || items[0]);
-  function handleItemsChange(event) {
+  const [curentItem, setCurentItem] = useState<SelecterDisplayItem | string | number>(
+    itemFromFather || items[0]
+  );
+  function handleItemsChange(event: React.ChangeEvent<HTMLSelectElement>): void {
     setCurentItem(event.target.value);
     getValue(event.target.value);
   }
@@ -33,7 +48,7 @@ function SelecterItemsToDisplay({
       <select
         className="bg-transparent w-full pr-4 appearance-none"
         name="DateSelector"
-        value={curentItem}
+        value={curentItem as unknown as string | number}
         onChange={handleItemsChange}
       >
         {items.length <= 0

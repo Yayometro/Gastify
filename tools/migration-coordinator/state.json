@@ -1178,8 +1178,23 @@
           ]
         },
         "src/components/Filters/selecterItemsToDisplay/SelecterItemsToDisplay.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T04:37:51.430Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T04:39:07.289Z",
+              "event": "submitted",
+              "notes": "Migrado SelecterItemsToDisplay a TypeScript (.tsx). Se definieron las interfaces `SelecterDisplayItem` (value, name, index signature unknown) y `SelecterItemsToDisplayProps` (getValue, itemsOverride, itemFromFather, styles). Tipado `curentItem` useState (`SelecterDisplayItem | string | number`), `handleItemsChange` con `React.ChangeEvent<HTMLSelectElement>`, retorno `React.JSX.Element`, y cast `as unknown as string | number` en el value del select nativo. Preservada la lógica y comportamiento intactos sin introducir fallbacks artificiales. Verificado con tsc --noEmit (0 errores), eslint (0 errores, 0 warnings) y vitest (281/281 pruebas pasando)."
+            },
+            {
+              "ts": "2026-09-25T04:39:31.900Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. Mismo patron correcto que SelecterFilter.tsx (SelecterDisplayItem/Props, cast legitimo en value del select). Sin bugs de value duplicado aqui. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/Filters/timeRange/TimeRange.jsx": {
           "status": "pending",
