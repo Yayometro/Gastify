@@ -3,31 +3,35 @@ import * as md from "react-icons/md";
 import * as fa from "react-icons/fa";
 import * as ai from "react-icons/ai";
 import * as gi from "react-icons/gi";
+import type { IconType } from "react-icons";
 
-function UniversalCategoIcon({ type, siz, colore, className }) {
+export interface UniversalCategoIconProps {
+  type?: string;
+  siz?: number | string;
+  colore?: string;
+  className?: string;
+}
+
+function UniversalCategoIcon({ type, siz, colore, className }: UniversalCategoIconProps): React.JSX.Element | null {
   if (!type) return null;
   // if (type.includes("/")) {
     // console.log(type);
     const [collectionName, iconName] = type.split("/");
     // Material
     if (collectionName === "md") {
-      const intermediate = iconName;
-      const Icon = md[iconName];
+      const Icon = (md as Record<string, IconType>)[iconName];
       return <Icon size={siz} color={colore} className={className} />;
     }
     if (collectionName === "fa") {
-      const intermediate = iconName;
-      const Icon = fa[iconName];
+      const Icon = (fa as Record<string, IconType>)[iconName];
       return <Icon size={siz} color={colore} className={className} />;
     }
     if (collectionName === "ai") {
-      const intermediate = iconName;
-      const Icon = ai[iconName];
+      const Icon = (ai as Record<string, IconType>)[iconName];
       return <Icon size={siz} color={colore} className={className} />;
     }
     if (collectionName === "gi") {
-      const intermediate = iconName;
-      const Icon = gi[iconName];
+      const Icon = (gi as Record<string, IconType>)[iconName];
       return <Icon size={siz} color={colore} className={className} />;
     }
     //
