@@ -1291,7 +1291,26 @@
     "historia-5-accounts": {
       "label": "Accounts (page + AccountClient + EditAccountModal + PrimaryCurrencySelector + modelo Account + rutas de API que usa). NO incluye ResumeTabsTrans/TransDetailsGrandContainer/DisplayerCategoryTreemap (arrastran CategoryTreemap y el arbol de analytics de categorias completo - son su propia historia futura). AccountClient necesitara bridges tipados para esos, igual que con Movements/WalletAnalyzer en Historia 2.",
       "files": {
-        "src/app/dashboard/accounts/page.jsx": {
+        "src/components/multiUsedComp/PrimaryCurrencySelector.jsx": {
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T06:17:48.541Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T06:20:00.591Z",
+              "event": "submitted",
+              "notes": "Migración de src/components/multiUsedComp/PrimaryCurrencySelector.jsx a src/components/multiUsedComp/PrimaryCurrencySelector.tsx.\n\n1. Tipado e interfaces co-localizadas:\n- Se renombró el archivo a `.tsx` preservando el historial en git (`git mv`).\n- Se definieron y exportaron las interfaces `PrimaryCurrencySelectorWallet` (`_id?: string`, `primaryCurrency?: string`, `[key: string]: unknown`) y `PrimaryCurrencySelectorProps` (`pcsWallet?: PrimaryCurrencySelectorWallet | null`).\n- Se tipó el hook de estado `useState<boolean>(false)`.\n- Se tipó el handler `handleChange` con el evento `React.ChangeEvent<HTMLSelectElement>` y retorno `Promise<void>`.\n- Se tipó el retorno del componente como `React.JSX.Element`.\n- Cero uso de `any`; se utilizó tipado estructural con `unknown` en la firma de índice.\n\n2. Preservación estricta de comportamiento y lógica:\n- Cero alteraciones en la lógica de selección de moneda, llamada al endpoint `general-data/wallet`, despacho a Redux con `updateWallet(res.data)`, notificaciones con `runNotify` y reseteo de estado `isSaving`.\n- Se preservó `catch (err)` sin anotaciones de tipo más estrictas según las reglas de `strict: false`.\n- No se agregaron operadores de optional chaining ni fallbacks artificiales no forzados por el compilador.\n- Comentarios explicativos sobre presentación multi-currency preservados intactos.\n\n3. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/components/multiUsedComp/PrimaryCurrencySelector.tsx`: 0 errores y 0 warnings (verificado en salida real línea por línea).\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo del usuario.\n- No se modificó ningún otro archivo del proyecto."
+            },
+            {
+              "ts": "2026-09-25T06:20:27.843Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. PrimaryCurrencySelectorWallet/Props, diff puramente aditivo. tsc --noEmit limpio, eslint limpio, 281/281 tests. Verificado en vivo en Chrome durante el fix de get-wallet/wallet (cambio de MXN a USD y de vuelta, confirmado con toast)."
+            }
+          ]
+        },
+        "src/components/multiUsedComp/EditAccountModal.jsx": {
           "status": "pending",
           "history": []
         },
@@ -1299,11 +1318,7 @@
           "status": "pending",
           "history": []
         },
-        "src/components/multiUsedComp/EditAccountModal.jsx": {
-          "status": "pending",
-          "history": []
-        },
-        "src/components/multiUsedComp/PrimaryCurrencySelector.jsx": {
+        "src/app/dashboard/accounts/page.jsx": {
           "status": "pending",
           "history": []
         },

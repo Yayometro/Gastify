@@ -8,17 +8,27 @@ import runNotify from "@/helpers/gastifyNotifier";
 import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
 import { updateWallet } from "@/lib/features/walletSlice";
 
+export interface PrimaryCurrencySelectorWallet {
+  _id?: string;
+  primaryCurrency?: string;
+  [key: string]: unknown;
+}
+
+export interface PrimaryCurrencySelectorProps {
+  pcsWallet?: PrimaryCurrencySelectorWallet | null;
+}
+
 // Lets the user choose which currency Wallet totals/reports are presented
 // in. Never reinterprets already-stored native Account/Transaction money -
 // only changes presentation.
-function PrimaryCurrencySelector({ pcsWallet }) {
-  const [isSaving, setIsSaving] = useState(false);
+function PrimaryCurrencySelector({ pcsWallet }: PrimaryCurrencySelectorProps): React.JSX.Element {
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const dispatch = useDispatch();
   const toFetch = fetcher();
 
   const currentCurrency = pcsWallet?.primaryCurrency || "MXN";
 
-  const handleChange = async (e) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>): Promise<void> => {
     const nextCurrency = e.target.value;
     if (!pcsWallet?._id || nextCurrency === currentCurrency) return;
     try {
