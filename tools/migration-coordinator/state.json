@@ -1365,8 +1365,23 @@
           ]
         },
         "src/app/api/general-data/accounts/new-account/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T05:41:09.166Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T05:43:46.612Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/accounts/new-account/route.js` a `src/app/api/general-data/accounts/new-account/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron y exportaron `NewAccountRequestBody` (`name?: string`, `amount?: number`, `accountType?: string`, `currency?: string`, `[key: string]: unknown`), `NewAccountSuccessResponse` (`message: string`, `data: IAccount`, `status: number`, `ok: boolean`) y el alias `NewAccountResponse`.\n- Se tipó la firma del handler: `export async function POST(request: NextRequest | Request): Promise<NextResponse<NewAccountResponse>>`.\n- Se casteó el payload de `request.json()` hacia `NewAccountRequestBody`.\n- Se usó tipado estructural con `unknown` en `Wallet.findById(walletId).lean()` para resolver limpiamente la incompatibilidad de firma TS2349 del modelo unmigrated `Wallet.js` sin recurrir a `any`.\n- Se preservó `catch (e)` sin anotación explícita bajo `strict: false` y con el throw idéntico al original (`throw new Error(e)`).\n\n2. Preservación estricta de lógica y seguridad:\n- Se preservó al 100% el fix de seguridad reciente que resuelve la sesión server-side vía `auth.api.getSession({ headers: request.headers })` y deriva `userId`/`walletId` del usuario autenticado en vez del body.\n- Se conservó idéntico el fallback de moneda por defecto a la `primaryCurrency` del Wallet (`Wallet.findById(walletId).lean()`) o `\"MXN\"`, junto con la validación de `SUPPORTED_CURRENCIES`.\n- Se conservó idéntico el cálculo de `balanceMinor` con `majorToMinor(resolvedAmount, resolvedCurrency)` y la fecha `balanceUpdatedAt: new Date()`.\n- Cero operadores de optional chaining o fallbacks artificiales no requeridos.\n- Todos los comentarios explicativos de contexto de seguridad y multi-currency se preservaron intactos.\n\n3. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/accounts/new-account/route.ts`: 0 errores y 0 warnings (verificado en salida real línea por línea).\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests pasados), incluyendo `src/app/api/general-data/accounts/new-account/route.test.js` con 5/5 tests en verde.\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo del usuario."
+            },
+            {
+              "ts": "2026-09-25T05:44:19.842Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. NewAccountRequestBody/SuccessResponse con IAccount, bridge tipado acotado para Wallet.findById(...).lean() (modelo aun sin migrar) sin any. Fix de seguridad de sesion intacto con su comentario. tsc --noEmit limpio, eslint limpio, 281/281 tests incluyendo los 5 del route.test.js actualizado."
+            }
+          ]
         },
         "src/app/api/general-data/accounts/remove-account/route.js": {
           "status": "pending",
