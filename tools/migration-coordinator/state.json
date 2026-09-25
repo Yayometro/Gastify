@@ -1607,8 +1607,23 @@
           ]
         },
         "src/app/api/general-data/categories/remove-category/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T07:07:39.281Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T07:08:49.945Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/categories/remove-category/route.js` a `src/app/api/general-data/categories/remove-category/route.ts`.\n\n1. Tipado e interfaces:\n- Se definieron las interfaces `RemoveCategorySuccessResponse` (`message: string`, `data: { categoRemoved: ICategory }`, `ok: boolean`, `status: number`) y el type alias `RemoveCategoryResponse` para tipar la respuesta `NextResponse<RemoveCategoryResponse>`.\n- Se tipó la firma del handler de Next.js: `export async function POST(request: NextRequest | Request): Promise<NextResponse<RemoveCategoryResponse>>`.\n- Se tipó `id` como `(await request.json()) as string`.\n- Se importaron y utilizaron directamente los modelos TypeScript `Category.ts` (junto con `type { ICategory }`) y `User.ts` sin necesidad de puentes de tipado manual.\n- Se removió el import no utilizado `SubCategory` para cumplir con las reglas de ESLint.\n- Se preservó `catch (e)` sin anotación explícita y `throw new Error(e)` según las directivas de `strict: false`.\n\n2. Cero cambios de comportamiento:\n- Se preservó íntegramente el fix de seguridad de sesión con Better Auth (`auth.api.getSession({ headers: request.headers })`) y el borrado acotado al wallet del usuario autenticado (`Category.findOneAndDelete({ _id: id, wallet: userFound.wallet })`), junto con todos sus comentarios explicativos intactos.\n- Cero alteraciones a la lógica de negocio, validaciones de errores o estructura del payload devuelto.\n\n3. Verificación ejecutada:\n- `npx eslint src/app/api/general-data/categories/remove-category/route.ts`: 0 errores, 0 warnings (salida completamente limpia revisada línea por línea).\n- `npx tsc --noEmit`: 0 errores de compilación en el proyecto.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests pasados).\n- No se ejecutó `npm run build` para preservar el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-25T07:09:23.465Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. RemoveCategorySuccessResponse con ICategory. Import de SubCategory removido - confirme que nunca se usaba en el original (solo la linea de import). Fix de seguridad intacto. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/app/api/general-data/subcategory/new/route.js": {
           "status": "pending",
