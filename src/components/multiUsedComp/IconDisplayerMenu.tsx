@@ -4,10 +4,21 @@ import CategoIcon from "./CategoIcon";
 import { Spin, Tooltip } from "antd";
 import { defaultIcons } from "@/helpers/defaultIconsDB";
 
-function IconDisplayerMenu({ idmActive, idmIcon, idmClose }) {
-  const [active, setActive] = useState(false);
-  const [allIco, setAllIco] = useState([]);
-  const defIconsDb = defaultIcons;
+export interface IconCategory {
+  name: string;
+  icons: string[];
+}
+
+export interface IconDisplayerMenuProps {
+  idmActive?: boolean;
+  idmIcon: (icon: string) => void;
+  idmClose: (active: boolean) => void;
+}
+
+function IconDisplayerMenu({ idmActive, idmIcon, idmClose }: IconDisplayerMenuProps): React.JSX.Element {
+  const [active, setActive] = useState<boolean>(false);
+  const [allIco, setAllIco] = useState<IconCategory[]>([]);
+  const defIconsDb: IconCategory[] = defaultIcons;
 
   useEffect(() => {
     if (idmActive) {
@@ -18,7 +29,7 @@ function IconDisplayerMenu({ idmActive, idmIcon, idmClose }) {
     setAllIco(defIconsDb);
   }, [idmActive]);
 
-  const handleSelectionIcon = (sIcon) => {
+  const handleSelectionIcon = (sIcon: string) => {
     // console.log(sIcon);
     idmIcon(sIcon);
   };
@@ -41,7 +52,8 @@ function IconDisplayerMenu({ idmActive, idmIcon, idmClose }) {
         <div
           className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer p-2"
           onClick={() => {
-            setActive(false), idmClose(false);
+            setActive(false);
+            idmClose(false);
           }}
         >
           <CategoIcon type={"MdClose"} siz={20} />
@@ -93,9 +105,9 @@ function IconDisplayerMenu({ idmActive, idmIcon, idmClose }) {
                       <li
                         className="flex justify-center items-center cursor-pointer gf-hover-glass hover:rounded-2xl"
                         onClick={() => {
-                          handleSelectionIcon(icon),
-                            setActive(false),
-                            idmClose(false);
+                          handleSelectionIcon(icon);
+                          setActive(false);
+                          idmClose(false);
                         }}
                       >
                         <UniversalCategoIcon type={icon} siz={45} />

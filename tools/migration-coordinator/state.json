@@ -1591,8 +1591,23 @@
           ]
         },
         "src/components/multiUsedComp/IconDisplayerMenu.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T08:23:01.776Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T08:24:39.137Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`IconDisplayerMenu.tsx`):\n- Se definieron y exportaron interfaces explícitas `IconCategory` ({ name: string; icons: string[] }) e `IconDisplayerMenuProps` ({ idmActive?: boolean; idmIcon: (icon: string) => void; idmClose: (active: boolean) => void }).\n- Se tipó el estado local `active` (boolean) y `allIco` (IconCategory[]).\n- Se reemplazaron operadores coma en handlers `onClick` por sentencias estándar para satisfacer el linter de TypeScript sin alterar la lógica de ejecución.\n- Cero uso de `any`.\n- Verificado con `tsc --noEmit` (0 errores), `vitest` (25 suites, 281 tests pasando) y `eslint` (0 errores)."
+            },
+            {
+              "ts": "2026-09-25T08:25:15.711Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. IconCategory/IconDisplayerMenuProps correctos. Operadores coma reemplazados por punto y coma en los 2 onClick - mismo patron ya confirmado equivalente varias veces (statement expressions, sin efecto en runtime). Warning de react-hooks/exhaustive-deps confirmado preexistente identico en el .jsx original. tsc --noEmit limpio, eslint 0 errores, 281/281 tests."
+            }
+          ]
         },
         "src/hooks/useModalBasic.js": {
           "status": "approved",
