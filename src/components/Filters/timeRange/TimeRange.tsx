@@ -4,12 +4,34 @@ import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { DatePicker, Space, Tooltip } from "antd";
 import dayjs from "dayjs";
+import type { Dayjs } from "dayjs";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { months } from "@/helpers/timeFunctions/timeFunctions";
 
-function TimeRange({ rpDate, rpResponse, styles, startDateValue, endDateValue }) {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+export interface MonthInfo {
+  name: string;
+  year: number;
+  start: Date;
+  end: Date;
+  label: string;
+}
+
+export interface TimeRangeProps {
+  rpDate?: (startDate: Date | null, endDate: Date | null) => void;
+  rpResponse?: string;
+  styles?: string;
+  startDateValue?: Date | string | number | Dayjs | null;
+  endDateValue?: Date | string | number | Dayjs | null;
+}
+
+function TimeRange({
+  rpDate,
+  styles,
+  startDateValue,
+  endDateValue,
+}: TimeRangeProps): React.JSX.Element {
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const isControlled = startDateValue !== undefined || endDateValue !== undefined;
   const selectedStartDate = isControlled ? startDateValue || null : startDate;
   const selectedEndDate = isControlled ? endDateValue || null : endDate;
@@ -23,7 +45,7 @@ function TimeRange({ rpDate, rpResponse, styles, startDateValue, endDateValue })
     if (!isControlled) rpDateRef.current(startDate, endDate);
   }, [startDate, endDate, isControlled]);
 
-  const updateRange = (nextStart, nextEnd) => {
+  const updateRange = (nextStart: Date | null, nextEnd: Date | null): void => {
     if (isControlled) {
       rpDate(nextStart, nextEnd);
       return;
@@ -32,31 +54,31 @@ function TimeRange({ rpDate, rpResponse, styles, startDateValue, endDateValue })
     setEndDate(nextEnd);
   };
 
-  const onChangeStart = (date) => {
+  const onChangeStart = (date: Dayjs | null): void => {
     if (!date) {
-      updateRange(null, selectedEndDate);
+      updateRange(null, selectedEndDate as Date | null);
       return;
     }
-    const d = date.toDate ? date.toDate() : date.$d;
-    if (d && !isNaN(d)) updateRange(d, selectedEndDate);
+    const d: Date | undefined = date.toDate ? date.toDate() : (date as unknown as { $d?: Date }).$d;
+    if (d && !isNaN(Number(d))) updateRange(d, selectedEndDate as Date | null);
   };
 
-  const onChangeEnd = (date) => {
+  const onChangeEnd = (date: Dayjs | null): void => {
     if (!date) {
-      updateRange(selectedStartDate, null);
+      updateRange(selectedStartDate as Date | null, null);
       return;
     }
-    const d = date.toDate ? date.toDate() : date.$d;
-    if (d && !isNaN(d)) updateRange(selectedStartDate, d);
+    const d: Date | undefined = date.toDate ? date.toDate() : (date as unknown as { $d?: Date }).$d;
+    if (d && !isNaN(Number(d))) updateRange(selectedStartDate as Date | null, d);
   };
 
-  const getRefDate = () => {
-    if (selectedStartDate instanceof Date && !isNaN(selectedStartDate)) return selectedStartDate;
-    if (selectedEndDate instanceof Date && !isNaN(selectedEndDate)) return selectedEndDate;
+  const getRefDate = (): Date => {
+    if (selectedStartDate instanceof Date && !isNaN(selectedStartDate.getTime())) return selectedStartDate;
+    if (selectedEndDate instanceof Date && !isNaN(selectedEndDate.getTime())) return selectedEndDate;
     return new Date();
   };
 
-  const getPrevMonthInfo = () => {
+  const getPrevMonthInfo = (): MonthInfo => {
     const ref = getRefDate();
     const currYear = ref.getFullYear();
     const currMonth = ref.getMonth(); // 0 - 11
@@ -73,7 +95,7 @@ function TimeRange({ rpDate, rpResponse, styles, startDateValue, endDateValue })
     };
   };
 
-  const getNextMonthInfo = () => {
+  const getNextMonthInfo = (): MonthInfo => {
     const ref = getRefDate();
     const currYear = ref.getFullYear();
     const currMonth = ref.getMonth();
@@ -90,12 +112,12 @@ function TimeRange({ rpDate, rpResponse, styles, startDateValue, endDateValue })
     };
   };
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = (): void => {
     const prev = getPrevMonthInfo();
     updateRange(prev.start, prev.end);
   };
 
-  const handleNextMonth = () => {
+  const handleNextMonth = (): void => {
     const next = getNextMonthInfo();
     updateRange(next.start, next.end);
   };
