@@ -1507,8 +1507,23 @@
           "history": []
         },
         "src/hooks/useModalBasic.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T07:24:00.000Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T07:25:24.639Z",
+              "event": "submitted",
+              "notes": "Migración de `src/hooks/useModalBasic.js` a `src/hooks/useModalBasic.ts`.\n\n1. Tipado e interfaces:\n- Se definió y exportó la interfaz `UseModalReturn` (`close: boolean`, `modalContent: React.ReactNode`, `handleClose: () => void`, `renderModal: (content?: React.ReactNode) => void`).\n- Se tipó la firma del hook: `export default function useModal(): UseModalReturn`.\n- Se tiparon los estados locales con `useState<boolean>(false)` y `useState<React.ReactNode>(null)`.\n- Se tipó el parámetro de renderizado como `content?: React.ReactNode` para soportar tanto invocaciones sin argumentos como con elementos JSX o nodos de React.\n- Cero usos de `any`, cero casts forzados o `@ts-ignore`.\n\n2. Cero cambios de comportamiento:\n- Se preservó idéntica la lógica interna de alternancia de estado booleano (`setClose((prev) => !prev)`), reseteo de contenido en `handleClose` (`setModalContent(null)`), y la estructura del objeto retornado.\n- No se agregaron optional chainings ni fallbacks innecesarios.\n\n3. Verificación ejecutada:\n- `npx eslint src/hooks/useModalBasic.ts`: 0 errores, 0 warnings (verificado en salida real).\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx vitest run`: 25/25 suites pasando (281/281 tests exitosos).\n- No se corrió `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-25T07:25:55.515Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. UseModalReturn, React.ReactNode para modalContent, diff puramente aditivo. tsc --noEmit limpio, eslint limpio, 281/281 tests."
+            }
+          ]
         },
         "src/components/modals/basicModal/BasicModal.jsx": {
           "status": "pending",
