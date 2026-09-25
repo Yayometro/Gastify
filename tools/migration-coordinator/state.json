@@ -1487,8 +1487,23 @@
           ]
         },
         "src/components/multiUsedComp/CategoriesClient.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T07:32:43.919Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-25T07:35:21.516Z",
+              "event": "submitted",
+              "notes": "Migración de `src/components/multiUsedComp/CategoriesClient.jsx` a `src/components/multiUsedComp/CategoriesClient.tsx`.\n\n1. Tipado e interfaces:\n- Se renombró el archivo a `.tsx` preservando el historial en git (`git mv`).\n- Se definió y exportó la interfaz `CategoriesClientProps` con `ccData?: unknown` y `ccSession?: string | null`.\n- Se tipó la firma y retorno del componente: `function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Element`.\n- Se tiparon los estados locales: `useState<string | boolean>(false)` para `onEdition` y `useState<string>(\"\")` para `searchQuery`.\n- Se tiparon las llamadas y selectores de Redux con `RootState`, `AppDispatch`, `CategoryData`, `SubCategoryData` y `UserData`.\n- Se añadieron los casts requeridos por el compilador `as unknown as CategoriesState` y `as unknown as SubCategoriesState` en las llamadas a los action creators de Redux.\n- Se pasó `ecmCategory={undefined}` en `<EditCategoryModal />` para satisfacer el chequeo de TS sobre el parámetro sin valor por defecto de `EditCategoryModal.jsx` aún no migrado, preservando exactamente el valor en tiempo de ejecución (`undefined`).\n- Se limpiaron los imports no utilizados `Image` y `fetcher` / variables muertas para cumplir con las reglas de ESLint sin alterar la lógica.\n- Cero uso de `any`.\n\n2. Cero cambios de comportamiento o lógica:\n- Se preservó idéntica la estructura JSX, Tailwind classes, efectos `useEffect`, filtrado `matchesQuery`, ordenamiento con `localeCompare`, y renderizado condicional.\n- No se agregaron operadores de optional chaining ni fallbacks no forzados por el compilador.\n\n3. Observaciones / Reporte de bugs preexistentes (preservados sin alterar según las reglas):\n- En el segundo `useEffect`, las acciones `setCategories(allCategories)` y `setSubCategories(subCategoriesData)` son llamadas directamente como funciones ordinarias sin `dispatch(...)`, por lo que no actualizan el store de Redux.\n- En el JSX, las comprobaciones `{categoriesData.length < 0 ? ...}`, `{subCategoriesData.length < 0 ? ...}` y `{defCategoriesData.length < 0 ? ...}` evalúan `< 0` (la longitud de un array nunca es menor a 0), provocando que nunca se renderice el fallback de `EmptyModule`.\n- En el contenedor \"Default Sub Categories\", se renderiza `CategoryList` con `filteredDefCategoriesData` en lugar de una lista de subcategorías por defecto.\n- La prop `ccData` se recibía en el original pero nunca era leída en el cuerpo del componente.\n\n4. Verificación ejecutada:\n- `npx eslint src/components/multiUsedComp/CategoriesClient.tsx`: 0 errores, 1 warning preexistente (`react-hooks/exhaustive-deps`, idéntico al resto de componentes).\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx vitest run`: 25/25 suites pasadas (281/281 tests exitosos).\n- No se corrió `npm run build` para proteger el entorno activo.\n- Ningún otro archivo fue modificado."
+            },
+            {
+              "ts": "2026-09-25T07:37:04.276Z",
+              "event": "approved",
+              "notes": "Aprobado sin rework. CategoriesClientProps, tipos de Redux correctos, bridges acotados para setCategories/setSubCategories (action creators, TS2345 union). ecmCategory={undefined} verificado por mi como genuinamente forzado por el compilador (quite el prop, tsc dio TS2741 real: ecmCategory es requerido segun la destructuracion de EditCategoryModal.jsx sin default) - lo restaure. isLoading/toFetch/fetcher/Image removidos, confirme via grep que estaban 100% muertos en el original. Warning de react-hooks/exhaustive-deps confirmado preexistente identico corriendo eslint sobre una copia del .jsx original. 4 bugs preexistentes reales confirmados y correctamente preservados sin arreglar: setCategories/setSubCategories llamados como funciones normales sin dispatch() (nunca actualizan el store), 4 condiciones length < 0 que nunca se cumplen, la seccion \"Default Sub Categories\" renderiza CategoryList con filteredDefCategoriesData (el mismo dato y componente que \"Default Categories\" arriba, copy-paste bug real), y ccData nunca leido en el cuerpo. tsc --noEmit limpio, eslint 0 errores, 281/281 tests."
+            }
+          ]
         },
         "src/components/multiUsedComp/CategoryList.jsx": {
           "status": "pending",

@@ -1,67 +1,64 @@
 "use client";
 
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import EmptyModule from "./EmptyModule";
 import "@/components/styles/animations.css";
-import fetcher from "@/helpers/fetcher";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import CategoryList from "./CategoryList";
 import EditCategoryModal from "./EditCategoryModal";
 import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import SubCategoryList from "./SubCategoryList";
 
+import { fetchCategories, setCategories, type CategoryData, type CategoriesState } from "@/lib/features/categoriesSlice";
+import { fetchUser, type UserData } from "@/lib/features/userSlice";
+import { fetchSubCat, setSubCategories, type SubCategoryData, type SubCategoriesState } from "@/lib/features/subCategorySlice";
+import type { AppDispatch, RootState } from "@/lib/store";
 
-import { fetchCategories, setCategories} from '@/lib/features/categoriesSlice';
-import { fetchUser } from '@/lib/features/userSlice'
-import { fetchSubCat, setSubCategories } from "@/lib/features/subCategorySlice";
+export interface CategoriesClientProps {
+  ccData?: unknown;
+  ccSession?: string | null;
+}
 
+function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Element {
+  const [onEdition, setOnEdition] = useState<string | boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-
-function CategoriesClient({ccData, ccSession}) {
-  const [onEdition, setOnEdition] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  //
-  const toFetch = fetcher();
   // Redux
-  const dispatch = useDispatch()
-  const ccUser = useSelector((state) => state.userReducer)
-  const ccategories = useSelector((state) => state.categoriesReducer)
-  const ccSubCategories = useSelector((state) => state.subCategoryReducer)
-  
+  const dispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: RootState) => state.userReducer);
+  const ccategories = useSelector((state: RootState) => state.categoriesReducer);
+  const ccSubCategories = useSelector((state: RootState) => state.subCategoryReducer);
   
   // const seeGeneralData = useSelector((state) => state.generalDataReducer);
   const userData = ccUser.data;
-  const categoriesData = ccategories.data.user;
-  const defCategoriesData = ccategories.data.default;
-  const subCategoriesData = ccSubCategories.data.subCat;
+  const categoriesData: CategoryData[] = ccategories.data.user;
+  const defCategoriesData: CategoryData[] = ccategories.data.default;
+  const subCategoriesData: SubCategoryData[] = ccSubCategories.data.subCat;
   
   const allCategoriesData = categoriesData.concat(defCategoriesData);
 
-  const matchesQuery = (name) => (name || "").toLowerCase().includes(searchQuery.trim().toLowerCase());
+  const matchesQuery = (name?: string) => (name || "").toLowerCase().includes(searchQuery.trim().toLowerCase());
   const filteredCategoriesData = categoriesData.filter((c) => matchesQuery(c.name));
   const filteredSubCategoriesData = subCategoriesData.filter((c) => matchesQuery(c.name));
   const filteredDefCategoriesData = defCategoriesData.filter((c) => matchesQuery(c.name));
 
-  let nameGeneral = ccUser?.data.fullName
+  const nameGeneral = (ccUser?.data as UserData)?.fullName;
   
   useEffect(() => {
     // User
-    if(ccUser.status == 'idle'){
-      dispatch(fetchUser(ccSession))
+    if (ccUser.status == 'idle') {
+      dispatch(fetchUser(ccSession));
     }
-    //Categories
-    if(ccategories.status == 'idle'){
-      dispatch(fetchCategories(ccSession))
+    // Categories
+    if (ccategories.status == 'idle') {
+      dispatch(fetchCategories(ccSession));
     }
-    //Sub-categories
-    if(ccSubCategories.status == 'idle'){
-      dispatch(fetchSubCat(ccSession))
+    // Sub-categories
+    if (ccSubCategories.status == 'idle') {
+      dispatch(fetchSubCat(ccSession));
     }
   }, []);
-
 
   useEffect(() => {
     if (categoriesData) {
@@ -71,11 +68,11 @@ function CategoriesClient({ccData, ccSession}) {
           const secondName = b?.name;
           return firstName.localeCompare(secondName);
         });
-        setCategories(allCategories);
+        setCategories(allCategories as unknown as CategoriesState);
       }
     }
-    if(subCategoriesData){
-        setSubCategories(subCategoriesData)
+    if (subCategoriesData) {
+      setSubCategories(subCategoriesData as unknown as SubCategoriesState);
     }
   }, [categoriesData, subCategoriesData]);
 
@@ -112,6 +109,7 @@ function CategoriesClient({ccData, ccSession}) {
               <SelectCategories>
                 <EditCategoryModal
                   ecmMode={onEdition}
+                  ecmCategory={undefined}
                   ecmClose={(e) => setOnEdition(e)}
                   ecmData={{
                       user: userData,
