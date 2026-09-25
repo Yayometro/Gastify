@@ -10,6 +10,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragEndEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -20,7 +21,37 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import fetcher from "@/helpers/fetcher";
 
-function SortableCard({ account, children }) {
+export interface MultiCreditCardAccount {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface MultiCreditCardUser {
+  fullName?: string;
+  [key: string]: unknown;
+}
+
+export interface MultiCreditCardTransaction {
+  _id?: string;
+  [key: string]: unknown;
+}
+
+export interface SortableCardProps {
+  account: MultiCreditCardAccount;
+  children: React.ReactNode;
+}
+
+export interface MultiCreditCardProps {
+  acc?: MultiCreditCardAccount[];
+  user?: MultiCreditCardUser | string | null;
+  trans?: MultiCreditCardTransaction[];
+  mccSession?: unknown;
+  walletPrimaryCurrency?: string;
+  mail?: string;
+}
+
+function SortableCard({ account, children }: SortableCardProps): React.JSX.Element {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: account._id,
   });
@@ -38,11 +69,17 @@ function SortableCard({ account, children }) {
   );
 }
 
-function MultiCreditCard({ acc, user, trans, mccSession, walletPrimaryCurrency, mail }) {
-  let [userName, setUserName] = useState("");
-  let [allTransactions, setAllTransactions] = useState([]);
-  let [accounts, setAccounts] = useState([]);
-  let [cardColors, setCardColors] = useState({});
+function MultiCreditCard({
+  acc,
+  user,
+  trans,
+  walletPrimaryCurrency,
+  mail,
+}: MultiCreditCardProps): React.JSX.Element {
+  const [userName, setUserName] = useState<string>("");
+  const [allTransactions, setAllTransactions] = useState<MultiCreditCardTransaction[]>([]);
+  const [accounts, setAccounts] = useState<MultiCreditCardAccount[]>([]);
+  const [cardColors, setCardColors] = useState<Record<string, string>>({});
   const toFetch = fetcher();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -50,7 +87,7 @@ function MultiCreditCard({ acc, user, trans, mccSession, walletPrimaryCurrency, 
 
   useEffect(() => {
     if (user && acc.length > 0 && trans.length > 0) {
-      setUserName(user.fullName || user);
+      setUserName((user as MultiCreditCardUser).fullName || (user as string));
       setAllTransactions(trans);
       setAccounts(acc);
       // Colors stay attached to the account itself (by id), not to its
@@ -65,7 +102,7 @@ function MultiCreditCard({ acc, user, trans, mccSession, walletPrimaryCurrency, 
     }
   }, [user, acc, trans]);
 
-  const generateColors = (index) => {
+  const generateColors = (index: number) => {
     if (index === 0)
       return "linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(18,127,205,1) 100%)";
     if (index === 1)
@@ -81,7 +118,7 @@ function MultiCreditCard({ acc, user, trans, mccSession, walletPrimaryCurrency, 
     }
   };
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const oldIndex = accounts.findIndex((a) => a._id === active.id);
