@@ -21,13 +21,43 @@ import {
   addNewCategory,
   removeOneCategory,
   updateCategory,
+  type CategoryData,
 } from "@/lib/features/categoriesSlice";
-import { addNewSubCategory, removeSubCategory, updateSubCategory } from "@/lib/features/subCategorySlice";
+import {
+  addNewSubCategory,
+  removeSubCategory,
+  updateSubCategory,
+  type SubCategoryData,
+} from "@/lib/features/subCategorySlice";
+import type { AppDispatch, RootState } from "@/lib/store";
+import type { UserData } from "@/lib/features/userSlice";
 
-function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline = false }) {
+export interface FormCategoryState {
+  id?: string;
+  name?: string;
+  icon?: string;
+  color?: string | number;
+  fatherCategory?: string;
+  user?: string;
+  wallet?: string;
+}
+
+export interface EditCategoryModalProps {
+  ecmMode?: string | boolean;
+  ecmCategory?: CategoryData | SubCategoryData | null;
+  ecmClose: (close: boolean | string) => void;
+  ecmData?: {
+    user?: UserData | Record<string, unknown> | null;
+    categories?: CategoryData[] | null;
+    [key: string]: unknown;
+  };
+  isInline?: boolean;
+}
+
+function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }: EditCategoryModalProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
-  const [active, setActive] = useState(false);
-  const [formCategory, setFormCategory] = useState({
+  const [active, setActive] = useState<string | boolean>(false);
+  const [formCategory, setFormCategory] = useState<FormCategoryState>({
     id: "",
     name: "",
     icon: "",
@@ -37,35 +67,31 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
     wallet: "",
   });
   const [isSub, setIsSub] = useState(false);
-  const [fatherCat, setFatherCat] = useState({});
+  const [fatherCat, setFatherCat] = useState<CategoryData>({});
   const [isCatMenuOpen, setIsCatMenuOpen] = useState(false);
   const toFetch = fetcher();
-  const { close: isSelectorOpen, handleClose: handleSelectorClose, handleOpen: handleSelectorOpen } = useModal();
+  const { close: isSelectorOpen, handleClose: handleSelectorClose } = useModal();
 
   //REDUX
-  const dispatchEcm = useDispatch();
-  const edUser = useSelector((state) => state.userReducer);
-  const edCategories = useSelector((state) => state.categoriesReducer);
-  const edSubCategories = useSelector((state) => state.subCategoryReducer);
+  const dispatchEcm = useDispatch<AppDispatch>();
+  const edUser = useSelector((state: RootState) => state.userReducer);
   //
-  const userData = edUser.data;
-  const userCat = edCategories.data.user;
-  const defCat = edCategories.data.default;
-  const categoriesData = userCat.concat(defCat) || ecmData.categories || [];
+  const userData = edUser.data as UserData | undefined;
 
   useEffect(() => {
     if (ecmCategory) {
       if (ecmMode === "edition") {
         if (ecmCategory.fatherCategory) {
+          const father = ecmCategory.fatherCategory as CategoryData;
           setFormCategory({
             id: ecmCategory._id,
             name: ecmCategory?.name,
             icon: ecmCategory?.icon,
             color: ecmCategory?.color,
-            fatherCategory: ecmCategory.fatherCategory._id,
+            fatherCategory: father._id,
           });
           setIsSub(true);
-          setFatherCat(ecmCategory.fatherCategory);
+          setFatherCat(father);
         } else {
           // console.log(ecmCategory);
           setFormCategory({
@@ -92,12 +118,9 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
 
   // console.log(formCategory);
 
-  useEffect(() => {
-    // console.log(formCategory);
-  }, [formCategory]);
   // HANDLERS
 
-  const handlerSubmit = async (e) => {
+  const handlerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     // console.log(formCategory);
@@ -116,7 +139,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
             handleClose();
           } else {
             // All OK 👌
-            dispatchEcm(updateSubCategory(res.data))
+            dispatchEcm(updateSubCategory(res.data));
             setIsLoading(false);
             handleClose();
             runNotify("ok", `${res.message}`);
@@ -135,7 +158,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
           } else {
             // All OK 👌
             // console.log(res.data)
-            dispatchEcm(updateCategory(res.data))
+            dispatchEcm(updateCategory(res.data));
             setIsLoading(false);
             handleClose();
             runNotify("ok", `${res.message}`);
@@ -176,8 +199,8 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
           } else {
             // NEW SUB CATEGORY
             // All OK 👌
-            console.log(res.data)
-            dispatchEcm(addNewSubCategory(res.data))
+            console.log(res.data);
+            dispatchEcm(addNewSubCategory(res.data));
             setIsLoading(false);
             handleClose();
             runNotify("ok", `${res.message}`);
@@ -228,16 +251,16 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
     // console.log(formCategory)
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormCategory({ ...formCategory, [name]: value });
   };
-  const handleColorChange = (e) => {
+  const handleColorChange = (e: string) => {
     // console.log(`#${e}`);
     setFormCategory({ ...formCategory, color: `#${e}` });
   };
 
-  const handleFatherCategory = (cat) => {
+  const handleFatherCategory = (cat: CategoryData) => {
     setFormCategory({
       ...formCategory,
       fatherCategory: cat._id,
@@ -247,7 +270,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
 
   const handleRemove = async () => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const categoryRoute = "general-data/categories/remove-category";
       const subCategoryRoute = "general-data/subcategory/remove";
       const removedId = formCategory.id;
@@ -256,9 +279,9 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
         removedId
       );
       if (!res.ok) {
-        console.log('first')
+        console.log('first');
         runNotify("error", "Something went wrong, please try again later 🤕");
-        setIsLoading(false)
+        setIsLoading(false);
         handleClose();
       } else {
         if(!formCategory.fatherCategory){ 
@@ -275,13 +298,13 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
             `${res.message}`
           );
         }
-        setIsLoading(false)
-        handleClose()
+        setIsLoading(false);
+        handleClose();
       }
     } catch (e) {
       runNotify("error", "Something went wrong, please try again later 🤕");
       console.log(e);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
@@ -348,10 +371,10 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
                   <div className="flex flex-wrap gap-2">
                     <IconDisplayerMenu
                       idmActive={isCatMenuOpen}
-                      idmIcon={(i) =>
+                      idmIcon={(i: string) =>
                         setFormCategory({ ...formCategory, icon: i })
                       }
-                      idmClose={(a) => setIsCatMenuOpen(a)}
+                      idmClose={(a: boolean) => setIsCatMenuOpen(a)}
                     />
                   </div>
                 </div>
@@ -361,11 +384,11 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
                 <div className="flex gap-2 items-center min-h-[64px]">
                   <Space direction="vertical">
                     <ColorPicker
-                      value={formCategory?.color || "#ABABAB"}
+                      value={formCategory?.color ? String(formCategory.color) : "#ABABAB"}
                       format="hex"
                       showText
                       style={{
-                        border: `2px solid ${formCategory?.color || "#ABABAB"}`,
+                        border: `2px solid ${formCategory?.color ? String(formCategory.color) : "#ABABAB"}`,
                       }}
                       onChange={(c) => handleColorChange(c.toHex())}
                     />
@@ -422,7 +445,6 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
                       <UniversalCategoIcon
                         type={`${fatherCat?.icon || "md/MdFilterNone"}`}
                         siz={30}
-                        color={fatherCat?.color}
                       />
                       <span className="font-medium text-purple-300">
                         {fatherCat?.name || "Click to select a father category"}
@@ -442,6 +464,8 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, ecmData, isInline =
                         onlyFathers={true}
                       />
                     }
+                    renderBodyContent={undefined}
+                    renderHeader={undefined}
                   />
                 )}
               </>
