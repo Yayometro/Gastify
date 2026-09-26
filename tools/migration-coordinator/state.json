@@ -2591,8 +2591,23 @@
           ]
         },
         "src/app/api/general-data/transactions/transfer/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T02:57:12.871Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T02:59:55.081Z",
+              "event": "submitted",
+              "notes": "Migrada la ruta de API `src/app/api/general-data/transactions/transfer/route.js` a TypeScript (`route.ts`). Se definió el esquema de validación `transferTransactionSchema` con Zod e inferencia de tipos con `z.infer`, junto con las interfaces de respuesta `TransferTransactionSuccessResponse`, `TransferTransactionErrorResponse` y `TransferTransactionResponse`. Se tipó `buildLegReporting` con retorno `Promise<IReportingMoney>`. Auditoría de seguridad: la ruta NO verificaba la sesión y confiaba en `user`/`wallet` pasados en el body; se corrigió agregando `auth.api.getSession({ headers: request.headers })`, derivación de usuario y wallet mediante `User.findOne({ mail: sesion.user.email })` y acotación estricta de las cuentas (`sourceAccount`/`destinationAccount`), wallet y creación de transacciones a la sesión autenticada. Se preservaron exactamente todos los campos y la lógica original de transacciones atómicas con MongoDB session. Se actualizó el archivo de tests hermano `route.test.js` con los mocks de auth y un caso de prueba para sesión ausente. `tsc --noEmit`, `eslint` y `vitest` ejecutados exitosamente con 0 errores (8/8 tests pasando)."
+            },
+            {
+              "ts": "2026-09-26T03:00:46.148Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #31): el original ya tenia checks de ownership (`sourceAccount.user !== user`) pero comparaba contra el `user`/`wallet` que mandaba el CLIENTE en el body, sin verificar sesion - un atacante que conociera el user/wallet id de una victima podia crear transferencias fantasma en su wallet. Ahora `user`/`wallet` se derivan de `auth.api.getSession` + `User.findOne`, y los mismos checks de ownership se hacen contra esos valores verificados. Toda la logica compleja (transaccion atomica de 2 piernas con sesion de Mongo, calculo de tasa efectiva, manejo de moneda por defecto, buildLegReporting) preservada identica. Test actualizado con mock de sesion y un caso nuevo de rechazo sin sesion. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 312/312 (29 suites, +1 test). Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/transfer/remove/route.js": {
           "status": "pending",

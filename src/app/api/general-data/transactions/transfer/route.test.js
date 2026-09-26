@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/app/api/dbConnection", () => ({ default: vi.fn() }));
+vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/Account", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/lib/money/server/fxRateService", () => ({ convert: vi.fn() }));
+vi.mock("@/lib/auth/betterAuth", () => ({
+  auth: { api: { getSession: vi.fn() } },
+}));
 
 const { TransactionMock, fakeSession } = vi.hoisted(() => {
   const fakeSession = {
@@ -31,12 +35,14 @@ vi.mock("mongoose", async (importOriginal) => {
 
 import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
+import User from "@/model/User";
 import Transaction from "@/model/Transaction";
+import { auth } from "@/lib/auth/betterAuth";
 import { convert } from "@/lib/money/server/fxRateService";
 import { POST } from "./route";
 
 function mockRequest(body) {
-  return { json: vi.fn().mockResolvedValue(body) };
+  return { json: vi.fn().mockResolvedValue(body), headers: new Headers() };
 }
 
 function chainablePopulate(result) {
@@ -45,6 +51,8 @@ function chainablePopulate(result) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.api.getSession.mockResolvedValue({ user: { email: "u1@example.com" } });
+  User.findOne.mockReturnValue({ lean: vi.fn().mockResolvedValue({ _id: "u1", wallet: "w1" }) });
   fakeSession.withTransaction.mockImplementation(async (fn) => fn());
   Wallet.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ primaryCurrency: "MXN" }) });
   Transaction.findById.mockReturnValue(chainablePopulate({ _id: "leg", name: "Transfer" }));
@@ -55,6 +63,17 @@ const DEST = { _id: "acc-mxn-2", user: "u1", wallet: "w1", currency: "MXN" };
 const USD_DEST = { _id: "acc-usd", user: "u1", wallet: "w1", currency: "USD" };
 
 describe("transfer POST - validation", () => {
+  it("rejects when there is no session", async () => {
+    auth.api.getSession.mockResolvedValueOnce(null);
+    const res = await POST(mockRequest({
+      sourceAccountId: "acc1", sourceAmountMinor: 1000,
+      destinationAccountId: "acc2", destinationAmountMinor: 1000,
+    }));
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.message).toMatch(/No session/);
+  });
+
   it("rejects when source and destination Accounts are the same", async () => {
     const res = await POST(mockRequest({
       user: "u1", wallet: "w1", sourceAccountId: "acc1", sourceAmountMinor: 1000,
