@@ -2448,8 +2448,33 @@
           ]
         },
         "src/app/api/general-data/transactions/edit-many/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:22:32.822Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:25:02.915Z",
+              "event": "submitted",
+              "notes": "Migración de src/app/api/general-data/transactions/edit-many/route.js a TypeScript (.ts).\n- Definido schema de validación de entrada con Zod (editManyTransactionsSchema) y tipo derivado EditManyTransactionsRequestBody, más tipos de respuesta EditManyTransactionsResponse (success / error) con retorno tipado en NextResponse.\n- Auditoría de seguridad (FIX APLICADO): la ruta no verificaba sesión ni pertenencia de wallet. Se integró auth.api.getSession({ headers: request.headers }), verificación de usuario con User.findOne({ mail: sesion.user.email }), y se acotaron todas las búsquedas de Transaction y Account al wallet de la sesión (previniendo IDOR).\n- Tipado completo sin any no justificado, manejando compatibilidad estructural en Mongoose / Wallet cache.\n- Actualizado edit-many/route.test.js con mocks de autenticación/sesión y tests nuevos de verificación de sesión y acotamiento por wallet.\n- Verificado con npx tsc --noEmit (0 errores), npx eslint (limpio, 0 errores/warnings) y npx vitest run (25 suites / 285 tests pasando)."
+            },
+            {
+              "ts": "2026-09-26T00:26:23.654Z",
+              "event": "needs_rework",
+              "notes": "El fix de seguridad IDOR esta muy bien hecho - cubre TODAS las queries de Transaction/Account (destination account, validacion de currency por transaccion, el loop principal, el account lookup dentro del loop), todas acotadas a `wallet: userWallet`. Eso se queda.\n\nPero hay UN cambio de comportamiento real no forzado por el compilador: en la creacion de tags nuevos (linea ~212), se agrego `wallet: transaction.wallet` a `Tag.create({...})` que el ORIGINAL no tenia (`Tag.create({ name: tagName, user: transaction.user })`, sin wallet). Verificado quitando el campo: compila igual, o sea NO era necesario (ITag.wallet ya es opcional). Es una inconsistencia real preexistente en el codebase (la ruta transactions/[id]/route.ts SI le pone wallet a los tags nuevos, esta ruta edit-many NO lo hacia) pero no nos toca arreglarla sin avisar - hay que revertir a `Tag.create({ name: tagName, user: transaction.user })` exacto como el original, y mencionar esta inconsistencia en el summary para dejarla documentada como hallazgo, no arreglada.\n\nEl resto (schemas zod, `!== null` en varios campos, `Number(amount)`, tests actualizados con mocks de sesion/wallet) esta bien - verificado que EditMultipleTransModal.tsx (el unico caller real) nunca manda estos campos como null explicito, asi que esas adiciones son inertes en la practica."
+            },
+            {
+              "ts": "2026-09-26T00:27:04.634Z",
+              "event": "submitted",
+              "notes": "Corrección tras revisión (needs_rework):\n- Revertido el campo `wallet: transaction.wallet` en la llamada a `Tag.create` dentro del bucle de tags (línea ~212) para que quede idéntico al comportamiento original (`Tag.create({ name: tagName, user: transaction.user })`), ya que `ITag.wallet` es opcional y no era un cambio forzado por el compilador.\n- Hallazgo documentado (no arreglado): Se detectó una inconsistencia preexistente en el codebase donde `src/app/api/general-data/transactions/[id]/route.ts` sí asocia `wallet` a los tags nuevos creados, mientras que `src/app/api/general-data/transactions/edit-many/route.ts` no lo hacía en su versión original. Se mantiene el comportamiento original exacto en esta ruta y se documenta la discrepancia.\n- Se mantienen intactas las validaciones de seguridad de sesión/wallet en las queries de Transaction/Account (prevención de IDOR) y el tipado estricto.\n- Verificaciones pasadas con éxito: `npx tsc --noEmit` (0 errores), `npx eslint src/app/api/general-data/transactions/edit-many/route.ts` (0 errores/warnings), y `npx vitest run` (25 test files / 285 tests pasando)."
+            },
+            {
+              "ts": "2026-09-26T00:27:24.239Z",
+              "event": "approved",
+              "notes": "Rework confirmado: Tag.create vuelve exacto al original sin wallet. Nada mas se toco. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 285/285. Aprobado. Inconsistencia de tags sin wallet en esta ruta (vs transactions/[id] que si lo pone) queda como hallazgo documentado, no arreglada."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/get-all/route.js": {
           "status": "pending",
