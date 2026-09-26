@@ -132,25 +132,32 @@ tabla de bugs pendientes. Deliberadamente NO incluye
 `HistoricalBudgetsComparative`/`HistoricalWalletAnalyzer` (analytics
 pesado, su propia historia futura).
 
-**Historia activa: Historia 8 — Movements/Transacciones** (25 archivos:
-`dashboard/movements/page.jsx`, `MovementsClient.jsx`, `Movements.jsx`
-[1466 líneas, el más grande de toda la migración], `EditSingleTransModal`,
+**Historia 8 (Movements/Transacciones) completa** - 25/25 archivos
+(`dashboard/movements/page`, `MovementsClient`, `Movements` [1466→1586
+líneas, el más grande de toda la migración], `EditSingleTransModal`,
 `EditMultipleTransModal`, `QuickEditModal`, `DuplicateComparisonTable`,
 `BtnSelectCategoryContext`, `AddTransactionComp`, `ReadFileComp`,
-`CategorySuggestions/` [3 archivos: `CategorySuggestionsSection`,
-`SuggestionsList`, `UncategorizedSuggestionsTab`], modelos `Transaction.js`
-y `Tag.js`, y 10 rutas de `transactions/*` - `get-transactions` ya estaba
-migrada a `.ts`). Aprovechar cada ruta para auditar en el momento el bug
-de `auth.api.getSession()` (grupo Transactions del checklist de
-seguridad, es el grupo más grande y sensible que queda pendiente).
-Deliberadamente NO incluye: `HistoricalMovementsController`/
-`HistoricalMovementsView` ni el árbol `top3/` (analytics pesado de
-agregación, historia futura); `AddTransactionModal`/`TransferExchangeModal`
-(flujo aparte de alta rápida desde el Navbar); `UnbudgetedSpending.jsx`
-(ya excluido en Historia 7). `EditTransModal.jsx` y
-`VoiceRecognicionComponent.jsx` son código huérfano sin importadores en
-todo el repo - no se migran, son candidatos a borrar con aprobación del
-usuario (igual que los huérfanos de Historia 1).
+`CategorySuggestions/` [3 archivos], modelos `Transaction` y `Tag`, y
+10 rutas de `transactions/*`). El grupo Transactions del checklist de
+seguridad quedó **100% auditado**: 10 fixes de sesión/IDOR durante la
+historia más un 11vo (`get-transactions`, que ya estaba en `.ts` desde
+antes pero nunca se había auditado) encontrado y corregido al cerrarla
+- 33 fixes de seguridad acumulados en toda la migración, ver tabla
+consolidada. Varios rounds de rework por el mismo patrón `<Space
+direction="">` de Antd (bug visual real preexistente, revertido dos
+veces) y un `Tag.create()` al que se le agregó `wallet` sin ser
+necesario (revertido). Se encontraron y documentaron sin arreglar 4
+bugs reales más (ver tabla de bugs pendientes filas 10-14), incluyendo
+uno en `handleMultiTransEdit` (key de React duplicada entre modales) y
+la inconsistencia de tags-sin-wallet en `edit-many`. Deliberadamente NO
+incluye: `HistoricalMovementsController`/`HistoricalMovementsView` ni
+el árbol `top3/` (analytics pesado de agregación, historia futura);
+`AddTransactionModal`/`TransferExchangeModal` (flujo aparte de alta
+rápida desde el Navbar); `UnbudgetedSpending.jsx` (ya excluido en
+Historia 7). `EditTransModal.jsx` y `VoiceRecognicionComponent.jsx` son
+código huérfano sin importadores en todo el repo - no se migraron, son
+candidatos a borrar con aprobación del usuario (igual que los huérfanos
+de Historia 1) - hay una tarea en cola para borrarlos.
 
 Historias siguientes (orden real a confirmar): Wallet Analyzer,
 Categories - analytics (Treemap/Circle Packing/comparativas históricas),
