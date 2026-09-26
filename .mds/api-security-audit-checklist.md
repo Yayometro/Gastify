@@ -26,7 +26,7 @@ userMail})` - vale la pena tenerla en mente al revisar lo que falta). Es
 muy probable que haya más entre las ~38 rutas que todavía no se han
 revisado a fondo.
 
-## Los 25 ya confirmados y corregidos (no hace falta re-revisarlos)
+## Los 26 ya confirmados y corregidos (no hace falta re-revisarlos)
 
 | Ruta | Problema | Commit |
 |------|----------|--------|
@@ -117,6 +117,7 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - `general-data/transactions/[id]` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/edit-many` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/get-all` (POST) - arreglada durante Historia 8 de la migración TS
+- `general-data/transactions/link-budget` (POST) - arreglada durante Historia 8 de la migración TS
 
 ### Probablemente OK sin `getSession()` propio (confirmar de todas formas)
 - `auth/[...all]/route.ts` - el catch-all de Better Auth, maneja su propia auth internamente.
@@ -162,7 +163,7 @@ que usa `Movements.jsx`, no este árbol)
 - [x] `general-data/transactions/edit-many` - arreglada (ver tabla de arriba, commit `38a7f9e`)
 - [x] `general-data/transactions/get-all` - arreglada (ver tabla de arriba, commit `0b29d8d`)
 - [ ] `general-data/transactions/get-transactions`
-- [ ] `general-data/transactions/link-budget`
+- [x] `general-data/transactions/link-budget` - arreglada (ver tabla de arriba, commit `7f2972b`)
 - [ ] `general-data/transactions/new-transaction`
 - [ ] `general-data/transactions/remove-many`
 - [ ] `general-data/transactions/remove-transaction/[id]`
