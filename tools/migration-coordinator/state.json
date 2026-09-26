@@ -2515,8 +2515,23 @@
           ]
         },
         "src/app/api/general-data/transactions/new-transaction/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:36:33.662Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:39:22.851Z",
+              "event": "submitted",
+              "notes": "Migrado `new-transaction/route.js` a TypeScript (`route.ts`).\n1. Auditoría de seguridad: SÍ se aplicó el fix de seguridad. La ruta original carecía de verificación de sesión y aceptaba `user` y `wallet` arbitrarios del body sin validar la identidad del llamador. Se agregó la verificación de sesión con `auth.api.getSession({ headers: request.headers })`, validación de usuario contra la BD mediante `User.findOne({ mail: sesion.user.email })`, y se inyectaron de forma segura `user: userFound._id` y `wallet: userFound.wallet` al invocar `createTransaction`.\n2. Tipado y Zod: Se definió el schema `createTransactionSchema` usando Zod y se derivó `CreateTransactionRequestBody = z.infer<typeof createTransactionSchema>`. Se tiparon las respuestas `NewTransactionGetResponse` y `NewTransactionPostResponse`, asegurando retornos explícitos de `NextResponse` en todos los flujos de GET y POST.\n3. Tests: Se actualizó el archivo de tests hermano `route.test.js` agregando mocks de `auth` y `User`, y añadiendo casos de prueba para verificar que rechaza peticiones sin sesión y aísla la creación de transacciones al usuario autenticado.\n4. Verificaciones: `npx tsc --noEmit` completó con 0 errores, `npx eslint` pasó limpio en ambos archivos, y `npx vitest run` pasó al 100% (293/293 tests en todo el proyecto, 9/9 en `route.test.js`)."
+            },
+            {
+              "ts": "2026-09-26T02:42:11.954Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #27): antes se pasaba el body completo (incluyendo user/wallet mandados por el cliente) directo a createTransaction(), sin verificar sesion - permitia forjar transacciones atribuidas a cualquier usuario/wallet. Ahora `user`/`wallet` SIEMPRE se sobreescriben con los valores derivados de la sesion (`{...body, user: userFound._id, wallet: userFound.wallet}`, el spread va primero asi que el override siempre gana pase lo que pase en el body). Test file actualizado con un caso de regresion de seguridad genuino: manda `user: \"attacker\", wallet: \"attacker-wallet\"` explicitamente y verifica que el documento construido usa los valores de sesion, no los del atacante. zod schema + z.infer, invocacion tipada de createTransaction (aun sin migrar) sin any. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 293/293 (+2 tests nuevos). Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/remove-many/route.js": {
           "status": "pending",

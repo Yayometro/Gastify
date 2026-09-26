@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../../../dbConnection", () => ({ default: vi.fn() }));
+vi.mock("@/app/api/dbConnection", () => ({ default: vi.fn() }));
+vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/Account", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Tag", () => ({ default: { findOne: vi.fn() } }));
@@ -8,6 +9,9 @@ vi.mock("@/model/SubCategory", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Category", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Budget", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/lib/money/server/transactionMoneyService", () => ({ buildTransactionMoney: vi.fn() }));
+vi.mock("@/lib/auth/betterAuth", () => ({
+  auth: { api: { getSession: vi.fn() } },
+}));
 
 const { TransactionMock } = vi.hoisted(() => {
   const savedDoc = {
@@ -33,12 +37,14 @@ import Account from "@/model/Account";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Wallet from "@/model/Wallet";
+import User from "@/model/User";
 import Transaction from "@/model/Transaction";
+import { auth } from "@/lib/auth/betterAuth";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { POST } from "./route";
 
 function mockRequest(body) {
-  return { json: vi.fn().mockResolvedValue(body) };
+  return { json: vi.fn().mockResolvedValue(body), headers: new Headers() };
 }
 
 function chainablePopulate(result) {
@@ -52,6 +58,8 @@ function chainablePopulate(result) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.api.getSession.mockResolvedValue({ user: { email: "u1@example.com" } });
+  User.findOne.mockReturnValue({ lean: vi.fn().mockResolvedValue({ _id: "u1", wallet: "w1" }) });
   buildTransactionMoney.mockResolvedValue({
     account: { amountMinor: 10000, currency: "USD" },
     merchant: null,
@@ -61,13 +69,31 @@ beforeEach(() => {
   Transaction.findById.mockReturnValue(chainablePopulate({ _id: "t1", name: "Coffee" }));
 });
 
+describe("new-transaction authentication and scoping", () => {
+  it("throws when no session exists", async () => {
+    auth.api.getSession.mockResolvedValueOnce(null);
+
+    await expect(
+      POST(mockRequest({ name: "Coffee", amount: 100, isBill: true }))
+    ).rejects.toThrow(/No session/);
+  });
+
+  it("derives user and wallet from the session rather than untrusted caller input", async () => {
+    await POST(mockRequest({ user: "attacker", wallet: "attacker-wallet", name: "Coffee", amount: 100, isBill: true }));
+
+    const constructedDoc = Transaction.mock.calls[0][0];
+    expect(constructedDoc.user).toBe("u1");
+    expect(constructedDoc.wallet).toBe("w1");
+  });
+});
+
 describe("new-transaction currency resolution", () => {
   it("resolves the Account's own currency when an Account is selected", async () => {
     Account.findById.mockReturnValue({
       lean: vi.fn().mockResolvedValue({ currency: "USD", user: "u1", wallet: "w1" }),
     });
 
-    await POST(mockRequest({ user: "u1", wallet: "w1", name: "Coffee", amount: 100, isBill: true, account: "acc1" }));
+    await POST(mockRequest({ name: "Coffee", amount: 100, isBill: true, account: "acc1" }));
 
     expect(buildTransactionMoney).toHaveBeenCalledWith(
       expect.objectContaining({ accountAmount: 100, accountCurrency: "USD", walletPrimaryCurrency: "MXN" })
@@ -75,7 +101,7 @@ describe("new-transaction currency resolution", () => {
   });
 
   it("defaults to the Wallet's primary currency when no Account is selected", async () => {
-    await POST(mockRequest({ user: "u1", wallet: "w1", name: "Cash tip", amount: 50, isBill: true }));
+    await POST(mockRequest({ name: "Cash tip", amount: 50, isBill: true }));
 
     expect(Account.findById).not.toHaveBeenCalled();
     expect(buildTransactionMoney).toHaveBeenCalledWith(
@@ -84,7 +110,7 @@ describe("new-transaction currency resolution", () => {
   });
 
   it("sets kind/direction explicitly from isIncome rather than relying on the model's fallback hook", async () => {
-    await POST(mockRequest({ user: "u1", wallet: "w1", name: "Salary", amount: 5000, isIncome: true }));
+    await POST(mockRequest({ name: "Salary", amount: 5000, isIncome: true }));
 
     const constructedDoc = Transaction.mock.calls[0][0];
     expect(constructedDoc.kind).toBe("income");
@@ -100,7 +126,7 @@ describe("new-transaction currency resolution", () => {
   it("defaults to MXN when the Wallet has no primaryCurrency field (unmigrated document)", async () => {
     Wallet.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ _id: "w1" }) });
 
-    await POST(mockRequest({ user: "u1", wallet: "w1", name: "Cash tip", amount: 50, isBill: true }));
+    await POST(mockRequest({ name: "Cash tip", amount: 50, isBill: true }));
 
     expect(buildTransactionMoney).toHaveBeenCalledWith(
       expect.objectContaining({ accountCurrency: "MXN", walletPrimaryCurrency: "MXN" })
@@ -122,7 +148,7 @@ describe("new-transaction ownership validation", () => {
 
     await expect(
       POST(
-        mockRequest({ user: "u1", wallet: "w1", name: "Coffee", amount: 100, isBill: true, account: "acc1" })
+        mockRequest({ name: "Coffee", amount: 100, isBill: true, account: "acc1" })
       )
     ).rejects.toThrow(/Account not found for this user/);
   });
@@ -134,7 +160,7 @@ describe("new-transaction ownership validation", () => {
 
     await expect(
       POST(
-        mockRequest({ user: "u1", wallet: "w1", name: "Lunch", amount: 100, isBill: true, category: "cat1" })
+        mockRequest({ name: "Lunch", amount: 100, isBill: true, category: "cat1" })
       )
     ).rejects.toThrow(/Category not found for this user/);
   });
@@ -149,8 +175,6 @@ describe("new-transaction ownership validation", () => {
     await expect(
       POST(
         mockRequest({
-          user: "u1",
-          wallet: "w1",
           name: "Ride",
           amount: 100,
           isBill: true,
