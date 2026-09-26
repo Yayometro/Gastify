@@ -27,7 +27,7 @@ userMail})` - el mismo patrón exacto volvió a aparecer en
 al revisar lo que falta). Es muy probable que haya más entre las rutas de
 `transactions/*` que aún faltan y en el resto de grupos pendientes.
 
-## Los 27 ya confirmados y corregidos (no hace falta re-revisarlos)
+## Los 28 ya confirmados y corregidos (no hace falta re-revisarlos)
 
 | Ruta | Problema | Commit |
 |------|----------|--------|
@@ -61,6 +61,7 @@ al revisar lo que falta). Es muy probable que haya más entre las rutas de
 | `general-data/transactions/get-all` (POST) | Cero sesión - `userMail` del body a secas exponía perfil/transacciones/categorías/cuentas de cualquiera | `0b29d8d` |
 | `general-data/transactions/link-budget` (POST) | Cero sesión - vinculaba/desvinculaba movimientos de cualquier usuario a proyectos | `7f2972b` |
 | `general-data/transactions/new-transaction` (POST) | Cero sesión - `user`/`wallet` del body a secas permitía forjar transacciones en cualquier wallet | `cbc48d2` |
+| `general-data/transactions/remove-many` (POST) | Cero sesión (el más crítico) - `Transaction.deleteMany({_id:{$in:...}})` a secas permitía borrar en bloque transacciones de cualquier usuario | `1f408d2` |
 
 ## Metodología sugerida para la auditoría completa
 
@@ -124,6 +125,7 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - `general-data/transactions/get-all` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/link-budget` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/new-transaction` (POST) - arreglada durante Historia 8 de la migración TS
+- `general-data/transactions/remove-many` (POST) - arreglada durante Historia 8 de la migración TS
 
 ### Probablemente OK sin `getSession()` propio (confirmar de todas formas)
 - `auth/[...all]/route.ts` - el catch-all de Better Auth, maneja su propia auth internamente.
@@ -171,7 +173,7 @@ que usa `Movements.jsx`, no este árbol)
 - [ ] `general-data/transactions/get-transactions`
 - [x] `general-data/transactions/link-budget` - arreglada (ver tabla de arriba, commit `7f2972b`)
 - [x] `general-data/transactions/new-transaction` - arreglada (ver tabla de arriba, commit `cbc48d2`)
-- [ ] `general-data/transactions/remove-many`
+- [x] `general-data/transactions/remove-many` - arreglada (ver tabla de arriba, commit `1f408d2`)
 - [ ] `general-data/transactions/remove-transaction/[id]`
 - [ ] `general-data/transactions/speech-add`
 - [ ] `general-data/transactions/transfer`
