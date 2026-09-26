@@ -4,20 +4,33 @@ import React, { useEffect, useState } from "react";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { BsFiletypeXml } from "react-icons/bs";
 import { Button, Upload } from "antd";
+import type { UploadProps } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import fetcher from "@/helpers/fetcher";
 import { useSelector, useDispatch } from "react-redux";
 import runNotify from "@/helpers/gastifyNotifier";
-import { addNewTransacctions, removeManyTransactions } from "@/lib/features/transacctionsSlice";
-import { fetchTrans } from "@/lib/features/transacctionsSlice";
+import {
+  addNewTransacctions,
+  removeManyTransactions,
+  updateManyTransactions,
+  type TransactionData,
+} from "@/lib/features/transacctionsSlice";
 import DedupPreviewModal from "@/components/multiUsedComp/DedupPreviewModal";
 import CategorySuggestionsModal from "@/components/multiUsedComp/CategorySuggestionsModal";
-import { updateManyTransactions } from "@/lib/features/transacctionsSlice";
 import { MdFormatAlignLeft, MdOutlineCleaningServices } from "react-icons/md";
-import { fetchUser } from "@/lib/features/userSlice";
+import { fetchUser, type UserData } from "@/lib/features/userSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
+import type { AppDispatch, RootState } from "@/lib/store";
 
-const STATUS = {
+export type UploadStatusKey = "idle" | "uploading" | "processing" | "done" | "error";
+
+interface StatusBadgeInfo {
+  label: string;
+  color: string;
+  spin: boolean;
+}
+
+const STATUS: Record<UploadStatusKey, StatusBadgeInfo | null> = {
   idle: null,
   uploading: { label: "Uploading file...", color: "text-purple-500", spin: true },
   processing: { label: "Reading and creating transactions...", color: "text-purple-500", spin: true },
@@ -25,7 +38,7 @@ const STATUS = {
   error: { label: "Something went wrong", color: "text-red-500", spin: false },
 };
 
-function SpinnerIcon() {
+function SpinnerIcon(): React.JSX.Element {
   return (
     <svg className="animate-spin h-4 w-4 inline-block mr-1" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -34,7 +47,7 @@ function SpinnerIcon() {
   );
 }
 
-function StatusBadge({ status }) {
+function StatusBadge({ status }: { status: UploadStatusKey }): React.JSX.Element | null {
   const s = STATUS[status];
   if (!s) return null;
   return (
@@ -45,32 +58,92 @@ function StatusBadge({ status }) {
   );
 }
 
-function ReadFileComp({}) {
-  const [isExcel, setIsExcel] = useState(true);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState("idle");
-  const [showDedup, setShowDedup] = useState(false);
-  const [dedupLoading, setDedupLoading] = useState(false);
-  const [dedupResult, setDedupResult] = useState(null);
-  const [dedupDeleteAll, setDedupDeleteAll] = useState(false);
-  const [dedupPreview, setDedupPreview] = useState(null);
-  const [dedupConfirming, setDedupConfirming] = useState(false);
-  const [uploadResult, setUploadResult] = useState(null);
-  const [suggestions, setSuggestions] = useState(null);
-  const [suggestionsApplying, setSuggestionsApplying] = useState(false);
+export interface DedupResult {
+  removed: number;
+  scanned?: number;
+}
 
-  let { email } = useGetUserSession();
+export interface DedupPreviewData {
+  ok?: boolean;
+  toDelete?: (TransactionData & { _match?: unknown })[];
+  toKeep?: TransactionData[];
+  scanned?: number;
+  message?: string;
+  [key: string]: unknown;
+}
+
+export interface UploadResult {
+  count: number;
+}
+
+export interface CategorySuggestionItem {
+  transaction: TransactionData & { _id: string };
+  category?: { _id?: string; name?: string; color?: string; icon?: string } | null;
+  subCategory?: { _id?: string; name?: string; color?: string; icon?: string } | null;
+  confidence?: string;
+  [key: string]: unknown;
+}
+
+export interface SuggestionApplication {
+  transactionId: string;
+  categoryId?: string;
+  subCategoryId?: string;
+}
+
+interface UploadApiResponse {
+  ok?: boolean;
+  versionMismatch?: boolean;
+  message?: string;
+  data?: TransactionData[];
+  [key: string]: unknown;
+}
+
+// Typed bridges for unmigrated child JSX components
+const TypedDedupPreviewModal = DedupPreviewModal as React.ComponentType<{
+  preview: DedupPreviewData;
+  deleteAll: boolean;
+  onConfirm: (idsToDelete: string[]) => void | Promise<void>;
+  onCancel: () => void;
+  confirming: boolean;
+}>;
+
+const TypedCategorySuggestionsModal = CategorySuggestionsModal as React.ComponentType<{
+  suggestions: CategorySuggestionItem[];
+  onConfirm: (applications: SuggestionApplication[]) => Promise<boolean>;
+  onCancel: () => void;
+  confirming: boolean;
+}>;
+
+export interface ReadFileCompProps {
+  [key: string]: never;
+}
+
+function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
+  const [isExcel, setIsExcel] = useState<boolean>(true);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatusKey>("idle");
+  const [showDedup, setShowDedup] = useState<boolean>(false);
+  const [dedupLoading, setDedupLoading] = useState<boolean>(false);
+  const [dedupResult, setDedupResult] = useState<DedupResult | null>(null);
+  const [dedupDeleteAll, setDedupDeleteAll] = useState<boolean>(false);
+  const [dedupPreview, setDedupPreview] = useState<DedupPreviewData | null>(null);
+  const [dedupConfirming, setDedupConfirming] = useState<boolean>(false);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const [suggestions, setSuggestions] = useState<CategorySuggestionItem[] | null>(null);
+  const [suggestionsApplying, setSuggestionsApplying] = useState<boolean>(false);
+
+  const { email } = useGetUserSession();
   const toFetch = fetcher();
-  const reduxDispatch = useDispatch();
-  const ccUser = useSelector((state) => state.userReducer.data);
+  const reduxDispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: RootState) => state.userReducer.data as UserData & { status?: string });
 
   useEffect(() => {
     if (ccUser.status == "idle") {
       reduxDispatch(fetchUser(email));
     }
-  }, [ccUser, email]);
+  }, [ccUser, email, reduxDispatch]);
 
-  const handleDownloadTemplate = async () => {
+  const handleDownloadTemplate = async (): Promise<void> => {
     const userEmail = ccUser.mail || email;
     if (!userEmail) return;
     try {
@@ -88,43 +161,43 @@ function ReadFileComp({}) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (e) {
+    } catch {
       runNotify("error", "Could not download template, please try again 🤕");
     } finally {
       setIsDownloading(false);
     }
   };
 
-  const customRequest = async ({ file, onSuccess, onError }) => {
+  const customRequest: NonNullable<UploadProps["customRequest"]> = async ({ file, onSuccess, onError }) => {
     const userEmail = ccUser.mail || email;
     if (!userEmail) {
-      onError(new Error("User not available yet, please try again"));
+      onError?.(new Error("User not available yet, please try again"));
       return;
     }
     setUploadStatus("uploading");
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", file as Blob);
     try {
       setUploadStatus("processing");
       const response = await fetch(
         toFetch.getFullPath(`general-data/files/upload/${userEmail}`),
         { method: "POST", body: formData }
       );
-      const res = await response.json();
-      onSuccess(res);
+      const res = (await response.json()) as UploadApiResponse;
+      onSuccess?.(res);
     } catch (e) {
       setUploadStatus("error");
-      onError(e);
+      onError?.(e as Error);
     }
   };
 
-  const uploadProps = {
+  const uploadProps: UploadProps = {
     name: "file",
     customRequest,
     showUploadList: false,
     onChange(info) {
       if (info.file.status === "done") {
-        const res = info.file.response;
+        const res = info.file.response as UploadApiResponse | undefined;
         if (!res?.ok) {
           setUploadStatus("error");
           if (res?.versionMismatch) {
@@ -137,32 +210,39 @@ function ReadFileComp({}) {
         setUploadStatus("done");
         const created = res.data?.length ?? 0;
         runNotify("ok", `${created} transactions have been processed and created from the file 😎`);
-        if (created > 0) {
+        if (created > 0 && res.data) {
           reduxDispatch(addNewTransacctions(res.data));
-          fetchSuggestionsFor(res.data.filter((t) => !t.category && !t.subCategory).map((t) => t._id));
+          fetchSuggestionsFor(
+            res.data
+              .filter((t) => !t.category && !t.subCategory)
+              .map((t) => t._id as string)
+          );
         }
         setUploadResult({ count: created });
         setTimeout(() => setUploadStatus("idle"), 3000);
       } else if (info.file.status === "error") {
         setUploadStatus("error");
-        const errMsg = info.file.response?.message || info.file.error?.message || "The file couldn't be processed, please try again 🤕";
+        const errMsg =
+          (info.file.response as UploadApiResponse | undefined)?.message ||
+          info.file.error?.message ||
+          "The file couldn't be processed, please try again 🤕";
         runNotify("error", errMsg);
         setTimeout(() => setUploadStatus("idle"), 3000);
       }
     },
   };
 
-  const dedupRequest = async ({ file, onSuccess, onError }) => {
+  const dedupRequest: NonNullable<UploadProps["customRequest"]> = async ({ file, onSuccess, onError }) => {
     const userEmail = ccUser.mail || email;
     if (!userEmail) {
-      onError(new Error("User not available yet, please try again"));
+      onError?.(new Error("User not available yet, please try again"));
       return;
     }
     setDedupLoading(true);
     setDedupResult(null);
     setDedupPreview(null);
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", file as Blob);
     formData.append("deleteAll", dedupDeleteAll ? "true" : "false");
     formData.append("preview", "true");
     try {
@@ -170,22 +250,22 @@ function ReadFileComp({}) {
         toFetch.getFullPath(`general-data/files/deduplicate/${userEmail}`),
         { method: "POST", body: formData }
       );
-      const res = await response.json();
-      onSuccess(res);
+      const res = (await response.json()) as DedupPreviewData;
+      onSuccess?.(res);
     } catch (e) {
-      onError(e);
+      onError?.(e as Error);
     } finally {
       setDedupLoading(false);
     }
   };
 
-  const dedupProps = {
+  const dedupProps: UploadProps = {
     name: "file",
     customRequest: dedupRequest,
     showUploadList: false,
     onChange(info) {
       if (info.file.status === "done") {
-        const res = info.file.response;
+        const res = info.file.response as DedupPreviewData | undefined;
         if (!res?.ok) {
           runNotify("error", res?.message || "Could not process deduplication 🤕");
           return;
@@ -199,22 +279,24 @@ function ReadFileComp({}) {
     },
   };
 
-  const handleDedupConfirm = async (idsToDelete) => {
+  const handleDedupConfirm = async (idsToDelete: string[]): Promise<void> => {
     if (!idsToDelete?.length) {
       setDedupPreview(null);
       return;
     }
     setDedupConfirming(true);
     try {
-      const res = await toFetch.post("general-data/transactions/remove-many", { manyTrans: idsToDelete });
+      const res = (await toFetch.post("general-data/transactions/remove-many", { manyTrans: idsToDelete })) as
+        | { ok?: boolean; message?: string }
+        | undefined;
       if (res?.ok !== false) {
         reduxDispatch(removeManyTransactions(idsToDelete));
-        setDedupResult({ removed: idsToDelete.length, scanned: dedupPreview.scanned });
+        setDedupResult({ removed: idsToDelete.length, scanned: dedupPreview?.scanned });
         runNotify("ok", `Removed ${idsToDelete.length} duplicate transaction(s) 🧹`);
       } else {
         runNotify("error", res?.message || "Could not delete transactions 🤕");
       }
-    } catch (e) {
+    } catch {
       runNotify("error", "Could not delete transactions 🤕");
     } finally {
       setDedupConfirming(false);
@@ -222,32 +304,36 @@ function ReadFileComp({}) {
     }
   };
 
-  const fetchSuggestionsFor = async (transactionIds) => {
+  const fetchSuggestionsFor = async (transactionIds: string[]): Promise<void> => {
     if (!transactionIds?.length) return;
     const userEmail = ccUser.mail || email;
     try {
-      const res = await toFetch.post("general-data/category-rules/suggest", {
+      const res = (await toFetch.post("general-data/category-rules/suggest", {
         mail: userEmail,
         transactionIds,
-      });
-      if (res.ok && res.data?.length > 0) setSuggestions(res.data);
-    } catch (e) {
+      })) as { ok?: boolean; data?: CategorySuggestionItem[] };
+      if (res.ok && res.data && res.data.length > 0) setSuggestions(res.data);
+    } catch {
       // suggestions are a nice-to-have, never block the upload flow on failure
     }
   };
 
-  const handleApplySuggestions = async (applications) => {
+  const handleApplySuggestions = async (applications: SuggestionApplication[]): Promise<boolean> => {
     setSuggestionsApplying(true);
     try {
-      const res = await toFetch.post("general-data/category-rules/apply-suggestions", { applications });
-      if (res.ok) {
+      const res = (await toFetch.post("general-data/category-rules/apply-suggestions", { applications })) as {
+        ok?: boolean;
+        data?: TransactionData[];
+        message?: string;
+      };
+      if (res.ok && res.data) {
         reduxDispatch(updateManyTransactions(res.data));
         runNotify("ok", `${res.data.length} transaction(s) categorized 🏷️`);
         return true;
       }
       runNotify("error", res?.message || "Could not apply suggestions 🤕");
       return false;
-    } catch (e) {
+    } catch {
       runNotify("error", "Could not apply suggestions 🤕");
       return false;
     } finally {
@@ -408,7 +494,7 @@ function ReadFileComp({}) {
       </div>
 
       {dedupPreview && (
-        <DedupPreviewModal
+        <TypedDedupPreviewModal
           preview={dedupPreview}
           deleteAll={dedupDeleteAll}
           onConfirm={handleDedupConfirm}
@@ -418,7 +504,7 @@ function ReadFileComp({}) {
       )}
 
       {suggestions && (
-        <CategorySuggestionsModal
+        <TypedCategorySuggestionsModal
           suggestions={suggestions}
           onConfirm={handleApplySuggestions}
           onCancel={() => setSuggestions(null)}

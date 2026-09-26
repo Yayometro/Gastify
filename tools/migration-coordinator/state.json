@@ -2315,8 +2315,23 @@
           ]
         },
         "src/components/multiUsedComp/ReadFileComp.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-25T23:57:51.324Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:00:08.476Z",
+              "event": "submitted",
+              "notes": "Migración de src/components/multiUsedComp/ReadFileComp.jsx a TypeScript (src/components/multiUsedComp/ReadFileComp.tsx).\n\n1. Tipado e interfaces agregadas:\n- Se definieron los tipos de estado y configuración: `UploadStatusKey` ('idle' | 'uploading' | 'processing' | 'done' | 'error'), `StatusBadgeInfo`, `DedupResult`, `DedupPreviewData`, `UploadResult`, `CategorySuggestionItem`, `SuggestionApplication` y `UploadApiResponse`.\n- Se tiparon las props del componente exportado `ReadFileCompProps` (`Record<string, never>`).\n- Se definieron typed bridges para los subcomponentes JSX no migrados (`TypedDedupPreviewModal` y `TypedCategorySuggestionsModal`).\n- Se tipó el hook de Redux `useDispatch<AppDispatch>()`, el selector de `userReducer.data`, y las propiedades de Ant Design `UploadProps` (incluyendo `customRequest` y `onChange`).\n\n2. Preservación estricta de lógica y comportamiento en tiempo de ejecución:\n- Cero alteraciones en la lógica de descarga de template (`handleDownloadTemplate`), subida de archivos (`customRequest`), deduplicación (`dedupRequest`, `handleDedupConfirm`), y sugerencias de categorías (`fetchSuggestionsFor`, `handleApplySuggestions`).\n- Se preservaron intactos los operadores lógicos `||`, valores de fallback, timeouts, notificaciones `runNotify` con sus emojis y strings exactos.\n\n3. Bug preexistente detectado y preservado:\n- En `useEffect`, la condición original verifica `if (ccUser.status == \"idle\")`, pero `ccUser` se obtiene de `useSelector(state => state.userReducer.data)` en vez de `state.userReducer`, por lo que en runtime `ccUser.status` es `undefined` y la condición no se cumple desde aquí. Se preservó el comportamiento original tipando `ccUser` como `UserData & { status?: string }` sin modificar la lógica ni la suscripción.\n\n4. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/components/multiUsedComp/ReadFileComp.tsx`: 0 errores, 0 warnings.\n- `npx vitest run`: 25 suites pasadas, 281/281 tests pasados."
+            },
+            {
+              "ts": "2026-09-26T00:01:25.024Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. Bug real preexistente confirmado y bien preservado: `useSelector(state => state.userReducer.data)` da un UserData plano, no el slice `{data,status,error}`, asi que `ccUser.status` siempre es undefined y el `if (ccUser.status == \"idle\")` nunca dispara `fetchUser` desde este componente (dead code, no manifiesta problema real porque MovementsClient siempre lo dispara). Preservado con cast, no arreglado. El guard `created > 0 && res.data` es matematicamente redundante (`created = res.data?.length ?? 0`, o sea created>0 implica res.data truthy siempre) - puro narrowing de TS. El guard `res.ok && res.data` en handleApplySuggestions solo cambia el mensaje de error mostrado en un caso pato-logico de respuesta malformada del backend (ok:true sin data) que no ocurre con la implementacion real de la ruta. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/CategorySuggestions/CategorySuggestionsSection.jsx": {
           "status": "pending",
