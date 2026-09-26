@@ -254,6 +254,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 22 | `general-data/budget/remove` (POST) | Cero verificación de sesión - se podía archivar el presupuesto de cualquier usuario y desvincular las transacciones de sus proyectos. | `414893b` | Crítica |
 | 23 | `general-data/transactions/[id]` (POST update) | Cero verificación de sesión - `Transaction.findById(params.id)` a secas permitía editar cualquier transacción (dinero real) de cualquier usuario si se conocía/adivinaba el id. | `2a3e538` | Crítica |
 | 24 | `general-data/transactions/edit-many` (POST) | Cero verificación de sesión - permitía editar en bloque cualquier transacción por id, e incluso reasignarlas a la cuenta de OTRO usuario (`Account.findById` sin acotar). | `38a7f9e` | Crítica |
+| 25 | `general-data/transactions/get-all` (POST) | Cero verificación de sesión - `const userMail = await request.json()` a secas exponía el perfil completo + todas las transacciones/categorías/subcategorías/cuentas de cualquier email, autenticado o no. | `0b29d8d` | Crítica |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
