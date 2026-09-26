@@ -259,6 +259,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 27 | `general-data/transactions/new-transaction` (POST) | Cero verificación de sesión - el `user`/`wallet` del body se pasaban tal cual a `createTransaction`, permitiendo forjar transacciones atribuidas a cualquier usuario/wallet. | `cbc48d2` | Crítica |
 | 28 | `general-data/transactions/remove-many` (POST) | Cero verificación de sesión - `Transaction.deleteMany({_id:{$in:manyTrans}})` a secas permitía a cualquiera (autenticado o no) borrar en bloque transacciones de cualquier usuario del sistema. Probablemente el bug más severo encontrado en toda la migración. | `1f408d2` | Crítica |
 | 29 | `general-data/transactions/remove-transaction/[id]` (POST) | Cero verificación de sesión - `Transaction.findByIdAndDelete(params.id)` a secas permitía borrar cualquier transacción de cualquier usuario por id. | `2f96af3` | Crítica |
+| 30 | `general-data/transactions/speech-add` (POST) | Cero verificación de sesión - `User.findById(transObj.user)` confiaba en el id de usuario mandado por el cliente, permitiendo crear transacciones de voz en la cuenta de cualquier usuario. | `8a3f0ea` | Alta |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
