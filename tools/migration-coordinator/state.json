@@ -2477,8 +2477,23 @@
           ]
         },
         "src/app/api/general-data/transactions/get-all/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:28:44.717Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:31:07.482Z",
+              "event": "submitted",
+              "notes": "Migrated src/app/api/general-data/transactions/get-all/route.js to .ts with security fix (IDOR route #25): the route originally had zero session verification and trusted whatever userMail was passed in the request body, returning the entire dataset (user profile, all transactions populated 5 levels deep, categories, default categories, subcategories with fatherCategory populated, and accounts) for any arbitrary user without authentication or authorization. Applied security fix: added auth.api.getSession({ headers: request.headers }), verified session existence, and derived user via User.findOne({ mail: sesion.user.email }). Added TransactionsGetAllData, TransactionsGetAllSuccessResponse, and TransactionsGetAllResponse DTO types. Typed POST(request: NextRequest | Request): Promise<NextResponse<TransactionsGetAllResponse>>. Preserved exact original response schema, object keys (transaction singular, defCat), message ('Categories and SubCategories founded'), status 201, and population chains. Tag and Budget converted to bare side-effect imports for Mongoose registration. Verified with npx tsc --noEmit (0 errors), npx eslint (0 errors/warnings), and npx vitest run (285/285 tests passing)."
+            },
+            {
+              "ts": "2026-09-26T00:31:50.434Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #25, el patron clasico ya visto en historias anteriores): antes `const userMail = await request.json()` a secas, sin ninguna verificacion, exponia el perfil completo + todas las transacciones/categorias/subcategorias/cuentas de CUALQUIER email, autenticado o no. Ahora deriva todo de `auth.api.getSession` + `User.findOne({mail: sesion.user.email})`. El bug preexistente `throw new Error({...})` (objeto en vez de string, ya trackeado en la tabla de bugs pendientes) se preservo igual con un cast, no se arreglo. `Tag`/`Budget` como imports de efecto secundario, sin uso directo, correcto para populate(). No hay route.test.js para este archivo. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 285/285. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/link-budget/route.js": {
           "status": "pending",

@@ -1,29 +1,61 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Transaction from "@/model/Transaction";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import User from "@/model/User";
 import Account from "@/model/Account";
-import Tag from "@/model/Tag";
-import Budget from "@/model/Budget";
+import "@/model/Tag";
+import "@/model/Budget";
+import { auth } from "@/lib/auth/betterAuth";
 
-export async function POST(request) {
+export interface TransactionsGetAllData {
+  user: unknown;
+  transaction: unknown;
+  categories: unknown;
+  defCat: unknown;
+  subCategories: unknown;
+  accounts: unknown;
+}
+
+export interface TransactionsGetAllSuccessResponse {
+  data: TransactionsGetAllData;
+  message: string;
+  status: number;
+  ok: boolean;
+}
+
+export type TransactionsGetAllResponse = TransactionsGetAllSuccessResponse;
+
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<TransactionsGetAllResponse>> {
   try {
     if (!request)
       throw new Error("No request received from get-all in Transactions");
-    const userMail = await request.json();
+
+    // Security fix: this route previously lacked session verification and trusted
+    // whatever userMail was sent in the request body (IDOR), returning another user's
+    // entire transactions, categories, subcategories, accounts, and user profile data.
+    // We now verify auth.api.getSession, resolve the session user, and scope all
+    // database lookups to that authenticated user and wallet.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
+
     //DB
     await dbConnection();
     // User find
-    const userFound = await User.findOne({ mail: userMail }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error({
-        error: "User not found, review the email provided in GENERAL-DATA POST",
-      });
+      throw new Error(
+        {
+          error: "User not found, review the email provided in GENERAL-DATA POST",
+        } as unknown as string
+      );
     const userId = userFound._id;
     const walletId = userFound.wallet;
-    userFound.password = null;
+    (userFound as { password?: unknown }).password = null;
+
     //FIND TRANSACTIONS
     const movementsFounded = await Transaction.find({
       user: userId,
@@ -48,6 +80,7 @@ export async function POST(request) {
       throw new Error(
         "No movements found, review the user and wallet id on get-all/transactions in POST"
       );
+
     //FIND CATEGORIES
     const categoriesFounded = await Category.find({
       user: userId,
@@ -57,6 +90,7 @@ export async function POST(request) {
       throw new Error(
         "No categories found, review the user and wallet id on GENERAL-DATA POST"
       );
+
     //FIND DEFUALT CATEGORIES
     const defaultCategoriesFounded = await Category.find({
       isDefaultCatego: true,
@@ -65,7 +99,7 @@ export async function POST(request) {
       throw new Error(
         "No default categories found, review the user and wallet id on GENERAL-DATA POST"
       );
-    // console.log(categoriesFounded)
+
     //FIND SUB CATEGORIES
     const subCategoriesFounded = await SubCategory.find({
       user: userId,
@@ -79,16 +113,17 @@ export async function POST(request) {
       throw new Error(
         "No SubCategories found, review the user and wallet id on GENERAL-DATA POST"
       );
+
     // ACCOUNTS
-      const accountsFounded = await Account.find({
-        user: userId,
-        wallet: walletId,
-      })
-      if (!accountsFounded)
+    const accountsFounded = await Account.find({
+      user: userId,
+      wallet: walletId,
+    });
+    if (!accountsFounded)
       throw new Error(
         "No Accounts found, review the user and wallet id on GENERAL-DATA POST"
       );
-    // console.log(subCategoriesFounded)
+
     const dataFull = {
       user: userFound,
       transaction: movementsFounded,
@@ -104,7 +139,7 @@ export async function POST(request) {
       ok: true,
     });
   } catch (e) {
-    console.log(e)
-    throw new Error(e);
+    console.log(e);
+    throw new Error(e as unknown as string);
   }
 }
