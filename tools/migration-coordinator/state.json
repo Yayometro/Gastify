@@ -2610,8 +2610,23 @@
           ]
         },
         "src/app/api/general-data/transactions/transfer/remove/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T03:01:57.821Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T03:03:22.164Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`route.ts`). Se definió el schema Zod `removeTransferSchema` y el tipo derivado `RemoveTransferRequestBody`, junto con las interfaces `RemoveTransferSuccessResponse`, `RemoveTransferErrorResponse` y `RemoveTransferResponse`. Retorno tipado con `NextResponse<RemoveTransferResponse>` en todas las ramas. FIX DE SEGURIDAD APLICADO: la ruta carecía de autenticación de sesión y permitía borrar transferencias por `transferGroupId` sin validar ownership (IDOR). Se agregó verificación de sesión con `auth.api.getSession`, consulta de usuario con `User.findOne({ mail: sesion.user.email })`, y se acotaron tanto `Transaction.find` como `Transaction.deleteMany` al `wallet: userFound.wallet`. Se actualizó el test hermano `route.test.js` para cubrir los casos de sesión/wallet. Validado con `npx tsc --noEmit`, `npx eslint` y `npx vitest run` (314 tests pasando)."
+            },
+            {
+              "ts": "2026-09-26T03:04:05.520Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #32, ultima de Historia 8): antes `Transaction.find/deleteMany({transferGroupId})` a secas, cero verificacion, permitia borrar las piernas de cualquier transferencia de cualquier usuario conociendo/adivinando el transferGroupId. Ahora ambos queries (find y deleteMany) acotados a `wallet: userFound.wallet`. Test actualizado con 2 casos nuevos (sin sesion, usuario no encontrado) y los 2 existentes actualizados para verificar el scoping. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314 (29 suites). Aprobado. Historia 8 completa: 25/25."
+            }
+          ]
         }
       }
     }
