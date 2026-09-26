@@ -1,6 +1,15 @@
-import mongoose, {Schema, model} from 'mongoose'
+import mongoose, {Schema} from 'mongoose'
 
-const tagSchema = new Schema({
+export interface ITag extends mongoose.Document {
+    name?: string;
+    color?: string;
+    user?: mongoose.Types.ObjectId | string;
+    wallet?: mongoose.Types.ObjectId | string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const tagSchema = new Schema<ITag>({
     name: {type: String},
     color: {type: String},
     user: {
@@ -17,7 +26,7 @@ const tagSchema = new Schema({
 }, {timestamps: true})
 
 
-const Tag = mongoose.models.Tag || mongoose.model('Tag', tagSchema); 
+const Tag: mongoose.Model<ITag> = mongoose.models.Tag || mongoose.model<ITag>('Tag', tagSchema); 
 
 export default Tag 
 //When a user is created, there's automaticly created:

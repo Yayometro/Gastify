@@ -2410,8 +2410,23 @@
           ]
         },
         "src/model/Tag.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:14:21.708Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:15:20.048Z",
+              "event": "submitted",
+              "notes": "Migrado `src/model/Tag.js` a `src/model/Tag.ts`.\n\n1. Tipado e interfaces:\n- Se definió `export interface ITag extends mongoose.Document` con los campos reales del schema:\n  - `name?: string;`\n  - `color?: string;`\n  - `user?: mongoose.Types.ObjectId | string;`\n  - `wallet?: mongoose.Types.ObjectId | string;`\n  - `createdAt: Date;`\n  - `updatedAt: Date;`\n- Se tipó el schema: `const tagSchema = new Schema<ITag>({ ... }, {timestamps: true})`.\n- Se preservó exactamente el patrón de inicialización y reutilización del modelo Mongoose:\n  `const Tag: mongoose.Model<ITag> = mongoose.models.Tag || mongoose.model<ITag>('Tag', tagSchema);`\n- Se removió el import no utilizado `{model}` de `'mongoose'` manteniendo `{Schema}` para evitar lints de `@typescript-eslint/no-unused-vars`.\n\n2. Preservación de comportamiento:\n- Cero cambios en la estructura del schema ni en lógica de runtime.\n- Se mantuvo el `require: true` preexistente en `user` y `wallet` sin alterar comportamiento.\n- Se preservaron los comentarios informativos al final del archivo.\n- No se utilizó `any` ni directivas `@ts-ignore`.\n- No se tocó ningún otro archivo del repositorio.\n\n3. Verificaciones realizadas:\n- `npx eslint src/model/Tag.ts`: 0 errores, 0 warnings (código de salida 0).\n- `npx tsc --noEmit`: 0 errores de compilación (código de salida 0).\n- `npx vitest run`: 25/25 suites pasando (281/281 tests exitosos).\n- NO se ejecutó `npm run build` para proteger el servidor de desarrollo activo."
+            },
+            {
+              "ts": "2026-09-26T00:15:46.339Z",
+              "event": "approved",
+              "notes": "Migracion de modelo byte-identica salvo tipos: ITag, patron de export estandar preservado, typo preexistente `require` en user/wallet preservado, import `model` sin usar removido, comentarios de pie preservados. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/[id]/route.js": {
           "status": "pending",
