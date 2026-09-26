@@ -2496,8 +2496,23 @@
           ]
         },
         "src/app/api/general-data/transactions/link-budget/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:32:56.018Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:34:41.906Z",
+              "event": "submitted",
+              "notes": "Migración de `src/app/api/general-data/transactions/link-budget/route.js` a `.ts`:\n\n1. Tipado completo y validación Zod:\n- Se definió el esquema de validación `linkBudgetSchema` con Zod (`transactionId`, `budgetId` opcional/nullable) y se derivó el tipo `LinkBudgetRequestBody`.\n- Se definieron los tipos de respuesta `LinkBudgetSuccessResponse` y `LinkBudgetResponse`.\n- El handler `POST` retorna `Promise<NextResponse<LinkBudgetResponse>>`.\n\n2. Auditoría y Corrección de Seguridad (IDOR / Cero Sesión):\n- La ruta original NO verificaba la sesión y ejecutaba `Transaction.findById(transactionId)` directamente, permitiendo vincular/desvincular transacciones de otros usuarios a presupuestos sin verificación de ownership.\n- Se aplicó el fix de seguridad: autenticación de sesión con `auth.api.getSession({ headers: request.headers })`, resolución del usuario autenticado vía `User.findOne({ mail: sesion.user.email }).lean()`, y acotación de la búsqueda de la transacción a `wallet: userFound.wallet`. La búsqueda del presupuesto objetivo también se valida contra el usuario y wallet.\n\n3. Pruebas y verificación:\n- Se creó la suite de pruebas unitarias `route.test.js` cubriendo:\n  * Rechazo cuando no se envía `transactionId`.\n  * Rechazo cuando no hay sesión (`No session`).\n  * Acotación del lookup de transacción al `wallet` de la sesión.\n  * Vinculación exitosa a presupuesto de proyecto (`budgetType: \"project\"`) y población de relaciones.\n  * Desvinculación de presupuesto cuando `budgetId` es falsy/null.\n  * Error cuando el presupuesto no existe o no es de tipo proyecto.\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint` sobre `route.ts` y `route.test.js`: 0 errores, 0 warnings.\n- `npx vitest run`: 26 test suites pasadas (291 tests totales exitosos).\n- No se corrió `npm run build` y se preservó estrictamente la lógica de negocio."
+            },
+            {
+              "ts": "2026-09-26T00:35:28.108Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #26): antes `Transaction.findById(transactionId)` sin ninguna verificacion de sesion permitia a cualquiera vincular/desvincular movimientos ajenos de/a proyectos por id. Ahora `auth.api.getSession` + `User.findOne` + `Transaction.findOne({_id, wallet: userFound.wallet})`. El Budget lookup ya estaba bien acotado (user/wallet de la transaccion), se preservo igual. Test file nuevo (no existia antes) bien construido: 6 casos cubriendo falta de transactionId, falta de sesion, scoping por wallet, link exitoso, unlink, y presupuesto invalido/no-project. Tag/Account/Category/SubCategory como imports de efecto secundario, correcto. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 291/291 (26 suites, +1 archivo nuevo de test). Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/new-transaction/route.js": {
           "status": "pending",
