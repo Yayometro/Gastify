@@ -253,6 +253,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 21 | `general-data/budget/update` (POST) | Cero verificación de sesión - se podía editar el presupuesto de cualquier usuario dando su id. | `414893b` | Alta |
 | 22 | `general-data/budget/remove` (POST) | Cero verificación de sesión - se podía archivar el presupuesto de cualquier usuario y desvincular las transacciones de sus proyectos. | `414893b` | Crítica |
 | 23 | `general-data/transactions/[id]` (POST update) | Cero verificación de sesión - `Transaction.findById(params.id)` a secas permitía editar cualquier transacción (dinero real) de cualquier usuario si se conocía/adivinaba el id. | `2a3e538` | Crítica |
+| 24 | `general-data/transactions/edit-many` (POST) | Cero verificación de sesión - permitía editar en bloque cualquier transacción por id, e incluso reasignarlas a la cuenta de OTRO usuario (`Account.findById` sin acotar). | `38a7f9e` | Crítica |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
@@ -441,6 +442,7 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 11 | `EditSingleTransModal.tsx` | Un `<Space direction="" size={12}>` (string vacío, prop inválida) hace que Antd nunca aplique su clase real `ant-space-horizontal` ni el `align: center` automático - el default `direction = 'horizontal'` de Antd solo aplica cuando la prop es `undefined`, no `""`. Se dispara siempre que se renderiza ese bloque (no es un edge case). agy lo "arregló" solo cambiándolo a `direction="horizontal"`; se revirtió en rework a `direction={"" as "horizontal"}` para preservar el bug visual exacto. | Historia 8 |
 | 12 | `EditMultipleTransModal.tsx` | El `<option value="">No account</option>` no coincide con el check `e.target.value === "No account"` de `handleDefAccount` (nunca es igual), así que seleccionar "No account" guarda `account: ""` en vez de `null` - el editor masivo nunca puede desvincular la cuenta de varias transacciones a la vez. | Historia 8 |
 | 13 | `ReadFileComp.tsx` | `useSelector(state => state.userReducer.data)` da el `UserData` plano, no el slice `{data, status, error}`, así que `ccUser.status` siempre es `undefined` y el `if (ccUser.status == "idle")` nunca dispara `fetchUser` desde este componente (código muerto - no causa problema visible porque `MovementsClient` ya lo dispara por su cuenta). | Historia 8 |
+| 14 | `transactions/edit-many/route.ts` | Los tags nuevos creados durante un bulk-edit se guardan sin campo `wallet` (`Tag.create({name, user})`, sin `wallet`) - inconsistente con `transactions/[id]/route.ts`, que sí le pone `wallet` a los tags nuevos. Como el schema de `Tag` tiene el mismo typo `require` (no `required`) que otros modelos, Mongoose no lo rechaza. | Historia 8 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
