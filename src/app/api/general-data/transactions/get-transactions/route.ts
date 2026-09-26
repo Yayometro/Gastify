@@ -9,6 +9,7 @@ import "@/model/Account";
 import "@/model/Tag";
 import "@/model/Budget";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
+import { auth } from "@/lib/auth/betterAuth";
 
 export interface GetTransactionsSuccessResponse {
   data: unknown;
@@ -25,11 +26,18 @@ export async function POST(
   try {
     if (!request)
       throw new Error("No request received from get-all in Transactions");
-    const userMail = await request.json();
+
+    // Security fix: this route previously lacked session verification and trusted
+    // whatever userMail was sent in the request body (IDOR), returning another
+    // user's entire transaction history. We now verify auth.api.getSession and
+    // resolve the user from the session instead.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
+
     //DB
     await dbConnection();
     // User find
-    const userFound = await User.findOne({ mail: userMail }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
       throw new Error(
         {
