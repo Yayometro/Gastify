@@ -27,7 +27,7 @@ userMail})` - el mismo patrón exacto volvió a aparecer en
 al revisar lo que falta). Es muy probable que haya más entre las rutas de
 `transactions/*` que aún faltan y en el resto de grupos pendientes.
 
-## Los 30 ya confirmados y corregidos (no hace falta re-revisarlos)
+## Los 31 ya confirmados y corregidos (no hace falta re-revisarlos)
 
 | Ruta | Problema | Commit |
 |------|----------|--------|
@@ -64,6 +64,7 @@ al revisar lo que falta). Es muy probable que haya más entre las rutas de
 | `general-data/transactions/remove-many` (POST) | Cero sesión (el más crítico) - `Transaction.deleteMany({_id:{$in:...}})` a secas permitía borrar en bloque transacciones de cualquier usuario | `1f408d2` |
 | `general-data/transactions/remove-transaction/[id]` (POST) | Cero sesión - `Transaction.findByIdAndDelete(params.id)` a secas permitía borrar cualquier transacción por id | `2f96af3` |
 | `general-data/transactions/speech-add` (POST) | Cero sesión - `User.findById(transObj.user)` confiaba en el id de usuario mandado por el cliente | `8a3f0ea` |
+| `general-data/transactions/transfer` (POST) | Cero sesión - los checks de ownership de cuenta comparaban contra el `user`/`wallet` mandado por el cliente, no verificado | `4021669` |
 
 ## Metodología sugerida para la auditoría completa
 
@@ -130,6 +131,7 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - `general-data/transactions/remove-many` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/remove-transaction/[id]` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/speech-add` (POST) - arreglada durante Historia 8 de la migración TS
+- `general-data/transactions/transfer` (POST) - arreglada durante Historia 8 de la migración TS
 
 ### Probablemente OK sin `getSession()` propio (confirmar de todas formas)
 - `auth/[...all]/route.ts` - el catch-all de Better Auth, maneja su propia auth internamente.
@@ -180,7 +182,7 @@ que usa `Movements.jsx`, no este árbol)
 - [x] `general-data/transactions/remove-many` - arreglada (ver tabla de arriba, commit `1f408d2`)
 - [x] `general-data/transactions/remove-transaction/[id]` - arreglada (ver tabla de arriba, commit `2f96af3`)
 - [x] `general-data/transactions/speech-add` - arreglada (ver tabla de arriba, commit `8a3f0ea`)
-- [ ] `general-data/transactions/transfer`
+- [x] `general-data/transactions/transfer` - arreglada (ver tabla de arriba, commit `4021669`)
 - [ ] `general-data/transactions/transfer/remove`
 
 **User**
