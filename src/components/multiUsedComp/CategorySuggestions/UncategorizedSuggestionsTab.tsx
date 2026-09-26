@@ -1,17 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import SuggestionsList from "@/components/multiUsedComp/CategorySuggestions/SuggestionsList";
+import SuggestionsList, {
+  type CategorySuggestionEntry,
+  type CategorySuggestionApplication,
+} from "@/components/multiUsedComp/CategorySuggestions/SuggestionsList";
 
 // Reviews suggestions for ALL of a wallet's already-existing uncategorized
 // transactions (not just ones from a fresh Excel upload) - fetches on mount.
-function UncategorizedSuggestionsTab({ mail, onApplied }) {
-  const [loading, setLoading] = useState(true);
-  const [suggestions, setSuggestions] = useState([]);
-  const [applying, setApplying] = useState(false);
+
+export interface UncategorizedSuggestionsTabProps {
+  mail?: string | null;
+  onApplied?: (data?: unknown[]) => void;
+}
+
+interface SuggestApiResponse {
+  ok?: boolean;
+  data?: CategorySuggestionEntry[];
+  message?: string;
+  [key: string]: unknown;
+}
+
+interface ApplyApiResponse {
+  ok?: boolean;
+  data?: unknown[];
+  message?: string;
+  [key: string]: unknown;
+}
+
+function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestionsTabProps): React.JSX.Element {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [suggestions, setSuggestions] = useState<CategorySuggestionEntry[]>([]);
+  const [applying, setApplying] = useState<boolean>(false);
   const toFetch = fetcher();
 
   useEffect(() => {
@@ -19,7 +42,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }) {
     setLoading(true);
     toFetch
       .post("general-data/category-rules/suggest", { mail })
-      .then((res) => {
+      .then((res: SuggestApiResponse) => {
         if (!cancelled && res.ok) setSuggestions(res.data || []);
       })
       .finally(() => {
@@ -31,12 +54,14 @@ function UncategorizedSuggestionsTab({ mail, onApplied }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mail]);
 
-  const handleApply = async (applications) => {
+  const handleApply = async (applications: CategorySuggestionApplication[]): Promise<boolean> => {
     setApplying(true);
     try {
-      const res = await toFetch.post("general-data/category-rules/apply-suggestions", { applications });
+      const res = (await toFetch.post("general-data/category-rules/apply-suggestions", {
+        applications,
+      })) as ApplyApiResponse;
       if (res.ok) {
-        runNotify("ok", `${res.data.length} transaction(s) categorized 🏷️`);
+        runNotify("ok", `${res.data?.length} transaction(s) categorized 🏷️`);
         const appliedIds = new Set(applications.map((a) => String(a.transactionId)));
         setSuggestions((prev) => prev.filter((s) => !appliedIds.has(String(s.transaction._id))));
         onApplied?.(res.data);
@@ -44,7 +69,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }) {
       }
       runNotify("error", res?.message || "Could not apply suggestions 🤕");
       return false;
-    } catch (e) {
+    } catch {
       runNotify("error", "Could not apply suggestions 🤕");
       return false;
     } finally {

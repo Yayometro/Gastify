@@ -2372,8 +2372,23 @@
           ]
         },
         "src/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:08:26.804Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:09:50.970Z",
+              "event": "submitted",
+              "notes": "Migrado `UncategorizedSuggestionsTab.jsx` a `UncategorizedSuggestionsTab.tsx`.\n- Se definieron y exportaron interfaces explícitas: `UncategorizedSuggestionsTabProps`, `SuggestApiResponse` y `ApplyApiResponse`.\n- Se importaron y reutilizaron los tipos `CategorySuggestionEntry` y `CategorySuggestionApplication` exportados por `SuggestionsList.tsx`.\n- Se tiparon explícitamente todos los estados locales (`useState<boolean>`, `useState<CategorySuggestionEntry[]>`), los parámetros del handler `handleApply` y el valor de retorno del componente (`React.JSX.Element`).\n- Se preservaron fielmente todos los operadores `||` (en `res.data || []` y `res?.message || ...`), la limpieza del efecto con flag de cancelación (`cancelled`), y la lógica de filtrado de transacciones aplicadas por ID (`appliedIds`).\n- Verificaciones ejecutadas:\n  1. `npx tsc --noEmit`: 0 errores.\n  2. `npx eslint src/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab.tsx`: 0 errores, 0 warnings.\n  3. `npx vitest run`: 281/281 tests pasando (25 test files).\n- No se corrió `npm run build` y no se tocó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-26T00:10:25.014Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. Reutiliza CategorySuggestionEntry/CategorySuggestionApplication de SuggestionsList.tsx. Unico detalle: `res.data.length` -> `res.data?.length` en el mensaje de exito - solo difiere en el caso patologico ok:true+data:undefined (no ocurre con la ruta real), mostraria \"undefined transaction(s)\" en vez de tirar throw/catch con mensaje generico - inerte en la practica. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/model/Transaction.js": {
           "status": "pending",
