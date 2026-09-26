@@ -2429,8 +2429,23 @@
           ]
         },
         "src/app/api/general-data/transactions/[id]/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:16:32.776Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:19:36.077Z",
+              "event": "submitted",
+              "notes": "Migrated src/app/api/general-data/transactions/[id]/route.js to route.ts. Defined updateTransactionSchema with Zod and derived UpdateTransactionRequestBody with z.infer<>. Typed context/params, request, and responses. Preserved pre-existing typo 'Transacion' in response message. SECURITY AUDIT FIX APPLIED: The route previously lacked authentication/session verification and looked up the transaction by ID directly (IDOR vulnerability). Added session verification via auth.api.getSession({ headers: request.headers }), retrieved user with User.findOne({ mail: sesion.user.email }), and scoped the transaction lookup to { _id: id, wallet: userFound.wallet }. Updated sibling route.test.js with session mocks and added 2 security tests. tsc --noEmit: 0 errors; eslint: 0 errors; vitest: 13/13 passing (283/283 suite passing)."
+            },
+            {
+              "ts": "2026-09-26T00:21:10.452Z",
+              "event": "approved",
+              "notes": "Fix de seguridad IDOR confirmado correcto (ruta #23): antes cero verificacion de sesion + `Transaction.findById(params.id)` a secas (cualquiera podia editar transacciones ajenas por id), ahora `auth.api.getSession` + `User.findOne` + `Transaction.findOne({_id: id, wallet: userFound.wallet})`. Test file actualizado consistentemente en todos los `Transaction.findById`->`findOne` y con 2 tests nuevos de auth/scoping, verificados pasando (283/283, +2 vs los 281 previos).\n\nDos cambios NO forzados por el compilador pero verificados sin diferencia observable para el trafico real de la app:\n1. `amountProvided` ahora excluye `amount === null` (el schema zod inventado permite null, pero ningun frontend real de la app manda amount:null explicito - siempre manda un numero o string, o omite el campo).\n2. La comparacion `findTrans.subCategory !== subCategory` (ObjectId vs string, siempre true por tipos distintos - bug conceptual preexistente que forzaba una relectura/reasignacion innecesaria de subCategory incluso sin cambios) se corrigio a `String(...) !== String(...)`. El resultado final guardado en el caso \"sin cambios\" es identico en ambas versiones (mismo subCategory/category), solo evita una query de mas - cero diferencia visible para el usuario.\n\nResto del archivo (logica de conversion de moneda, presupuestos de proyecto, tags, preservacion de reporting) revisada y preservada identica, con zod schema + z.infer en vez de interface a mano (como pide la convencion del proyecto para rutas API), y `Category` como import de efecto secundario (confirmado sin uso directo en el original, solo para populate()). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 283/283. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/edit-many/route.js": {
           "status": "pending",

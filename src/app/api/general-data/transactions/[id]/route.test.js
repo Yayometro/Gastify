@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../../../dbConnection", () => ({ default: vi.fn() }));
-vi.mock("@/model/User", () => ({ default: {} }));
+vi.mock("@/app/api/dbConnection", () => ({ default: vi.fn() }));
+vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/Account", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/SubCategory", () => ({ default: { findById: vi.fn() } }));
@@ -10,18 +10,23 @@ vi.mock("@/model/Budget", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/Tag", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/lib/money/server/transactionMoneyService", () => ({ buildTransactionMoney: vi.fn() }));
 vi.mock("@/lib/money/server/fxRateService", () => ({ convert: vi.fn() }));
+vi.mock("@/lib/auth/betterAuth", () => ({
+  auth: { api: { getSession: vi.fn() } },
+}));
 
-vi.mock("@/model/Transaction", () => ({ default: { findById: vi.fn() } }));
+vi.mock("@/model/Transaction", () => ({ default: { findOne: vi.fn(), findById: vi.fn() } }));
 
 import Transaction from "@/model/Transaction";
 import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
+import User from "@/model/User";
+import { auth } from "@/lib/auth/betterAuth";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { convert } from "@/lib/money/server/fxRateService";
 import { POST } from "./route";
 
 function mockRequest(body) {
-  return { json: vi.fn().mockResolvedValue(body) };
+  return { json: vi.fn().mockResolvedValue(body), headers: new Headers() };
 }
 
 function chainablePopulate(result) {
@@ -57,6 +62,8 @@ function makeFindTrans(overrides = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.api.getSession.mockResolvedValue({ user: { email: "u1@example.com" } });
+  User.findOne.mockReturnValue({ lean: vi.fn().mockResolvedValue({ _id: "u1", wallet: "w1" }) });
   Wallet.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ primaryCurrency: "MXN" }) });
   buildTransactionMoney.mockResolvedValue({
     account: { amountMinor: 10000, currency: "MXN" },
@@ -65,10 +72,36 @@ beforeEach(() => {
   });
 });
 
+describe("update-transaction authentication and scoping", () => {
+  it("throws when no session exists", async () => {
+    auth.api.getSession.mockResolvedValueOnce(null);
+
+    await expect(
+      POST(mockRequest({ name: "New name" }), { params: { id: "t1" } })
+    ).rejects.toThrow(/No session/);
+
+    expect(Transaction.findOne).not.toHaveBeenCalled();
+  });
+
+  it("scopes transaction lookup to the session user's wallet", async () => {
+    const findTrans = makeFindTrans();
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
+
+    await POST(mockRequest({ name: "Updated Name" }), { params: { id: "t1" } });
+
+    expect(Transaction.findOne).toHaveBeenCalledWith({
+      _id: "t1",
+      wallet: "w1",
+    });
+  });
+});
+
 describe("update-transaction account currency-change strategy", () => {
   it("requires an explicit currencyStrategy when the new Account's currency differs", async () => {
     const findTrans = makeFindTrans();
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
     Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
 
     await expect(
@@ -80,7 +113,8 @@ describe("update-transaction account currency-change strategy", () => {
 
   it("'reinterpret' keeps the same number under the new currency", async () => {
     const findTrans = makeFindTrans();
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
     Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
 
     await POST(mockRequest({ account: "acc-usd", currencyStrategy: "reinterpret" }), { params: { id: "t1" } });
@@ -93,7 +127,8 @@ describe("update-transaction account currency-change strategy", () => {
 
   it("'convert' preserves economic value via a live FX quote", async () => {
     const findTrans = makeFindTrans();
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
     Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
     convert.mockResolvedValue({ available: true, amountMinor: 592, currency: "USD", rate: "0.0592" });
 
@@ -109,7 +144,8 @@ describe("update-transaction account currency-change strategy", () => {
 
   it("'manual' requires an explicit amount in the new currency", async () => {
     const findTrans = makeFindTrans();
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
     Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
 
     await expect(
@@ -119,7 +155,8 @@ describe("update-transaction account currency-change strategy", () => {
 
   it("throws (never fakes a rate) when convert is unavailable", async () => {
     const findTrans = makeFindTrans();
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
     Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
     convert.mockResolvedValue({ available: false });
 
@@ -130,7 +167,8 @@ describe("update-transaction account currency-change strategy", () => {
 
   it("does not require a strategy when the new Account has the same currency", async () => {
     const findTrans = makeFindTrans();
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
     Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "MXN" }) });
 
     await POST(mockRequest({ account: "acc-mxn-2" }), { params: { id: "t1" } });
@@ -149,7 +187,8 @@ describe("update-transaction preserves exact manual reporting", () => {
       },
       account: "acc-usd",
     });
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
 
     await POST(mockRequest({ name: "Renamed only" }), { params: { id: "t1" } });
 
@@ -167,7 +206,8 @@ describe("update-transaction preserves exact manual reporting", () => {
       },
       account: "acc-usd",
     });
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
 
     await POST(mockRequest({ amount: 40 }), { params: { id: "t1" } });
 
@@ -184,7 +224,8 @@ describe("update-transaction merchant field (Charged in another currency)", () =
         reporting: { amountMinor: 10000, currency: "MXN", rate: "1", source: "same_currency", effectiveDate: new Date("2026-08-01"), estimated: false },
       },
     });
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
 
     await POST(mockRequest({ name: "Renamed only" }), { params: { id: "t1" } });
 
@@ -199,7 +240,8 @@ describe("update-transaction merchant field (Charged in another currency)", () =
         reporting: { amountMinor: 10000, currency: "MXN", rate: "1", source: "same_currency", effectiveDate: new Date("2026-08-01"), estimated: false },
       },
     });
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
 
     await POST(mockRequest({ merchantAmount: null, merchantCurrency: null }), { params: { id: "t1" } });
 
@@ -214,7 +256,8 @@ describe("update-transaction merchant field (Charged in another currency)", () =
         reporting: { amountMinor: 10000, currency: "MXN", rate: "1", source: "manual", effectiveDate: new Date("2026-08-01"), estimated: false },
       },
     });
-    Transaction.findById.mockReturnValueOnce(findTrans).mockReturnValue(chainablePopulate({}));
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
 
     await POST(mockRequest({ merchantAmount: 50, merchantCurrency: "USD" }), { params: { id: "t1" } });
 
