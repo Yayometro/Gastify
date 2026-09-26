@@ -2572,8 +2572,23 @@
           ]
         },
         "src/app/api/general-data/transactions/speech-add/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T02:51:41.175Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T02:55:24.645Z",
+              "event": "submitted",
+              "notes": "Migrado src/app/api/general-data/transactions/speech-add/route.js a TypeScript (route.ts).\n- AUDITORÍA DE SEGURIDAD: La ruta carecía de autenticación de sesión y aceptaba ciegamente `transObj.user` del cuerpo de la petición (vulnerabilidad IDOR). Se aplicó el fix de seguridad agregando verificación con `auth.api.getSession({ headers: request.headers })`, derivación del usuario mediante `User.findOne({ mail: sesion.user.email })` y acotación de creación/búsqueda al wallet y usuario de la sesión autenticada.\n- Tipado: Se definió el schema Zod `speechAddSchema` y se derivó `SpeechAddRequestBody = z.infer<typeof speechAddSchema>`, además de tipar las respuestas con `SpeechAddResponse` y retorno de Next.js `Promise<NextResponse<SpeechAddResponse>>`.\n- Se preservaron exactamente los campos y comportamiento del documento `Transaction` original sin agregar propiedades no presentes.\n- Se agregó el suite de tests unitarios hermano `src/app/api/general-data/transactions/speech-add/route.test.js` validando rechazo por falta de sesión, derivación segura del usuario de sesión, parseo de voz (inglés y español) y cálculo monetario.\n- Verificación: `npx eslint` limpio (0 errores) y `npx vitest run` pasando al 100% (311 tests en el proyecto, incluyendo los 6 de speech-add y los 59 de transacciones)."
+            },
+            {
+              "ts": "2026-09-26T02:56:08.042Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #30): antes `User.findById(transObj.user)` confiaba en el id de usuario mandado por el cliente, permitiendo crear transacciones de voz en la cuenta de cualquier usuario. Ahora deriva de `auth.api.getSession` + `User.findOne({mail: sesion.user.email})`. Toda la logica de extraccion por regex (titulo, monto, fecha, hora, categoria, cuenta, ingles/español) preservada linea por linea, verificado contra el original. Test file nuevo excelente: no solo cubre el fix de seguridad (con un caso explicito de \"attacker-user-id\" ignorado) sino que ejercita de verdad el parseo de regex en ambos idiomas verificando valores extraidos reales (nombre, monto, isBill/isIncome). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 311/311 (29 suites). Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/transfer/route.js": {
           "status": "pending",
