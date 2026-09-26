@@ -257,6 +257,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 25 | `general-data/transactions/get-all` (POST) | Cero verificación de sesión - `const userMail = await request.json()` a secas exponía el perfil completo + todas las transacciones/categorías/subcategorías/cuentas de cualquier email, autenticado o no. | `0b29d8d` | Crítica |
 | 26 | `general-data/transactions/link-budget` (POST) | Cero verificación de sesión - `Transaction.findById(transactionId)` a secas permitía vincular/desvincular movimientos de cualquier usuario a/de proyectos por id. | `7f2972b` | Alta |
 | 27 | `general-data/transactions/new-transaction` (POST) | Cero verificación de sesión - el `user`/`wallet` del body se pasaban tal cual a `createTransaction`, permitiendo forjar transacciones atribuidas a cualquier usuario/wallet. | `cbc48d2` | Crítica |
+| 28 | `general-data/transactions/remove-many` (POST) | Cero verificación de sesión - `Transaction.deleteMany({_id:{$in:manyTrans}})` a secas permitía a cualquiera (autenticado o no) borrar en bloque transacciones de cualquier usuario del sistema. Probablemente el bug más severo encontrado en toda la migración. | `1f408d2` | Crítica |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
