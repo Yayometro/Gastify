@@ -16,17 +16,18 @@
 `middleware.ts` solo protege páginas (`matcher: ["/dashboard/:path*"]`) - las
 rutas de API NO están cubiertas por el middleware. Eso significa que un
 endpoint sin su propio `auth.api.getSession()` es alcanzable por cualquiera,
-autenticado o no, no solo por "el usuario equivocado". Se encontraron 22
+autenticado o no, no solo por "el usuario equivocado". Se encontraron 27
 instancias de esta familia de bug (IDOR o directamente cero autenticación)
 sin buscarlas deliberadamente - solo revisando de paso los archivos que la
 migración fue tocando (3 de ellas, `get-wallet`/`get-categories`/
 `get-sub-categories`, eran review misses de Historia 2, todas con la
 forma exacta `const userMail = await request.json(); User.findOne({mail:
-userMail})` - vale la pena tenerla en mente al revisar lo que falta). Es
-muy probable que haya más entre las ~38 rutas que todavía no se han
-revisado a fondo.
+userMail})` - el mismo patrón exacto volvió a aparecer en
+`transactions/get-all` durante Historia 8 - vale la pena tenerla en mente
+al revisar lo que falta). Es muy probable que haya más entre las rutas de
+`transactions/*` que aún faltan y en el resto de grupos pendientes.
 
-## Los 26 ya confirmados y corregidos (no hace falta re-revisarlos)
+## Los 27 ya confirmados y corregidos (no hace falta re-revisarlos)
 
 | Ruta | Problema | Commit |
 |------|----------|--------|
@@ -56,6 +57,10 @@ revisado a fondo.
 | `general-data/budget/update` | Cero sesión | `414893b` |
 | `general-data/budget/remove` | Cero sesión (crítico - archiva + desvincula transacciones) | `414893b` |
 | `general-data/transactions/[id]` (POST update) | Cero sesión (crítico - editaba cualquier transacción por id, dinero real) | `2a3e538` |
+| `general-data/transactions/edit-many` (POST) | Cero sesión (crítico - reasignaba transacciones a cuentas de otros usuarios) | `38a7f9e` |
+| `general-data/transactions/get-all` (POST) | Cero sesión - `userMail` del body a secas exponía perfil/transacciones/categorías/cuentas de cualquiera | `0b29d8d` |
+| `general-data/transactions/link-budget` (POST) | Cero sesión - vinculaba/desvinculaba movimientos de cualquier usuario a proyectos | `7f2972b` |
+| `general-data/transactions/new-transaction` (POST) | Cero sesión - `user`/`wallet` del body a secas permitía forjar transacciones en cualquier wallet | `cbc48d2` |
 
 ## Metodología sugerida para la auditoría completa
 
@@ -118,6 +123,7 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - `general-data/transactions/edit-many` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/get-all` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/link-budget` (POST) - arreglada durante Historia 8 de la migración TS
+- `general-data/transactions/new-transaction` (POST) - arreglada durante Historia 8 de la migración TS
 
 ### Probablemente OK sin `getSession()` propio (confirmar de todas formas)
 - `auth/[...all]/route.ts` - el catch-all de Better Auth, maneja su propia auth internamente.
@@ -164,7 +170,7 @@ que usa `Movements.jsx`, no este árbol)
 - [x] `general-data/transactions/get-all` - arreglada (ver tabla de arriba, commit `0b29d8d`)
 - [ ] `general-data/transactions/get-transactions`
 - [x] `general-data/transactions/link-budget` - arreglada (ver tabla de arriba, commit `7f2972b`)
-- [ ] `general-data/transactions/new-transaction`
+- [x] `general-data/transactions/new-transaction` - arreglada (ver tabla de arriba, commit `cbc48d2`)
 - [ ] `general-data/transactions/remove-many`
 - [ ] `general-data/transactions/remove-transaction/[id]`
 - [ ] `general-data/transactions/speech-add`
