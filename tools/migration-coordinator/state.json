@@ -2553,8 +2553,23 @@
           ]
         },
         "src/app/api/general-data/transactions/remove-transaction/[id]/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T02:48:17.058Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T02:49:56.827Z",
+              "event": "submitted",
+              "notes": "- Migrado `src/app/api/general-data/transactions/remove-transaction/[id]/route.js` a TypeScript (`route.ts`).\n- Definido schema Zod `removeTransactionParamsSchema` y derivado tipo `RemoveTransactionParams`.\n- Tipados explícitos para request, context/params (soportando Promise de Next.js 15+ y objeto simple) y response (`RemoveTransactionResponse`).\n- AUDITORÍA DE SEGURIDAD (FIX APLICADO): La ruta original carecía de verificación de sesión y ejecutaba `Transaction.findByIdAndDelete(params.id)` sin control de propiedad (vulnerabilidad IDOR). Se agregó verificación de sesión con `auth.api.getSession({ headers: request.headers })`, búsqueda del usuario con `User.findOne({ mail: sesion.user.email })`, y se acotó la eliminación al wallet del usuario con `Transaction.findOneAndDelete({ _id: id, wallet: userFound.wallet })`.\n- Preservada la lógica y mensajes originales exactos (status 201, mensaje de éxito con emoji y el mensaje de error con texto original).\n- Creado archivo hermano de tests `route.test.js` con 7 pruebas unitarias completas (validación de params, sesión ausente, usuario no encontrado, acotación por wallet, Promise params y transacción no encontrada).\n- Verificado con `npx tsc --noEmit` (0 errores), `npx eslint` (0 errores) y `npx vitest run` (28/28 archivos y 305/305 tests pasando)."
+            },
+            {
+              "ts": "2026-09-26T02:50:36.150Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #29): antes `Transaction.findByIdAndDelete(params.id)` a secas, cero verificacion, permitia borrar cualquier transaccion de cualquier usuario por id. Ahora `findOneAndDelete({_id, wallet: userFound.wallet})`. Test file nuevo con 7 casos solidos, incluyendo el caso Next.js 15+ de params como Promise. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 305/305 (28 suites). Aprobado. Nota: este es el endpoint al que BudgetDetailModal.tsx no llegaba a alcanzar por el bug fetcher.post ya documentado (bug pendiente #10) - el fix de seguridad aqui sigue siendo valido para el resto de los call sites reales (Movements.tsx, SuggestionsList.tsx)."
+            }
+          ]
         },
         "src/app/api/general-data/transactions/speech-add/route.js": {
           "status": "pending",
