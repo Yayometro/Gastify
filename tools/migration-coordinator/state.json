@@ -2391,8 +2391,23 @@
           ]
         },
         "src/model/Transaction.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:10:58.598Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:12:50.883Z",
+              "event": "submitted",
+              "notes": "Migración a TypeScript de src/model/Transaction.ts:\n- Definida la interface `ITransaction extends mongoose.Document` junto con `ITransactionMoney`, `IMoneyAmount`, `IReportingMoney`, y los tipos de unión para `kind`, `direction`, `state`, `transferDirection`.\n- Reflejados todos los campos del schema, incluyendo campos legacy (`amount`, `isIncome`, `isBill`, `isReadable`, `isForSaving`) y adiciones multi-currency (`kind`, `direction`, `state`, `money`, `transferGroupId`, `transferDirection`, `schemaVersion`).\n- Se preserva el typo preexistente en el schema (`amount: {type: Number, require: true}` con `require` en vez de `required`), manteniéndolo opcional en la interfaz tal como valida la suite de tests.\n- Tipado el hook `pre('validate')` con `this: ITransaction` y `next: (err?: CallbackError) => void` preservando exactamente la lógica de compatibilidad hacia atrás para `kind`, `direction` y `money`.\n- Preservado el patrón estándar de exportación: `const Transaction: mongoose.Model<ITransaction> = mongoose.models.Transaction || mongoose.model<ITransaction>('Transaction', transactionsSchema)`.\n- Verificaciones: `npx tsc --noEmit` limpio, `npx eslint src/model/Transaction.ts` limpio, `npx vitest run` (25/25 suites, 281/281 tests pasando incluyendo Transaction.test.js)."
+            },
+            {
+              "ts": "2026-09-26T00:13:32.143Z",
+              "event": "approved",
+              "notes": "Migracion de modelo fiel y limpia. Interfaces completas (ITransaction, IMoneyAmount, IReportingMoney, ITransactionMoney, union types). Confirmado byte-a-byte: el typo preexistente `require` (en vez de `required`) en el campo amount se preservo exacto, el hook pre('validate') es identico linea por linea, y el patron de export `mongoose.models.Transaction || mongoose.model(...)` se preservo tal cual (NO se normalizo al patron delete-then-register de Budget.ts, correcto). El import `model` (sin usar, solo se llamaba `mongoose.model`) se removio, confirmado sin uso en el original. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281 (incluye Transaction.test.js). Aprobado."
+            }
+          ]
         },
         "src/model/Tag.js": {
           "status": "pending",
