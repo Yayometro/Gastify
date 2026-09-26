@@ -1,23 +1,80 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Modal, Tooltip } from "antd";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/lib/store";
 import TransactionItemList from "@/components/Transactions/ItemList/TransactionItemList";
-import EditSingleTransModal from "@/components/multiUsedComp/EditSingleTransModal";
+import EditSingleTransModal, {
+  type EditSingleTransItem,
+} from "@/components/multiUsedComp/EditSingleTransModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { removeOneTransacction } from "@/lib/features/transacctionsSlice";
 
-function CategoryDot({ color, icon }) {
+export interface SuggestionCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string | null;
+  icon?: string | null;
+  [key: string]: unknown;
+}
+
+export interface SuggestionTransaction {
+  _id?: string;
+  name?: string;
+  amount?: number | string;
+  category?: SuggestionCategoryRef | null;
+  subCategory?: SuggestionCategoryRef | null;
+  [key: string]: unknown;
+}
+
+export interface SuggestionRuleMatch {
+  category?: SuggestionCategoryRef | null;
+  subCategory?: SuggestionCategoryRef | null;
+  confidence?: "high" | "low" | string;
+  [key: string]: unknown;
+}
+
+export interface CategorySuggestionEntry {
+  transaction: SuggestionTransaction;
+  suggestion: SuggestionRuleMatch;
+  [key: string]: unknown;
+}
+
+export interface CategorySuggestionApplication {
+  transactionId?: string;
+  category: string | null;
+  subCategory: string | null;
+}
+
+interface TransactionItemListProps {
+  movement?: SuggestionTransaction;
+  handleDelete?: (id?: string) => void;
+  handleEdit?: (transaction?: SuggestionTransaction) => void;
+  style?: string;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelect?: (id?: string) => void;
+  [key: string]: unknown;
+}
+
+const TypedTransactionItemList = TransactionItemList as React.ComponentType<TransactionItemListProps>;
+
+interface CategoryDotProps {
+  color?: string | null;
+  icon?: string | null;
+}
+
+function CategoryDot({ color, icon }: CategoryDotProps): React.JSX.Element {
   return (
     <div
       style={{ backgroundColor: color || "#DADADA" }}
       className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full flex items-center justify-center shrink-0"
     >
-      <UniversalCategoIcon type={icon || "md/MdFilterNone"} size={16} />
+      <UniversalCategoIcon type={icon || "md/MdFilterNone"} />
     </div>
   );
 }
@@ -29,7 +86,12 @@ function CategoryDot({ color, icon }) {
 // right-hand column next to the transaction. justify-between spreads it into
 // three slots across the full width: current (left), arrow (center),
 // suggested (right, dot flush against the edge).
-function CategoryTransitionChip({ transaction, suggestion }) {
+interface CategoryTransitionChipProps {
+  transaction: SuggestionTransaction;
+  suggestion: SuggestionRuleMatch;
+}
+
+function CategoryTransitionChip({ transaction, suggestion }: CategoryTransitionChipProps): React.JSX.Element {
   const currentLabel = transaction.category?.name || transaction.subCategory?.name || "No category";
   const suggestedLabel = suggestion.subCategory?.name || suggestion.category?.name || "Uncategorized";
   const isLowConfidence = suggestion.confidence === "low";
@@ -68,7 +130,15 @@ function CategoryTransitionChip({ transaction, suggestion }) {
 // rows. What changes responsively is only the content beside it: stacked
 // (transaction on top, chip below, both full width) on mobile, side by side
 // as two roughly-equal columns split by a divider on sm+, like a table row.
-function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }) {
+interface SuggestionEntryProps {
+  entry: CategorySuggestionEntry;
+  selected: boolean;
+  onToggle: (id: string) => void;
+  onEdit: (transaction: SuggestionTransaction) => void;
+  onDelete: (transactionId?: string) => void;
+}
+
+function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }: SuggestionEntryProps): React.JSX.Element {
   const id = String(entry.transaction._id);
   return (
     <div className={`flex items-center gap-2 transition-opacity ${selected ? "" : "opacity-40"}`}>
@@ -82,7 +152,7 @@ function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }) {
 
       <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:border sm:border-gf-border sm:rounded-2xl sm:p-2">
         <div className="w-full sm:w-1/2 min-w-0">
-          <TransactionItemList
+          <TypedTransactionItemList
             movement={entry.transaction}
             handleEdit={() => onEdit(entry.transaction)}
             handleDelete={() => onDelete(entry.transaction._id)}
@@ -102,15 +172,29 @@ function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }) {
 // Shared "guts" for reviewing/applying category suggestions - no portal/backdrop of
 // its own, so it can be dropped into a standalone modal or nested inside a bigger
 // tabbed container (e.g. the Movements tools modal).
-function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel, confirming, cancelLabel = "Skip" }) {
-  const [items, setItems] = useState(initialSuggestions);
-  const [deselected, setDeselected] = useState(new Set());
-  const [editingTrans, setEditingTrans] = useState(null);
-  const [editKey, setEditKey] = useState(0);
-  const dispatch = useDispatch();
+export interface SuggestionsListProps {
+  suggestions: CategorySuggestionEntry[];
+  onConfirm: (applications: CategorySuggestionApplication[]) => boolean | Promise<boolean | void> | void;
+  onCancel?: () => void;
+  confirming?: boolean;
+  cancelLabel?: string;
+}
+
+interface FetcherDeleteResponse {
+  ok?: boolean;
+  message?: string;
+  [key: string]: unknown;
+}
+
+function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel, confirming, cancelLabel = "Skip" }: SuggestionsListProps): React.JSX.Element {
+  const [items, setItems] = useState<CategorySuggestionEntry[]>(initialSuggestions);
+  const [deselected, setDeselected] = useState<Set<string>>(new Set());
+  const [editingTrans, setEditingTrans] = useState<EditSingleTransItem | null>(null);
+  const [editKey, setEditKey] = useState<number>(0);
+  const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
 
-  const toggle = (id) => {
+  const toggle = (id: string) => {
     setDeselected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -119,12 +203,12 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
     });
   };
 
-  const removeEntry = (transactionId) => {
+  const removeEntry = (transactionId: string | undefined) => {
     setItems((prev) => prev.filter((e) => String(e.transaction._id) !== String(transactionId)));
   };
 
-  const handleEdit = (transaction) => {
-    setEditingTrans(transaction);
+  const handleEdit = (transaction: SuggestionTransaction) => {
+    setEditingTrans(transaction as EditSingleTransItem);
     setEditKey((k) => k + 1);
   };
 
@@ -135,7 +219,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
     setEditingTrans(null);
   };
 
-  const handleDelete = (transactionId) => {
+  const handleDelete = (transactionId?: string) => {
     Modal.confirm({
       title: "Delete this movement?",
       content: "Are you sure you want to remove this transaction?",
@@ -146,7 +230,9 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
       onOk: async () => {
         try {
           dispatch(removeOneTransacction(transactionId));
-          const res = await toFetch.post(`general-data/transactions/remove-transaction/${transactionId}`);
+          const res = (await toFetch.post(
+            `general-data/transactions/remove-transaction/${transactionId}`
+          )) as FetcherDeleteResponse;
           if (res.ok) {
             runNotify("ok", "Movement deleted successfully!");
           } else {

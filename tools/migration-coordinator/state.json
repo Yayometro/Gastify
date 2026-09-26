@@ -2353,8 +2353,23 @@
           ]
         },
         "src/components/multiUsedComp/CategorySuggestions/SuggestionsList.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-26T00:04:39.015Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-26T00:07:01.482Z",
+              "event": "submitted",
+              "notes": "Migrado `SuggestionsList.jsx` a `SuggestionsList.tsx`.\n- Se definieron y exportaron interfaces explícitas: `SuggestionCategoryRef`, `SuggestionTransaction`, `SuggestionRuleMatch`, `CategorySuggestionEntry`, `CategorySuggestionApplication`, `SuggestionsListProps`, `CategoryDotProps`, `CategoryTransitionChipProps`, `SuggestionEntryProps`, `TransactionItemListProps`, `FetcherDeleteResponse`.\n- Se tiparon explícitamente todos los estados locales (`useState<CategorySuggestionEntry[]>`, `useState<Set<string>>`, `useState<EditSingleTransItem | null>`, `useState<number>`), handlers de edición y confirmación, y retorno del componente (`React.JSX.Element`).\n- Se removió la prop inválida `size={16}` en `<UniversalCategoIcon />` dentro de `CategoryDot` siguiendo la regla de no renombrar props con typo (UniversalCategoIcon espera `siz`).\n- Se preservaron fielmente todos los operadores `||`, la lógica de selección/deselección, la confirmación modal de borrado, la llamada a `removeOneTransacction` y el manejo de promesas de `onConfirm`.\n- Verificaciones ejecutadas:\n  1. `npm run typecheck` (`tsc --noEmit`): 0 errores.\n  2. `npx eslint src/components/multiUsedComp/CategorySuggestions/SuggestionsList.tsx`: limpio sin errores.\n  3. `npx vitest run`: 281/281 tests pasando.\n- No se corrió `npm run build` y no se tocó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-26T00:07:44.801Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. `size={16}` invalido en UniversalCategoIcon removido correctamente (no renombrado a siz), interfaces bien estructuradas reutilizando EditSingleTransItem ya exportado, typed bridge para TransactionItemList (aun sin migrar). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 281/281. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab.jsx": {
           "status": "pending",
