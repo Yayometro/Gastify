@@ -1,6 +1,33 @@
 import mongoose, { Schema } from "mongoose";
 import { moneyAmountSchema } from "./schemas/moneySchemas";
 
+export interface IBaselineIncomeHistoryEntry {
+  effectiveFrom?: Date;
+  effectiveTo?: Date;
+  incomeMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+}
+
+export interface IBaselineExpenseHistoryEntry {
+  effectiveFrom?: Date;
+  effectiveTo?: Date;
+  expenseMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+}
+
+export interface IProjectionBaseline extends mongoose.Document {
+  user?: mongoose.Types.ObjectId | string;
+  wallet?: mongoose.Types.ObjectId | string;
+  incomeHistory?: IBaselineIncomeHistoryEntry[];
+  expenseHistory?: IBaselineExpenseHistoryEntry[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // One document per wallet (not per year) - a rough, user-entered timeline of
 // concurrent income periods and, independently, expense periods, used only
 // to fill in Projections for months/years with no real Budgets, Income
@@ -16,7 +43,7 @@ import { moneyAmountSchema } from "./schemas/moneySchemas";
 // jobs (e.g. a steady one since 2022 plus a second one that started later)
 // both count toward that month's total instead of the newer one silently
 // replacing the older one. effectiveTo left unset means "still ongoing".
-const projectionBaselineSchema = new Schema(
+const projectionBaselineSchema = new Schema<IProjectionBaseline>(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -44,8 +71,8 @@ const projectionBaselineSchema = new Schema(
 
 projectionBaselineSchema.index({ wallet: 1 }, { unique: true });
 
-const ProjectionBaseline =
-  mongoose.models.ProjectionBaseline ||
-  mongoose.model("ProjectionBaseline", projectionBaselineSchema);
+const ProjectionBaseline: mongoose.Model<IProjectionBaseline> =
+  (mongoose.models.ProjectionBaseline as mongoose.Model<IProjectionBaseline>) ||
+  mongoose.model<IProjectionBaseline>("ProjectionBaseline", projectionBaselineSchema);
 
 export default ProjectionBaseline;
