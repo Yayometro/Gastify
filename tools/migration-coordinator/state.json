@@ -2805,8 +2805,23 @@
           ]
         },
         "src/components/multiUsedComp/walletAnalyzer/WeekdaySpendingDetailModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:15:33.513Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:17:54.297Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript como WeekdaySpendingDetailModal.tsx. Se definió la interfaz WeekdaySpendingDetailModalProps reutilizando WalletAnalyzerWeekdaySpendingData de WalletAnalyzerView.tsx. Se preservó el comportamiento exacto de renderizado y cálculos de las barras de día y semana destacada. tsc pasó limpio sin errores, eslint verificado limpio y vitest pasó en verde (29/29 archivos, 314 tests)."
+            },
+            {
+              "ts": "2026-09-28T23:18:30.735Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. Guards `weeks || []` y `dailyBreakdown || []` compiler-required (campos opcionales en WalletAnalyzerWeekdaySpendingData), sin diferencia real ya que weekdaySpending siempre trae ambos campos poblados juntos cuando existe. Reutiliza WalletAnalyzerWeekdaySpendingData de WalletAnalyzerView.tsx. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/helpers/transformers/walletAnalyzer.js": {
           "status": "pending",

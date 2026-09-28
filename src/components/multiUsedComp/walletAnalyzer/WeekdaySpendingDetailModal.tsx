@@ -2,17 +2,30 @@
 import React from "react";
 import { Modal } from "antd";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { WalletAnalyzerWeekdaySpendingData } from "./WalletAnalyzerView";
+
+export interface WeekdaySpendingDetailModalProps {
+  open: boolean;
+  onClose: () => void;
+  weekdaySpending?: WalletAnalyzerWeekdaySpendingData | null;
+  walletPrimaryCurrency?: string;
+}
 
 // The "why" behind the weekday-pattern card: which week of the month hit
 // hardest, a plain explanation of the averaging method, and a full
 // day-by-day list so the conclusion (e.g. "los miércoles") is traceable
 // to the actual daily numbers, not just the 7-bucket averages.
-function WeekdaySpendingDetailModal({ open, onClose, weekdaySpending, walletPrimaryCurrency }) {
+function WeekdaySpendingDetailModal({
+  open,
+  onClose,
+  weekdaySpending,
+  walletPrimaryCurrency,
+}: WeekdaySpendingDetailModalProps): React.JSX.Element | null {
   if (!open || !weekdaySpending) return null;
   const { weeks, dailyBreakdown, insight, weekdayAvg, weekendAvg } = weekdaySpending;
 
-  const bestWeek = [...weeks].sort((a, b) => b.total - a.total)[0];
-  const maxDayTotal = Math.max(1, ...dailyBreakdown.map((d) => d.total));
+  const bestWeek = [...(weeks || [])].sort((a, b) => b.total - a.total)[0];
+  const maxDayTotal = Math.max(1, ...(dailyBreakdown || []).map((d) => d.total));
 
   return (
     <Modal
@@ -42,7 +55,7 @@ function WeekdaySpendingDetailModal({ open, onClose, weekdaySpending, walletPrim
 
       <p className="text-[11px] font-bold uppercase tracking-wide text-gf-text-muted mt-3 mb-2">Detalle día por día</p>
       <div className="flex flex-col max-h-[320px] overflow-y-auto pr-1">
-        {dailyBreakdown.map((d) => (
+        {(dailyBreakdown || []).map((d) => (
           <div key={d.dayOfMonth} className="flex items-center gap-3 py-1.5 border-t border-gf-border first:border-t-0">
             <span className="w-16 text-[11px] text-gf-text-muted shrink-0">
               {d.dayName.slice(0, 3)} {d.dayOfMonth}
