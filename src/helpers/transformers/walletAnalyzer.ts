@@ -6,19 +6,633 @@ import {
 } from "./transactionsChange";
 import { buildBudgetHistoricalComparative } from "./budgetHistoricalComparative";
 import { months } from "../timeFunctions/timeFunctions";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import type { BudgetData } from "@/lib/features/budgetSlice";
+
+export interface DateRange {
+  start: Date;
+  end: Date;
+}
+
+export interface PopulatedCategory {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface PopulatedSubCategory {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface PopulatedTag {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface PopulatedAccount {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerTransaction {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  value?: number;
+  isIncome?: boolean;
+  isBill?: boolean;
+  isReadable?: boolean;
+  isForSaving?: boolean;
+  date?: Date | string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  account?: PopulatedAccount | null;
+  category?: PopulatedCategory | null;
+  subCategory?: PopulatedSubCategory | null;
+  budget?: string | unknown;
+  tags?: (PopulatedTag | string | unknown)[];
+  kind?: string;
+  direction?: string;
+  state?: string;
+  money?: unknown;
+  displayMoney?: {
+    primary?: {
+      amountMinor: number;
+      currency: string;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerTotals {
+  income: number;
+  expense: number;
+  balance: number;
+  savingsRate: number;
+  transactionCount: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerRankCategory {
+  name: string;
+  color: string;
+  icon: string;
+  amount: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerCategoryBill {
+  name: string;
+  color?: string;
+  icon?: string;
+  current: number;
+  previous: number;
+  changePct: number | null;
+  isNew: boolean;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerCategoryBillPrevious {
+  name: string;
+  color?: string;
+  icon?: string;
+  amount: number;
+  [key: string]: unknown;
+}
+
+export interface CategoryHistoryMonthlyTotal {
+  label: string;
+  amount: number;
+  [key: string]: unknown;
+}
+
+export interface CategoryHistoryAverageResult {
+  average: number;
+  monthsOfHistory: number;
+  monthlyTotals: CategoryHistoryMonthlyTotal[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerRankTransaction {
+  _id?: string;
+  name: string;
+  categoryName: string;
+  subcategoryName: string | null;
+  amount: number;
+  date?: Date | string;
+  color?: string;
+  icon?: string;
+  tags?: string[] | { name?: string }[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerTopTransactions {
+  current: WalletAnalyzerRankTransaction[];
+  previous: WalletAnalyzerRankTransaction[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerTrendItem {
+  label: string;
+  income: number;
+  expense: number;
+  transactionCount: number;
+  shortLabel?: string;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerMonthlyAverages {
+  avgIncome: number;
+  avgExpense: number;
+  avgTransactionCount: number;
+  monthsCount: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerBudgetMonthlySeriesItem {
+  label: string;
+  actual: number;
+  goal: number;
+  met: boolean;
+  estimated?: boolean;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerBudgetRow {
+  budgetId: string;
+  category: string;
+  limit: number;
+  spent: number;
+  pct: number;
+  streakMonths: number;
+  status: "over" | "warning" | "ok" | string;
+  monthlySeries?: WalletAnalyzerBudgetMonthlySeriesItem[];
+  [key: string]: unknown;
+}
+
+export interface SubscriptionOccurrence {
+  date: Date | string;
+  amount: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerSubscription {
+  name: string;
+  categoryName: string;
+  accountName: string | null;
+  amount: number;
+  color: string;
+  icon: string;
+  isNew: boolean;
+  possibleDuplicateInMonth: boolean;
+  occurrences: SubscriptionOccurrence[];
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsTransaction {
+  _id?: string;
+  name: string;
+  amount: number;
+  categoryName: string;
+  subcategoryName: string | null;
+  date?: Date | string;
+  color: string;
+  icon: string;
+  tags: string[];
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsCategory {
+  name: string;
+  color: string;
+  icon: string;
+  total: number;
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsSubcategory {
+  name: string;
+  categoryName: string;
+  total: number;
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsTag {
+  name: string;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsAnalysis {
+  transactionIsInBiggestCategory: boolean;
+  transactionIsBiggestSubcategory: boolean;
+  subcategoryBelongsToBiggestCategory: boolean;
+  categoryShareOfTotal: number;
+  transactionShareOfCategory: number;
+  transactionSharesTopCategoryTag: boolean;
+  [key: string]: unknown;
+}
+
+export interface BiggestSpendPatternsData {
+  biggestTransaction: SpendPatternsTransaction;
+  biggestCategory: SpendPatternsCategory;
+  biggestSubcategory: SpendPatternsSubcategory | null;
+  mostCommonCategoryTag: SpendPatternsTag | null;
+  analysis: SpendPatternsAnalysis;
+  lookbackRange: DateRange;
+  monthsBack?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerChampionMonthItem {
+  _id?: string;
+  name: string;
+  amount: number;
+  categoryName: string;
+  date?: Date | string;
+  color: string;
+  icon: string;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerChampionMonthCategory {
+  name: string;
+  color: string;
+  icon: string;
+  total: number;
+  pctOfWindowTotal?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerChampionMonthSubcategory {
+  name: string;
+  categoryName?: string;
+  categoryColor?: string;
+  categoryIcon?: string;
+  total: number;
+  pctOfWindowTotal?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerMonthlyChampionEntry {
+  label: string;
+  range: DateRange;
+  total: number;
+  biggestTransaction: WalletAnalyzerChampionMonthItem | null;
+  biggestCategory: WalletAnalyzerChampionMonthCategory | null;
+  biggestSubcategory: WalletAnalyzerChampionMonthSubcategory | null;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerMonthlyChampionsData {
+  months: WalletAnalyzerMonthlyChampionEntry[];
+  windowTotal: number;
+  monthsBack: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerQuarterMonthItem {
+  label: string;
+  total: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerQuarterTotal {
+  label: string;
+  year: number;
+  quarter: number;
+  total: number;
+  months: WalletAnalyzerQuarterMonthItem[];
+  [key: string]: unknown;
+}
+
+export interface SpendingPaceMonthlyDetail {
+  label: string;
+  throughDay: number;
+  amount: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerPace {
+  spentSoFar: number;
+  avgPaceForSameDay: number;
+  deltaPct: number | null;
+  dayOfMonth: number;
+  monthlyDetail: SpendingPaceMonthlyDetail[];
+  periodWidthDays?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdayDay {
+  dayIndex: number;
+  dayName: string;
+  total: number;
+  count: number;
+  occurrences: number;
+  avgPerOccurrence: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdayWeek {
+  label: string;
+  startDay?: number;
+  endDay?: number;
+  total: number;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdayDailyBreakdownMonth {
+  dayOfMonth: number;
+  dayName: string;
+  total: number;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdayDailyBreakdownRange {
+  date: Date;
+  dayName: string;
+  total: number;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdaySpendingData {
+  days: WalletAnalyzerWeekdayDay[];
+  insight: string;
+  weekdayAvg: number;
+  weekendAvg: number;
+  overallMean: number;
+  weeks: WalletAnalyzerWeekdayWeek[];
+  dailyBreakdown: WalletAnalyzerWeekdayDailyBreakdownMonth[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdaySpendingDataForRange {
+  days: WalletAnalyzerWeekdayDay[];
+  insight: string;
+  weekdayAvg: number;
+  weekendAvg: number;
+  overallMean: number;
+  weeks: WalletAnalyzerWeekdayWeek[];
+  dailyBreakdown: WalletAnalyzerWeekdayDailyBreakdownRange[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerCategoryAnomaly {
+  name: string;
+  current: number;
+  average: number;
+  changePct: number;
+  monthlyTotals: CategoryHistoryMonthlyTotal[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerSavingsHistoryLabeled {
+  label: string;
+  rate: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerInsightItem {
+  icon: string;
+  tone: "warning" | "positive" | "info" | string;
+  title: string;
+  type: string;
+  data: unknown;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerFacts {
+  currentTotals: WalletAnalyzerTotals;
+  previousTotals: WalletAnalyzerTotals;
+  topCategoriesBills: WalletAnalyzerCategoryBill[];
+  topCategoriesIncomes: WalletAnalyzerCategoryBill[];
+  topCategoriesBillsPrevious: (WalletAnalyzerCategoryBillPrevious | WalletAnalyzerRankCategory)[];
+  topTransactionsBills: WalletAnalyzerTopTransactions;
+  trend: WalletAnalyzerTrendItem[];
+  monthlyAverages: WalletAnalyzerMonthlyAverages;
+  budgetRows: WalletAnalyzerBudgetRow[];
+  subscriptions: WalletAnalyzerSubscription[];
+  pace: WalletAnalyzerPace;
+  biggestSpendPatterns?: BiggestSpendPatternsData | null;
+  monthlyChampions?: WalletAnalyzerMonthlyChampionsData | null;
+  previousMonthlyChampions?: WalletAnalyzerMonthlyChampionsData | null;
+  quarterTotals?: WalletAnalyzerQuarterTotal[];
+  weekdaySpending: WalletAnalyzerWeekdaySpendingData;
+  savingsHistory: number[];
+  savingsHistoryLabeled: WalletAnalyzerSavingsHistoryLabeled[];
+  categoryAnomaly?: WalletAnalyzerCategoryAnomaly | null;
+  [key: string]: unknown;
+}
+
+export interface BuildWalletAnalyzerSnapshotParams {
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[];
+  budgets: (BudgetData | unknown)[];
+  referenceDate: Date | string | number;
+  today?: Date;
+  topN?: number;
+}
+
+export interface WalletAnalyzerSnapshotData extends WalletAnalyzerFacts {
+  insights: WalletAnalyzerInsightItem[];
+  currentRange: DateRange;
+  previousRange: DateRange;
+  [key: string]: unknown;
+}
+
+export interface CuratedWalletSummary {
+  currentTotals: WalletAnalyzerTotals;
+  previousTotals: WalletAnalyzerTotals;
+  insights: WalletAnalyzerInsightItem[];
+  budgetRows: Omit<WalletAnalyzerBudgetRow, "monthlySeries">[];
+  topCategoriesBills: WalletAnalyzerCategoryBill[];
+  topCategoriesIncomes: WalletAnalyzerCategoryBill[];
+  topTransactionsBills: {
+    current: WalletAnalyzerRankTransaction[];
+    previous: WalletAnalyzerRankTransaction[];
+  };
+  subscriptions: WalletAnalyzerSubscription[];
+  pace: WalletAnalyzerPace;
+  weekdaySpending: WalletAnalyzerWeekdaySpendingData;
+  savingsHistoryLabeled: WalletAnalyzerSavingsHistoryLabeled[];
+  monthlyAverages: WalletAnalyzerMonthlyAverages;
+  categoryAnomaly: WalletAnalyzerCategoryAnomaly | null;
+  [key: string]: unknown;
+}
+
+export interface MonthComparisonMonthItem {
+  label: string;
+  totals: WalletAnalyzerTotals;
+  [key: string]: unknown;
+}
+
+export interface MonthComparisonData {
+  monthA: MonthComparisonMonthItem;
+  monthB: MonthComparisonMonthItem;
+  categoriesBills: WalletAnalyzerCategoryBill[];
+  categoriesIncomes: WalletAnalyzerCategoryBill[];
+  transactionsBills: WalletAnalyzerTopTransactions;
+  [key: string]: unknown;
+}
+
+export interface BuildMonthComparisonParams {
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[];
+  monthADate: Date | string | number;
+  monthBDate: Date | string | number;
+  topN?: number;
+}
+
+export interface HistoricalComparativeBudgetRow {
+  budget: BudgetData & { _id?: string; category?: { name?: string }; name?: string };
+  monthlySeries: WalletAnalyzerBudgetMonthlySeriesItem[];
+  monthsTracked: number;
+  monthsMet: number;
+  monthsExceeded: number;
+  monthsEstimated: number;
+  complianceRate: number | null;
+  [key: string]: unknown;
+}
+
+export interface SumBudgetSeriesResult {
+  actual: number;
+  goal: number;
+  monthsTracked: number;
+  monthsMet: number;
+  complianceRate: number | null;
+  monthlySeries: WalletAnalyzerBudgetMonthlySeriesItem[];
+  [key: string]: unknown;
+}
+
+export interface BudgetPeriodChangeRow {
+  budgetId: string;
+  budget: unknown;
+  category: string;
+  periodA: SumBudgetSeriesResult | null;
+  periodB: SumBudgetSeriesResult | null;
+  [key: string]: unknown;
+}
+
+export interface PeriodComparisonPeriodItem {
+  label: string;
+  totals: WalletAnalyzerTotals;
+  [key: string]: unknown;
+}
+
+export interface PeriodComparisonData {
+  periodA: PeriodComparisonPeriodItem;
+  periodB: PeriodComparisonPeriodItem;
+  categoriesBills: WalletAnalyzerCategoryBill[];
+  categoriesIncomes: WalletAnalyzerCategoryBill[];
+  transactionsBills: WalletAnalyzerTopTransactions;
+  budgetChanges: BudgetPeriodChangeRow[];
+  [key: string]: unknown;
+}
+
+export interface BuildPeriodComparisonParams {
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[];
+  budgets: (BudgetData | unknown)[];
+  rangeA: DateRange;
+  rangeB: DateRange;
+  labelA: string;
+  labelB: string;
+  topN?: number;
+}
+
+export interface BuildPeriodSnapshotParams {
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[];
+  budgets: (BudgetData | unknown)[];
+  range: DateRange;
+  periodsBack?: number;
+  topN?: number;
+  today?: Date;
+}
+
+export interface PeriodFacts {
+  currentTotals: WalletAnalyzerTotals;
+  previousTotals: WalletAnalyzerTotals;
+  topCategoriesBills: WalletAnalyzerCategoryBill[];
+  topCategoriesIncomes: WalletAnalyzerCategoryBill[];
+  topCategoriesBillsPrevious: (WalletAnalyzerCategoryBillPrevious | WalletAnalyzerRankCategory)[];
+  topTransactionsBills: WalletAnalyzerTopTransactions;
+  trend: WalletAnalyzerTrendItem[];
+  monthlyAverages: WalletAnalyzerMonthlyAverages;
+  budgetRows: WalletAnalyzerBudgetRow[];
+  subscriptions: WalletAnalyzerSubscription[];
+  pace: WalletAnalyzerPace;
+  biggestSpendPatterns?: BiggestSpendPatternsData | null;
+  monthlyChampions?: WalletAnalyzerMonthlyChampionsData | null;
+  previousMonthlyChampions?: WalletAnalyzerMonthlyChampionsData | null;
+  quarterTotals?: WalletAnalyzerQuarterTotal[];
+  weekdaySpending: WalletAnalyzerWeekdaySpendingDataForRange | WalletAnalyzerWeekdaySpendingData;
+  savingsHistory: number[];
+  savingsHistoryLabeled: WalletAnalyzerSavingsHistoryLabeled[];
+  categoryAnomaly?: WalletAnalyzerCategoryAnomaly | null;
+  [key: string]: unknown;
+}
+
+export interface PeriodSnapshotData extends PeriodFacts {
+  insights: WalletAnalyzerInsightItem[];
+  currentRange: DateRange;
+  previousRange: DateRange;
+  [key: string]: unknown;
+}
+
+export interface CuratedPeriodSummaryMonthlyChampionMonth {
+  label: string;
+  total: number;
+  topCategory: { name: string; total: number } | null;
+  [key: string]: unknown;
+}
+
+export interface CuratedPeriodSummary {
+  currentTotals: WalletAnalyzerTotals;
+  previousTotals: WalletAnalyzerTotals;
+  insights: WalletAnalyzerInsightItem[];
+  budgetRows: Omit<WalletAnalyzerBudgetRow, "monthlySeries">[];
+  topCategoriesBills: WalletAnalyzerCategoryBill[];
+  topCategoriesIncomes: WalletAnalyzerCategoryBill[];
+  topTransactionsBills: {
+    current: WalletAnalyzerRankTransaction[];
+    previous: WalletAnalyzerRankTransaction[];
+  };
+  subscriptions: WalletAnalyzerSubscription[];
+  pace: WalletAnalyzerPace;
+  weekdaySpending: WalletAnalyzerWeekdaySpendingDataForRange | WalletAnalyzerWeekdaySpendingData;
+  savingsHistoryLabeled: WalletAnalyzerSavingsHistoryLabeled[];
+  monthlyAverages: WalletAnalyzerMonthlyAverages;
+  categoryAnomaly: WalletAnalyzerCategoryAnomaly | null;
+  monthlyChampions: {
+    months: CuratedPeriodSummaryMonthlyChampionMonth[];
+  };
+  quarterTotals?: WalletAnalyzerQuarterTotal[];
+  currentRange: DateRange;
+  previousRange: DateRange;
+  [key: string]: unknown;
+}
 
 // All range helpers build explicit start-of-day/end-of-day boundaries
 // themselves (not via getLastDayOfMonth, which returns midnight) - a range
 // end at midnight would silently exclude same-day transactions with a
 // later time component.
-export function getMonthRange(referenceDate) {
+export function getMonthRange(referenceDate: Date | string | number): DateRange {
   const d = new Date(referenceDate);
   const start = new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0);
   const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
   return { start, end };
 }
 
-export function getPreviousMonthRange(referenceDate) {
+export function getPreviousMonthRange(referenceDate: Date | string | number): DateRange {
   const d = new Date(referenceDate);
   return getMonthRange(new Date(d.getFullYear(), d.getMonth() - 1, 1));
 }
@@ -35,19 +649,19 @@ export function getPreviousMonthRange(referenceDate) {
 // period" does NOT reproduce "the previous calendar month" exactly, so
 // silently swapping one for the other would subtly change already-tested
 // Dashboard behavior. Kept as fully independent, parallel implementations.
-function startOfDay(date) {
+function startOfDay(date: Date | string | number): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   return d;
 }
 
-function endOfDay(date) {
+function endOfDay(date: Date | string | number): Date {
   const d = new Date(date);
   d.setHours(23, 59, 59, 999);
   return d;
 }
 
-function addDays(date, days) {
+function addDays(date: Date | string | number, days: number): Date {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d;
@@ -57,18 +671,18 @@ function addDays(date, days) {
 // boundary - normalizing it down to start-of-day before dividing (then
 // adding 1 back for inclusive counting) avoids overcounting by a day,
 // which dividing the raw end-of-day timestamp directly does.
-function getRangeWidthDays(range) {
-  return Math.round((startOfDay(range.end) - startOfDay(range.start)) / 86400000) + 1;
+function getRangeWidthDays(range: DateRange): number {
+  return Math.round((startOfDay(range.end).getTime() - startOfDay(range.start).getTime()) / 86400000) + 1;
 }
 
-function formatShortDate(date) {
+function formatShortDate(date: Date): string {
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 }
 
 // A period's display label: "Julio 2026" when it happens to be exactly one
 // calendar month (the common case - matches the existing month-based
 // labeling convention elsewhere in this file), a short date range otherwise.
-function formatPeriodLabel(period) {
+function formatPeriodLabel(period: DateRange): string {
   const sameCalendarMonth =
     period.start.getDate() === 1 &&
     period.start.getMonth() === period.end.getMonth() &&
@@ -81,9 +695,9 @@ function formatPeriodLabel(period) {
 // before `range.start` - oldest first, matching computeTrend's existing
 // oldest->newest ordering convention. The arbitrary-width sibling of "N
 // calendar months back from a reference date."
-export function getPrecedingPeriods(range, count) {
+export function getPrecedingPeriods(range: DateRange, count: number): DateRange[] {
   const widthDays = getRangeWidthDays(range);
-  const periods = [];
+  const periods: DateRange[] = [];
   let cursorEnd = endOfDay(addDays(range.start, -1));
   for (let i = 0; i < count; i++) {
     const end = cursorEnd;
@@ -95,11 +709,15 @@ export function getPrecedingPeriods(range, count) {
 }
 
 // 1. Income / expense / balance / savings-rate for one month.
-export function getMonthTotals(transactions, monthStart, monthEnd) {
+export function getMonthTotals(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  monthStart: Date,
+  monthEnd: Date
+): WalletAnalyzerTotals {
   const monthTx = getTransactionsFromTimeRange(transactions, monthStart, monthEnd);
   const { incomes, bills } = filterBillsOrIncomes(monthTx);
-  const income = incomes.reduce((a, t) => a + getPrimaryAmount(t), 0);
-  const expense = bills.reduce((a, t) => a + getPrimaryAmount(t), 0);
+  const income = incomes.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+  const expense = bills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
   const balance = income - expense;
   return { income, expense, balance, savingsRate: income > 0 ? balance / income : 0, transactionCount: bills.length };
 }
@@ -109,16 +727,21 @@ export function getMonthTotals(transactions, monthStart, monthEnd) {
 // a month's own top-12 categories side by side with another month's,
 // mirroring how top transactions already work (two independent top-N
 // lists, not one merged comparison row).
-export function rankCategoriesForRange(transactions, isBill, range, topN = 12) {
+export function rankCategoriesForRange(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  isBill: boolean,
+  range: DateRange,
+  topN: number = 12
+): WalletAnalyzerRankCategory[] {
   const tx = getTransactionsFromTimeRange(transactions, range.start, range.end);
-  const set = isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes;
-  const map = new Map();
+  const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
+  const map = new Map<string, WalletAnalyzerRankCategory>();
   set.forEach((t) => {
     const name = t.category?.name || "No category";
     if (!map.has(name)) {
       map.set(name, { name, color: t.category?.color || "#ABABAB", icon: t.category?.icon || "MdFilterNone", amount: 0 });
     }
-    map.get(name).amount += getPrimaryAmount(t);
+    map.get(name)!.amount += getPrimaryAmount(t);
   });
   return Array.from(map.values())
     .sort((a, b) => b.amount - a.amount)
@@ -127,33 +750,49 @@ export function rankCategoriesForRange(transactions, isBill, range, topN = 12) {
 
 // Raw transaction docs for one category in one range - feeds the
 // existing ModalContentTopMonthItem drill-down modal's `children`.
-export function getCategoryTransactions(transactions, categoryName, isBill, range) {
+export function getCategoryTransactions(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  categoryName: string,
+  isBill: boolean,
+  range: DateRange
+): TransactionData[] {
   const tx = getTransactionsFromTimeRange(transactions, range.start, range.end);
-  const set = isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes;
-  return set.filter((t) => (t.category?.name || "No category") === categoryName);
+  const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
+  return set.filter((t) => (t.category?.name || "No category") === categoryName) as unknown as TransactionData[];
 }
 
 // Same as getCategoryTransactions, but for one subcategory.
-export function getSubcategoryTransactions(transactions, subcategoryName, isBill, range) {
+export function getSubcategoryTransactions(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  subcategoryName: string,
+  isBill: boolean,
+  range: DateRange
+): TransactionData[] {
   const tx = getTransactionsFromTimeRange(transactions, range.start, range.end);
-  const set = isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes;
-  return set.filter((t) => t.subCategory?.name === subcategoryName);
+  const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
+  return set.filter((t) => t.subCategory?.name === subcategoryName) as unknown as TransactionData[];
 }
 
 // 2. Top categories by current-month spend, each compared against the same
 // category's previous-month total. `isNew` marks a category with nothing
 // in the previous month at all (not just a dip to zero).
-export function compareCategoriesAcrossMonths(transactions, isBill, currentRange, previousRange, topN = 12) {
-  const sumByCategory = (range) => {
+export function compareCategoriesAcrossMonths(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  isBill: boolean,
+  currentRange: DateRange,
+  previousRange: DateRange,
+  topN: number = 12
+): WalletAnalyzerCategoryBill[] {
+  const sumByCategory = (range: DateRange) => {
     const tx = getTransactionsFromTimeRange(transactions, range.start, range.end);
-    const set = isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes;
-    const map = new Map();
+    const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
+    const map = new Map<string, { name: string; color: string; icon: string; value: number }>();
     set.forEach((t) => {
       const name = t.category?.name || "No category";
       if (!map.has(name)) {
         map.set(name, { name, color: t.category?.color || "#ABABAB", icon: t.category?.icon || "MdFilterNone", value: 0 });
       }
-      map.get(name).value += getPrimaryAmount(t);
+      map.get(name)!.value += getPrimaryAmount(t);
     });
     return map;
   };
@@ -182,18 +821,24 @@ export function compareCategoriesAcrossMonths(transactions, isBill, currentRange
 // itself) - used to flag "spent way more than usual" independently of the
 // single-month-over-single-month comparison above, which can't tell a
 // one-off dip in an otherwise-typical previous month from a real trend.
-export function computeCategoryHistoryAverage(transactions, categoryName, isBill, referenceDate, monthsBack = 6) {
+export function computeCategoryHistoryAverage(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  categoryName: string,
+  isBill: boolean,
+  referenceDate: Date | string | number,
+  monthsBack: number = 6
+): CategoryHistoryAverageResult {
   const ref = new Date(referenceDate);
-  const monthlyTotals = [];
-  const monthlyTotalsLabeled = [];
+  const monthlyTotals: number[] = [];
+  const monthlyTotalsLabeled: CategoryHistoryMonthlyTotal[] = [];
   for (let m = monthsBack; m >= 1; m--) {
     const monthDate = new Date(ref.getFullYear(), ref.getMonth() - m, 1);
     const { start, end } = getMonthRange(monthDate);
     const tx = getTransactionsFromTimeRange(transactions, start, end);
-    const set = isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes;
+    const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
     const total = set
       .filter((t) => (t.category?.name || "No category") === categoryName)
-      .reduce((a, t) => a + getPrimaryAmount(t), 0);
+      .reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
     monthlyTotals.push(total);
     monthlyTotalsLabeled.push({ label: `${months[monthDate.getMonth()]} ${monthDate.getFullYear()}`, amount: total });
   }
@@ -207,16 +852,22 @@ export function computeCategoryHistoryAverage(transactions, categoryName, isBill
 // of always trailing calendar months. Same field names as the month-based
 // version above (`monthsOfHistory`/`monthlyTotals`) so downstream
 // rendering (categoryAnomaly cards/modals) works with either unchanged.
-export function computeCategoryHistoryAverageForRange(transactions, categoryName, isBill, range, periodsBack = 6) {
+export function computeCategoryHistoryAverageForRange(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  categoryName: string,
+  isBill: boolean,
+  range: DateRange,
+  periodsBack: number = 6
+): CategoryHistoryAverageResult {
   const periods = getPrecedingPeriods(range, periodsBack);
-  const totals = [];
-  const totalsLabeled = [];
+  const totals: number[] = [];
+  const totalsLabeled: CategoryHistoryMonthlyTotal[] = [];
   periods.forEach((period) => {
     const tx = getTransactionsFromTimeRange(transactions, period.start, period.end);
-    const set = isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes;
+    const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
     const total = set
       .filter((t) => (t.category?.name || "No category") === categoryName)
-      .reduce((a, t) => a + getPrimaryAmount(t), 0);
+      .reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
     totals.push(total);
     totalsLabeled.push({ label: formatPeriodLabel(period), amount: total });
   });
@@ -228,10 +879,16 @@ export function computeCategoryHistoryAverageForRange(transactions, categoryName
 // 3. Top individual transactions for the current month and, separately,
 // the previous month - transactions don't repeat month to month the way
 // categories do, so this is two independent top-N lists, not a joined one.
-export function compareTransactionsAcrossMonths(transactions, isBill, currentRange, previousRange, topN = 12) {
-  const build = (range) => {
+export function compareTransactionsAcrossMonths(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  isBill: boolean,
+  currentRange: DateRange,
+  previousRange: DateRange,
+  topN: number = 12
+): WalletAnalyzerTopTransactions {
+  const build = (range: DateRange): WalletAnalyzerRankTransaction[] => {
     const tx = getTransactionsFromTimeRange(transactions, range.start, range.end);
-    const set = isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes;
+    const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
     return set
       .map((t) => ({
         _id: t._id,
@@ -253,18 +910,24 @@ export function compareTransactionsAcrossMonths(transactions, isBill, currentRan
 // reference month last), for the trend chart. Reuses
 // orderItemsInRelativeMonth (already used by the Top-elements compare
 // table) instead of re-deriving month-bucketing from scratch.
-export function computeTrend(transactions, referenceDate, monthsBack = 6) {
+export function computeTrend(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  referenceDate: Date | string | number,
+  monthsBack: number = 6
+): WalletAnalyzerTrendItem[] {
   const ref = new Date(referenceDate);
   const rangeStart = new Date(ref.getFullYear(), ref.getMonth() - (monthsBack - 1), 1);
   const rangeEnd = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
   const windowTx = getTransactionsFromTimeRange(transactions, rangeStart, rangeEnd);
   const { incomes, bills } = filterBillsOrIncomes(windowTx);
-  const incomeByIndex = new Map(orderItemsInRelativeMonth(incomes, rangeStart).map((b) => [b.index, b.value]));
-  const expenseBuckets = orderItemsInRelativeMonth(bills, rangeStart);
-  const expenseByIndex = new Map(expenseBuckets.map((b) => [b.index, b.value]));
-  const expenseCountByIndex = new Map(expenseBuckets.map((b) => [b.index, b.childrens.length]));
+  const incomeByIndex = new Map<number, number>(
+    orderItemsInRelativeMonth(incomes, rangeStart).map((b: { index: number; value: number }) => [b.index, b.value])
+  );
+  const expenseBuckets: { index: number; value: number; childrens: unknown[] }[] = orderItemsInRelativeMonth(bills, rangeStart);
+  const expenseByIndex = new Map<number, number>(expenseBuckets.map((b) => [b.index, b.value]));
+  const expenseCountByIndex = new Map<number, number>(expenseBuckets.map((b) => [b.index, b.childrens.length]));
 
-  const result = [];
+  const result: WalletAnalyzerTrendItem[] = [];
   for (let i = 0; i < monthsBack; i++) {
     const monthDate = new Date(rangeStart.getFullYear(), rangeStart.getMonth() + i, 1);
     result.push({
@@ -281,15 +944,19 @@ export function computeTrend(transactions, referenceDate, monthsBack = 6) {
 // periods (same width as `range`), oldest first, `range` itself last. Feeds
 // the same trend-chart shape ({label, income, expense, transactionCount}),
 // so computeMonthlyAverages below works on either unchanged.
-export function computeTrendForRange(transactions, range, periodsBack = 6) {
+export function computeTrendForRange(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  range: DateRange,
+  periodsBack: number = 6
+): WalletAnalyzerTrendItem[] {
   const periods = [...getPrecedingPeriods(range, periodsBack - 1), range];
   return periods.map((period) => {
     const tx = getTransactionsFromTimeRange(transactions, period.start, period.end);
     const { incomes, bills } = filterBillsOrIncomes(tx);
     return {
       label: formatPeriodLabel(period),
-      income: incomes.reduce((a, t) => a + getPrimaryAmount(t), 0),
-      expense: bills.reduce((a, t) => a + getPrimaryAmount(t), 0),
+      income: incomes.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0),
+      expense: bills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0),
       transactionCount: bills.length,
     };
   });
@@ -297,7 +964,9 @@ export function computeTrendForRange(transactions, range, periodsBack = 6) {
 
 // Average monthly income/expense across the same trend window - reuses
 // `trend`'s already-computed whole-month totals instead of re-deriving them.
-export function computeMonthlyAverages(trend) {
+export function computeMonthlyAverages(
+  trend: { income: number; expense: number; transactionCount: number; [key: string]: unknown }[]
+): WalletAnalyzerMonthlyAverages {
   const count = trend.length || 1;
   return {
     avgIncome: trend.reduce((a, m) => a + m.income, 0) / count,
@@ -311,11 +980,22 @@ export function computeMonthlyAverages(trend) {
 // reference month. Wraps buildBudgetHistoricalComparative (already
 // resolves each month's goal via the budget's history[]) instead of
 // re-deriving month-by-month compliance.
-export function computeBudgetStreaks(budgets, transactions, referenceDate, lookbackMonths = 12) {
+export function computeBudgetStreaks(
+  budgets: (BudgetData | unknown)[],
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  referenceDate: Date | string | number,
+  lookbackMonths: number = 12
+): WalletAnalyzerBudgetRow[] {
   const ref = new Date(referenceDate);
   const startDate = new Date(ref.getFullYear(), ref.getMonth() - (lookbackMonths - 1), 1);
   const endDate = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
-  const rows = buildBudgetHistoricalComparative({ budgets, transactions, startDate, endDate, today: endDate });
+  const rows: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({
+    budgets,
+    transactions,
+    startDate,
+    endDate,
+    today: endDate,
+  });
 
   return rows.map((row) => {
     const series = row.monthlySeries;
@@ -350,47 +1030,52 @@ export function computeBudgetStreaks(budgets, transactions, referenceDate, lookb
 // of the last `lookbackMonths` months with amount variance under 15%.
 // `isNew` marks a group with no occurrence before that lookback window,
 // within the wider `historyMonths` window.
-function normalizeTxName(name) {
+function normalizeTxName(name?: string | null): string {
   return (name || "").trim().toLowerCase();
 }
 
-export function detectSubscriptions(transactions, referenceDate, lookbackMonths = 3, historyMonths = 6) {
+export function detectSubscriptions(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  referenceDate: Date | string | number,
+  lookbackMonths: number = 3,
+  historyMonths: number = 6
+): WalletAnalyzerSubscription[] {
   const ref = new Date(referenceDate);
   const historyStart = new Date(ref.getFullYear(), ref.getMonth() - (historyMonths - 1), 1);
   const historyEnd = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
-  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, historyStart, historyEnd)).bills;
+  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, historyStart, historyEnd)).bills as WalletAnalyzerTransaction[];
 
-  const byName = new Map();
+  const byName = new Map<string, WalletAnalyzerTransaction[]>();
   bills.forEach((t) => {
     const key = normalizeTxName(t.name);
     if (!key) return;
     if (!byName.has(key)) byName.set(key, []);
-    byName.get(key).push(t);
+    byName.get(key)!.push(t);
   });
 
   const lookbackStart = new Date(ref.getFullYear(), ref.getMonth() - (lookbackMonths - 1), 1);
-  const results = [];
+  const results: WalletAnalyzerSubscription[] = [];
 
   byName.forEach((allTx) => {
-    const recentTx = allTx.filter((t) => new Date(t.date || t.createdAt) >= lookbackStart);
+    const recentTx = allTx.filter((t) => new Date((t.date || t.createdAt) as string | number | Date).getTime() >= lookbackStart.getTime());
     const monthsTouched = new Set(
       recentTx.map((t) => {
-        const d = new Date(t.date || t.createdAt);
+        const d = new Date((t.date || t.createdAt) as string | number | Date);
         return `${d.getFullYear()}-${d.getMonth()}`;
       })
     );
     if (monthsTouched.size < 2) return;
 
     const amounts = recentTx.map((t) => getPrimaryAmount(t));
-    const avg = amounts.reduce((a, b) => a + b, 0) / amounts.length;
-    const withinVariance = avg > 0 && amounts.every((a) => Math.abs(a - avg) / avg <= 0.15);
+    const avg = amounts.reduce((a: number, b: number) => a + b, 0) / amounts.length;
+    const withinVariance = avg > 0 && amounts.every((a: number) => Math.abs(a - avg) / avg <= 0.15);
     if (!withinVariance) return;
 
-    const isNew = !allTx.some((t) => new Date(t.date || t.createdAt) < lookbackStart);
-    const latest = [...recentTx].sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt))[0];
-    const occurrences = [...recentTx]
-      .sort((a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt))
-      .map((t) => ({ date: t.date || t.createdAt, amount: getPrimaryAmount(t) }));
+    const isNew = !allTx.some((t) => new Date((t.date || t.createdAt) as string | number | Date).getTime() < lookbackStart.getTime());
+    const latest = [...recentTx].sort((a, b) => new Date((b.date || b.createdAt) as string | number | Date).getTime() - new Date((a.date || a.createdAt) as string | number | Date).getTime())[0];
+    const occurrences: SubscriptionOccurrence[] = [...recentTx]
+      .sort((a, b) => new Date((a.date || a.createdAt) as string | number | Date).getTime() - new Date((b.date || b.createdAt) as string | number | Date).getTime())
+      .map((t) => ({ date: (t.date || t.createdAt) as string | Date, amount: getPrimaryAmount(t) }));
 
     // A real recurring subscription fires once per billing cycle - two
     // occurrences less than 48h apart, in the current month, are far more
@@ -406,7 +1091,7 @@ export function detectSubscriptions(transactions, referenceDate, lookbackMonths 
     let possibleDuplicateInMonth = false;
     for (let i = 0; i < occurrencesThisMonth.length && !possibleDuplicateInMonth; i++) {
       for (let j = i + 1; j < occurrencesThisMonth.length; j++) {
-        const hoursApart = Math.abs(new Date(occurrencesThisMonth[i].date) - new Date(occurrencesThisMonth[j].date)) / 36e5;
+        const hoursApart = Math.abs(new Date(occurrencesThisMonth[i].date).getTime() - new Date(occurrencesThisMonth[j].date).getTime()) / 36e5;
         if (hoursApart <= 48) {
           possibleDuplicateInMonth = true;
           break;
@@ -415,7 +1100,7 @@ export function detectSubscriptions(transactions, referenceDate, lookbackMonths 
     }
 
     results.push({
-      name: latest.name,
+      name: latest.name || "Subscription",
       categoryName: latest.category?.name || "No category",
       accountName: latest.account?.name || null,
       amount: avg,
@@ -440,39 +1125,44 @@ export function detectSubscriptions(transactions, referenceDate, lookbackMonths 
 // findBiggestSpendPatternsForRange (arbitrary range) - everything after
 // resolving the bills-in-range set is identical either way, so this is the
 // one place that logic lives.
-function computeBiggestSpendPatternsCore(transactions, range) {
-  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills;
+function computeBiggestSpendPatternsCore(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  range: DateRange
+): BiggestSpendPatternsData | null {
+  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills as WalletAnalyzerTransaction[];
   if (bills.length === 0) return null;
 
-  const totalSpend = bills.reduce((a, t) => a + getPrimaryAmount(t), 0);
+  const totalSpend = bills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
 
-  const biggestTransactionRaw = [...bills].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))[0];
+  const biggestTransactionRaw = [...bills].sort(
+    (a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)
+  )[0];
   const transactionAmount = getPrimaryAmount(biggestTransactionRaw);
   const transactionCategoryName = biggestTransactionRaw.category?.name || "No category";
   const transactionSubcategoryName = biggestTransactionRaw.subCategory?.name || null;
 
-  const byCategory = new Map();
-  const byCategoryTagCounts = new Map(); // categoryName -> Map(tagName -> count)
-  const bySubcategory = new Map();
+  const byCategory = new Map<string, SpendPatternsCategory>();
+  const byCategoryTagCounts = new Map<string, Map<string, number>>(); // categoryName -> Map(tagName -> count)
+  const bySubcategory = new Map<string, SpendPatternsSubcategory>();
   bills.forEach((t) => {
     const catName = t.category?.name || "No category";
     if (!byCategory.has(catName)) {
       byCategory.set(catName, { name: catName, color: t.category?.color || "#ABABAB", icon: t.category?.icon || "MdFilterNone", total: 0 });
     }
-    byCategory.get(catName).total += getPrimaryAmount(t);
+    byCategory.get(catName)!.total += getPrimaryAmount(t);
 
-    if (!byCategoryTagCounts.has(catName)) byCategoryTagCounts.set(catName, new Map());
-    (t.tags || []).forEach((tag) => {
-      const tagName = tag?.name;
+    if (!byCategoryTagCounts.has(catName)) byCategoryTagCounts.set(catName, new Map<string, number>());
+    (t.tags || []).forEach((tag: PopulatedTag | string | unknown) => {
+      const tagName = typeof tag === "object" && tag !== null && "name" in tag ? (tag as PopulatedTag).name : undefined;
       if (!tagName) return;
-      const counts = byCategoryTagCounts.get(catName);
+      const counts = byCategoryTagCounts.get(catName)!;
       counts.set(tagName, (counts.get(tagName) || 0) + 1);
     });
 
     if (t.subCategory?.name) {
       const subName = t.subCategory.name;
       if (!bySubcategory.has(subName)) bySubcategory.set(subName, { name: subName, categoryName: catName, total: 0 });
-      bySubcategory.get(subName).total += getPrimaryAmount(t);
+      bySubcategory.get(subName)!.total += getPrimaryAmount(t);
     }
   });
 
@@ -480,11 +1170,14 @@ function computeBiggestSpendPatternsCore(transactions, range) {
   const biggestSubcategory = [...bySubcategory.values()].sort((a, b) => b.total - a.total)[0] || null;
 
   const categoryTagCounts = byCategoryTagCounts.get(biggestCategory.name);
-  const mostCommonCategoryTag = categoryTagCounts && categoryTagCounts.size > 0
-    ? [...categoryTagCounts.entries()].sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }))[0]
-    : null;
+  const mostCommonCategoryTag: SpendPatternsTag | null =
+    categoryTagCounts && categoryTagCounts.size > 0
+      ? [...categoryTagCounts.entries()].sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }))[0]
+      : null;
 
-  const transactionTagNames = (biggestTransactionRaw.tags || []).map((tag) => tag?.name).filter(Boolean);
+  const transactionTagNames = (biggestTransactionRaw.tags || [])
+    .map((tag: PopulatedTag | string | unknown) => (typeof tag === "object" && tag !== null && "name" in tag ? (tag as PopulatedTag).name : undefined))
+    .filter((name): name is string => Boolean(name));
 
   // Always measured against the transaction's OWN category total (not
   // necessarily `biggestCategory` - they may differ) - "what fraction of
@@ -492,7 +1185,7 @@ function computeBiggestSpendPatternsCore(transactions, range) {
   // relative to the category it actually belongs to.
   const transactionOwnCategoryTotal = byCategory.get(transactionCategoryName)?.total || 0;
 
-  const analysis = {
+  const analysis: SpendPatternsAnalysis = {
     transactionIsInBiggestCategory: transactionCategoryName === biggestCategory.name,
     transactionIsBiggestSubcategory: !!biggestSubcategory && transactionSubcategoryName === biggestSubcategory.name,
     subcategoryBelongsToBiggestCategory: !!biggestSubcategory && biggestSubcategory.categoryName === biggestCategory.name,
@@ -521,17 +1214,24 @@ function computeBiggestSpendPatternsCore(transactions, range) {
   };
 }
 
-export function findBiggestSpendPatterns(transactions, referenceDate, monthsBack = 12) {
+export function findBiggestSpendPatterns(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  referenceDate: Date | string | number,
+  monthsBack: number = 12
+): BiggestSpendPatternsData | null {
   const ref = new Date(referenceDate);
   const start = new Date(ref.getFullYear(), ref.getMonth() - (monthsBack - 1), 1, 0, 0, 0, 0);
   const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
   const core = computeBiggestSpendPatternsCore(transactions, { start, end });
-  return core && { ...core, monthsBack };
+  return core ? { ...core, monthsBack } : null;
 }
 
 // Arbitrary-width sibling - the range IS the lookback window, no monthsBack
 // concept (the caller already chose the window's width by picking `range`).
-export function findBiggestSpendPatternsForRange(transactions, range) {
+export function findBiggestSpendPatternsForRange(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  range: DateRange
+): BiggestSpendPatternsData | null {
   return computeBiggestSpendPatternsCore(transactions, range);
 }
 
@@ -543,36 +1243,42 @@ export function findBiggestSpendPatternsForRange(transactions, range) {
 // 12-month total (not that month's own total), so the 12 rows are
 // directly comparable to each other and to findBiggestSpendPatterns'
 // own categoryShareOfTotal.
-export function computeMonthlyChampions(transactions, referenceDate, monthsBack = 12) {
+export function computeMonthlyChampions(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  referenceDate: Date | string | number,
+  monthsBack: number = 12
+): WalletAnalyzerMonthlyChampionsData {
   const ref = new Date(referenceDate);
   const windowStart = new Date(ref.getFullYear(), ref.getMonth() - (monthsBack - 1), 1, 0, 0, 0, 0);
   const windowEnd = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
-  const windowBills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, windowStart, windowEnd)).bills;
-  const windowTotal = windowBills.reduce((a, t) => a + getPrimaryAmount(t), 0);
+  const windowBills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, windowStart, windowEnd)).bills as WalletAnalyzerTransaction[];
+  const windowTotal = windowBills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
 
-  const monthEntries = [];
+  const monthEntries: WalletAnalyzerMonthlyChampionEntry[] = [];
   for (let m = monthsBack - 1; m >= 0; m--) {
     const monthDate = new Date(ref.getFullYear(), ref.getMonth() - m, 1);
     const range = getMonthRange(monthDate);
     const label = `${months[monthDate.getMonth()]} ${monthDate.getFullYear()}`;
-    const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills;
+    const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills as WalletAnalyzerTransaction[];
 
     if (bills.length === 0) {
       monthEntries.push({ label, range, total: 0, biggestTransaction: null, biggestCategory: null, biggestSubcategory: null });
       continue;
     }
 
-    const total = bills.reduce((a, t) => a + getPrimaryAmount(t), 0);
-    const biggestTransactionRaw = [...bills].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))[0];
+    const total = bills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+    const biggestTransactionRaw = [...bills].sort(
+      (a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)
+    )[0];
 
-    const byCategory = new Map();
-    const bySubcategory = new Map();
+    const byCategory = new Map<string, SpendPatternsCategory>();
+    const bySubcategory = new Map<string, { name: string; categoryName: string; categoryColor: string; categoryIcon: string; total: number }>();
     bills.forEach((t) => {
       const catName = t.category?.name || "No category";
       if (!byCategory.has(catName)) {
         byCategory.set(catName, { name: catName, color: t.category?.color || "#ABABAB", icon: t.category?.icon || "MdFilterNone", total: 0 });
       }
-      byCategory.get(catName).total += getPrimaryAmount(t);
+      byCategory.get(catName)!.total += getPrimaryAmount(t);
       if (t.subCategory?.name) {
         const subName = t.subCategory.name;
         if (!bySubcategory.has(subName)) {
@@ -584,7 +1290,7 @@ export function computeMonthlyChampions(transactions, referenceDate, monthsBack 
             total: 0,
           });
         }
-        bySubcategory.get(subName).total += getPrimaryAmount(t);
+        bySubcategory.get(subName)!.total += getPrimaryAmount(t);
       }
     });
     const biggestCategoryRaw = [...byCategory.values()].sort((a, b) => b.total - a.total)[0];
@@ -627,7 +1333,11 @@ export function computeMonthlyChampions(transactions, referenceDate, monthsBack 
 // September: the real range is Jan-Dec, but a lookback from today would
 // cover Oct(previous year)-Sept instead). This walks calendar months from
 // range.start through min(range.end, today) directly.
-export function computeMonthlyChampionsForRange(transactions, range, today = new Date()) {
+export function computeMonthlyChampionsForRange(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  range: DateRange,
+  today: Date = new Date()
+): WalletAnalyzerMonthlyChampionsData {
   const effectiveEnd = range.end < today ? range.end : today;
   if (effectiveEnd < range.start) {
     return { months: [], windowTotal: 0, monthsBack: 0 };
@@ -639,7 +1349,7 @@ export function computeMonthlyChampionsForRange(transactions, range, today = new
 
 // The single busiest calendar month inside a champions window - the
 // concrete answer to "mes del período en el que más se gastó".
-export function findPeakMonth(monthlyChampions) {
+export function findPeakMonth(monthlyChampions: WalletAnalyzerMonthlyChampionsData): WalletAnalyzerMonthlyChampionEntry | null {
   const withSpend = monthlyChampions.months.filter((m) => m.total > 0);
   if (withSpend.length === 0) return null;
   return withSpend.reduce((best, m) => (m.total > best.total ? m : best));
@@ -651,8 +1361,8 @@ export function findPeakMonth(monthlyChampions) {
 // slice - meaningful once a period spans enough months to compare more
 // than one quarter against another (a 3-month "last quarter" selection
 // only ever touches one bucket, so there's nothing to compare there).
-export function computeQuarterTotals(monthlyChampions) {
-  const byQuarter = new Map();
+export function computeQuarterTotals(monthlyChampions: WalletAnalyzerMonthlyChampionsData): WalletAnalyzerQuarterTotal[] {
+  const byQuarter = new Map<string, WalletAnalyzerQuarterTotal>();
   monthlyChampions.months.forEach((m) => {
     const monthDate = m.range.start;
     const year = monthDate.getFullYear();
@@ -661,14 +1371,14 @@ export function computeQuarterTotals(monthlyChampions) {
     if (!byQuarter.has(key)) {
       byQuarter.set(key, { label: `Q${quarter} ${year}`, year, quarter, total: 0, months: [] });
     }
-    const entry = byQuarter.get(key);
+    const entry = byQuarter.get(key)!;
     entry.total += m.total;
     entry.months.push({ label: m.label, total: m.total });
   });
   return [...byQuarter.values()].sort((a, b) => (a.year - b.year) || (a.quarter - b.quarter));
 }
 
-export function findPeakQuarter(quarterTotals) {
+export function findPeakQuarter(quarterTotals: WalletAnalyzerQuarterTotal[]): WalletAnalyzerQuarterTotal | null {
   const withSpend = quarterTotals.filter((q) => q.total > 0);
   if (withSpend.length === 0) return null;
   return withSpend.reduce((best, q) => (q.total > best.total ? q : best));
@@ -684,7 +1394,13 @@ export function findPeakQuarter(quarterTotals) {
 // month, pace runs through today's actual date; for an already-elapsed
 // past month it runs through that month's last day (a full-month
 // comparison), since "today" has no meaning there.
-export function computeSpendingPace(transactions, referenceDate, isBill = true, lookbackMonths = 6, today = new Date()) {
+export function computeSpendingPace(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  referenceDate: Date | string | number,
+  isBill: boolean = true,
+  lookbackMonths: number = 6,
+  today: Date = new Date()
+): WalletAnalyzerPace {
   const ref = new Date(referenceDate);
   const isCurrentMonth = ref.getFullYear() === today.getFullYear() && ref.getMonth() === today.getMonth();
   const lastDayOfRefMonth = new Date(ref.getFullYear(), ref.getMonth() + 1, 0).getDate();
@@ -694,10 +1410,10 @@ export function computeSpendingPace(transactions, referenceDate, isBill = true, 
   const currentSet = isBill
     ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, monthStart, soFarEnd)).bills
     : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, monthStart, soFarEnd)).incomes;
-  const spentSoFar = currentSet.reduce((a, t) => a + getPrimaryAmount(t), 0);
+  const spentSoFar = currentSet.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
 
-  const pastPaces = [];
-  const monthlyDetail = [];
+  const pastPaces: number[] = [];
+  const monthlyDetail: SpendingPaceMonthlyDetail[] = [];
   for (let m = lookbackMonths; m >= 1; m--) {
     const pastMonthDate = new Date(ref.getFullYear(), ref.getMonth() - m, 1);
     const lastDayOfPastMonth = new Date(pastMonthDate.getFullYear(), pastMonthDate.getMonth() + 1, 0).getDate();
@@ -707,7 +1423,7 @@ export function computeSpendingPace(transactions, referenceDate, isBill = true, 
     const pastSet = isBill
       ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, pastStart, pastEnd)).bills
       : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, pastStart, pastEnd)).incomes;
-    const amount = pastSet.reduce((a, t) => a + getPrimaryAmount(t), 0);
+    const amount = pastSet.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
     pastPaces.push(amount);
     monthlyDetail.push({ label: `${months[pastMonthDate.getMonth()]} ${pastMonthDate.getFullYear()}`, throughDay: cappedDay, amount });
   }
@@ -727,25 +1443,31 @@ export function computeSpendingPace(transactions, referenceDate, isBill = true, 
 // periods of the same width. Same field names as computeSpendingPace
 // (`dayOfMonth`/`monthlyDetail`) so existing pace-card rendering works with
 // either - "day of month" reads fine as "day of period" too.
-export function computeSpendingPaceForRange(transactions, range, isBill = true, periodsBack = 6, today = new Date()) {
+export function computeSpendingPaceForRange(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  range: DateRange,
+  isBill: boolean = true,
+  periodsBack: number = 6,
+  today: Date = new Date()
+): WalletAnalyzerPace {
   const widthDays = getRangeWidthDays(range);
   const isCurrentPeriod = today >= range.start && today <= range.end;
-  const elapsedDays = isCurrentPeriod ? Math.floor((startOfDay(today) - range.start) / 86400000) + 1 : widthDays;
+  const elapsedDays = isCurrentPeriod ? Math.floor((startOfDay(today).getTime() - range.start.getTime()) / 86400000) + 1 : widthDays;
   const soFarEnd = endOfDay(addDays(range.start, elapsedDays - 1));
   const currentSet = isBill
     ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, soFarEnd)).bills
     : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, soFarEnd)).incomes;
-  const spentSoFar = currentSet.reduce((a, t) => a + getPrimaryAmount(t), 0);
+  const spentSoFar = currentSet.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
 
-  const pastPaces = [];
-  const monthlyDetail = [];
+  const pastPaces: number[] = [];
+  const monthlyDetail: SpendingPaceMonthlyDetail[] = [];
   getPrecedingPeriods(range, periodsBack).forEach((period) => {
     const cappedDays = Math.min(elapsedDays, getRangeWidthDays(period));
     const pastEnd = endOfDay(addDays(period.start, cappedDays - 1));
     const pastSet = isBill
       ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, period.start, pastEnd)).bills
       : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, period.start, pastEnd)).incomes;
-    const amount = pastSet.reduce((a, t) => a + getPrimaryAmount(t), 0);
+    const amount = pastSet.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
     pastPaces.push(amount);
     monthlyDetail.push({ label: formatPeriodLabel(period), throughDay: cappedDays, amount });
   });
@@ -761,11 +1483,19 @@ export function computeSpendingPaceForRange(transactions, range, isBill = true, 
 }
 
 const WEEKDAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-const WEEKDAY_PLURAL = { Lunes: "lunes", Martes: "martes", Miércoles: "miércoles", Jueves: "jueves", Viernes: "viernes", Sábado: "sábados", Domingo: "domingos" };
+const WEEKDAY_PLURAL: Record<string, string> = {
+  Lunes: "lunes",
+  Martes: "martes",
+  Miércoles: "miércoles",
+  Jueves: "jueves",
+  Viernes: "viernes",
+  Sábado: "sábados",
+  Domingo: "domingos",
+};
 
 // JS Date#getDay(): 0=Sunday..6=Saturday. Remapped to a Monday-first index
 // (0=Monday..6=Sunday) so a calendar week reads left-to-right naturally.
-function mondayFirstIndex(jsDay) {
+function mondayFirstIndex(jsDay: number): number {
   return (jsDay + 6) % 7;
 }
 
@@ -776,15 +1506,18 @@ function mondayFirstIndex(jsDay) {
 // this month), not raw totals, since a month has 4 or 5 of each weekday
 // unevenly - raw totals would unfairly favor whichever weekday occurs
 // one extra time.
-export function computeSpendingByWeekday(transactions, referenceDate) {
+export function computeSpendingByWeekday(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  referenceDate: Date | string | number
+): WalletAnalyzerWeekdaySpendingData {
   const ref = new Date(referenceDate);
   const { start, end } = getMonthRange(ref);
-  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, start, end)).bills;
+  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, start, end)).bills as WalletAnalyzerTransaction[];
 
   const totals = new Array(7).fill(0);
   const counts = new Array(7).fill(0);
   bills.forEach((t) => {
-    const idx = mondayFirstIndex(new Date(t.date || t.createdAt).getDay());
+    const idx = mondayFirstIndex(new Date((t.date || t.createdAt) as string | number | Date).getDay());
     totals[idx] += getPrimaryAmount(t);
     counts[idx] += 1;
   });
@@ -795,7 +1528,7 @@ export function computeSpendingByWeekday(transactions, referenceDate) {
     occurrences[mondayFirstIndex(new Date(ref.getFullYear(), ref.getMonth(), day).getDay())] += 1;
   }
 
-  const days = WEEKDAY_NAMES.map((dayName, i) => ({
+  const days: WalletAnalyzerWeekdayDay[] = WEEKDAY_NAMES.map((dayName, i) => ({
     dayIndex: i,
     dayName,
     total: totals[i],
@@ -821,7 +1554,7 @@ export function computeSpendingByWeekday(transactions, referenceDate) {
   const standout = sortedByAvg[0];
   const runnerUp = sortedByAvg[1];
 
-  let insight;
+  let insight: string;
   if (!hasAnySpend) {
     insight = "Sin gastos este mes para detectar un patrón.";
   } else if (standout.avgPerOccurrence > 0 && (runnerUp.avgPerOccurrence === 0 || standout.avgPerOccurrence > runnerUp.avgPerOccurrence * 1.5)) {
@@ -839,27 +1572,27 @@ export function computeSpendingByWeekday(transactions, referenceDate) {
   // Day-by-day and week-by-week breakdowns, for the detail modal - "why
   // did the app conclude this" needs the actual daily numbers, not just
   // the 7-bucket weekday averages above.
-  const dailyTotalsByDay = new Map();
+  const dailyTotalsByDay = new Map<number, { total: number; count: number }>();
   for (let day = 1; day <= lastDay; day++) dailyTotalsByDay.set(day, { total: 0, count: 0 });
   bills.forEach((t) => {
-    const d = new Date(t.date || t.createdAt);
+    const d = new Date((t.date || t.createdAt) as string | number | Date);
     const entry = dailyTotalsByDay.get(d.getDate());
     if (entry) {
       entry.total += getPrimaryAmount(t);
       entry.count += 1;
     }
   });
-  const dailyBreakdown = [];
+  const dailyBreakdown: WalletAnalyzerWeekdayDailyBreakdownMonth[] = [];
   for (let day = 1; day <= lastDay; day++) {
     const jsDay = new Date(ref.getFullYear(), ref.getMonth(), day).getDay();
-    const { total, count } = dailyTotalsByDay.get(day);
-    dailyBreakdown.push({ dayOfMonth: day, dayName: WEEKDAY_NAMES[mondayFirstIndex(jsDay)], total, count });
+    const entry = dailyTotalsByDay.get(day) || { total: 0, count: 0 };
+    dailyBreakdown.push({ dayOfMonth: day, dayName: WEEKDAY_NAMES[mondayFirstIndex(jsDay)], total: entry.total, count: entry.count });
   }
 
   // Simple day-range weeks (1-7, 8-14, ...) rather than calendar weeks,
   // so every month cleanly splits into ~4 weeks plus a short tail instead
   // of partial weeks bleeding into neighboring months.
-  const weeks = [];
+  const weeks: WalletAnalyzerWeekdayWeek[] = [];
   for (let weekStart = 1; weekStart <= lastDay; weekStart += 7) {
     const weekEnd = Math.min(weekStart + 6, lastDay);
     const weekDays = dailyBreakdown.filter((d) => d.dayOfMonth >= weekStart && d.dayOfMonth <= weekEnd);
@@ -878,14 +1611,17 @@ export function computeSpendingByWeekday(transactions, referenceDate) {
 // Arbitrary-width sibling - iterates the whole `range` day by day instead
 // of one calendar month's days, so the pattern reflects the entire
 // selected period (e.g. "last 3 months"), not just its final month.
-export function computeSpendingByWeekdayForRange(transactions, range) {
+export function computeSpendingByWeekdayForRange(
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  range: DateRange
+): WalletAnalyzerWeekdaySpendingDataForRange {
   const widthDays = getRangeWidthDays(range);
-  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills;
+  const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills as WalletAnalyzerTransaction[];
 
   const totals = new Array(7).fill(0);
   const counts = new Array(7).fill(0);
   bills.forEach((t) => {
-    const idx = mondayFirstIndex(new Date(t.date || t.createdAt).getDay());
+    const idx = mondayFirstIndex(new Date((t.date || t.createdAt) as string | number | Date).getDay());
     totals[idx] += getPrimaryAmount(t);
     counts[idx] += 1;
   });
@@ -895,7 +1631,7 @@ export function computeSpendingByWeekdayForRange(transactions, range) {
     occurrences[mondayFirstIndex(addDays(range.start, i).getDay())] += 1;
   }
 
-  const days = WEEKDAY_NAMES.map((dayName, i) => ({
+  const days: WalletAnalyzerWeekdayDay[] = WEEKDAY_NAMES.map((dayName, i) => ({
     dayIndex: i,
     dayName,
     total: totals[i],
@@ -915,7 +1651,7 @@ export function computeSpendingByWeekdayForRange(transactions, range) {
   const standout = sortedByAvg[0];
   const runnerUp = sortedByAvg[1];
 
-  let insight;
+  let insight: string;
   if (!hasAnySpend) {
     insight = "Sin gastos en este periodo para detectar un patrón.";
   } else if (standout.avgPerOccurrence > 0 && (runnerUp.avgPerOccurrence === 0 || standout.avgPerOccurrence > runnerUp.avgPerOccurrence * 1.5)) {
@@ -930,29 +1666,29 @@ export function computeSpendingByWeekdayForRange(transactions, range) {
     insight = "Sin un patrón claro por día de la semana en este periodo.";
   }
 
-  const dailyTotalsByKey = new Map();
+  const dailyTotalsByKey = new Map<string, { total: number; count: number }>();
   for (let i = 0; i < widthDays; i++) {
     dailyTotalsByKey.set(addDays(range.start, i).toDateString(), { total: 0, count: 0 });
   }
   bills.forEach((t) => {
-    const d = new Date(t.date || t.createdAt);
+    const d = new Date((t.date || t.createdAt) as string | number | Date);
     const entry = dailyTotalsByKey.get(d.toDateString());
     if (entry) {
       entry.total += getPrimaryAmount(t);
       entry.count += 1;
     }
   });
-  const dailyBreakdown = [];
+  const dailyBreakdown: WalletAnalyzerWeekdayDailyBreakdownRange[] = [];
   for (let i = 0; i < widthDays; i++) {
     const day = addDays(range.start, i);
-    const { total, count } = dailyTotalsByKey.get(day.toDateString());
-    dailyBreakdown.push({ date: day, dayName: WEEKDAY_NAMES[mondayFirstIndex(day.getDay())], total, count });
+    const entry = dailyTotalsByKey.get(day.toDateString()) || { total: 0, count: 0 };
+    dailyBreakdown.push({ date: day, dayName: WEEKDAY_NAMES[mondayFirstIndex(day.getDay())], total: entry.total, count: entry.count });
   }
 
   // Simple day-range weeks (day 1-7, 8-14, ...) across the whole span,
   // rather than calendar weeks - same convention as the month-based
   // version, just not clipped to one month's days.
-  const weeks = [];
+  const weeks: WalletAnalyzerWeekdayWeek[] = [];
   for (let weekStartIdx = 0; weekStartIdx < widthDays; weekStartIdx += 7) {
     const weekEndIdx = Math.min(weekStartIdx + 6, widthDays - 1);
     const weekDays = dailyBreakdown.slice(weekStartIdx, weekEndIdx + 1);
@@ -970,7 +1706,7 @@ export function computeSpendingByWeekdayForRange(transactions, range) {
 // number here is already computed exactly, so a template just has to word
 // it, not derive it. Ranked warnings-first, capped so the strip stays
 // scannable.
-const INSIGHT_PRIORITY = { warning: 0, positive: 1, info: 2 };
+const INSIGHT_PRIORITY: Record<string, number> = { warning: 0, positive: 1, info: 2 };
 
 // Insights carry `type`/`data` (raw facts) instead of a pre-baked string -
 // currency formatting needs `walletPrimaryCurrency`, which this
@@ -983,8 +1719,12 @@ const INSIGHT_PRIORITY = { warning: 0, positive: 1, info: 2 };
 // function's sort/priority logic; both default away to nothing so every
 // existing single-month caller (buildWalletAnalyzerSnapshot, the
 // Dashboard) behaves exactly as before.
-export function generateInsights(facts, extraInsights = [], maxInsights = 5) {
-  const insights = [];
+export function generateInsights(
+  facts: WalletAnalyzerFacts | PeriodFacts,
+  extraInsights: WalletAnalyzerInsightItem[] = [],
+  maxInsights: number = 5
+): WalletAnalyzerInsightItem[] {
+  const insights: WalletAnalyzerInsightItem[] = [];
 
   const worstBudget = facts.budgetRows.find((b) => b.status === "over");
   if (worstBudget) {
@@ -1065,13 +1805,19 @@ export function generateInsights(facts, extraInsights = [], maxInsights = 5) {
     }
   }
 
-  return [...insights, ...extraInsights].sort((a, b) => INSIGHT_PRIORITY[a.tone] - INSIGHT_PRIORITY[b.tone]).slice(0, maxInsights);
+  return [...insights, ...extraInsights].sort((a, b) => (INSIGHT_PRIORITY[a.tone] ?? 2) - (INSIGHT_PRIORITY[b.tone] ?? 2)).slice(0, maxInsights);
 }
 
 // Orchestrator - composes every sync computation above into one snapshot.
 // FX exposure isn't included here: it needs network calls (fx/quote), so
 // it's computed separately by a hook the component calls alongside this.
-export function buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate, today = new Date(), topN = 12 }) {
+export function buildWalletAnalyzerSnapshot({
+  transactions,
+  budgets,
+  referenceDate,
+  today = new Date(),
+  topN = 12,
+}: BuildWalletAnalyzerSnapshotParams): WalletAnalyzerSnapshotData {
   const ref = new Date(referenceDate);
   const currentRange = getMonthRange(ref);
   const previousRange = getPreviousMonthRange(ref);
@@ -1093,8 +1839,8 @@ export function buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDa
   const monthlyChampions = computeMonthlyChampions(transactions, ref, 12);
   const weekdaySpending = computeSpendingByWeekday(transactions, ref);
 
-  const savingsHistory = [];
-  const savingsHistoryLabeled = [];
+  const savingsHistory: number[] = [];
+  const savingsHistoryLabeled: WalletAnalyzerSavingsHistoryLabeled[] = [];
   for (let m = 0; m < 6; m++) {
     const monthDate = new Date(ref.getFullYear(), ref.getMonth() - m, 1);
     const { start, end } = getMonthRange(monthDate);
@@ -1106,7 +1852,7 @@ export function buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDa
   // Among the top few categories, whichever deviates most (in either
   // direction) from its own trailing average is the one worth calling out
   // - not necessarily whichever spends the most in absolute terms.
-  let categoryAnomaly = null;
+  let categoryAnomaly: WalletAnalyzerCategoryAnomaly | null = null;
   topCategoriesBills.slice(0, 5).forEach((c) => {
     const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverage(transactions, c.name, true, ref, 6);
     if (average <= 0 || monthsOfHistory < 3) return;
@@ -1118,7 +1864,7 @@ export function buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDa
     }
   });
 
-  const facts = {
+  const facts: WalletAnalyzerFacts = {
     currentTotals,
     previousTotals,
     topCategoriesBills,
@@ -1148,7 +1894,7 @@ export function buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDa
 // transactions from a database (rather than an already-loaded Redux store)
 // never needs more than this window, regardless of whether it's building
 // the curated or the detailed summary.
-export function getSnapshotLookbackStart(referenceDate) {
+export function getSnapshotLookbackStart(referenceDate: Date | string | number): Date {
   const ref = new Date(referenceDate);
   return new Date(ref.getFullYear(), ref.getMonth() - 11, 1);
 }
@@ -1162,7 +1908,13 @@ export function getSnapshotLookbackStart(referenceDate) {
 // trim in the MCP handler) means the exact same curation logic is testable
 // on its own and can't drift from a second copy if anything else ever needs
 // the same "cheap monthly summary" shape.
-export function buildCuratedWalletSummary(snapshot) {
+function stripMonthlySeries<T extends Record<string, unknown>>(obj: T): Omit<T, "monthlySeries"> {
+  const clone = { ...obj };
+  delete clone.monthlySeries;
+  return clone;
+}
+
+export function buildCuratedWalletSummary(snapshot: WalletAnalyzerSnapshotData): CuratedWalletSummary {
   return {
     currentTotals: snapshot.currentTotals,
     previousTotals: snapshot.previousTotals,
@@ -1172,11 +1924,11 @@ export function buildCuratedWalletSummary(snapshot) {
     // even after the top-level budgetRows below gets trimmed. Strip it here
     // too, or a heavy field leaks right back in through the insight cards.
     insights: snapshot.insights.map((insight) =>
-      insight.type === "budget" && insight.data?.monthlySeries
-        ? { ...insight, data: (({ monthlySeries, ...rest }) => rest)(insight.data) }
+      insight.type === "budget" && (insight.data as Record<string, unknown>)?.monthlySeries
+        ? { ...insight, data: stripMonthlySeries(insight.data as Record<string, unknown>) }
         : insight
     ),
-    budgetRows: snapshot.budgetRows.map(({ monthlySeries, ...rest }) => rest),
+    budgetRows: snapshot.budgetRows.map((row) => stripMonthlySeries(row as unknown as Record<string, unknown>)),
     topCategoriesBills: snapshot.topCategoriesBills.slice(0, 6),
     topCategoriesIncomes: snapshot.topCategoriesIncomes.slice(0, 6),
     topTransactionsBills: {
@@ -1200,12 +1952,12 @@ export function buildCuratedWalletSummary(snapshot) {
 // compareTransactionsAcrossMonths) - both already take two independent
 // ranges as parameters, so no new comparison math is needed here, just an
 // orchestrator that doesn't assume the two ranges are consecutive.
-export function buildMonthComparison({ transactions, monthADate, monthBDate, topN = 12 }) {
+export function buildMonthComparison({ transactions, monthADate, monthBDate, topN = 12 }: BuildMonthComparisonParams): MonthComparisonData {
   const dateA = new Date(monthADate);
   const dateB = new Date(monthBDate);
   const rangeA = getMonthRange(dateA);
   const rangeB = getMonthRange(dateB);
-  const labelFor = (d) => `${months[d.getMonth()]} ${d.getFullYear()}`;
+  const labelFor = (d: Date) => `${months[d.getMonth()]} ${d.getFullYear()}`;
 
   return {
     monthA: { label: labelFor(dateA), totals: getMonthTotals(transactions, rangeA.start, rangeA.end) },
@@ -1230,10 +1982,10 @@ export function buildMonthComparison({ transactions, monthADate, monthBDate, top
 // period-comparison budget row can open the same month-by-month detail
 // view BudgetHistoricalDetailModal already renders for a single period -
 // one per side here, via the new BudgetPeriodDetailModal.
-function sumBudgetSeries(row) {
+function sumBudgetSeries(row: HistoricalComparativeBudgetRow): SumBudgetSeriesResult {
   return {
-    actual: row.monthlySeries.reduce((a, m) => a + m.actual, 0),
-    goal: row.monthlySeries.reduce((a, m) => a + m.goal, 0),
+    actual: row.monthlySeries.reduce((a: number, m) => a + m.actual, 0),
+    goal: row.monthlySeries.reduce((a: number, m) => a + m.goal, 0),
     monthsTracked: row.monthsTracked,
     monthsMet: row.monthsMet,
     complianceRate: row.complianceRate,
@@ -1241,20 +1993,26 @@ function sumBudgetSeries(row) {
   };
 }
 
-export function buildBudgetPeriodChanges(budgets, transactions, rangeA, rangeB) {
-  const rowsA = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeA.start, endDate: rangeA.end });
-  const rowsB = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeB.start, endDate: rangeB.end });
+export function buildBudgetPeriodChanges(
+  budgets: (BudgetData | unknown)[],
+  transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
+  rangeA: DateRange,
+  rangeB: DateRange
+): BudgetPeriodChangeRow[] {
+  const rowsA: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeA.start, endDate: rangeA.end });
+  const rowsB: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeB.start, endDate: rangeB.end });
 
-  const byId = (rows) => new Map(rows.map((row) => [String(row.budget._id), row]));
+  const byId = (rows: HistoricalComparativeBudgetRow[]) =>
+    new Map<string, HistoricalComparativeBudgetRow>(rows.map((row) => [String(row.budget._id), row]));
   const mapA = byId(rowsA);
   const mapB = byId(rowsB);
-  const allIds = new Set([...mapA.keys(), ...mapB.keys()]);
+  const allIds = new Set<string>([...mapA.keys(), ...mapB.keys()]);
 
-  const results = [];
+  const results: BudgetPeriodChangeRow[] = [];
   allIds.forEach((id) => {
     const rowA = mapA.get(id);
     const rowB = mapB.get(id);
-    const budget = (rowA || rowB).budget;
+    const budget = (rowA || rowB)!.budget;
     results.push({
       budgetId: id,
       budget,
@@ -1273,7 +2031,15 @@ export function buildBudgetPeriodChanges(budgets, transactions, rangeA, rangeB) 
 // getMonthTotals/compareCategoriesAcrossMonths/compareTransactionsAcrossMonths
 // already accept a range of any width on each side, so this is a pure
 // orchestrator - no new comparison math beyond the budget merge above.
-export function buildPeriodComparison({ transactions, budgets, rangeA, rangeB, labelA, labelB, topN = 12 }) {
+export function buildPeriodComparison({
+  transactions,
+  budgets,
+  rangeA,
+  rangeB,
+  labelA,
+  labelB,
+  topN = 12,
+}: BuildPeriodComparisonParams): PeriodComparisonData {
   return {
     periodA: { label: labelA, totals: getMonthTotals(transactions, rangeA.start, rangeA.end) },
     periodB: { label: labelB, totals: getMonthTotals(transactions, rangeB.start, rangeB.end) },
@@ -1297,7 +2063,14 @@ export function buildPeriodComparison({ transactions, budgets, rangeA, rangeB, l
 // (budget limits, subscription billing cycles, "which calendar month
 // spent the most"): generalizing those to the display period's own width
 // would be answering a question nobody asked.
-export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack, topN = 12, today = new Date() }) {
+export function buildPeriodSnapshot({
+  transactions,
+  budgets,
+  range,
+  periodsBack,
+  topN = 12,
+  today = new Date(),
+}: BuildPeriodSnapshotParams): PeriodSnapshotData {
   const previousRange = getPrecedingPeriods(range, 1)[0];
 
   // A fixed periodsBack (the original month-based Wallet Analyzer always
@@ -1351,8 +2124,8 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
   // savingsHistory[0] is the CURRENT period (matching generateInsights'
   // `facts.savingsHistory[0]` = current convention), oldest last - the
   // labeled array stays chronological (oldest first) for the trend chart.
-  const savingsHistory = [];
-  const savingsHistoryLabeled = [];
+  const savingsHistory: number[] = [];
+  const savingsHistoryLabeled: WalletAnalyzerSavingsHistoryLabeled[] = [];
   const orderedPeriods = [range, ...getPrecedingPeriods(range, resolvedPeriodsBack - 1).reverse()];
   orderedPeriods.forEach((period) => {
     const rate = getMonthTotals(transactions, period.start, period.end).savingsRate;
@@ -1362,7 +2135,7 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
 
   // Among the top few categories, whichever deviates most (in either
   // direction) from its own trailing average is the one worth calling out.
-  let categoryAnomaly = null;
+  let categoryAnomaly: WalletAnalyzerCategoryAnomaly | null = null;
   topCategoriesBills.slice(0, 5).forEach((c) => {
     const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverageForRange(transactions, c.name, true, range, resolvedPeriodsBack);
     if (average <= 0 || monthsOfHistory < 3) return;
@@ -1382,7 +2155,7 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
   // savings-rate swings) - without them, a wide range like a full year
   // came back nearly empty since most of those single-month-flavored
   // conditions rarely fire over a long span.
-  const periodInsights = [];
+  const periodInsights: WalletAnalyzerInsightItem[] = [];
   const peakMonth = findPeakMonth(monthlyChampions);
   if (peakMonth && monthlyChampions.months.length > 1) {
     periodInsights.push({
@@ -1419,7 +2192,7 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
     });
   }
 
-  const facts = {
+  const facts: PeriodFacts = {
     currentTotals,
     previousTotals,
     topCategoriesBills,
@@ -1451,7 +2224,7 @@ export function buildPeriodSnapshot({ transactions, budgets, range, periodsBack,
 // periods of the same width as `range` is always enough - the arbitrary-
 // range sibling of getSnapshotLookbackStart, which does the same thing for
 // the single-month snapshot.
-export function getPeriodSnapshotLookbackStart(range) {
+export function getPeriodSnapshotLookbackStart(range: DateRange): Date {
   return getPrecedingPeriods(range, 6)[0].start;
 }
 
@@ -1464,16 +2237,16 @@ export function getPeriodSnapshotLookbackStart(range) {
 // biggestSubcategory detail, which the AI can get via get_period_summary_
 // detailed if it actually needs it) and quarterTotals is kept as-is since
 // it's already small.
-export function buildCuratedPeriodSummary(snapshot) {
+export function buildCuratedPeriodSummary(snapshot: PeriodSnapshotData): CuratedPeriodSummary {
   return {
     currentTotals: snapshot.currentTotals,
     previousTotals: snapshot.previousTotals,
     insights: snapshot.insights.map((insight) =>
-      insight.type === "budget" && insight.data?.monthlySeries
-        ? { ...insight, data: (({ monthlySeries, ...rest }) => rest)(insight.data) }
+      insight.type === "budget" && (insight.data as Record<string, unknown>)?.monthlySeries
+        ? { ...insight, data: stripMonthlySeries(insight.data as Record<string, unknown>) }
         : insight
     ),
-    budgetRows: snapshot.budgetRows.map(({ monthlySeries, ...rest }) => rest),
+    budgetRows: snapshot.budgetRows.map((row) => stripMonthlySeries(row as unknown as Record<string, unknown>)),
     topCategoriesBills: snapshot.topCategoriesBills.slice(0, 6),
     topCategoriesIncomes: snapshot.topCategoriesIncomes.slice(0, 6),
     topTransactionsBills: {
@@ -1487,7 +2260,7 @@ export function buildCuratedPeriodSummary(snapshot) {
     monthlyAverages: snapshot.monthlyAverages,
     categoryAnomaly: snapshot.categoryAnomaly,
     monthlyChampions: {
-      months: snapshot.monthlyChampions.months.map((m) => ({
+      months: (snapshot.monthlyChampions?.months || []).map((m) => ({
         label: m.label,
         total: m.total,
         topCategory: m.biggestCategory ? { name: m.biggestCategory.name, total: m.biggestCategory.total } : null,

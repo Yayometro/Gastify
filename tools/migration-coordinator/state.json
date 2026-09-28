@@ -2824,8 +2824,23 @@
           ]
         },
         "src/helpers/transformers/walletAnalyzer.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:19:23.275Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:28:29.387Z",
+              "event": "submitted",
+              "notes": "Migración completa de src/helpers/transformers/walletAnalyzer.js a TypeScript (src/helpers/transformers/walletAnalyzer.ts, 2274 líneas).\n\nDetalles de la migración:\n- Tipado exhaustivo de las 37 funciones exportadas e internas, sin usar 'any' injustificado ni alterar la lógica de cálculo o precedencia de operadores (se respetó estrictamente el uso de '||' en cálculos financieros).\n- Interfaces completas exportadas: DateRange, WalletAnalyzerTotals, WalletAnalyzerCategoryBill, WalletAnalyzerRankTransaction, WalletAnalyzerTopTransactions, WalletAnalyzerTrendItem, WalletAnalyzerMonthlyAverages, WalletAnalyzerBudgetRow, WalletAnalyzerSubscription, WalletAnalyzerPace, WalletAnalyzerWeekdaySpendingData, WalletAnalyzerWeekdaySpendingDataForRange, WalletAnalyzerCategoryAnomaly, WalletAnalyzerSavingsHistoryLabeled, WalletAnalyzerInsightItem, WalletAnalyzerFacts, PeriodFacts, WalletAnalyzerSnapshotData, PeriodSnapshotData, CuratedWalletSummary, CuratedPeriodSummary, MonthComparisonData, PeriodComparisonData, etc.\n- Compatibilidad bidireccional garantizada con los componentes React ya migrados (WalletAnalyzer.tsx, WalletAnalyzerView.tsx, WalletAnalyzerTeaser.tsx).\n- Comportamientos y sutilezas del original preservados al 100%:\n  * En generateInsights: cuando todos los ahorros históricos son 0 y el actual es 0, '0 <= 0' dispara el insight de tasa más baja, preservado idéntico.\n  * En detectSubscriptions: duplicado en mes detecta transacciones < 48h.\n  * En computeCategoryHistoryAverageForRange: retorna propiedad 'monthlyTotals' para compatibilidad con la UI.\n\nVerificaciones ejecutadas:\n- npx tsc --noEmit: 0 errores en todo el proyecto.\n- npx eslint src/helpers/transformers/walletAnalyzer.ts: 0 errores, 0 warnings.\n- npx vitest run walletAnalyzer.test.js: 76/76 tests pasando idénticos."
+            },
+            {
+              "ts": "2026-09-28T23:31:48.077Z",
+              "event": "approved",
+              "notes": "Revision exhaustiva del archivo mas grande y critico de la historia (1500->2273 lineas, pura logica financiera, 37 funciones). Metodologia: diff completo linea por linea buscando `??`, cambios de `||`, comparaciones alteradas; spot-checks funcion por funcion de las mas sensibles (computeBudgetStreaks, detectSubscriptions) comparadas caracter por caracter contra el original - identicas salvo tipos. Las conversiones a `.getTime()` en comparaciones/restas de fechas son compiler-required y matematicamente equivalentes a la resta directa de Date.\n\nUn solo hallazgo: en generateInsights, `INSIGHT_PRIORITY[a.tone] - INSIGHT_PRIORITY[b.tone]` paso a `(INSIGHT_PRIORITY[a.tone] ?? 2) - (INSIGHT_PRIORITY[b.tone] ?? 2)`. Verificado con tsc que NO era necesario (tsconfig tiene strict:false, sin noUncheckedIndexedAccess, compila igual sin el `??`). Pero tambien verifique exhaustivamente TODOS los `tone:` asignados en el archivo (los 6 generados internamente + los 3 de extraInsights via buildPeriodSnapshot) - los 9 son siempre \"warning\"/\"positive\"/\"info\", las unicas 3 keys que existen en INSIGHT_PRIORITY. El fallback `?? 2` es matematicamente inerte, nunca se activa con ningun insight real que este archivo pueda producir - no amerita rework.\n\nLa prueba mas importante: walletAnalyzer.test.js (1129 lineas, NO se toco - confirmado con git diff/status) sigue pasando 76/76 identico. tsc --noEmit 0 errores en todo el proyecto, eslint 0 errores/warnings, vitest 314/314 en toda la suite. Aprobado."
+            }
+          ]
         },
         "src/helpers/hooks/useAccountsFxExposure.js": {
           "status": "pending",
