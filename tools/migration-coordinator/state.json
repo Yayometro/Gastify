@@ -2957,8 +2957,23 @@
           ]
         },
         "src/app/api/general-data/projections/get/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:49:59.736Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:51:45.884Z",
+              "event": "submitted",
+              "notes": "Migración de src/app/api/general-data/projections/get/route.js a .ts.\n\n1. Tipado completo:\n- Se renombró el archivo a `.ts` preservando historial (`git mv`).\n- Se definió el esquema de validación de entrada con zod (`getProjectionSettingsBodySchema`) y se derivó el tipo `GetProjectionSettingsRequestBody`.\n- Se definieron los tipos de respuesta: `GetProjectionSettingsStatusResponse`, `GetProjectionSettingsSuccessResponse` y `GetProjectionSettingsResponse`.\n- Se tiparon las funciones exportadas de Next.js `GET` (`Promise<NextResponse<GetProjectionSettingsStatusResponse>>`) y `POST` (`Promise<NextResponse<GetProjectionSettingsResponse>>`), junto con `request: NextRequest | Request`.\n\n2. Auditoría de Seguridad (Fix IDOR #35 aplicado):\n- La ruta original leía `{ mail, year }` del body confiando ciegamente en `mail` sin verificar sesión de autenticación, permitiendo a cualquier atacante leer la configuración de proyecciones de cualquier usuario conociendo su correo (vulnerabilidad IDOR).\n- Se aplicó el patrón estándar de seguridad de la migración: se obtiene la sesión mediante `auth.api.getSession({ headers: request.headers })`, se valida `if (!sesion) throw new Error(\"No session\")`, se busca el usuario por `sesion.user.email` y se acota la consulta a `ProjectionSettings.findOne({ wallet: walletId, year })` con el wallet del usuario autenticado.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/projections/get/route.ts`: 0 errores, 0 warnings.\n- `npx vitest run`: 29 suites pasadas (314 tests exitosos).\n- No existía `route.test.js` para este endpoint.\n- NO se ejecutó `npm run build`.\n- No se tocó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-28T23:52:16.826Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #35): antes `const { mail, year } = await request.json()` confiaba en el mail del cliente sin verificar sesion, exponia la configuracion de proyecciones de cualquier usuario. Ahora deriva de `auth.api.getSession` + `User.findOne`. El check `!mail || !year` correctamente paso a solo `!year` ya que mail dejo de usarse (viene de la sesion), consistente con el patron esperado. zod schema con safeParse. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/projection-baseline/get/route.js": {
           "status": "pending",
