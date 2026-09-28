@@ -265,6 +265,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 33 | `general-data/transactions/get-transactions` (POST) | Cero verificación de sesión - mismo patrón `const userMail = await request.json()` que `get-wallet`/`get-categories`/`get-all`. Esta ruta ya estaba en `.ts` desde antes de Historia 8 (no estaba en su lista de archivos), se encontró y arregló al cerrar la historia. | `87f1ca9` | Crítica |
 | 34 | `general-data/income-sources/get` (POST) | Cero verificación de sesión - `const id = await request.json()` a secas trataba el body entero como el email, exponia los income sources de cualquier usuario. | `11c035e` | Alta |
 | 35 | `general-data/projections/get` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para buscar la configuración de proyecciones de cualquier usuario. | `1ef4c85` | Alta |
+| 36 | `general-data/projection-baseline/get` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para buscar el projection baseline de cualquier usuario. | `7964929` | Alta |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión

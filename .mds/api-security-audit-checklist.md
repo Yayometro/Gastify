@@ -27,7 +27,7 @@ userMail})` - el mismo patrón exacto volvió a aparecer en
 al revisar lo que falta). Es muy probable que haya más entre las rutas de
 `transactions/*` que aún faltan y en el resto de grupos pendientes.
 
-## Los 35 ya confirmados y corregidos (no hace falta re-revisarlos)
+## Los 36 ya confirmados y corregidos (no hace falta re-revisarlos)
 
 | Ruta | Problema | Commit |
 |------|----------|--------|
@@ -69,6 +69,7 @@ al revisar lo que falta). Es muy probable que haya más entre las rutas de
 | `general-data/transactions/get-transactions` (POST) | Cero sesión - `const userMail = await request.json()` a secas, mismo patrón que `get-wallet`/`get-categories`/`get-all` | `87f1ca9` |
 | `general-data/income-sources/get` (POST) | Cero sesión - `const id = await request.json()` a secas trataba el body entero como el email, mismo patrón | `11c035e` |
 | `general-data/projections/get` (POST) | Cero sesión - confiaba en el `mail` del body para buscar la configuración de proyecciones | `1ef4c85` |
+| `general-data/projection-baseline/get` (POST) | Cero sesión - confiaba en el `mail` del body para buscar el projection baseline | `7964929` |
 
 ## Metodología sugerida para la auditoría completa
 
@@ -140,6 +141,7 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - `general-data/transactions/get-transactions` (POST) - arreglada al cerrar Historia 8 (ya estaba en .ts desde antes)
 - `general-data/income-sources/get` (POST) - arreglada durante Historia 9 de la migración TS
 - `general-data/projections/get` (POST) - arreglada durante Historia 9 de la migración TS
+- `general-data/projection-baseline/get` (POST) - arreglada durante Historia 9 de la migración TS
 
 ### Probablemente OK sin `getSession()` propio (confirmar de todas formas)
 - `auth/[...all]/route.ts` - el catch-all de Better Auth, maneja su propia auth internamente.
@@ -170,7 +172,7 @@ que usa `Movements.jsx`, no este árbol)
 - [ ] `general-data/income-sources/remove`
 - [ ] `general-data/income-sources/update`
 - [ ] `general-data/projection-baseline/delete`
-- [ ] `general-data/projection-baseline/get`
+- [x] `general-data/projection-baseline/get` - arreglada (ver tabla de arriba, commit `7964929`)
 - [ ] `general-data/projection-baseline/update`
 - [x] `general-data/projections/get` - arreglada (ver tabla de arriba, commit `1ef4c85`)
 - [ ] `general-data/projections/update`
