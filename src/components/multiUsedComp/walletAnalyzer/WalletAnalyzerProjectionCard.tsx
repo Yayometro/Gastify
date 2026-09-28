@@ -2,6 +2,22 @@
 import React from "react";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import ProjectionVarianceCell from "../Projections/ProjectionVarianceCell";
+import type { ProjectionComparisonData } from "./WalletAnalyzerView";
+
+// Typed bridge for unmigrated ProjectionVarianceCell
+interface ProjectionVarianceCellProps {
+  label: string;
+  actual: number;
+  projected: number;
+  value: number;
+  betterWhenPositive?: boolean;
+}
+const TypedProjectionVarianceCell = ProjectionVarianceCell as React.ComponentType<ProjectionVarianceCellProps>;
+
+export interface WalletAnalyzerProjectionCardProps {
+  comparison?: ProjectionComparisonData | null;
+  walletPrimaryCurrency?: string;
+}
 
 // Proyectado vs. Real for whichever month Wallet Analyzer's stepper is
 // currently showing - the same comparison Projections' "Precisión de tus
@@ -10,7 +26,7 @@ import ProjectionVarianceCell from "../Projections/ProjectionVarianceCell";
 // this is where the user actually spends time looking at one month closely.
 // Renders nothing when `comparison` is null: either a future month (hasn't
 // happened yet) or a closed month with no buffer/baseline data recorded.
-function WalletAnalyzerProjectionCard({ comparison, walletPrimaryCurrency }) {
+function WalletAnalyzerProjectionCard({ comparison, walletPrimaryCurrency }: WalletAnalyzerProjectionCardProps) {
   if (!comparison) return null;
 
   const varianceIncome = comparison.actualIncome - comparison.projectedIncome;
@@ -41,14 +57,14 @@ function WalletAnalyzerProjectionCard({ comparison, walletPrimaryCurrency }) {
       </div>
 
       <div className="flex flex-col gap-1 text-xs">
-        <ProjectionVarianceCell
+        <TypedProjectionVarianceCell
           label="Ingreso"
           actual={comparison.actualIncome}
           projected={comparison.projectedIncome}
           value={varianceIncome}
           betterWhenPositive
         />
-        <ProjectionVarianceCell
+        <TypedProjectionVarianceCell
           label="Gasto"
           actual={comparison.actualExpense}
           projected={comparison.projectedExpense}

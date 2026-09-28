@@ -2710,8 +2710,23 @@
           ]
         },
         "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerProjectionCard.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T22:59:32.180Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:01:34.886Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerProjectionCard.jsx a WalletAnalyzerProjectionCard.tsx.\n\n1. Tipado completo:\n- Se definió y exportó la interfaz `WalletAnalyzerProjectionCardProps` (`comparison?: ProjectionComparisonData | null`, `walletPrimaryCurrency?: string`), reutilizando el tipo `ProjectionComparisonData` de `WalletAnalyzerView.tsx`.\n- Se definió la interfaz `ProjectionVarianceCellProps` y el typed bridge `TypedProjectionVarianceCell` (`React.ComponentType<ProjectionVarianceCellProps>`) para interactuar de forma segura con el componente no migrado `ProjectionVarianceCell.jsx`.\n\n2. Cero cambios de comportamiento:\n- Se preservaron íntegramente las operaciones matemáticas de varianza, condición de early-return (`!comparison`), flags condicionales (`isInProgress`), labels (`actualColumnLabel`) y llamadas a `formatMoneyMajor`.\n\n3. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerProjectionCard.tsx`: 0 errores / 0 warnings.\n- `npx vitest run`: 29 suites pasadas, 314 tests pasados.\n- NO se ejecutó `npm run build`. No se modificó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-28T23:02:11.966Z",
+              "event": "approved",
+              "notes": "Byte-identico salvo interfaces y typed bridge para ProjectionVarianceCell (aun sin migrar). Reutiliza ProjectionComparisonData de WalletAnalyzerView.tsx. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerTeaser.jsx": {
           "status": "pending",
