@@ -2900,8 +2900,23 @@
           ]
         },
         "src/model/ProjectionSettings.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:41:16.746Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:42:25.007Z",
+              "event": "submitted",
+              "notes": "Migración de `src/model/ProjectionSettings.js` a `src/model/ProjectionSettings.ts`.\n\n1. Tipado y estructuras:\n- Se definió `interface IProjectionSettings extends mongoose.Document` reflejando los campos del schema (`user`, `wallet`, `year`, `monthlyBalances`, `monthlyBuffers`, `createdAt`, `updatedAt`).\n- Se definieron interfaces anidadas auxiliares: `IMonthlyBalanceRevision`, `IMonthlyBalance`, `IMonthlyBufferRevision`, e `IMonthlyBuffer` tipando `money` (`amountMinor`, `currency`), buffers y balances con soporte para append-only log de revisiones (`revisions`).\n- Se preservó exactamente el patrón de inicialización Mongoose del archivo original: `(mongoose.models.ProjectionSettings as mongoose.Model<IProjectionSettings>) || mongoose.model<IProjectionSettings>(\"ProjectionSettings\", projectionSettingsSchema)`.\n\n2. Fidelidad de código y observaciones:\n- No se cambió lógica ni comportamiento.\n- Se conservaron todos los comentarios explicativos y opciones del schema tal como estaban en el original (incluyendo `require: true` preexistente en user/wallet/year).\n- No se utilizaron `any` ni `@ts-ignore`.\n\n3. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/model/ProjectionSettings.ts`: 0 errores/warnings.\n- `npx vitest run`: 29 test files passed (314/314 tests passed)."
+            },
+            {
+              "ts": "2026-09-28T23:42:55.699Z",
+              "event": "approved",
+              "notes": "Migracion de modelo byte-identica salvo tipos. IProjectionSettings, IMonthlyBalance/Revision, IMonthlyBuffer/Revision. Typo preexistente `require` en user/wallet/year preservado. Patron de export estandar preservado. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/model/ProjectionBaseline.js": {
           "status": "pending",
