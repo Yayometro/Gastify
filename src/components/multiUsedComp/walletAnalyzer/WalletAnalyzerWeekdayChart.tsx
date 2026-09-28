@@ -1,12 +1,33 @@
 import React, { useState } from "react";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 
-const SHORT_LABELS = { Lunes: "Lun", Martes: "Mar", Miércoles: "Mié", Jueves: "Jue", Viernes: "Vie", Sábado: "Sáb", Domingo: "Dom" };
+export interface WalletAnalyzerWeekdayDay {
+  dayName: string;
+  avgPerOccurrence: number;
+  total: number;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdayChartProps {
+  days: WalletAnalyzerWeekdayDay[];
+  walletPrimaryCurrency?: string;
+}
+
+const SHORT_LABELS: Record<string, string> = {
+  Lunes: "Lun",
+  Martes: "Mar",
+  Miércoles: "Mié",
+  Jueves: "Jue",
+  Viernes: "Vie",
+  Sábado: "Sáb",
+  Domingo: "Dom",
+};
 
 // Same hand-rolled div-bar + hover-tooltip technique as
 // WalletAnalyzerTrendChart.jsx, single series instead of paired.
-function WalletAnalyzerWeekdayChart({ days, walletPrimaryCurrency }) {
-  const [hovered, setHovered] = useState(null);
+function WalletAnalyzerWeekdayChart({ days, walletPrimaryCurrency }: WalletAnalyzerWeekdayChartProps) {
+  const [hovered, setHovered] = useState<number | null>(null);
   const maxValue = Math.max(1, ...days.map((d) => d.avgPerOccurrence));
 
   return (
