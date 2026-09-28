@@ -2938,8 +2938,23 @@
           ]
         },
         "src/app/api/general-data/income-sources/get/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:46:12.029Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:48:02.317Z",
+              "event": "submitted",
+              "notes": "Migración de src/app/api/general-data/income-sources/get/route.js a .ts.\n\n1. Tipado completo:\n- Se renombró el archivo a `.ts` preservando historial (`git mv`).\n- Se definieron los tipos e interfaces de respuesta: `GetIncomeSourcesStatusResponse`, `GetIncomeSourcesSuccessResponse` y el alias `GetIncomeSourcesResponse`.\n- Se tiparon las funciones exportadas de Next.js `GET` (`Promise<NextResponse<GetIncomeSourcesStatusResponse>>`) y `POST` (`Promise<NextResponse<GetIncomeSourcesResponse>>`).\n- Se tipó el parámetro `request: NextRequest | Request`.\n\n2. Auditoría de Seguridad (Fix IDOR aplicado):\n- La ruta original leía el email del body mediante `const id = await request.json()` y buscaba el usuario por dicho valor sin validar autenticación de sesión, lo que constituía una vulnerabilidad IDOR.\n- Se aplicó el fix de seguridad estándar: se obtiene la sesión mediante `auth.api.getSession({ headers: request.headers })`, se valida que exista (`if (!sesion) throw new Error(\"No session\")`), se busca el usuario por `sesion.user.email` y se acota la consulta de `IncomeSource` a `user: userId` y `wallet: walletId` con `archived: { $ne: true }`.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/income-sources/get/route.ts`: 0 errores, 0 warnings.\n- `npx vitest run`: 29 suites pasadas (314 tests exitosos).\n- No se ejecutó `npm run build`.\n- No se tocó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-28T23:48:52.213Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #34): antes `const id = await request.json()` a secas trataba TODO el body como el email, cero verificacion de sesion, exponia los income sources de cualquier usuario. Ahora deriva de `auth.api.getSession` + `User.findOne`. El `throw new Error(e)` final sin cast compila limpio porque `strict:false` implica `e` como `any` en el catch (no useUnknownInCatchVariables) - correcto, no le hacia falta cast. No hay route.test.js para este archivo. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/projections/get/route.js": {
           "status": "pending",
