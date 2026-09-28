@@ -2995,8 +2995,23 @@
           ]
         },
         "src/app/api/general-data/fx/quote/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:56:28.117Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:58:36.235Z",
+              "event": "submitted",
+              "notes": "Migración de src/app/api/general-data/fx/quote/route.js a route.ts.\n\n1. Tipado completo:\n- Se renombró el archivo a `.ts` preservando el historial en git (`git mv`).\n- Se definió el schema Zod `fxQuoteRequestSchema` y se derivó el tipo de entrada `FxQuoteRequestBody` con `z.infer<typeof fxQuoteRequestSchema>`.\n- Se tiparon las interfaces de respuesta: `FxQuoteResolvedData`, `FxQuotePostSuccessResponse`, `FxQuotePostUnavailableResponse`, `FxQuotePostErrorResponse`, `FxQuotePostResponse`, `FxQuoteGetResponse`.\n- Se tiparon explícitamente los handlers `POST(request: NextRequest | Request): Promise<NextResponse<FxQuotePostResponse>>` y `GET(): Promise<NextResponse<FxQuoteGetResponse>>` garantizando retorno de `NextResponse` en todas las ramas.\n\n2. Auditoría de seguridad:\n- Se auditó exhaustivamente la ruta: maneja cotizaciones públicas de tipo de cambio basadas en tipos de referencia del BCE (vía `FxRateSnapshot` y `fxRateService.convert`).\n- No lee, escribe, ni filtra datos específicos de ningún usuario, wallet, cuenta ni transacción (solo recibe `amountMinor`, `fromCurrency`, `toCurrency`, `date` y calcula la conversión matemática).\n- Por ser un endpoint puramente informativo/utilitario público de cotizaciones de divisa, NO requiere `auth.api.getSession()` ni verificación de usuario (coincide con lo previsto en `.mds/api-security-audit-checklist.md`).\n\n3. Cero cambios de comportamiento o lógica:\n- Se preservaron intactas todas las validaciones de entrada (`MAX_AMOUNT_MINOR`, `MIN_DATE`, `assertSupportedCurrency`, validación de fecha ISO no futura), mensajes de error y códigos de estado HTTP (200, 400, 503).\n- Se conservó la estructura exacta de la respuesta JSON.\n\n4. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/api/general-data/fx/quote/route.ts`: 0 errores, 0 warnings.\n- `npx vitest run`: 29 test files pasadas (314 tests exitosos).\n- NO se ejecutó `npm run build`.\n- No se modificó ningún otro archivo."
+            },
+            {
+              "ts": "2026-09-28T23:59:28.070Z",
+              "event": "approved",
+              "notes": "Analisis de seguridad correcto: confirmado que la ruta solo toma amountMinor/fromCurrency/toCurrency/date, usa FxRateSnapshot (cache compartido de tasas publicas del BCE, no ligado a usuario), y no lee/escribe nada especifico de usuario/wallet/cuenta - no necesita auth.api.getSession(), coincide con lo ya anotado en el checklist (\"probablemente OK\"). Todas las validaciones manuales (Number.isInteger, assertSupportedCurrency, rango de fecha) preservadas identicas, mismos mensajes de error. El schema zod se define pero su fallo no bloquea nada (cae a castear el body crudo de todas formas) - las validaciones manuales que ya existian siguen siendo las que realmente gatean el comportamiento, sin cambio real. `Boolean(result.estimated)`/`Boolean(result.stale)` son compiler-required (interface los declara no-opcionales) y no deberian diferir de los valores reales que devuelve convert(). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado. Con esto Historia 9 completa: 20/20."
+            }
+          ]
         }
       }
     }
