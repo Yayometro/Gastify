@@ -3,8 +3,17 @@ import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { buildWalletAnalyzerSnapshot } from "@/helpers/transformers/walletAnalyzer";
 import WalletAnalyzerInsightsStrip from "./WalletAnalyzerInsightsStrip";
+import type { RootState } from "@/lib/store";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import type { BudgetData } from "@/lib/features/budgetSlice";
+import type { WalletData } from "@/lib/features/walletSlice";
+import type { WalletAnalyzerSnapshotData } from "./WalletAnalyzerView";
 
-const EMPTY_ARRAY = [];
+const EMPTY_ARRAY: never[] = [];
+
+export interface WalletAnalyzerTeaserProps {
+  timePeriodFromFather?: (Date | string)[] | null;
+}
 
 // The full "Lo más destacado del mes" strip (every insight, full detail,
 // same click-to-explain modals as the main Wallet Analyzer - not a
@@ -20,18 +29,18 @@ const EMPTY_ARRAY = [];
 // WalletAnalyzer.jsx, there's no local stepper here to "take the wheel"
 // with, so it just always follows the parent - one atomic, prop-driven
 // piece instead of owning its own navigation state.
-function WalletAnalyzerTeaser({ timePeriodFromFather }) {
-  const transactions = useSelector((state) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
-  const budgets = useSelector((state) => state.budgetReducer?.data) || EMPTY_ARRAY;
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProps): React.JSX.Element | null {
+  const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
+  const budgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
+  const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
 
   const today = useMemo(() => new Date(), []);
-  const snapshot = useMemo(
+  const snapshot = useMemo<WalletAnalyzerSnapshotData>(
     () => buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: timePeriodFromFather?.[0] ? new Date(timePeriodFromFather[0]) : today }),
     [transactions, budgets, timePeriodFromFather, today]
   );
 
-  function scrollToFullAnalyzer() {
+  function scrollToFullAnalyzer(): void {
     // "smooth" scroll animation isn't reliably driven in every browser
     // context (confirmed hanging at scrollY 0 in this session's automated
     // pane) - "auto" (an instant jump) is the safe choice since this is a
