@@ -263,6 +263,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 31 | `general-data/transactions/transfer` (POST) | Ya tenía checks de ownership de cuenta, pero comparaba contra el `user`/`wallet` mandado por el cliente sin verificar sesión - un atacante que conociera esos ids de una víctima podía crear transferencias fantasma en su wallet. | `4021669` | Alta |
 | 32 | `general-data/transactions/transfer/remove` (POST) | Cero verificación de sesión - `Transaction.find/deleteMany({transferGroupId})` a secas permitía borrar las piernas de cualquier transferencia de cualquier usuario conociendo/adivinando el transferGroupId. | `7a8ca3c` | Alta |
 | 33 | `general-data/transactions/get-transactions` (POST) | Cero verificación de sesión - mismo patrón `const userMail = await request.json()` que `get-wallet`/`get-categories`/`get-all`. Esta ruta ya estaba en `.ts` desde antes de Historia 8 (no estaba en su lista de archivos), se encontró y arregló al cerrar la historia. | `87f1ca9` | Crítica |
+| 34 | `general-data/income-sources/get` (POST) | Cero verificación de sesión - `const id = await request.json()` a secas trataba el body entero como el email, exponia los income sources de cualquier usuario. | `11c035e` | Alta |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión

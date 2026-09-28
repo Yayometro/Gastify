@@ -27,7 +27,7 @@ userMail})` - el mismo patrón exacto volvió a aparecer en
 al revisar lo que falta). Es muy probable que haya más entre las rutas de
 `transactions/*` que aún faltan y en el resto de grupos pendientes.
 
-## Los 33 ya confirmados y corregidos (no hace falta re-revisarlos)
+## Los 34 ya confirmados y corregidos (no hace falta re-revisarlos)
 
 | Ruta | Problema | Commit |
 |------|----------|--------|
@@ -67,6 +67,7 @@ al revisar lo que falta). Es muy probable que haya más entre las rutas de
 | `general-data/transactions/transfer` (POST) | Cero sesión - los checks de ownership de cuenta comparaban contra el `user`/`wallet` mandado por el cliente, no verificado | `4021669` |
 | `general-data/transactions/transfer/remove` (POST) | Cero sesión - `Transaction.find/deleteMany({transferGroupId})` a secas permitía borrar las piernas de cualquier transferencia de cualquier usuario | `7a8ca3c` |
 | `general-data/transactions/get-transactions` (POST) | Cero sesión - `const userMail = await request.json()` a secas, mismo patrón que `get-wallet`/`get-categories`/`get-all` | `87f1ca9` |
+| `general-data/income-sources/get` (POST) | Cero sesión - `const id = await request.json()` a secas trataba el body entero como el email, mismo patrón | `11c035e` |
 
 ## Metodología sugerida para la auditoría completa
 
@@ -136,6 +137,7 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 - `general-data/transactions/transfer` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/transfer/remove` (POST) - arreglada durante Historia 8 de la migración TS
 - `general-data/transactions/get-transactions` (POST) - arreglada al cerrar Historia 8 (ya estaba en .ts desde antes)
+- `general-data/income-sources/get` (POST) - arreglada durante Historia 9 de la migración TS
 
 ### Probablemente OK sin `getSession()` propio (confirmar de todas formas)
 - `auth/[...all]/route.ts` - el catch-all de Better Auth, maneja su propia auth internamente.
@@ -161,7 +163,7 @@ que usa `Movements.jsx`, no este árbol)
 
 **FX / Income sources / Projections**
 - [ ] `general-data/fx/quote` - probablemente público (cotizaciones), confirmar que no filtra nada sensible.
-- [ ] `general-data/income-sources/get`
+- [x] `general-data/income-sources/get` - arreglada (ver tabla de arriba, commit `11c035e`)
 - [ ] `general-data/income-sources/new`
 - [ ] `general-data/income-sources/remove`
 - [ ] `general-data/income-sources/update`
