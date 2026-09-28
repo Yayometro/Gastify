@@ -1,23 +1,38 @@
 import React, { useRef, useState } from "react";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 
+export interface WalletAnalyzerTrendChartItem {
+  label?: string;
+  shortLabel?: string;
+  income?: number;
+  expense?: number;
+  transactionCount?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerTrendChartProps {
+  trend: WalletAnalyzerTrendChartItem[];
+  walletPrimaryCurrency?: string;
+  onSelectMonth?: (month: WalletAnalyzerTrendChartItem) => void;
+}
+
 // Plain divs sized by inline style, same hand-rolled technique as
 // CategoryTreemap's squarified treemap - no charting dependency needed for
 // a 6-bar income-vs-expense comparison. The tooltip follows the actual
 // cursor position (tracked via onMouseMove on the chart container, same
 // technique as CategoryTreemap's cursor-following tooltip) instead of
 // being pinned above whichever column is hovered.
-function WalletAnalyzerTrendChart({ trend, walletPrimaryCurrency, onSelectMonth }) {
-  const containerRef = useRef(null);
-  const [hovered, setHovered] = useState(null);
-  const [cursor, setCursor] = useState({ x: 0, y: 0 });
+function WalletAnalyzerTrendChart({ trend, walletPrimaryCurrency, onSelectMonth }: WalletAnalyzerTrendChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [cursor, setCursor] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const maxValue = Math.max(1, ...trend.flatMap((m) => [m.income, m.expense]));
   // Transaction counts share the chart but not the currency scale, so
   // they get their own max to size against - a count bar sized against
   // peso amounts would be invisible next to real spend.
   const maxCount = Math.max(1, ...trend.map((m) => m.transactionCount));
 
-  function handleMouseMove(e) {
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
     setCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top });
@@ -53,7 +68,7 @@ function WalletAnalyzerTrendChart({ trend, walletPrimaryCurrency, onSelectMonth 
             tabIndex={onSelectMonth ? 0 : undefined}
             onKeyDown={
               onSelectMonth
-                ? (e) => {
+                ? (e: React.KeyboardEvent<HTMLDivElement>) => {
                     if (e.key === "Enter" || e.key === " ") onSelectMonth(month);
                   }
                 : undefined
