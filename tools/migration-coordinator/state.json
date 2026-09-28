@@ -2862,8 +2862,23 @@
           ]
         },
         "src/model/FxRateSnapshot.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:36:38.379Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:38:07.011Z",
+              "event": "submitted",
+              "notes": "Migración de src/model/FxRateSnapshot.js a TypeScript (.ts). Se definieron las interfaces IFxRates, IFxRateSnapshot (extendiendo mongoose.Document con todos los campos reales del schema: source, baseCurrency, effectiveDate, rates, fetchedAt, rawSourceDate, schemaVersion, timestamps) e IFxRateSnapshotModel (incluyendo la propiedad estática SUPPORTED_CURRENCIES). Se preservó exactamente el patrón de exportación mongoose.models.FxRateSnapshot || mongoose.model(...). Sin cambios de lógica ni comportamiento. Verificado con npx tsc --noEmit (0 errores), npx eslint src/model/FxRateSnapshot.ts (0 advertencias/errores) y npx vitest run (314 tests pasando)."
+            },
+            {
+              "ts": "2026-09-28T23:38:37.815Z",
+              "event": "approved",
+              "notes": "Migracion de modelo fiel y limpia. IFxRateSnapshot/IFxRates/IFxRateSnapshotModel completas, el estatico `SUPPORTED_CURRENCIES` (confirmado real en el original via `.statics.SUPPORTED_CURRENCIES`) preservado con cast apropiado. Patron de export estandar preservado sin normalizar. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/model/IncomeSource.js": {
           "status": "pending",
