@@ -17,13 +17,352 @@ import WalletAnalyzerInsightsStrip from "./WalletAnalyzerInsightsStrip";
 import WalletAnalyzerProjectionCard from "./WalletAnalyzerProjectionCard";
 import MonthlyChampionsModal from "./MonthlyChampionsModal";
 import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import type { WalletAnalyzerTrendItem } from "./WalletAnalyzer";
+
+// Typed bridge for unmigrated ModalContentTopMonthItem
+interface ModalContentTopMonthItemProps {
+  item: unknown;
+  close: () => void;
+  onBack?: (() => void) | false;
+}
+const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<ModalContentTopMonthItemProps>;
+
+export interface ChangePillProps {
+  changePct?: number | null;
+  isNew?: boolean;
+  unit?: string;
+  invert?: boolean;
+}
+
+export interface CategoryDotProps {
+  color?: string;
+}
+
+export interface RankRowItem {
+  name: string;
+  color?: string;
+  icon?: string;
+  amount?: number;
+  [key: string]: unknown;
+}
+
+export interface RankRowProps {
+  index: number;
+  item: RankRowItem;
+  currency?: string;
+  subtitle?: string;
+  onClick?: () => void;
+}
+
+export interface SpendPatternsAnalysis {
+  transactionIsInBiggestCategory?: boolean;
+  transactionIsBiggestSubcategory?: boolean;
+  subcategoryBelongsToBiggestCategory?: boolean;
+  categoryShareOfTotal: number;
+  transactionShareOfCategory: number;
+  transactionSharesTopCategoryTag?: boolean;
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsCategory {
+  name: string;
+  color?: string;
+  icon?: string;
+  total: number;
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsSubcategory {
+  name: string;
+  categoryName?: string;
+  total: number;
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsTransaction {
+  _id?: string;
+  name: string;
+  amount: number;
+  categoryName: string;
+  subcategoryName?: string | null;
+  date?: Date | string;
+  color?: string;
+  icon?: string;
+  tags: string[];
+  [key: string]: unknown;
+}
+
+export interface SpendPatternsTag {
+  name: string;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface BiggestSpendPatternsData {
+  biggestTransaction: SpendPatternsTransaction;
+  biggestCategory: SpendPatternsCategory;
+  biggestSubcategory?: SpendPatternsSubcategory | null;
+  mostCommonCategoryTag?: SpendPatternsTag | null;
+  analysis: SpendPatternsAnalysis;
+  lookbackRange?: { start: Date; end: Date };
+  monthsBack?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerTotals {
+  income: number;
+  expense: number;
+  balance: number;
+  savingsRate: number;
+  transactionCount: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerCategoryBill {
+  name: string;
+  color?: string;
+  icon?: string;
+  current: number;
+  previous?: number;
+  changePct?: number | null;
+  isNew?: boolean;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerCategoryBillPrevious {
+  name: string;
+  color?: string;
+  icon?: string;
+  amount: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerRankTransaction {
+  _id?: string;
+  name: string;
+  amount: number;
+  categoryName: string;
+  subcategoryName?: string | null;
+  color?: string;
+  icon?: string;
+  tags?: string[] | { name?: string }[];
+  date?: Date | string;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerTopTransactions {
+  current: WalletAnalyzerRankTransaction[];
+  previous: WalletAnalyzerRankTransaction[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerMonthlyAverages {
+  avgIncome: number;
+  avgExpense: number;
+  avgTransactionCount: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerBudgetRow {
+  budgetId: string;
+  category: string;
+  limit: number;
+  spent: number;
+  pct: number;
+  status: "over" | "warning" | "ok" | string;
+  streakMonths: number;
+  monthlySeries?: { label: string; actual: number; goal: number; met: boolean }[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerSubscription {
+  name: string;
+  categoryName: string;
+  amount: number;
+  color: string;
+  icon: string;
+  isNew?: boolean;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerPace {
+  spentSoFar: number;
+  avgPaceForSameDay: number;
+  dayOfMonth: number;
+  deltaPct: number | null;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerChampionMonthItem {
+  _id?: string;
+  name: string;
+  amount: number;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerChampionMonthCategory {
+  name: string;
+  color?: string;
+  icon?: string;
+  total: number;
+  pctOfWindowTotal?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerChampionMonthSubcategory {
+  name: string;
+  categoryName?: string;
+  categoryColor?: string;
+  categoryIcon?: string;
+  total: number;
+  pctOfWindowTotal?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerMonthlyChampionEntry {
+  label: string;
+  range: { start: Date; end: Date };
+  biggestTransaction?: WalletAnalyzerChampionMonthItem;
+  biggestCategory?: WalletAnalyzerChampionMonthCategory;
+  biggestSubcategory?: WalletAnalyzerChampionMonthSubcategory | null;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerMonthlyChampionsData {
+  months?: WalletAnalyzerMonthlyChampionEntry[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdayDay {
+  dayName: string;
+  avgPerOccurrence: number;
+  total: number;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdayWeek {
+  label: string;
+  total: number;
+  count: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdayDailyBreakdown {
+  dayName: string;
+  dayOfMonth: number;
+  total: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerWeekdaySpendingData {
+  days: WalletAnalyzerWeekdayDay[];
+  insight: string;
+  weeks?: WalletAnalyzerWeekdayWeek[];
+  dailyBreakdown?: WalletAnalyzerWeekdayDailyBreakdown[];
+  weekdayAvg?: number;
+  weekendAvg?: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerInsightItem {
+  type: string;
+  data: unknown;
+  icon: string;
+  title: string;
+  tone?: "warning" | "positive" | "info" | string;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerSnapshotData {
+  currentTotals: WalletAnalyzerTotals;
+  previousTotals: WalletAnalyzerTotals;
+  topCategoriesBills: WalletAnalyzerCategoryBill[];
+  topCategoriesBillsPrevious: WalletAnalyzerCategoryBillPrevious[];
+  topTransactionsBills: WalletAnalyzerTopTransactions;
+  trend: (WalletAnalyzerTrendItem & {
+    label?: string;
+    shortLabel?: string;
+    income?: number;
+    expense?: number;
+    transactionCount?: number;
+    [key: string]: unknown;
+  })[];
+  monthlyAverages: WalletAnalyzerMonthlyAverages;
+  budgetRows: WalletAnalyzerBudgetRow[];
+  subscriptions: WalletAnalyzerSubscription[];
+  pace: WalletAnalyzerPace;
+  biggestSpendPatterns?: BiggestSpendPatternsData | null;
+  monthlyChampions?: WalletAnalyzerMonthlyChampionsData | null;
+  weekdaySpending: WalletAnalyzerWeekdaySpendingData;
+  insights: WalletAnalyzerInsightItem[];
+  currentRange: { start: Date; end: Date };
+  previousRange: { start: Date; end: Date };
+  [key: string]: unknown;
+}
+
+export interface FxExposureRow {
+  currency: string;
+  nativeAmount: number;
+  valueInPrimary: number;
+  changePct: number | null;
+  effectiveDate?: string;
+  [key: string]: unknown;
+}
+
+export interface FxExposureState {
+  rows: FxExposureRow[];
+  loading: boolean;
+  [key: string]: unknown;
+}
+
+export interface ProjectionComparisonData {
+  type?: "closed" | "in-progress" | string;
+  projectedIncome: number;
+  actualIncome: number;
+  projectedExpense: number;
+  actualExpense: number;
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerViewProps {
+  referenceMonth: Date;
+  referenceMonthLabel: string;
+  previousMonthLabel: string;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
+  onSelectMonth?: (d: Date) => void;
+  maxSelectableMonth?: Date;
+  canGoNext?: boolean;
+  topN?: number;
+  onChangeTopN?: (n: number) => void;
+  walletPrimaryCurrency: string;
+  snapshot: WalletAnalyzerSnapshotData;
+  fxExposure: FxExposureState;
+  transactions?: TransactionData[];
+  projectionComparison?: ProjectionComparisonData | null;
+}
+
+export type ChampionsModalKind = "transaction" | "category" | "subCategory" | null;
+
+export interface ActiveInsightData {
+  icon?: string;
+  tone?: "warning" | "positive" | "info" | string;
+  title?: string;
+  type?: string;
+  data?: unknown;
+  [key: string]: unknown;
+}
 
 // Expense-side change: spending more (>0) is the notable/warm direction,
 // spending less is the cool/positive one - matches the approved concept.
 // `invert`: for expense-side metrics (spending), up is the warm/notable
 // direction (red) - for income/balance/savings-rate/FX-value, up is the
 // good direction (green), so those pass invert to flip the colors.
-export function ChangePill({ changePct, isNew, unit = "%", invert = false }) {
+export function ChangePill({ changePct, isNew, unit = "%", invert = false }: ChangePillProps): React.JSX.Element {
   if (isNew) {
     return (
       <span className="text-[11px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>
@@ -46,14 +385,14 @@ export function ChangePill({ changePct, isNew, unit = "%", invert = false }) {
   );
 }
 
-function CategoryDot({ color }) {
+export function CategoryDot({ color }: CategoryDotProps): React.JSX.Element {
   return <span className="inline-block h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />;
 }
 
 // `onClick`, when present, drives the same drill-down modal used for the
 // "top elements by month" section elsewhere in the app - a category row
 // opens that category's transactions, a transaction row opens itself.
-export function RankRow({ index, item, currency, subtitle, onClick }) {
+export function RankRow({ index, item, currency, subtitle, onClick }: RankRowProps): React.JSX.Element {
   return (
     <div
       className={`flex items-center gap-2.5 py-2 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 transition-colors ${
@@ -64,7 +403,7 @@ export function RankRow({ index, item, currency, subtitle, onClick }) {
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={
         onClick
-          ? (e) => {
+          ? (e: React.KeyboardEvent) => {
               if (e.key === "Enter" || e.key === " ") onClick();
             }
           : undefined
@@ -90,9 +429,9 @@ export function RankRow({ index, item, currency, subtitle, onClick }) {
 // bullets - every claim here is a direct readout of a computed boolean/
 // percentage, not an inference, so it stays consistent with the rest of
 // Wallet Analyzer's "no AI" rule-based approach.
-export function buildSpendPatternAnalysis(patterns) {
+export function buildSpendPatternAnalysis(patterns: BiggestSpendPatternsData): string[] {
   const { biggestTransaction, biggestCategory, biggestSubcategory, mostCommonCategoryTag, analysis } = patterns;
-  const bullets = [];
+  const bullets: string[] = [];
 
   bullets.push(
     analysis.transactionIsInBiggestCategory
@@ -144,7 +483,7 @@ function WalletAnalyzerView({
   fxExposure,
   transactions,
   projectionComparison,
-}) {
+}: WalletAnalyzerViewProps): React.JSX.Element {
   const {
     currentTotals,
     previousTotals,
@@ -168,48 +507,54 @@ function WalletAnalyzerView({
   const pacePct = pace.avgPaceForSameDay > 0 ? Math.min(100, (pace.spentSoFar / pace.avgPaceForSameDay) * 100) : 0;
 
   const transactionsById = useMemo(() => {
-    const map = new Map();
+    const map = new Map<string | undefined, TransactionData>();
     (transactions || []).forEach((t) => map.set(t._id, t));
     return map;
   }, [transactions]);
 
   const { close, handleClose, renderModal, modalContent } = useModal();
-  const [activeInsight, setActiveInsight] = useState(null);
-  const [championsModalKind, setChampionsModalKind] = useState(null);
-  const [weekdayDetailOpen, setWeekdayDetailOpen] = useState(false);
+  const [activeInsight, setActiveInsight] = useState<ActiveInsightData | null>(null);
+  const [championsModalKind, setChampionsModalKind] = useState<ChampionsModalKind>(null);
+  const [weekdayDetailOpen, setWeekdayDetailOpen] = useState<boolean>(false);
 
   // Only when opened FROM the monthly-champions list does the drill-down
   // get a back button - passed straight through as a callback (not state),
   // so there's no timing gap between "remember where we came from" and
   // "render the modal that needs to know it". Every other entry point
   // (Top categories/transactions rows, insight cards) just omits it.
-  function handleSelectChampionMonth(monthEntry) {
+  function handleSelectChampionMonth(monthEntry: WalletAnalyzerMonthlyChampionEntry) {
     const kind = championsModalKind;
     setChampionsModalKind(null);
     const goBack = () => setChampionsModalKind(kind);
     if (kind === "transaction") {
-      openTransactionModal(monthEntry.biggestTransaction, goBack);
+      if (monthEntry.biggestTransaction) {
+        openTransactionModal(monthEntry.biggestTransaction, goBack);
+      }
     } else if (kind === "category") {
-      openCategoryModal(
-        { name: monthEntry.biggestCategory.name, color: monthEntry.biggestCategory.color, icon: monthEntry.biggestCategory.icon, amount: monthEntry.biggestCategory.total },
-        monthEntry.range,
-        goBack
-      );
+      if (monthEntry.biggestCategory) {
+        openCategoryModal(
+          { name: monthEntry.biggestCategory.name, color: monthEntry.biggestCategory.color, icon: monthEntry.biggestCategory.icon, amount: monthEntry.biggestCategory.total },
+          monthEntry.range,
+          goBack
+        );
+      }
     } else if (kind === "subCategory") {
-      openSubcategoryModal(monthEntry.biggestSubcategory, monthEntry.range, goBack);
+      if (monthEntry.biggestSubcategory) {
+        openSubcategoryModal(monthEntry.biggestSubcategory, monthEntry.range, goBack);
+      }
     }
   }
 
-  function openTransactionModal(item, onBack) {
+  function openTransactionModal(item: { _id?: string }, onBack?: () => void) {
     const raw = transactionsById.get(item._id);
     if (!raw) return;
-    renderModal(<ModalContentTopMonthItem item={raw} close={handleClose} onBack={onBack && (() => { handleClose(); onBack(); })} />);
+    renderModal(<TypedModalContentTopMonthItem item={raw} close={handleClose} onBack={onBack && (() => { handleClose(); onBack(); })} />);
   }
 
-  function openCategoryModal(item, range, onBack) {
+  function openCategoryModal(item: { name: string; icon?: string; color?: string; amount?: number }, range: { start: Date; end: Date }, onBack?: () => void) {
     const children = getCategoryTransactions(transactions || [], item.name, true, range);
     renderModal(
-      <ModalContentTopMonthItem
+      <TypedModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill: true, value: item.amount, children }}
         close={handleClose}
         onBack={onBack && (() => { handleClose(); onBack(); })}
@@ -217,13 +562,13 @@ function WalletAnalyzerView({
     );
   }
 
-  function openSubcategoryModal(item, range, onBack) {
+  function openSubcategoryModal(item: { name: string; total: number }, range: { start: Date; end: Date }, onBack?: () => void) {
     const children = getSubcategoryTransactions(transactions || [], item.name, true, range);
     // Subcategories have no icon/color of their own - borrow the parent
     // category's, read off any matching transaction (they all share it).
-    const parentCategory = children[0]?.category;
+    const parentCategory = (children[0] as TransactionData | undefined)?.category as { icon?: string; color?: string } | undefined;
     renderModal(
-      <ModalContentTopMonthItem
+      <TypedModalContentTopMonthItem
         item={{
           name: item.name,
           icon: parentCategory?.icon || "MdFilterNone",
@@ -267,7 +612,7 @@ function WalletAnalyzerView({
                 picker="month"
                 value={referenceMonth ? dayjs(referenceMonth).locale("es") : null}
                 onChange={(d) => d && onSelectMonth?.(d.toDate())}
-                disabledDate={(d) => maxSelectableMonth && d.toDate() > maxSelectableMonth}
+                disabledDate={(d) => Boolean(maxSelectableMonth && d.toDate() > maxSelectableMonth)}
                 format="MMMM YYYY"
                 allowClear={false}
                 suffixIcon={null}
@@ -397,7 +742,7 @@ function WalletAnalyzerView({
             }
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => {
+            onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === "Enter" || e.key === " ") {
                 setActiveInsight({
                   icon: "📅",
@@ -426,8 +771,8 @@ function WalletAnalyzerView({
           <WalletAnalyzerTrendChart
             trend={trend}
             walletPrimaryCurrency={walletPrimaryCurrency}
-            onSelectMonth={(month) =>
-              setActiveInsight({ icon: "📅", tone: "info", title: month.label, type: "trend_month", data: month })
+            onSelectMonth={(month: unknown) =>
+              setActiveInsight({ icon: "📅", tone: "info", title: (month as { label?: string })?.label, type: "trend_month", data: month })
             }
           />
         </div>
@@ -554,7 +899,7 @@ function WalletAnalyzerView({
                   }
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: React.KeyboardEvent) => {
                     if (e.key === "Enter" || e.key === " ") {
                       setActiveInsight({ icon: "📊", tone: "info", title: `${b.category} — cumplimiento`, type: "budget", data: b });
                     }
@@ -595,7 +940,7 @@ function WalletAnalyzerView({
               onClick={() => setChampionsModalKind("transaction")}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === "Enter" || e.key === " ") setChampionsModalKind("transaction");
               }}
               className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
@@ -616,7 +961,7 @@ function WalletAnalyzerView({
               onClick={() => setChampionsModalKind("category")}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === "Enter" || e.key === " ") setChampionsModalKind("category");
               }}
               className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
@@ -632,7 +977,7 @@ function WalletAnalyzerView({
                 onClick={() => setChampionsModalKind("subCategory")}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => {
+                onKeyDown={(e: React.KeyboardEvent) => {
                   if (e.key === "Enter" || e.key === " ") setChampionsModalKind("subCategory");
                 }}
                 className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
@@ -674,7 +1019,7 @@ function WalletAnalyzerView({
                   }
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: React.KeyboardEvent) => {
                     if (e.key === "Enter" || e.key === " ") {
                       setActiveInsight({ icon: "🔁", tone: "info", title: s.name, type: "subscription", data: s });
                     }
@@ -743,7 +1088,7 @@ function WalletAnalyzerView({
         onClick={() => setActiveInsight({ icon: "🏃", tone: "info", title: "Ritmo de gasto", type: "spending_pace", data: pace })}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => {
+        onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === "Enter" || e.key === " ") {
             setActiveInsight({ icon: "🏃", tone: "info", title: "Ritmo de gasto", type: "spending_pace", data: pace });
           }
@@ -776,7 +1121,7 @@ function WalletAnalyzerView({
         onClick={() => setWeekdayDetailOpen(true)}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => {
+        onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === "Enter" || e.key === " ") setWeekdayDetailOpen(true);
         }}
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
