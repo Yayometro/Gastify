@@ -2,9 +2,25 @@
 import { useEffect, useState } from "react";
 import fetcher from "@/helpers/fetcher";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import type { AccountData } from "@/lib/features/accountsSlice";
 
-function previousMonthEnd(referenceDate) {
-  const d = new Date(referenceDate);
+export interface FxExposureRow {
+  currency: string;
+  nativeAmount: number;
+  valueInPrimary: number;
+  changePct: number | null;
+  effectiveDate?: string;
+  [key: string]: unknown;
+}
+
+export interface FxExposureState {
+  rows: FxExposureRow[];
+  loading: boolean;
+  [key: string]: unknown;
+}
+
+function previousMonthEnd(referenceDate?: Date | string | number | null): Date {
+  const d = new Date(referenceDate as string | number | Date);
   return new Date(d.getFullYear(), d.getMonth(), 0, 23, 59, 59, 999);
 }
 
@@ -16,18 +32,22 @@ function previousMonthEnd(referenceDate) {
 // balance changes). Mirrors useLinkedAccountsTotal's conversion pattern -
 // same-currency accounts need no conversion, a failed quote drops that
 // currency rather than assuming a rate.
-export function useAccountsFxExposure(accounts, walletPrimaryCurrency, referenceDate) {
+export function useAccountsFxExposure(
+  accounts?: AccountData[] | null,
+  walletPrimaryCurrency?: string,
+  referenceDate?: Date | string | number | null
+): FxExposureState {
   const foreignAccounts = (accounts || []).filter(
     (a) => (a?.currency || walletPrimaryCurrency) !== walletPrimaryCurrency
   );
-  const nativeByCurrency = {};
+  const nativeByCurrency: Record<string, number> = {};
   foreignAccounts.forEach((a) => {
-    nativeByCurrency[a.currency] = (nativeByCurrency[a.currency] || 0) + (Number(a.amount) || 0);
+    nativeByCurrency[a.currency as string] = (nativeByCurrency[a.currency as string] || 0) + (Number(a.amount) || 0);
   });
   const currencies = Object.keys(nativeByCurrency);
   const key = currencies.map((c) => `${c}:${nativeByCurrency[c]}`).join(",") + `|${referenceDate}`;
 
-  const [state, setState] = useState({ rows: [], loading: currencies.length > 0 });
+  const [state, setState] = useState<FxExposureState>({ rows: [], loading: currencies.length > 0 });
 
   useEffect(() => {
     if (currencies.length === 0) {
@@ -40,7 +60,7 @@ export function useAccountsFxExposure(accounts, walletPrimaryCurrency, reference
 
     (async () => {
       setState((s) => ({ ...s, loading: true }));
-      const rows = [];
+      const rows: FxExposureRow[] = [];
       for (const currency of currencies) {
         const nativeAmount = nativeByCurrency[currency];
         const amountMinor = majorToMinor(nativeAmount, currency);
@@ -51,9 +71,9 @@ export function useAccountsFxExposure(accounts, walletPrimaryCurrency, reference
             toCurrency: walletPrimaryCurrency,
           });
           if (!current.ok) continue;
-          const valueInPrimary = minorToMajor(current.data.amountMinor, walletPrimaryCurrency);
+          const valueInPrimary = minorToMajor(current.data.amountMinor, walletPrimaryCurrency as string);
 
-          let changePct = null;
+          let changePct: number | null = null;
           try {
             const previous = await toFetch.post("general-data/fx/quote", {
               amountMinor,
@@ -62,17 +82,17 @@ export function useAccountsFxExposure(accounts, walletPrimaryCurrency, reference
               date: prevDate,
             });
             if (previous.ok) {
-              const previousValueInPrimary = minorToMajor(previous.data.amountMinor, walletPrimaryCurrency);
+              const previousValueInPrimary = minorToMajor(previous.data.amountMinor, walletPrimaryCurrency as string);
               changePct = previousValueInPrimary > 0
                 ? ((valueInPrimary - previousValueInPrimary) / previousValueInPrimary) * 100
                 : null;
             }
-          } catch (e) {
+          } catch {
             // Historical rate unavailable - show current exposure without a MoM delta.
           }
 
           rows.push({ currency, nativeAmount, valueInPrimary, changePct, effectiveDate: current.data.effectiveDate });
-        } catch (e) {
+        } catch {
           // Current rate unavailable - drop this currency entirely rather than guess.
         }
       }

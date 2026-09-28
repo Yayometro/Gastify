@@ -2843,8 +2843,23 @@
           ]
         },
         "src/helpers/hooks/useAccountsFxExposure.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:32:36.359Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:35:17.238Z",
+              "event": "submitted",
+              "notes": "Migración de `src/helpers/hooks/useAccountsFxExposure.js` a `src/helpers/hooks/useAccountsFxExposure.ts`:\n\n1. Tipado:\n- Se definieron y exportaron las interfaces `FxExposureRow` y `FxExposureState` (coincidentes con la forma consumida por `WalletAnalyzerView.tsx` y `WalletAnalyzer.tsx`).\n- Se tiparon los parámetros de `useAccountsFxExposure`: `accounts?: AccountData[] | null`, `walletPrimaryCurrency?: string`, `referenceDate?: Date | string | number | null`.\n- Se tipó la función auxiliar interna `previousMonthEnd(referenceDate?: Date | string | number | null): Date`.\n- Se tipó el estado React `useState<FxExposureState>` y el acumulador `rows: FxExposureRow[]`.\n\n2. Preservación estricta de lógica y comportamiento:\n- Cero cambios de lógica o flujos condicionales.\n- Se mantuvieron intactos todos los operadores lógicos y fallbacks (no se alteró ningún `||` por `??`, conservando fallbacks como `a?.currency || walletPrimaryCurrency` y `Number(a.amount) || 0`).\n- Se ajustaron los bloques `catch (e)` a `catch` para satisfacer `@typescript-eslint/no-unused-vars` de ESLint sin alterar el manejo de errores ni la continuidad del bucle.\n\n3. Verificaciones realizadas:\n- `npx tsc --noEmit`: 0 errores de compilación TypeScript.\n- `npx eslint src/helpers/hooks/useAccountsFxExposure.ts`: 0 errores y 0 advertencias.\n- `npx vitest run`: 29/29 suites pasadas (314/314 tests exitosos)."
+            },
+            {
+              "ts": "2026-09-28T23:36:01.240Z",
+              "event": "approved",
+              "notes": "Byte-identico salvo tipos. Nota menor de estilo (no bloqueante): FxExposureRow/FxExposureState se redefinieron aqui en vez de importarse de WalletAnalyzerView.tsx - son estructuralmente identicas (mismos campos), asi que no hay incompatibilidad, solo duplicacion cosmetica. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/model/FxRateSnapshot.js": {
           "status": "pending",
