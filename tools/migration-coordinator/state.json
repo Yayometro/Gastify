@@ -2881,8 +2881,23 @@
           ]
         },
         "src/model/IncomeSource.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:39:21.468Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:40:17.157Z",
+              "event": "submitted",
+              "notes": "Migración de src/model/IncomeSource.js a TypeScript (.ts). Se definieron las interfaces IIncomeSource (extendiendo mongoose.Document con todos los campos reales del schema: name, amount legacy, currency, recurrence enum, anchorDate, active, user ObjectId, wallet ObjectId, archived, history con IIncomeSourceHistoryEntry, moneyAmountSchema opcional y timestamps createdAt/updatedAt), IIncomeSourceHistoryEntry y el tipo IncomeSourceRecurrence. Se preservó exactamente el patrón de exportación mongoose.models.IncomeSource || mongoose.model(...). Sin cambios de lógica ni comportamiento. Verificado con npx tsc --noEmit (0 errores), npx eslint src/model/IncomeSource.ts (0 advertencias/errores) y npx vitest run (314 tests pasando)."
+            },
+            {
+              "ts": "2026-09-28T23:40:41.242Z",
+              "event": "approved",
+              "notes": "Migracion de modelo byte-identica salvo tipos. IIncomeSource, IIncomeSourceHistoryEntry, IncomeSourceRecurrence. Typo preexistente `require` en user/wallet preservado. Patron de export estandar preservado. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/model/ProjectionSettings.js": {
           "status": "pending",
