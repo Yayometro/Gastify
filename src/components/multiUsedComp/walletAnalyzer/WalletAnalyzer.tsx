@@ -7,16 +7,116 @@ import { useAccountsFxExposure } from "@/helpers/hooks/useAccountsFxExposure";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import type { RootState } from "@/lib/store";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import type { BudgetData } from "@/lib/features/budgetSlice";
+import type { AccountData } from "@/lib/features/accountsSlice";
+import type { WalletData } from "@/lib/features/walletSlice";
 import WalletAnalyzerView from "./WalletAnalyzerView";
+
+export interface WalletAnalyzerProps {
+  timePeriodFromFather?: (Date | string)[] | null;
+  mail?: string;
+}
+
+export interface IncomeSourceItem {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  currency?: string;
+  recurrence?: "monthly" | "semimonthly" | "biweekly" | "weekly" | string;
+  anchorDate?: Date | string;
+  active?: boolean;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  archived?: boolean;
+  history?: {
+    amount?: number;
+    money?: unknown;
+    recurrence?: string;
+    effectiveFrom?: Date | string;
+    effectiveTo?: Date | string;
+  }[];
+  money?: unknown;
+  [key: string]: unknown;
+}
+
+export interface MonthlyBufferItem {
+  month?: number;
+  unexpectedBuffer?: number;
+  unexpectedIncomeBuffer?: number;
+  expenseMoney?: unknown;
+  incomeMoney?: unknown;
+  revisions?: {
+    unexpectedBuffer?: number;
+    unexpectedIncomeBuffer?: number;
+    expenseMoney?: unknown;
+    incomeMoney?: unknown;
+    updatedAt?: Date | string;
+    [key: string]: unknown;
+  }[];
+  [key: string]: unknown;
+}
+
+export interface ProjectionSettingsData {
+  _id?: string;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  year?: number;
+  monthlyBalances?: {
+    month?: number;
+    balance?: number;
+    money?: unknown;
+    revisions?: {
+      balance?: number;
+      money?: unknown;
+      updatedAt?: Date | string;
+    }[];
+    [key: string]: unknown;
+  }[];
+  monthlyBuffers?: MonthlyBufferItem[];
+  [key: string]: unknown;
+}
+
+export interface BaselineHistoryEntry {
+  effectiveFrom?: Date | string;
+  effectiveTo?: Date | string;
+  incomeMoney?: {
+    amountMinor: number;
+    currency: string;
+    [key: string]: unknown;
+  };
+  expenseMoney?: {
+    amountMinor: number;
+    currency: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface ProjectionBaselineData {
+  _id?: string;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  incomeHistory?: BaselineHistoryEntry[];
+  expenseHistory?: BaselineHistoryEntry[];
+  [key: string]: unknown;
+}
+
+export interface WalletAnalyzerTrendItem {
+  label?: string;
+  shortLabel?: string;
+  [key: string]: unknown;
+}
 
 const SPANISH_MONTHS = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 const SPANISH_MONTHS_SHORT = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-const EMPTY_ARRAY = [];
+const EMPTY_ARRAY: never[] = [];
 
-function formatMonthLabel(date) {
+function formatMonthLabel(date: Date): string {
   return `${SPANISH_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
@@ -31,19 +131,19 @@ function formatMonthLabel(date) {
 // means navigating the ‹ › stepper or month picker here doesn't get
 // stomped by the parent filter, and a later parent-filter change is
 // ignored once the user has picked their own month.
-function WalletAnalyzer({ timePeriodFromFather, mail }) {
-  const transactions = useSelector((state) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
-  const budgets = useSelector((state) => state.budgetReducer?.data) || EMPTY_ARRAY;
-  const accounts = useSelector((state) => state.accountsReducer?.data) || EMPTY_ARRAY;
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): React.JSX.Element | null {
+  const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
+  const budgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
+  const accounts: AccountData[] = useSelector((state: RootState) => state.accountsReducer?.data) || EMPTY_ARRAY;
+  const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
 
   const today = useMemo(() => new Date(), []);
   const initialMonth = timePeriodFromFather?.[0]
     ? new Date(new Date(timePeriodFromFather[0]).getFullYear(), new Date(timePeriodFromFather[0]).getMonth(), 1)
     : new Date(today.getFullYear(), today.getMonth(), 1);
-  const [referenceMonth, setReferenceMonth] = useState(initialMonth);
-  const [topN, setTopN] = useState(12);
-  const userHasSelectedMonth = useRef(false);
+  const [referenceMonth, setReferenceMonth] = useState<Date>(initialMonth);
+  const [topN, setTopN] = useState<number>(12);
+  const userHasSelectedMonth = useRef<boolean>(false);
 
   useEffect(() => {
     if (!userHasSelectedMonth.current && timePeriodFromFather?.[0]) {
@@ -65,7 +165,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
 
   const trendWithLabels = useMemo(
     () =>
-      snapshot.trend.map((m, i) => {
+      snapshot.trend.map((m: WalletAnalyzerTrendItem, i: number) => {
         const monthDate = new Date(referenceMonth.getFullYear(), referenceMonth.getMonth() - (snapshot.trend.length - 1 - i), 1);
         return { ...m, label: formatMonthLabel(monthDate), shortLabel: SPANISH_MONTHS_SHORT[monthDate.getMonth()] };
       }),
@@ -76,7 +176,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
   // Projections' own accuracy report reads, ported here so the same
   // comparison is available for whichever month the stepper is showing.
 
-  const [incomeSources, setIncomeSources] = useState(EMPTY_ARRAY);
+  const [incomeSources, setIncomeSources] = useState<IncomeSourceItem[]>(EMPTY_ARRAY);
   useEffect(() => {
     if (!mail) return;
     let cancelled = false;
@@ -94,7 +194,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
     };
   }, [mail]);
 
-  const [projectionSettings, setProjectionSettings] = useState(null);
+  const [projectionSettings, setProjectionSettings] = useState<ProjectionSettingsData | null>(null);
   const year = referenceMonth.getFullYear();
   useEffect(() => {
     if (!mail) return;
@@ -113,7 +213,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
     };
   }, [mail, year]);
 
-  const [projectionBaseline, setProjectionBaseline] = useState(null);
+  const [projectionBaseline, setProjectionBaseline] = useState<ProjectionBaselineData | null>(null);
   useEffect(() => {
     if (!mail) return;
     let cancelled = false;
@@ -135,7 +235,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
   // but the projection math needs every source in the Wallet's primary
   // currency to sum them meaningfully. Same-currency sources pass through
   // untouched; foreign ones are converted via a live quote, never faked.
-  const [incomeSourcesConverted, setIncomeSourcesConverted] = useState(EMPTY_ARRAY);
+  const [incomeSourcesConverted, setIncomeSourcesConverted] = useState<IncomeSourceItem[]>(EMPTY_ARRAY);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -151,7 +251,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
               toCurrency: walletPrimaryCurrency,
             });
             if (res.ok) return { ...s, amount: minorToMajor(res.data.amountMinor, walletPrimaryCurrency) };
-          } catch (e) {
+          } catch {
             // No rate available - fall through to the raw (unconverted) source.
           }
           return s;
@@ -166,7 +266,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
 
   // Same idea, for ProjectionBaseline's income/expense entries - each can
   // carry its own currency (e.g. Octaura paid in USD).
-  const [projectionBaselineConverted, setProjectionBaselineConverted] = useState(null);
+  const [projectionBaselineConverted, setProjectionBaselineConverted] = useState<ProjectionBaselineData | null>(null);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -175,7 +275,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
         return;
       }
       const toFetch = fetcher();
-      const convertEntries = (entries, moneyField) =>
+      const convertEntries = (entries: BaselineHistoryEntry[] | undefined, moneyField: "incomeMoney" | "expenseMoney") =>
         Promise.all(
           (entries || []).map(async (entry) => {
             const money = entry[moneyField];
@@ -188,7 +288,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
                 toCurrency: walletPrimaryCurrency,
               });
               if (res.ok) return { ...entry, [moneyField]: { amountMinor: res.data.amountMinor, currency: walletPrimaryCurrency } };
-            } catch (e) {
+            } catch {
               // No rate available - fall through to the raw (unconverted) entry.
             }
             return entry;
@@ -235,7 +335,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }) {
         userHasSelectedMonth.current = true;
         setReferenceMonth((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
       }}
-      onSelectMonth={(d) => {
+      onSelectMonth={(d: Date) => {
         userHasSelectedMonth.current = true;
         setReferenceMonth(new Date(d.getFullYear(), d.getMonth(), 1));
       }}
