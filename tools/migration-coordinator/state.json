@@ -2786,8 +2786,23 @@
           ]
         },
         "src/components/multiUsedComp/walletAnalyzer/InsightDetailModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:11:55.680Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:14:14.356Z",
+              "event": "submitted",
+              "notes": "Migrado InsightDetailModal.jsx a .tsx. Se definieron y exportaron interfaces detalladas para cada una de las variantes de insight (`BudgetInsightDetailData`, `CategoryAnomalyInsightDetailData`, `SubscriptionInsightDetailData`, `MonthlyAverageInsightDetailData`, `TrendMonthInsightDetailData`, `SavingsRateInsightDetailData`, `PeakMonthInsightDetailData`, `PeakMonthVsPreviousInsightDetailData`, `PeakQuarterInsightDetailData`, `SpendingPaceInsightDetailData`) junto con `InsightDetailItem`, `InsightDetailModalProps` y `MonthRowProps`. Se mantuvieron intactos todos los operadores de fallback `||`, ternarios y lógica de renderizado. Sin cambios en tiempo de ejecución. Verificado con `npx tsc --noEmit` (0 errores), `npx eslint` (0 errores) y `npx vitest run` (29 archivos / 314 tests pasando)."
+            },
+            {
+              "ts": "2026-09-28T23:14:51.270Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. Cada uno de los 10 tipos de insight revisado linea por linea contra el original - identicos, solo se agrego `const d = data as XInsightDetailData` al inicio de cada rama. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/walletAnalyzer/WeekdaySpendingDetailModal.jsx": {
           "status": "pending",
