@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-8-movements",
+  "activeStory": "historia-9-wallet-analyzer",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -2627,6 +2627,91 @@
               "notes": "Fix de seguridad confirmado correcto (ruta #32, ultima de Historia 8): antes `Transaction.find/deleteMany({transferGroupId})` a secas, cero verificacion, permitia borrar las piernas de cualquier transferencia de cualquier usuario conociendo/adivinando el transferGroupId. Ahora ambos queries (find y deleteMany) acotados a `wallet: userFound.wallet`. Test actualizado con 2 casos nuevos (sin sesion, usuario no encontrado) y los 2 existentes actualizados para verificar el scoping. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314 (29 suites). Aprobado. Historia 8 completa: 25/25."
             }
           ]
+        }
+      }
+    },
+    "historia-9-wallet-analyzer": {
+      "label": "Wallet Analyzer, el widget de analisis financiero del Dashboard (WalletAnalyzer + WalletAnalyzerTeaser + WalletAnalyzerView [812 lineas] + WalletAnalyzerTrendChart + WalletAnalyzerInsightsStrip + WalletAnalyzerProjectionCard + WalletAnalyzerWeekdayChart + MonthlyChampionsModal + InsightDetailModal + WeekdaySpendingDetailModal + el transformer helpers/transformers/walletAnalyzer.js [1500 lineas, pura logica de calculo, tiene su propio walletAnalyzer.test.js de 1129 lineas que hay que mantener en verde] + useAccountsFxExposure hook + modelos FxRateSnapshot/IncomeSource/ProjectionSettings/ProjectionBaseline + las 4 rutas de solo lectura que el widget realmente llama: income-sources/get, projections/get, projection-baseline/get, fx/quote). Auditar seguridad en cada ruta migrada igual que en Historia 8. NO incluye: HistoricalWalletAnalyzer.jsx ni HistoricalProjectionsTable ni BudgetPeriodDetailModal (variante 'History' del mismo widget, renderizada en dashboard/history/page.jsx via HistoryClient.jsx - su propia historia futura 'History'); ModalContentTopMonthItem.jsx (704 lineas, compartido con el arbol pesado de analytics top3/historical ya excluido en historias anteriores - se usa via typed bridge sin migrar); las rutas de escritura income-sources/new,update,remove y projections/update y projection-baseline/update,delete (pertenecen a la futura historia 'Projections' junto con la UI que las administra, aun no localizada/explorada).",
+      "files": {
+        "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzer.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerView.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerTrendChart.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerInsightsStrip.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerProjectionCard.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerTeaser.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerWeekdayChart.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/MonthlyChampionsModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/InsightDetailModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/walletAnalyzer/WeekdaySpendingDetailModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/transformers/walletAnalyzer.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/hooks/useAccountsFxExposure.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/FxRateSnapshot.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/IncomeSource.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/ProjectionSettings.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/ProjectionBaseline.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/income-sources/get/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/projections/get/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/projection-baseline/get/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/fx/quote/route.js": {
+          "status": "pending",
+          "history": []
         }
       }
     }
