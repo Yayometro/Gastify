@@ -2976,8 +2976,23 @@
           ]
         },
         "src/app/api/general-data/projection-baseline/get/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-28T23:53:17.282Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-28T23:54:40.486Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript con tipado completo de NextRequest/NextResponse y esquema Zod (getProjectionBaselineBodySchema, GetProjectionBaselineRequestBody, GetProjectionBaselineResponse). AUDITORÍA DE SEGURIDAD: Se aplicó el fix de seguridad estándar (IDOR) - la ruta anteriormente confiaba en el mail enviado en el body sin verificar sesión; ahora valida la sesión con auth.api.getSession({ headers: request.headers }) y deriva el usuario/walletId a partir de sesion.user.email. Verificación: npx tsc --noEmit pasó limpio (0 errores), npx eslint pasó limpio (0 errores/warnings), npx vitest run pasó limpio (29/29 suites, 314 tests pasaron)."
+            },
+            {
+              "ts": "2026-09-28T23:55:26.199Z",
+              "event": "approved",
+              "notes": "Fix de seguridad confirmado correcto (ruta #36): antes `const { mail } = await request.json()` confiaba en el mail del cliente sin verificar sesion, exponia el projection baseline de cualquier usuario. Ahora deriva de `auth.api.getSession` + `User.findOne`.\n\nDos detalles menores, ninguno bloqueante:\n1. `request.json().catch(() => ({}))` agregado - si el body viene vacio/malformado, antes tiraba error (el mail ya no se usa para nada critico, asi que esto solo evita un fallo en el caso patologico de un body invalido; los call sites reales - WalletAnalyzer.tsx - siempre mandan `{mail}` valido, asi que es inerte en la practica).\n2. `getProjectionBaselineBodySchema.safeParse(rawBody)` se llama pero su resultado nunca se usa (linea muerta, sin efecto, no afecta comportamiento).\n\ntsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/app/api/general-data/fx/quote/route.js": {
           "status": "pending",
