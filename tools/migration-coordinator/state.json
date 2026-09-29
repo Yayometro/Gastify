@@ -3974,8 +3974,23 @@
           ]
         },
         "src/app/api/general-data/income-sources/update/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T18:01:14.742Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T18:03:18.334Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript con fix de seguridad #40 (verificación de sesión vía Better Auth y scoping de la consulta por wallet: IncomeSource.findOne({ _id: id, wallet: userFound.wallet })). Se tiparon request, response (UpdateIncomeSourceGetStatusResponse, UpdateIncomeSourceRequestBody, UpdateIncomeSourceSuccessResponse) y se reutilizaron IIncomeSource e IncomeSourceRecurrence de IncomeSource.ts. Se añadió cast de anchorDate a Date para compatibilidad con el documento Mongoose preservando la evaluación original. Bugs preexistentes identificados y preservados intactos: incapacidad de actualizar amount a 0 debido al patrón !amount, bypass de history para amount 0, status 201 en payload con HTTP 200 por defecto, y throw directo en catch."
+            },
+            {
+              "ts": "2026-09-29T18:04:12.036Z",
+              "event": "approved",
+              "notes": "Fix de seguridad #40, tan severo como el de remove-many (fila 28): el original hacía `IncomeSource.findById(id)` sin verificar sesión NI ownership - cualquiera que adivinara un ObjectId podía modificar la income source de cualquier usuario. Fix correcto siguiendo el patrón de link-budget/route.ts: `auth.api.getSession()` → `User.findOne({mail: sesion.user.email})` → `IncomeSource.findOne({_id: id, wallet: userFound.wallet})` en vez de `findById(id)` a secas. Si el id pertenece a otro usuario, cae correctamente en el `if (!updateIncomeSource) throw...` que ya existía.\n\nVerificado vía diff que TODA la lógica de negocio (version history con `isChanging`/`openEntry.effectiveTo`, los fallbacks `!campo ? valorViejo : valorNuevo` para name/amount/currency/recurrence/anchorDate/active) es byte-idéntica al original - solo difieren casts de compilación (`as unknown as Date`, `as string` en el catch).\n\nReutiliza `IIncomeSource`/`IncomeSourceRecurrence` reales del modelo ya migrado. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\n4 bugs preexistentes documentados sin arreglar: `!amount` hace imposible fijar el monto a exactamente 0; el mismo problema hace que `isChanging` no detecte un cambio a monto 0; `status: 201` en el body pero el HTTP real es 200 (NextResponse.json default); el catch relanza el error sin responder con un status HTTP de error explícito. Sin rework."
+            }
+          ]
         },
         "src/app/api/general-data/income-sources/new/route.js": {
           "status": "pending",

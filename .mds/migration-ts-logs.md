@@ -269,6 +269,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 37 | `general-data/projections/update` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para actualizar los projection settings (buffers mensuales, balance manual) de cualquier usuario. | `17b1e9a` | Alta |
 | 38 | `general-data/projection-baseline/update` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para crear/editar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | `3971553` | Alta |
 | 39 | `general-data/projection-baseline/delete` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para borrar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | `b26a2d2` | Alta |
+| 40 | `general-data/income-sources/update` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía a cualquiera (autenticado o no) modificar amount/recurrence/currency/anchorDate/active de la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo nivel de gravedad que el bug de `remove-many` (fila 28). | (pendiente) | Crítica |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
@@ -485,6 +486,9 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 39 | `TransferExchangeModal.tsx` | El flag `destinationTouched` es "pegajoso": una vez que el usuario edita manualmente el monto destino, cambiar la cuenta origen/destino o el monto origen ya no vuelve a autocompletar la cotización de cambio de divisa - el usuario tiene que usar "Clear Form" para reactivarla. | Historia 13 |
 | 40 | `TransferExchangeModal.tsx` | `majorToMinor()` redondea con `Math.round` - un monto menor a la unidad menor de la moneda (ej. $0.001 USD) se redondea a 0 y la validación `!(sourceAmountMinor > 0)` bloquea el submit con "Enter both amounts", aunque el usuario sí haya escrito un monto. | Historia 13 |
 | 41 | `Navbar.tsx` | `useSelector((state) => state.userReducer.data)` da el `UserData` plano, no el slice `{data, status, error}` - `ccUser.status` siempre es `undefined` (el campo real vive en `state.userReducer.status`, no dentro de `.data`), así que `if (ccUser.status == "idle")` nunca dispara `fetchUser` desde Navbar. Mismo patrón raíz que el bug #13 (`ReadFileComp.tsx`, Historia 8), ocurrencia nueva en archivo distinto - no causa problema visible porque otros componentes ya disparan `fetchUser` por su cuenta. | Historia 13 |
+| 42 | `income-sources/update/route.ts` | `!amount ? updateIncomeSource.amount : amount` hace imposible fijar el monto de una income source a exactamente `0` (siempre se lee como "no vino este campo" y se conserva el valor viejo). | Historia 14 |
+| 43 | `income-sources/update/route.ts` | Por el mismo motivo del bug #42, `isChanging` (`!!amount && amount !== ...`) nunca detecta un cambio a monto `0`, así que ese cambio tampoco queda registrado en el historial de versiones. | Historia 14 |
+| 44 | `income-sources/update/route.ts` | La respuesta incluye `status: 201` en el cuerpo JSON, pero `NextResponse.json(...)` sin opciones explícitas siempre responde con status HTTP 200 real - el 201 del body es puramente informativo y no coincide con el código HTTP real. | Historia 14 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,

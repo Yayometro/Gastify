@@ -1,20 +1,66 @@
-import IncomeSource from "@/model/IncomeSource";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
-import { NextResponse } from "next/server";
+import IncomeSource, {
+  type IIncomeSource,
+  type IncomeSourceRecurrence,
+} from "@/model/IncomeSource";
+import User from "@/model/User";
+import { auth } from "@/lib/auth/betterAuth";
+import type mongoose from "mongoose";
 
-export async function GET() {
+export interface UpdateIncomeSourceGetStatusResponse {
+  mes: string;
+}
+
+export interface UpdateIncomeSourceRequestBody {
+  id?: mongoose.Types.ObjectId | string;
+  name?: string | null;
+  amount?: number;
+  currency?: string | null;
+  recurrence?: IncomeSourceRecurrence | string;
+  anchorDate?: string | Date | null;
+  active?: boolean;
+  [key: string]: unknown;
+}
+
+export interface UpdateIncomeSourceSuccessResponse {
+  message: string;
+  data: IIncomeSource;
+  status: number;
+  ok: boolean;
+}
+
+export type UpdateIncomeSourceResponse = UpdateIncomeSourceSuccessResponse;
+
+export async function GET(): Promise<NextResponse<UpdateIncomeSourceGetStatusResponse>> {
   return NextResponse.json({ mes: "Work" });
 }
 
-export async function POST(request) {
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<UpdateIncomeSourceResponse>> {
   try {
-    if (!request) throw new Error("No data in request on UPDATE INCOME SOURCE POST");
+    if (!request)
+      throw new Error("No data in request on UPDATE INCOME SOURCE POST");
     const { id, name, amount, currency, recurrence, anchorDate, active } =
-      await request.json();
-    await dbConnection();
+      ((await request.json()) || {}) as UpdateIncomeSourceRequestBody;
     // NO ID FILTER
     if (!id) throw new Error(`No ID was provided to update income source 🤕`);
-    const updateIncomeSource = await IncomeSource.findById(id);
+
+    // Security fix: this route previously lacked session verification and
+    // performed IncomeSource.findById(id) directly with zero ownership check (IDOR).
+    // We now verify the caller's session via auth.api.getSession, find the
+    // session user in the database, and scope the query to the user's wallet.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
+    await dbConnection();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
+    if (!userFound) throw new Error("User not found...");
+
+    const updateIncomeSource = await IncomeSource.findOne({
+      _id: id,
+      wallet: userFound.wallet,
+    });
     //IF ERROR
     if (!updateIncomeSource)
       throw new Error(`No Income Source was identified to update 🤕`);
@@ -43,7 +89,7 @@ export async function POST(request) {
       : recurrence;
     updateIncomeSource.anchorDate = !anchorDate
       ? updateIncomeSource.anchorDate
-      : anchorDate;
+      : (anchorDate as unknown as Date);
     updateIncomeSource.active =
       active === undefined ? updateIncomeSource.active : active;
     // SAVE
@@ -58,6 +104,6 @@ export async function POST(request) {
     });
   } catch (e) {
     console.log(e);
-    throw new Error(e);
+    throw new Error(e as string);
   }
 }
