@@ -2,12 +2,25 @@
 
 import React from "react";
 import { Skeleton, Tooltip } from "antd";
-import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
+import SelecterFilter, { type SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import EmptyModule from "../EmptyModule";
 import { getDateInYearMonthDay } from "@/helpers/timeFunctions/timeFunctions";
 import BudgetHistoricalComparativeRow from "./BudgetHistoricalComparativeRow";
+import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
+import type { TimePeriodOption } from "@/hooks/usePeriodComparison";
+
+export interface HistoricalBudgetsComparativeViewProps {
+  rows: BudgetHistoricalComparativeRowData[];
+  isLoading?: boolean;
+  timePeriod: [Date, Date] | (Date | string | number | null | undefined)[];
+  getValueFromSelecter?: (val: string) => void;
+  handleRangeDate?: (dateStart?: Date | null, dateEnd?: Date | null) => void;
+  timePeriodsForSelecter?: SelecterPeriod[] | TimePeriodOption[];
+  walletPrimaryCurrency?: string;
+  onOpenDetail: (row: BudgetHistoricalComparativeRowData) => void;
+}
 
 function HistoricalBudgetsComparativeView({
   rows,
@@ -18,7 +31,7 @@ function HistoricalBudgetsComparativeView({
   timePeriodsForSelecter,
   walletPrimaryCurrency,
   onOpenDetail,
-}) {
+}: HistoricalBudgetsComparativeViewProps): React.JSX.Element {
   return (
     <div className="w-full h-full">
       <h1 className="text-3xl text-purple-300">Budgets comparative</h1>
@@ -39,7 +52,7 @@ function HistoricalBudgetsComparativeView({
           </Tooltip>
           <SelecterFilter
             getValue={getValueFromSelecter}
-            periodOverride={timePeriodsForSelecter}
+            periodOverride={timePeriodsForSelecter as SelecterPeriod[]}
             styles={
               "gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative min-[400px]:py-[2px] min-[640px]:py-[4px]"
             }
@@ -55,7 +68,7 @@ function HistoricalBudgetsComparativeView({
         <div className="flex flex-col gap-2 mt-3">
           {rows.map((row) => (
             <BudgetHistoricalComparativeRow
-              key={row.budget._id}
+              key={row.budget._id as React.Key}
               row={row}
               walletPrimaryCurrency={walletPrimaryCurrency}
               onOpenDetail={onOpenDetail}

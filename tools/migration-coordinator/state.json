@@ -3551,12 +3551,32 @@
       "label": "Budgets - analytics (comparativas historicas de budgets). La seccion 'Budgets comparative' de /dashboard/history: HistoricalBudgetsComparative.jsx (entry, renderizado desde HistoryClient.tsx ya migrado via typed bridge), HistoricalBudgetsComparativeView.jsx, BudgetHistoricalComparativeRow.jsx (usa ColumnChartAntComparative - arbol de charts compartido, ya excluido y bridged desde Historia 10 - y propsForBudgetMonthlyChart.js), BudgetHistoricalDetailModal.jsx (modal de detalle mes a mes, usa CategoIcon.tsx ya migrado), propsForBudgetMonthlyChart.js (100 lineas, solo usado aqui), budgetHistoricalComparative.js (108 lineas, el transformer principal - importa de budgetHistory.ts/timeFunctions.ts ya migrados, y de transactionsChange.js/ projectionsChange.js aun sin migrar que se quedan como estan) con su test suite budgetHistoricalComparative.test.js [195 lineas, debe seguir pasando identico], y budgetTypes.js (21 lineas, tipos/helpers de clasificacion de budget - spending/saving/project - pequeno y ya usado por muchos consumidores TS existentes: AddTransactionComp.tsx, BudgetEditModal.tsx, BudgetsClient.tsx, ProjectBudgetDetailModal.tsx, BudgetBarRow.tsx). La ruta de API budget/get-historical ya esta migrada desde Historia 7 - esta historia es puramente UI/logica de cliente, sin backend nuevo. NO incluye: transactionsChange.js ni projectionsChange.js (helpers compartidos enormes, deliberadamente pospuestos igual que en Historias 10 y 11); ColumnChartAntComparative (arbol de charts compartido, ya excluido, se usa via typed bridge igual que en TabsTogglerMontlyController.tsx de Historia 10).",
       "files": {
         "src/components/multiUsedComp/historicalBudgetsComparative/HistoricalBudgetsComparative.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "claimed",
+          "history": [
+            {
+              "ts": "2026-09-29T16:03:44.186Z",
+              "event": "claimed"
+            }
+          ]
         },
         "src/components/multiUsedComp/historicalBudgetsComparative/HistoricalBudgetsComparativeView.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:04:23.950Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:06:23.288Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de src/components/multiUsedComp/historicalBudgetsComparative/HistoricalBudgetsComparativeView.jsx a TypeScript (HistoricalBudgetsComparativeView.tsx).\n\n1. Tipado e interfaces:\n- Creada la interfaz `HistoricalBudgetsComparativeViewProps` tipando explícitamente:\n  - `rows: BudgetHistoricalComparativeRowData[]` utilizando el tipo real exportado de `@/helpers/transformers/budgetHistoricalComparative`.\n  - `isLoading?: boolean`.\n  - `timePeriod: [Date, Date] | (Date | string | number | null | undefined)[]`.\n  - `getValueFromSelecter?: (val: string) => void`.\n  - `handleRangeDate?: (dateStart?: Date | null, dateEnd?: Date | null) => void`.\n  - `timePeriodsForSelecter?: SelecterPeriod[] | TimePeriodOption[]`.\n  - `walletPrimaryCurrency?: string`.\n  - `onOpenDetail: (row: BudgetHistoricalComparativeRowData) => void`.\n- Retorno tipado explícitamente como `React.JSX.Element`.\n- Importados directamente sin bridges `BudgetHistoricalComparativeRow`, `SelecterFilter` (y su tipo `SelecterPeriod`), `TimeRange`, `UniversalCategoIcon` y `EmptyModule`.\n\n2. Casts / Puentes de compilación:\n- `key={row.budget._id as React.Key}` para satisfacer el tipado de React Key dado que `BudgetHistoricalInput._id` permite `unknown`.\n- `periodOverride={timePeriodsForSelecter as SelecterPeriod[]}` para compatibilizar la unión con `TimePeriodOption[]`.\n\n3. Bugs preexistentes preservados sin arreglar:\n- `siz={15}` en `<UniversalCategoIcon>` (prop typo histórico `siz` vs `size` en el icono de ayuda tooltip).\n- `sm:font-base` en la cadena de clases de estilos de `SelecterFilter` (clase no estándar en Tailwind CSS).\n- `to : ` en el label del rango de fechas tiene un espacio antes de los dos puntos (`\"to : \"`).\n- `filters` duplicado en dos niveles de divs contenedores (`className=\"filters flex...\"` y `className=\"filters w-full...\"`).\n- `!timePeriod[0]` y `!timePeriod[1]` asumen que `timePeriod` siempre es un array definido; si `timePeriod` fuera `undefined`, arrojaría `TypeError: Cannot read properties of undefined (reading '0')`.\n- `key={row.budget._id}`: si un budget tuviera `_id` undefined o nulo, la key de React evaluaría a undefined.\n\n4. Verificaciones ejecutadas:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/components/multiUsedComp/historicalBudgetsComparative/HistoricalBudgetsComparativeView.tsx`: 0 errores/warnings.\n- `npx vitest run`: 30/30 suites pasadas (324/324 tests)."
+            },
+            {
+              "ts": "2026-09-29T16:06:55.548Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\n`rows: BudgetHistoricalComparativeRowData[]` reutiliza el tipo real de budgetHistoricalComparative.ts. Imports directos sin bridge para BudgetHistoricalComparativeRow/SelecterFilter/TimeRange (todos ya migrados). Casts `row.budget._id as React.Key` y `timePeriodsForSelecter as SelecterPeriod[]` puramente de compilación, sin efecto en runtime. Cero `?.` nuevo agregado.\n\n5 bugs/quirks preexistentes documentados sin arreglar: `siz` (prop real, no typo del código sino ya establecido), clase Tailwind no estándar `sm:font-base`, espacio antes de los dos puntos en \"to : \", clase `filters` duplicada en dos divs anidados, y riesgo de TypeError si `timePeriod` llega undefined (`!timePeriod[0]` sin guard). Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalComparativeRow.jsx": {
           "status": "approved",
