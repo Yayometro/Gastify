@@ -224,28 +224,42 @@ ya excluido); `budgetHistoricalComparative.js` (compartido con
 `HistoricalBudgetsComparative` excluido, ya funciona bien sin tipar
 como dependencia de `walletAnalyzer.ts`).
 
-**Historia activa: Historia 11 — Categories - analytics** (10 archivos, dos
+**Historia 11 (Categories - analytics) completa** - 10/10 archivos, dos
 árboles: (1) la sección "Category Details" del Dashboard con sus 3 tabs -
-`TransDetailsGrandContainer.jsx` [entry, renderizado desde `Dashboard.tsx`
-ya migrado], `DisplayerCategoryTreemap.jsx`, `CategoryTreemap.jsx` [667
+`TransDetailsGrandContainer.tsx` [entry, renderizado desde `Dashboard.tsx`
+ya migrado], `DisplayerCategoryTreemap.tsx`, `CategoryTreemap.tsx` [666→819
 líneas, algoritmo squarified treemap hecho a mano - el archivo de mayor
-riesgo de la historia], `DisplayerCategoryCirclePacking.jsx`,
-`CategoryCirclePacking.jsx` [Nivo `ResponsiveCirclePacking`],
-`TransactionsResumeCont.jsx`, `TransResumeChart.jsx` [Nivo
-`ResponsiveSunburst`]; (2) la comparativa histórica de categorías en
-`/dashboard/history` - `HistoricalComparativeCategories.jsx`,
-`CategoriesCompareTable.jsx`, `HistoricalComparativeCategoriesView.jsx`
-(explícitamente excluida de Historia 10 como "árbol pesado de analytics,
-historia futura"). Historia puramente de UI/lógica de cliente - no toca
-modelos ni rutas de API nuevas (usa Redux ya migrado y helpers ya
-migrados: `usePeriodComparison.ts`, `timeFunctions.ts`, `TabsToggler.tsx`,
-`PeriodFiltersWithCompare.tsx`). Deliberadamente NO incluye:
-`TopCategoryRow` (árbol `top3/`, ya excluido en historias anteriores,
-usado vía typed bridge en `CategoriesCompareTable.jsx`);
-`transactionsChange.js` (helper compartido enorme usado por decenas de
-archivos en toda la app, incluye `buildCategoryHierarchy`/
-`getTransactionsFromTimeRange`/etc - se queda sin tipar, demasiado
-riesgoso para incluir de paso aquí, su propia historia futura aparte).
+riesgo de la historia, revisado carácter por carácter contra el original,
+cero diferencias en la matemática], `DisplayerCategoryCirclePacking.tsx`,
+`CategoryCirclePacking.tsx` [Nivo `ResponsiveCirclePacking`, usa los
+tipos oficiales del paquete], `TransactionsResumeCont.tsx`,
+`TransResumeChart.tsx` [Nivo `ResponsiveSunburst`, también con tipos
+oficiales]; (2) la comparativa histórica de categorías en
+`/dashboard/history` - `HistoricalComparativeCategories.tsx`,
+`CategoriesCompareTable.tsx`, `HistoricalComparativeCategoriesView.tsx`
+(la que había sido explícitamente excluida de Historia 10 como "árbol
+pesado de analytics, historia futura"). Historia puramente de UI/lógica
+de cliente - no tocó modelos ni rutas de API nuevas, por lo tanto sin
+fixes de seguridad nuevos. **1 ronda de rework**: en `TransResumeChart.tsx`
+un `?.` agregado sin necesidad (`fatherId: cat?._id`) estuvo a punto de
+tapar por accidente un bug real de crash (`TypeError` si una transacción
+tiene subcategoría pero no categoría) que el propio resumen de agy decía
+haber preservado - se detectó en revisión y se revirtió a `cat._id` para
+mantener el crash original exacto. Encontró 2 ocurrencias más del patrón
+"Redux action creator sin `dispatch()`" (`HistoricalComparativeCategories.tsx`
+- `setUser`/`setTransacctions`, la 5ta y 6ta de toda la migración) y 5
+bugs de comportamiento reales más (2 divisiones por cero en tooltips que
+muestran "NaN%", un ícono con formato inconsistente que se resuelve a
+`null`, un símbolo `$` fijo ignorando la moneda primaria de la wallet, y
+el TypeError de `TransResumeChart.tsx` ya mencionado) - todos documentados
+en `migration-ts-logs.md` (filas 22-28), ninguno arreglado.
+Deliberadamente NO incluyó: `TopCategoryRow` (árbol `top3/`, ya excluido
+en historias anteriores, usado vía typed bridge en
+`CategoriesCompareTable.tsx`); `transactionsChange.js` (helper compartido
+enorme usado por decenas de archivos en toda la app, incluye
+`buildCategoryHierarchy`/`getTransactionsFromTimeRange`/etc - se queda sin
+tipar, demasiado riesgoso para incluir de paso aquí, su propia historia
+futura aparte).
 
 Historias siguientes (orden real a confirmar): Budgets - analytics
 (comparativas históricas), Navbar/alta rápida

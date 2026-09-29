@@ -719,3 +719,61 @@ hook grande `useProjectionTable.ts` de 421 líneas y el transformer
 compartido `timeFunctions.ts`), 2 archivos triviales de 1 línea de
 cambio real (`DashboardLoadingMessage.tsx`, `TabsTogglerMontlyView.tsx`),
 y solo `budgetHistory.ts` necesitó 1 ronda de rework.
+
+## 2026-09-29 — Historia 11 (Categories analytics) completa: 10/10 archivos
+
+Dos árboles migrados. El primero, la sección "Category Details" del
+Dashboard (3 tabs Treemap/Bubble/Nested Pie):
+`TransDetailsGrandContainer.tsx`, `DisplayerCategoryTreemap.tsx`,
+`CategoryTreemap.tsx` [666→819 líneas, el hand-rolled squarified
+treemap - revisado carácter por carácter contra el original en sus 4
+secciones críticas (`worstRatio`/`squarify`, `TreemapTile`,
+`transactionNode`, el JSX de renderizado final), cero diferencias más
+allá de anotaciones de tipo], `DisplayerCategoryCirclePacking.tsx`,
+`CategoryCirclePacking.tsx` [Nivo `ResponsiveCirclePacking`, tipos
+oficiales del paquete], `TransactionsResumeCont.tsx`,
+`TransResumeChart.tsx` [Nivo `ResponsiveSunburst`, también tipos
+oficiales]. El segundo, la comparativa histórica de categorías en
+`/dashboard/history` que había quedado explícitamente excluida de
+Historia 10 como "árbol pesado, historia futura":
+`HistoricalComparativeCategories.tsx`, `CategoriesCompareTable.tsx`,
+`HistoricalComparativeCategoriesView.tsx`.
+
+Historia puramente de UI/lógica de cliente - todos los modelos y rutas
+que este árbol necesita ya estaban migrados en historias anteriores,
+así que **sin fixes de seguridad nuevos**.
+
+**1 ronda de rework, la más significativa hasta ahora por lo sutil del
+hallazgo**: en `TransResumeChart.tsx`, al construir el nivel de
+subcategoría, el original leía `traSub.category._id` sin `?.` - como el
+filtro `transWithSubCat` solo exige `subCategory` truthy (no
+`category`), una transacción con subcategoría pero sin categoría
+lanzaba un `TypeError` real en runtime, un bug preexistente real. La
+migración agregó `cat?._id` (con el cast `const cat = traSub.category
+as TransCategoryRef`) - el `?.` no era requerido por el compilador (el
+cast ya tipa `cat` como no-opcional), y silenciosamente convirtió el
+crash original en un `fatherId: undefined` sin errores. El propio
+resumen de la migración decía haber preservado el bug intacto, pero no
+era cierto - se detectó en la revisión independiente comparando línea
+por línea contra el original, y se corrigió a `cat._id` (sin `?.`) para
+restaurar el crash exacto. Este caso queda como el ejemplo de referencia
+de por qué cada `?.` nuevo debe verificarse dos veces contra el original
+antes de aceptarlo.
+
+**Bugs no-seguridad encontrados y preservados sin arreglar** (ver tabla
+de bugs pendientes, filas 22-28): 2 ocurrencias más del patrón "Redux
+action creator sin `dispatch()`" (`setUser`/`setTransacctions` en
+`HistoricalComparativeCategories.tsx` - 5ta y 6ta ocurrencia de toda la
+migración); 2 divisiones por cero en tooltips de Nivo que muestran
+"NaN%" (`CategoryCirclePacking.tsx` y `TransResumeChart.tsx`, mismo
+patrón en ambos); un formato de ícono inconsistente entre
+`buildCategoryHierarchy()` y `UniversalCategoIcon` que hace que el
+ícono se resuelva a `null` silenciosamente; un símbolo `$` fijo en
+`TransResumeChart.tsx` que ignora la moneda primaria real de la
+wallet; y el `TypeError` de `traSub.category._id` ya descrito arriba
+(que casi se pierde durante la migración).
+
+9 de los 10 archivos limpios a la primera revisión (incluyendo el
+archivo más grande y riesgoso, `CategoryTreemap.tsx` de 819 líneas) -
+solo `TransResumeChart.tsx` necesitó 1 ronda de rework, por el hallazgo
+descrito arriba.
