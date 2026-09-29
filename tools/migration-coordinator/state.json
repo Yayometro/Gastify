@@ -3437,8 +3437,23 @@
           ]
         },
         "src/components/multiUsedComp/TransactionsResumeCont.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T07:11:52.573Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T07:12:56.732Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de `src/components/multiUsedComp/TransactionsResumeCont.jsx` a `.tsx`.\n\n1. Interfaces y tipos definidos:\n- `TransactionsResumeContProps`: `{ trcIncomes?: TransactionData[]; trcBills?: TransactionData[]; }` usando `TransactionData` de `@/lib/features/transacctionsSlice`, completamente compatible con la interfaz consumida en `TransDetailsGrandContainer.tsx`.\n- Typed bridge para el componente hijo aún no migrado: `TransResumeChartProps` (`TypedTransResumeChart`) con `{ trchTransactions?: TransactionData[]; trchIsBill?: boolean; }`.\n- Tipado del estado `isBillTab` como `boolean` y parámetro `budType: string` en `handleTab`.\n- Retorno explícito `React.JSX.Element`.\n\n2. Bugs preexistentes y particularidades documentadas (sin modificar):\n- Texto de Tooltip: \"The needle indicator shows your actual state regarding your budget or saving 🤓\" menciona un \"needle indicator\" probablemente copiado de un componente tipo medidor/gauge, a pesar de que este contenedor aloja `TransResumeChart` (Sunburst). Se preservó idéntico.\n- Prop `siz={15}` e interpolación `${\"fa/FaRegQuestionCircle\"}` en `UniversalCategoIcon` preservados 1:1.\n- Clases CSS (`bc-tab-headers-cont`, etc.) preservadas 1:1.\n\n3. Guards/casts agregados:\n- Únicamente el cast del typed bridge `TypedTransResumeChart = TransResumeChart as React.ComponentType<TransResumeChartProps>`.\n\n4. Verificación:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint`: 0 errores / 0 warnings en `TransactionsResumeCont.tsx` y `TransDetailsGrandContainer.tsx`.\n- `npx vitest run`: 30/30 suites pasadas (324/324 tests)."
+            },
+            {
+              "ts": "2026-09-29T07:13:28.286Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica (solo reformateo de comillas/indentación/punto y coma tipo prettier, sin cambios funcionales). tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\n`TransactionsResumeContProps` compatible con el typed bridge ya existente en TransDetailsGrandContainer.tsx. Typed bridge nuevo para `TransResumeChart` (siguiente en la cola). `let [isBillTab, ...]` → `const` inerte.\n\nBug preexistente documentado sin arreglar: el tooltip dice \"The needle indicator shows your actual state...\" (texto de un gauge/velocímetro) pero este contenedor en realidad muestra un sunburst chart - copy desalineado, probablemente copiado de otro componente. Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/TransResumeChart.jsx": {
           "status": "pending",
