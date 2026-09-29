@@ -271,6 +271,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 39 | `general-data/projection-baseline/delete` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para borrar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | `b26a2d2` | Alta |
 | 40 | `general-data/income-sources/update` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía a cualquiera (autenticado o no) modificar amount/recurrence/currency/anchorDate/active de la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo nivel de gravedad que el bug de `remove-many` (fila 28). | `55300de` | Crítica |
 | 41 | `general-data/income-sources/new` (POST) | Cero verificación de sesión - el `user`/`wallet` del body se pasaban tal cual al crear la income source, permitiendo forjar income sources atribuidas a cualquier usuario/wallet. Mismo patrón que el fix #27 (`new-transaction`). | `231d055` | Crítica |
+| 42 | `general-data/income-sources/remove` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía archivar (soft-delete) la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo patrón que el fix #40. | (pendiente) | Crítica |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
@@ -493,6 +494,9 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 45 | `income-sources/new/route.ts` | `if (!newIncomeSource)`/`if (!savedIncomeSource)` son código muerto - Mongoose nunca hace que el constructor `new IncomeSource(...)` ni `.save()` regresen un valor falsy en el flujo normal (fallarían lanzando una excepción, no regresando `null`/`undefined`). | Historia 14 |
 | 46 | `income-sources/new/route.ts` | Si no se manda `name`, el mensaje de éxito interpola a `"null was created successfully 🤓"` en vez de un nombre por default legible. | Historia 14 |
 | 47 | `income-sources/new/route.ts` | La entrada inicial de `history` solo guarda `amount` en unidades mayores, sin inicializar el subdocumento de dinero multi-moneda (`money`/`amountMinor`+`currency`) que sí usan otras partes del modelo - inconsistente con el resto del esquema multi-currency. | Historia 14 |
+| 48 | `income-sources/remove/route.ts` | La respuesta de una operación de archivado/borrado usa `status: 201` en vez de 200/204. | Historia 14 |
+| 49 | `income-sources/remove/route.ts` | Typo en el mensaje de error: "No ID was provided to **removed** the income source" (debería ser "remove"). | Historia 14 |
+| 50 | `income-sources/remove/route.ts` | Si hubiera múltiples entradas sin `effectiveTo` en `history` por alguna inconsistencia previa de datos, `.find()` solo cierra la primera, dejando las demás "abiertas" indefinidamente. | Historia 14 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,

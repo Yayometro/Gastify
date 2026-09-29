@@ -4012,8 +4012,23 @@
           ]
         },
         "src/app/api/general-data/income-sources/remove/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T18:10:34.926Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T18:11:55.647Z",
+              "event": "submitted",
+              "notes": "Migrada ruta de API src/app/api/general-data/income-sources/remove/route.js a TypeScript (.ts).\n\n1. Fix de seguridad #42 (IDOR / falta de sesión):\n- Se solucionó la vulnerabilidad donde la ruta realizaba IncomeSource.findById(id) sin verificar sesión ni wallet del usuario.\n- Se implementó el patrón estándar con auth.api.getSession, User.findOne({ mail: sesion.user.email }).lean() y scoped query IncomeSource.findOne({ _id: id, wallet: userFound.wallet }). Si el documento no existe o pertenece a otra wallet, cae en el if (!removedIncomeSource) preexistente.\n\n2. Tipado y schemas:\n- removeIncomeSourceSchema (Zod) y RemoveIncomeSourceRequestBody.\n- RemoveIncomeSourceGetStatusResponse, RemoveIncomeSourceGetResponse, RemoveIncomeSourcePostSuccessResponse, RemoveIncomeSourcePostResponse.\n- Tipado estricto de GET y POST con NextRequest | Request y NextResponse<...>. Reutiliza IIncomeSource de @/model/IncomeSource.\n\n3. Comportamiento preservado 1:1:\n- Soft-delete exacto: archived = true, active = false, cierre de openEntry.effectiveTo = new Date(), save() y respuesta con el mismo formato y status 201.\n\n4. Bugs preexistentes encontrados (preservados sin arreglar):\n- Status code 201 en la respuesta para una operación de borrado / soft-delete en vez de 200.\n- Typo en mensaje de error original: 'No ID was provided to removed the income source 🤕'.\n- Si hay más de una entrada en history sin effectiveTo, solo se actualiza la primera encontrada por .find().\n- Bloque catch relanza excepción con throw new Error(e) en vez de responder con formato JSON estructurado de error.\n\n5. Verificación:\n- npx tsc --noEmit: 0 errores.\n- npx eslint src/app/api/general-data/income-sources/remove/route.ts: 0 errores.\n- vitest: 30 test files pasaron (324 tests)."
+            },
+            {
+              "ts": "2026-09-29T18:12:46.346Z",
+              "event": "approved",
+              "notes": "Fix de seguridad #42, mismo patrón que #40 (income-sources/update): `IncomeSource.findById(id)` sin sesión ni ownership permitía archivar la income source de cualquier usuario. Fix correcto: `IncomeSource.findOne({_id: id, wallet: userFound.wallet})` tras verificar sesión, cayendo en el `if (!removedIncomeSource) throw...` ya existente si el id pertenece a otro usuario.\n\nVerificado vía diff que la lógica de soft-delete (`archived = true`, `active = false`, cierre del `openEntry.effectiveTo` abierto en el historial) es byte-idéntica al original salvo el cambio de seguridad intencional.\n\nReutiliza `IIncomeSource` real del modelo ya migrado. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\n4 bugs preexistentes documentados sin arreglar: `status: 201` para una operación de archivado/borrado (no coincide con 200/204 estándar); typo \"removed the income source\" en vez de \"remove\"; `.find()` solo cierra la primera entrada abierta del historial si hubiera múltiples por inconsistencia de datos previa; el catch relanza sin responder con status HTTP estructurado. Sin rework.\n\nCon este fix se completan las 6 rutas de escritura de esta historia (income-sources: update/new/remove, projections: update, projection-baseline: update/delete)."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/IncomeSourcesPanel.jsx": {
           "status": "pending",
