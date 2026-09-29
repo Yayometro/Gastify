@@ -4,7 +4,11 @@ import React from "react";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "../CategoIcon";
 
-function ProjectionsInfoModal({ onClose }) {
+export interface ProjectionsInfoModalProps {
+  onClose: () => void;
+}
+
+function ProjectionsInfoModal({ onClose }: ProjectionsInfoModalProps): React.JSX.Element {
   return (
     <BasicModal
       close={onClose}

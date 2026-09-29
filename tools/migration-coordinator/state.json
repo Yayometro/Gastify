@@ -3860,8 +3860,23 @@
           ]
         },
         "src/components/multiUsedComp/Projections/ProjectionsInfoModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:50:37.826Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:51:54.062Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 a TypeScript (ProjectionsInfoModal.tsx).\n- Interfaces/tipos: ProjectionsInfoModalProps ({ onClose: () => void }), retorno React.JSX.Element.\n- Bridges/imports: BasicModal y CategoIcon importados directamente desde sus versiones .tsx existentes.\n- Bugs preexistentes identificados (preservados sin arreglar):\n  1. Uso de <div onClick={onClose}> con cursor-pointer para el botón de cierre en lugar de un elemento interactivo accesible <button>.\n  2. z-[1001] en el contenedor de contenido del modal que compite con el stacking context del backdrop de BasicModal (z-[5000]).\n  3. Discordancia gramatical menor en el título \"How Projections works\" (vs \"work\").\n- Guards/casts agregados: Ninguno. Cero `any`, cero index signatures, cero optional chaining añadidos.\n- Verificación: npx tsc --noEmit limpio (0 errores), npx eslint limpio (0 errores), vitest 30/30 suites y 324/324 tests pasando."
+            },
+            {
+              "ts": "2026-09-29T16:52:26.159Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, solo tipos agregados. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324. Cero guards/casts.\n\nBugs preexistentes documentados sin arreglar: botón de cerrar es `<div onClick>` sin accesibilidad; z-index inconsistente (`z-[1001]` interno vs `z-[5000]` de BasicModal); typo \"How Projections works\" (debería ser \"work\"). Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/ProjectionAccuracyReport.jsx": {
           "status": "pending",
