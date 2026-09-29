@@ -188,19 +188,34 @@ su propia historia futura "History"); `ModalContentTopMonthItem.jsx`
 "Projections" junto con la UI que las administra, aún sin
 localizar/explorar).
 
-**Historia activa: Historia 10 — History** (16 archivos: la página de
-comparativas históricas - `dashboard/history/page.jsx`, `HistoryClient.jsx`,
+**Historia 10 (History) completa** - 16/16 archivos: la página de
+comparativas históricas (`dashboard/history/page.jsx`, `HistoryClient.jsx`,
 la variante "History" de Wallet Analyzer completa
-[`HistoricalWalletAnalyzer.jsx` 836 líneas, `HistoricalProjectionsTable.jsx`,
+[`HistoricalWalletAnalyzer.jsx` 836→943 líneas, `HistoricalProjectionsTable.jsx`,
 `BudgetPeriodDetailModal.jsx`], y sus dependencias chicas
 [`TabsToggler`/`TabsTogglerMontlyController`/`TabsTogglerMontlyView`,
 `DashboardLoadingMessage`, `usePeriodComparison`, `budgetHistory.js`,
-`timeFunctions.js`, `useGetInfoFromProvider.js`,
-`PeriodFiltersWithCompare.jsx`, `useProjectionTable.js`,
-`ProjectionsView.jsx`]). Todos los modelos y rutas de API que este árbol
-necesita ya están migrados desde Historia 9 - esta historia es
-puramente UI/lógica de cliente, sin backend nuevo. Deliberadamente NO
-incluye: `HistoricalMovementsController.jsx`,
+`timeFunctions.js` [309→360 líneas, el helper de fechas compartido por
+docenas de consumidores en toda la app], `useGetInfoFromProvider.js`,
+`PeriodFiltersWithCompare.jsx`, `useProjectionTable.js` [248→421
+líneas], `ProjectionsView.jsx`]). Todos los modelos y rutas de API que
+este árbol necesita ya estaban migrados desde Historia 9 - historia
+puramente de UI/lógica de cliente, sin backend nuevo que tocar y por lo
+tanto sin fixes de seguridad nuevos. Solo 1 ronda de rework en toda la
+historia (`budgetHistory.ts` traía un `[key: string]: any` no
+justificado en un index signature que nadie consumía todavía - se quitó,
+el genérico se infiere solo del array real). Encontró 3 ocurrencias más
+del patrón "Redux action creator llamado sin `dispatch()`"
+(`HistoryClient.tsx`/`setUser`, `TabsTogglerMontlyController.tsx`/
+`setTransacctions`, ambas documentadas y preservadas sin arreglar) y 6
+bugs de comportamiento reales más (año/fecha congelados a nivel de
+módulo en `usePeriodComparison.ts` y `timeFunctions.ts`,
+`comparePeriod` que no se resincroniza al cambiar `timePeriod`, el
+parámetro `year` ignorado en una rama de
+`generate_timeperiod_ranges_array_for_dashboard`, y una paleta de
+colores de mes inconsistente entre `getYearMonthDateRange` y
+`monthObjects`) - todos documentados en `migration-ts-logs.md`, ninguno
+arreglado. Deliberadamente NO incluyó: `HistoricalMovementsController.jsx`,
 `HistoricalComparativeCategories.jsx`, `HistoricalBudgetsComparative.jsx`
 (los 3 árboles pesados de analytics, cada uno su propia historia futura,
 aunque `HistoryClient.jsx` los renderiza directamente - se usan vía

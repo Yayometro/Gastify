@@ -646,3 +646,69 @@ Reaparece al refrescar la página.
 `BudgetsClient.tsx` y `ProjectBudgetDetailModal.tsx` y
 `SpendingSummaryDetailModal.tsx` y `dashboard/budgets/page.tsx` no
 tuvieron rework - limpios a la primera.
+
+## 2026-09-28/29 — Historia 9 (Wallet Analyzer) completa: 20/20 archivos
+
+(Registro retroactivo breve - el resumen completo vive en
+`migration-typescript.md`.) El widget de análisis financiero del
+Dashboard completo: `WalletAnalyzer`/`WalletAnalyzerTeaser`/
+`WalletAnalyzerView` [812→1157 líneas]/`WalletAnalyzerTrendChart`/
+`WalletAnalyzerInsightsStrip`/`WalletAnalyzerProjectionCard`/
+`WalletAnalyzerWeekdayChart`/`MonthlyChampionsModal`/
+`InsightDetailModal`/`WeekdaySpendingDetailModal`, el transformer
+`walletAnalyzer.ts` [1500→2273 líneas, revisado función por función,
+su test suite de 1129 líneas siguió pasando 76/76 idéntico],
+`useAccountsFxExposure`, los modelos `FxRateSnapshot`/`IncomeSource`/
+`ProjectionSettings`/`ProjectionBaseline`, y las 4 rutas de lectura
+`income-sources/get`/`projections/get`/`projection-baseline/get`/
+`fx/quote`. **Cero rondas de rework en toda la historia** - la más
+limpia hasta ahora. Fixes de seguridad #34-36 (mismo IDOR clásico de
+`mail`/`id` sin sesión en las primeras 3 rutas); `fx/quote` confirmada
+correctamente como pública, sin fix necesario.
+
+## 2026-09-29 — Historia 10 (History) completa: 16/16 archivos
+
+La página de comparativas históricas completa: `dashboard/history/page.tsx`,
+`HistoryClient.tsx`, la variante "History" de Wallet Analyzer
+(`HistoricalWalletAnalyzer.tsx` [836→943 líneas], `HistoricalProjectionsTable.tsx`,
+`BudgetPeriodDetailModal.tsx`), `TabsToggler.tsx`/
+`TabsTogglerMontlyController.tsx`/`TabsTogglerMontlyView.tsx`,
+`DashboardLoadingMessage.tsx`, `usePeriodComparison.ts`,
+`budgetHistory.ts`, `timeFunctions.ts` [309→360 líneas, compartido por
+docenas de consumidores en toda la app - la migración de mayor
+alcance/riesgo de la historia], `useGetInfoFromProvider.ts`,
+`PeriodFiltersWithCompare.tsx`, `useProjectionTable.ts` [248→421
+líneas], `ProjectionsView.tsx`.
+
+Historia puramente de UI/lógica de cliente - todos los modelos y rutas
+que este árbol necesita ya estaban migrados desde Historia 9, así que
+**sin fixes de seguridad nuevos**.
+
+**1 ronda de rework**: `budgetHistory.ts` traía un `[key: string]: any`
+no justificado en un index signature de `HistoryEntryWithDates` que
+ningún consumidor TypeScript real necesitaba todavía (a diferencia del
+`any` legítimo de `TabsToggler.tsx`, justificado porque cada entrada
+real del array tiene un shape distinto) - se quitó, el genérico
+`T extends {...}` se sigue infiriendo solo del array real que se le
+pasa.
+
+**Bugs no-seguridad encontrados y preservados sin arreglar** (ver tabla
+de bugs pendientes, filas 15-21): 2 ocurrencias más del patrón "Redux
+action creator sin `dispatch()`" (`setUser` en `HistoryClient.tsx`,
+`setTransacctions` en `TabsTogglerMontlyController.tsx` - 3ra y 4ta
+ocurrencia del mismo patrón visto por primera vez en
+`CategoriesClient.tsx`, Historia 6); `today`/`year` congelados a nivel
+de módulo en `usePeriodComparison.ts` y `timeFunctions.ts` (mismo
+patrón en ambos - una sesión SPA larga que cruce medianoche/año nuevo
+usa una fecha base obsoleta); `comparePeriod` que no se resincroniza
+cuando el usuario cambia `timePeriod` después del montaje inicial;
+`generate_timeperiod_ranges_array_for_dashboard` ignorando su propio
+parámetro `year` en la entrada "Last 3 months"; una paleta de colores
+de mes distinta entre `getYearMonthDateRange` y `monthObjects` para el
+mismo mes.
+
+13 de los 16 archivos limpios a la primera revisión (incluyendo el
+hook grande `useProjectionTable.ts` de 421 líneas y el transformer
+compartido `timeFunctions.ts`), 2 archivos triviales de 1 línea de
+cambio real (`DashboardLoadingMessage.tsx`, `TabsTogglerMontlyView.tsx`),
+y solo `budgetHistory.ts` necesitó 1 ronda de rework.
