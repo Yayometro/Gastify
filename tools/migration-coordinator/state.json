@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-11-categories-analytics",
+  "activeStory": "historia-12-budgets-analytics",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -3544,6 +3544,39 @@
               "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nBug `isLoading <= 0` confirmado preservado exactamente: `(isLoading as unknown as number) <= 0` es un cast puramente de compilación, cero efecto en runtime - `undefined <= 0` sigue evaluando `false` igual que el original, así que el Skeleton de carga sigue sin poder mostrarse nunca (bug ya documentado, no arreglado).\n\nCasts `periodFromFather as SelecterPeriod`/`timePeriodsForSelecter as SelecterPeriod[]`/`timePeriodsForCompareSelecter as SelecterPeriod[]` son solo de compilación para compatibilizar `TimePeriodOption` con lo que espera `PeriodFiltersWithCompare` (ya migrado) - sin efecto en runtime. `TabsToggler`/`PeriodFiltersWithCompare` importados directos sin typed bridge, correctamente (ambos ya son .tsx desde Historia 10).\n\nSin rework. Historia 11 completa: 10/10 archivos."
             }
           ]
+        }
+      }
+    },
+    "historia-12-budgets-analytics": {
+      "label": "Budgets - analytics (comparativas historicas de budgets). La seccion 'Budgets comparative' de /dashboard/history: HistoricalBudgetsComparative.jsx (entry, renderizado desde HistoryClient.tsx ya migrado via typed bridge), HistoricalBudgetsComparativeView.jsx, BudgetHistoricalComparativeRow.jsx (usa ColumnChartAntComparative - arbol de charts compartido, ya excluido y bridged desde Historia 10 - y propsForBudgetMonthlyChart.js), BudgetHistoricalDetailModal.jsx (modal de detalle mes a mes, usa CategoIcon.tsx ya migrado), propsForBudgetMonthlyChart.js (100 lineas, solo usado aqui), budgetHistoricalComparative.js (108 lineas, el transformer principal - importa de budgetHistory.ts/timeFunctions.ts ya migrados, y de transactionsChange.js/ projectionsChange.js aun sin migrar que se quedan como estan) con su test suite budgetHistoricalComparative.test.js [195 lineas, debe seguir pasando identico], y budgetTypes.js (21 lineas, tipos/helpers de clasificacion de budget - spending/saving/project - pequeno y ya usado por muchos consumidores TS existentes: AddTransactionComp.tsx, BudgetEditModal.tsx, BudgetsClient.tsx, ProjectBudgetDetailModal.tsx, BudgetBarRow.tsx). La ruta de API budget/get-historical ya esta migrada desde Historia 7 - esta historia es puramente UI/logica de cliente, sin backend nuevo. NO incluye: transactionsChange.js ni projectionsChange.js (helpers compartidos enormes, deliberadamente pospuestos igual que en Historias 10 y 11); ColumnChartAntComparative (arbol de charts compartido, ya excluido, se usa via typed bridge igual que en TabsTogglerMontlyController.tsx de Historia 10).",
+      "files": {
+        "src/components/multiUsedComp/historicalBudgetsComparative/HistoricalBudgetsComparative.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/historicalBudgetsComparative/HistoricalBudgetsComparativeView.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalComparativeRow.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalDetailModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/historicalBudgetsComparative/propsForBudgetMonthlyChart.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/transformers/budgetHistoricalComparative.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/transformers/budgetTypes.js": {
+          "status": "pending",
+          "history": []
         }
       }
     }

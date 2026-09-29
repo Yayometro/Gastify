@@ -261,8 +261,30 @@ enorme usado por decenas de archivos en toda la app, incluye
 tipar, demasiado riesgoso para incluir de paso aquí, su propia historia
 futura aparte).
 
-Historias siguientes (orden real a confirmar): Budgets - analytics
-(comparativas históricas), Navbar/alta rápida
+**Historia activa: Historia 12 — Budgets - analytics** (7 archivos: la
+sección "Budgets comparative" de `/dashboard/history` -
+`HistoricalBudgetsComparative.jsx` [entry, renderizado desde
+`HistoryClient.tsx` ya migrado vía typed bridge],
+`HistoricalBudgetsComparativeView.jsx`, `BudgetHistoricalComparativeRow.jsx`
+[usa `ColumnChartAntComparative`, árbol de charts compartido ya excluido
+y bridged desde Historia 10, y `propsForBudgetMonthlyChart.js`],
+`BudgetHistoricalDetailModal.jsx` [modal de detalle mes a mes, usa
+`CategoIcon.tsx` ya migrado], `propsForBudgetMonthlyChart.js` [100
+líneas, solo usado aquí], `budgetHistoricalComparative.js` [108 líneas,
+el transformer principal - importa de `budgetHistory.ts`/`timeFunctions.ts`
+ya migrados, y de `transactionsChange.js`/`projectionsChange.js` aún sin
+migrar que se quedan como están - con su test suite
+`budgetHistoricalComparative.test.js`, 195 líneas], y `budgetTypes.js`
+[21 líneas, clasificación de budget spending/saving/project - pequeño y
+ya usado por muchos consumidores TS existentes]. La ruta de API
+`budget/get-historical` ya está migrada desde Historia 7 - esta historia
+es puramente UI/lógica de cliente, sin backend nuevo. Deliberadamente
+NO incluye: `transactionsChange.js` ni `projectionsChange.js` (helpers
+compartidos enormes, pospuestos igual que en Historias 10 y 11);
+`ColumnChartAntComparative` (árbol de charts compartido, ya excluido,
+vía typed bridge igual que en `TabsTogglerMontlyController.tsx`).
+
+Historias siguientes (orden real a confirmar): Navbar/alta rápida
 (AddTransactionModal/TransferExchangeModal), Projections, MCP
 tools (`buildGastifyMcpServer.js`), `transactionsChange.js` (el
 transformer más grande y compartido de toda la app, deliberadamente
