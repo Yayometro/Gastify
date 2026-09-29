@@ -4,7 +4,27 @@ import UniversalCategoIcon from "../UniversalCategoIcon";
 import { Tooltip } from "antd";
 import EmptyModule from "../EmptyModule";
 
-function TabsToggler({ tabs, compontentsArray, tooltip, contentStyle }) {
+export interface TabsTogglerComponentItem<P extends object = Record<string, unknown>> {
+  tab: string;
+  Component: React.ComponentType<P>;
+  props?: P;
+}
+
+export interface TabsTogglerProps {
+  tabs?: string[] | null;
+  // Dynamic component container passes heterogeneous props to child components
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  compontentsArray?: TabsTogglerComponentItem<any>[] | null;
+  tooltip?: React.ReactNode;
+  contentStyle?: string;
+}
+
+function TabsToggler({
+  tabs,
+  compontentsArray,
+  tooltip,
+  contentStyle,
+}: TabsTogglerProps): React.JSX.Element {
   const [active, setActive] = useState(tabs?.[0]?.toLowerCase() || "");
 
   // Every "Compare" toggle on the History page adds/removes tabs at
@@ -22,7 +42,7 @@ function TabsToggler({ tabs, compontentsArray, tooltip, contentStyle }) {
     }
   }, [tabs, active]);
 
-  const handleTab = (type) => {
+  const handleTab = (type: string) => {
     setActive(type.toLowerCase());
   };
 
@@ -31,7 +51,9 @@ function TabsToggler({ tabs, compontentsArray, tooltip, contentStyle }) {
       ? null
       : compontentsArray
           .filter(({ tab }) => tab.toLowerCase() === active)
-          .map(({ Component, props }, i) => <Component {...props} key={`tabs-togler-key-${tabs}-${i}`} />);
+          .map(({ Component, props }, i) => (
+            <Component {...props} key={`tabs-togler-key-${tabs}-${i}`} />
+          ));
 
   return (
     <div className="rtt-cont w-full h-full mt-1">
