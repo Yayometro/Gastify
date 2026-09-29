@@ -269,7 +269,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 37 | `general-data/projections/update` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para actualizar los projection settings (buffers mensuales, balance manual) de cualquier usuario. | `17b1e9a` | Alta |
 | 38 | `general-data/projection-baseline/update` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para crear/editar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | `3971553` | Alta |
 | 39 | `general-data/projection-baseline/delete` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para borrar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | `b26a2d2` | Alta |
-| 40 | `general-data/income-sources/update` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía a cualquiera (autenticado o no) modificar amount/recurrence/currency/anchorDate/active de la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo nivel de gravedad que el bug de `remove-many` (fila 28). | (pendiente) | Crítica |
+| 40 | `general-data/income-sources/update` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía a cualquiera (autenticado o no) modificar amount/recurrence/currency/anchorDate/active de la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo nivel de gravedad que el bug de `remove-many` (fila 28). | `55300de` | Crítica |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
