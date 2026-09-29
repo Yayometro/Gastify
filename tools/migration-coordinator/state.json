@@ -3955,8 +3955,23 @@
           ]
         },
         "src/app/api/general-data/projection-baseline/delete/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T17:57:45.239Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T17:59:06.862Z",
+              "event": "submitted",
+              "notes": "Migración a TypeScript de src/app/api/general-data/projection-baseline/delete/route.js -> route.ts.\n\n- Fix de seguridad #39: Se eliminó la confianza ciega en `mail` del body JSON y se implementó la autenticación con Better Auth via `auth.api.getSession({ headers: request.headers })`, derivando el usuario de `sesion.user.email`.\n- Tipos e interfaces: Se creó el schema Zod `deleteProjectionBaselineBodySchema`, el tipo de body `DeleteProjectionBaselineRequestBody`, y las interfaces de respuesta `DeleteProjectionBaselineStatusResponse`, `DeleteProjectionBaselineSuccessResponse` y `DeleteProjectionBaselineResponse`. Se reutilizaron `IProjectionBaseline`, `IBaselineIncomeHistoryEntry` e `IBaselineExpenseHistoryEntry` de `@/model/ProjectionBaseline`.\n- Bugs preexistentes preservados:\n  1. `throw new Error({ error: ... })` pasando un objeto a `Error` en lugar de string (preservado con cast `as unknown as string`).\n  2. `throw new Error(e)` en bloque catch (preservado con cast `as unknown as string`).\n- Guards y casts:\n  1. `cast` de `rawBody` con fallback seguro si el parseo de Zod falla.\n  2. Cast de `entry._id` para filtrado seguro de subdocumentos en `baseline[field]`.\n  3. `npx tsc --noEmit` y `npx eslint` ejecutados con 0 errores; vitest 324/324 tests pasando."
+            },
+            {
+              "ts": "2026-09-29T17:59:51.756Z",
+              "event": "approved",
+              "notes": "Fix de seguridad #39 aplicado correctamente, mismo patrón exacto que las rutas hermanas ya arregladas en esta historia. Lógica del filtro (`String(entry._id) !== String(entryId)`) byte-idéntica al original - confirmado vía diff.\n\nNota menor de estilo (no bloqueante): el cast final `as (IBaselineIncomeHistoryEntry & IBaselineExpenseHistoryEntry)[]` usa una intersección en vez de unión de los dos tipos - es imprecisa pero puramente de compilación, cero efecto en runtime, no cambia el array real filtrado.\n\n`throw new Error({...} as unknown as string)` preserva el bug ya documentado sin arreglarlo. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324. Sin rework."
+            }
+          ]
         },
         "src/app/api/general-data/income-sources/update/route.js": {
           "status": "pending",
