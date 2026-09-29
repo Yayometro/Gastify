@@ -3841,8 +3841,23 @@
           ]
         },
         "src/components/multiUsedComp/Projections/ProjectionAccuracyInfoModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:47:52.863Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:49:21.622Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/Projections/ProjectionAccuracyInfoModal.jsx a ProjectionAccuracyInfoModal.tsx (80 líneas).\n\n1. Interfaces y tipos definidos:\n- `ProjectionAccuracyInfoModalProps`: `{ onClose: () => void; }`\n- Componente tipado con retorno explícito `React.JSX.Element`.\n- `BasicModal` y `CategoIcon` importados directamente de sus archivos `.tsx` sin bridges.\n\n2. Preservación estricta y comportamiento (Regla de oro):\n- 100% de JSX y estructura preservados idénticos byte a byte.\n- Cero `any` explícitos o implícitos.\n- Cero guards o `?.` nuevos.\n- Cero casts de compilación.\n\n3. Bugs preexistentes identificados (preservados sin arreglar):\n- El botón de cierre flotante superior derecho usa un `<div>` con `onClick={onClose}` en vez de un `<button>`, sin atributos de accesibilidad (`aria-label`) ni manejo de eventos de teclado (`onKeyDown`/`tabIndex`).\n\n4. Verificaciones:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/components/multiUsedComp/Projections/ProjectionAccuracyInfoModal.tsx`: 0 errores, 0 warnings.\n- `npx vitest run`: 30 suites pasadas, 324 tests pasados."
+            },
+            {
+              "ts": "2026-09-29T16:49:57.155Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, solo tipos agregados. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324. Cero guards/casts.\n\nBug preexistente documentado sin arreglar: botón de cerrar es un `<div onClick>` en vez de `<button>`, sin aria-label ni soporte de teclado. Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/ProjectionsInfoModal.jsx": {
           "status": "pending",

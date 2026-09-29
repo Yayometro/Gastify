@@ -4,7 +4,11 @@ import React from "react";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "../CategoIcon";
 
-function ProjectionAccuracyInfoModal({ onClose }) {
+export interface ProjectionAccuracyInfoModalProps {
+  onClose: () => void;
+}
+
+function ProjectionAccuracyInfoModal({ onClose }: ProjectionAccuracyInfoModalProps): React.JSX.Element {
   return (
     <BasicModal
       close={onClose}
