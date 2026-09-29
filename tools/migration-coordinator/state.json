@@ -3076,8 +3076,23 @@
           ]
         },
         "src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalProjectionsTable.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:06:16.407Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:08:43.203Z",
+              "event": "submitted",
+              "notes": "Migrated HistoricalProjectionsTable to TypeScript (HistoricalProjectionsTable.tsx). Added explicit props interface (HistoricalProjectionsTableProps), typing for periodState (PeriodStateProps imported from HistoricalWalletAnalyzer), ProjectionTableResult, ProjectionRow, MonthRange, and DataFromProvider for useGetDataFromProvider context. Added typed bridges for unmigrated child JSX components (TypedPeriodFiltersWithCompare, TypedProjectionsView). Preserved all runtime behavior exactly (including fallback logic 'wallet?.primaryCurrency || \\\"MXN\\\"' and hook call sequence). Verified with npx tsc --noEmit (0 errors), npx eslint (0 errors/warnings), and npx vitest run (314/314 tests passing)."
+            },
+            {
+              "ts": "2026-09-29T05:09:22.713Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. Byte-identico salvo interfaces (ProjectionRow, ProjectionTableResult, MonthRange, DataFromProvider) y typed bridges para PeriodFiltersWithCompare/ProjectionsView (ambos aun pendientes en esta historia). Reutiliza PeriodStateProps de HistoricalWalletAnalyzer.tsx. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/HistoricalWalletAnalyzer/BudgetPeriodDetailModal.jsx": {
           "status": "pending",
