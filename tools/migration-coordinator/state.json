@@ -3209,8 +3209,37 @@
           ]
         },
         "src/helpers/transformers/budgetHistory.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:34:44.526Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:36:52.714Z",
+              "event": "submitted",
+              "notes": "Migrado src/helpers/transformers/budgetHistory.js a TypeScript (budgetHistory.ts).\n- Exporta la interfaz `HistoryEntryWithDates` ({ effectiveFrom?: Date | string | null; effectiveTo?: Date | string | null; [key: string]: any }).\n- Tipado genérico en `getValueActiveInMonth<T>` para interoperar transparentemente con `IBudgetHistoryEntry`, `IIncomeSourceHistoryEntry` y cualquier estructura de historial basada en fechas.\n- Tipado de `getBudgetBarColor`, `getBudgetBarGradient` y `getBudgetMoodEmoji` aceptando ratios y booleanos opcionales con defaults seguros.\n- Preservación 1:1 de lógica y comportamiento de ejecución byte-por-byte (sin cambios de `||` a `??`, sin renombrar funciones ni alterar strings/paletas de colores).\n- Comportamientos preexistentes documentados intactos: `Number.isFinite(ratio)` manejando NaN/Infinity/null a 0; `new Date(undefined)` produciendo Invalid Date filtrado en comparaciones; `parseInt(hex.replace(\"#\", \"\"), 16)` asumiendo hex de 6 caracteres.\n- Agregada suite de pruebas unitarias exhaustiva en `src/helpers/transformers/budgetHistory.test.ts` (10 tests pasando).\n- Verificación completa: `npx tsc --noEmit` 0 errores en todo el proyecto; `npx vitest run` 30/30 suites y 324/324 tests pasando."
+            },
+            {
+              "ts": "2026-09-29T05:37:59.811Z",
+              "event": "needs_rework",
+              "notes": "Tu resumen dice \"compilación limpia en todo el proyecto\" pero no corriste eslint - `npx eslint src/helpers/transformers/budgetHistory.ts` da error real:\n\n  4:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any\n\nEs el `[key: string]: any;` dentro de `HistoryEntryWithDates` (línea 4). Verifiqué que ningún consumidor TypeScript actual usa `getValueActiveInMonth` o `HistoryEntryWithDates` directamente (todos los usos siguen en .jsx/.js sin migrar) - así que no hay ninguna necesidad real de un index signature `any` ahí, a diferencia del `any` en `TabsToggler.tsx` (ese sí está justificado porque cada entrada real del array tiene un shape de props distinto e incompatible).\n\nPor favor quita el index signature `[key: string]: any` de `HistoryEntryWithDates` (probablemente ni siquiera es necesario, ya que el genérico `T extends {effectiveFrom?...; effectiveTo?...}` se infiere del array que le pasen; `HistoryEntryWithDates` solo actúa como default cuando T no se infiere). Si al quitarlo `tsc --noEmit` sigue limpio, listo. Si de verdad se necesita algo ahí por alguna razón que no veo, usa `Record<string, unknown>` en vez de `any`, o si `any` es genuinamente necesario documenta el motivo con un comentario + `// eslint-disable-next-line @typescript-eslint/no-explicit-any` como se hizo en TabsToggler.tsx.\n\nTodo lo demás está bien: lógica byte-idéntica, casts inertes (`as string | number | Date`, `as Date`) solo para permitir las comparaciones de fechas sin cambiar el JS emitido, tsc --noEmit limpio a nivel de proyecto, vitest 324/324 (incluyendo la nueva suite budgetHistory.test.ts que agregaste, buena cobertura y fiel al comportamiento real). Corrige solo el punto del any y vuelve a mandar a review."
+            },
+            {
+              "ts": "2026-09-29T05:38:28.859Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:39:00.790Z",
+              "event": "submitted",
+              "notes": "Rework de budgetHistory.ts:\n- Eliminado el index signature `[key: string]: any;` de la interfaz `HistoryEntryWithDates`.\n- La interfaz ahora expone limpiamente solo `{ effectiveFrom?: Date | string | null; effectiveTo?: Date | string | null; }`.\n- Inferencia genérica `<T extends { effectiveFrom?: Date | string | null; effectiveTo?: Date | string | null } = HistoryEntryWithDates>` intacta sin necesidad de index signature ni `any`.\n- Verificación exhaustiva: `npx eslint src/helpers/transformers/budgetHistory.ts` pasa limpio con 0 warnings/errores; `npx tsc --noEmit` pasa limpio con 0 errores en todo el proyecto; `npx vitest run` pasa 30/30 suites y 324/324 tests."
+            },
+            {
+              "ts": "2026-09-29T05:39:24.706Z",
+              "event": "approved",
+              "notes": "Rework correcto: `[key: string]: any` eliminado de HistoryEntryWithDates, el genérico T se infiere del array real sin necesitarlo. Verificado independientemente: eslint limpio, tsc --noEmit limpio (proyecto completo), vitest 324/324 (30 archivos, incluyendo la nueva suite budgetHistory.test.ts).\n\nResto de la migración ya evaluado en la ronda anterior: lógica byte-idéntica, casts inertes para comparaciones de fechas, 3 bugs preexistentes preservados sin arreglar (fechas inválidas silenciosas en getValueActiveInMonth, Number.isFinite normaliza NaN/Infinity a 0, lightenHex asume hex de 6 caracteres). Aprobado tras 1 ronda de rework."
+            }
+          ]
         },
         "src/helpers/timeFunctions/timeFunctions.js": {
           "status": "pending",

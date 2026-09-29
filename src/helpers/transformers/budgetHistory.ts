@@ -1,16 +1,24 @@
+export interface HistoryEntryWithDates {
+  effectiveFrom?: Date | string | null;
+  effectiveTo?: Date | string | null;
+}
+
 // Resolves which history[] entry (of a Budget or IncomeSource) was active at a given date.
 // Both models version changes the same way: an append-only list of
 // {..., effectiveFrom, effectiveTo} entries, with effectiveTo: null meaning "still active".
-export function getValueActiveInMonth(historyArray, monthStart) {
+export function getValueActiveInMonth<T extends { effectiveFrom?: Date | string | null; effectiveTo?: Date | string | null } = HistoryEntryWithDates>(
+  historyArray?: T[] | null,
+  monthStart?: Date | string | number | null
+): T | null {
   if (!Array.isArray(historyArray) || historyArray.length === 0) return null;
   const candidates = historyArray.filter((entry) => {
-    const from = new Date(entry.effectiveFrom);
-    const to = entry.effectiveTo ? new Date(entry.effectiveTo) : null;
-    return from <= monthStart && (!to || to > monthStart);
+    const from = new Date(entry.effectiveFrom as string | number | Date);
+    const to = entry.effectiveTo ? new Date(entry.effectiveTo as string | number | Date) : null;
+    return from <= (monthStart as Date) && (!to || to > (monthStart as Date));
   });
   if (candidates.length === 0) return null;
   return candidates.reduce((latest, entry) =>
-    new Date(entry.effectiveFrom) > new Date(latest.effectiveFrom) ? entry : latest
+    new Date(entry.effectiveFrom as string | number | Date) > new Date(latest.effectiveFrom as string | number | Date) ? entry : latest
   );
 }
 
@@ -18,8 +26,8 @@ export function getValueActiveInMonth(historyArray, monthStart) {
 // Spending budgets: high ratio is bad (near/over the ceiling) -> green to red.
 // Saving budgets: high ratio is good -> red (far from goal) to green (getting
 // close) to a rich blue (at/very close to the goal).
-export function getBudgetBarColor(ratio, isSaving) {
-  const safeRatio = Number.isFinite(ratio) ? ratio : 0;
+export function getBudgetBarColor(ratio?: number | null, isSaving?: boolean | null): string {
+  const safeRatio = Number.isFinite(ratio) ? (ratio as number) : 0;
   if (isSaving) {
     if (safeRatio >= 0.85) return "#2962FF"; // blue - at/very close to goal
     if (safeRatio >= 0.35) return "#4CAF50"; // green - getting close
@@ -31,7 +39,7 @@ export function getBudgetBarColor(ratio, isSaving) {
   return "#4CAF50"; // green
 }
 
-function lightenHex(hex, amount) {
+function lightenHex(hex: string, amount: number): string {
   const num = parseInt(hex.replace("#", ""), 16);
   const r = Math.min(255, Math.round(((num >> 16) & 0xff) + (255 - ((num >> 16) & 0xff)) * amount));
   const g = Math.min(255, Math.round(((num >> 8) & 0xff) + (255 - ((num >> 8) & 0xff)) * amount));
@@ -41,7 +49,7 @@ function lightenHex(hex, amount) {
 
 // A light-to-solid gradient of whichever zone color the ratio currently falls
 // in, so the bar reads as a smooth degrade rather than one flat color.
-export function getBudgetBarGradient(ratio, isSaving) {
+export function getBudgetBarGradient(ratio?: number | null, isSaving?: boolean | null): string {
   const color = getBudgetBarColor(ratio, isSaving);
   return `linear-gradient(90deg, ${lightenHex(color, 0.55)}, ${color})`;
 }
@@ -49,8 +57,8 @@ export function getBudgetBarGradient(ratio, isSaving) {
 // A small mood indicator matching how close the budget is to its limit (or,
 // for savings, its goal). Spending: barely-spent is delighted, over budget
 // is panicked. Saving: mirrored - close to/past the goal is delighted.
-export function getBudgetMoodEmoji(ratio, isSaving) {
-  const safeRatio = Number.isFinite(ratio) ? ratio : 0;
+export function getBudgetMoodEmoji(ratio?: number | null, isSaving?: boolean | null): string {
+  const safeRatio = Number.isFinite(ratio) ? (ratio as number) : 0;
   if (isSaving) {
     if (safeRatio >= 0.85) return "🤩";
     if (safeRatio >= 0.35) return "🙂";
