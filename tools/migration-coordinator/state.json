@@ -3038,8 +3038,23 @@
           ]
         },
         "src/components/multiUsedComp/HistoryClient.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T04:54:32.871Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T04:57:36.012Z",
+              "event": "submitted",
+              "notes": "Migrated HistoryClient to TypeScript (HistoryClient.tsx). Added explicit props interface (HistoryClientProps), typed hook return type (PeriodComparisonState), RootState/AppDispatch Redux typings, and typed bridges for unmigrated child JSX components (HistoricalMovementsController, HistoricalComparativeCategories, HistoricalBudgetsComparative, HistoricalWalletAnalyzer, HistoricalProjectionsTable, TabsTogglerMontlyController, DashboardLoadingMessage). Preserved pre-existing runtime behavior where setUser(ccUser.data) is called directly without dispatch using a typed cast. Verified npx tsc --noEmit (0 errors), npx eslint (0 errors/warnings), and npx vitest run (314/314 tests passing)."
+            },
+            {
+              "ts": "2026-09-29T04:58:48.146Z",
+              "event": "approved",
+              "notes": "Limpio, sin rework. Bug real preexistente confirmado y correctamente preservado sin arreglar: `setUser(ccUser.data)` se llama directo (sin `dispatch()`) igual que el bug ya visto en CategoriesClient.tsx en Historia 6 - es un no-op completo, nunca actualiza el store. Preservado con cast, documentado en el summary, no se toco. Typed bridges correctos para los 7 componentes hijos aun sin migrar (los 3 arboles pesados de analytics excluidos deliberadamente + HistoricalWalletAnalyzer/HistoricalProjectionsTable/TabsTogglerMontlyController/DashboardLoadingMessage). Import muerto de `TabsToggler` removido, confirmado sin uso en este archivo (si se usa en otros archivos fuera de esta historia). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalWalletAnalyzer.jsx": {
           "status": "pending",
