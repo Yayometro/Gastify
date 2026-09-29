@@ -3727,8 +3727,37 @@
           ]
         },
         "src/components/multiUsedComp/TransferExchangeModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:21:37.717Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:25:40.774Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TransferExchangeModal.jsx a TypeScript (.tsx) preservando todo el comportamiento existente, operadores || y estructura de componentes:\n- Creadas interfaces `TransferExchangeFormState` y `ProviderData`.\n- Tipadas respuestas de backend con `FxQuotePostResponse` (fx/quote) y `TransferTransactionResponse` (transactions/transfer) con estrechamiento seguro.\n- Tipados eventos de formulario con `React.ChangeEvent<HTMLInputElement | HTMLSelectElement>`, `React.FormEvent<HTMLFormElement>`, y MUI DateTimePicker con `Dayjs | null`.\n- Redux dispatch tipado con `AppDispatch` y payload `TransactionData[]`.\n- Bugs preexistentes identificados y documentados (preservados sin modificar):\n  1. `EMPTY_FORM.date` evaluado a nivel de módulo: `clearForm()` resetea la fecha al timestamp de carga del módulo en vez del momento actual.\n  2. Flag `destinationTouched` permanente: al editar manualmente `destinationAmount`, las sugerencias y cotizaciones automáticas de FX dejan de actualizarse aunque se cambie la cuenta de origen/destino o el monto, hasta que se presione `clearForm`.\n  3. Redundancia de payload `wallet: user.wallet`: enviado al backend pero ignorado de forma segura porque la ruta deriva user y wallet de la sesión autenticada.\n  4. Redondeo en montos sub-centavo: `majorToMinor` redondea a 0 valores menores a 1 centavo/minor unit, bloqueados por validación.\n- Guards/casts: `(user as UserData)?._id`, casts a DTOs de API y `if (newValue)` para el picker de fecha."
+            },
+            {
+              "ts": "2026-09-29T16:27:48.795Z",
+              "event": "needs_rework",
+              "notes": "Encontré 2 cambios de comportamiento reales, no forzados por el compilador, verificados uno por uno quitando el guard y confirmando que `npx tsc --noEmit` sigue limpio sin él (proyecto completo, no solo grep).\n\n1. **`onChange` del `MobileDateTimePicker` (línea ~259-263)**: el original llama `newValue.format()` DIRECTO, sin ningún guard:\n   `onChange={(newValue) => setForm((f) => ({ ...f, date: new Date(newValue.format()) }))}`\n   Si el usuario limpia el campo de fecha (MUI puede pasar `newValue: null` al borrar el texto), esto lanza un `TypeError` real en el original - un crash preexistente, no un bug tuyo.\n   Tu migración agregó `if (newValue) { ... }` - esto NO es requerido por el compilador (`strict: false`, sin `strictNullChecks` - verifiqué quitando el guard y `tsc --noEmit` compila limpio igual). El guard convierte el crash original en un no-op silencioso (la fecha simplemente no se actualiza). Por favor quita el `if (newValue)` y vuelve a llamar `newValue.format()` directo, reproduciendo el crash original exacto - solo necesitas anotar el parámetro `newValue: Dayjs | null` para que tipe, sin agregar el guard.\n\n2. **Payload de `handleSubmit` (líneas ~142-143), el más importante por ser el submit de una transferencia de dinero real**: el original manda:\n   `user: user._id, wallet: user.wallet,`\n   acceso DIRECTO sin `?.`. Si `user` fuera null/undefined al momento del submit, esto lanza un `TypeError` real (crash) en el original.\n   Tu migración cambió a `user: (user as UserData | undefined)?._id, wallet: (user as UserData | undefined)?.wallet,` - el `?.` NO es requerido por el compilador (verifiqué quitándolo con `(user as UserData)._id`/`.wallet` sin `?.`, compila limpio igual gracias al cast). El `?.` convierte el crash original en mandar `user: undefined, wallet: undefined` en el body de la petición de transferencia - un cambio de comportamiento real, aunque el backend ya ignore esos campos y derive todo de la sesión (fix de IDOR previo), sigue siendo un comportamiento distinto al original en el cliente. Por favor quita ambos `?.` y usa solo el cast sin optional chaining: `user: (user as UserData)._id, wallet: (user as UserData).wallet,`.\n\nTodo lo demás de la migración está bien: la destructuración de `wallet` (la variable del provider, no `user.wallet`) se quitó correctamente - confirmé que nunca se usaba en el original, solo `user.wallet` sí se usaba y sigue intacto. `catch (e) {}` → `catch {}` correcto, `e` nunca se usaba. Todos los `||` preservados. DTOs de fx/quote y transfer bien reutilizados. Corrige solo esos 2 puntos y vuelve a mandar a review - dado que es lógica de transferencia de dinero, quiero que el comportamiento sea exactamente el mismo, incluyendo los crashes preexistentes."
+            },
+            {
+              "ts": "2026-09-29T16:28:21.819Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:28:52.601Z",
+              "event": "submitted",
+              "notes": "Rework completado: corrección de 2 cambios de comportamiento no forzados para preservar runtime idéntico al original:\n1. Revertido el guard `if (newValue)` en `MobileDateTimePicker.onChange`: ahora llama `setForm((f) => ({ ...f, date: new Date(newValue.format()) }))` directo con tipo `(newValue: Dayjs | null) =>`, preservando el crash original si se limpia el campo.\n2. Revertido el optional chaining `?.` en el payload de `handleSubmit`: se utiliza acceso directo casteado `user: (user as UserData)._id` y `wallet: (user as UserData).wallet`, preservando el crash original exacto en caso de que `user` sea nulo/indefinido.\n3. Todo el resto de la migración (interfaces de formulario, DTOs de API `fx/quote` y `transactions/transfer`, dispatch tipado, y bugs preexistentes documentados) se mantiene intacto. Verificado con `npx tsc --noEmit` y `npx eslint` limpios."
+            },
+            {
+              "ts": "2026-09-29T16:29:32.812Z",
+              "event": "approved",
+              "notes": "Rework correcto y verificado línea por línea:\n1. `onChange={(newValue: Dayjs | null) => setForm((f) => ({ ...f, date: new Date(newValue.format()) }))}` - sin `if (newValue)`, `.format()` se llama directo, preserva el crash original si el picker manda null.\n2. `user: (user as UserData)._id, wallet: (user as UserData).wallet,` - sin `?.`, acceso directo, preserva el crash original si `user` fuera null/undefined al submit.\n\nVerificado independientemente: tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nResto de la migración (DTOs de fx/quote y transfer, remoción segura de la variable `wallet` del provider nunca usada, catch(e)->catch{}, todos los `||` preservados) ya evaluado en la ronda anterior y sigue correcto. Aprobado tras 1 ronda de rework - dado que es lógica de transferencia de dinero real, valió la pena la revisión extra."
+            }
+          ]
         },
         "src/components/multiUsedComp/AddTransactionModal.jsx": {
           "status": "pending",

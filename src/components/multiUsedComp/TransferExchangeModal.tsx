@@ -1,20 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Spin, Tooltip } from "antd";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
-import dayjs from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/lib/store";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
-import { addNewTransacctions } from "@/lib/features/transacctionsSlice";
+import { addNewTransacctions, type TransactionData } from "@/lib/features/transacctionsSlice";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import type { AccountData } from "@/lib/features/accountsSlice";
+import type { UserData } from "@/lib/features/userSlice";
+import type { WalletData } from "@/lib/features/walletSlice";
+import type { FxQuotePostResponse } from "@/app/api/general-data/fx/quote/route";
+import type { TransferTransactionResponse } from "@/app/api/general-data/transactions/transfer/route";
 
-const EMPTY_FORM = {
+export interface TransferExchangeFormState {
+  name: string;
+  sourceAccountId: string;
+  sourceAmount: string;
+  destinationAccountId: string;
+  destinationAmount: string;
+  date: Date;
+}
+
+interface ProviderData {
+  user?: UserData | null;
+  wallet?: WalletData | null;
+  accounts?: AccountData[];
+  [key: string]: unknown;
+}
+
+const EMPTY_FORM: TransferExchangeFormState = {
   name: "",
   sourceAccountId: "",
   sourceAmount: "",
@@ -28,17 +50,17 @@ const EMPTY_FORM = {
 // both Accounts to share a currency; a currency mismatch is automatically
 // treated as an "exchange" and gets a live rate suggestion the user can
 // override to reflect the exact rate their bank actually used.
-function TransferExchangeModal() {
-  const dispatch = useDispatch();
+function TransferExchangeModal(): React.JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
-  const { user, wallet, accounts = [] } = useGetDataFromProvider();
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [isLoading, setIsLoading] = useState(false);
-  const [quoting, setQuoting] = useState(false);
-  const [destinationTouched, setDestinationTouched] = useState(false);
+  const { user, accounts = [] } = useGetDataFromProvider<ProviderData>();
+  const [form, setForm] = useState<TransferExchangeFormState>(EMPTY_FORM);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [quoting, setQuoting] = useState<boolean>(false);
+  const [destinationTouched, setDestinationTouched] = useState<boolean>(false);
 
-  const sourceAccount = accounts.find((a) => a._id === form.sourceAccountId);
-  const destinationAccount = accounts.find((a) => a._id === form.destinationAccountId);
+  const sourceAccount = accounts.find((a: AccountData) => a._id === form.sourceAccountId);
+  const destinationAccount = accounts.find((a: AccountData) => a._id === form.destinationAccountId);
   // A real Account document that predates the multi-currency migration has
   // no currency field in its stored BSON at all (the API never applies the
   // schema default on a .lean() read) - default to MXN explicitly rather
@@ -47,7 +69,7 @@ function TransferExchangeModal() {
   const destinationCurrency = destinationAccount?.currency || "MXN";
   const isCrossCurrency = Boolean(sourceAccount && destinationAccount && sourceCurrency !== destinationCurrency);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === "destinationAmount") setDestinationTouched(true);
     setForm((f) => ({ ...f, [name]: value }));
@@ -71,15 +93,15 @@ function TransferExchangeModal() {
       try {
         setQuoting(true);
         const amountMinor = majorToMinor(numericAmount, sourceCurrency);
-        const res = await toFetch.post("general-data/fx/quote", {
+        const res = (await toFetch.post("general-data/fx/quote", {
           amountMinor,
           fromCurrency: sourceCurrency,
           toCurrency: destinationCurrency,
-        });
+        })) as FxQuotePostResponse;
         if (!cancelled && res.ok && !destinationTouched) {
           setForm((f) => ({ ...f, destinationAmount: String(minorToMajor(res.data.amountMinor, destinationCurrency)) }));
         }
-      } catch (e) {
+      } catch {
         // Silently unavailable - the user can still enter it manually.
       } finally {
         if (!cancelled) setQuoting(false);
@@ -97,7 +119,7 @@ function TransferExchangeModal() {
     setDestinationTouched(false);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!sourceAccount || !destinationAccount) {
       runNotify("error", "Select both a source and destination account");
@@ -116,9 +138,9 @@ function TransferExchangeModal() {
 
     setIsLoading(true);
     try {
-      const res = await toFetch.post("general-data/transactions/transfer", {
-        user: user._id,
-        wallet: user.wallet,
+      const res = (await toFetch.post("general-data/transactions/transfer", {
+        user: (user as UserData)._id,
+        wallet: (user as UserData).wallet,
         name: form.name,
         kind: isCrossCurrency ? "exchange" : "transfer",
         sourceAccountId: sourceAccount._id,
@@ -126,10 +148,10 @@ function TransferExchangeModal() {
         destinationAccountId: destinationAccount._id,
         destinationAmountMinor,
         date: form.date,
-      });
+      })) as TransferTransactionResponse;
       if (res.ok) {
         runNotify("ok", res.message);
-        dispatch(addNewTransacctions([res.data.outgoing, res.data.incoming]));
+        dispatch(addNewTransacctions([res.data.outgoing, res.data.incoming] as TransactionData[]));
         clearForm();
       } else {
         runNotify("error", res.message || "Something went wrong");
@@ -234,7 +256,9 @@ function TransferExchangeModal() {
                   <MobileDateTimePicker
                     className="text-center flex items-center justify-between border-2"
                     slotProps={{ textField: { size: "small" } }}
-                    onChange={(newValue) => setForm((f) => ({ ...f, date: new Date(newValue.format()) }))}
+                    onChange={(newValue: Dayjs | null) =>
+                      setForm((f) => ({ ...f, date: new Date(newValue.format()) }))
+                    }
                     value={dayjs(form.date)}
                     sx={{
                       "& .MuiInputBase-root": { width: "100%", height: "100%", padding: "0px", border: "none" },
