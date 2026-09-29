@@ -3280,8 +3280,23 @@
           ]
         },
         "src/components/multiUsedComp/periodFiltersWithCompare/PeriodFiltersWithCompare.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:52:10.059Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:54:37.789Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de PeriodFiltersWithCompare a TypeScript (.tsx). Se define y exporta la interfaz PeriodFiltersWithCompareProps compatible como superset con los typed bridges existentes en TabsTogglerMontlyView.tsx, HistoricalProjectionsTable.tsx y HistoricalWalletAnalyzer.tsx. Se reutiliza SelecterPeriod de SelecterFilter.tsx. Se preservaron los nombres exactos de props (siz={13}, siz={15} en UniversalCategoIcon) y typos preexistentes en tooltips. Solo se añadió un cast seguro 'rangePickerResponse as string | undefined' para TimeRange y optional chaining 'setCompareEnabled?.(e.target.checked)' para el handler onChange del input checkbox. Se verificó con tsc --noEmit limpio en todo el proyecto, eslint limpio y vitest 324/324 pasando."
+            },
+            {
+              "ts": "2026-09-29T05:55:48.945Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerificado:\n- `rangePickerResponse as string | undefined` al pasarlo a TimeRange - cast necesario y correcto, confirmé que TimeRangeProps.rpResponse es `string | undefined` mientras que aquí `rangePickerResponse` está tipado como `unknown` (dato externo sin garantía de shape).\n- `setCompareEnabled?.(e.target.checked)` - NO es compiler-required (probé quitando el `?.` y `tsc --noEmit` sigue limpio con strict:false). Es inerte para datos reales: `setCompareEnabled` solo se invoca dentro del checkbox que solo se renderiza cuando `showCompareToggle = typeof setCompareEnabled === \"function\"` ya es true, así que en la práctica siempre es una función real en ese punto. Aceptado sin rework.\n- `PeriodFiltersWithCompareProps` reutiliza `SelecterPeriod` de SelecterFilter.tsx (ya migrado) y es superset-compatible con los typed bridges locales ya existentes en TabsTogglerMontlyView.tsx y HistoricalProjectionsTable.tsx.\n- Prop legacy `siz={13}`/`siz={15}` (no `size`) preservada tal cual - es el nombre real que espera UniversalCategoIcon.\n- Typo preexistente en tooltip (\"Filter de date by...\") preservado sin corregir.\n- Doble `<Tooltip>` contiguo (uno para texto, otro para el ícono) preservado tal cual - ya estaba así en el original, es cosmético/duplicación menor, no bug de comportamiento.\n\nSin rework."
+            }
+          ]
         },
         "src/hooks/useProjectionTable.js": {
           "status": "pending",

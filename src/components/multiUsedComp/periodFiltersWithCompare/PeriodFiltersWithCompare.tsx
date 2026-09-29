@@ -1,10 +1,27 @@
 "use client";
 
+import React from "react";
 import { Tooltip } from "antd";
-import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
+import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { getDateInYearMonthDay } from "@/helpers/timeFunctions/timeFunctions";
+
+export interface PeriodFiltersWithCompareProps {
+  timePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;
+  getValueFromSelecter?: (v: string) => void;
+  timePeriodsForSelecter?: SelecterPeriod[];
+  periodFromFather?: SelecterPeriod | string | number;
+  handleRangeDate?: (startDate: Date | null, endDate: Date | null) => void;
+  rangePickerResponse?: unknown;
+  extraControls?: React.ReactNode;
+  compareEnabled?: boolean;
+  setCompareEnabled?: React.Dispatch<React.SetStateAction<boolean>> | ((enabled: boolean) => void);
+  comparePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;
+  getCompareValueFromSelecter?: (v: string) => void;
+  handleCompareRangeDate?: (startDate: Date | null, endDate: Date | null) => void;
+  timePeriodsForCompareSelecter?: SelecterPeriod[];
+}
 
 const FILTER_PILL_STYLE =
   "gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative min-[400px]:py-[2px] min-[640px]:py-[4px]";
@@ -36,7 +53,7 @@ function PeriodFiltersWithCompare({
   getCompareValueFromSelecter,
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
-}) {
+}: PeriodFiltersWithCompareProps): React.JSX.Element {
   const showCompareToggle = typeof setCompareEnabled === "function";
 
   return (
@@ -46,7 +63,7 @@ function PeriodFiltersWithCompare({
           <input
             type="checkbox"
             checked={compareEnabled}
-            onChange={(e) => setCompareEnabled(e.target.checked)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCompareEnabled?.(e.target.checked)}
             className="appearance-none w-4 h-4 rounded-full border-2 border-purple-300 checked:bg-purple-600 checked:border-purple-600 cursor-pointer transition-colors"
           />
           <Tooltip title={COMPARE_TOOLTIP}>
@@ -86,7 +103,7 @@ function PeriodFiltersWithCompare({
               periodOverride={timePeriodsForSelecter}
               styles={FILTER_PILL_STYLE}
             />
-            <TimeRange rpDate={handleRangeDate} rpResponse={rangePickerResponse} />
+            <TimeRange rpDate={handleRangeDate} rpResponse={rangePickerResponse as string | undefined} />
             {extraControls}
           </div>
         </div>
