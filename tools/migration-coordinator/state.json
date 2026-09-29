@@ -3508,8 +3508,23 @@
           ]
         },
         "src/components/multiUsedComp/historicalComparativeCategories/CategoriesCompareTable.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T07:26:08.649Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T07:27:28.329Z",
+              "event": "submitted",
+              "notes": "Migrado CategoriesCompareTable a TypeScript (.tsx) 1:1. Se definieron las interfaces CategoryRowItem, TopCategoryRowProps y CategoriesCompareTableProps (100% compatible con HistoricalComparativeCategories.tsx). Se creó un typed bridge para TopCategoryRow (excluido de esta historia). Se aplicó cast seguro 'as CategoryRowItem[]' a (rowsA || []) y (rowsB || []) antes del slice(0, TOP_N) para tipar los elementos sin agregar optional chaining innecesario. Sin cambios en lógica ni operadores ||. Verificado con tsc --noEmit (0 errores en todo el proyecto), eslint (0 errores) y vitest (30 archivos / 324 tests pasando)."
+            },
+            {
+              "ts": "2026-09-29T07:28:01.178Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerificación específica (dado el precedente de TransResumeChart.tsx): `item._id || item.type || i` en la key de React se dejó EXACTAMENTE igual, sin agregar `?.`. El cast `((rowsA || []) as CategoryRowItem[])` es puramente de compilación (permite tipar `.map()`), no altera ningún acceso en runtime.\n\n`CategoriesCompareTableProps` compatible con el typed bridge ya existente en HistoricalComparativeCategories.tsx. Typed bridge nuevo para `TopCategoryRow` (árbol top3/, correctamente NO migrado, ya excluido de esta historia).\n\nSin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/historicalComparativeCategories/view/HistoricalComparativeCategoriesView.jsx": {
           "status": "pending",

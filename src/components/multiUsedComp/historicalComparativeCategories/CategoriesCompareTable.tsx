@@ -6,6 +6,37 @@ import { formatMoneyMajor } from "@/lib/money/currencies";
 
 const TOP_N = 10;
 
+export interface CategoryRowItem {
+  name?: string;
+  type?: string;
+  icon?: string;
+  color?: string;
+  value?: number;
+  isBill?: boolean;
+  children?: unknown[];
+  _id?: string;
+}
+
+export interface TopCategoryRowProps {
+  item: CategoryRowItem | unknown;
+  index: number;
+  onClick?: (item: unknown) => void;
+}
+
+const TypedTopCategoryRow = TopCategoryRow as unknown as React.ComponentType<TopCategoryRowProps>;
+
+export interface CategoriesCompareTableProps {
+  rowsA?: CategoryRowItem[] | unknown[];
+  rowsB?: CategoryRowItem[] | unknown[];
+  totalA?: number;
+  totalB?: number;
+  labelA?: string;
+  labelB?: string;
+  kindLabel?: string;
+  walletPrimaryCurrency?: string;
+  onOpenItem?: (item: unknown) => void;
+}
+
 // A mirrored bar chart forces both periods onto the same x-axis order, which
 // only makes sense when the two periods actually rank their categories the
 // same way - the moment period B's #1 category isn't period A's #1 (e.g. a
@@ -24,9 +55,9 @@ function CategoriesCompareTable({
   kindLabel,
   walletPrimaryCurrency = "MXN",
   onOpenItem,
-}) {
-  const topA = (rowsA || []).slice(0, TOP_N);
-  const topB = (rowsB || []).slice(0, TOP_N);
+}: CategoriesCompareTableProps): React.JSX.Element {
+  const topA = ((rowsA || []) as CategoryRowItem[]).slice(0, TOP_N);
+  const topB = ((rowsB || []) as CategoryRowItem[]).slice(0, TOP_N);
 
   return (
     <div className="w-full flex flex-col items-center gap-2">
@@ -51,7 +82,7 @@ function CategoriesCompareTable({
             <p className="text-xs text-gf-text-muted text-center">No categories</p>
           ) : (
             topA.map((item, i) => (
-              <TopCategoryRow key={`a-${item._id || item.type || i}`} item={item} index={i} onClick={onOpenItem} />
+              <TypedTopCategoryRow key={`a-${item._id || item.type || i}`} item={item} index={i} onClick={onOpenItem} />
             ))
           )}
         </div>
@@ -60,7 +91,7 @@ function CategoriesCompareTable({
             <p className="text-xs text-gf-text-muted text-center">No categories</p>
           ) : (
             topB.map((item, i) => (
-              <TopCategoryRow key={`b-${item._id || item.type || i}`} item={item} index={i} onClick={onOpenItem} />
+              <TypedTopCategoryRow key={`b-${item._id || item.type || i}`} item={item} index={i} onClick={onOpenItem} />
             ))
           )}
         </div>
