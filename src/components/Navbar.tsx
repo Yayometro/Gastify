@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/authClient";
+import type { auth } from "@/lib/auth/betterAuth";
 import Link from "next/link";
 import Image from "next/image";
 import "animate.css";
@@ -15,34 +16,40 @@ import { MdAutoGraph } from "react-icons/md";
 import { MdSavings } from "react-icons/md";
 import { IoAdd } from "react-icons/io5";
 import { MdAccountBalance } from "react-icons/md";
-import { IoPricetags } from "react-icons/io5";
 import { IoMdExit } from "react-icons/io";
 import { BiSolidCategory } from "react-icons/bi";
 import { MdLightMode, MdDarkMode } from "react-icons/md";
 
-import "@/components/styles/NavbarStyle.css"
+import "@/components/styles/NavbarStyle.css";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUser } from "@/lib/features/userSlice";
+import type { RootState, AppDispatch } from "@/lib/store";
+import { fetchUser, type UserData } from "@/lib/features/userSlice";
 import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
 import { FaHistory } from "react-icons/fa";
 import { useThemeMode } from "@/app/ThemeProvider";
 
-function Navbar({ sesion }) {
-  const [toggleNav, setToggleNav] = useState(false);
-  const [isAddTrans, setIsAddTrans] = useState(false);
+export type NavbarSession = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
+
+export interface NavbarProps {
+  sesion: NavbarSession;
+}
+
+function Navbar({ sesion }: NavbarProps): React.JSX.Element {
+  const [toggleNav, setToggleNav] = useState<boolean>(false);
+  const [isAddTrans, setIsAddTrans] = useState<boolean>(false);
   const { mode, toggleMode } = useThemeMode();
   const router = useRouter();
-  const handleSignOut = () => {
+  const handleSignOut = (): void => {
     authClient.signOut({
       fetchOptions: { onSuccess: () => router.push("/login") },
     });
   };
-  const handleToggleNav = () => {
+  const handleToggleNav = (): void => {
     setToggleNav(!toggleNav);
   };
   // REDUX
-  const reduxDispatch = useDispatch()
-  const ccUser = useSelector((state) => state.userReducer.data);
+  const reduxDispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: RootState) => state.userReducer.data as UserData & { status?: string });
   // 
   useEffect(() => {
     // User
@@ -51,9 +58,9 @@ function Navbar({ sesion }) {
     }
   }, []);
 
-  const toogleAddTrans = React.useCallback(() => {
-    setIsAddTrans(prev => !prev)
-  }, [])
+  const toogleAddTrans = React.useCallback((): void => {
+    setIsAddTrans(prev => !prev);
+  }, []);
 
   return (
     <nav className="navbar w-full fixed flex flex-col items-center justify-center bottom-0 md:w-fit md:fixed md:top-0 z-[1000] ">

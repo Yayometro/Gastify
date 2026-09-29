@@ -3779,8 +3779,23 @@
           ]
         },
         "src/components/Navbar.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:34:06.434Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:36:44.108Z",
+              "event": "submitted",
+              "notes": "Migración de `src/components/Navbar.jsx` a `src/components/Navbar.tsx`.\n\n1. Tipado e interfaces:\n- `NavbarSession` como `NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>` derivado directamente de `@/lib/auth/betterAuth`.\n- `NavbarProps` tipando `sesion: NavbarSession`.\n- `useSelector` tipado con `(state: RootState) => state.userReducer.data as UserData & { status?: string }`.\n- `useDispatch` tipado con `<AppDispatch>`.\n- Handlers y states locales con firmas y genéricos explícitos (`boolean`, `void`).\n\n2. Bugs preexistentes identificados (preservados sin arreglar):\n- `ccUser.status == \"idle\"` en `useEffect`: `status` vive en `state.userReducer.status` y no en `state.userReducer.data`. En tiempo de ejecución `ccUser.status` es `undefined` (nunca igual a `\"idle\"`). Preservado 1:1 sin alterar lógica ni agregar optional chaining innecesario.\n- Se eliminó el import no utilizado `IoPricetags` de `react-icons/io5` para resolver `@typescript-eslint/no-unused-vars`.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/components/Navbar.tsx`: 0 errores (1 warning estándar de exhaustive-deps).\n- `npx vitest run`: 30/30 suites pasadas (324/324 tests)."
+            },
+            {
+              "ts": "2026-09-29T16:37:42.450Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica (confirmé que el resto del JSX es idéntico salvo un punto y coma). tsc --noEmit limpio (proyecto completo, confirmé que dashboard/layout.tsx sigue compilando con `NavbarSession = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>`). eslint: 1 warning preexistente de exhaustive-deps (mismo array `[]` que ya tenía el original, no es regresión). vitest 324/324.\n\nHallazgo importante verificado: `state.userReducer.data as UserData & { status?: string }` - el cast es correcto y preserva el bug real: confirmé en userSlice.ts que `UserData` (línea 6) NO tiene campo `status` (ese vive en `UserState`, el wrapper del slice, línea 29, un nivel arriba de `.data`). Por lo tanto `ccUser.status` siempre fue `undefined` en runtime, tanto en el original como en la migración - `fetchUser` NUNCA se despacha desde este useEffect de Navbar. Es el mismo patrón raíz ya documentado como bug #13 (`ReadFileComp.tsx`), pero una ocurrencia nueva en un archivo distinto - lo voy a loguear como fila nueva.\n\n`IoPricetags` removido del import - confirmado via grep que solo aparecía en su línea de import, nunca usado en el JSX. `?.` preexistentes en `ccUser?.image`/`ccUser?.fullName` preservados sin tocar, y `ccUser.status` sigue sin `?.` tal como pedí. Sin rework. Historia 13 completa: 5/5 archivos."
+            }
+          ]
         }
       }
     }
