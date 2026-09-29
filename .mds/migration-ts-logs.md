@@ -829,3 +829,49 @@ muestra igual que "0% compliance" real; y un crash potencial de
 fallback interno en ese componente.
 
 Los 7 archivos limpios a la primera revisión, ninguno necesitó rework.
+
+## 2026-09-29 — Historia 13 (Navbar/alta rápida) completa: 5/5 archivos
+
+El shell de navegación completo y el modal de alta rápida:
+`scrollLock.ts` [31 líneas, helper de bloqueo de scroll compartido],
+`ThemeProvider.tsx` [75→86 líneas, contexto claro/oscuro],
+`TransferExchangeModal.tsx` [268→292 líneas, el archivo más sensible -
+formulario real de transferencia/conversión de divisas entre cuentas],
+`AddTransactionModal.tsx` [100→106 líneas, modal de 4 tabs], y
+`Navbar.tsx` [205→212 líneas, entry, renderizado desde
+`dashboard/layout.tsx`]. Todas las rutas de API que este árbol
+necesita ya estaban migradas desde Historias 7-9 - historia puramente
+de UI/lógica de cliente, **sin fixes de seguridad nuevos**.
+
+**1 ronda de rework, la segunda vez en toda la migración que un guard
+no forzado casi tapa un crash real** (después del caso de
+`TransResumeChart.tsx` en Historia 11) - y esta vez en el archivo más
+delicado posible, el submit de una transferencia de dinero real:
+- `MobileDateTimePicker.onChange` llamaba `newValue.format()` directo
+  en el original (crash si el usuario limpia el campo). La migración
+  agregó `if (newValue) {...}` - no requerido por el compilador
+  (verificado quitándolo, `tsc --noEmit` sigue limpio con `strict:
+  false`), revertido para preservar el crash original.
+- El payload de `handleSubmit` mandaba `user: user._id, wallet:
+  user.wallet` directo en el original (crash si `user` fuera
+  null/undefined). La migración agregó `?.` sobre el cast - tampoco
+  requerido por el compilador, revertido a `(user as UserData)._id`/
+  `.wallet` sin `?.` para preservar el crash original exacto.
+
+**Bugs no-seguridad encontrados y preservados sin arreglar** (ver tabla
+de bugs pendientes, filas 36-41): los 2 crashes preexistentes ya
+descritos arriba; `EMPTY_FORM.date` congelado a nivel de módulo (mismo
+patrón que `today`/`year` de Historias 10-11); el flag
+`destinationTouched` "pegajoso" que desactiva permanentemente el
+autocompletado de cotización de divisa tras la primera edición manual;
+redondeo sub-centavo (`Math.round` en `majorToMinor`) que bloquea el
+submit con "Enter both amounts" aunque el usuario sí haya escrito un
+monto; y una 3ra ocurrencia de `ccUser.status` siempre `undefined` en
+`Navbar.tsx` (mismo patrón raíz que el bug #13 de `ReadFileComp.tsx`,
+Historia 8 - `useSelector` lee `.data` en vez del slice completo con
+`.status`).
+
+4 de los 5 archivos limpios a la primera revisión - solo
+`TransferExchangeModal.tsx` necesitó 1 ronda de rework, por ser
+justamente el archivo con lógica de dinero real donde más importaba
+revisar dos veces cada `?.` nuevo.
