@@ -10,13 +10,67 @@ import Movements from "../Movements";
 import runNotify from "@/helpers/gastifyNotifier";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
-import CurrencyBreakdownChips from "../CurrencyBreakdownChips";
+import CurrencyBreakdownChips, {
+  type CurrencyBreakdownData,
+} from "../CurrencyBreakdownChips";
+import type { ProjectionTableRow } from "@/hooks/useProjectionTable";
 
 const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
   ssr: false,
 });
 
-function QuestionTooltip({ title }) {
+export interface BucketBreakdownItem {
+  label: string;
+  budgeted: number;
+  actual: number;
+}
+
+export interface IncomeOccurrenceItem {
+  name?: string;
+  amount: number;
+  occurrences: number;
+}
+
+export interface BufferRevisionItem {
+  unexpectedBuffer?: number;
+  unexpectedIncomeBuffer?: number;
+  expenseMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+  incomeMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+  updatedAt?: Date | string;
+}
+
+export interface SaveBuffersPayload {
+  unexpectedBuffer: number;
+  unexpectedIncomeBuffer: number;
+}
+
+export interface ProjectionMonthDetailModalProps {
+  monthRow?: ProjectionTableRow | null;
+  bucketBreakdown?: BucketBreakdownItem[] | null;
+  incomeOccurrences?: IncomeOccurrenceItem[] | null;
+  incomeCurrencyBreakdown?: CurrencyBreakdownData | null;
+  expenseCurrencyBreakdown?: CurrencyBreakdownData | null;
+  walletPrimaryCurrency?: string;
+  unexpectedBuffer?: number | null;
+  unexpectedIncomeBuffer?: number | null;
+  bufferRevisions?: BufferRevisionItem[] | null;
+  onSaveBuffers: (buffers: SaveBuffersPayload) => Promise<void> | void;
+  onSaveMonthBalance: (balance: number) => Promise<void> | void;
+  onClose: () => void;
+  mail?: string;
+}
+
+interface QuestionTooltipProps {
+  title: React.ReactNode;
+}
+
+function QuestionTooltip({ title }: QuestionTooltipProps): React.JSX.Element {
   return (
     <Tooltip title={title}>
       <div className="inline-block ml-1 align-middle text-purple-400">
@@ -40,20 +94,20 @@ function ProjectionMonthDetailModal({
   onSaveMonthBalance,
   onClose,
   mail,
-}) {
-  const [bufferValue, setBufferValue] = useState(unexpectedBuffer ?? 0);
-  const [incomeBufferValue, setIncomeBufferValue] = useState(unexpectedIncomeBuffer ?? 0);
-  const [balanceValue, setBalanceValue] = useState(monthRow?.manualBalance ?? "");
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSavingBalance, setIsSavingBalance] = useState(false);
-  const [showTransactions, setShowTransactions] = useState(false);
+}: ProjectionMonthDetailModalProps): React.JSX.Element | null {
+  const [bufferValue, setBufferValue] = useState<number | string>(unexpectedBuffer ?? 0);
+  const [incomeBufferValue, setIncomeBufferValue] = useState<number | string>(unexpectedIncomeBuffer ?? 0);
+  const [balanceValue, setBalanceValue] = useState<number | string>(monthRow?.manualBalance ?? "");
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isSavingBalance, setIsSavingBalance] = useState<boolean>(false);
+  const [showTransactions, setShowTransactions] = useState<boolean>(false);
 
   if (!monthRow) return null;
 
   // Same [start, end] shape Movements already accepts via timePeriodFromFather
   // elsewhere in the app (e.g. Dashboard.jsx) - reusing the real Movements UI
   // here instead of building a second transaction list from scratch.
-  const monthDateRange = getYearMonthDateRange(new Date(monthRow.year, 0, 1)).get(monthRow.monthName);
+  const monthDateRange = getYearMonthDateRange(new Date(monthRow.year as number, 0, 1)).get(monthRow.monthName);
 
   const chartData = (bucketBreakdown || []).flatMap((row) => [
     { label: row.label, type: "Budgeted", value: row.budgeted },
@@ -290,11 +344,11 @@ function ProjectionMonthDetailModal({
                 </summary>
                 <ul className="mt-2 flex flex-col gap-1">
                   {[...bufferRevisions]
-                    .sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt))
+                    .sort((a, b) => +new Date(a.updatedAt as string | number | Date) - +new Date(b.updatedAt as string | number | Date))
                     .map((rev, i) => (
                       <li key={i} className="flex justify-between bg-gf-accent-soft-bg/70 rounded-lg px-2 py-1 text-gf-text-muted">
                         <span>
-                          {new Date(rev.updatedAt).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
+                          {new Date(rev.updatedAt as string | number | Date).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
                         </span>
                         <span>
                           gasto: {usdFormatChanger(rev.unexpectedBuffer || 0)} · ingreso: {usdFormatChanger(rev.unexpectedIncomeBuffer || 0)}

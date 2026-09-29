@@ -3898,8 +3898,23 @@
           ]
         },
         "src/components/multiUsedComp/Projections/ProjectionMonthDetailModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T17:43:03.582Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T17:46:39.853Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 a TypeScript de `ProjectionMonthDetailModal.jsx` -> `ProjectionMonthDetailModal.tsx` (325 líneas).\n\nInterfaces y tipos:\n- `ProjectionTableRow` importado directamente de `@/hooks/useProjectionTable.ts`.\n- `CurrencyBreakdownData` importado directamente de `../CurrencyBreakdownChips.tsx`.\n- Definidas interfaces co-localizadas:\n  - `BucketBreakdownItem`: `{ label: string; budgeted: number; actual: number }`\n  - `IncomeOccurrenceItem`: `{ name?: string; amount: number; occurrences: number }`\n  - `BufferRevisionItem`: `{ unexpectedBuffer?: number; unexpectedIncomeBuffer?: number; expenseMoney?: { amountMinor: number; currency: string }; incomeMoney?: { amountMinor: number; currency: string }; updatedAt?: Date | string }`\n  - `SaveBuffersPayload`: `{ unexpectedBuffer: number; unexpectedIncomeBuffer: number }`\n  - `ProjectionMonthDetailModalProps`: tipado completo y explícito de props sin `any`.\n  - `QuestionTooltipProps`: `{ title: React.ReactNode }`.\n\nCasts / Ajustes mínimos de TypeScript (inertes en runtime):\n- `+new Date(a.updatedAt as string | number | Date) - +new Date(b.updatedAt as string | number | Date)`: coerción unaria explícita con `+` para que el compilador de TypeScript permita la resta aritmética de fechas preservando la coerción idéntica a `.valueOf()` (timestamp en ms o NaN) de JavaScript.\n- `new Date(monthRow.year as number, 0, 1)`: cast mínimo dado que `year?: number` es opcional en `ProjectionTableRow`, manteniendo exactamente la llamada original sin agregar guards innecesarios.\n\nBugs preexistentes detectados y preservados sin arreglar:\n1. En `handleSaveBalance`: si `balanceValue` es `\"\"` (estado inicial cuando `manualBalance` no existe), `Number(\"\")` evalúa a `0`, por lo que al guardar un balance vacío se enviará `0` en vez de `null` o clearing.\n2. En `bufferRevisions.sort`: si algún elemento no tiene `updatedAt` o tiene fecha inválida, `+new Date(undefined)` produce `NaN`, dando como resultado una comparación `NaN - NaN = NaN` con ordenamiento inestable/indefinido.\n3. En `incomeOccurrences`: si `row.amount` o `row.occurrences` no estuvieran definidos, `row.occurrences * row.amount` evalúa a `NaN`.\n\nVerificación:\n- `npx tsc --noEmit` pasó con 0 errores en todo el proyecto.\n- `npx eslint src/components/multiUsedComp/Projections/ProjectionMonthDetailModal.tsx` pasó sin errores ni advertencias.\n- `npx vitest run` pasó 30/30 suites y 324/324 tests."
+            },
+            {
+              "ts": "2026-09-29T17:47:30.035Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, verificada línea por línea contra el original (archivo de 325→379 líneas, el más grande de esta historia). tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerificación matemática del cambio más delicado: `new Date(a.updatedAt) - new Date(b.updatedAt)` → `+new Date(a.updatedAt as string | number | Date) - +new Date(b.updatedAt as string | number | Date)`. Confirmado que ambas expresiones son idénticas: la resta original de dos objetos Date invoca implícitamente `.valueOf()` en ambos operandos (coerción a número vía el algoritmo ToNumeric de JS), exactamente lo mismo que hace el operador unario `+` explícito. Cero diferencia de comportamiento, incluyendo el caso de fecha inválida (`NaN` en ambos casos).\n\n`monthRow.year as number` es cast puro de compilación (el campo es opcional en `ProjectionTableRow`, pero el guard `if (!monthRow) return null;` ya garantiza que monthRow existe en este punto - el año en sí sigue sin verificarse, igual que el original).\n\nReutiliza `ProjectionTableRow` real de useProjectionTable.ts y `CurrencyBreakdownData` real de CurrencyBreakdownChips.tsx. `Movements` importado directo con su contrato real de props verificado. Interfaces razonables (`BucketBreakdownItem`/`IncomeOccurrenceItem`/`BufferRevisionItem`) definidas según el uso real, ya que su fuente (ProjectionsClient.jsx) aún no está migrada.\n\n3 bugs preexistentes documentados sin arreglar: guardar el balance sin escribir nada registra $0 en vez de cancelar; fechas inválidas/ausentes en bufferRevisions producen NaN en el sort; multiplicación de occurrences×amount puede dar NaN si algún campo falta. Sin rework."
+            }
+          ]
         },
         "src/app/api/general-data/projections/update/route.js": {
           "status": "pending",
