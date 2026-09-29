@@ -300,8 +300,27 @@ que en Historias 10 y 11); `ColumnChartAntComparative` (árbol de
 charts compartido, ya excluido, vía typed bridge igual que en
 `TabsTogglerMontlyController.tsx`).
 
-Historias siguientes (orden real a confirmar): Navbar/alta rápida
-(AddTransactionModal/TransferExchangeModal), Projections, MCP
+**Historia activa: Historia 13 — Navbar/alta rápida** (5 archivos: el
+shell de navegación completo y el modal de alta rápida de transacciones -
+`Navbar.jsx` [205 líneas, entry, renderizado desde `dashboard/layout.tsx`
+ya migrado; incluye auth (`authClient`), theme toggle (`useThemeMode`),
+y renderiza `AddTransactionModal`], `AddTransactionModal.jsx` [100
+líneas, modal de 4 tabs: Manual → `AddTransactionComp.tsx` ya migrado,
+Excel → `ReadFileComp.tsx` ya migrado, Categories → `EditCategoryModal`
+ya migrado Historia 6, Transfer → `TransferExchangeModal.jsx`],
+`TransferExchangeModal.jsx` [268 líneas, formulario de transferencia
+entre cuentas/conversión de divisas, usa las rutas ya migradas
+`fx/quote` (Historia 9) y `transactions/transfer` (Historia 8)],
+`scrollLock.js` [31 líneas, helper compartido de bloqueo de scroll con
+reference counting, ya usado por `BasicModal.tsx` migrado], y
+`ThemeProvider.jsx` [75 líneas, contexto de tema claro/oscuro consumido
+por `Navbar.jsx`, pequeño y autocontenido]. Todas las rutas de API que
+este árbol necesita ya están migradas desde Historias 7-9 - historia
+puramente de UI/lógica de cliente, sin backend nuevo. Deliberadamente
+NO incluye: `EditTransModal.jsx` (otro consumidor de `ThemeProvider`
+pero fuera de este árbol, su propia historia futura si hiciera falta).
+
+Historias siguientes (orden real a confirmar): Projections, MCP
 tools (`buildGastifyMcpServer.js`), `transactionsChange.js` (el
 transformer más grande y compartido de toda la app, deliberadamente
 pospuesto historia tras historia). Los modelos Mongoose que aún faltan
