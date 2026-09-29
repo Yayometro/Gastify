@@ -13,27 +13,53 @@ import {
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
+import type { RootState } from "@/lib/store";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
+
+// Typed bridges for unmigrated child components
+interface DisplayerCategoryTreemapProps {
+  dccpIncomes?: TransactionData[];
+  dccoBills?: TransactionData[];
+}
+
+interface DisplayerCategoryCirclePackingProps {
+  dccpIncomes?: TransactionData[];
+  dccoBills?: TransactionData[];
+}
+
+interface TransactionsResumeContProps {
+  trcBills?: TransactionData[];
+  trcIncomes?: TransactionData[];
+}
+
+const TypedDisplayerCategoryTreemap = DisplayerCategoryTreemap as React.ComponentType<DisplayerCategoryTreemapProps>;
+const TypedDisplayerCategoryCirclePacking = DisplayerCategoryCirclePacking as React.ComponentType<DisplayerCategoryCirclePackingProps>;
+const TypedTransactionsResumeCont = TransactionsResumeCont as React.ComponentType<TransactionsResumeContProps>;
+
+export interface TransDetailsGrandContainerProps {
+  timePeriodFromFather?: [Date, Date] | Date[];
+}
 
 const today = new Date();
 
-function TransDetailsGrandContainer({ timePeriodFromFather }) {
+function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandContainerProps): React.JSX.Element {
   // "treemap" is the default view - it's the easiest to read at a glance,
   // Bubble and Nested Pie stay available as alternate ways to look at the
   // same category/subcategory breakdown.
-  let [activeTab, setActiveTab] = useState("treemap");
-  const [allBills, setAllBills] = useState([]);
-  const [allIncomes, setAllIncomes] = useState([]);
+  const [activeTab, setActiveTab] = useState<string>("treemap");
+  const [allBills, setAllBills] = useState<TransactionData[]>([]);
+  const [allIncomes, setAllIncomes] = useState<TransactionData[]>([]);
   // Own local time-period filter, same pattern as ResumeTabsTrans - lets
   // this section be scoped to a different range than the rest of the
   // Wallet page instead of always mirroring the page-level filter.
-  const [timePeriod, setTimePeriod] = useState(
+  const [timePeriod, setTimePeriod] = useState<[Date, Date] | Date[]>(
     timePeriodFromFather || [
       new Date(today.getFullYear(), today.getMonth(), 1),
       getLastDayOfMonth(today.getFullYear(), today.getMonth()),
     ]
   );
 
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
+  const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
   const timePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(today.getFullYear());
 
   useEffect(() => {
@@ -43,17 +69,17 @@ function TransDetailsGrandContainer({ timePeriodFromFather }) {
   useEffect(() => {
     if (!ccTransacciones.data || ccTransacciones.data.length === 0) return;
     const [start, end] = timePeriod;
-    const filtered = getTransactionsFromTimeRange(ccTransacciones.data, start, end);
-    setAllBills(filtered.filter((t) => t.isBill && !t.isIncome));
-    setAllIncomes(filtered.filter((t) => t.isIncome && !t.isBill));
+    const filtered: TransactionData[] = getTransactionsFromTimeRange(ccTransacciones.data, start, end);
+    setAllBills(filtered.filter((t: TransactionData) => t.isBill && !t.isIncome));
+    setAllIncomes(filtered.filter((t: TransactionData) => t.isIncome && !t.isBill));
   }, [ccTransacciones.data, timePeriod]);
 
-  function getValueFromSelecter(v) {
+  function getValueFromSelecter(v: string) {
     const [start, end] = v.split("*");
     setTimePeriod([new Date(start), new Date(end)]);
   }
 
-  function handleRangeDate(dateStart, dateEnd) {
+  function handleRangeDate(dateStart: Date | null, dateEnd: Date | null) {
     if (dateStart && dateEnd) setTimePeriod([dateStart, dateEnd]);
   }
 
@@ -129,13 +155,13 @@ function TransDetailsGrandContainer({ timePeriodFromFather }) {
       */}
       <div className="trc-container-sub w-full h-full">
         {activeTab === "treemap" && (
-          <DisplayerCategoryTreemap dccpIncomes={allIncomes} dccoBills={allBills} />
+          <TypedDisplayerCategoryTreemap dccpIncomes={allIncomes} dccoBills={allBills} />
         )}
         {activeTab === "bubble" && (
-          <DisplayerCategoryCirclePacking dccpIncomes={allIncomes} dccoBills={allBills} />
+          <TypedDisplayerCategoryCirclePacking dccpIncomes={allIncomes} dccoBills={allBills} />
         )}
         {activeTab === "nestedPie" && (
-          <TransactionsResumeCont trcBills={allBills} trcIncomes={allIncomes} />
+          <TypedTransactionsResumeCont trcBills={allBills} trcIncomes={allIncomes} />
         )}
       </div>
     </div>

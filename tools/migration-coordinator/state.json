@@ -3342,8 +3342,23 @@
       "label": "Categories - analytics (Treemap/Circle Packing/comparativas historicas). Dos arboles: (1) La seccion 'Category Details' del Dashboard (3 tabs: Treemap/Bubble/Nested Pie) - TransDetailsGrandContainer.jsx (entry, renderizado desde Dashboard.tsx ya migrado), DisplayerCategoryTreemap.jsx, CategoryTreemap.jsx [667 lineas, algoritmo squarified treemap hecho a mano, el archivo mas grande/riesgoso de la historia], DisplayerCategoryCirclePacking.jsx, CategoryCirclePacking.jsx [Nivo ResponsiveCirclePacking], TransactionsResumeCont.jsx, TransResumeChart.jsx [Nivo ResponsiveSunburst]. (2) La comparativa historica de categorias en /dashboard/history (explicitamente excluida de Historia 10 como 'arbol pesado de analytics, historia futura') - HistoricalComparativeCategories.jsx, CategoriesCompareTable.jsx, HistoricalComparativeCategoriesView.jsx. Historia puramente de UI/logica de cliente: no toca modelos ni rutas de API nuevas (usa Redux ya migrado - transacctionsSlice/userSlice - y helpers ya migrados: usePeriodComparison.ts, timeFunctions.ts, TabsToggler.tsx, PeriodFiltersWithCompare.tsx). NO incluye: TopCategoryRow (arbol top3/, ya excluido en historias anteriores, usado via typed bridge en CategoriesCompareTable.jsx); transactionsChange.js (helper compartido enorme usado por decenas de archivos en toda la app, incluye buildCategoryHierarchy/getTransactionsFromTimeRange/etc - se queda sin tipar, su propia historia futura aparte, demasiado riesgoso para incluir de paso aqui).",
       "files": {
         "src/components/multiUsedComp/TransDetailsGrandContainer.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T06:51:11.555Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T06:53:33.173Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de `src/components/multiUsedComp/TransDetailsGrandContainer.jsx` a `.tsx`.\n\n1. Interfaces y tipos definidos:\n- `TransDetailsGrandContainerProps`: `{ timePeriodFromFather?: [Date, Date] | Date[]; }` basándose en la prop real que el componente desestructura.\n- Typed bridges para los 3 subcomponentes hijos aún sin migrar:\n  * `DisplayerCategoryTreemapProps` (`TypedDisplayerCategoryTreemap`)\n  * `DisplayerCategoryCirclePackingProps` (`TypedDisplayerCategoryCirclePacking`)\n  * `TransactionsResumeContProps` (`TypedTransactionsResumeCont`)\n- Tipado del selector Redux con `RootState` y transacciones con `TransactionData` (`@/lib/features/transacctionsSlice`).\n- Tipado de estados locales (`allBills`, `allIncomes` como `TransactionData[]`, `activeTab` como `string`, `timePeriod` como `[Date, Date] | Date[]`).\n- Tipado explícito de parámetros y retorno de funciones auxiliares (`getValueFromSelecter`, `handleRangeDate`).\n\n2. Mismatch de props y bugs preexistentes documentados (sin modificar):\n- En `src/components/Dashboard.tsx` (ya migrado), existen dos instancias del componente: una activa que pasa `timePeriodFromFather` (coincidente con lo que el componente consume) y otra comentada que pasa `tdgcBills={allBills}` y `tdgcInc={allIncomes}`, las cuales corresponden a props obsoletas/no desestructuradas en este componente. Se preservó la interfaz oficial basada en `timePeriodFromFather`.\n- En JSX se mantuvo intacto el prop `siz={15}` (convención histórica de `UniversalCategoIcon`) y la interpolación template string redundante `${\"fa/FaRegQuestionCircle\"}`.\n\n3. Verificación:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint`: 0 errores y 0 warnings en `TransDetailsGrandContainer.tsx` y `Dashboard.tsx`.\n- `npx vitest run`: 30/30 suites pasadas (324/324 tests)."
+            },
+            {
+              "ts": "2026-09-29T06:54:34.392Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerifiqué la afirmación sobre el mismatch de props en Dashboard.tsx: confirmado que el segundo uso de `TransDetailsGrandContainer` (con `tdgcBills`/`tdgcInc`, props que el componente ni siquiera destructura) está dentro de un bloque JSX comentado `{/* ... */}` (líneas 657-686 de Dashboard.tsx) - código muerto, nunca se renderiza. La interfaz oficial `TransDetailsGrandContainerProps` se definió correctamente basada solo en `timePeriodFromFather`, la única prop real que usa el componente activo.\n\n`let [activeTab, setActiveTab]` → `const [activeTab, setActiveTab]` - verificado que `activeTab` nunca se reasigna directamente en ningún lado del componente (solo vía `setActiveTab`), cambio inerte.\n\n3 typed bridges creados para los hijos aún sin migrar de esta misma historia (DisplayerCategoryTreemap, DisplayerCategoryCirclePacking, TransactionsResumeCont) - se simplificarán cuando cada uno se migre. `siz={15}` preservado, `||` sin cambiar a `??`.\n\nSin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/DisplayerCategoryTreemap.jsx": {
           "status": "pending",
