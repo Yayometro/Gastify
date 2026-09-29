@@ -3019,8 +3019,23 @@
       "label": "History, la pagina de comparativas historicas (dashboard/history/page.jsx + HistoryClient.jsx + la variante 'History' de Wallet Analyzer: HistoricalWalletAnalyzer.jsx [836 lineas] + HistoricalProjectionsTable.jsx + BudgetPeriodDetailModal.jsx + sus dependencias chicas: TabsToggler/TabsTogglerMontlyController/TabsTogglerMontlyView, DashboardLoadingMessage, usePeriodComparison, budgetHistory.js [helper getBudgetBarColor], timeFunctions.js [utilidad de fechas compartida], useGetInfoFromProvider.js, PeriodFiltersWithCompare.jsx, useProjectionTable.js, ProjectionsView.jsx). Todos los modelos y rutas de API que este arbol necesita YA estan migrados desde Historia 9 (Budget, User, Category, SubCategory, ProjectionBaseline, ProjectionSettings, IncomeSource, FxRateSnapshot; rutas budget/get-historical, income-sources/get, projections/get, projection-baseline/get, fx/quote) - esta historia es puramente UI/logica de cliente, sin backend nuevo que tocar. NO incluye: HistoricalMovementsController.jsx (arbol pesado de Movements/top3, historia futura), HistoricalComparativeCategories.jsx (arbol pesado de Categories analytics, historia futura), HistoricalBudgetsComparative.jsx (arbol pesado de Budgets analytics, historia futura) - aunque HistoryClient.jsx renderiza los 3 directamente, se usan via typed bridge sin migrar; ModalContentTopMonthItem.jsx (compartido con el arbol top3/, ya excluido antes, typed bridge); budgetHistoricalComparative.js (compartido con el HistoricalBudgetsComparative excluido, ya funciona bien como dependencia JS del walletAnalyzer.ts migrado, se queda sin tipar hasta la historia de Budgets analytics).",
       "files": {
         "src/app/dashboard/history/page.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T04:52:35.917Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T04:53:16.955Z",
+              "event": "submitted",
+              "notes": "Migrado `src/app/dashboard/history/page.jsx` a `src/app/dashboard/history/page.tsx`.\n\n1. Tipado:\n- Se añadió el tipo de retorno explícito `Promise<React.JSX.Element>` a la función Server Component `page()`.\n- Se preservó la exportación `export const dynamic = \"force-dynamic\"`.\n- Se tipó la llamada a `auth.api.getSession({ headers: await headers() })` y la redirección en caso de no sesión / sin email.\n- Se pasan los props requeridos a `<HistoryClient email={sesion.user.email} />`.\n\n2. Comportamiento:\n- Comportamiento exactamente idéntico al original en tiempo de ejecución.\n\n3. Verificaciones realizadas:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/dashboard/history/page.tsx`: 0 errores/warnings.\n- `npx vitest run`: 29 suites passed (314/314 tests passed)."
+            },
+            {
+              "ts": "2026-09-29T04:53:44.050Z",
+              "event": "approved",
+              "notes": "Trivial, byte-identico salvo el tipo de retorno Promise<React.JSX.Element>. Ya tenia getSession/redirect correcto. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/HistoryClient.jsx": {
           "status": "pending",

@@ -6,13 +6,13 @@ import HistoryClient from "@/components/multiUsedComp/HistoryClient";
 
 export const dynamic = "force-dynamic";
 
-async function page() {
+async function page(): Promise<React.JSX.Element> {
   const sesion = await auth.api.getSession({ headers: await headers() });
   if (!sesion || !sesion.user?.email) redirect("/login");
 
   return (
     <div className=" w-full h-full min-[768px]:pl-[80px]">
-      <HistoryClient email={sesion.user.email}/>
+      <HistoryClient email={sesion.user.email} />
     </div>
   );
 }
