@@ -5,18 +5,49 @@ import { Tooltip } from "antd";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
-const TYPE_LABEL = {
+export interface ProjectionRow {
+  monthName: string;
+  year?: number;
+  type: "actual" | "estimate" | "current" | string;
+  income?: number;
+  expense?: number;
+  projectedIncome?: number;
+  projectedExpense?: number;
+  net?: number;
+  balance?: number | null;
+  manualBalance?: number;
+  estimatedBalance?: number | null;
+  historicalIncome?: number;
+  historicalExpense?: number;
+  hasTransactions?: boolean;
+  shadowIncome?: number;
+  actualIncome?: number;
+  shadowExpense?: number;
+  actualExpense?: number;
+  [key: string]: unknown;
+}
+
+export interface ProjectionsViewProps {
+  rows: ProjectionRow[];
+  onRowClick: (row: ProjectionRow) => void;
+}
+
+const TYPE_LABEL: Record<string, string> = {
   actual: "Closed",
   estimate: "Estimate",
   current: "In progress",
 };
 
-function formatMoney(value) {
+function formatMoney(value?: number | null): string {
   if (value === null || value === undefined) return "—";
   return usdFormatChanger(value);
 }
 
-function HeaderTooltip({ title }) {
+interface HeaderTooltipProps {
+  title: React.ReactNode;
+}
+
+function HeaderTooltip({ title }: HeaderTooltipProps): React.JSX.Element {
   return (
     <Tooltip title={title}>
       <div className="inline-block ml-1 align-middle">
@@ -26,7 +57,7 @@ function HeaderTooltip({ title }) {
   );
 }
 
-const getIncomeColorClass = (type) => {
+const getIncomeColorClass = (type?: string): string => {
   switch (type) {
     case "actual":
       return "text-green-400 font-normal"; // Closed/past months - historical green, normal weight
@@ -38,7 +69,7 @@ const getIncomeColorClass = (type) => {
   }
 };
 
-const getExpenseColorClass = (type) => {
+const getExpenseColorClass = (type?: string): string => {
   switch (type) {
     case "actual":
       return "text-red-400 font-normal"; // Closed/past months - historical red, normal weight
@@ -50,7 +81,7 @@ const getExpenseColorClass = (type) => {
   }
 };
 
-function ProjectionsView({ rows, onRowClick }) {
+function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.Element {
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
