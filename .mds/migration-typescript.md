@@ -188,10 +188,31 @@ su propia historia futura "History"); `ModalContentTopMonthItem.jsx`
 "Projections" junto con la UI que las administra, aún sin
 localizar/explorar).
 
+**Historia activa: Historia 10 — History** (16 archivos: la página de
+comparativas históricas - `dashboard/history/page.jsx`, `HistoryClient.jsx`,
+la variante "History" de Wallet Analyzer completa
+[`HistoricalWalletAnalyzer.jsx` 836 líneas, `HistoricalProjectionsTable.jsx`,
+`BudgetPeriodDetailModal.jsx`], y sus dependencias chicas
+[`TabsToggler`/`TabsTogglerMontlyController`/`TabsTogglerMontlyView`,
+`DashboardLoadingMessage`, `usePeriodComparison`, `budgetHistory.js`,
+`timeFunctions.js`, `useGetInfoFromProvider.js`,
+`PeriodFiltersWithCompare.jsx`, `useProjectionTable.js`,
+`ProjectionsView.jsx`]). Todos los modelos y rutas de API que este árbol
+necesita ya están migrados desde Historia 9 - esta historia es
+puramente UI/lógica de cliente, sin backend nuevo. Deliberadamente NO
+incluye: `HistoricalMovementsController.jsx`,
+`HistoricalComparativeCategories.jsx`, `HistoricalBudgetsComparative.jsx`
+(los 3 árboles pesados de analytics, cada uno su propia historia futura,
+aunque `HistoryClient.jsx` los renderiza directamente - se usan vía
+typed bridge); `ModalContentTopMonthItem.jsx` (compartido con `top3/`,
+ya excluido); `budgetHistoricalComparative.js` (compartido con
+`HistoricalBudgetsComparative` excluido, ya funciona bien sin tipar
+como dependencia de `walletAnalyzer.ts`).
+
 Historias siguientes (orden real a confirmar): Categories - analytics
 (Treemap/Circle Packing/comparativas históricas), Budgets - analytics
 (comparativas históricas), Navbar/alta rápida
-(AddTransactionModal/TransferExchangeModal), History, Projections, MCP
+(AddTransactionModal/TransferExchangeModal), Projections, MCP
 tools (`buildGastifyMcpServer.js`). Los modelos Mongoose que aún faltan
 (Wallet, CategoryRule) se migran conforme cada historia los necesite,
 no todos de un jalón. `scripts/` sueltos al final.

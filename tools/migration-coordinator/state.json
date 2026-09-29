@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-9-wallet-analyzer",
+  "activeStory": "historia-10-history",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -3012,6 +3012,75 @@
               "notes": "Analisis de seguridad correcto: confirmado que la ruta solo toma amountMinor/fromCurrency/toCurrency/date, usa FxRateSnapshot (cache compartido de tasas publicas del BCE, no ligado a usuario), y no lee/escribe nada especifico de usuario/wallet/cuenta - no necesita auth.api.getSession(), coincide con lo ya anotado en el checklist (\"probablemente OK\"). Todas las validaciones manuales (Number.isInteger, assertSupportedCurrency, rango de fecha) preservadas identicas, mismos mensajes de error. El schema zod se define pero su fallo no bloquea nada (cae a castear el body crudo de todas formas) - las validaciones manuales que ya existian siguen siendo las que realmente gatean el comportamiento, sin cambio real. `Boolean(result.estimated)`/`Boolean(result.stale)` son compiler-required (interface los declara no-opcionales) y no deberian diferir de los valores reales que devuelve convert(). tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado. Con esto Historia 9 completa: 20/20."
             }
           ]
+        }
+      }
+    },
+    "historia-10-history": {
+      "label": "History, la pagina de comparativas historicas (dashboard/history/page.jsx + HistoryClient.jsx + la variante 'History' de Wallet Analyzer: HistoricalWalletAnalyzer.jsx [836 lineas] + HistoricalProjectionsTable.jsx + BudgetPeriodDetailModal.jsx + sus dependencias chicas: TabsToggler/TabsTogglerMontlyController/TabsTogglerMontlyView, DashboardLoadingMessage, usePeriodComparison, budgetHistory.js [helper getBudgetBarColor], timeFunctions.js [utilidad de fechas compartida], useGetInfoFromProvider.js, PeriodFiltersWithCompare.jsx, useProjectionTable.js, ProjectionsView.jsx). Todos los modelos y rutas de API que este arbol necesita YA estan migrados desde Historia 9 (Budget, User, Category, SubCategory, ProjectionBaseline, ProjectionSettings, IncomeSource, FxRateSnapshot; rutas budget/get-historical, income-sources/get, projections/get, projection-baseline/get, fx/quote) - esta historia es puramente UI/logica de cliente, sin backend nuevo que tocar. NO incluye: HistoricalMovementsController.jsx (arbol pesado de Movements/top3, historia futura), HistoricalComparativeCategories.jsx (arbol pesado de Categories analytics, historia futura), HistoricalBudgetsComparative.jsx (arbol pesado de Budgets analytics, historia futura) - aunque HistoryClient.jsx renderiza los 3 directamente, se usan via typed bridge sin migrar; ModalContentTopMonthItem.jsx (compartido con el arbol top3/, ya excluido antes, typed bridge); budgetHistoricalComparative.js (compartido con el HistoricalBudgetsComparative excluido, ya funciona bien como dependencia JS del walletAnalyzer.ts migrado, se queda sin tipar hasta la historia de Budgets analytics).",
+      "files": {
+        "src/app/dashboard/history/page.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/HistoryClient.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalWalletAnalyzer.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalProjectionsTable.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/HistoricalWalletAnalyzer/BudgetPeriodDetailModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TabsComponents/TabsToggler.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyController.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyView.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/loaders/DashboardLoadingMessage.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/hooks/usePeriodComparison.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/transformers/budgetHistory.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/timeFunctions/timeFunctions.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/hooks/getAllInfo/useGetInfoFromProvider.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/periodFiltersWithCompare/PeriodFiltersWithCompare.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/hooks/useProjectionTable.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/ProjectionsView.jsx": {
+          "status": "pending",
+          "history": []
         }
       }
     }
