@@ -3399,8 +3399,23 @@
           ]
         },
         "src/components/multiUsedComp/DisplayerCategoryCirclePacking.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T07:05:10.090Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T07:06:38.526Z",
+              "event": "submitted",
+              "notes": "Migrado DisplayerCategoryCirclePacking a TypeScript (.tsx) preservando comportamiento 1:1. Se declaró DisplayerCategoryCirclePackingProps con { dccpIncomes?: TransactionData[]; dccoBills?: TransactionData[] } compatible con el typed bridge de su consumidor TransDetailsGrandContainer.tsx. Se agregó el typed bridge CategoryCirclePackingProps ({ ccpTransacctions?: TransactionData[]; ccpIsBill?: boolean }) para el componente hijo CategoryCirclePacking. Se cambió 'let [tabBill, setTabBill]' a const para satisfacer prefer-const. Bugs preexistentes preservados sin arreglar: import no utilizado de Skeleton desde antd (omitido para eslint no-unused-vars); asimetría de nombres de props dccoBills (con 'o') vs dccpIncomes (con 'p'); doble 'c' en el prop ccpTransacctions del hijo; typo en el mensaje de EmptyModule ('maybe the is not data'); template literal redundante type={`${'fa/FaRegQuestionCircle'}`}. Verificación: tsc --noEmit 0 errores en todo el proyecto, eslint limpio, vitest 324/324 pasando en 30 archivos."
+            },
+            {
+              "ts": "2026-09-29T07:07:11.206Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerificado: import `Skeleton` genuinamente nunca usado en el JSX (solo aparecía en la línea de import) - eliminación segura. `let [tabBill, ...]` → `const` inerte (nunca reasignado directo). Typed bridge nuevo para `CategoryCirclePacking` (siguiente en la cola). `DisplayerCategoryCirclePackingProps` compatible con el bridge ya existente en TransDetailsGrandContainer.tsx.\n\nBugs preexistentes preservados sin arreglar: typo `dccoBills` (o vs p), typo `ccpTransacctions` (doble c), typo en EmptyModule, template literal redundante en UniversalCategoIcon. Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/CategoryCirclePacking.jsx": {
           "status": "pending",

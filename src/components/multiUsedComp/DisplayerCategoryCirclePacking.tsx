@@ -1,13 +1,30 @@
 import React, { useState } from "react";
 import CategoryCirclePacking from "./CategoryCirclePacking";
-import { Skeleton, Tooltip } from "antd";
+import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import EmptyModule from "./EmptyModule";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
 
-function DisplayerCategoryCirclePacking({ dccpIncomes, dccoBills }) {
+// Typed bridge for unmigrated CategoryCirclePacking component
+interface CategoryCirclePackingProps {
+  ccpTransacctions?: TransactionData[];
+  ccpIsBill?: boolean;
+}
+
+const TypedCategoryCirclePacking = CategoryCirclePacking as React.ComponentType<CategoryCirclePackingProps>;
+
+export interface DisplayerCategoryCirclePackingProps {
+  dccpIncomes?: TransactionData[];
+  dccoBills?: TransactionData[];
+}
+
+function DisplayerCategoryCirclePacking({
+  dccpIncomes,
+  dccoBills,
+}: DisplayerCategoryCirclePackingProps): React.JSX.Element {
   // Función para renderizar el contenido de cada pestaña
-  let [tabBill, setTabBill] = useState(true);
-  const handleToggle = (type) => {
+  const [tabBill, setTabBill] = useState(true);
+  const handleToggle = (type: "bill" | "income" | string) => {
     if (type === "bill") {
       setTabBill(true);
     }
@@ -57,7 +74,7 @@ function DisplayerCategoryCirclePacking({ dccpIncomes, dccoBills }) {
               />
             </div>
             ) : (
-              <CategoryCirclePacking ccpTransacctions={dccoBills} ccpIsBill={true}/>
+              <TypedCategoryCirclePacking ccpTransacctions={dccoBills} ccpIsBill={true}/>
             )
           }
         </div>
@@ -74,7 +91,7 @@ function DisplayerCategoryCirclePacking({ dccpIncomes, dccoBills }) {
               />
             </div>
             ) : (
-              <CategoryCirclePacking
+              <TypedCategoryCirclePacking
                 ccpTransacctions={dccpIncomes}
                 ccpIsBill={false}
               />
