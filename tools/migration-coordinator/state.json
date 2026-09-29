@@ -3299,8 +3299,23 @@
           ]
         },
         "src/hooks/useProjectionTable.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:56:34.757Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T06:00:07.300Z",
+              "event": "submitted",
+              "notes": "Migrado src/hooks/useProjectionTable.js a TypeScript (src/hooks/useProjectionTable.ts). Se definieron y exportaron interfaces explícitas para las opciones y retorno del hook (IncomeSourceItem, MonthlyBalanceItem, MonthlyBufferItem, ProjectionSettingsData, BaselineHistoryEntry, ProjectionBaselineData, ProjectionTableRow, ProjectionAccuracyRow, UseProjectionTableOptions, UseProjectionTableReturn). La interfaz UseProjectionTableReturn es un superset concreto y 100% compatible con ProjectionTableResult de HistoricalProjectionsTable.tsx. Se preservó el comportamiento 1:1. Bug preexistente documentado (sin modificar): en loadSettings se llama a toFetch.post('general-data/income-sources/get', mail) enviando mail directo en vez de un objeto { mail }. Cero 'any' y cero '@ts-ignore'. tsc --noEmit limpio, eslint limpio, 324/324 tests pasando."
+            },
+            {
+              "ts": "2026-09-29T06:01:02.509Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica para un hook de 248→421 líneas (crecimiento todo en interfaces). tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerificado línea por línea contra el original vía diff completo:\n- Todos los efectos, fetches, cálculos de balance y conversión de divisas idénticos byte-a-byte.\n- `catch (e) { /* comentario */ }` → `catch { /* comentario */ }` en los 2 bloques donde `e` genuinamente nunca se usaba (verificado leyendo el cuerpo del catch en ambos) - sintaxis ES2019 de catch binding opcional, cero cambio de comportamiento. Los 2 catch que sí usan `e` (via `String(e)` en runNotify) se dejaron con el binding intacto.\n- Bug preexistente preservado sin arreglar: `toFetch.post(\"general-data/income-sources/get\", mail)` manda el string `mail` directo en vez de `{mail}` (inconsistente con projection-baseline/get y projections/get que sí mandan objeto) - confirmado presente igual en el original, y ya es inofensivo desde Historia 9 porque esa ruta deriva el usuario de la sesión, no del body.\n- `UseProjectionTableReturn` es superset-compatible con `ProjectionTableResult` (la interfaz local en HistoricalProjectionsTable.tsx que ya consume este hook via `as ProjectionTableResult`) - confirmado que el cast sigue funcionando sin fricción.\n- Cero `any`, cero guards defensivos no verificados agregados.\n\nSin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/ProjectionsView.jsx": {
           "status": "pending",

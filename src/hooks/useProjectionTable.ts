@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
+import { getYearMonthDateRange, type MonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
 import {
   buildYearProjectionTable,
   buildProjectionAccuracyReport,
@@ -11,6 +11,172 @@ import {
   computeYearRowsWithBalance,
 } from "@/helpers/transformers/projectionsChange";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import type { BudgetData } from "@/lib/features/budgetSlice";
+import type { AccountData } from "@/lib/features/accountsSlice";
+
+export interface IncomeSourceItem {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  currency?: string;
+  recurrence?: "monthly" | "semimonthly" | "biweekly" | "weekly" | string;
+  anchorDate?: Date | string;
+  active?: boolean;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  archived?: boolean;
+  history?: {
+    amount?: number;
+    money?: {
+      amountMinor: number;
+      currency: string;
+    };
+    recurrence?: string;
+    effectiveFrom?: Date | string;
+    effectiveTo?: Date | string;
+  }[];
+  money?: {
+    amountMinor: number;
+    currency: string;
+  };
+}
+
+export interface MonthlyBalanceItem {
+  month?: number;
+  balance?: number;
+  money?: {
+    amountMinor: number;
+    currency: string;
+  };
+  revisions?: {
+    balance?: number;
+    money?: {
+      amountMinor: number;
+      currency: string;
+    };
+    updatedAt?: Date | string;
+  }[];
+}
+
+export interface MonthlyBufferItem {
+  month?: number;
+  unexpectedBuffer?: number;
+  unexpectedIncomeBuffer?: number;
+  expenseMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+  incomeMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+  revisions?: {
+    unexpectedBuffer?: number;
+    unexpectedIncomeBuffer?: number;
+    expenseMoney?: {
+      amountMinor: number;
+      currency: string;
+    };
+    incomeMoney?: {
+      amountMinor: number;
+      currency: string;
+    };
+    updatedAt?: Date | string;
+  }[];
+}
+
+export interface ProjectionSettingsData {
+  _id?: string;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  year?: number;
+  monthlyBalances?: MonthlyBalanceItem[];
+  monthlyBuffers?: MonthlyBufferItem[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface BaselineHistoryEntry {
+  effectiveFrom?: Date | string;
+  effectiveTo?: Date | string;
+  incomeMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+  expenseMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+}
+
+export interface ProjectionBaselineData {
+  _id?: string;
+  user?: string | unknown;
+  wallet?: string | unknown;
+  incomeHistory?: BaselineHistoryEntry[];
+  expenseHistory?: BaselineHistoryEntry[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface ProjectionTableRow {
+  monthName: string;
+  year?: number;
+  type: "actual" | "estimate" | "current" | string;
+  income?: number;
+  expense?: number;
+  historicalIncome?: number;
+  historicalExpense?: number;
+  hasTransactions?: boolean;
+  shadowIncome?: number;
+  actualIncome?: number;
+  projectedIncome?: number;
+  shadowExpense?: number;
+  actualExpense?: number;
+  projectedExpense?: number;
+  net?: number;
+  balance?: number | null;
+  manualBalance?: number;
+  estimatedBalance?: number | null;
+}
+
+export interface ProjectionAccuracyRow {
+  monthName: string;
+  projectedIncome?: number;
+  projectedExpense?: number;
+  actualIncome?: number;
+  actualExpense?: number;
+  varianceIncome?: number;
+  varianceExpense?: number;
+}
+
+export interface UseProjectionTableOptions {
+  mail?: string | null;
+  year?: number | null;
+  transactions?: TransactionData[] | null;
+  budgets?: BudgetData[] | null;
+  accounts?: AccountData[] | null;
+  walletPrimaryCurrency?: string;
+}
+
+export interface UseProjectionTableReturn {
+  rows: ProjectionTableRow[];
+  rawRows: ProjectionTableRow[];
+  accuracyRows: ProjectionAccuracyRow[];
+  startingBalance: number;
+  incomeSources: IncomeSourceItem[];
+  incomeSourcesConverted: IncomeSourceItem[];
+  projectionSettings: ProjectionSettingsData | null;
+  setProjectionSettings: React.Dispatch<React.SetStateAction<ProjectionSettingsData | null>>;
+  projectionBaseline: ProjectionBaselineData | null;
+  monthlyBuffers: MonthlyBufferItem[];
+  monthlyBalances: MonthlyBalanceItem[];
+  monthRanges: Map<string, MonthDateRange>;
+  isLoading: boolean;
+  reloadSettings: () => Promise<void>;
+  reloadBaseline: () => Promise<void>;
+}
 
 // Extracted from ProjectionsClient.jsx - the projections page's own year
 // table needs fetching + currency-converting incomeSources/projectionBaseline,
@@ -26,11 +192,18 @@ import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 // two times (rules of hooks: the call itself can't be conditional) and
 // passes null for the second slot when the selected period only touches
 // one calendar year.
-export default function useProjectionTable({ mail, year, transactions, budgets, accounts, walletPrimaryCurrency }) {
-  const [incomeSources, setIncomeSources] = useState([]);
-  const [projectionSettings, setProjectionSettings] = useState(null);
-  const [settingsLoading, setSettingsLoading] = useState(Boolean(year));
-  const [projectionBaseline, setProjectionBaseline] = useState(null);
+export default function useProjectionTable({
+  mail,
+  year,
+  transactions,
+  budgets,
+  accounts,
+  walletPrimaryCurrency,
+}: UseProjectionTableOptions): UseProjectionTableReturn {
+  const [incomeSources, setIncomeSources] = useState<IncomeSourceItem[]>([]);
+  const [projectionSettings, setProjectionSettings] = useState<ProjectionSettingsData | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState<boolean>(Boolean(year));
+  const [projectionBaseline, setProjectionBaseline] = useState<ProjectionBaselineData | null>(null);
 
   const loadSettings = async () => {
     if (!mail || !year) return;
@@ -80,7 +253,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
   // but the projection math needs every source in the Wallet's primary
   // currency to sum them meaningfully. Same-currency sources pass through
   // untouched; foreign ones are converted via a live quote, never faked.
-  const [incomeSourcesConverted, setIncomeSourcesConverted] = useState([]);
+  const [incomeSourcesConverted, setIncomeSourcesConverted] = useState<IncomeSourceItem[]>([]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -96,7 +269,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
               toCurrency: walletPrimaryCurrency,
             });
             if (res.ok) return { ...s, amount: minorToMajor(res.data.amountMinor, walletPrimaryCurrency) };
-          } catch (e) {
+          } catch {
             // No rate available - fall through to the raw (unconverted) source.
           }
           return s;
@@ -113,7 +286,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
   // the same way, entry by entry, at resolution time. The RAW (unconverted)
   // projectionBaseline is still returned separately for a panel that
   // displays entries in the currency the user actually entered them in.
-  const [projectionBaselineConverted, setProjectionBaselineConverted] = useState(null);
+  const [projectionBaselineConverted, setProjectionBaselineConverted] = useState<ProjectionBaselineData | null>(null);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -122,7 +295,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
         return;
       }
       const toFetch = fetcher();
-      const convertEntries = (entries, moneyField) =>
+      const convertEntries = (entries: BaselineHistoryEntry[] | undefined, moneyField: "incomeMoney" | "expenseMoney") =>
         Promise.all(
           (entries || []).map(async (entry) => {
             const money = entry[moneyField];
@@ -135,7 +308,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
                 toCurrency: walletPrimaryCurrency,
               });
               if (res.ok) return { ...entry, [moneyField]: { amountMinor: res.data.amountMinor, currency: walletPrimaryCurrency } };
-            } catch (e) {
+            } catch {
               // No rate available - fall through to the raw (unconverted) entry.
             }
             return entry;
@@ -181,7 +354,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
   // Converts every non-credit Account's own native balance into the Wallet's
   // primary currency using the latest reference rate - a live, right-now
   // valuation, not a historical one.
-  const [startingBalance, setStartingBalance] = useState(0);
+  const [startingBalance, setStartingBalance] = useState<number>(0);
   useEffect(() => {
     if (!year) return;
     const nonCreditAccounts = (accounts || []).filter((acc) => acc.accountType !== "credit");
@@ -202,7 +375,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
             toCurrency: walletPrimaryCurrency,
           });
           if (res.ok) total += minorToMajor(res.data.amountMinor, walletPrimaryCurrency);
-        } catch (e) {
+        } catch {
           // No cached/live rate available - skip rather than guess.
         }
       }
@@ -220,7 +393,7 @@ export default function useProjectionTable({ mail, year, transactions, budgets, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, startingBalance, year, monthlyBalances]);
 
-  const monthRanges = useMemo(() => (year ? getYearMonthDateRange(new Date(year, 0, 1)) : new Map()), [year]);
+  const monthRanges = useMemo(() => (year ? getYearMonthDateRange(new Date(year, 0, 1)) : new Map<string, MonthDateRange>()), [year]);
 
   const rowsWithEstimates = useMemo(() => {
     if (!year) return [];
