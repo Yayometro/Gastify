@@ -271,7 +271,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 39 | `general-data/projection-baseline/delete` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para borrar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | `b26a2d2` | Alta |
 | 40 | `general-data/income-sources/update` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía a cualquiera (autenticado o no) modificar amount/recurrence/currency/anchorDate/active de la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo nivel de gravedad que el bug de `remove-many` (fila 28). | `55300de` | Crítica |
 | 41 | `general-data/income-sources/new` (POST) | Cero verificación de sesión - el `user`/`wallet` del body se pasaban tal cual al crear la income source, permitiendo forjar income sources atribuidas a cualquier usuario/wallet. Mismo patrón que el fix #27 (`new-transaction`). | `231d055` | Crítica |
-| 42 | `general-data/income-sources/remove` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía archivar (soft-delete) la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo patrón que el fix #40. | (pendiente) | Crítica |
+| 42 | `general-data/income-sources/remove` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía archivar (soft-delete) la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo patrón que el fix #40. | `8241872` | Crítica |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
