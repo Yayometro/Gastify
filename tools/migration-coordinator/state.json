@@ -3489,8 +3489,23 @@
           ]
         },
         "src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T07:21:28.710Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T07:23:35.574Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 a TypeScript (HistoricalComparativeCategories.tsx). Tipado completo de props compatible con PeriodComparisonState. Typed bridges para CategoriesCompareTable, HistoricalComparativeCategoriesView, ResponsiveBarsChartComponent y ModalContentTopMonthItem. Preservado explícitamente el bug conocido de setUser/setTransacctions sin dispatch (5ta y 6ta ocurrencia). Documentados bugs preexistentes preservados intactos: totalAmount inicializado en 0 y luego usado como array, punto y coma suelto en el JSX del return, typo legenedLeft, isLoading comentado en props hacia la vista. npx tsc, eslint y vitest pasando al 100%."
+            },
+            {
+              "ts": "2026-09-29T07:24:56.574Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerificación específica del bug de dispatch (5ta y 6ta ocurrencia): confirmé línea por línea que `setUser(ccUser.data as unknown as UserState);` y `setTransacctions(ccTransacciones.data as unknown as TransacctionsState);` NO tienen `dispatch(...)` envolviendo la llamada, exactamente igual al original (`setUser(ccUser.data);` / `setTransacctions(ccTransacciones.data);`, tampoco con dispatch). Preservado correctamente.\n\n`dispatch` agregado al array de deps del useEffect (`[ccUser, ccTransacciones, email, dispatch]` vs original `[ccUser, ccTransacciones, email]`) - inerte, `dispatch` de `useDispatch()` es una referencia estable garantizada por react-redux, nunca cambia entre renders, así que el efecto se dispara bajo exactamente las mismas condiciones con o sin él en el array.\n\n`const [, setIsLoading] = useState<boolean>(false)` - el getter `isLoading` se eliminó; verificado via grep que el valor (no el setter) nunca se leía en ningún lado del original (solo se declaraba y se seteaba, nunca se usaba) - eliminación segura de estado muerto, mismo patrón ya visto en TabsTogglerMontlyController.tsx (Historia 10).\n\n`(totalAmount as number[])[0]` - cast necesario y correcto ya que `totalAmount: number | number[]`. Cast `(state.walletReducer?.data as WalletData)?.primaryCurrency` - patrón ya establecido, comportamiento idéntico al `?.` doble original. Punto y coma suelto tras `<TypedHistoricalComparativeCategoriesView {...props} />;` preservado (statement vacío inofensivo). `isLoading` comentado en el objeto props hacia la vista preservado (bug ya documentado previamente: el Skeleton de esa sección nunca puede mostrarse). `legenedLeft: \"Amount\"` preservado.\n\n4 typed bridges nuevos para componentes de esta misma historia (CategoriesCompareTable, HistoricalComparativeCategoriesView, ambos siguientes en la cola) y componentes ya excluidos (ResponsiveBarsChartComponent, ModalContentTopMonthItem del árbol top3/). Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/historicalComparativeCategories/CategoriesCompareTable.jsx": {
           "status": "pending",

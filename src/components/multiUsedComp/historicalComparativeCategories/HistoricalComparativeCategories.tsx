@@ -1,3 +1,8 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/lib/store";
 import { getPeriodLabel } from "@/helpers/timeFunctions/timeFunctions";
 import {
   filterBillsOrIncomes,
@@ -10,27 +15,117 @@ import useGetUserSession from "@/hooks/useGetUserSession";
 import {
   fetchTrans,
   setTransacctions,
+  type TransacctionsState,
 } from "@/lib/features/transacctionsSlice";
-import { fetchUser, setUser } from "@/lib/features/userSlice";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { fetchUser, setUser, type UserState } from "@/lib/features/userSlice";
+import type { WalletData } from "@/lib/features/walletSlice";
 import ResponsiveBarsChartComponent from "../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
 import HistoricalComparativeCategoriesView from "./view/HistoricalComparativeCategoriesView";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
+import type { PeriodComparisonState, TimePeriodOption } from "@/hooks/usePeriodComparison";
+import type { TabsTogglerComponentItem } from "../TabsComponents/TabsToggler";
 
-function HistoricalComparativeCategories({ periodState }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [transactionCategories, setTransactionCategories] = useState([]);
-  const [compareCategoryData, setCompareCategoryData] = useState(null);
+export interface HistoricalComparativeCategoriesProps {
+  periodState: PeriodComparisonState;
+}
+
+export interface CategoryRowItem {
+  name: string;
+  type: string;
+  icon: string;
+  color: string;
+  value: number;
+  isBill?: boolean;
+  children?: unknown[];
+  _id?: string;
+  [key: string]: unknown;
+}
+
+export interface CompareCategorySideData {
+  rowsA: CategoryRowItem[] | unknown[];
+  rowsB: CategoryRowItem[] | unknown[];
+  totalA: number;
+  totalB: number;
+}
+
+export interface CompareCategoryDataState {
+  bills: CompareCategorySideData;
+  incomes: CompareCategorySideData;
+  labelA: string;
+  labelB: string;
+}
+
+// Typed bridges for unmigrated child JSX components
+export interface CategoriesCompareTableProps {
+  rowsA: CategoryRowItem[] | unknown[];
+  rowsB: CategoryRowItem[] | unknown[];
+  totalA: number;
+  totalB: number;
+  labelA: string;
+  labelB: string;
+  kindLabel: string;
+  walletPrimaryCurrency?: string;
+  onOpenItem: (item: unknown) => void;
+}
+const TypedCategoriesCompareTable = CategoriesCompareTable as unknown as React.ComponentType<CategoriesCompareTableProps>;
+
+export interface HistoricalComparativeCategoriesViewProps {
+  tabs: string[];
+  // Dynamic component container passes heterogeneous props to child components
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  components: TabsTogglerComponentItem<any>[];
+  handleRangeDate: (dateStart?: Date | null, dateEnd?: Date | null) => void;
+  getValueFromSelecter: (v: string) => void;
+  periodFromFather: TimePeriodOption;
+  timePeriodsForSelecter: TimePeriodOption[];
+  timePeriod: [Date, Date];
+  isLoading?: boolean | number;
+  title?: React.ReactNode;
+  compareEnabled: boolean;
+  setCompareEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  comparePeriod: [Date, Date];
+  getCompareValueFromSelecter: (v: string) => void;
+  handleCompareRangeDate: (dateStart?: Date | null, dateEnd?: Date | null) => void;
+  timePeriodsForCompareSelecter: TimePeriodOption[];
+}
+const TypedHistoricalComparativeCategoriesView = HistoricalComparativeCategoriesView as unknown as React.ComponentType<HistoricalComparativeCategoriesViewProps>;
+
+export interface ResponsiveBarsChartPropsPlus {
+  onClick?: (a: { data: unknown; [key: string]: unknown }, e?: unknown) => void;
+  [key: string]: unknown;
+}
+
+export interface ResponsiveBarsChartComponentProps {
+  data?: unknown[];
+  totalValue?: number;
+  legendBottom?: string;
+  legenedLeft?: string;
+  header?: React.ReactNode;
+  propsPlus?: ResponsiveBarsChartPropsPlus;
+  [key: string]: unknown;
+}
+const TypedResponsiveBarsChartComponent = ResponsiveBarsChartComponent as unknown as React.ComponentType<ResponsiveBarsChartComponentProps>;
+
+export interface ModalContentTopMonthItemProps {
+  item: unknown;
+  close?: () => void;
+  onBack?: () => void;
+}
+const TypedModalContentTopMonthItem = ModalContentTopMonthItem as unknown as React.ComponentType<ModalContentTopMonthItemProps>;
+
+function HistoricalComparativeCategories({ periodState }: HistoricalComparativeCategoriesProps): React.JSX.Element {
+  const [, setIsLoading] = useState<boolean>(false);
+  const [totalAmount, setTotalAmount] = useState<number | number[]>(0);
+  const [transactionCategories, setTransactionCategories] = useState<unknown[][]>([]);
+  const [compareCategoryData, setCompareCategoryData] = useState<CompareCategoryDataState | null>(null);
   // Redux
-  const dispatch = useDispatch();
-  const ccUser = useSelector((state) => state.userReducer);
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
-  const walletPrimaryCurrency =
-    useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const dispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: RootState) => state.userReducer);
+  const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
+  const walletPrimaryCurrency: string =
+    useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
 
   const { email } = useGetUserSession();
   const { close, modalContent, renderModal, handleClose } = useModal();
@@ -60,14 +155,14 @@ function HistoricalComparativeCategories({ periodState }) {
       dispatch(fetchTrans(email));
     }
     if (ccUser.status == "succeeded") {
-      setUser(ccUser.data);
+      setUser(ccUser.data as unknown as UserState);
     }
     //Transactions
     if (ccTransacciones.status == "succeeded") {
-      setTransacctions(ccTransacciones.data);
+      setTransacctions(ccTransacciones.data as unknown as TransacctionsState);
       setIsLoading(false);
     }
-  }, [ccUser, ccTransacciones, email]);
+  }, [ccUser, ccTransacciones, email, dispatch]);
 
   // UseEffect for transactions mutation:
   useEffect(() => {
@@ -121,13 +216,13 @@ function HistoricalComparativeCategories({ periodState }) {
       bills: {
         rowsA: transactionCategories[0] || [],
         rowsB: billsB.array,
-        totalA: totalAmount[0] || 0,
+        totalA: (totalAmount as number[])[0] || 0,
         totalB: billsB.totalAmount,
       },
       incomes: {
         rowsA: transactionCategories[1] || [],
         rowsB: incomesB.array,
-        totalA: totalAmount[1] || 0,
+        totalA: (totalAmount as number[])[1] || 0,
         totalB: incomesB.totalAmount,
       },
       labelA,
@@ -143,42 +238,45 @@ function HistoricalComparativeCategories({ periodState }) {
     timePeriodsForSelecter,
   ]);
 
-  const components = [
+  // Dynamic component container passes heterogeneous props to child components
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const components: TabsTogglerComponentItem<any>[] = [
     {
       tab: "bills",
       props: {
         data: transactionCategories[0] || [],
-        totalValue: totalAmount[0] || 0,
+        totalValue: (totalAmount as number[])[0] || 0,
         legendBottom: "Months",
         legenedLeft: "Amount",
         propsPlus: {
-          onClick: (a, e) => {
-            renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />);
+          onClick: (a: { data: unknown; [key: string]: unknown }) => {
+            renderModal(<TypedModalContentTopMonthItem item={a.data} close={handleClose} />);
           },
         },
       },
-      Component: ResponsiveBarsChartComponent,
+      Component: TypedResponsiveBarsChartComponent,
     },
     {
       tab: "incomes",
       props: {
         data: transactionCategories[1] || [],
-        totalValue: totalAmount[1] || 0,
+        totalValue: (totalAmount as number[])[1] || 0,
         legendBottom: "Months",
         legenedLeft: "Amount",
         propsPlus: {
-          onClick: (a, e) => {
-            renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />);
+          onClick: (a: { data: unknown; [key: string]: unknown }) => {
+            renderModal(<TypedModalContentTopMonthItem item={a.data} close={handleClose} />);
           },
         },
       },
-      Component: ResponsiveBarsChartComponent,
+      Component: TypedResponsiveBarsChartComponent,
     },
   ];
 
-  const tabs = ["Bills", "Incomes"];
+  const tabs: string[] = ["Bills", "Incomes"];
   if (compareEnabled && compareCategoryData) {
-    const onOpenItem = (item) => renderModal(<ModalContentTopMonthItem item={item} close={handleClose} />);
+    const onOpenItem = (item: unknown) =>
+      renderModal(<TypedModalContentTopMonthItem item={item} close={handleClose} />);
     components.push(
       {
         tab: "compare bills",
@@ -193,7 +291,7 @@ function HistoricalComparativeCategories({ periodState }) {
           walletPrimaryCurrency,
           onOpenItem,
         },
-        Component: CategoriesCompareTable,
+        Component: TypedCategoriesCompareTable,
       },
       {
         tab: "compare incomes",
@@ -208,7 +306,7 @@ function HistoricalComparativeCategories({ periodState }) {
           walletPrimaryCurrency,
           onOpenItem,
         },
-        Component: CategoriesCompareTable,
+        Component: TypedCategoriesCompareTable,
       }
     );
     tabs.push("Compare bills", "Compare incomes");
@@ -234,7 +332,7 @@ function HistoricalComparativeCategories({ periodState }) {
 
   return (
     <>
-      <HistoricalComparativeCategoriesView {...props} />;
+      <TypedHistoricalComparativeCategoriesView {...props} />;
       {close && (
         <BasicModal close={handleClose} renderContent={modalContent} />
       )}
