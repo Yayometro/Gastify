@@ -2,13 +2,31 @@
 
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import type { RootState } from "@/lib/store";
+import type { WalletData } from "@/lib/features/walletSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import useModal from "@/hooks/useModalBasic";
 import fetcher from "@/helpers/fetcher";
-import { buildBudgetHistoricalComparative } from "@/helpers/transformers/budgetHistoricalComparative";
+import {
+  buildBudgetHistoricalComparative,
+  type BudgetHistoricalInput,
+  type BudgetHistoricalComparativeRowData,
+} from "@/helpers/transformers/budgetHistoricalComparative";
 import HistoricalBudgetsComparativeView from "./HistoricalBudgetsComparativeView";
 import BudgetHistoricalDetailModal from "./BudgetHistoricalDetailModal";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
+import type { PeriodComparisonState } from "@/hooks/usePeriodComparison";
+
+export interface HistoricalBudgetsComparativeProps {
+  periodState: PeriodComparisonState;
+}
+
+export interface HistoricalBudgetsApiResponse {
+  ok?: boolean;
+  data?: BudgetHistoricalInput[];
+  message?: string;
+  status?: number;
+}
 
 // New (not yet on this page before) - lets you see how your spending
 // budgets behaved month by month across whatever range you pick, same as
@@ -23,18 +41,20 @@ import BasicModal from "@/components/modals/basicModal/BasicModal";
 // /dashboard/history section, so this table always shows the same range as
 // the rest of the page - it doesn't render its own compare-period table
 // (period-vs-period budget changes live in HistoricalWalletAnalyzer instead).
-function HistoricalBudgetsComparative({ periodState }) {
+function HistoricalBudgetsComparative({
+  periodState,
+}: HistoricalBudgetsComparativeProps): React.JSX.Element {
   const { timePeriod, timePeriodsForSelecter, getValueFromSelecter, handleRangeDate } = periodState;
-  const [budgets, setBudgets] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [budgets, setBudgets] = useState<BudgetHistoricalInput[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { email } = useGetUserSession();
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
-  const walletPrimaryCurrency =
-    useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
+  const walletPrimaryCurrency: string =
+    useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const { close, modalContent, renderModal, handleClose } = useModal();
 
-  function onOpenDetail(row) {
+  function onOpenDetail(row: BudgetHistoricalComparativeRowData): void {
     renderModal(
       <BudgetHistoricalDetailModal row={row} walletPrimaryCurrency={walletPrimaryCurrency} close={handleClose} />
     );
@@ -46,7 +66,7 @@ function HistoricalBudgetsComparative({ periodState }) {
     const toFetch = fetcher();
     toFetch
       .post("general-data/budget/get-historical", email)
-      .then((res) => {
+      .then((res: HistoricalBudgetsApiResponse) => {
         if (res.ok) setBudgets(res.data || []);
         setIsLoading(false);
       })
