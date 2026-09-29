@@ -3171,8 +3171,23 @@
           ]
         },
         "src/components/multiUsedComp/loaders/DashboardLoadingMessage.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:27:57.955Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:29:32.684Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 a TypeScript (DashboardLoadingMessage.tsx).\n- Creada interfaz exportada `DashboardLoadingMessageProps` (`setLoading?: React.MouseEventHandler<HTMLDivElement> | (() => void)`, `message?: React.ReactNode`, `subMessage?: React.ReactNode`).\n- Retorno explícito tipado como `React.JSX.Element`.\n- Sin guards/casts forzados; tsc --noEmit y suite de vitest ejecutados con 0 errores y 314 tests pasando.\n- Bugs/detalles preexistentes preservados intactos: la prop `setLoading` se usa como handler `onClick` en el botón de cerrar (`<div className=\"close\" onClick={setLoading}>`), a pesar de nombrarse convencionalmente como setter en vez de `onClose`/`toggleLoading`."
+            },
+            {
+              "ts": "2026-09-29T05:30:03.427Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio, eslint limpio, vitest 314/314 pasando.\n\nVerificado: prop `setLoading` pasada directo a `onClick` (en realidad recibe un toggle desde los consumidores, no un setter booleano puro) preservada tal cual, sin renombrar ni \"corregir\" la semántica. Sin guards ni casts necesarios. Sin rework."
+            }
+          ]
         },
         "src/hooks/usePeriodComparison.js": {
           "status": "pending",
