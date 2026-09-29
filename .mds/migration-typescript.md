@@ -159,29 +159,34 @@ código huérfano sin importadores en todo el repo - no se migraron, son
 candidatos a borrar con aprobación del usuario (igual que los huérfanos
 de Historia 1) - hay una tarea en cola para borrarlos.
 
-**Historia activa: Historia 9 — Wallet Analyzer** (20 archivos: el
-widget de análisis financiero del Dashboard - `WalletAnalyzer`,
-`WalletAnalyzerTeaser`, `WalletAnalyzerView` [812 líneas],
+**Historia 9 (Wallet Analyzer) completa** - 20/20 archivos: el widget de
+análisis financiero del Dashboard (`WalletAnalyzer`,
+`WalletAnalyzerTeaser`, `WalletAnalyzerView` [812→1157 líneas],
 `WalletAnalyzerTrendChart`, `WalletAnalyzerInsightsStrip`,
 `WalletAnalyzerProjectionCard`, `WalletAnalyzerWeekdayChart`,
 `MonthlyChampionsModal`, `InsightDetailModal`,
 `WeekdaySpendingDetailModal`, el transformer
-`helpers/transformers/walletAnalyzer.js` [1500 líneas de pura lógica de
-cálculo, con su propio `walletAnalyzer.test.js` de 1129 líneas que hay
-que mantener en verde], el hook `useAccountsFxExposure`, los modelos
-`FxRateSnapshot`/`IncomeSource`/`ProjectionSettings`/`ProjectionBaseline`,
-y las 4 rutas de solo lectura que el widget realmente llama:
-`income-sources/get`, `projections/get`, `projection-baseline/get`,
-`fx/quote`). Deliberadamente NO incluye: `HistoricalWalletAnalyzer.jsx`
-ni `HistoricalProjectionsTable`/`BudgetPeriodDetailModal` (la variante
-"History" del mismo widget, renderizada en `dashboard/history/page.jsx`
-vía `HistoryClient.jsx` - su propia historia futura "History");
-`ModalContentTopMonthItem.jsx` (compartido con el árbol pesado de
-analytics `top3/`, ya excluido antes - se usa vía typed bridge); las
-rutas de escritura `income-sources/new,update,remove` y
-`projections/update` y `projection-baseline/update,delete`
-(pertenecen a la futura historia "Projections" junto con la UI que las
-administra, aún sin localizar/explorar).
+`helpers/transformers/walletAnalyzer.ts` [1500→2273 líneas de pura
+lógica de cálculo, revisado a fondo - su `walletAnalyzer.test.js` de
+1129 líneas siguió pasando 76/76 idéntico], el hook
+`useAccountsFxExposure`, los modelos `FxRateSnapshot`/`IncomeSource`/
+`ProjectionSettings`/`ProjectionBaseline`, y las 4 rutas de solo
+lectura `income-sources/get`, `projections/get`,
+`projection-baseline/get`, `fx/quote`). Cero rondas de rework en toda
+la historia. 3 de las 4 rutas de lectura tenían el mismo IDOR clásico
+(`mail`/`id` del body sin verificar sesión) y se corrigieron - `fx/quote`
+se confirmó correctamente como pública (cotizaciones sin datos de
+usuario, no necesita sesión). Deliberadamente NO incluye:
+`HistoricalWalletAnalyzer.jsx` ni `HistoricalProjectionsTable`/
+`BudgetPeriodDetailModal` (la variante "History" del mismo widget,
+renderizada en `dashboard/history/page.jsx` vía `HistoryClient.jsx` -
+su propia historia futura "History"); `ModalContentTopMonthItem.jsx`
+(compartido con el árbol pesado de analytics `top3/`, ya excluido antes
+- se usa vía typed bridge); las rutas de escritura
+`income-sources/new,update,remove` y `projections/update` y
+`projection-baseline/update,delete` (pertenecen a la futura historia
+"Projections" junto con la UI que las administra, aún sin
+localizar/explorar).
 
 Historias siguientes (orden real a confirmar): Categories - analytics
 (Treemap/Circle Packing/comparativas históricas), Budgets - analytics
