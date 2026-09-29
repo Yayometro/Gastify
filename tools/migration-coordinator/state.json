@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-10-history",
+  "activeStory": "historia-11-categories-analytics",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -3335,6 +3335,51 @@
               "notes": "Migración byte-idéntica en lógica y JSX, solo anotaciones de tipo agregadas. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\n`ProjectionRow` con index signature `[key: string]: unknown` (no `any`, correcto) - superset-compatible con `ProjectionTableRow` de useProjectionTable.ts ya migrado y con la interfaz local `ProjectionRow`/`ProjectionsViewProps` que ya usa el typed bridge en HistoricalProjectionsTable.tsx.\n\nCero guards añadidos: `row.net >= 0` con `net?: number` opcional se dejó exactamente igual (comparación con posible `undefined` evalúa `false` en runtime igual que en el original, sin necesidad de guard ya que strict:false no lo exige). `onRowClick(row)` sin chequeo defensivo, preservado tal cual. `siz={12}` en UniversalCategoIcon preservado (prop real, no typo). Cero casts, cero `as`.\n\n3 quirks preexistentes documentados sin arreglar (comportamiento ya presente en el original, no introducidos por la migración): `TYPE_LABEL[row.type]` puede devolver undefined para un `type` no estándar; `row.net >= 0` clasifica net===0 como \"ingreso\" (verde); `onRowClick(row)` lanzaría TypeError si algún consumidor omitiera la prop (ninguno lo hace actualmente).\n\nSin rework. Historia 10 completa: 16/16 archivos."
             }
           ]
+        }
+      }
+    },
+    "historia-11-categories-analytics": {
+      "label": "Categories - analytics (Treemap/Circle Packing/comparativas historicas). Dos arboles: (1) La seccion 'Category Details' del Dashboard (3 tabs: Treemap/Bubble/Nested Pie) - TransDetailsGrandContainer.jsx (entry, renderizado desde Dashboard.tsx ya migrado), DisplayerCategoryTreemap.jsx, CategoryTreemap.jsx [667 lineas, algoritmo squarified treemap hecho a mano, el archivo mas grande/riesgoso de la historia], DisplayerCategoryCirclePacking.jsx, CategoryCirclePacking.jsx [Nivo ResponsiveCirclePacking], TransactionsResumeCont.jsx, TransResumeChart.jsx [Nivo ResponsiveSunburst]. (2) La comparativa historica de categorias en /dashboard/history (explicitamente excluida de Historia 10 como 'arbol pesado de analytics, historia futura') - HistoricalComparativeCategories.jsx, CategoriesCompareTable.jsx, HistoricalComparativeCategoriesView.jsx. Historia puramente de UI/logica de cliente: no toca modelos ni rutas de API nuevas (usa Redux ya migrado - transacctionsSlice/userSlice - y helpers ya migrados: usePeriodComparison.ts, timeFunctions.ts, TabsToggler.tsx, PeriodFiltersWithCompare.tsx). NO incluye: TopCategoryRow (arbol top3/, ya excluido en historias anteriores, usado via typed bridge en CategoriesCompareTable.jsx); transactionsChange.js (helper compartido enorme usado por decenas de archivos en toda la app, incluye buildCategoryHierarchy/getTransactionsFromTimeRange/etc - se queda sin tipar, su propia historia futura aparte, demasiado riesgoso para incluir de paso aqui).",
+      "files": {
+        "src/components/multiUsedComp/TransDetailsGrandContainer.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/DisplayerCategoryTreemap.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CategoryTreemap.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/DisplayerCategoryCirclePacking.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CategoryCirclePacking.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TransactionsResumeCont.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TransResumeChart.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/historicalComparativeCategories/CategoriesCompareTable.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/historicalComparativeCategories/view/HistoricalComparativeCategoriesView.jsx": {
+          "status": "pending",
+          "history": []
         }
       }
     }

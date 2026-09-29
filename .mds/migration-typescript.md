@@ -224,10 +224,34 @@ ya excluido); `budgetHistoricalComparative.js` (compartido con
 `HistoricalBudgetsComparative` excluido, ya funciona bien sin tipar
 como dependencia de `walletAnalyzer.ts`).
 
-Historias siguientes (orden real a confirmar): Categories - analytics
-(Treemap/Circle Packing/comparativas históricas), Budgets - analytics
+**Historia activa: Historia 11 — Categories - analytics** (10 archivos, dos
+árboles: (1) la sección "Category Details" del Dashboard con sus 3 tabs -
+`TransDetailsGrandContainer.jsx` [entry, renderizado desde `Dashboard.tsx`
+ya migrado], `DisplayerCategoryTreemap.jsx`, `CategoryTreemap.jsx` [667
+líneas, algoritmo squarified treemap hecho a mano - el archivo de mayor
+riesgo de la historia], `DisplayerCategoryCirclePacking.jsx`,
+`CategoryCirclePacking.jsx` [Nivo `ResponsiveCirclePacking`],
+`TransactionsResumeCont.jsx`, `TransResumeChart.jsx` [Nivo
+`ResponsiveSunburst`]; (2) la comparativa histórica de categorías en
+`/dashboard/history` - `HistoricalComparativeCategories.jsx`,
+`CategoriesCompareTable.jsx`, `HistoricalComparativeCategoriesView.jsx`
+(explícitamente excluida de Historia 10 como "árbol pesado de analytics,
+historia futura"). Historia puramente de UI/lógica de cliente - no toca
+modelos ni rutas de API nuevas (usa Redux ya migrado y helpers ya
+migrados: `usePeriodComparison.ts`, `timeFunctions.ts`, `TabsToggler.tsx`,
+`PeriodFiltersWithCompare.tsx`). Deliberadamente NO incluye:
+`TopCategoryRow` (árbol `top3/`, ya excluido en historias anteriores,
+usado vía typed bridge en `CategoriesCompareTable.jsx`);
+`transactionsChange.js` (helper compartido enorme usado por decenas de
+archivos en toda la app, incluye `buildCategoryHierarchy`/
+`getTransactionsFromTimeRange`/etc - se queda sin tipar, demasiado
+riesgoso para incluir de paso aquí, su propia historia futura aparte).
+
+Historias siguientes (orden real a confirmar): Budgets - analytics
 (comparativas históricas), Navbar/alta rápida
 (AddTransactionModal/TransferExchangeModal), Projections, MCP
-tools (`buildGastifyMcpServer.js`). Los modelos Mongoose que aún faltan
+tools (`buildGastifyMcpServer.js`), `transactionsChange.js` (el
+transformer más grande y compartido de toda la app, deliberadamente
+pospuesto historia tras historia). Los modelos Mongoose que aún faltan
 (Wallet, CategoryRule) se migran conforme cada historia los necesite,
 no todos de un jalón. `scripts/` sueltos al final.
