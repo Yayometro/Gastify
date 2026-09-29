@@ -3527,8 +3527,23 @@
           ]
         },
         "src/components/multiUsedComp/historicalComparativeCategories/view/HistoricalComparativeCategoriesView.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T07:28:47.502Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T07:30:49.905Z",
+              "event": "submitted",
+              "notes": "Migrado HistoricalComparativeCategoriesView.jsx a HistoricalComparativeCategoriesView.tsx (10/10 de Historia 11 - Categories analytics). Se exportó la interfaz `HistoricalComparativeCategoriesViewProps` coincidente con el typed bridge de `HistoricalComparativeCategories.tsx` y se tipó el componente (`React.JSX.Element`).\n\nDetalles de migración y preservación de bugs:\n1. Bug `isLoading <= 0`: Se preservó exactamente la comparación `(isLoading as unknown as number) <= 0 ? <Skeleton ... /> : <TabsToggler ... />`. Con `isLoading` no provisto por el caller (HistoricalComparativeCategories.tsx), `undefined <= 0` evalúa a `false`, renderizando `TabsToggler` directamente sin alterar el comportamiento en tiempo de ejecución.\n2. Imports y compatibilidad de props: `TabsToggler` y `PeriodFiltersWithCompare` se importaron directamente con sus tipos ya migrados (TSX). Para `periodFromFather`, `timePeriodsForSelecter` y `timePeriodsForCompareSelecter`, se agregaron casts de tipo a `SelecterPeriod` / `SelecterPeriod[]` para satisfacer el chequeo de tipos de `PeriodFiltersWithCompareProps` sin modificar los valores en runtime.\n3. Cero cambios de comportamiento: `title || <h1 ...>` y props de `TabsToggler` y `PeriodFiltersWithCompare` se mantuvieron 1:1.\n\nVerificación:\n- `npx tsc --noEmit` limpio para todo el proyecto (0 errores).\n- `npx eslint src/components/multiUsedComp/historicalComparativeCategories/view/HistoricalComparativeCategoriesView.tsx` limpio (0 errores / 0 warnings).\n- `npx vitest run` pasando al 100% (30 test files, 324/324 tests)."
+            },
+            {
+              "ts": "2026-09-29T07:31:41.902Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nBug `isLoading <= 0` confirmado preservado exactamente: `(isLoading as unknown as number) <= 0` es un cast puramente de compilación, cero efecto en runtime - `undefined <= 0` sigue evaluando `false` igual que el original, así que el Skeleton de carga sigue sin poder mostrarse nunca (bug ya documentado, no arreglado).\n\nCasts `periodFromFather as SelecterPeriod`/`timePeriodsForSelecter as SelecterPeriod[]`/`timePeriodsForCompareSelecter as SelecterPeriod[]` son solo de compilación para compatibilizar `TimePeriodOption` con lo que espera `PeriodFiltersWithCompare` (ya migrado) - sin efecto en runtime. `TabsToggler`/`PeriodFiltersWithCompare` importados directos sin typed bridge, correctamente (ambos ya son .tsx desde Historia 10).\n\nSin rework. Historia 11 completa: 10/10 archivos."
+            }
+          ]
         }
       }
     }
