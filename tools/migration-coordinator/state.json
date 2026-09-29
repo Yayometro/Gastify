@@ -3917,8 +3917,23 @@
           ]
         },
         "src/app/api/general-data/projections/update/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T17:48:38.089Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T17:51:04.041Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`route.ts`) con fix de seguridad IDOR #37 (derivación de usuario a través de `auth.api.getSession` con `sesion.user.email` ignorando el `mail` no autenticado del body). Se definieron schemas de Zod (`monthBufferSchema`, `monthBalanceSchema`, `updateProjectionSettingsBodySchema`) y tipos DTO asociados (`MonthBufferInput`, `MonthBalanceInput`, `UpdateProjectionSettingsRequestBody`, `UpdateProjectionSettingsStatusResponse`, `UpdateProjectionSettingsSuccessResponse`, `UpdateProjectionSettingsResponse`). Se preservó el comportamiento 1:1 de `throw new Error({...} as unknown as string)`. Se aplicó structural typing a `Wallet.findById` para interoperabilidad con `Wallet.js` aún no migrado. Verificado con `tsc --noEmit` (0 errores), `eslint` (0 errores) y vitest (30/30 suites, 324 tests pasando)."
+            },
+            {
+              "ts": "2026-09-29T17:52:03.010Z",
+              "event": "approved",
+              "notes": "Fix de seguridad #37 aplicado correctamente: `const sesion = await auth.api.getSession({headers: request.headers}); if (!sesion) throw new Error(\"No session\"); const userFound = await User.findOne({mail: sesion.user.email})` - exactamente el patrón ya establecido en income-sources/get/route.ts. El `mail` que mandaba el cliente en el body ya no se usa para nada (correctamente removido del destructuring). Lógica de negocio (get-or-create de ProjectionSettings, monthlyBuffers/monthlyBalances con revisiones) byte-idéntica al original - confirmado vía diff, solo reformateo prettier-style y anotaciones de tipo.\n\n`IMonthlyBufferRevision`/`IMonthlyBalanceRevision`/`IProjectionSettings` reutilizados reales del modelo ya migrado. Cast `Wallet as unknown as {findById: ...}` es un bridge razonable para el modelo Wallet.js aún sin migrar (fuera de alcance de esta historia). `throw new Error({...} as unknown as string)` preserva el bug ya documentado (objeto en vez de string, da \"[object Object]\") sin arreglarlo, con el cast usado consistentemente en income-sources/get/route.ts.\n\ntsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324. Sin rework."
+            }
+          ]
         },
         "src/app/api/general-data/projection-baseline/update/route.js": {
           "status": "pending",
