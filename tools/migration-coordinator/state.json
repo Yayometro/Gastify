@@ -3936,8 +3936,23 @@
           ]
         },
         "src/app/api/general-data/projection-baseline/update/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T17:53:58.536Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T17:55:49.931Z",
+              "event": "submitted",
+              "notes": "Migración a TypeScript de projection-baseline/update/route.js:\n- Fix de seguridad #38: Validación de sesión obligatoria vía auth.api.getSession({ headers: request.headers }) ignorando mail del cliente y derivando usuario desde sesion.user.email para User.findOne(), eliminando vulnerabilidad IDOR.\n- Esquema de entrada con Zod (updateProjectionBaselineBodySchema + UpdateProjectionBaselineRequestBody).\n- Tipado estricto de request (NextRequest | Request), respuestas (UpdateProjectionBaselineStatusResponse, UpdateProjectionBaselineSuccessResponse, UpdateProjectionBaselineResponse).\n- Typed bridge para Wallet model aún no migrado.\n- Preservados bugs preexistentes: throw new Error({ error: ... }) con cast as unknown as string, rethrow en catch (e), y parsing de effectiveTo.\n- Verificado con npx tsc --noEmit (0 errores), npx eslint (0 errores/warnings) y vitest (324/324 tests pasando)."
+            },
+            {
+              "ts": "2026-09-29T17:56:36.972Z",
+              "event": "approved",
+              "notes": "Fix de seguridad #38 aplicado correctamente, mismo patrón exacto que projections/update/route.ts: `auth.api.getSession()` → `User.findOne({mail: sesion.user.email})`, el `mail` del body ya no se usa. Lógica de negocio (get-or-create ProjectionBaseline, edición/creación de entradas de incomeHistory/expenseHistory) byte-idéntica al original - confirmado vía diff, solo reformateo y casts de tipo puramente de compilación.\n\n`IProjectionBaseline`/`IBaselineIncomeHistoryEntry`/`IBaselineExpenseHistoryEntry` reutilizados reales del modelo ya migrado. Bridge de Wallet.js idéntico al ya usado en projections/update/route.ts. `throw new Error({...} as unknown as string)` preserva el bug ya documentado sin arreglarlo.\n\ntsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324. Sin rework."
+            }
+          ]
         },
         "src/app/api/general-data/projection-baseline/delete/route.js": {
           "status": "pending",

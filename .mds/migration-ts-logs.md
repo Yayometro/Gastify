@@ -267,6 +267,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 35 | `general-data/projections/get` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para buscar la configuración de proyecciones de cualquier usuario. | `1ef4c85` | Alta |
 | 36 | `general-data/projection-baseline/get` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para buscar el projection baseline de cualquier usuario. | `7964929` | Alta |
 | 37 | `general-data/projections/update` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para actualizar los projection settings (buffers mensuales, balance manual) de cualquier usuario. | `17b1e9a` | Alta |
+| 38 | `general-data/projection-baseline/update` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para crear/editar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | (pendiente) | Alta |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
