@@ -4,6 +4,14 @@ import React from "react";
 import { Tooltip } from "antd";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
+export interface ProjectionVarianceCellProps {
+  label: string;
+  actual: number;
+  projected: number;
+  value: number;
+  betterWhenPositive?: boolean;
+}
+
 // One line of a projected-vs-actual comparison: a label, the colored
 // variance value, and a hover tooltip spelling out the actual subtraction
 // with this row's own numbers. "Better" flips per label - more income is
@@ -14,7 +22,13 @@ import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 // (Wallet Analyzer) so the "why is one green and one red" explanation users
 // are taught once doesn't need re-teaching with different wording in a
 // second place.
-function ProjectionVarianceCell({ label, actual, projected, value, betterWhenPositive }) {
+function ProjectionVarianceCell({
+  label,
+  actual,
+  projected,
+  value,
+  betterWhenPositive,
+}: ProjectionVarianceCellProps): React.JSX.Element {
   const isBetter = betterWhenPositive ? value >= 0 : value <= 0;
   const sign = value > 0 ? "+" : "";
   const verb = betterWhenPositive ? "ganaste" : "gastaste";

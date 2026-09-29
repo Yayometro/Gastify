@@ -3822,8 +3822,23 @@
           ]
         },
         "src/components/multiUsedComp/Projections/ProjectionVarianceCell.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:45:00.711Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:46:27.224Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/Projections/ProjectionVarianceCell.jsx a ProjectionVarianceCell.tsx.\n\n1. Interfaces y tipos creados:\n- Se definió y exportó la interfaz `ProjectionVarianceCellProps` con exactamente la forma esperada:\n  ```ts\n  export interface ProjectionVarianceCellProps {\n    label: string;\n    actual: number;\n    projected: number;\n    value: number;\n    betterWhenPositive?: boolean;\n  }\n  ```\n- Tipo de retorno explícito `React.JSX.Element` para `ProjectionVarianceCell`.\n\n2. Cero cambios de comportamiento / migración 1:1:\n- Se preservó byte-a-byte toda la lógica existente (`isBetter`, `sign`, `verb`, `comparison`, `verdict`), estructura JSX y tooltip con sus caracteres especiales exactos (unicode minus `−` y em-dash `—`).\n- Cero casts forzados, cero usos de `any`, cero index signatures, cero optional chaining añadidos.\n\n3. Bugs preexistentes encontrados (documentados y preservados intactos):\n- Formato de moneda fijo: utiliza `usdFormatChanger` para formatear los números, por lo que formatea siempre como USD ('en-US') independientemente de la moneda primaria de la wallet.\n- Comportamiento de valor neutro (value === 0): tanto con `betterWhenPositive` verdadero como falso, `value >= 0` y `value <= 0` evalúan a `true` para 0, produciendo siempre `comparison = \"más\"` y `verdict = \"mejor de lo esperado\"` (\"Ganaste $0.00 más...\" o \"Gastaste $0.00 más...\").\n\n4. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto (verificado que `WalletAnalyzerProjectionCard.tsx` sigue compilando con su typed bridge existente).\n- `npx eslint src/components/multiUsedComp/Projections/ProjectionVarianceCell.tsx`: 0 errores, 0 warnings.\n- `npx vitest run`: 30/30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-29T16:47:05.360Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, solo tipos agregados. Interfaz exacta a la forma que ya esperaba el bridge existente en WalletAnalyzerProjectionCard.tsx. tsc --noEmit limpio (proyecto completo, ese archivo sigue compilando), eslint limpio, vitest 324/324.\n\n2 bugs preexistentes documentados sin arreglar: formato USD fijo vía usdFormatChanger (ignora la moneda primaria real de la wallet); `value === 0` siempre se clasifica como \"mejor de lo esperado\" en ambos casos de `betterWhenPositive` (ganar/gastar $0.00 más se muestra como buena noticia). Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/ProjectionAccuracyInfoModal.jsx": {
           "status": "pending",
