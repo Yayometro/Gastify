@@ -1,37 +1,75 @@
 import React, { useEffect, useState } from "react";
-import { ResponsiveSunburst } from "@nivo/sunburst";
+import { ResponsiveSunburst, ComputedDatum } from "@nivo/sunburst";
 import { IoMdRefresh } from "react-icons/io";
 import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { RootState } from "@/lib/store";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
 
+export interface TransCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
 
-function TransResumeChart({ trchTransactions, trchIsBill }) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
-  const [dataCat, setDataCat] = useState({});
-  const [drilldownData, setDrilldownData] = useState(null);
-  const [totalValueOn, setTotalValueOn] = useState(0);
+export interface TransSubCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface TransResumeTransaction extends Omit<TransactionData, "category" | "subCategory"> {
+  category?: TransCategoryRef | string | null;
+  subCategory?: TransSubCategoryRef | string | null;
+}
+
+export interface SunburstNode {
+  name?: string;
+  color?: string;
+  icon?: string;
+  fatherId?: string;
+  childId?: string;
+  loc?: number;
+  value?: number;
+  children?: SunburstNode[];
+}
+
+export interface TransResumeChartProps {
+  trchTransactions?: (TransactionData | TransResumeTransaction)[];
+  trchIsBill?: boolean;
+}
+
+function TransResumeChart({ trchTransactions, trchIsBill }: TransResumeChartProps): React.JSX.Element {
+  const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const [dataCat, setDataCat] = useState<SunburstNode>({});
+  const [drilldownData, setDrilldownData] = useState<SunburstNode | null>(null);
+  const [totalValueOn, setTotalValueOn] = useState<number>(0);
 
   useEffect(() => {
     if (trchTransactions) {
       // SET THE TOTAL AMOUNT
-      let totalAmount = trchTransactions.reduce((acc, trans) => acc += getPrimaryAmount(trans) , 0)
+      const totalAmount = trchTransactions.reduce((acc, trans) => acc += getPrimaryAmount(trans) , 0)
       if(totalAmount) setTotalValueOn(totalAmount)
       //
-      let transWithoutCategory = trchTransactions.filter(
+      const transWithoutCategory = trchTransactions.filter(
         (trans) => !trans.category
       );
-      let transWithCategory = trchTransactions.filter(
+      const transWithCategory = trchTransactions.filter(
         (trans) => trans?.category && !trans?.subCategory
       );
       console.log(transWithCategory);
-      let transWithSubCat = trchTransactions.filter(
+      const transWithSubCat = trchTransactions.filter(
         (trans) => trans?.subCategory
       );
       console.log(transWithSubCat);
       // Save with no category
-      let cateFaseOne = transWithoutCategory.map((traWCat) => {
+      const cateFaseOne: SunburstNode[] = transWithoutCategory.map((traWCat) => {
         const amount = getPrimaryAmount(traWCat);
         return {
           fatherId: "Generic-1",
@@ -44,44 +82,47 @@ function TransResumeChart({ trchTransactions, trchIsBill }) {
         };
       });
       console.log(cateFaseOne);
-      let cateFaseDos = transWithCategory.map((traCat) => {
+      let cateFaseDos: SunburstNode[] = transWithCategory.map((traCat) => {
+        const cat = traCat.category as TransCategoryRef;
         const amount = getPrimaryAmount(traCat);
         return {
-          fatherId: traCat.category._id,
-          name: traCat?.category.name,
+          fatherId: cat?._id,
+          name: cat?.name,
           loc: amount,
           value: amount,
-          color: traCat?.category?.color ? traCat?.category?.color : "#ABABAB",
-          icon: traCat?.category?.icon || "MdFilterNone",
+          color: cat?.color ? cat?.color : "#ABABAB",
+          icon: cat?.icon || "MdFilterNone",
           children: [],
         };
       });
       console.log(cateFaseDos);
       if (transWithSubCat) {
         transWithSubCat.forEach((traSub) => {
+          const cat = traSub.category as TransCategoryRef;
+          const subCat = traSub.subCategory as TransSubCategoryRef;
           const amount = getPrimaryAmount(traSub);
           cateFaseDos.push({
-            fatherId: traSub.category._id,
-            name: traSub.category?.name,
-            color: traSub.category?.color ? traSub.category?.color : "#ABABAB",
-            icon: traSub?.category?.icon || "MdFilterNone",
+            fatherId: cat._id,
+            name: cat?.name,
+            color: cat?.color ? cat?.color : "#ABABAB",
+            icon: cat?.icon || "MdFilterNone",
             children: [
               {
-                childId: traSub.subCategory._id,
-                name: traSub.subCategory?.name,
+                childId: subCat?._id,
+                name: subCat?.name,
                 loc: amount,
                 value: amount,
-                color: traSub.subCategory?.color
-                  ? traSub?.subCategory?.color
+                color: subCat?.color
+                  ? subCat?.color
                   : "#ABABAB",
-                icon: traSub?.subCategory?.icon || "MdFilterNone",
+                icon: subCat?.icon || "MdFilterNone",
               },
             ],
           });
         });
         cateFaseDos = cateFaseDos.concat(cateFaseOne);
         console.log(cateFaseDos);
-        const result = cateFaseDos.reduce((acc, item) => {
+        const result = cateFaseDos.reduce<Record<string, SunburstNode>>((acc, item) => {
           // Si la categoría no existe en el acumulador, la inicializamos
           if (!acc[item.fatherId]) {
             acc[item.fatherId] = { ...item, loc: 0, children: [] }; // Inicializamos loc en 0 para sumarlo correctamente después
@@ -106,7 +147,7 @@ function TransResumeChart({ trchTransactions, trchIsBill }) {
         }, {});
         if (result) {
           console.log(result);
-          const newDataCat = {
+          const newDataCat: SunburstNode = {
             name: trchIsBill ? "Total expenses" : "Total incomes",
             color: trchIsBill ? "#FF9775" : "#A4F379",
             icon: "md/MdMonetizationOn",
@@ -119,9 +160,9 @@ function TransResumeChart({ trchTransactions, trchIsBill }) {
       }
     }
   }, [trchTransactions]);
-const handleSelect = (node) => {
+const handleSelect = (node: ComputedDatum<SunburstNode>) => {
     // Aquí filtras los datos para mostrar solo los hijos del segmento seleccionado
-    const filteredData = dataCat.children.find(child => child.name === node.data.name);
+    const filteredData = dataCat.children?.find(child => child.name === node.data.name);
     setDrilldownData(filteredData ? { ...dataCat, children: [filteredData] } : dataCat);
 }
 
@@ -140,7 +181,7 @@ const resetDrilldown = () => {
       </div>
       <div className="trch-content w-full h-full">
         <div className="trhc-ResponsiveSunburst-cont w-[100%] h-[500px] sm:h-[600px]">
-          <ResponsiveSunburst
+          <ResponsiveSunburst<SunburstNode>
             animate
             data={drilldownData || dataCat}
             margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
