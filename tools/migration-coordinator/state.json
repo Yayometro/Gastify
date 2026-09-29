@@ -3578,8 +3578,23 @@
           ]
         },
         "src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalDetailModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:00:20.380Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:02:25.861Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de BudgetHistoricalDetailModal.jsx a TypeScript (BudgetHistoricalDetailModal.tsx).\n\n1. Tipado e interfaces:\n- Creada interfaz `BudgetHistoricalDetailModalProps` ({ row: BudgetHistoricalComparativeRowData; walletPrimaryCurrency?: string; close: () => void }) reutilizando directamente el tipo real `BudgetHistoricalComparativeRowData` de `src/helpers/transformers/budgetHistoricalComparative.ts`.\n- `CategoIcon` importado directamente sin bridge (ya migrado a `.tsx`).\n- Tipado del retorno del componente como `React.JSX.Element`.\n\n2. Preservación estricta de comportamiento (Regla de oro):\n- Se preservaron al 100% todos los operadores lógicos (`||` en `budget.name || \"Unnamed budget\"` y ternarios en resultado/clases).\n- Cero operadores de optional chaining nuevos (`?.` solo en los `monthlySeries[0]?.label` y `monthlySeries[monthlySeries.length - 1]?.label` preexistentes).\n- Cero `any` explícitos o implícitos.\n- Cero casts de compilación o runtime necesarios.\n- Comentarios de documentación 100% conservados.\n\n3. Bugs preexistentes identificados (preservados sin alterar):\n- `formatMoneyMajor`: si `walletPrimaryCurrency` es `undefined` (o no soportado), `formatMoneyMajor` lanza `Error: Unsupported currency: undefined` ya que la función no proporciona un fallback por defecto internamente.\n- `monthlySeries`: si `row.monthlySeries` está vacío (`[]`), la cabecera renderiza `- · 0 of 0 months met` debido a que ambos accesos por índice retornan `undefined`.\n- Botón de cierre: `<button onClick={close}>` envuelve un `<div className=\"close-con absolute top-[0%] right-[0%] ...\">`. El botón exterior no tiene estilos de posicionamiento absoluto, por lo que el elemento `<button>` vive al pie del contenedor mientras el hijo `<div>` flota arriba a la derecha.\n\n4. Verificaciones ejecutadas:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalDetailModal.tsx`: 0 errores/warnings.\n- `npx vitest run`: 30/30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-29T16:02:59.482Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, sin ningún guard/cast agregado. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\n`row: BudgetHistoricalComparativeRowData` reutiliza el tipo real de budgetHistoricalComparative.ts (ya migrado en esta historia). `CategoIcon` importado directo sin bridge (ya es .tsx). `?.` preexistentes en `monthlySeries[0]?.label`/`monthlySeries[monthlySeries.length - 1]?.label` preservados sin agregar ninguno nuevo.\n\n3 bugs preexistentes documentados sin arreglar: `formatMoneyMajor` puede lanzar error si `walletPrimaryCurrency` es undefined/no soportada (sin fallback interno en este componente); `monthlySeries` vacío muestra \"- · 0 of 0 months met\"; el botón de cerrar externo no tiene las clases de posicionamiento absoluto que sí tiene su div hijo interno (inconsistencia de layout menor). Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/historicalBudgetsComparative/propsForBudgetMonthlyChart.js": {
           "status": "approved",

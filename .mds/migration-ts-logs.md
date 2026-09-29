@@ -475,6 +475,7 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 32 | `budgetHistoricalComparative.ts` | El `rows.sort((a, b) => (a.complianceRate ?? 1) - (b.complianceRate ?? 1))` no tiene criterio de desempate para budgets con el mismo `complianceRate` - el orden entre ellos depende del algoritmo de sort del motor JS, no es determinista de forma explícita. | Historia 12 |
 | 33 | `BudgetHistoricalComparativeRow.tsx` | Al presionar la barra espaciadora sobre una fila (navegación por teclado), `onOpenDetail(row)` se dispara pero falta `e.preventDefault()` - el navegador puede hacer scroll de la página al mismo tiempo que se abre el modal de detalle. | Historia 12 |
 | 34 | `BudgetHistoricalComparativeRow.tsx` | Cuando `complianceRate` es `null` (`monthsTracked === 0`), `(complianceRate \|\| 0) * 100` muestra "0% compliance" en rojo, indistinguible visualmente de un budget que de verdad se cumplió 0% de las veces, en vez de indicar "sin datos". | Historia 12 |
+| 35 | `BudgetHistoricalDetailModal.tsx` | Si `walletPrimaryCurrency` llega `undefined` o con un código no soportado, `formatMoneyMajor` lanza `Error: Unsupported currency: undefined` - el componente no tiene ningún fallback interno (a diferencia de otros lugares del código que sí hacen `|| "MXN"`). | Historia 12 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,

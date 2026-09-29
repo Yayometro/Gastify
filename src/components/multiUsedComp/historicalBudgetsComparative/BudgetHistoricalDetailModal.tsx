@@ -3,6 +3,13 @@
 import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
+
+export interface BudgetHistoricalDetailModalProps {
+  row: BudgetHistoricalComparativeRowData;
+  walletPrimaryCurrency?: string;
+  close: () => void;
+}
 
 // Full month-by-month breakdown for one Budget, opened by clicking its row
 // in the Budgets comparative list. Mirrors the mini bar chart's data
@@ -11,7 +18,11 @@ import { formatMoneyMajor } from "@/lib/money/currencies";
 // Renders its own wrapper/close button (matching BasicModal's other
 // content components, e.g. ModalContentTopMonthItem) since passing
 // `renderContent` bypasses BasicModal's default chrome entirely.
-function BudgetHistoricalDetailModal({ row, walletPrimaryCurrency, close }) {
+function BudgetHistoricalDetailModal({
+  row,
+  walletPrimaryCurrency,
+  close,
+}: BudgetHistoricalDetailModalProps): React.JSX.Element {
   const { budget, monthlySeries, monthsTracked, monthsMet } = row;
 
   return (
