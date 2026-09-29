@@ -3361,8 +3361,23 @@
           ]
         },
         "src/components/multiUsedComp/DisplayerCategoryTreemap.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T06:55:19.822Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T06:57:23.699Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de `src/components/multiUsedComp/DisplayerCategoryTreemap.jsx` a `.tsx`.\n\n1. Interfaces y tipos definidos:\n- `DisplayerCategoryTreemapProps`: `{ dccpIncomes?: TransactionData[]; dccoBills?: TransactionData[]; }`, 100% compatible con los typed bridges existentes en `TransDetailsGrandContainer.tsx` y `AccountClient.tsx`.\n- Typed bridge `CategoryTreemapProps` y `TypedCategoryTreemap` (`ctTransactions?: TransactionData[]; ctIsBill?: boolean;`) para el subcomponente hijo aún sin migrar `CategoryTreemap.jsx`.\n- Retorno explícito `React.JSX.Element` y tipado de argumento en `handleToggle(type: \"bill\" | \"income\" | string)`.\n- `const [tabBill, setTabBill] = useState(true)` (ajuste a prefer-const para ESLint).\n\n2. Bugs preexistentes documentados (preservados sin modificar):\n- Typo en mensaje de `EmptyModule`: \"...maybe the is not data in general...\" (\"the\" en lugar de \"there\").\n- Nombre de prop asimétrico preexistente: `dccoBills` (en vez de `dccpBills` comparado con `dccpIncomes`).\n- Clases CSS heredadas de `DisplayerCategoryCirclePacking`: `displayer-ccp-container`, `dccp-tab-content`, `dccp-tc-bill`, `dccp-tc-income` y la pestaña de Incomes usando `thc-bill`.\n- Prop `siz={15}` e interpolación redundante `${\"fa/FaRegQuestionCircle\"}` en `UniversalCategoIcon`.\n\n3. Guards / Casts:\n- Ninguno requerido. Se mantuvieron las lecturas directas `.length <= 0` sin optional chaining adicional.\n\n4. Verificación:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint`: 0 errores y 0 warnings en `DisplayerCategoryTreemap.tsx`, `TransDetailsGrandContainer.tsx` y `AccountClient.tsx`.\n- `npx vitest run`: 30/30 suites pasadas (324/324 tests)."
+            },
+            {
+              "ts": "2026-09-29T06:57:59.022Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\n`DisplayerCategoryTreemapProps` compatible con los typed bridges ya existentes en TransDetailsGrandContainer.tsx y AccountClient.tsx. Typed bridge nuevo para `CategoryTreemap` (siguiente en la cola). `dccoBills.length`/`dccpIncomes.length` se leyeron directo sin `?.` tal como el original - confirmado que ambos consumidores siempre pasan ambas props.\n\n`let [tabBill, setTabBill]` → `const` (ajuste de eslint prefer-const) - verificado que `tabBill` nunca se reasigna directamente, solo vía `setTabBill`, inerte.\n\nBugs preexistentes documentados sin arreglar: typo en EmptyModule (\"the is not data\"), asimetría `dccoBills`/`dccpIncomes` (o vs p), clases CSS residuales de circle-packing en este wrapper de Treemap (`displayer-ccp-container`, `dccp-*`) - cosmético, no bug de comportamiento. Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/CategoryTreemap.jsx": {
           "status": "pending",

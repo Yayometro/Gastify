@@ -3,14 +3,31 @@ import CategoryTreemap from "./CategoryTreemap";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import EmptyModule from "./EmptyModule";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
+
+// Typed bridge for unmigrated CategoryTreemap component
+interface CategoryTreemapProps {
+  ctTransactions?: TransactionData[];
+  ctIsBill?: boolean;
+}
+
+const TypedCategoryTreemap = CategoryTreemap as React.ComponentType<CategoryTreemapProps>;
+
+export interface DisplayerCategoryTreemapProps {
+  dccpIncomes?: TransactionData[];
+  dccoBills?: TransactionData[];
+}
 
 // Same Bills/Incomes tab wrapper as DisplayerCategoryCirclePacking, but
 // rendering the category Treemap instead of the circle-packing bubble chart
 // - used on Account movements detail, where the bubble chart read as too
 // dark/cramped compared to the Treemap already used elsewhere in the app.
-function DisplayerCategoryTreemap({ dccpIncomes, dccoBills }) {
-  let [tabBill, setTabBill] = useState(true);
-  const handleToggle = (type) => {
+function DisplayerCategoryTreemap({
+  dccpIncomes,
+  dccoBills,
+}: DisplayerCategoryTreemapProps): React.JSX.Element {
+  const [tabBill, setTabBill] = useState(true);
+  const handleToggle = (type: "bill" | "income" | string) => {
     if (type === "bill") {
       setTabBill(true);
     }
@@ -60,7 +77,7 @@ function DisplayerCategoryTreemap({ dccpIncomes, dccoBills }) {
               />
             </div>
             ) : (
-              <CategoryTreemap ctTransactions={dccoBills} ctIsBill={true}/>
+              <TypedCategoryTreemap ctTransactions={dccoBills} ctIsBill={true}/>
             )
           }
         </div>
@@ -77,7 +94,7 @@ function DisplayerCategoryTreemap({ dccpIncomes, dccoBills }) {
               />
             </div>
             ) : (
-              <CategoryTreemap
+              <TypedCategoryTreemap
                 ctTransactions={dccpIncomes}
                 ctIsBill={false}
               />
