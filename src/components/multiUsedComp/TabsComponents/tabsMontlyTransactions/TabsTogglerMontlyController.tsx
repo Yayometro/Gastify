@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import ResponsiveBarsChartComponent from "../../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/lib/store";
 import {
   fetchTrans,
   setTransacctions,
+  type TransacctionsState,
 } from "@/lib/features/transacctionsSlice";
+import type { WalletData } from "@/lib/features/walletSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
-import { useDispatch, useSelector } from "react-redux";
 import { getPeriodLabel } from "@/helpers/timeFunctions/timeFunctions";
-import TabsTogglerMontlyView from "./TabsTogglerMontlyView";
 import {
   filterBillsOrIncomes,
   getTransactionsFromTimeRange,
@@ -17,27 +18,119 @@ import {
   transactionsToMonths,
   transactionsToRelativeMonths,
 } from "@/helpers/transformers/transactionsChange";
+import type usePeriodComparison from "@/hooks/usePeriodComparison";
+import type { TabsTogglerComponentItem } from "../TabsToggler";
+import TabsTogglerMontlyView from "./TabsTogglerMontlyView";
+import ResponsiveBarsChartComponent from "../../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
 import ColumnChartAntComparative from "../../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
-import TooltipForChart from "@/components/toltips/tooltipsForCharts/TooltipForChart";
-import AtomicTop from "../../top3/atomicTop/AtomicTop";
 import {
   generatePropForChartColAntTogglerTabs,
   generatePropForChartColAntPeriodCompare,
 } from "./propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler";
 
-function TabsTogglerMontlyController({ periodState }) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [totalAmount, setTotalAmount] = useState([]);
-  const [clickedItems, setClickedItems] = useState([]);
-  const [compareChartData, setCompareChartData] = useState(null);
+export type PeriodComparisonState = ReturnType<typeof usePeriodComparison>;
 
-  let { email } = useGetUserSession();
+export interface TabsTogglerMontlyControllerProps {
+  periodState: PeriodComparisonState;
+}
+
+export interface MonthBucketItem {
+  type?: string;
+  index?: number;
+  monthLabel?: string;
+  value: number;
+  isBill?: boolean | null;
+  isIncome?: boolean | null;
+  [key: string]: unknown;
+}
+
+export interface CompareTotals {
+  incomeA: number;
+  billA: number;
+  incomeB: number;
+  billB: number;
+}
+
+export interface CompareChartItem {
+  type: string;
+  transactionType: string;
+  color: string;
+  absValue: number;
+  value: number;
+  monthLabel?: string;
+  index?: number;
+  [key: string]: unknown;
+}
+
+export interface CompareChartDataState {
+  chartData: CompareChartItem[];
+  totals: CompareTotals;
+  labelA: string;
+  labelB: string;
+}
+
+export interface ClickedChartItem {
+  type?: string;
+  value?: number;
+  isBill?: boolean;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+// Typed bridges for unmigrated child JSX components
+interface TabsTogglerMontlyViewProps {
+  getValueSelecterFilter: (v: string) => void;
+  timePeriodsForSelecter: Array<{ value: string; name: string }>;
+  data: unknown[][];
+  handleRangeDate: (dateStart: Date | null, dateEnd: Date | null) => void;
+  timePeriod: Date[];
+  // Dynamic component container passes heterogeneous props to child components
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  components: TabsTogglerComponentItem<any>[];
+  tabs: string[];
+  compareEnabled: boolean;
+  setCompareEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  comparePeriod: Date[];
+  getCompareValueFromSelecter: (v: string) => void;
+  handleCompareRangeDate: (dateStart: Date | null, dateEnd: Date | null) => void;
+  timePeriodsForCompareSelecter: Array<{ value: string; name: string }>;
+  rangePickerResponse?: unknown;
+}
+const TypedTabsTogglerMontlyView = TabsTogglerMontlyView as unknown as React.ComponentType<TabsTogglerMontlyViewProps>;
+
+interface ResponsiveBarsChartComponentProps {
+  data?: unknown[];
+  totalValue?: number;
+  legendBottom?: string;
+  legenedLeft?: string;
+  [key: string]: unknown;
+}
+const TypedResponsiveBarsChartComponent = ResponsiveBarsChartComponent as unknown as React.ComponentType<ResponsiveBarsChartComponentProps>;
+
+interface ColumnChartAntComparativeProps {
+  data?: unknown;
+  totalValue?: React.ReactNode;
+  propPlus?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+const TypedColumnChartAntComparative = ColumnChartAntComparative as unknown as React.ComponentType<ColumnChartAntComparativeProps>;
+
+function TabsTogglerMontlyController({
+  periodState,
+}: TabsTogglerMontlyControllerProps): React.JSX.Element {
+  const [data, setData] = useState<unknown[][]>([]);
+  const [, setLoading] = useState<boolean>(false);
+  const [totalAmount, setTotalAmount] = useState<number[]>([]);
+  const [clickedItems, setClickedItems] = useState<ClickedChartItem[]>([]);
+  const [compareChartData, setCompareChartData] = useState<CompareChartDataState | null>(null);
+
+  const { email } = useGetUserSession();
 
   // REDUX
-  const dispath = useDispatch();
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const dispath = useDispatch<AppDispatch>();
+  const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
+  const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const allTransactions = ccTransacciones.data;
   // Period state (timePeriod/comparePeriod/compareEnabled + selector
   // options/handlers) is owned by HistoryClient via usePeriodComparison and
@@ -61,10 +154,10 @@ function TabsTogglerMontlyController({ periodState }) {
       dispath(fetchTrans(email));
     }
     if (ccTransacciones.status == "succeeded") {
-      setTransacctions(ccTransacciones.data);
+      setTransacctions(ccTransacciones.data as unknown as TransacctionsState);
       setLoading(false);
     }
-  }, [ccTransacciones, email]);
+  }, [ccTransacciones, email, dispath]);
 
   useEffect(() => {
     if (allTransactions.length >= 1 && timePeriod[0] && timePeriod[1]) {
@@ -129,7 +222,14 @@ function TabsTogglerMontlyController({ periodState }) {
     // income over income and bill over bill - `absValue` keeps the real
     // (always-positive) amount for labels/tooltips, since a downward bar
     // shouldn't read as "negative spending."
-    const tagOne = (m, monthName, metricLabel, periodLabel, color, mirror) => ({
+    const tagOne = (
+      m: MonthBucketItem,
+      monthName: string,
+      metricLabel: string,
+      periodLabel: string,
+      color: string,
+      mirror: boolean
+    ): CompareChartItem => ({
       ...m,
       type: `${monthName} ${metricLabel}`,
       transactionType: `${metricLabel} (${periodLabel})`,
@@ -140,15 +240,15 @@ function TabsTogglerMontlyController({ periodState }) {
 
     const monthIndices = Array.from(
       new Set([
-        ...incomesA.array.map((m) => m.index),
-        ...incomesB.array.map((m) => m.index),
-        ...billsA.array.map((m) => m.index),
-        ...billsB.array.map((m) => m.index),
+        ...incomesA.array.map((m: MonthBucketItem) => m.index),
+        ...incomesB.array.map((m: MonthBucketItem) => m.index),
+        ...billsA.array.map((m: MonthBucketItem) => m.index),
+        ...billsB.array.map((m: MonthBucketItem) => m.index),
       ])
-    ).sort((a, b) => a - b);
-    const byIndex = (arr, idx) => arr.find((m) => m.index === idx);
+    ).filter((idx): idx is number => idx !== undefined && !isNaN(idx)).sort((a, b) => a - b);
+    const byIndex = (arr: MonthBucketItem[], idx: number) => arr.find((m) => m.index === idx);
 
-    const chartData = [];
+    const chartData: CompareChartItem[] = [];
     monthIndices.forEach((idx) => {
       const iA = byIndex(incomesA.array, idx);
       const iB = byIndex(incomesB.array, idx);
@@ -179,7 +279,9 @@ function TabsTogglerMontlyController({ periodState }) {
     });
   }, [allTransactions, timePeriod, comparePeriod, compareEnabled, timePeriodsForSelecter]);
 
-  const components = [
+  // Dynamic component container passes heterogeneous props to child components
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const components: TabsTogglerComponentItem<any>[] = [
     {
       tab: "incomes",
       props: {
@@ -188,7 +290,7 @@ function TabsTogglerMontlyController({ periodState }) {
         legendBottom: "months",
         legenedLeft: "Amount",
       },
-      Component: ResponsiveBarsChartComponent,
+      Component: TypedResponsiveBarsChartComponent,
     },
     {
       tab: "bills",
@@ -198,12 +300,18 @@ function TabsTogglerMontlyController({ periodState }) {
         legendBottom: "Months",
         legenedLeft: "Amount",
       },
-      Component: ResponsiveBarsChartComponent,
+      Component: TypedResponsiveBarsChartComponent,
     },
     {
       tab: "comparative",
-      props: generatePropForChartColAntTogglerTabs({data, clickedItems, setClickedItems, totalAmount, walletPrimaryCurrency }),
-      Component: ColumnChartAntComparative,
+      props: generatePropForChartColAntTogglerTabs({
+        data,
+        clickedItems,
+        setClickedItems,
+        totalAmount,
+        walletPrimaryCurrency,
+      }),
+      Component: TypedColumnChartAntComparative,
     },
   ];
 
@@ -218,13 +326,13 @@ function TabsTogglerMontlyController({ periodState }) {
         labelB: compareChartData.labelB,
         walletPrimaryCurrency,
       }),
-      Component: ColumnChartAntComparative,
+      Component: TypedColumnChartAntComparative,
     });
     tabs.push("Compare periods");
   }
 
   return (
-    <TabsTogglerMontlyView
+    <TypedTabsTogglerMontlyView
       getValueSelecterFilter={getValueFromSelecter}
       timePeriodsForSelecter={timePeriodsForSelecter}
       data={data}

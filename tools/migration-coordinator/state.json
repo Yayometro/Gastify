@@ -3133,8 +3133,23 @@
           ]
         },
         "src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyController.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:16:13.880Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:19:42.929Z",
+              "event": "submitted",
+              "notes": "Migrado TabsTogglerMontlyController.jsx a TypeScript (.tsx). Se definieron interfaces completas (TabsTogglerMontlyControllerProps, MonthBucketItem, CompareTotals, CompareChartItem, CompareChartDataState, ClickedChartItem) y typed bridges para componentes hijos JSX aún no migrados (TypedTabsTogglerMontlyView, TypedResponsiveBarsChartComponent, TypedColumnChartAntComparative). Se reutilizaron tipos de store (RootState, AppDispatch), walletSlice (WalletData), transacctionsSlice (TransacctionsState) y TabsToggler (TabsTogglerComponentItem). Se preservó intacto el bug preexistente en el effect de succeeded donde setTransacctions se invoca directamente sin dispatch() mediante cast con as unknown as TransacctionsState. Se preservaron operadores || originales y nombres de props preexistentes como legenedLeft. Removidos imports no utilizados (TooltipForChart, AtomicTop). Verificado con npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores) y npx vitest run (314/314 tests passing)."
+            },
+            {
+              "ts": "2026-09-29T05:23:52.705Z",
+              "event": "approved",
+              "notes": "Migración limpia, sin rework. tsc --noEmit limpio, eslint limpio, vitest 314/314 (29 archivos) pasando.\n\nVerificaciones específicas:\n1. 4ta ocurrencia del bug \"Redux action creator sin dispatch()\": `setTransacctions(ccTransacciones.data as unknown as TransacctionsState);` (línea 157) llamado sin dispatch(), exactamente igual al original (línea 64, tampoco tenía dispatch). Preexistente, NO introducido por la migración. Preservado tal cual, documentado en migration-ts-logs.md (no corregido, sin autorización explícita del usuario).\n2. `const [, setLoading] = useState<boolean>(false)` - el getter `loading` fue eliminado. Verificado via grep en el original: `loading` (el valor, no el setter) nunca se leía en ningún lado. Eliminación segura de estado muerto.\n3. `.filter((idx): idx is number => idx !== undefined && !isNaN(idx))` agregado antes de `.sort()` sobre `monthIndices` - no es requerido por el compilador (verificado revirtiendo + tsc --noEmit), pero es inerte para datos reales: `transactionsToRelativeMonths()` en transactionsChange.js siempre asigna `index: monthsSinceStart` como número real, nunca undefined. El filtro nunca cambia el comportamiento real.\n4. `legenedLeft: \"Amount\"` (typo preexistente, esperado por ResponsiveBarsChartComponent aún no migrado) preservado sin cambios en ambos objetos de props (líneas 291, 301) - correcto, no se \"corrigió\" el typo.\n5. Imports removidos `TooltipForChart` y `AtomicTop` - verificado via grep en el original que ambos solo aparecían en su línea de import, nunca usados en el JSX. Eliminación segura.\n6. Bridges tipados creados: TypedTabsTogglerMontlyView, TypedResponsiveBarsChartComponent, TypedColumnChartAntComparative.\n7. Tipos reutilizados: RootState, AppDispatch, WalletData, TransacctionsState, TabsTogglerComponentItem (de TabsToggler.tsx ya migrado), y nuevo alias PeriodComparisonState = ReturnType<typeof usePeriodComparison> (usePeriodComparison aún es .js, tipado por inferencia).\n\nAprobado sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyView.jsx": {
           "status": "pending",
