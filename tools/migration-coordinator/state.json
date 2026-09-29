@@ -3559,8 +3559,23 @@
           "history": []
         },
         "src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalComparativeRow.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T15:57:15.075Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T15:58:49.359Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de BudgetHistoricalComparativeRow.jsx a TypeScript (BudgetHistoricalComparativeRow.tsx).\n\n1. Tipado e interfaces:\n- Creada interfaz `BudgetCategoryLike` ({ color?: string | null; icon?: string | null; name?: string | null; [key: string]: unknown }) para category/subCategory.\n- Creada interfaz `BudgetHistoricalComparativeRowProps` ({ row: BudgetHistoricalComparativeRowData; walletPrimaryCurrency?: string; onOpenDetail: (row: BudgetHistoricalComparativeRowData) => void }) utilizando el tipo real `BudgetHistoricalComparativeRowData` de `budgetHistoricalComparative.ts`.\n- Creado typed bridge `TypedColumnChartAntComparative` (React.ComponentType<BudgetMonthlyChartProps>) para el componente compartido de gráficos `ColumnChartAntComparative`.\n- Tipado del retorno `React.JSX.Element` y del evento de teclado `React.KeyboardEvent<HTMLDivElement>`.\n\n2. Preservación estricta de comportamiento (Regla de oro):\n- Se preservaron todos los operadores lógicos `||` sin cambiar a `??` (en complianceRate, color, icon, name y onKeyDown).\n- Se mantuvieron intactos los nombres de props y atributos (incluyendo `siz={18}`).\n- No se agregaron operadores de optional chaining innecesarios ni nuevos.\n- Comentarios de documentación 100% conservados.\n\n3. Bugs preexistentes identificados (preservados sin alterar):\n- Keyboard navigation: `onKeyDown` para Space (\" \") ejecuta `onOpenDetail(row)` sin `e.preventDefault()`, por lo que el espacio puede provocar scroll en la página al abrir el modal.\n- `budget.subCategory`: si `subCategory` es un ID no poblado o string, `defaultCate` se asigna a él y sus propiedades `.color`/`.icon` evalúan a `undefined`, cayendo a los fallbacks `\"#DADADA\"` y `\"md/MdCategory\"`.\n- `complianceRate`: cuando es `null` (p. ej. `monthsTracked === 0`), `(complianceRate || 0) * 100` calcula `0% compliance` con color `text-red-400`.\n\n4. Casts / Guards agregados:\n- `budget.category as BudgetCategoryLike | null | undefined` y `budget.subCategory as BudgetCategoryLike | null | undefined` para permitir el acceso type-safe a `.color` e `.icon`.\n- `ColumnChartAntComparative as unknown as React.ComponentType<BudgetMonthlyChartProps>` para el componente de gráficos fuera de alcance.\n\n5. Verificaciones:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalComparativeRow.tsx`: 0 errores y 0 warnings.\n- `npx vitest run`: 30/30 suites pasadas (324/324 tests)."
+            },
+            {
+              "ts": "2026-09-29T15:59:27.855Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerificado: los casts `budget.category as BudgetCategoryLike | null | undefined` / `budget.subCategory as ...` son puramente de compilación, el `let defaultCate = ...` y el `if (budget.subCategory) defaultCate = ...` se dejaron exactamente igual (sin `?.` nuevo, sin cambiar `let` a `const` ya que sí se reasigna condicionalmente). `row: BudgetHistoricalComparativeRowData` reutiliza el tipo real de budgetHistoricalComparative.ts (ya migrado en esta historia) en vez de inventar uno nuevo. Typed bridge nuevo para `ColumnChartAntComparative` (árbol de charts compartido, fuera de alcance).\n\nTodos los `||` originales preservados sin tocar (`complianceRate || 0`, `defaultCate?.color || \"#DADADA\"`, etc.), `siz={18}` preservado.\n\n3 bugs preexistentes documentados sin arreglar: falta `e.preventDefault()` en el onKeyDown de la barra espaciadora (puede hacer scroll de página Y abrir el modal a la vez); si `subCategory` no está poblado (solo un ID string), `.color`/`.icon` evalúan a undefined y caen a los defaults; `complianceRate === null` (0 meses trackeados) se muestra como \"0% compliance\" en rojo en vez de indicar \"sin datos\". Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalDetailModal.jsx": {
           "status": "pending",

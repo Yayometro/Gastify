@@ -3,7 +3,27 @@
 import React from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import ColumnChartAntComparative from "../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
-import { generatePropForBudgetMonthlyChart } from "./propsForBudgetMonthlyChart";
+import {
+  generatePropForBudgetMonthlyChart,
+  type BudgetMonthlyChartProps,
+} from "./propsForBudgetMonthlyChart";
+import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
+
+export interface BudgetCategoryLike {
+  color?: string | null;
+  icon?: string | null;
+  name?: string | null;
+  [key: string]: unknown;
+}
+
+export interface BudgetHistoricalComparativeRowProps {
+  row: BudgetHistoricalComparativeRowData;
+  walletPrimaryCurrency?: string;
+  onOpenDetail: (row: BudgetHistoricalComparativeRowData) => void;
+}
+
+// Typed bridge for shared chart component outside migration scope
+const TypedColumnChartAntComparative = ColumnChartAntComparative as unknown as React.ComponentType<BudgetMonthlyChartProps>;
 
 // One row per Budget: a compliance headline (X of Y months met) plus a
 // grouped-bar chart (Actual vs. Goal, one pair per month) using the same
@@ -11,13 +31,17 @@ import { generatePropForBudgetMonthlyChart } from "./propsForBudgetMonthlyChart"
 // interactive tooltips, full-width responsive bars, instead of a
 // hand-rolled div strip. The whole row opens a full month-by-month detail
 // modal on click.
-function BudgetHistoricalComparativeRow({ row, walletPrimaryCurrency, onOpenDetail }) {
+function BudgetHistoricalComparativeRow({
+  row,
+  walletPrimaryCurrency,
+  onOpenDetail,
+}: BudgetHistoricalComparativeRowProps): React.JSX.Element {
   const { budget, monthlySeries, monthsTracked, monthsMet, monthsEstimated, complianceRate } = row;
   const pct = Math.round((complianceRate || 0) * 100);
   const pctColor = pct >= 70 ? "text-green-400" : pct >= 40 ? "text-yellow-400" : "text-red-400";
 
-  let defaultCate = budget.category;
-  if (budget.subCategory) defaultCate = budget.subCategory;
+  let defaultCate = budget.category as BudgetCategoryLike | null | undefined;
+  if (budget.subCategory) defaultCate = budget.subCategory as BudgetCategoryLike | null | undefined;
 
   const chartProps = generatePropForBudgetMonthlyChart({ monthlySeries, walletPrimaryCurrency });
 
@@ -27,7 +51,7 @@ function BudgetHistoricalComparativeRow({ row, walletPrimaryCurrency, onOpenDeta
       onClick={() => onOpenDetail(row)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => {
+      onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === "Enter" || e.key === " ") onOpenDetail(row);
       }}
     >
@@ -60,7 +84,7 @@ function BudgetHistoricalComparativeRow({ row, walletPrimaryCurrency, onOpenDeta
         <p className={`text-sm font-bold ${pctColor}`}>{pct}% compliance</p>
       </div>
       <div className="w-full" style={{ height: 200 }}>
-        <ColumnChartAntComparative {...chartProps} />
+        <TypedColumnChartAntComparative {...chartProps} />
       </div>
     </div>
   );
