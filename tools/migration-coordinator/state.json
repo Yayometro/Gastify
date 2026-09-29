@@ -4031,8 +4031,23 @@
           ]
         },
         "src/components/multiUsedComp/Projections/IncomeSourcesPanel.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T18:14:01.612Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T18:17:08.595Z",
+              "event": "submitted",
+              "notes": "Migración de src/components/multiUsedComp/Projections/IncomeSourcesPanel.jsx a TypeScript (IncomeSourcesPanel.tsx):\n\n1. Interfaces y tipos definidos:\n- `IncomeSourceLike = IIncomeSource | IncomeSourceItem` reutilizando `IIncomeSource` de `@/model/IncomeSource` y `IncomeSourceItem` de `@/hooks/useProjectionTable`.\n- `IncomeSourceFormData`: estructura tipada para el estado local del formulario (`name`, `amount`, `currency`, `recurrence`, `anchorDate`).\n- `IncomeSourcesPanelProps`: props tipadas explícitamente (`incomeSources?: IncomeSourceLike[] | null`, `userId?: string`, `walletId?: string`, `walletPrimaryCurrency?: string`, `onChange?: () => void`).\n- `RECURRENCE_LABELS: Record<string, string>`.\n\n2. Confirmación EXPLÍCITA de NO agregar guards en handleDateChange:\n- `const handleDateChange = (newValue: Dayjs | null) => { setForm({ ...form, anchorDate: new Date(newValue.format()) }); };` llama DIRECTAMENTE a `newValue.format()` sin `if (newValue)`, sin optional chaining `newValue?.format()` y sin fallbacks, preservando exactamente el riesgo/comportamiento de crash preexistente si `newValue` es null.\n\n3. Bugs preexistentes encontrados y preservados intactos:\n- Unused import: `usdFormatChanger` importado de `@/helpers/transformers/transactionsChange` pero nunca invocado en el componente (removido para cumplir con ESLint `@typescript-eslint/no-unused-vars`).\n- Invocación de `onChange()` directa en `handleSubmit` y `handleRemove` sin verificar si `onChange` fue provisto (`onChange()` tiraría TypeError si fuera undefined).\n- Si `walletPrimaryCurrency` cambia en runtime, el estado `form` inicializado con `useState(() => ...)` no se resincroniza.\n- En `startEdit`, `source.amount || \"\"` evalúa `0` a `\"\"` al ser falsy (`amount: 0` se convierte en campo vacío en el form).\n- `RECURRENCE_LABELS[source.recurrence]` no tiene fallback si la recurrencia no coincide con las 4 llaves estándar.\n- `Number(form.amount)` en el submit convierte `\"\"` a `0` sin validación previa.\n- Posible crash en `new Date(newValue.format())` si `newValue` es null en `handleDateChange`.\n\n4. Guards y casts mínimos agregados para compilar:\n- `source._id ? String(source._id) : null` para el id de edición y key de React.\n- `RECURRENCE_LABELS[source.recurrence as string]`.\n- Tipado de eventos de React: `React.ChangeEvent<HTMLInputElement | HTMLSelectElement>`, `React.FormEvent<HTMLFormElement>`.\n\n5. Verificaciones:\n- `npx tsc --noEmit` (proyecto completo): 0 errores.\n- `npx eslint src/components/multiUsedComp/Projections/IncomeSourcesPanel.tsx`: 0 errores / 0 warnings.\n- `npx vitest run`: 30 test files / 324 tests pasando."
+            },
+            {
+              "ts": "2026-09-29T18:30:28.415Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, verificada exhaustivamente vía diff completo. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nCONFIRMACIÓN CRÍTICA verificada personalmente: `handleDateChange` NO tiene guard agregado - `newValue.format()` se llama directo exactamente como el original, preservando el crash real si `newValue` fuera null (mismo patrón de riesgo ya visto en Historia 11 y Historia 13, esta vez correctamente evitado desde el inicio).\n\n`source._id ? String(source._id) : null` (en `setEditingId` y `key`) verificado inerte para datos reales: los datos de `incomeSources` llegan vía fetch/JSON, donde Mongoose ya serializa `_id` como string plano (no como objeto ObjectId) - el cast `String(...)` no cambia nada en la práctica, y el guard `? : null` nunca se dispara porque todo IncomeSource real siempre tiene `_id`. `usdFormatChanger` removido del import - confirmado nunca usado en el componente.\n\n7 bugs preexistentes documentados sin arreglar: crash potencial en handleDateChange (ya descrito, preservado); `onChange()` llamado sin verificar que la prop exista; `form.currency` no se resincroniza si `walletPrimaryCurrency` cambia post-montaje; `source.amount || \"\"` convierte 0 a vacío en startEdit; `Number(\"\")` da 0 en el submit; `RECURRENCE_LABELS[...]` puede dar undefined para una recurrencia no estándar. Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/HistoricalBaselinePanel.jsx": {
           "status": "pending",

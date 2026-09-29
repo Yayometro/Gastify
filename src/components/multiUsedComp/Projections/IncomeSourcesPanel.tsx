@@ -2,24 +2,43 @@
 
 import React, { useState } from "react";
 import { Spin } from "antd";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
-import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@/lib/money/currencies";
+import type { IIncomeSource, IncomeSourceRecurrence } from "@/model/IncomeSource";
+import type { IncomeSourceItem } from "@/hooks/useProjectionTable";
 
-const RECURRENCE_LABELS = {
+export type IncomeSourceLike = IIncomeSource | IncomeSourceItem;
+
+export interface IncomeSourceFormData {
+  name: string;
+  amount: number | string;
+  currency: string;
+  recurrence: IncomeSourceRecurrence | string;
+  anchorDate: Date;
+}
+
+export interface IncomeSourcesPanelProps {
+  incomeSources?: IncomeSourceLike[] | null;
+  userId?: string;
+  walletId?: string;
+  walletPrimaryCurrency?: string;
+  onChange?: () => void;
+}
+
+const RECURRENCE_LABELS: Record<string, string> = {
   monthly: "Monthly",
   semimonthly: "Semimonthly (fixed paydays, ~2/mo)",
   biweekly: "Biweekly (every 14 days)",
   weekly: "Weekly",
 };
 
-const getEmptyForm = (currency) => ({
+const getEmptyForm = (currency?: string): IncomeSourceFormData => ({
   name: "",
   amount: "",
   currency: currency || "MXN",
@@ -27,25 +46,31 @@ const getEmptyForm = (currency) => ({
   anchorDate: new Date(),
 });
 
-function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurrency, onChange }) {
+function IncomeSourcesPanel({
+  incomeSources,
+  userId,
+  walletId,
+  walletPrimaryCurrency,
+  onChange,
+}: IncomeSourcesPanelProps): React.JSX.Element {
   const defaultCurrency = walletPrimaryCurrency || "MXN";
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState(() => getEmptyForm(defaultCurrency));
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<IncomeSourceFormData>(() => getEmptyForm(defaultCurrency));
   const toFetch = fetcher();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleDateChange = (newValue) => {
+  const handleDateChange = (newValue: Dayjs | null) => {
     setForm({ ...form, anchorDate: new Date(newValue.format()) });
   };
 
-  const startEdit = (source) => {
-    setEditingId(source._id);
+  const startEdit = (source: IncomeSourceLike) => {
+    setEditingId(source._id ? String(source._id) : null);
     setForm({
       name: source.name || "",
       amount: source.amount || "",
@@ -60,7 +85,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurr
     setForm(getEmptyForm(defaultCurrency));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       setIsLoading(true);
@@ -97,7 +122,7 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurr
     }
   };
 
-  const handleRemove = async (id) => {
+  const handleRemove = async (id: string | unknown) => {
     try {
       setIsLoading(true);
       const res = await toFetch.post("general-data/income-sources/remove", { id });
@@ -128,13 +153,13 @@ function IncomeSourcesPanel({ incomeSources, userId, walletId, walletPrimaryCurr
           <ul className="flex flex-col gap-2 mb-4">
             {(incomeSources || []).map((source) => (
               <li
-                key={source._id}
+                key={source._id ? String(source._id) : undefined}
                 className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
               >
                 <div className="flex flex-col">
                   <p className="text-purple-300">{source.name}</p>
                   <p className="text-xs text-gf-text-muted">
-                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence]}
+                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence as string]}
                   </p>
                 </div>
                 <div className="flex gap-2">
