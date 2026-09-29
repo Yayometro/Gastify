@@ -3095,8 +3095,23 @@
           ]
         },
         "src/components/multiUsedComp/HistoricalWalletAnalyzer/BudgetPeriodDetailModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:10:16.000Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:11:56.290Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/HistoricalWalletAnalyzer/BudgetPeriodDetailModal.jsx -> .tsx (73 -> 94 líneas).\n\nDetalles de la migración:\n- Tipado explícito de interfaces: PeriodTableProps y BudgetPeriodDetailModalProps.\n- Reutilización de tipos exportados por walletAnalyzer.ts (SumBudgetSeriesResult, BudgetPeriodChangeRow).\n- Preservación estricta de la lógica y JSX original:\n  - Preservado row.budget?.name || row.category mediante cast narrowing de budget.\n  - Preservado <CategoIcon type=\"MdClose\" siz={20} /> (respetando prop siz definido en CategoIcon).\n  - Preservado el formateo con formatMoneyMajor.\n  - Cero cambios de comportamiento en tiempo de ejecución.\n  - Sin uso de any.\n\nVerificación:\n- npx tsc --noEmit: 0 errores.\n- npx eslint src/components/multiUsedComp/HistoricalWalletAnalyzer/BudgetPeriodDetailModal.tsx: 0 errores, 0 warnings.\n- npx vitest run: 29 suites pasadas, 314 tests pasados.\n- Ningún otro archivo modificado."
+            },
+            {
+              "ts": "2026-09-29T05:12:29.198Z",
+              "event": "approved",
+              "notes": "Byte-identico salvo tipos. Reutiliza SumBudgetSeriesResult/BudgetPeriodChangeRow de walletAnalyzer.ts. siz preservado correctamente. tsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/TabsComponents/TabsToggler.jsx": {
           "status": "pending",

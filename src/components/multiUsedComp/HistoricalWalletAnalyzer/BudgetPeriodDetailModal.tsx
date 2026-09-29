@@ -3,12 +3,19 @@
 import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { SumBudgetSeriesResult, BudgetPeriodChangeRow } from "@/helpers/transformers/walletAnalyzer";
+
+export interface PeriodTableProps {
+  label: string;
+  periodData?: SumBudgetSeriesResult | null;
+  walletPrimaryCurrency?: string;
+}
 
 // Month-by-month breakdown for one budget's period-vs-period comparison
 // row - the two-period sibling of BudgetHistoricalDetailModal (which shows
 // a single period). Renders both periods' monthlySeries stacked, reusing
 // the exact same table shape twice.
-function PeriodTable({ label, periodData, walletPrimaryCurrency }) {
+function PeriodTable({ label, periodData, walletPrimaryCurrency }: PeriodTableProps): React.JSX.Element {
   if (!periodData) {
     return (
       <div>
@@ -49,11 +56,26 @@ function PeriodTable({ label, periodData, walletPrimaryCurrency }) {
   );
 }
 
-function BudgetPeriodDetailModal({ row, labelA, labelB, walletPrimaryCurrency, close }) {
+export interface BudgetPeriodDetailModalProps {
+  row: BudgetPeriodChangeRow;
+  labelA: string;
+  labelB: string;
+  walletPrimaryCurrency?: string;
+  close: () => void;
+}
+
+function BudgetPeriodDetailModal({
+  row,
+  labelA,
+  labelB,
+  walletPrimaryCurrency,
+  close,
+}: BudgetPeriodDetailModalProps): React.JSX.Element {
+  const budget = row.budget as { name?: string } | null | undefined;
   return (
     <div className="content absolute gf-glass-violet flex flex-col w-full h-full max-w-[640px] max-h-[80%] rounded-2xl items-center overflow-hidden z-[1001]">
       <header className="w-full text-white px-6 py-4">
-        <p className="text-lg">{row.budget?.name || row.category}</p>
+        <p className="text-lg">{budget?.name || row.category}</p>
         <p className="text-xs text-white/80">Comparativo de cumplimiento entre periodos</p>
       </header>
       <div className="w-full flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
