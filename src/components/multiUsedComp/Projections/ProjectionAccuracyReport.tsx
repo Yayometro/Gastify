@@ -3,8 +3,14 @@
 import React, { useState } from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import type { ProjectionAccuracyRow } from "@/hooks/useProjectionTable";
 import ProjectionAccuracyInfoModal from "./ProjectionAccuracyInfoModal";
 import ProjectionVarianceCell from "./ProjectionVarianceCell";
+
+export interface ProjectionAccuracyReportProps {
+  rows?: ProjectionAccuracyRow[] | null;
+  onRowClick: (monthName: string) => void;
+}
 
 // Precisión de proyecciones: proyectado (lo que se esperaba, fijado a como
 // estaba el buffer al cierre de ese mes) vs. real, solo para meses cerrados
@@ -13,8 +19,8 @@ import ProjectionVarianceCell from "./ProjectionVarianceCell";
 // sección porque solo aplica a un subconjunto de meses y necesita dos
 // dimensiones numéricas por mes (proyectado y real) que no caben como una
 // sola columna más en la tabla existente.
-function ProjectionAccuracyReport({ rows, onRowClick }) {
-  const [showInfoModal, setShowInfoModal] = useState(false);
+function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReportProps): React.JSX.Element | null {
+  const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
   if (!rows || rows.length === 0) return null;
 
   return (

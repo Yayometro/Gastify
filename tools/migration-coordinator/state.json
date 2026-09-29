@@ -3879,8 +3879,23 @@
           ]
         },
         "src/components/multiUsedComp/Projections/ProjectionAccuracyReport.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:53:18.916Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:55:07.757Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/Projections/ProjectionAccuracyReport.jsx a ProjectionAccuracyReport.tsx (86 líneas).\n\n1. Interfaces y tipos creados:\n- Se definió y exportó `ProjectionAccuracyReportProps`:\n  ```ts\n  export interface ProjectionAccuracyReportProps {\n    rows?: ProjectionAccuracyRow[] | null;\n    onRowClick: (monthName: string) => void;\n  }\n  ```\n- Reutilización de `ProjectionAccuracyRow` importado directamente desde `@/hooks/useProjectionTable` (Historia 10).\n- Retorno explícito `React.JSX.Element | null` y estado `useState<boolean>(false)`.\n- `ProjectionAccuracyInfoModal` y `ProjectionVarianceCell` importados directamente de sus archivos `.tsx` sin bridges.\n\n2. Cero cambios de comportamiento / migración 1:1:\n- Se preservó byte-a-byte la estructura JSX, handlers, clases de Tailwind y lógica condicional (`if (!rows || rows.length === 0) return null;`).\n- Cero `any` (explícito o implícito), cero index signatures `[key: string]: any`, cero casts y cero optional chaining / guards adicionales.\n\n3. Bugs preexistentes identificados (documentados y preservados intactos):\n- Trigger de modal inaccesible: el ícono de ayuda para abrir el modal es un `<div onClick>` en vez de un `<button>`, sin atributos de accesibilidad (`aria-label`) ni soporte de navegación por teclado.\n- Filas de tabla interactivas sin semántica de accesibilidad: cada `<tr onClick>` actúa como botón pero carece de `role=\"button\"`, `tabIndex` y soporte para teclas Enter/Espacio.\n- Formato de moneda fijo: utiliza `usdFormatChanger` que formatea siempre como USD ('en-US') ignorando la moneda primaria de la wallet.\n- Ausencia de coalescing para campos numéricos opcionales en `row` (`projectedIncome`, `actualIncome`, `varianceIncome`, etc.), pasando valores `undefined` tal cual como en el original.\n\n4. Verificación ejecutada:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/components/multiUsedComp/Projections/ProjectionAccuracyReport.tsx`: 0 errores, 0 warnings.\n- `npx vitest run`: 30/30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-29T16:55:58.182Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, solo tipos agregados. Reutiliza `ProjectionAccuracyRow` real de useProjectionTable.ts en vez de inventar uno nuevo. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerificado: `value={row.varianceIncome}` (tipo `number | undefined`) hacia `ProjectionVarianceCell`'s `value: number` (no opcional) compila sin cast porque `strict: false` (sin strictNullChecks) permite `undefined` en cualquier tipo - no requiere `?? 0` ni cast, y no se agregó ninguno, preservando la ausencia de fallback del original.\n\n4 bugs preexistentes documentados sin arreglar: trigger del modal sin accesibilidad, filas de tabla clicables sin soporte de teclado/semántica, formato USD fijo, valores opcionales pasados sin `?? 0`. Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/ProjectionMonthDetailModal.jsx": {
           "status": "pending",
