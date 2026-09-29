@@ -270,6 +270,7 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 38 | `general-data/projection-baseline/update` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para crear/editar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | `3971553` | Alta |
 | 39 | `general-data/projection-baseline/delete` (POST) | Cero verificación de sesión - confiaba en el `mail` del body para borrar entradas del historial de ingreso/gasto (baseline) de cualquier usuario. | `b26a2d2` | Alta |
 | 40 | `general-data/income-sources/update` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía a cualquiera (autenticado o no) modificar amount/recurrence/currency/anchorDate/active de la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo nivel de gravedad que el bug de `remove-many` (fila 28). | `55300de` | Crítica |
+| 41 | `general-data/income-sources/new` (POST) | Cero verificación de sesión - el `user`/`wallet` del body se pasaban tal cual al crear la income source, permitiendo forjar income sources atribuidas a cualquier usuario/wallet. Mismo patrón que el fix #27 (`new-transaction`). | (pendiente) | Crítica |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
@@ -489,6 +490,9 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 42 | `income-sources/update/route.ts` | `!amount ? updateIncomeSource.amount : amount` hace imposible fijar el monto de una income source a exactamente `0` (siempre se lee como "no vino este campo" y se conserva el valor viejo). | Historia 14 |
 | 43 | `income-sources/update/route.ts` | Por el mismo motivo del bug #42, `isChanging` (`!!amount && amount !== ...`) nunca detecta un cambio a monto `0`, así que ese cambio tampoco queda registrado en el historial de versiones. | Historia 14 |
 | 44 | `income-sources/update/route.ts` | La respuesta incluye `status: 201` en el cuerpo JSON, pero `NextResponse.json(...)` sin opciones explícitas siempre responde con status HTTP 200 real - el 201 del body es puramente informativo y no coincide con el código HTTP real. | Historia 14 |
+| 45 | `income-sources/new/route.ts` | `if (!newIncomeSource)`/`if (!savedIncomeSource)` son código muerto - Mongoose nunca hace que el constructor `new IncomeSource(...)` ni `.save()` regresen un valor falsy en el flujo normal (fallarían lanzando una excepción, no regresando `null`/`undefined`). | Historia 14 |
+| 46 | `income-sources/new/route.ts` | Si no se manda `name`, el mensaje de éxito interpola a `"null was created successfully 🤓"` en vez de un nombre por default legible. | Historia 14 |
+| 47 | `income-sources/new/route.ts` | La entrada inicial de `history` solo guarda `amount` en unidades mayores, sin inicializar el subdocumento de dinero multi-moneda (`money`/`amountMinor`+`currency`) que sí usan otras partes del modelo - inconsistente con el resto del esquema multi-currency. | Historia 14 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,

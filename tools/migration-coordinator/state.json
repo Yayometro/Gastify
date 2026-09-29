@@ -3993,8 +3993,23 @@
           ]
         },
         "src/app/api/general-data/income-sources/new/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T18:06:17.756Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T18:08:07.798Z",
+              "event": "submitted",
+              "notes": "Migración de src/app/api/general-data/income-sources/new/route.js a TypeScript (route.ts).\n\n1. Fix de seguridad aplicado (fix #41 de la migración):\n- Se eliminó la vulnerabilidad de forjado de income sources donde los campos `user` y `wallet` del body del request se usaban directamente para crear documentos sin verificación de sesión.\n- Se agregó verificación estricta de sesión mediante `auth.api.getSession({ headers: request.headers })` y búsqueda de usuario en base de datos con `User.findOne({ mail: sesion.user.email }).lean()`.\n- Los campos `user` y `wallet` se derivan exclusivamente del usuario autenticado (`userFound._id` y `userFound.wallet`), ignorando cualquier valor enviado por el cliente.\n\n2. Manejo del check obsoleto `if (!user && !wallet)`:\n- Se reemplazó por las validaciones de sesión (`if (!sesion) throw new Error(\"No session\")`) y existencia de usuario (`if (!userFound) throw new Error(\"User not found on NEW INCOME SOURCE\")`), garantizando pertenencia y existencia de wallet y user de forma robusta y consistente con new-transaction/route.ts y budget/new/route.ts.\n\n3. Tipos e interfaces definidos:\n- Esquema Zod `createIncomeSourceSchema` y tipo inferido `CreateIncomeSourceRequestBody` para validar/tipar el body.\n- Interfaces de respuesta `NewIncomeSourceGetStatusResponse`, `NewIncomeSourceGetResponse`, `NewIncomeSourcePostSuccessResponse`, `NewIncomeSourcePostResponse`.\n- Tipado estricto de los handlers `GET` y `POST` con `NextRequest | Request` y `Promise<NextResponse<...>>`, reutilizando `IIncomeSource` del modelo `@/model/IncomeSource`.\n\n4. Bugs preexistentes preservados intactos:\n- Respuesta GET con clave `mes: \"Work\"` en vez de `message`.\n- Validaciones redundantes / dead code `if (!newIncomeSource)` y `if (!savedIncomeSource)`.\n- Fallback a `\"null was created successfully 🤓\"` en el mensaje si `name` no se provee (`name || null`).\n- El array inicial de `history` no pobla el subdocumento multi-currency `money` (modelo legacy preservado).\n- Re-throw `throw new Error(e)` en el catch.\n\n5. Guards y casts:\n- `((await request.json()) || {}) as CreateIncomeSourceRequestBody`\n- `e as string` en el catch block.\n\nVerificaciones:\n- `npx tsc --noEmit` proyecto completo: 0 errores.\n- `npx eslint src/app/api/general-data/income-sources/new/route.ts`: 0 errores.\n- `npx vitest run`: 324/324 tests pasando."
+            },
+            {
+              "ts": "2026-09-29T18:09:01.413Z",
+              "event": "approved",
+              "notes": "Fix de seguridad #41: el original confiaba ciegamente en `user`/`wallet` del body para crear el nuevo IncomeSource, permitiendo forjar datos financieros en la cuenta de cualquier víctima - mismo patrón ya arreglado en new-transaction (fix #27). Fix correcto: `user: userFound._id, wallet: userFound.wallet` derivados siempre de la sesión verificada, ignorando completamente lo que mande el cliente. El check obsoleto `if (!user && !wallet)` se reemplazó sensatamente por `if (!userFound) throw...`, consistente con new-transaction/route.ts.\n\nVerificado vía diff que la construcción del documento (todos los fallbacks `name || null`, `amount || 0`, `currency || null`, `recurrence || \"monthly\"`, `anchorDate || now`, y la entrada inicial de `history`) es byte-idéntica salvo el cambio de seguridad intencional.\n\nReutiliza `IIncomeSource` real del modelo ya migrado. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nBugs preexistentes documentados sin arreglar: `if (!newIncomeSource)`/`if (!savedIncomeSource)` son código muerto (Mongoose nunca los hace falsy); si `name` no viene, el mensaje de éxito interpola \"null was created successfully\"; `history[0]` no inicializa el subdocumento de dinero multi-moneda, solo el amount en unidades mayores. Sin rework."
+            }
+          ]
         },
         "src/app/api/general-data/income-sources/remove/route.js": {
           "status": "pending",
