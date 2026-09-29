@@ -3803,8 +3803,23 @@
       "label": "Projections - la pagina /dashboard/projections completa (UI de gestion, distinta de la tabla de solo-lectura HistoricalProjectionsTable.tsx que ya se migro en Historia 10). Componentes: ProjectionsClient.jsx [221 lineas, entry, renderizado desde page.jsx], IncomeSourcesPanel.jsx [256 lineas, CRUD de fuentes de ingreso], HistoricalBaselinePanel.jsx [272 lineas, CRUD de baseline historico de ingreso/gasto], ProjectionMonthDetailModal.jsx [325 lineas, el mas grande, usa Movements.tsx ya migrado y CurrencyBreakdownChips.jsx], ProjectionAccuracyReport.jsx [86 lineas], ProjectionAccuracyInfoModal.jsx [80 lineas], ProjectionsInfoModal.jsx [74 lineas], ProjectionVarianceCell.jsx [39 lineas], CurrencyBreakdownChips.jsx [38 lineas, pequeno y compartido, tambien usado por BudgetDetailModal.tsx ya migrado], y dashboard/projections/page.jsx (entry de Next.js). Rutas de API de escritura QUE HISTORIA 9 DEJO EXPLICITAMENTE PENDIENTES PARA ESTA HISTORIA (revisar con cuidado de seguridad - son POST de creacion/actualizacion/borrado, candidatos tipicos a IDOR como se ha visto repetidamente en la migracion): projections/update/route.js, projection-baseline/update/route.js, projection-baseline/delete/route.js, income-sources/update/route.js, income-sources/new/route.js, income-sources/remove/route.js. Los modelos y rutas de LECTURA que este arbol necesita (ProjectionSettings.ts, ProjectionBaseline.ts, IncomeSource de Historia 9; projections/get, projection-baseline/get, income-sources/get de Historia 9; useProjectionTable.ts, ProjectionsView.tsx, HistoricalProjectionsTable.tsx de Historia 10) ya estan migrados. NO incluye: projectionsChange.js (helper compartido grande, usado por useProjectionTable.ts y este arbol, deliberadamente pospuesto igual que transactionsChange.js); mcpProjections.js (parte de la futura historia de MCP tools).",
       "files": {
         "src/components/multiUsedComp/CurrencyBreakdownChips.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:41:26.142Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:43:28.575Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/CurrencyBreakdownChips.jsx a .tsx.\n\n1. Interfaces y tipos creados:\n- `CurrencyBreakdownItem`: { currency: string, nativeAmountMinor: number, primaryAmountMinor?: number, rate?: number | string | null, effectiveDate?: string | Date | null }\n- `CurrencyBreakdownData`: { isMultiCurrency?: boolean, breakdown: CurrencyBreakdownItem[] }\n- `CurrencyBreakdownChipsProps`: { breakdown?: CurrencyBreakdownData | null, walletPrimaryCurrency?: string, className?: string }\n- Retorno del componente: React.JSX.Element | null\n- Totalmente compatible con el typed bridge existente en BudgetDetailModal.tsx.\n\n2. Guards/casts añadidos:\n- Ninguno. Cero casts `as any` o index signatures. No se agregaron operadores de optional chaining (?.) ni fallbacks que no existieran en el original (se preservó {breakdown.breakdown.map(...)} sin ?. adicional).\n\n3. Bugs preexistentes encontrados (preservados intactos sin arreglar):\n- Potencial TypeError en `breakdown.breakdown.map` si `isMultiCurrency` es verdadero pero la propiedad interna `breakdown` viene undefined/null.\n- `formatMoneyMinor` para primaryAmountMinor depende de que `walletPrimaryCurrency` sea provisto cuando la moneda difiere; si viene undefined fallará en assertSupportedCurrency.\n- `new Date(g.effectiveDate).toLocaleDateString()` puede producir \"Invalid Date\" si el string de fecha es inválido.\n\n4. Verificación:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/components/multiUsedComp/CurrencyBreakdownChips.tsx`: 0 errores, 0 warnings.\n- `npx vitest run`: 30 suites pasadas, 324 tests exitosos."
+            },
+            {
+              "ts": "2026-09-29T16:44:08.630Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, solo tipos agregados. tsc --noEmit limpio (proyecto completo, BudgetDetailModal.tsx sigue compilando con su bridge existente), eslint limpio, vitest 324/324.\n\nVerificado: `breakdown.breakdown.map(...)` sin `?.` preservado exactamente igual al original. Interfaces compatibles con el bridge ya existente en BudgetDetailModal.tsx.\n\n3 bugs preexistentes documentados sin arreglar: TypeError potencial si `isMultiCurrency: true` pero `breakdown.breakdown` es undefined; `formatMoneyMinor` puede fallar si `walletPrimaryCurrency` es undefined; fecha inválida no parseable muestra \"Invalid Date\" en el tooltip. Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/ProjectionVarianceCell.jsx": {
           "status": "pending",
