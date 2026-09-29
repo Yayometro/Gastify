@@ -10,14 +10,20 @@ import EditCategoryModal from "./EditCategoryModal";
 import TransferExchangeModal from "./TransferExchangeModal";
 import { lockBodyScroll, unlockBodyScroll } from "@/helpers/scrollLock";
 
-function AddTransactionModal({ close }) {
-  const [active, setActive] = useState("manual");
+export type AddTransactionTab = "manual" | "excel" | "categories" | "transfer";
+
+export interface AddTransactionModalProps {
+  close?: React.MouseEventHandler<HTMLElement> | (() => void);
+}
+
+function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Element | null {
+  const [active, setActive] = useState<AddTransactionTab>("manual");
   // Rendered from inside Navbar's gf-nav-surface, which uses backdrop-filter
   // - that makes it a new containing block for `position: fixed`
   // descendants, so without a portal this modal is "fixed" to the nav
   // panel's box instead of the viewport. See BasicModal.jsx for the same
   // fix and full explanation.
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState<boolean>(false);
   useEffect(() => {
     setMounted(true);
   }, []);

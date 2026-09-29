@@ -3760,8 +3760,23 @@
           ]
         },
         "src/components/multiUsedComp/AddTransactionModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:30:30.405Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:32:37.269Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 a TypeScript de AddTransactionModal (.tsx).\n- Tipos definidos: AddTransactionModalProps ({ close?: React.MouseEventHandler<HTMLElement> | (() => void) }) y AddTransactionTab ('manual' | 'excel' | 'categories' | 'transfer').\n- Integración directa sin bridge con componentes ya migrados: AddTransactionComp (.tsx), ReadFileComp (.tsx), SelectCategories (.tsx), EditCategoryModal (.tsx), TransferExchangeModal (.tsx), y helpers lockBodyScroll/unlockBodyScroll (.ts).\n- Cero 'any', cero 'as' casts, cero guards/optional chaining innecesarios agregados.\n- Bugs preexistentes preservados intactos: (1) En el tab 'categories', EditCategoryModal recibe ecmData={{}} y ecmClose={() => {}} no-op; (2) Inconsistencia de overflow entre tabs (overflow-y-auto en excel vs overflow-y-scroll en categories); (3) Botón de cierre sin type='button' que envuelve un div absoluto; (4) Template literal sin interpolación en backdrop."
+            },
+            {
+              "ts": "2026-09-29T16:33:10.665Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, solo tipos agregados. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nTodos los hijos ya migrados importados directo sin bridge (AddTransactionComp, ReadFileComp, SelectCategories, EditCategoryModal, TransferExchangeModal, lockBodyScroll/unlockBodyScroll). Cero `?.`/guards nuevos agregados - confirmado explícitamente dado el precedente de Historia 11 y del archivo anterior de esta misma historia.\n\nBugs preexistentes documentados sin arreglar: `EditCategoryModal` con `ecmClose={() => {}}` (callback vacío, crear una categoría desde este modal no lo cierra ni navega); inconsistencia `overflow-y-auto` vs `overflow-y-scroll` entre tabs; botón de cerrar sin `type=\"button\"` explícito (inofensivo aquí, no hay `<form>` envolviendo). Sin rework."
+            }
+          ]
         },
         "src/components/Navbar.jsx": {
           "status": "pending",
