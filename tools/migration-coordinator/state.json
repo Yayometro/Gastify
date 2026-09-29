@@ -3261,8 +3261,23 @@
           ]
         },
         "src/hooks/getAllInfo/useGetInfoFromProvider.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:48:23.450Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:50:25.695Z",
+              "event": "submitted",
+              "notes": "Migrado useGetInfoFromProvider.js a .ts. Se definió la interfaz AllDataContextValue que refleja la estructura real de datos provista por useFetchAndGetAllReduxInfo (user, wallet, accounts, categories, subCategories, transacciones, budgets, tags, loading) con una firma de índice [key: string]: unknown y soporte para parámetro genérico default useGetDataFromProvider<T = AllDataContextValue>(): T. Esto permite que consumidores existentes sin cast (ej. BudgetsClient.tsx) y consumidores con casts locales (SelectCategoryProvider.tsx, AddTransactionComp.tsx, BudgetEditModal.tsx, EditMultipleTransModal.tsx, EditSingleTransModal.tsx, HistoricalProjectionsTable.tsx, HistoricalWalletAnalyzer.tsx, QuickEditModal.tsx) compilen perfectamente sin error de insufficient overlap y sin haber tenido que modificar ningún archivo consumidor. Verificado con npx tsc --noEmit (0 errores en todo el proyecto), npx eslint (0 errores), y npx vitest run (324/324 tests pasando)."
+            },
+            {
+              "ts": "2026-09-29T05:51:20.491Z",
+              "event": "approved",
+              "notes": "Bridge pragmático razonable para un hook cuyo Context real se define en un .jsx sin migrar (AllDataProvider.jsx, fuera de alcance). En vez de depender del tipo mal-inferido de `createContext({user: null, accounts: [], ...})` (que allowJs infiere con `null`/`never[]` inútiles), se usa `useContext(AllDataContext) as unknown as T` con `T = AllDataContextValue` por default - una interfaz nueva que sí modela el shape real que produce `useFetchAndGetAllReduxInfo.ts` (verificado: `categories: CategoryData[]` coincide con `AllDataContextValue.categories: CategoryData[] | {default?, user?}`, cubriendo tanto el shape real en runtime como el default shape del Provider).\n\nCero consumidores tocados - confirmado que los 8 consumidores TS existentes (SelectCategoryProvider.tsx, AddTransactionComp.tsx, BudgetEditModal.tsx, BudgetsClient.tsx, EditMultipleTransModal.tsx, EditSingleTransModal.tsx, HistoricalProjectionsTable.tsx, HistoricalWalletAnalyzer.tsx, QuickEditModal.tsx) siguen compilando sin cambios, sus casts locales `as DataFromProvider`/etc funcionan igual que antes gracias al `[key: string]: unknown` index signature.\n\nLógica byte-idéntica: `if (!context) throw ...` preservado (código muerto en la práctica ya que el default de createContext siempre es un objeto truthy, pero eso ya era así en el original, no se tocó).\n\ntsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324. Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/periodFiltersWithCompare/PeriodFiltersWithCompare.jsx": {
           "status": "pending",
