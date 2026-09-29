@@ -1,15 +1,57 @@
 import { minorToMajor } from "@/lib/money/currencies";
 
+export interface PrimaryAmountItem {
+  displayMoney?: {
+    primary?: {
+      amountMinor: number;
+      currency: string;
+    };
+  };
+  value?: number | string;
+  amount?: number | string;
+}
+
+export interface MonthTransactionItem extends PrimaryAmountItem {
+  date?: Date | string | number | null;
+}
+
+export interface MonthTransactionsBucket<T = MonthTransactionItem> {
+  month: string;
+  value: number;
+  childrens: T[];
+  icon?: string;
+  color?: string;
+  index?: number;
+}
+
+export interface MonthObject {
+  color: string;
+  name: string;
+  icon: string;
+  index: number;
+}
+
+export interface MonthDateRange {
+  start: Date;
+  end: Date;
+  color: string;
+}
+
+export type TimePeriodOption = {
+  value: string;
+  name: string;
+};
+
 // Duplicated from transactionsChange.js's getPrimaryAmount rather than
 // imported - transactionsChange.js itself imports from this file, so
 // importing back would create a circular dependency.
-function getPrimaryAmount(item) {
+function getPrimaryAmount(item?: PrimaryAmountItem | null): number {
   const primary = item?.displayMoney?.primary;
   if (primary) return minorToMajor(primary.amountMinor, primary.currency);
   return Number(item?.value ?? item?.amount) || 0;
 }
 
-export const months = [
+export const months: string[] = [
   "January",
   "February",
   "March",
@@ -23,7 +65,7 @@ export const months = [
   "November",
   "December",
 ];
-export const monthObjects = [
+export const monthObjects: MonthObject[] = [
   { color: "#fbcfc6", name: "january", icon: "md/MdOutlineFilter1", index: 1 },
   { color: "#99ffb3", name: "february", icon: "md/MdOutlineFilter2", index: 2 },
   { color: "#99a6ff", name: "march", icon: "md/MdOutlineFilter3", index: 3 },
@@ -43,10 +85,10 @@ export const monthObjects = [
   { color: "#99eaff", name: "december", icon: "md/Md12Mp", index: 12 },
 ];
 
-export const mapedMonths = new Map(monthObjects.map((m) => [m.name, m]));
-export function getDateInYearMonthDay(date, where) {
+export const mapedMonths: Map<string, MonthObject> = new Map(monthObjects.map((m) => [m.name, m]));
+export function getDateInYearMonthDay(date?: Date | string | number | null): string {
   const validDate =
-    date instanceof Date && !isNaN(date.getTime()) ? date : new Date(date);
+    date instanceof Date && !isNaN(date.getTime()) ? date : new Date(date as string | number | Date);
 
   if (!isNaN(validDate.getTime())) {
     return validDate.toISOString().split("T")[0];
@@ -65,7 +107,10 @@ export function getDateInYearMonthDay(date, where) {
 // passed to SelecterFilter - matched by resolved timestamp, not string
 // identity, since Date objects built from the same source moment are only
 // guaranteed equal via getTime().
-export function getPeriodLabel(periodOptions, range) {
+export function getPeriodLabel(
+  periodOptions?: TimePeriodOption[] | null,
+  range?: readonly (Date | string | number | null | undefined)[] | (Date | string | number | null | undefined)[] | null
+): string {
   if (!range?.[0] || !range?.[1]) return "No time selected";
   const start = range[0] instanceof Date ? range[0] : new Date(range[0]);
   const end = range[1] instanceof Date ? range[1] : new Date(range[1]);
@@ -76,35 +121,41 @@ export function getPeriodLabel(periodOptions, range) {
   return match?.name || `${getDateInYearMonthDay(start)} to ${getDateInYearMonthDay(end)}`;
 }
 
-export function orderItemsInTheirMonth(arr) {
+export function orderItemsInTheirMonth<T extends MonthTransactionItem = MonthTransactionItem>(
+  arr: T[]
+): MonthTransactionsBucket<T>[] {
   if (!(arr instanceof Array))
     throw new Error("arr param should be an Array instance");
   const mapedMonths = new Map(monthObjects.map((m) => [m.name, m]));
-  const reducedItemsPerMonth = arr.reduce((acc, item) => {
-    const monthNumber = new Date(item.date).getMonth();
-    const month = getMonthOfTransaction(monthNumber).toLowerCase();
+  const reducedItemsPerMonth = arr.reduce<Record<string, MonthTransactionsBucket<T>>>((acc, item) => {
+    const monthNumber = new Date(item.date as string | number | Date).getMonth();
+    const month = (getMonthOfTransaction(monthNumber) || "").toLowerCase();
     if (acc[month]) {
-      (acc[month].value += getPrimaryAmount(item)),
-        (acc[month].childrens = [...acc[month].childrens, item]);
+      acc[month].value += getPrimaryAmount(item);
+      acc[month].childrens = [...acc[month].childrens, item];
     } else {
+      const monthObj = mapedMonths.get(month);
       acc[month] = {
         month: month,
         value: getPrimaryAmount(item),
         childrens: [item],
-        icon: mapedMonths.get(month).icon,
-        color: mapedMonths.get(month).color,
-        index: mapedMonths.get(month).index,
+        icon: monthObj ? monthObj.icon : undefined,
+        color: monthObj ? monthObj.color : undefined,
+        index: monthObj ? monthObj.index : undefined,
       };
     }
     return acc;
   }, {});
   return Object.values(reducedItemsPerMonth);
 }
-export function slicedAndReduceNewValuesForMonths(arr, slice) {
+export function slicedAndReduceNewValuesForMonths<
+  T extends MonthTransactionItem = MonthTransactionItem,
+  M extends MonthTransactionsBucket<T> = MonthTransactionsBucket<T>
+>(arr: M[], slice?: number): M[] {
   if (!(arr instanceof Array))
     throw new Error("arr param should be an Array instance");
   return arr.map((monthTrans) => {
-    const monthsSliced = monthTrans.childrens.slice(0, slice);
+    const monthsSliced = (monthTrans.childrens || []).slice(0, slice);
     const newValue = monthsSliced.reduce(
       (acc, item) => (acc += getPrimaryAmount(item)),
       0
@@ -116,7 +167,7 @@ export function slicedAndReduceNewValuesForMonths(arr, slice) {
     };
   });
 }
-export function getMonthOfTransaction(month) {
+export function getMonthOfTransaction(month: number): string | undefined {
   if (typeof month !== "number")
     throw new Error(
       `Month should be a number, but it's typeof is ${typeof month} and the element is -> ${month}`
@@ -142,8 +193,8 @@ export function getMonthOfTransaction(month) {
   return newMonthNamesMap.get(month);
 }
 
-export function getLastDayOfQuarter(year, quarter) {
-  const quarterEndMonths = {
+export function getLastDayOfQuarter(year: number, quarter: number): Date {
+  const quarterEndMonths: Record<number, number> = {
     1: 2,
     2: 5,
     3: 8,
@@ -157,11 +208,11 @@ export function getLastDayOfQuarter(year, quarter) {
 
   return new Date(year, month + 1, 0);
 }
-export function getLastDayOfMonth(year, month) {
+export function getLastDayOfMonth(year: number, month: number): Date {
   return new Date(year, month + 1, 0);
 }
 
-export function getYearMonthDateRange(today) {
+export function getYearMonthDateRange(today: Date): Map<string, MonthDateRange> {
   const year = today.getFullYear();
 
   const monthNames = [
@@ -179,7 +230,7 @@ export function getYearMonthDateRange(today) {
     { color: "#33D4FF", name: "december" },
   ];
 
-  const dateRangeMap = new Map();
+  const dateRangeMap = new Map<string, MonthDateRange>();
 
   monthNames.forEach((month, index) => {
     const start = new Date(year, index, 1);
@@ -191,7 +242,7 @@ export function getYearMonthDateRange(today) {
   return dateRangeMap;
 }
 
-export function generatePeriodsForSelector(year) {
+export function generatePeriodsForSelector(year: number): TimePeriodOption[] {
   return [
     {
       value: `${new Date(year, 0, 1)}*${getLastDayOfQuarter(year, 1)}`,
@@ -224,7 +275,7 @@ export function generatePeriodsForSelector(year) {
   ];
 }
 const year = new Date().getFullYear();
-export const timeperiodRangesArray = [
+export const timeperiodRangesArray: TimePeriodOption[] = [
   {
     value: `${new Date(year, 0, 1)}*${getLastDayOfQuarter(year, 1)}`,
     name: "First quarter (Q1)",
@@ -258,7 +309,7 @@ export const timeperiodRangesArray = [
     name: `All ${year - 1}`,
   },
 ];
-export const generate_timeperiod_ranges_array_for_dashboard = (year) => {
+export const generate_timeperiod_ranges_array_for_dashboard = (year: number): TimePeriodOption[] => {
   const today = new Date();
   return [
     {
@@ -302,7 +353,7 @@ export const generate_timeperiod_ranges_array_for_dashboard = (year) => {
   ];
 };
 
-export function normalizeDateToUTC(date) {
+export function normalizeDateToUTC(date: Date): Date {
   return new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
   );
