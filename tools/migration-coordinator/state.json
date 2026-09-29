@@ -3190,8 +3190,23 @@
           ]
         },
         "src/hooks/usePeriodComparison.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:30:47.684Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:32:45.288Z",
+              "event": "submitted",
+              "notes": "Migrated usePeriodComparison hook 1:1 to TypeScript. Defined TimePeriodOption and comprehensive PeriodComparisonState interfaces matching all properties returned by the hook (timePeriod, setTimePeriod, comparePeriod, setComparePeriod, compareEnabled, setCompareEnabled, timePeriodsForSelecter, timePeriodsForCompareSelecter, periodFromFather, getValueFromSelecter, handleRangeDate, getCompareValueFromSelecter, handleCompareRangeDate, labelA, labelB). No type casts or guards were needed. All existing consumers (HistoryClient.tsx, TabsTogglerMontlyController.tsx, HistoricalWalletAnalyzer.tsx, HistoricalMovementsController.jsx, HistoricalBudgetsComparative.jsx, HistoricalComparativeCategories.jsx) compile and typecheck cleanly with npx tsc --noEmit (0 errors) and all 314 tests pass."
+            },
+            {
+              "ts": "2026-09-29T05:33:41.847Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, cero casts/any/ts-ignore. Verificado tsc --noEmit a nivel de TODO el proyecto (no solo el archivo) - los 4 consumidores ya migrados (HistoryClient.tsx, TabsTogglerMontlyController.tsx, HistoricalWalletAnalyzer.tsx, HistoricalProjectionsTable.tsx) siguen compilando sin errores nuevos, incluyendo el uso vía `ReturnType<typeof usePeriodComparison>`. eslint limpio, vitest 314/314 pasando.\n\nVerificado: `TimePeriodOption {value, name}` coincide exactamente con la forma real de `timeperiodRangesArray` en timeFunctions.js (confirmado leyendo su definición).\n\n3 bugs preexistentes encontrados y preservados sin arreglar (no introducidos por la migración, presentes byte-a-byte en el original):\n1. `const today = new Date()` a nivel de módulo - no se re-evalúa si la sesión SPA queda abierta cruzando la medianoche, el rango default \"Last 3 months\" queda congelado a la fecha de carga del módulo.\n2. `comparePeriod` no se resincroniza cuando el usuario cambia `timePeriod` desde el selector después del montaje inicial - solo se calcula una vez al montar sobre el default \"Last 3 months\".\n3. `getValueFromSelecter`/`getCompareValueFromSelecter` parsean `v.split(\"*\")` sin fallback si el string no tiene ese formato - solo defensivo, en la práctica todos los valores vienen de arreglos controlados en este mismo archivo o en timeFunctions.js, nunca malformados.\n\nLogging bugs #1 y #2 en migration-ts-logs.md (comportamentales reales); #3 es más una nota de robustez que un bug real dado que nunca se manifiesta con datos reales. Sin rework."
+            }
+          ]
         },
         "src/helpers/transformers/budgetHistory.js": {
           "status": "pending",
