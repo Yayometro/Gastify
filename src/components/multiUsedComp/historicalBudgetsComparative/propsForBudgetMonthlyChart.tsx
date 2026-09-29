@@ -1,7 +1,76 @@
+import React from "react";
 import { getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { MonthlyBudgetSeriesItem } from "@/helpers/transformers/budgetHistoricalComparative";
 
 const GOAL_COLOR = "#D1D5DB"; // neutral reference bar - never color-coded, it's not a result
+
+export interface BudgetMonthlyChartDatum {
+  type: string;
+  transactionType: "Actual" | "Goal" | string;
+  value: number;
+  color: string;
+  fillOpacity: number;
+  met: boolean | null;
+  estimated: boolean;
+  [key: string]: unknown;
+}
+
+export interface BudgetMonthlyChartStyleDatum {
+  color?: string;
+  fillOpacity?: number;
+  [key: string]: unknown;
+}
+
+export interface BudgetMonthlyChartLegendDatum {
+  id?: string;
+  [key: string]: unknown;
+}
+
+export interface BudgetMonthlyTooltipItem {
+  name?: string;
+  value?: number;
+  color?: string;
+  channel?: unknown;
+  [key: string]: unknown;
+}
+
+export interface BudgetMonthlyTooltipContext {
+  items: BudgetMonthlyTooltipItem[];
+  title: string | number;
+}
+
+export interface BudgetMonthlyChartPropPlus {
+  style: {
+    fill: (datum: BudgetMonthlyChartStyleDatum) => string | undefined;
+    fillOpacity: (datum: BudgetMonthlyChartStyleDatum) => number | undefined;
+    inset: number;
+  };
+  label: boolean;
+  legend: {
+    color: {
+      itemMarkerFill: (datum: BudgetMonthlyChartLegendDatum) => string;
+    };
+  };
+  interaction: {
+    elementHighlight: boolean;
+    tooltip: {
+      crosshairs: boolean;
+      render: (_e: unknown, context: BudgetMonthlyTooltipContext) => React.JSX.Element;
+    };
+  };
+}
+
+export interface BudgetMonthlyChartProps {
+  data: BudgetMonthlyChartDatum[];
+  totalValue: string;
+  propPlus: BudgetMonthlyChartPropPlus;
+}
+
+export interface GeneratePropForBudgetMonthlyChartParams {
+  monthlySeries: MonthlyBudgetSeriesItem[];
+  walletPrimaryCurrency?: string;
+}
 
 // Turns one budget's monthlySeries into the grouped-bar shape
 // ColumnChartAntComparative expects: two bars per month ("Actual",
@@ -9,8 +78,11 @@ const GOAL_COLOR = "#D1D5DB"; // neutral reference bar - never color-coded, it's
 // neutral reference) - this way a per-month goal that changed over time
 // still reads correctly, since each month draws its own goal bar instead
 // of relying on one shared reference line.
-export function generatePropForBudgetMonthlyChart({ monthlySeries, walletPrimaryCurrency = "MXN" }) {
-  const data = monthlySeries.flatMap((m) => {
+export function generatePropForBudgetMonthlyChart({
+  monthlySeries,
+  walletPrimaryCurrency = "MXN",
+}: GeneratePropForBudgetMonthlyChartParams): BudgetMonthlyChartProps {
+  const data: BudgetMonthlyChartDatum[] = monthlySeries.flatMap((m) => {
     const ratio = m.goal > 0 ? m.actual / m.goal : m.actual > 0 ? 1.5 : 0;
     return [
       {
@@ -39,14 +111,14 @@ export function generatePropForBudgetMonthlyChart({ monthlySeries, walletPrimary
     totalValue: "",
     propPlus: {
       style: {
-        fill: ({ color }) => color,
-        fillOpacity: ({ fillOpacity }) => fillOpacity,
+        fill: ({ color }: BudgetMonthlyChartStyleDatum) => color,
+        fillOpacity: ({ fillOpacity }: BudgetMonthlyChartStyleDatum) => fillOpacity,
         inset: 0.2,
       },
       label: false,
       legend: {
         color: {
-          itemMarkerFill: (datum) => (datum?.id === "Actual" ? "#94A3B8" : GOAL_COLOR),
+          itemMarkerFill: (datum: BudgetMonthlyChartLegendDatum) => (datum?.id === "Actual" ? "#94A3B8" : GOAL_COLOR),
         },
       },
       interaction: {
@@ -62,7 +134,7 @@ export function generatePropForBudgetMonthlyChart({ monthlySeries, walletPrimary
           // competing with the tooltip's own glass box. The tooltip itself
           // already marks which month/bar is active, so this is redundant.
           crosshairs: false,
-          render: (e, { items, title }) => {
+          render: (_e: unknown, { items, title }: BudgetMonthlyTooltipContext): React.JSX.Element => {
             // items[].origin isn't a documented/verified shape in this
             // chart library version - look the month up from the closed-
             // over monthlySeries instead of trusting undocumented tooltip

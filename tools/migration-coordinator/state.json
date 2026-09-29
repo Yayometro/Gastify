@@ -3567,8 +3567,23 @@
           "history": []
         },
         "src/components/multiUsedComp/historicalBudgetsComparative/propsForBudgetMonthlyChart.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T15:52:12.135Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T15:55:06.986Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de src/components/multiUsedComp/historicalBudgetsComparative/propsForBudgetMonthlyChart.js a TypeScript (src/components/multiUsedComp/historicalBudgetsComparative/propsForBudgetMonthlyChart.tsx).\n\n1. Tipado e interfaces nuevas creadas:\n- `BudgetMonthlyChartDatum`: modelo para los elementos del dataset de dos barras por mes (Actual/Goal) esperados por ColumnChartAntComparative.\n- `BudgetMonthlyChartStyleDatum`: shape para callbacks de estilo de @ant-design/plots (fill, fillOpacity).\n- `BudgetMonthlyChartLegendDatum`: shape para el callback de leyenda itemMarkerFill (id).\n- `BudgetMonthlyTooltipItem`: shape para items individuales en el render del tooltip (name, value, color, channel).\n- `BudgetMonthlyTooltipContext`: shape del segundo argumento context del tooltip ({ items, title }).\n- `BudgetMonthlyChartPropPlus`: tipado de la configuración adicional para ColumnChartAntComparative (style, label: false, legend, interaction con elementHighlight y tooltip render).\n- `BudgetMonthlyChartProps`: { data: BudgetMonthlyChartDatum[]; totalValue: string; propPlus: BudgetMonthlyChartPropPlus }.\n- `GeneratePropForBudgetMonthlyChartParams`: { monthlySeries: MonthlyBudgetSeriesItem[]; walletPrimaryCurrency?: string } reutilizando `MonthlyBudgetSeriesItem` de `budgetHistoricalComparative.ts`.\n\n2. Preservación estricta de lógica y operadores:\n- Cero cambios de comportamiento o lógica.\n- Se mantuvieron intactos los operadores originales `??` y `?.` (`datum?.id === \"Actual\"`, `actual?.value ?? monthData?.actual ?? 0`, `goal?.value ?? monthData?.goal ?? 0`) y el ternario de cálculo de `ratio`.\n- Cero `any` explícitos/implícitos y sin casts invasivos.\n\n3. Bugs preexistentes identificados (preservados sin alterar):\n- `generatePropForBudgetMonthlyChart`: si el llamador pasa `monthlySeries` como null o undefined, `monthlySeries.flatMap(...)` arroja `TypeError: Cannot read properties of undefined (reading 'flatMap')`.\n- `render` del tooltip: asume que `items` siempre es un array; si Ant Design Plots pasa `items: undefined`, `items.find(...)` arroja `TypeError`.\n\n4. Verificaciones ejecutadas:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/components/multiUsedComp/historicalBudgetsComparative/propsForBudgetMonthlyChart.tsx`: 0 errores/warnings.\n- `npx vitest run`: 30/30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-29T15:55:49.435Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nCorrectamente migrado a `.tsx` (no `.ts`) por contener JSX real en el callback del tooltip - decisión correcta. Reutiliza `MonthlyBudgetSeriesItem` real de `budgetHistoricalComparative.ts` (ya migrado en esta misma historia) para el parámetro `monthlySeries`. Interfaces propias razonables para el shape que espera `@ant-design/plots` (style/legend/interaction/tooltip render) ya que ese paquete se sigue usando vía typed bridge en otras historias, no se importaron tipos oficiales de la librería aquí (no era parte del alcance pedido).\n\nVerificado explícitamente: `datum?.id === \"Actual\"` y `actual?.value ?? monthData?.actual ?? 0` / `goal?.value ?? monthData?.goal ?? 0` preservados exactamente igual al original, ningún `?.`/`??` nuevo agregado. Cero `any`.\n\n2 bugs preexistentes documentados sin arreglar (ya presentes en el original): `monthlySeries.flatMap(...)` sin guard si `monthlySeries` es null/undefined; el callback del tooltip asume `items` siempre es array sin verificar. Sin rework."
+            }
+          ]
         },
         "src/helpers/transformers/budgetHistoricalComparative.js": {
           "status": "approved",
