@@ -1,15 +1,33 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ResponsiveCirclePacking } from "@nivo/circle-packing";
 import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { buildCategoryHierarchy, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { RootState } from "@/lib/store";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
 
-function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
-  const [zoomedId, setZoomedId] = useState(null);
-  const [dataCat, setDataCat] = useState({});
-  const [totalValueOn, setTotalValueOn] = useState(0);
+export interface CategoryPackingNode {
+  name?: string;
+  color?: string;
+  icon?: string;
+  fatherId?: string;
+  childId?: string;
+  loc?: number;
+  transactions?: TransactionData[];
+  children?: CategoryPackingNode[];
+}
+
+export interface CategoryCirclePackingProps {
+  ccpTransacctions?: TransactionData[];
+  ccpIsBill?: boolean;
+}
+
+function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }: CategoryCirclePackingProps): React.JSX.Element {
+  const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const [zoomedId, setZoomedId] = useState<string | null>(null);
+  const [dataCat, setDataCat] = useState<CategoryPackingNode>({});
+  const [totalValueOn, setTotalValueOn] = useState<number>(0);
 
   useEffect(() => {
     if (ccpTransacctions) {
@@ -29,7 +47,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }) {
       </div>
       <div className="circle-graph-container w-full h-full">
         <div className="circle-graph-container w-[100%] h-[500px] sm:h-[700px] md:h-[800px]">
-          <ResponsiveCirclePacking
+          <ResponsiveCirclePacking<CategoryPackingNode>
             data={dataCat}
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
             id="name"

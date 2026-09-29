@@ -3418,8 +3418,23 @@
           ]
         },
         "src/components/multiUsedComp/CategoryCirclePacking.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T07:07:51.877Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T07:09:56.079Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/CategoryCirclePacking.jsx a CategoryCirclePacking.tsx.\n\nTipos e interfaces:\n- Creada interfaz `CategoryPackingNode` para modelar la jerarquía de nodos devuelta por `buildCategoryHierarchy` ({ name?, color?, icon?, fatherId?, childId?, loc?, transactions?, children? }).\n- Utilizados los tipos nativos de `@nivo/circle-packing` parametrizando `ResponsiveCirclePacking<CategoryPackingNode>`, tipando automáticamente los callbacks (`colors`, `label`, `labelsFilter`, `onClick`, `tooltip`) y `ComputedDatum<CategoryPackingNode>`.\n- Creada interfaz `CategoryCirclePackingProps` ({ ccpTransacctions?: TransactionData[]; ccpIsBill?: boolean }) compatible al 100% con el typed bridge de `DisplayerCategoryCirclePacking.tsx`.\n- Tipado de Redux con `state: RootState`.\n\nBugs preexistentes documentados (preservados sin arreglar):\n1. Typo preexistente en el nombre de la prop `ccpTransacctions` (doble 'c'), preservado para no romper el contrato.\n2. División por cero potencial en tooltip (`(dataa.value / totalValueOn) * 100`) si `totalValueOn` es 0, resultando en string \"NaN%\" / \"Infi%\".\n3. En `UniversalCategoIcon`, los iconos sin prefijo con barra (\"MdFilterNone\" devueltos por `buildCategoryHierarchy`) no coinciden con colecciones y retornan `null`.\n\nGuards/casts:\n- Ningún cast `any` ni type assertion no justificada agregada. Limpieza del import no usado `useRef` para cumplir con linter.\n- Verificación exitosa: npx tsc --noEmit (0 errores), npx eslint (0 errores), npx vitest run (30 archivos, 324/324 tests pasados)."
+            },
+            {
+              "ts": "2026-09-29T07:10:45.994Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nVerifiqué que `@nivo/circle-packing` sí trae sus propios `.d.ts` (node_modules/@nivo/circle-packing/dist/types/) - correcto usar `ResponsiveCirclePacking<CategoryPackingNode>` genérico en vez de inventar interfaces para los callbacks de Nivo (colors/label/labelsFilter/onClick/tooltip se infieren solos). `CategoryPackingNode` modela con precisión el shape real de `buildCategoryHierarchy()` (mismos campos `fatherId`/`childId`/`loc`/`transactions` ya verificados en la revisión de CategoryTreemap.tsx).\n\n`useRef` removido del import - confirmado via grep que solo aparecía en la línea de import, nunca usado en el cuerpo. `CategoryCirclePackingProps` compatible con el typed bridge ya existente en DisplayerCategoryCirclePacking.tsx.\n\n3 bugs preexistentes documentados sin arreglar: typo `ccpTransacctions` (doble c), división por cero silenciosa en el tooltip cuando `totalValueOn` es 0 (`(dataa.value / totalValueOn) * 100` da \"NaN%\"/\"Infi%\"), formato de icono inconsistente (`buildCategoryHierarchy` genera iconos sin prefijo de colección como \"MdFilterNone\" en vez de \"md/MdFilterNone\" que espera UniversalCategoIcon - el ícono se resuelve a null silenciosamente en ese caso). Cero `any`, sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/TransactionsResumeCont.jsx": {
           "status": "pending",
