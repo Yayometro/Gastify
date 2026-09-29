@@ -261,28 +261,44 @@ enorme usado por decenas de archivos en toda la app, incluye
 tipar, demasiado riesgoso para incluir de paso aquí, su propia historia
 futura aparte).
 
-**Historia activa: Historia 12 — Budgets - analytics** (7 archivos: la
+**Historia 12 (Budgets - analytics) completa** - 7/7 archivos: la
 sección "Budgets comparative" de `/dashboard/history` -
-`HistoricalBudgetsComparative.jsx` [entry, renderizado desde
-`HistoryClient.tsx` ya migrado vía typed bridge],
-`HistoricalBudgetsComparativeView.jsx`, `BudgetHistoricalComparativeRow.jsx`
+`HistoricalBudgetsComparative.tsx` [entry, renderizado desde
+`HistoryClient.tsx` ya migrado vía typed bridge - el mismo bridge
+existente, sin tocar, siguió compilando sin cambios],
+`HistoricalBudgetsComparativeView.tsx`, `BudgetHistoricalComparativeRow.tsx`
 [usa `ColumnChartAntComparative`, árbol de charts compartido ya excluido
-y bridged desde Historia 10, y `propsForBudgetMonthlyChart.js`],
-`BudgetHistoricalDetailModal.jsx` [modal de detalle mes a mes, usa
-`CategoIcon.tsx` ya migrado], `propsForBudgetMonthlyChart.js` [100
-líneas, solo usado aquí], `budgetHistoricalComparative.js` [108 líneas,
-el transformer principal - importa de `budgetHistory.ts`/`timeFunctions.ts`
-ya migrados, y de `transactionsChange.js`/`projectionsChange.js` aún sin
-migrar que se quedan como están - con su test suite
-`budgetHistoricalComparative.test.js`, 195 líneas], y `budgetTypes.js`
-[21 líneas, clasificación de budget spending/saving/project - pequeño y
-ya usado por muchos consumidores TS existentes]. La ruta de API
-`budget/get-historical` ya está migrada desde Historia 7 - esta historia
-es puramente UI/lógica de cliente, sin backend nuevo. Deliberadamente
-NO incluye: `transactionsChange.js` ni `projectionsChange.js` (helpers
-compartidos enormes, pospuestos igual que en Historias 10 y 11);
-`ColumnChartAntComparative` (árbol de charts compartido, ya excluido,
-vía typed bridge igual que en `TabsTogglerMontlyController.tsx`).
+y bridged desde Historia 10, y `propsForBudgetMonthlyChart.tsx`],
+`BudgetHistoricalDetailModal.tsx` [modal de detalle mes a mes, usa
+`CategoIcon.tsx` ya migrado], `propsForBudgetMonthlyChart.tsx` [100→172
+líneas - migrado a `.tsx`, no `.ts`, porque el `.js` original ya
+contenía JSX real en su callback de tooltip], `budgetHistoricalComparative.ts`
+[108→208 líneas, el transformer principal - importa de
+`budgetHistory.ts`/`timeFunctions.ts` ya migrados, y de
+`transactionsChange.js`/`projectionsChange.js` aún sin migrar que se
+quedan como están; su tipo de retorno ya era consumido sin verificar
+por `walletAnalyzer.ts` desde Historia 9 - esta migración fue la
+primera vez que ese cruce se validó de verdad por el compilador, y
+pasó limpio - con su test suite `budgetHistoricalComparative.test.js`
+corrida aparte, 9/9], y `budgetTypes.ts` [21→39 líneas, clasificación
+de budget spending/saving/project - pequeño y ya usado por 6
+consumidores TS existentes, todos siguieron compilando sin cambios].
+La ruta de API `budget/get-historical` ya estaba migrada desde
+Historia 7 - historia puramente de UI/lógica de cliente, **sin fixes
+de seguridad nuevos**. **Cero rondas de rework en toda la historia.**
+Encontró 7 bugs de comportamiento reales más (sin ocurrencias nuevas
+del patrón dispatch-less esta vez): clasificación incorrecta de
+budgets con `budgetType: "saving"` explícito pero `isSaving` falso,
+fechas inválidas silenciosas y estimación incorrecta en el cálculo de
+metas mensuales, sort sin desempate, falta de `preventDefault()` en
+navegación por teclado, "0% compliance" indistinguible de "sin datos",
+y un crash potencial de moneda no soportada sin fallback - todos
+documentados en `migration-ts-logs.md` (filas 29-35), ninguno
+arreglado. Deliberadamente NO incluyó: `transactionsChange.js` ni
+`projectionsChange.js` (helpers compartidos enormes, pospuestos igual
+que en Historias 10 y 11); `ColumnChartAntComparative` (árbol de
+charts compartido, ya excluido, vía typed bridge igual que en
+`TabsTogglerMontlyController.tsx`).
 
 Historias siguientes (orden real a confirmar): Navbar/alta rápida
 (AddTransactionModal/TransferExchangeModal), Projections, MCP

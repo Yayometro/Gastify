@@ -784,3 +784,42 @@ wallet; y el `TypeError` de `traSub.category._id` ya descrito arriba
 archivo más grande y riesgoso, `CategoryTreemap.tsx` de 819 líneas) -
 solo `TransResumeChart.tsx` necesitó 1 ronda de rework, por el hallazgo
 descrito arriba.
+
+## 2026-09-29 — Historia 12 (Budgets analytics) completa: 7/7 archivos
+
+La sección "Budgets comparative" de `/dashboard/history` completa:
+`budgetTypes.ts` [21→39 líneas, clasificación spending/saving/project,
+ya usado por 6 consumidores TS existentes que siguieron compilando sin
+cambios], `budgetHistoricalComparative.ts` [108→208 líneas, el
+transformer principal - `walletAnalyzer.ts` (Historia 9) ya lo
+consumía con sus propios tipos locales sin que el compilador pudiera
+verificar nada, siendo la función implícitamente `any`; esta migración
+fue la primera vez que ese cruce se validó de verdad, y pasó limpio;
+con su test suite corrida aparte, 9/9], `propsForBudgetMonthlyChart.tsx`
+[100→172 líneas - correctamente migrado a `.tsx` en vez de `.ts`
+porque el `.js` original ya tenía JSX real en su callback de tooltip],
+`BudgetHistoricalComparativeRow.tsx`, `BudgetHistoricalDetailModal.tsx`,
+`HistoricalBudgetsComparativeView.tsx`, y `HistoricalBudgetsComparative.tsx`
+[entry, el bridge ya existente en `HistoryClient.tsx` desde Historia 10
+siguió compilando sin tocarlo].
+
+Historia puramente de UI/lógica de cliente - la ruta `budget/get-historical`
+ya estaba migrada desde Historia 7, así que **sin fixes de seguridad
+nuevos**. **Cero rondas de rework en toda la historia** - la segunda
+historia más limpia después de Historia 9, y sin ninguna recurrencia
+del patrón dispatch-less-Redux por primera vez desde que empezó a
+aparecer en Historia 6.
+
+**Bugs no-seguridad encontrados y preservados sin arreglar** (ver tabla
+de bugs pendientes, filas 29-35): `getBudgetType()` sin rama explícita
+para `budgetType === "saving"`; fecha inválida silenciosa en
+`getEarliestKnownGoal()` cuando falta `effectiveFrom`; `estimated: false`
+incorrecto en `resolveMonthlyGoalAmount()` para budgets sin `history`
+ni `createdAt`; sort de compliance sin criterio de desempate; falta
+`e.preventDefault()` en la navegación por teclado de una fila (permite
+scroll de página al abrir el modal); `complianceRate === null` se
+muestra igual que "0% compliance" real; y un crash potencial de
+`formatMoneyMajor` si la moneda no está definida/soportada, sin
+fallback interno en ese componente.
+
+Los 7 archivos limpios a la primera revisión, ninguno necesitó rework.
