@@ -1,8 +1,19 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { ConfigProvider, theme } from "antd";
 import { ToastContainer } from "react-toastify";
+
+export type ThemeMode = "dark" | "light";
+
+export interface ThemeModeContextValue {
+  mode: ThemeMode;
+  toggleMode: () => void;
+}
+
+export interface ThemeProviderProps {
+  children?: React.ReactNode;
+}
 
 // layout.js is a Server Component (it awaits getServerSession()), and
 // antd's ConfigProvider is a client-only component - importing it there
@@ -17,14 +28,14 @@ import { ToastContainer } from "react-toastify";
 // components with their own local ConfigProvider only override
 // colorPrimary/borderRadius, so they inherit this algorithm from here
 // automatically.
-const ThemeModeContext = createContext({ mode: "dark", toggleMode: () => {} });
+const ThemeModeContext = createContext<ThemeModeContextValue>({ mode: "dark", toggleMode: () => {} });
 
-export const useThemeMode = () => useContext(ThemeModeContext);
+export const useThemeMode = (): ThemeModeContextValue => useContext(ThemeModeContext);
 
 const STORAGE_KEY = "gf-theme";
 
-export default function ThemeProvider({ children }) {
-  const [mode, setMode] = useState("dark");
+export default function ThemeProvider({ children }: ThemeProviderProps): React.JSX.Element {
+  const [mode, setMode] = useState<ThemeMode>("dark");
 
   // The blocking inline script in layout.js already set data-theme on
   // <html> before paint (avoiding a flash) - this just brings React's own
@@ -35,9 +46,9 @@ export default function ThemeProvider({ children }) {
     if (stored === "light") setMode("light");
   }, []);
 
-  const toggleMode = () => {
+  const toggleMode = (): void => {
     setMode((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
+      const next: ThemeMode = prev === "dark" ? "light" : "dark";
       window.localStorage.setItem(STORAGE_KEY, next);
       document.documentElement.setAttribute("data-theme", next);
       return next;

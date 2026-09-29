@@ -3708,8 +3708,23 @@
           ]
         },
         "src/app/ThemeProvider.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:16:49.106Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:20:16.025Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de ThemeProvider.jsx a ThemeProvider.tsx.\n- Interfaces y tipos: creados `ThemeMode` (\"dark\" | \"light\"), `ThemeModeContextValue` ({ mode: ThemeMode; toggleMode: () => void; }) y `ThemeProviderProps` ({ children?: React.ReactNode; }).\n- Tipado estricto en ThemeModeContext, useThemeMode, ThemeProvider y toggleMode sin ningún `any`, sin casts ni guards adicionales.\n- Bugs preexistentes identificados (preservados sin arreglar): en el `useEffect` de ThemeProvider se lee `window.localStorage.getItem(\"gf-theme\")` sin bloque try/catch (a diferencia del script en layout.js que sí previene SecurityError/DOMException si localStorage está bloqueado).\n- Verificaciones: `npx tsc --noEmit` 0 errores, `npx eslint src/app/ThemeProvider.tsx` 0 errores, `vitest` 324/324 passed."
+            },
+            {
+              "ts": "2026-09-29T16:20:54.605Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, solo tipos agregados (`ThemeMode`, `ThemeModeContextValue`, `ThemeProviderProps`). tsc --noEmit limpio (proyecto completo, confirmé que EditTransModal.jsx, el consumidor .jsx aún sin migrar, sigue funcionando vía allowJs interop). eslint limpio, vitest 324/324.\n\nCero guards/casts agregados. Bug preexistente documentado sin arreglar: `window.localStorage.getItem(\"gf-theme\")` sin try/catch en el useEffect (a diferencia del script inline en layout.js que sí protege con try/catch contra SecurityError/DOMException si localStorage está bloqueado). Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/TransferExchangeModal.jsx": {
           "status": "pending",
