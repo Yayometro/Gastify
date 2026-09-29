@@ -4,7 +4,114 @@ import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { buildCategoryHierarchy, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { RootState } from "@/lib/store";
+import type { WalletData } from "@/lib/features/walletSlice";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+
+// Explicit interfaces for domain entities used in Treemap hierarchy and nodes
+export interface TreemapTag {
+  _id?: string;
+  name?: string;
+  color?: string;
+}
+
+export interface TreemapAccount {
+  _id?: string;
+  name?: string;
+}
+
+export interface TreemapCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+}
+
+export interface TreemapSubCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+}
+
+export interface TreemapTransaction {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  value?: number;
+  isIncome?: boolean;
+  isBill?: boolean;
+  date?: Date | string;
+  account?: TreemapAccount | null;
+  category?: TreemapCategoryRef | null;
+  subCategory?: TreemapSubCategoryRef | null;
+  tags?: TreemapTag[];
+  displayMoney?: {
+    primary?: {
+      amountMinor: number;
+      currency: string;
+    };
+  };
+  kind?: string;
+}
+
+export interface CategoryHierarchySubcategory {
+  childId: string;
+  name: string;
+  loc: number;
+  color?: string;
+  icon?: string;
+  transactions?: TreemapTransaction[];
+}
+
+export interface CategoryHierarchyCategory {
+  fatherId: string;
+  name: string;
+  loc: number;
+  color?: string;
+  icon?: string;
+  transactions?: TreemapTransaction[];
+  children?: CategoryHierarchySubcategory[];
+}
+
+export interface CategoryHierarchyRoot {
+  name: string;
+  color: string;
+  icon: string;
+  children: CategoryHierarchyCategory[];
+}
+
+export type TreemapNodeKind = "category" | "subcategory" | "transaction";
+
+export interface TreemapNode {
+  key: string;
+  name: string;
+  color?: string;
+  icon?: string;
+  value: number;
+  hasChildren?: boolean;
+  kind: TreemapNodeKind;
+  transactionCount?: number;
+  date?: Date | string;
+  accountName?: string;
+  categoryName?: string;
+  subcategoryName?: string;
+  tags?: TreemapTag[];
+}
+
+export interface SquarifyItem<T> {
+  node: T;
+  area: number;
+}
+
+export interface TreemapRect<T = TreemapNode> {
+  node: T;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 // Hand-rolled squarified treemap (Bruls/Huizing/van Wijk algorithm), laid
 // out once against a fixed nominal box and then rendered as percentages -
@@ -12,7 +119,7 @@ import UniversalCategoIcon from "./UniversalCategoIcon";
 // silently fail to measure its container. `nodes` must already be sorted
 // descending by value; zero/negative values are meaningless for area math
 // and are filtered out by the caller.
-function worstRatio(row, shortSide) {
+function worstRatio<T extends { area: number }>(row: T[], shortSide: number): number {
   let sum = 0;
   let max = -Infinity;
   let min = Infinity;
@@ -28,12 +135,18 @@ function worstRatio(row, shortSide) {
   );
 }
 
-function squarify(nodes, x0, y0, w0, h0) {
+function squarify<T extends { value: number }>(
+  nodes: T[],
+  x0: number,
+  y0: number,
+  w0: number,
+  h0: number
+): TreemapRect<T>[] {
   const total = nodes.reduce((sum, n) => sum + n.value, 0);
   if (total <= 0 || nodes.length === 0 || w0 <= 0 || h0 <= 0) return [];
   const scale = (w0 * h0) / total;
-  let remaining = nodes.map((n) => ({ node: n, area: n.value * scale }));
-  const rects = [];
+  let remaining: SquarifyItem<T>[] = nodes.map((n) => ({ node: n, area: n.value * scale }));
+  const rects: TreemapRect<T>[] = [];
   let x = x0;
   let y = y0;
   let w = w0;
@@ -97,12 +210,34 @@ const BIG_TILE_MIN_H = 95;
 const TOOLTIP_W_ESTIMATE = 200;
 const TOOLTIP_H_ESTIMATE = 190;
 
-function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, onClick, entered, containerRef }) {
+export interface TreemapTileProps {
+  rect: TreemapRect<TreemapNode>;
+  index: number;
+  isBig: boolean;
+  canDrill?: boolean;
+  isSelected?: boolean;
+  pct: string;
+  currency: string;
+  onClick: () => void;
+  entered: boolean;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+}
+
+interface TileTooltipPosition {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  flipX: boolean;
+  flipY: boolean;
+}
+
+function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, onClick, entered, containerRef }: TreemapTileProps): React.JSX.Element {
   const { node } = rect;
   const [hover, setHover] = useState(false);
-  const [pos, setPos] = useState({ x: 0, y: 0, w: 0, h: 0, flipX: false, flipY: false });
+  const [pos, setPos] = useState<TileTooltipPosition>({ x: 0, y: 0, w: 0, h: 0, flipX: false, flipY: false });
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const bounds = e.currentTarget.getBoundingClientRect();
     let flipX = false;
     let flipY = false;
@@ -121,7 +256,7 @@ function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, 
     });
   };
 
-  const restingStyle = entered
+  const restingStyle: React.CSSProperties = entered
     ? { backgroundColor: node.color || "#8884d8" }
     : {
         backgroundColor: node.color || "#8884d8",
@@ -269,7 +404,14 @@ function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, 
 // layer first, even if some of those subcategories are themselves small.
 const AUTO_EXPAND_SUBCATEGORY_THRESHOLD = 1;
 
-function transactionNode(t, keyPrefix, color, icon, categoryName, subcategoryName) {
+function transactionNode(
+  t: TreemapTransaction,
+  keyPrefix: string,
+  color?: string,
+  icon?: string,
+  categoryName?: string,
+  subcategoryName?: string
+): TreemapNode {
   return {
     key: t._id || `${keyPrefix}-${t.date || ""}-${t.name || ""}`,
     name: t.name || "Transaction",
@@ -286,38 +428,49 @@ function transactionNode(t, keyPrefix, color, icon, categoryName, subcategoryNam
   };
 }
 
-function CategoryTreemap({ ctTransactions, ctIsBill }) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+export interface BreadcrumbInfo {
+  first: string;
+  firstClick: (() => void) | null;
+  second: string | null;
+}
+
+export interface CategoryTreemapProps {
+  ctTransactions?: (TransactionData | TreemapTransaction)[];
+  ctIsBill?: boolean;
+}
+
+function CategoryTreemap({ ctTransactions, ctIsBill }: CategoryTreemapProps): React.JSX.Element {
+  const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   // path = [] -> top-level categories.
   // path = [categoryName] -> that category's subcategories, UNLESS it has
   //   few enough that we auto-expand straight to its individual
   //   transactions (see AUTO_EXPAND_SUBCATEGORY_THRESHOLD).
   // path = [categoryName, subcategoryName] -> that one subcategory's
   //   individual transactions (only reachable when NOT auto-expanded).
-  const [path, setPath] = useState([]);
-  const [entered, setEntered] = useState(false);
+  const [path, setPath] = useState<string[]>([]);
+  const [entered, setEntered] = useState<boolean>(false);
   // Transactions are leaves - tapping one doesn't navigate anywhere, so its
   // detail has nowhere persistent to show up on its own. On touch devices
   // there's no hover either, so without this the rich detail (date,
   // account, tags...) would simply be unreachable on mobile. Selecting one
   // shows it in a dedicated panel until dismissed or navigated away from.
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const tilesContainerRef = useRef(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<TreemapNode | null>(null);
+  const tilesContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const data = useMemo(
+  const data: CategoryHierarchyRoot = useMemo(
     () => buildCategoryHierarchy(ctTransactions || [], ctIsBill),
     [ctTransactions, ctIsBill]
   );
   const totalValue = useMemo(
-    () => (ctTransactions || []).reduce((acc, t) => acc + getPrimaryAmount(t), 0),
+    () => (ctTransactions || []).reduce((acc: number, t) => acc + getPrimaryAmount(t), 0),
     [ctTransactions]
   );
 
-  const topCategories = useMemo(() => data.children || [], [data]);
-  const activeCategory = path[0]
+  const topCategories: CategoryHierarchyCategory[] = useMemo(() => data.children || [], [data]);
+  const activeCategory: CategoryHierarchyCategory | null = path[0]
     ? topCategories.find((c) => c.name === path[0]) || null
     : null;
-  const activeSubcategory =
+  const activeSubcategory: CategoryHierarchySubcategory | null =
     activeCategory && path[1] && path[1] !== "__direct__"
       ? (activeCategory.children || []).find((s) => s.name === path[1]) || null
       : null;
@@ -327,7 +480,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
   // so explicitly - otherwise "Restaurant" showing individual transactions
   // looks identical to "Restaurant" showing subcategory tiles, and there's
   // no way to tell which step you're actually on.
-  const autoExpandSingleSubcategory =
+  const autoExpandSingleSubcategory: CategoryHierarchySubcategory | null =
     categoryIsAutoExpanded &&
     path.length === 1 &&
     (activeCategory.children || []).length === 1 &&
@@ -345,7 +498,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
   // back is always visible, not just the current leaf's own name. Every
   // segment except the current (last) one is clickable and jumps straight
   // to that level, instead of only being able to step back one at a time.
-  const breadcrumb = useMemo(() => {
+  const breadcrumb = useMemo<BreadcrumbInfo | null>(() => {
     if (path.length === 0 || !activeCategory) return null;
     const second =
       activeSubcategory?.name ||
@@ -362,7 +515,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
     };
   }, [path, activeCategory, activeSubcategory, autoExpandSingleSubcategory]);
 
-  const rootNodes = useMemo(
+  const rootNodes: TreemapNode[] = useMemo(
     () =>
       topCategories
         .map((cat) => ({
@@ -374,7 +527,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
           transactionCount:
             (cat.transactions || []).length + (cat.children || []).reduce((a, c) => a + (c.transactions || []).length, 0),
           hasChildren: (cat.children || []).length > 0 || cat.loc > 0,
-          kind: "category",
+          kind: "category" as const,
         }))
         .filter((n) => n.value > 0)
         .sort((a, b) => b.value - a.value),
@@ -384,7 +537,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
   // Level shown right after drilling into a category: either its
   // subcategories as aggregate tiles, or - if there are only a few - every
   // individual transaction across all of them, flattened into one view.
-  const categoryLevelNodes = useMemo(() => {
+  const categoryLevelNodes: TreemapNode[] = useMemo(() => {
     if (!activeCategory) return [];
     if (categoryIsAutoExpanded) {
       const direct = (activeCategory.transactions || []).map((t) =>
@@ -397,7 +550,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
       );
       return direct.concat(fromSubs).filter((n) => n.value > 0).sort((a, b) => b.value - a.value);
     }
-    const subs = (activeCategory.children || []).map((sub) => ({
+    const subs: TreemapNode[] = (activeCategory.children || []).map((sub) => ({
       key: sub.name,
       name: sub.name,
       color: sub.color,
@@ -405,7 +558,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
       value: sub.loc,
       transactionCount: (sub.transactions || []).length,
       hasChildren: (sub.transactions || []).length > 0,
-      kind: "subcategory",
+      kind: "subcategory" as const,
     }));
     if (activeCategory.loc > 0) {
       subs.push({
@@ -416,7 +569,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
         value: activeCategory.loc,
         transactionCount: (activeCategory.transactions || []).length,
         hasChildren: (activeCategory.transactions || []).length > 0,
-        kind: "subcategory",
+        kind: "subcategory" as const,
       });
     }
     return subs.filter((n) => n.value > 0).sort((a, b) => b.value - a.value);
@@ -424,7 +577,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
 
   // Level shown after explicitly drilling into one specific subcategory
   // (only reachable when the category wasn't auto-expanded above).
-  const subcategoryLevelNodes = useMemo(() => {
+  const subcategoryLevelNodes: TreemapNode[] = useMemo(() => {
     if (!activeCategory || !path[1]) return [];
     const bucket =
       path[1] === "__direct__"
@@ -439,7 +592,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
       .sort((a, b) => b.value - a.value);
   }, [activeCategory, activeSubcategory, path]);
 
-  const visibleNodes = path.length === 0 ? rootNodes : path.length === 1 ? categoryLevelNodes : subcategoryLevelNodes;
+  const visibleNodes: TreemapNode[] = path.length === 0 ? rootNodes : path.length === 1 ? categoryLevelNodes : subcategoryLevelNodes;
   const rects = useMemo(
     () => squarify(visibleNodes, 0, 0, NOMINAL_W, NOMINAL_H),
     [visibleNodes]
@@ -470,7 +623,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
     setSelectedTransaction(null);
   }, [path]);
 
-  const handleTileClick = (node) => {
+  const handleTileClick = (node: TreemapNode) => {
     if (node.kind === "transaction") {
       setSelectedTransaction((prev) => (prev?.key === node.key ? null : node));
       return;
@@ -479,7 +632,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }) {
     if (node.kind === "category") setPath([node.name]);
     else if (node.kind === "subcategory") setPath((prev) => [prev[0], node.name]);
   };
-  const handleChipClick = (cat) => {
+  const handleChipClick = (cat: CategoryHierarchyCategory) => {
     if (!(cat.children || []).length && !(cat.loc > 0)) return;
     setPath((prev) => (prev[0] === cat.name ? [] : [cat.name]));
   };
