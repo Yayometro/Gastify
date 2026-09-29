@@ -3689,8 +3689,23 @@
       "label": "Navbar - alta rapida (AddTransactionModal/TransferExchangeModal). El shell de navegacion completo y el modal de alta rapida de transacciones: Navbar.jsx [205 lineas, entry, renderizado desde dashboard/layout.tsx ya migrado; incluye auth (authClient), theme toggle (useThemeMode), y renderiza AddTransactionModal], AddTransactionModal.jsx [100 lineas, modal de 4 tabs: Manual -> AddTransactionComp.tsx ya migrado, Excel -> ReadFileComp.tsx ya migrado, Categories -> EditCategoryModal ya migrado Historia 6, Transfer -> TransferExchangeModal.jsx], TransferExchangeModal.jsx [268 lineas, formulario de transferencia entre cuentas/conversion de divisas, usa las rutas ya migradas fx/quote (Historia 9) y transactions/transfer (Historia 8)], scrollLock.js [31 lineas, helper compartido de bloqueo de scroll con reference counting, ya usado por BasicModal.tsx migrado], y ThemeProvider.jsx [75 lineas, contexto de tema claro/oscuro consumido por Navbar.jsx, pequeno y autocontenido]. Todas las rutas de API que este arbol necesita ya estan migradas desde Historias 7-9 - historia puramente de UI/logica de cliente, sin backend nuevo. NO incluye: EditTransModal.jsx (otro consumidor de ThemeProvider pero fuera de este arbol, su propia historia futura de Movements/edicion si hiciera falta revisarla).",
       "files": {
         "src/helpers/scrollLock.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T16:14:33.238Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T16:15:26.493Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript src/helpers/scrollLock.ts. Se agregaron tipos de retorno explicito : void a lockBodyScroll y unlockBodyScroll. lockCount tipado numerico. Cero casts, cero any, cero optional chaining o guards no presentes en el original. Bug preexistente documentado sin arreglar: acceso directo a document.body sin comprobar typeof document !== 'undefined' (arrojaria ReferenceError si se invocara en SSR, aunque se usa en useEffect de cliente). Verificado con npx tsc --noEmit, npx eslint y vitest (30/30 suites, 324/324 tests pasando)."
+            },
+            {
+              "ts": "2026-09-29T16:16:03.404Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica, solo tipos de retorno `: void` agregados. tsc --noEmit limpio (proyecto completo, BasicModal.tsx sigue compilando), eslint limpio, vitest 324/324. Sin guards/casts, sin rework."
+            }
+          ]
         },
         "src/app/ThemeProvider.jsx": {
           "status": "pending",
