@@ -469,6 +469,7 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 26 | `TransResumeChart.tsx` | `arcLabel={(e) => e.id + " ( $" + e.value + ")"}` usa el símbolo `$` fijo en vez del helper de formateo multi-moneda (`formatMoneyMajor`) que sí se usa en el resto del componente - las etiquetas del sunburst siempre muestran `$` aunque la wallet use otra moneda primaria. | Historia 11 |
 | 27 | `HistoricalComparativeCategories.tsx` | `setUser(ccUser.data)` se llama directo sin `dispatch(...)` - 5ta ocurrencia del mismo patrón no-op (`CategoriesClient.tsx` Historia 6, `HistoryClient.tsx` Historia 10, `TabsTogglerMontlyController.tsx` Historia 10). Nunca actualiza el store de usuario desde este componente. | Historia 11 |
 | 28 | `HistoricalComparativeCategories.tsx` | `setTransacctions(ccTransacciones.data)` se llama directo sin `dispatch(...)` - 6ta ocurrencia del mismo patrón no-op. Nunca actualiza el store de transacciones desde este componente. | Historia 11 |
+| 29 | `budgetTypes.ts` | `getBudgetType()` solo evalúa `isSaving === true` y `budgetType === "project"`, pero no tiene rama explícita para `budgetType === "saving"` - un budget con `budgetType: "saving"` pero `isSaving` falso/ausente se clasifica como "spending" en vez de "saving". | Historia 12 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,

@@ -3575,8 +3575,23 @@
           "history": []
         },
         "src/helpers/transformers/budgetTypes.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T15:40:53.271Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T15:43:11.947Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de src/helpers/transformers/budgetTypes.js a TypeScript (src/helpers/transformers/budgetTypes.ts).\n\n1. Tipado:\n- `BUDGET_TYPES` marcado con `as const` y exportado el tipo unión `BudgetType`.\n- Creada interfaz permisiva `BudgetTypeInput` ({ isSaving?: boolean | null; budgetType?: string | null }) para `getBudgetType`, `isSpendingBudget`, `isSavingBudget` e `isProjectBudget`, compatible con `IBudget`, `BudgetData` (Redux) y objetos parciales de consumidores existentes sin sobre-restringir.\n- Creadas interfaces `TransactionBudgetRef` ({ _id?: string | { toString(): string } | unknown }) y `TransactionLike` ({ budget?: TransactionBudgetRef | string | null | unknown }) para `getExplicitBudgetId`, aceptando strings, ObjectIds o transacciones pobladas.\n- Cast documentado: `(transaction?.budget as TransactionBudgetRef)?._id` para satisfacer al compilador en la unión con string sin alterar el orden ni el comportamiento de evaluación en runtime.\n\n2. Bugs preexistentes identificados (preservados sin alterar):\n- `getBudgetType`: solo evalúa `isSaving === true` y `budgetType === BUDGET_TYPES.PROJECT`; no evalúa `budgetType === BUDGET_TYPES.SAVING` de forma explícita, por lo que un budget con `budgetType: \"saving\"` pero `isSaving` falso/ausente resolvería a `\"spending\"`.\n- `getExplicitBudgetId`: si `transaction.budget` es un objeto plano sin `_id`, el fallback evalúa al objeto completo y `String(obj)` resulta en `\"[object Object]\"`.\n\n3. Verificaciones ejecutadas:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto (los 6 consumidores TS existentes compilan limpios).\n- `npx eslint src/helpers/transformers/budgetTypes.ts`: 0 errores/warnings.\n- `npx vitest run`: 30/30 suites pasadas (324/324 tests)."
+            },
+            {
+              "ts": "2026-09-29T15:44:00.839Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica. tsc --noEmit limpio (proyecto completo, confirmé que los 6 consumidores TS existentes - AddTransactionComp.tsx, EditSingleTransModal.tsx, ProjectBudgetDetailModal.tsx, BudgetsClient.tsx, BudgetEditModal.tsx, BudgetBarRow.tsx - compilan sin cambios), eslint limpio, vitest 324/324.\n\n`BudgetTypeInput`/`TransactionLike` son interfaces estructurales permisivas en vez del tipo completo de `IBudget`, decisión correcta para no sobre-restringir a los callers existentes que pasan objetos parciales/de Redux. El cast `(transaction?.budget as TransactionBudgetRef)?._id` es puramente de compilación, no altera la cadena de fallback `|| transaction?.budget || \"\"` en runtime.\n\nBug preexistente real encontrado y preservado sin arreglar: `getBudgetType` solo evalúa `isSaving === true` y `budgetType === \"project\"`, pero NO tiene rama explícita para `budgetType === \"saving\"` - un budget con `budgetType: \"saving\"` pero `isSaving` falso/ausente se clasifica como \"spending\" en vez de \"saving\". Presente igual en el original, no introducido por la migración. También documentado (ya conocido, no es nuevo): `getExplicitBudgetId` retorna `\"[object Object]\"` si `transaction.budget` es un objeto sin `_id`.\n\nSin rework."
+            }
+          ]
         }
       }
     }
