@@ -330,7 +330,30 @@ bug #13 de `ReadFileComp.tsx`, Historia 8) - todos documentados en
 NO incluyó: `EditTransModal.jsx` (otro consumidor de `ThemeProvider`
 pero fuera de este árbol, su propia historia futura si hiciera falta).
 
-Historias siguientes (orden real a confirmar): Projections, MCP
+**Historia activa: Historia 14 — Projections** (16 archivos: la página
+`/dashboard/projections` completa de gestión - distinta de la tabla de
+solo-lectura `HistoricalProjectionsTable.tsx` ya migrada en Historia 10.
+`ProjectionsClient.jsx` [221 líneas, entry], `IncomeSourcesPanel.jsx`
+[256 líneas, CRUD de fuentes de ingreso], `HistoricalBaselinePanel.jsx`
+[272 líneas, CRUD de baseline histórico], `ProjectionMonthDetailModal.jsx`
+[325 líneas, el más grande, usa `Movements.tsx` ya migrado y
+`CurrencyBreakdownChips.jsx`], `ProjectionAccuracyReport.jsx` [86
+líneas], `ProjectionAccuracyInfoModal.jsx` [80 líneas],
+`ProjectionsInfoModal.jsx` [74 líneas], `ProjectionVarianceCell.jsx`
+[39 líneas], `CurrencyBreakdownChips.jsx` [38 líneas, pequeño y
+compartido, también usado por `BudgetDetailModal.tsx` ya migrado], y
+`dashboard/projections/page.jsx`. **6 rutas de API de escritura que
+Historia 9 dejó explícitamente pendientes para esta historia** -
+candidatas típicas a IDOR como se ha visto repetidamente en la
+migración: `projections/update`, `projection-baseline/update`,
+`projection-baseline/delete`, `income-sources/update`,
+`income-sources/new`, `income-sources/remove`. Los modelos y rutas de
+lectura que este árbol necesita ya están migrados (Historia 9 y 10).
+Deliberadamente NO incluye: `projectionsChange.js` (helper compartido
+grande, pospuesto igual que `transactionsChange.js`); `mcpProjections.js`
+(parte de la futura historia de MCP tools).
+
+Historias siguientes (orden real a confirmar): MCP
 tools (`buildGastifyMcpServer.js`), `transactionsChange.js` (el
 transformer más grande y compartido de toda la app, deliberadamente
 pospuesto historia tras historia). Los modelos Mongoose que aún faltan

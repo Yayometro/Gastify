@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-13-navbar-quick-add",
+  "activeStory": "historia-14-projections",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -3796,6 +3796,75 @@
               "notes": "Migración byte-idéntica en lógica (confirmé que el resto del JSX es idéntico salvo un punto y coma). tsc --noEmit limpio (proyecto completo, confirmé que dashboard/layout.tsx sigue compilando con `NavbarSession = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>`). eslint: 1 warning preexistente de exhaustive-deps (mismo array `[]` que ya tenía el original, no es regresión). vitest 324/324.\n\nHallazgo importante verificado: `state.userReducer.data as UserData & { status?: string }` - el cast es correcto y preserva el bug real: confirmé en userSlice.ts que `UserData` (línea 6) NO tiene campo `status` (ese vive en `UserState`, el wrapper del slice, línea 29, un nivel arriba de `.data`). Por lo tanto `ccUser.status` siempre fue `undefined` en runtime, tanto en el original como en la migración - `fetchUser` NUNCA se despacha desde este useEffect de Navbar. Es el mismo patrón raíz ya documentado como bug #13 (`ReadFileComp.tsx`), pero una ocurrencia nueva en un archivo distinto - lo voy a loguear como fila nueva.\n\n`IoPricetags` removido del import - confirmado via grep que solo aparecía en su línea de import, nunca usado en el JSX. `?.` preexistentes en `ccUser?.image`/`ccUser?.fullName` preservados sin tocar, y `ccUser.status` sigue sin `?.` tal como pedí. Sin rework. Historia 13 completa: 5/5 archivos."
             }
           ]
+        }
+      }
+    },
+    "historia-14-projections": {
+      "label": "Projections - la pagina /dashboard/projections completa (UI de gestion, distinta de la tabla de solo-lectura HistoricalProjectionsTable.tsx que ya se migro en Historia 10). Componentes: ProjectionsClient.jsx [221 lineas, entry, renderizado desde page.jsx], IncomeSourcesPanel.jsx [256 lineas, CRUD de fuentes de ingreso], HistoricalBaselinePanel.jsx [272 lineas, CRUD de baseline historico de ingreso/gasto], ProjectionMonthDetailModal.jsx [325 lineas, el mas grande, usa Movements.tsx ya migrado y CurrencyBreakdownChips.jsx], ProjectionAccuracyReport.jsx [86 lineas], ProjectionAccuracyInfoModal.jsx [80 lineas], ProjectionsInfoModal.jsx [74 lineas], ProjectionVarianceCell.jsx [39 lineas], CurrencyBreakdownChips.jsx [38 lineas, pequeno y compartido, tambien usado por BudgetDetailModal.tsx ya migrado], y dashboard/projections/page.jsx (entry de Next.js). Rutas de API de escritura QUE HISTORIA 9 DEJO EXPLICITAMENTE PENDIENTES PARA ESTA HISTORIA (revisar con cuidado de seguridad - son POST de creacion/actualizacion/borrado, candidatos tipicos a IDOR como se ha visto repetidamente en la migracion): projections/update/route.js, projection-baseline/update/route.js, projection-baseline/delete/route.js, income-sources/update/route.js, income-sources/new/route.js, income-sources/remove/route.js. Los modelos y rutas de LECTURA que este arbol necesita (ProjectionSettings.ts, ProjectionBaseline.ts, IncomeSource de Historia 9; projections/get, projection-baseline/get, income-sources/get de Historia 9; useProjectionTable.ts, ProjectionsView.tsx, HistoricalProjectionsTable.tsx de Historia 10) ya estan migrados. NO incluye: projectionsChange.js (helper compartido grande, usado por useProjectionTable.ts y este arbol, deliberadamente pospuesto igual que transactionsChange.js); mcpProjections.js (parte de la futura historia de MCP tools).",
+      "files": {
+        "src/components/multiUsedComp/CurrencyBreakdownChips.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/ProjectionVarianceCell.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/ProjectionAccuracyInfoModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/ProjectionsInfoModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/ProjectionAccuracyReport.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/ProjectionMonthDetailModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/projections/update/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/projection-baseline/update/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/projection-baseline/delete/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/income-sources/update/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/income-sources/new/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/income-sources/remove/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/IncomeSourcesPanel.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/HistoricalBaselinePanel.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Projections/ProjectionsClient.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/dashboard/projections/page.jsx": {
+          "status": "pending",
+          "history": []
         }
       }
     }
