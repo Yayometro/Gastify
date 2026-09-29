@@ -3057,8 +3057,23 @@
           ]
         },
         "src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalWalletAnalyzer.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-29T05:00:03.346Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-29T05:03:51.137Z",
+              "event": "submitted",
+              "notes": "Migrado src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalWalletAnalyzer.jsx -> .tsx (836 líneas).\n\nDetalles de la migración:\n- Tipado exhaustivo de props y estado interno: `HistoricalWalletAnalyzerProps`, `PeriodStateProps`, `CategoryCompareRowProps`.\n- Reutilización de tipos del transformer `walletAnalyzer.ts` (`DateRange`, `BudgetPeriodChangeRow`, `WalletAnalyzerCategoryBill`, `WalletAnalyzerMonthlyChampionEntry`, `WalletAnalyzerWeekdaySpendingData`, `PopulatedCategory`) y componentes de `walletAnalyzer/` (`ChampionsModalKind`, `InsightDetailItem`, `WalletAnalyzerTrendChartItem`, etc.).\n- Bridges tipados para componentes no migrados o pendientes: `TypedModalContentTopMonthItem`, `TypedBudgetPeriodDetailModal`, `TypedPeriodFiltersWithCompare`.\n- Integración limpia con Redux (`RootState`, `TransactionData`, `BudgetData`, `AccountData`).\n- Preservación estricta de lógica y comportamiento original (sin reemplazos arbitrarios de || por ??, preservación de ternarios y formatos).\n\nBugs/comportamientos preexistentes observados (preservados sin alterar):\n1. Inconsistencia menor en handler de teclado de budget rows: en `onClick` se usa `icon: b.status === \"over\" ? \"⚠️\" : \"📊\"` mientras que en `onKeyDown` el código original tenía hardcodeado `icon: \"📊\"`. Se preservó idéntico al original.\n2. La llamada a `toFetch.post(\"general-data/budget/get-historical\", email)` envía el email directamente en el body. Preservado idéntico al original.\n\nVerificación:\n- npx tsc --noEmit: 0 errores.\n- npx eslint src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalWalletAnalyzer.tsx: 0 errores, 0 warnings.\n- npx vitest run: 29 suites pasadas, 314 tests pasados.\n- Ningún otro archivo modificado."
+            },
+            {
+              "ts": "2026-09-29T05:05:23.650Z",
+              "event": "approved",
+              "notes": "Revision exhaustiva del diff completo (836->943 lineas), sin rework. Buena reutilizacion de tipos ya exportados por walletAnalyzer.ts y walletAnalyzer/*.tsx. Typed bridges correctos para ModalContentTopMonthItem (excluido), BudgetPeriodDetailModal y PeriodFiltersWithCompare (ambos aun pendientes en esta misma historia). Puntos verificados especificamente:\n- `labelB || \"\"` en 2 lugares: verificado que `getPeriodLabel()` (en timeFunctions.js) SIEMPRE devuelve un string real (\"No time selected\" o una etiqueta calculada), nunca undefined - inerte en la practica, solo satisface el tipo opcional inventado en PeriodStateProps.\n- Guards `if (monthEntry.biggestCategory)`/`if (monthEntry.biggestSubcategory)` y `monthlyChampions &&`: mismo patron ya vetteado en WalletAnalyzerView.tsx (Historia 9) - solo previenen un crash en datos faltantes, no cambian el camino feliz.\n- Las 2 observaciones que agy reporto sin arreglar (inconsistencia de icono onClick/onKeyDown en filas de presupuesto, y el body de get-historical mandando email directo) son comportamiento preexistente, confirmado que ninguna de las dos aparece en el diff (nunca se tocaron).\ntsc --noEmit 0 errores, eslint 0 errores/warnings, vitest 314/314. Aprobado."
+            }
+          ]
         },
         "src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalProjectionsTable.jsx": {
           "status": "pending",

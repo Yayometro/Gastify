@@ -19,20 +19,84 @@ import {
   buildPeriodComparison,
   getCategoryTransactions,
   getSubcategoryTransactions,
+  type DateRange,
+  type BudgetPeriodChangeRow,
+  type WalletAnalyzerCategoryBill,
+  type WalletAnalyzerMonthlyChampionEntry,
+  type WalletAnalyzerWeekdaySpendingData,
+  type PopulatedCategory,
 } from "@/helpers/transformers/walletAnalyzer";
-import { ChangePill, RankRow, buildSpendPatternAnalysis } from "../walletAnalyzer/WalletAnalyzerView";
+import {
+  ChangePill,
+  RankRow,
+  buildSpendPatternAnalysis,
+  type ChampionsModalKind,
+} from "../walletAnalyzer/WalletAnalyzerView";
 import WalletAnalyzerInsightsStrip from "../walletAnalyzer/WalletAnalyzerInsightsStrip";
-import WalletAnalyzerTrendChart from "../walletAnalyzer/WalletAnalyzerTrendChart";
+import WalletAnalyzerTrendChart, { type WalletAnalyzerTrendChartItem } from "../walletAnalyzer/WalletAnalyzerTrendChart";
 import WalletAnalyzerWeekdayChart from "../walletAnalyzer/WalletAnalyzerWeekdayChart";
-import InsightDetailModal from "../walletAnalyzer/InsightDetailModal";
+import InsightDetailModal, { type InsightDetailItem } from "../walletAnalyzer/InsightDetailModal";
 import MonthlyChampionsModal from "../walletAnalyzer/MonthlyChampionsModal";
 import WeekdaySpendingDetailModal from "../walletAnalyzer/WeekdaySpendingDetailModal";
 import BudgetPeriodDetailModal from "./BudgetPeriodDetailModal";
+import type { RootState } from "@/lib/store";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import type { BudgetData } from "@/lib/features/budgetSlice";
+import type { AccountData } from "@/lib/features/accountsSlice";
+
+// Typed bridge for unmigrated ModalContentTopMonthItem
+interface ModalContentTopMonthItemProps {
+  item: unknown;
+  close: () => void;
+  onBack?: (() => void) | false;
+}
+const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<ModalContentTopMonthItemProps>;
+
+// Typed bridge for unmigrated BudgetPeriodDetailModal
+interface BudgetPeriodDetailModalProps {
+  row: BudgetPeriodChangeRow;
+  labelA: string;
+  labelB: string;
+  walletPrimaryCurrency: string;
+  close: () => void;
+}
+const TypedBudgetPeriodDetailModal = BudgetPeriodDetailModal as React.ComponentType<BudgetPeriodDetailModalProps>;
+
+export interface PeriodStateProps {
+  timePeriod?: [Date, Date] | Date[];
+  setTimePeriod?: (dates: [Date, Date] | Date[]) => void;
+  comparePeriod?: [Date, Date] | Date[];
+  setComparePeriod?: (dates: [Date, Date] | Date[]) => void;
+  compareEnabled?: boolean;
+  setCompareEnabled?: (enabled: boolean) => void;
+  timePeriodsForSelecter?: Array<{ value: string; name: string; [key: string]: unknown }>;
+  timePeriodsForCompareSelecter?: Array<{ value: string; name: string; [key: string]: unknown }>;
+  periodFromFather?: { value: string; name: string; [key: string]: unknown };
+  getValueFromSelecter?: (v: string) => void;
+  handleRangeDate?: (start: Date, end: Date) => void;
+  getCompareValueFromSelecter?: (v: string) => void;
+  handleCompareRangeDate?: (start: Date, end: Date) => void;
+  labelA: string;
+  labelB?: string;
+  rangePickerResponse?: unknown;
+  extraControls?: React.ReactNode;
+  [key: string]: unknown;
+}
+
+// Typed bridge for unmigrated PeriodFiltersWithCompare
+const TypedPeriodFiltersWithCompare = PeriodFiltersWithCompare as React.ComponentType<PeriodStateProps>;
 
 // Short "DD/MM/YYYY" for the small parenthetical dates next to a friendlier
 // period phrase (e.g. "Últimos 3 meses (01/07/2026 - 09/09/2026)").
-function formatShortDate(date) {
+function formatShortDate(date: Date): string {
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+
+export interface CategoryCompareRowProps {
+  index: number;
+  item: WalletAnalyzerCategoryBill;
+  currency: string;
+  onClick?: () => void;
 }
 
 // The period-vs-period compare table's row for a single category -
@@ -43,7 +107,7 @@ function formatShortDate(date) {
 // columns aligned regardless of name length - and the icon is the same
 // filled circle + UniversalCategoIcon RankRow uses (was a tiny bare dot
 // before, inconsistent with every other icon on this page).
-function CategoryCompareRow({ index, item, currency, onClick }) {
+function CategoryCompareRow({ index, item, currency, onClick }: CategoryCompareRowProps): React.JSX.Element {
   return (
     <div
       onClick={onClick}
@@ -71,6 +135,10 @@ function CategoryCompareRow({ index, item, currency, onClick }) {
   );
 }
 
+export interface HistoricalWalletAnalyzerProps {
+  periodState: PeriodStateProps;
+}
+
 // History's Wallet Analyzer - the arbitrary-period sibling of the
 // Dashboard's own single-month one. Always renders the full single-period
 // analysis (buildPeriodSnapshot, auto-comparing against the immediately
@@ -82,20 +150,21 @@ function CategoryCompareRow({ index, item, currency, onClick }) {
 // MonthlyChampionsModal, WeekdaySpendingDetailModal, ChangePill/RankRow/
 // buildSpendPatternAnalysis) so both Wallet Analyzers speak the exact same
 // visual language without a second copy of any of them.
-function HistoricalWalletAnalyzer({ periodState }) {
+function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps): React.JSX.Element {
   const { timePeriod, comparePeriod, compareEnabled, labelA, labelB, timePeriodsForSelecter } = periodState;
-  const [budgets, setBudgets] = useState([]);
-  const [topN, setTopN] = useState(6);
+  const [budgets, setBudgets] = useState<BudgetData[]>([]);
+  const [topN, setTopN] = useState<number>(6);
   const { email } = useGetUserSession();
-  const { accounts } = useGetDataFromProvider();
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const { accounts } = useGetDataFromProvider() as { accounts?: AccountData[] };
+  const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
+  const walletPrimaryCurrency =
+    (useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) as string | undefined) || "MXN";
   const { close, modalContent, renderModal, handleClose } = useModal();
   const fxExposure = useAccountsFxExposure(accounts, walletPrimaryCurrency, timePeriod?.[1]);
 
-  const [activeInsight, setActiveInsight] = useState(null);
-  const [championsModalKind, setChampionsModalKind] = useState(null);
-  const [weekdayDetailOpen, setWeekdayDetailOpen] = useState(false);
+  const [activeInsight, setActiveInsight] = useState<InsightDetailItem | null>(null);
+  const [championsModalKind, setChampionsModalKind] = useState<ChampionsModalKind>(null);
+  const [weekdayDetailOpen, setWeekdayDetailOpen] = useState<boolean>(false);
 
   // Same dedicated route HistoricalBudgetsComparative uses - includes
   // archived budgets, since an archived budget's past months still belong
@@ -105,20 +174,23 @@ function HistoricalWalletAnalyzer({ periodState }) {
     const toFetch = fetcher();
     toFetch
       .post("general-data/budget/get-historical", email)
-      .then((res) => {
-        if (res.ok) setBudgets(res.data || []);
+      .then((res: unknown) => {
+        const budgetRes = res as { ok?: boolean; data?: BudgetData[] } | undefined;
+        if (budgetRes?.ok) setBudgets(budgetRes.data || []);
       })
       .catch(() => {});
   }, [email]);
 
-  const transactions = useMemo(() => ccTransacciones.data || [], [ccTransacciones.data]);
+  const transactions: TransactionData[] = useMemo(() => ccTransacciones.data || [], [ccTransacciones.data]);
   const transactionsById = useMemo(() => {
-    const map = new Map();
-    transactions.forEach((t) => map.set(t._id, t));
+    const map = new Map<string, TransactionData>();
+    transactions.forEach((t) => {
+      if (t._id) map.set(t._id, t);
+    });
     return map;
   }, [transactions]);
 
-  const range = useMemo(
+  const range: DateRange | null = useMemo(
     () => (timePeriod?.[0] && timePeriod?.[1] ? { start: timePeriod[0], end: timePeriod[1] } : null),
     [timePeriod]
   );
@@ -133,24 +205,28 @@ function HistoricalWalletAnalyzer({ periodState }) {
     if (!range || !comparePeriod?.[0] || !comparePeriod?.[1]) return null;
     if (transactions.length < 1) return null;
     const rangeB = { start: comparePeriod[0], end: comparePeriod[1] };
-    return buildPeriodComparison({ transactions, budgets, rangeA: range, rangeB, labelA, labelB, topN });
+    return buildPeriodComparison({ transactions, budgets, rangeA: range, rangeB, labelA, labelB: labelB || "", topN });
   }, [compareEnabled, range, comparePeriod, transactions, budgets, labelA, labelB, topN]);
 
-  function openCategoryModal(item, isBill, forRange) {
+  function openCategoryModal(
+    item: { name: string; icon?: string; color?: string; current?: number; amount?: number },
+    isBill: boolean,
+    forRange?: DateRange
+  ) {
     const children = getCategoryTransactions(transactions, item.name, isBill, forRange);
     renderModal(
-      <ModalContentTopMonthItem
+      <TypedModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill, value: item.current ?? item.amount, children }}
         close={handleClose}
       />
     );
   }
 
-  function openSubcategoryModal(item, forRange) {
+  function openSubcategoryModal(item: { name: string; total?: number; [key: string]: unknown }, forRange?: DateRange) {
     const children = getSubcategoryTransactions(transactions, item.name, true, forRange);
-    const parentCategory = children[0]?.category;
+    const parentCategory = children[0]?.category as PopulatedCategory | undefined;
     renderModal(
-      <ModalContentTopMonthItem
+      <TypedModalContentTopMonthItem
         item={{
           name: item.name,
           icon: parentCategory?.icon || "MdFilterNone",
@@ -165,10 +241,10 @@ function HistoricalWalletAnalyzer({ periodState }) {
     );
   }
 
-  function openTransactionModal(item) {
-    const raw = transactionsById.get(item._id);
+  function openTransactionModal(item: { _id?: string; [key: string]: unknown }) {
+    const raw = item._id ? transactionsById.get(item._id) : undefined;
     if (!raw) return;
-    renderModal(<ModalContentTopMonthItem item={raw} close={handleClose} />);
+    renderModal(<TypedModalContentTopMonthItem item={raw} close={handleClose} />);
   }
 
   // Routed through the same renderModal()/BasicModal mechanism as the
@@ -177,16 +253,22 @@ function HistoricalWalletAnalyzer({ periodState }) {
   // rendering BudgetPeriodDetailModal on its own left it positioned
   // relative to the document instead (no positioned ancestor), placing it
   // thousands of pixels off-screen on this long page.
-  function openBudgetPeriodModal(row) {
+  function openBudgetPeriodModal(row: BudgetPeriodChangeRow) {
     renderModal(
-      <BudgetPeriodDetailModal row={row} labelA={labelA} labelB={labelB} walletPrimaryCurrency={walletPrimaryCurrency} close={handleClose} />
+      <TypedBudgetPeriodDetailModal
+        row={row}
+        labelA={labelA}
+        labelB={labelB || ""}
+        walletPrimaryCurrency={walletPrimaryCurrency}
+        close={handleClose}
+      />
     );
   }
 
   const periodFilters = (
     <div className="flex flex-col items-center gap-1">
       <h2 className="text-2xl text-center font-bold text-gf-text">Wallet Analyzer</h2>
-      <PeriodFiltersWithCompare {...periodState} />
+      <TypedPeriodFiltersWithCompare {...periodState} />
     </div>
   );
 
@@ -220,25 +302,50 @@ function HistoricalWalletAnalyzer({ periodState }) {
     previousRange,
   } = snapshot;
 
-  const previousPeriodLabel = getPeriodLabel(timePeriodsForSelecter, [previousRange.start, previousRange.end]);
+  const previousPeriodLabel = getPeriodLabel(
+    (timePeriodsForSelecter as { value: string; name: string }[]) || [],
+    [previousRange.start, previousRange.end]
+  );
   const savingsRateChangePp = Math.round((currentTotals.savingsRate - previousTotals.savingsRate) * 100);
   const pacePct = pace.avgPaceForSameDay > 0 ? Math.min(100, (pace.spentSoFar / pace.avgPaceForSameDay) * 100) : 0;
 
-  function handleSelectChampionMonth(monthEntry) {
+  function handleSelectChampionMonth(monthEntry: WalletAnalyzerMonthlyChampionEntry) {
     const kind = championsModalKind;
     setChampionsModalKind(null);
     const goBack = () => setChampionsModalKind(kind);
     if (kind === "transaction") {
-      const raw = transactionsById.get(monthEntry.biggestTransaction?._id);
-      if (raw) renderModal(<ModalContentTopMonthItem item={raw} close={handleClose} onBack={() => { handleClose(); goBack(); }} />);
+      const raw = monthEntry.biggestTransaction?._id
+        ? transactionsById.get(monthEntry.biggestTransaction._id)
+        : undefined;
+      if (raw) {
+        renderModal(
+          <TypedModalContentTopMonthItem
+            item={raw}
+            close={handleClose}
+            onBack={() => {
+              handleClose();
+              goBack();
+            }}
+          />
+        );
+      }
     } else if (kind === "category") {
-      openCategoryModal(
-        { name: monthEntry.biggestCategory.name, color: monthEntry.biggestCategory.color, icon: monthEntry.biggestCategory.icon, current: monthEntry.biggestCategory.total },
-        true,
-        monthEntry.range
-      );
+      if (monthEntry.biggestCategory) {
+        openCategoryModal(
+          {
+            name: monthEntry.biggestCategory.name,
+            color: monthEntry.biggestCategory.color,
+            icon: monthEntry.biggestCategory.icon,
+            current: monthEntry.biggestCategory.total,
+          },
+          true,
+          monthEntry.range
+        );
+      }
     } else if (kind === "subCategory") {
-      openSubcategoryModal(monthEntry.biggestSubcategory, monthEntry.range);
+      if (monthEntry.biggestSubcategory) {
+        openSubcategoryModal(monthEntry.biggestSubcategory, monthEntry.range);
+      }
     }
   }
 
@@ -368,7 +475,7 @@ function HistoricalWalletAnalyzer({ periodState }) {
           <WalletAnalyzerTrendChart
             trend={trend}
             walletPrimaryCurrency={walletPrimaryCurrency}
-            onSelectMonth={(month) => setActiveInsight({ icon: "📅", tone: "info", title: month.label, type: "trend_month", data: month })}
+            onSelectMonth={(month: WalletAnalyzerTrendChartItem) => setActiveInsight({ icon: "📅", tone: "info", title: month.label, type: "trend_month", data: month })}
           />
         </div>
       </div>
@@ -580,7 +687,7 @@ function HistoricalWalletAnalyzer({ periodState }) {
           "Grandes gastos" drill-down) is worth its own glanceable table -
           especially useful for year-vs-year comparisons. Hidden for a
           single-month window since there'd be nothing to compare. */}
-      {monthlyChampions.months.length > 1 && (
+      {monthlyChampions && monthlyChampions.months.length > 1 && (
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
           <p className="text-[15px] font-extrabold text-gf-text">Categoría líder por mes</p>
           <p className="text-xs text-gf-text-muted mb-3">Qué categoría concentró más gasto, mes a mes, dentro de este periodo</p>
@@ -826,7 +933,7 @@ function HistoricalWalletAnalyzer({ periodState }) {
       <WeekdaySpendingDetailModal
         open={weekdayDetailOpen}
         onClose={() => setWeekdayDetailOpen(false)}
-        weekdaySpending={weekdaySpending}
+        weekdaySpending={weekdaySpending as unknown as WalletAnalyzerWeekdaySpendingData}
         walletPrimaryCurrency={walletPrimaryCurrency}
       />
     </div>
