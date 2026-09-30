@@ -13,24 +13,76 @@ import CategoIcon from "./CategoIcon";
 import { IoColorPalette } from "react-icons/io5";
 import { FaRegQuestionCircle } from "react-icons/fa";
 import { Tooltip } from "antd";
-import { TbLetterCaseToggle } from "react-icons/tb";
 import fetcher from "@/helpers/fetcher";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { formatMoneyMajor, formatMoneyMinor, majorToMinor, minorToMajor } from "@/lib/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import type { RootState } from "@/lib/store";
+
+export interface CreditCardAccountRef {
+  _id?: string;
+  name?: string | null;
+  currency?: string | null;
+  amount?: number | null;
+  color?: string | null;
+  [key: string]: unknown;
+}
+
+export interface CreditCardTransaction {
+  _id?: string;
+  account?: { _id?: string; [key: string]: unknown } | null;
+  amount?: number | string | null;
+  isReadable?: boolean | null;
+  isBill?: boolean | null;
+  isIncome?: boolean | null;
+  date?: string | Date | null;
+  createdAt?: string | Date | null;
+  displayMoney?: {
+    native?: {
+      currency?: string;
+      amountMinor?: number;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  } | null;
+  [key: string]: unknown;
+}
+
+export interface EquivalentQuote {
+  rate?: number;
+  source?: string;
+  stale?: boolean;
+  effectiveDate?: string | Date;
+  amountMinor?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface CreditCardProps {
+  acc?: CreditCardAccountRef | null;
+  user?: unknown;
+  trans?: CreditCardTransaction[] | null;
+  cardColor?: string | null;
+  current?: boolean | null;
+  walletPrimaryCurrency?: string | null;
+}
 
 // A transaction's own native amount, in its own native currency - as
 // opposed to getPrimaryAmount, which converts to the Wallet's primary
 // currency. Used to show a foreign-currency account's totals in its own
 // currency first, matching how "Current" already shows the native balance.
-function getNativeAmount(tra) {
+function getNativeAmount(tra?: CreditCardTransaction | null): number {
   const native = tra?.displayMoney?.native;
   if (native && native.currency) return minorToMajor(native.amountMinor, native.currency);
   return Number(tra?.amount) || 0;
 }
 
-function CurrencyChip({ currency }) {
+export interface CurrencyChipProps {
+  currency?: string | null;
+}
+
+function CurrencyChip({ currency }: CurrencyChipProps): React.JSX.Element | null {
   if (!currency) return null;
   return (
     <span className="text-[9px] sm:text-[10px] font-semibold text-white/90 bg-gf-surface/15 px-1.5 py-0.5 rounded shrink-0 self-center leading-none">
@@ -39,26 +91,31 @@ function CurrencyChip({ currency }) {
   );
 }
 
-function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrency: walletPrimaryCurrencyProp }) {
+function CreditCard({
+  acc,
+  user,
+  trans,
+  cardColor,
+  current,
+  walletPrimaryCurrency: walletPrimaryCurrencyProp,
+}: CreditCardProps): React.JSX.Element {
   const router = useRouter();
-  const reduxWalletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency);
-  const walletPrimaryCurrency = walletPrimaryCurrencyProp || reduxWalletPrimaryCurrency || "MXN";
-  let [userName, setUserName] = useState("");
-  let [allTransactions, setAllTransacctions] = useState([]);
-  let [account, setAccount] = useState([]);
-  let [totalReadTransactions, setTotalReadTransactions] = useState([]);
-  let [billTransactions, setBillTransactions] = useState([]);
-  let [incomeTransactions, setIncomeTransactions] = useState([]);
-  let [totalAmount, setTotalAmount] = useState(0);
-  let [totalBill, setTotalBill] = useState(0);
-  let [totalIncome, setTotalIncome] = useState(0);
-  let [nativeTotalBill, setNativeTotalBill] = useState(0);
-  let [nativeTotalIncome, setNativeTotalIncome] = useState(0);
-  let [selectedDuration, setSelectedDuration] = useState(30);
-  let [lastDayRange, setLastDayRange] = useState(new Date());
-  let [cardColore, setCardColore] = useState("");
-  let [manualColor, setManualColor] = useState(false);
-  let [equivalentQuote, setEquivalentQuote] = useState(null);
+  const reduxWalletPrimaryCurrency = (useSelector((state: RootState) => state.walletReducer?.data) as { primaryCurrency?: string })?.primaryCurrency;
+  const walletPrimaryCurrency: string = walletPrimaryCurrencyProp || reduxWalletPrimaryCurrency || "MXN";
+  const [allTransactions, setAllTransacctions] = useState<CreditCardTransaction[]>([]);
+  const [account, setAccount] = useState<CreditCardAccountRef>([] as unknown as CreditCardAccountRef);
+  const [, setTotalReadTransactions] = useState<CreditCardTransaction[]>([]);
+  const [, setBillTransactions] = useState<CreditCardTransaction[]>([]);
+  const [, setIncomeTransactions] = useState<CreditCardTransaction[]>([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalBill, setTotalBill] = useState(0);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [nativeTotalBill, setNativeTotalBill] = useState(0);
+  const [nativeTotalIncome, setNativeTotalIncome] = useState(0);
+  const [selectedDuration, setSelectedDuration] = useState(30);
+  const [cardColore, setCardColore] = useState("");
+  const manualColor = false;
+  const [equivalentQuote, setEquivalentQuote] = useState<EquivalentQuote | null>(null);
   const accountCurrency = account?.currency || "MXN";
 
   useEffect(() => {
@@ -66,11 +123,11 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
       // console.log(acc)
       // console.log(user)
       // console.log(trans)
-      setUserName(user);
       setAllTransacctions(trans);
       setAccount(acc);
       setCardColore(cardColor);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acc, user, trans]);
 
   useEffect(() => {
@@ -82,7 +139,7 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
         (tra) => tra.account?._id === account._id && tra.isReadable
       );
       total = total.filter((tra) => {
-        const transactionDate = new Date(tra.date || tra.createdAt);
+        const transactionDate = new Date((tra.date || tra.createdAt) as string | number | Date);
         return transactionDate >= dayRange;
       });
       const accBills = total.filter((bill) => bill.isBill);
@@ -93,26 +150,26 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
       // transaction's own native currency, which only happens to equal the
       // Wallet primary for an all-MXN wallet.
       const finalAmount = total.reduce(
-        (current, tra) => current + getPrimaryAmount(tra),
+        (currentVal, tra) => currentVal + getPrimaryAmount(tra),
         0
       );
       const finalBill = accBills.reduce(
-        (current, bill) => current + getPrimaryAmount(bill),
+        (currentVal, bill) => currentVal + getPrimaryAmount(bill),
         0
       );
       const finalIncome = accIncomes.reduce(
-        (current, income) => current + getPrimaryAmount(income),
+        (currentVal, income) => currentVal + getPrimaryAmount(income),
         0
       );
       // Native-currency sums (e.g. USD for a Revolut account) - shown as the
       // primary number for a foreign-currency account, with the wallet-
       // primary total above as the small converted equivalent.
       const nativeBill = accBills.reduce(
-        (current, bill) => current + getNativeAmount(bill),
+        (currentVal, bill) => currentVal + getNativeAmount(bill),
         0
       );
       const nativeIncome = accIncomes.reduce(
-        (current, income) => current + getNativeAmount(income),
+        (currentVal, income) => currentVal + getNativeAmount(income),
         0
       );
       setTotalReadTransactions(total);
@@ -126,7 +183,7 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
     }
   }, [allTransactions, account, selectedDuration]);
 
-  const handleDurationChange = (event) => {
+  const handleDurationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedDuration(parseInt(event.target.value, 10));
   };
 
@@ -151,7 +208,7 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
         if (!cancelled && res.ok) {
           setEquivalentQuote(res.data);
         }
-      } catch (e) {
+      } catch {
         // Silently unavailable - the card just omits the equivalent line.
       }
     })();
@@ -267,10 +324,10 @@ function CreditCard({ acc, user, trans, cardColor, current, walletPrimaryCurrenc
             </div>
             {equivalentQuote ? (
               <Tooltip
-                title={`Valued at ${equivalentQuote.rate} (${equivalentQuote.source}${equivalentQuote.stale ? ", stale" : ""}) on ${new Date(equivalentQuote.effectiveDate).toLocaleDateString()}. This is a valuation, not a second balance.`}
+                title={`Valued at ${equivalentQuote.rate} (${equivalentQuote.source}${equivalentQuote.stale ? ", stale" : ""}) on ${new Date(equivalentQuote.effectiveDate as string | number | Date).toLocaleDateString()}. This is a valuation, not a second balance.`}
               >
                 <div className="text-white/80 text-xs font-thin whitespace-nowrap">
-                  ≈ {formatMoneyMinor(equivalentQuote.amountMinor, equivalentQuote.currency, { showCode: false })} {equivalentQuote.currency}
+                  ≈ {formatMoneyMinor(equivalentQuote.amountMinor as number, equivalentQuote.currency as string, { showCode: false })} {equivalentQuote.currency}
                 </div>
               </Tooltip>
             ) : null}
