@@ -18,15 +18,6 @@ export interface BtnSelectCategoryContextProps {
   onClose?: () => void;
 }
 
-interface SelectCategoryBtnProps {
-  size?: number;
-  style?: string;
-  click?: () => void;
-  icon?: string | null;
-}
-
-const TypedSelectCategoryBtn = SelectCategoryBtn as React.ComponentType<SelectCategoryBtnProps>;
-
 function BtnSelectCategoryContext({ onClose }: BtnSelectCategoryContextProps): React.JSX.Element {
   const { itemSelected } = useContext(SelectCategoryContext);
   const selected = itemSelected as SelectedCategoryItem | null;
@@ -44,7 +35,7 @@ function BtnSelectCategoryContext({ onClose }: BtnSelectCategoryContextProps): R
           </p>
         )}
       </span>
-      <TypedSelectCategoryBtn click={onClose} icon={selected?.icon || null} />
+      <SelectCategoryBtn click={onClose} icon={selected?.icon || null} />
     </>
   );
 }
