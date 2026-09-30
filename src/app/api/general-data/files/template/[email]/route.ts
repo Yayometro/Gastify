@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Category from "@/model/Category";
@@ -8,12 +8,33 @@ import Wallet from "@/model/Wallet";
 import xlsxPopulate from "xlsx-populate";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, TEMPLATE_NOTE } from "@/lib/files/gastifyTemplate";
+import { auth } from "@/lib/auth/betterAuth";
 
-export async function GET(request, { params }) {
+export interface TemplateErrorResponse {
+  error?: string;
+  ok: false;
+}
+
+interface WalletModelBridge {
+  findById: (id: unknown) => {
+    lean: () => Promise<{ primaryCurrency?: string } | null>;
+  };
+}
+
+export async function GET(
+  request: NextRequest | Request
+): Promise<NextResponse | Response> {
   try {
+    // Security fix: this route previously lacked session authentication and trusted
+    // params.email from the URL to fetch user accounts, categories, and wallet config (IDOR).
+    // We now verify auth.api.getSession, resolve user identity exclusively from the session,
+    // and query categories, subcategories, accounts, and wallet scoped to the session user.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
+
     await dbConnection();
 
-    const userFound = await User.findOne({ mail: params.email }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound) throw new Error("User not found for template generation");
 
     const [categories, subCategories, accounts, wallet] = await Promise.all([
@@ -24,7 +45,7 @@ export async function GET(request, { params }) {
         $or: [{ user: userFound._id }, { isDefaultSubCatego: true }],
       }).lean(),
       Account.find({ user: userFound._id, wallet: userFound.wallet }).lean(),
-      Wallet.findById(userFound.wallet).lean(),
+      (Wallet as unknown as WalletModelBridge).findById(userFound.wallet).lean(),
     ]);
 
     const catNames = categories.map((c) => c.name).filter(Boolean);
@@ -71,7 +92,9 @@ export async function GET(request, { params }) {
     dataSheet.cell(1, 3).value(TEMPLATE_VERSION); // version stored here
     accountNames.forEach((name, idx) => dataSheet.cell(idx + 1, 4).value(name));
     SUPPORTED_CURRENCIES.forEach((code, idx) => dataSheet.cell(idx + 1, 5).value(code));
-    try { dataSheet.hidden(true); } catch (_) {}
+    try { dataSheet.hidden(true); } catch {
+      // ignore
+    }
 
     // --- Data validation rows 3-202 ---
     for (let row = 3; row <= 202; row++) {
@@ -147,7 +170,7 @@ export async function GET(request, { params }) {
 
     const buffer = await workbook.outputAsync();
 
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as unknown as BodyInit, {
       status: 200,
       headers: {
         "Content-Type":
@@ -157,6 +180,6 @@ export async function GET(request, { params }) {
     });
   } catch (e) {
     console.log(e);
-    return NextResponse.json({ error: e.message, ok: false }, { status: 500 });
+    return NextResponse.json({ error: (e as Error).message, ok: false }, { status: 500 });
   }
 }
