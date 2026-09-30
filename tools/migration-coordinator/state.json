@@ -4504,20 +4504,80 @@
           ]
         },
         "src/app/api/general-data/category-rules/apply-suggestions/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:30:47.610Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:32:17.695Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`route.ts`) con tipado estricto e interfaces para payload y respuesta.\n\n1. Vulnerabilidad exacta:\nRuta pública sin autenticación de sesión (`getSession`) no cubierta por el matcher de `middleware.ts`. Permitía a cualquier cliente (autenticado o no) actualizar transacciones arbitrarias de otros usuarios mediante `Transaction.findById(app.transactionId)` y asignar IDs de `category`/`subCategory` ajenos sin verificar ownership. Además, el `$in` de respuesta leía sin filtro de `user`/`wallet`.\n\n2. Fix aplicado:\n- Verificación de sesión con `auth.api.getSession({ headers: request.headers })` y resolución de `userFound` con `User.findOne({ mail: sesion.user.email }).lean()`.\n- Búsqueda de cada transacción restringida a `Transaction.findOne({ _id: app.transactionId, user: userFound._id, wallet: userFound.wallet })`.\n- Validación de `category` y `subCategory` asignados mediante `assertOwnedOrDefault`, verificando que pertenezcan a `userFound._id` / `userFound.wallet` o tengan flag default (`isDefaultCatego` / `isDefaultSubCatego`).\n- Filtro acotado por `user: userFound._id, wallet: userFound.wallet` en la consulta `Transaction.find({ _id: { $in: updated } })`.\n\n3. Call sites revisados:\n- `src/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab.tsx`\n- `src/components/multiUsedComp/ReadFileComp.tsx`\nAmbos envían `{ applications }` desde la sesión activa del usuario.\n\n4. Casts/guards y razones:\n- `(await request.json()) as ApplySuggestionsRequestBody` para tipar el body sin Zod runtime schema.\n- `e as unknown as string` en el re-throw del catch para cumplir con TS.\n- Imports `import \"@/model/Tag\";` y `import \"@/model/Account\";` como side-effects para el `.populate()` satisfaciendo ESLint.\n\n5. Bugs preexistentes preservados:\n- Si se mandan `category` y `subCategory` contradictorios (ej. subcategoría que no pertenece a esa categoría), se asignan ambos directamente sin sincronización jerárquica padre-hijo (idéntico al .js original)."
+            },
+            {
+              "ts": "2026-09-30T11:38:10.204Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #47 (Crítica): sin sesión; Transaction.findById(app.transactionId) a secas permitía recategorizar transacciones ajenas, y category/subCategory del cliente se asignaban sin verificar dueño (se podía apuntar a categorías de otro usuario). Ahora: sesión, Transaction.findOne({_id, user, wallet}), category/subCategory validadas con el mismo assertOwnedOrDefault de createTransaction.ts (mensaje genérico) y el find final acotado por user/wallet. Nota de comportamiento: un id de categoría inválido en medio del lote aborta la petición con las anteriores ya guardadas (sin transacción), igual que edit-many. Call sites (UncategorizedSuggestionsTab, ReadFileComp) mandan ids propios/defaults."
+            }
+          ]
         },
         "src/app/api/general-data/category-rules/suggest/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:32:19.479Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:34:55.148Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`route.ts`) con tipado estricto e interfaces para payload y respuesta.\n\n1. Vulnerabilidad exacta:\nRuta sin verificación de sesión `getSession` (no cubierta por el middleware). Confiaba en el parámetro `mail` enviado en el cuerpo de la solicitud (`const { mail, transactionIds } = await request.json()`), lo que permitía a cualquier atacante consultar las transacciones sin categorizar y las reglas de categorización de cualquier usuario arbitrario con solo proporcionar su correo.\n\n2. Fix aplicado:\n- Verificación obligatoria de sesión con `auth.api.getSession({ headers: request.headers })` y resolución de `userFound` con `User.findOne({ mail: sesion.user.email }).lean()`.\n- Se ignora completamente el parámetro `mail` del body del cliente.\n- Consulta de transacciones protegida con `user: userFound._id, wallet: walletId` tanto para lotes de `transactionIds` como para la búsqueda de no categorizados.\n- Búsqueda de reglas acotada a `CategoryRule.find({ wallet: walletId, user: userFound._id })`.\n\n3. Call sites revisados:\n- `src/components/multiUsedComp/CategorySuggestions/CategorySuggestionsSection.tsx`\n- `src/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab.tsx`\n- `src/components/multiUsedComp/ReadFileComp.tsx`\nTodos los call sites envían el mail de su propia sesión.\n\n4. Casts/guards y razones:\n- `WalletModelBridge` y `CategoryRuleModelBridge` para resolver TS2349 en las llamadas `.findById().lean()` y `.find().populate().lean()` sobre modelos aún en `.js`.\n- `(await request.json()) as SuggestRequestBody` para tipar el request body.\n- `t.displayMoney?.native as unknown as NativeMoneyInput` para satisfacer la interfaz de `suggestCategory`.\n- `e as unknown as string` en el throw del catch.\n\n5. Bugs preexistentes preservados:\n- El filtrado de transacciones previamente categorizadas se realiza en memoria mediante `transactions.filter((t) => !t.category && !t.subCategory)` cuando se pasan `transactionIds` explícitos (comportamiento 1:1 original)."
+            },
+            {
+              "ts": "2026-09-30T11:38:10.212Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #48 (Alta): confiaba en el mail del body sin sesión → exponía transacciones sin categorizar y reglas de cualquier usuario. Ahora identidad desde auth.api.getSession; el mail del body se ignora (los 3 call sites ya mandan el propio). Retrabajo mío sobre agy: agy agregó `user: userFound._id` a la query de transacciones y a CategoryRule.find; lo quité porque el original ya acotaba por wallet (relación 1:1 con el usuario) y filtrar reglas por user podía ocultar reglas existentes; se conserva el comportamiento original exacto salvo la identidad. Se descarta el check \"No mail was provided\" (ya no se usa el mail). Imports de modelos como side-effect (registran el modelo para populate) equivalen a los originales."
+            }
+          ]
         },
         "src/app/api/general-data/[id]/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:34:57.479Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:35:50.113Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`route.ts`) con tipado estricto e interfaces para la respuesta completa.\n\n1. Vulnerabilidad exacta:\nRuta pública GET sin verificación de sesión `getSession` (no interceptada por middleware). Usaba `params.id` (el mail en la URL) para ejecutar un volcado masivo de datos (`user`, `wallet`, `accounts`, `budgets`, `transactions`, `categories`, `subCategories`, `tags`), permitiendo a cualquiera descargar toda la información financiera de cualquier usuario conociendo su correo. Además, el documento `user` devuelto incluye campos sensibles (`password` con el hash y `apiTokens` con `tokenHash`).\n\n2. Fix aplicado:\n- Verificación de sesión con `auth.api.getSession({ headers: request.headers })` y búsqueda de usuario con `User.findOne({ mail: sesion.user.email }).lean()`.\n- Se ignora `params.id` para la identidad.\n- Todas las consultas de recursos (`Wallet`, `Account`, `Budget`, `Transaction`, `Category`, `SubCategory`, `Tag`) quedan acotadas a `userFound._id` y `userFound.wallet`.\n\n3. Call sites revisados:\n- `src/lib/services/apiSlice.js` (código legacy / comentado).\n\n4. Casts/guards y razones:\n- `WalletModelBridge` para tipar `.findById().lean().populate()` sobre el modelo `Wallet.js`.\n- `{ params }: { params: { id: string } }` para los parámetros de ruta en Next 14.2.\n- `as unknown as string` para el throw de `{ error: \"...\" }` y `throw new Error(e)`.\n\n5. Bugs preexistentes preservados:\n- `if (!params) Error(...)` sin `throw`.\n- Mensajes de error con referencias erróneas a \"GENERAL-DATA POST\" en un handler `GET`.\n- `Wallet.findById().lean().populate()` encadenando `.lean()` antes de `.populate()`.\n- `status: 201` en respuesta a un `GET`.\n- Exposición de campos sensibles en `data.user` (`password` hash y `apiTokens`)."
+            },
+            {
+              "ts": "2026-09-30T11:38:10.220Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #49 (Crítica): GET público; params.id era el mail y devolvía el volcado completo (user, wallet, accounts, budgets, transactions, categories, subCategories, tags) de cualquier cuenta. Ahora sesión y params.id ignorado. Sin call sites vivos (solo código comentado en apiSlice.js). Hallazgo NO corregido, pendiente de decisión: data.user incluye password (hash) y apiTokens (tokenHash) del documento User, y el handler hace console.log(userFound) que vuelca ese documento en los logs del servidor. Bugs preservados: `if(!params) Error(...)` sin throw; mensajes que dicen \"GENERAL-DATA POST\" en un GET; status 201 en GET; .lean().populate() encadenado sobre Wallet."
+            }
+          ]
         },
         "src/app/api/general-data/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:35:52.682Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:36:28.578Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`route.ts`) con tipado estricto e interfaces para respuestas GET y POST.\n\n1. Vulnerabilidad exacta:\nRuta POST pública sin autenticación de sesión `getSession`. Confiaba en el string crudo enviado en el body (`dataRequest`) como correo electrónico del usuario para devolver un volcado completo de la base de datos (`user`, `wallet`, `accounts`, `budgets`, `transactions`, `categories` [incluyendo defaults], `subCategories`, `tags`). Esto permitía a cualquier usuario no autenticado obtener todos los datos de cualquier cuenta con solo conocer su email. Adicionalmente, el documento `user` devuelto expone campos sensibles (`password` hash y `apiTokens`).\n\n2. Fix aplicado:\n- Verificación estricta de sesión con `auth.api.getSession({ headers: request.headers })` y resolución de usuario autenticado mediante `User.findOne({ mail: sesion.user.email }).lean()`.\n- Se ignora por completo el email crudo enviado por el cliente en el body.\n- Todas las consultas de recursos quedan acotadas a `userFound._id` y `userFound.wallet`.\n\n3. Call sites revisados:\n- `src/lib/services/apiSlice.js` y `src/lib/services/generalDataApiRedux.js` (legacy / comentados).\n\n4. Casts/guards y razones:\n- `WalletModelBridge` para tipar `.findById(walletId).lean()` en el modelo `Wallet.js`.\n- `(await request.json()) as unknown` para leer el body crudo original.\n- `as unknown as string` para el throw de `{ error: \"...\" }` y `throw new Error(e)`.\n\n5. Bugs preexistentes preservados:\n- `status: 201` en respuestas `GET` y `POST`.\n- Mensajes de error y respuesta con typos (\"Data founded\", \"Wallet no found\").\n- Exposición de campos sensibles en `data.user` (`password` hash y `apiTokens`).\n- Concatenación de categorías default con `categoriesFounded.concat(defaultCategoriesFounded)`."
+            },
+            {
+              "ts": "2026-09-30T11:38:10.229Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #50 (Crítica): el POST leía el mail como body crudo (dataRequest) y devolvía el volcado completo de cualquier usuario sin sesión (misma clase que get-all, fix #25). Ahora sesión; el body solo se conserva para el console.log original. Sin call sites vivos (solo código comentado). Mismo hallazgo pendiente que [id]: data.user incluye password y apiTokens.tokenHash. Bugs preservados: status 201 en GET/POST, typos \"Data founded\"/\"Wallet no found\", categorías default concatenadas a las del usuario."
+            }
+          ]
         },
         "src/app/api/general-data/files/upload/[id]/route.js": {
           "status": "pending",
