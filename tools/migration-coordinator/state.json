@@ -4188,8 +4188,23 @@
           ]
         },
         "src/lib/transactions/createTransaction.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T03:47:58.669Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T03:50:49.268Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de `src/lib/transactions/createTransaction.js` a TypeScript (`src/lib/transactions/createTransaction.ts`).\n\n1. Interfaces y tipos creados:\n- `OwnableDocument`: Interface mínima (`user?: unknown; wallet?: unknown;`) para tipar documentos con ownership en `assertOwnedOrDefault`.\n- `CreateTransactionParams`: Interface explícita para tipar el parámetro destructurado completo de `createTransaction`, reflejando todos los campos permitidos y sus tipos opcionales/anulables.\n- `CreateTransactionResult<T = Record<string, unknown>>`: Interface de retorno tipada con `WithDisplayMoney<T>` y `name?: string`.\n- `WalletModelBridge`: Interface co-localizada para `Wallet.findById().lean()`, resolviendo la incompatibilidad de unión TS2349 en el modelo unmigrated `Wallet.js`.\n- `assertOwnedOrDefault<T extends OwnableDocument>`: Función genérica tipada de forma mínima.\n\n2. Casts y guards agregados:\n- `(doc as Record<string, unknown>)[defaultFlag]`: Indexación dinámica segura requerida por TypeScript para acceder al flag sin imponer index signatures globales.\n- `(Wallet as unknown as WalletModelBridge)`: Cast estructural mínimo requerido por TypeScript para invocar `.findById()` en `Wallet.js` unmigrated sin `any`.\n- Cambio de `let findSubCategory` a `const findSubCategory` para cumplir regla `prefer-const` de ESLint.\n- Se preservaron al 100% todos los operadores `||`, `?.`, ternarios, checks preexistentes y orden de evaluación original.\n\n3. Bugs preexistentes encontrados (preservados sin arreglar):\n- Código muerto en `if (!newTag)` tras `new Tag(...)`: el constructor siempre retorna una instancia o lanza error.\n- Código muerto en `if (!savedTransacction)` tras `newTransacction.save()`: Mongoose `save()` siempre resuelve con el documento o rechaza la promesa.\n- Iteración en `tags` cuando es `string`: `for (const tag of tags)` iteraría carácter por carácter creando un tag por cada letra.\n- `if (!amount)`: bloquea montos legítimos con valor `0` (\"No Amount finded...\").\n- `if (!isReadable) isReadable = true`: fuerza `true` incluso cuando se pasa explícitamente `isReadable: false`.\n- Typos en mensajes y variables: \"finded\" en lugar de \"found\", mensajes en plural para operaciones singulares, y variables `newTransacction`/`savedTransacction`.\n\n4. Resultado de verificaciones:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/lib/transactions/createTransaction.ts`: 0 errores, 0 warnings.\n- `npx vitest run`: 30/30 test files pasados (324/324 tests)."
+            },
+            {
+              "ts": "2026-09-30T03:51:31.430Z",
+              "event": "approved",
+              "notes": "Migración limpia. Todos los ||/?./ternarios/== preexistentes preservados exactos (parentWallet.primaryCurrency || \"MXN\", selectedAccount?.currency || walletPrimaryCurrency, linkedBudget.budgetType || (...), !account ? null : account). El cast (Wallet as unknown as WalletModelBridge) verificado como requerido por el compilador (TS2349 real al quitarlo, restaurado). Único cambio no-tipo: let->const en findSubCategory (nunca reasignado, inerte, solo satisface prefer-const de eslint). Buen hallazgo nuevo: si `tags` se pasa como string (permitido por new-transaction/route.ts), el for...of itera carácter por carácter creando un tag por letra - documentar en cierre de Historia 15 junto con los otros 5 bugs reportados (código muerto en !newTag/!savedTransacction, amount:0 rechazado, isReadable:false forzado a true, typos \"finded\"/\"newTransacction\"). tsc/eslint/vitest limpios (324/324)."
+            }
+          ]
         },
         "src/lib/mcp/mcpProjections.js": {
           "status": "pending",
