@@ -6,14 +6,42 @@ import UniversalCategoIcon from "../../UniversalCategoIcon";
 import CategoIcon from "../../CategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import type { PrimaryAmountItem } from "@/helpers/timeFunctions/timeFunctions";
+import type { RootState } from "@/lib/store";
+
+const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
+  type?: string;
+  size?: number | string;
+  siz?: number | string;
+  colore?: string;
+  className?: string;
+  [key: string]: unknown;
+}>;
+
+export interface TopCategoryRowItem extends PrimaryAmountItem {
+  _id?: string;
+  color?: string;
+  icon?: string;
+  type?: string;
+  name?: string;
+  isBill?: boolean;
+  value?: number;
+  [key: string]: unknown;
+}
+
+export interface TopCategoryRowProps {
+  item: TopCategoryRowItem;
+  index: number;
+  onClick?: (item: TopCategoryRowItem) => void;
+}
 
 // Mirrors TransactionItemList's horizontal layout (icon circle + name on
 // the left, amount pinned to the far right) since categories aren't real
 // transactions and so can't reuse that component directly, but should read
 // as its sibling - same row shape, just with a rank number for "this is the
 // #1/#2/... category".
-function TopCategoryRow({ item, index, onClick }) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+function TopCategoryRow({ item, index, onClick }: TopCategoryRowProps): React.JSX.Element {
+  const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
 
   return (
     <div
@@ -31,7 +59,7 @@ function TopCategoryRow({ item, index, onClick }) {
           style={{ backgroundColor: item.color || "#DADADA" }}
           className="gf-glass-tile rounded-full min-w-[50px] min-h-[50px] w-[50px] h-[50px] flex items-center justify-center shrink-0 hover:brightness-90"
         >
-          <UniversalCategoIcon type={item.icon || "md/MdFilterNone"} size={10} />
+          <TypedUniversalCategoIcon type={item.icon || "md/MdFilterNone"} size={10} />
         </div>
         <p className="truncate text-start text-[15px] font-medium">
           {item.type || item.name || "No category"}
