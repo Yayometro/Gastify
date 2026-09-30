@@ -7,14 +7,42 @@ import { useDispatch } from "react-redux";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import EditSingleTransModal from "@/components/multiUsedComp/EditSingleTransModal";
+import EditSingleTransModal, { EditSingleTransItem } from "@/components/multiUsedComp/EditSingleTransModal";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { removeOneTransacction } from "@/lib/features/transacctionsSlice";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
+import type { AppDispatch } from "@/lib/store";
+import type {
+  BudgetCoverageResult,
+  CoverageGroup,
+  CoverageCategoryItem,
+} from "@/helpers/transformers/budgetCoverage";
 
-function MovementRow({ movement, onEdit, onDelete }) {
+export interface MovementAccountRef {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface UnbudgetedMovement {
+  _id?: string;
+  name?: string | null;
+  date?: string | Date | null;
+  createdAt?: string | Date | null;
+  amount?: number | string | null;
+  account?: MovementAccountRef | null;
+  [key: string]: unknown;
+}
+
+export interface MovementRowProps {
+  movement: UnbudgetedMovement;
+  onEdit: (movement: UnbudgetedMovement) => void;
+  onDelete: (movementId?: string) => void;
+}
+
+function MovementRow({ movement, onEdit, onDelete }: MovementRowProps): React.JSX.Element {
   return (
     <div className="flex items-center justify-between gap-3 gf-glass-row rounded-2xl px-3 py-2">
       <div className="min-w-0 flex-1">
@@ -51,7 +79,20 @@ function MovementRow({ movement, onEdit, onDelete }) {
   );
 }
 
-export function UnbudgetedSpendingCard({ coverage, onClick, compact = false }) {
+export interface UnbudgetedSpendingCardProps {
+  coverage: BudgetCoverageResult | {
+    unbudgetedSpent?: number;
+    unbudgetedPercentage?: number;
+    groups?: unknown[];
+    uncovered?: unknown[];
+    [key: string]: unknown;
+  };
+  onClick?: () => void;
+  compact?: boolean;
+}
+
+export function UnbudgetedSpendingCard({ coverage: coverageProp, onClick, compact = false }: UnbudgetedSpendingCardProps): React.JSX.Element {
+  const coverage = coverageProp as BudgetCoverageResult;
   const hasSpending = coverage.unbudgetedSpent > 0;
   const percentage = Math.round(coverage.unbudgetedPercentage);
 
@@ -97,6 +138,21 @@ export function UnbudgetedSpendingCard({ coverage, onClick, compact = false }) {
   );
 }
 
+import type { BudgetData } from "@/lib/features/budgetSlice";
+
+export interface UnbudgetedSpendingModalProps {
+  coverage: BudgetCoverageResult;
+  budgets?: BudgetData[] | null;
+  projectBudgets?: BudgetData[];
+  uncoveredCatalogCategories?: CoverageCategoryItem[];
+  rangeLabel?: string;
+  onClose: () => void;
+  onCreateBudget: (group: CoverageGroup) => void;
+  onAddToBudget: (group: CoverageGroup, budget: BudgetData) => void;
+  onCreateProject: (group: CoverageGroup) => void;
+  onAddToProject: (group: CoverageGroup, project: BudgetData) => void | Promise<void>;
+}
+
 export function UnbudgetedSpendingModal({
   coverage,
   budgets,
@@ -108,15 +164,15 @@ export function UnbudgetedSpendingModal({
   onAddToBudget,
   onCreateProject,
   onAddToProject,
-}) {
-  const [expandedKey, setExpandedKey] = useState(null);
-  const [selectedBudgets, setSelectedBudgets] = useState({});
-  const [selectedProjects, setSelectedProjects] = useState({});
+}: UnbudgetedSpendingModalProps): React.JSX.Element {
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [selectedBudgets, setSelectedBudgets] = useState<{ [key: string]: string }>({});
+  const [selectedProjects, setSelectedProjects] = useState<{ [key: string]: string }>({});
   const [showCatalog, setShowCatalog] = useState(false);
-  const [editingMovement, setEditingMovement] = useState(null);
-  const [deletingMovementId, setDeletingMovementId] = useState(null);
+  const [editingMovement, setEditingMovement] = useState<UnbudgetedMovement | null>(null);
+  const [deletingMovementId, setDeletingMovementId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
   const spendingBudgets = (budgets || []).filter((budget) => !budget.archived && isSpendingBudget(budget));
 
@@ -128,7 +184,7 @@ export function UnbudgetedSpendingModal({
   // it invisible behind Unbudgeted Spending instead of on top of it. A
   // normal controlled <Modal> inherits the theme correctly and can be given
   // an explicit z-index high enough to win.
-  const handleDelete = (movementId) => setDeletingMovementId(movementId);
+  const handleDelete = (movementId?: string) => setDeletingMovementId(movementId);
 
   const confirmDeleteMovement = async () => {
     setIsDeleting(true);
@@ -230,8 +286,8 @@ export function UnbudgetedSpendingModal({
                             <div className="flex flex-col gap-2 mb-3">
                               {group.movements.map((movement) => (
                                 <MovementRow
-                                  key={movement._id}
-                                  movement={movement}
+                                  key={movement._id as string}
+                                  movement={movement as unknown as UnbudgetedMovement}
                                   onEdit={setEditingMovement}
                                   onDelete={handleDelete}
                                 />
@@ -323,15 +379,15 @@ export function UnbudgetedSpendingModal({
                       {uncoveredCatalogCategories.map((category) => (
                         <button
                           type="button"
-                          key={category._id}
+                          key={category._id as string}
                           onClick={() =>
                             onCreateBudget({
                               key: `category:${category._id}`,
-                              name: category.name,
+                              name: category.name as string,
                               category,
                               subCategory: null,
-                              color: category.color,
-                              icon: category.icon,
+                              color: category.color as string,
+                              icon: category.icon as string,
                               type: "category",
                               amount: 0,
                               movements: [],
@@ -351,7 +407,7 @@ export function UnbudgetedSpendingModal({
         }
       />
       {editingMovement && (
-        <EditSingleTransModal trans={editingMovement} onClose={() => setEditingMovement(null)} />
+        <EditSingleTransModal trans={editingMovement as unknown as EditSingleTransItem} onClose={() => setEditingMovement(null)} />
       )}
       <Modal
         className="gf-antd-modal-glass"

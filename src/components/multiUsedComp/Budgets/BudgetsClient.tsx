@@ -8,6 +8,7 @@ import { getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
 import {
   getBudgetCoverage,
   getUncoveredCatalogCategories,
+  type CoverageGroup,
 } from "@/helpers/transformers/budgetCoverage";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { getLastDayOfMonth } from "@/helpers/timeFunctions/timeFunctions";
@@ -55,27 +56,7 @@ export interface BudgetsClientProps {
   mcSession?: string | null;
 }
 
-export interface UnbudgetedGroupMovement {
-  _id?: string;
-  tags?: Array<{ _id?: string; [key: string]: unknown }>;
-  [key: string]: unknown;
-}
-
-export interface UnbudgetedGroupCategoryRef {
-  _id?: string;
-  [key: string]: unknown;
-}
-
-export interface UnbudgetedGroup {
-  name?: string;
-  category?: UnbudgetedGroupCategoryRef | string | null;
-  subCategory?: UnbudgetedGroupCategoryRef | string | null;
-  color?: string;
-  icon?: string | null;
-  amount?: number;
-  movements?: UnbudgetedGroupMovement[];
-  [key: string]: unknown;
-}
+export type UnbudgetedGroup = CoverageGroup;
 
 const today = new Date();
 
@@ -232,8 +213,8 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   };
 
   const categoryEntryFromGroup = (group: UnbudgetedGroup): FormCategoryEntry => ({
-    category: (group.category as UnbudgetedGroupCategoryRef)?._id || (group.category as string) || "",
-    subCategory: (group.subCategory as UnbudgetedGroupCategoryRef)?._id || (group.subCategory as string) || "",
+    category: ((group.category as { _id?: string } | null)?._id) || (group.category as unknown as string) || "",
+    subCategory: ((group.subCategory as { _id?: string } | null)?._id) || (group.subCategory as unknown as string) || "",
     name: group.name,
     color: group.color || "#DADADA",
     icon: group.icon || null,
@@ -255,7 +236,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
 
   const openCreateProjectFromUnbudgeted = (group: UnbudgetedGroup): void => {
     const linkedTags = new Map<string, unknown>();
-    (group.movements || []).forEach((movement) => (movement.tags || []).forEach((tag) => {
+    (group.movements || []).forEach((movement) => ((movement as unknown as { tags?: Array<{ _id?: string; [key: string]: unknown }> }).tags || []).forEach((tag) => {
       if (tag?._id) linkedTags.set(String(tag._id), tag);
     }));
     setShowUnbudgeted(false);
@@ -276,7 +257,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   const addGroupToProject = async (group: UnbudgetedGroup, project: BudgetData): Promise<void> => {
     try {
       const results = await Promise.all((group.movements || []).map((transaction) =>
-        toFetch.post("general-data/transactions/link-budget", { transactionId: transaction._id, budgetId: project._id })
+        toFetch.post("general-data/transactions/link-budget", { transactionId: transaction._id as string, budgetId: project._id })
       ));
       const failed = results.find((result) => !result.ok);
       if (failed) throw new Error(failed.message || "Could not link all movements");
