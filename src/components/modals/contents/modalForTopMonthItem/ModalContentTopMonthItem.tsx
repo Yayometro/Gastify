@@ -1,33 +1,50 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Tooltip, Modal, Button } from "antd";
 import { useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "@/lib/store";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import TransactionItemList from "@/components/Transactions/ItemList/TransactionItemList";
+import TransactionItemList, {
+  type TransactionItemMovement,
+} from "@/components/Transactions/ItemList/TransactionItemList";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
-import EditSingleTransModal from "@/components/multiUsedComp/EditSingleTransModal";
+import EditSingleTransModal, {
+  type EditSingleTransItem,
+} from "@/components/multiUsedComp/EditSingleTransModal";
 import EditMultipleTransModal from "@/components/multiUsedComp/EditMultipleTransModal";
 import QuickEditModal from "@/components/multiUsedComp/QuickEditModal";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
-import DuplicateComparisonTable from "@/components/multiUsedComp/DuplicateComparisonTable";
+import DeletePreviewRow, {
+  type DeletePreviewRowTransaction,
+} from "@/components/multiUsedComp/DeletePreviewRow";
+import DuplicateComparisonTable, {
+  type DuplicatePair,
+} from "@/components/multiUsedComp/DuplicateComparisonTable";
 import {
   removeOneTransacction,
   removeManyTransactions,
+  type TransactionData,
 } from "@/lib/features/transacctionsSlice";
 import {
   getDuplicates,
   getDuplicatesToDelete,
   getAllMatchingIds,
   getDuplicatePairs,
+  type DuplicateTransaction,
 } from "@/helpers/transformers/transactionDuplicates";
 
-const QUICK_ACTIONS = [
+export interface QuickActionItem {
+  key: string;
+  label: string;
+  icon: string;
+}
+
+const QUICK_ACTIONS: QuickActionItem[] = [
   { key: "name",     label: "Rename",   icon: "MdDriveFileRenameOutline" },
   { key: "date",     label: "Date",     icon: "MdCalendarMonth" },
   { key: "type",     label: "Type",     icon: "MdSwapVert" },
@@ -36,9 +53,65 @@ const QUICK_ACTIONS = [
   { key: "tags",     label: "Tags",     icon: "MdLocalOffer" },
 ];
 
-function ModalContentTopMonthItem({ item, close, onBack }) {
-  const dispatch = useDispatch();
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+export interface ModalCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface ModalSubCategoryRef {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface ModalContentTopMonthItemItem {
+  _id?: string;
+  name?: string;
+  type?: string;
+  color?: string;
+  icon?: string;
+  amount?: number;
+  isBill?: boolean;
+  filterBy?: string;
+  children?: ModalContentTopMonthItemItem[];
+  childrens?: ModalContentTopMonthItemItem[];
+  category?: ModalCategoryRef | null;
+  subCategory?: ModalSubCategoryRef | null;
+  date?: string | Date;
+  createdAt?: string | Date;
+  [key: string]: unknown;
+}
+
+export interface ModalContentTopMonthItemProps {
+  item?: ModalContentTopMonthItemItem;
+  close?: () => void;
+  onBack?: () => void;
+}
+
+export type ConfirmDeleteState =
+  | { type: "single"; id: string }
+  | { type: "many"; ids: string[] };
+
+export interface DuplicateCriteriaState {
+  name: boolean;
+  date: boolean;
+  amount: boolean;
+  category: boolean;
+  subcategory: boolean;
+  [key: string]: boolean;
+}
+
+interface ItemWithCategory extends TransactionData {
+  category?: ModalCategoryRef | null;
+  subCategory?: ModalSubCategoryRef | null;
+}
+
+function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthItemProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const toFetch = fetcher();
 
   // Capture original IDs at mount — never changes
@@ -49,17 +122,18 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
   );
 
   // Track deletions locally
-  const [deletedIds, setDeletedIds] = useState(new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
   // Derive localItems live from Redux so edits reflect immediately,
   // and dynamically remove items if their category or isBill type changed away from this modal's item!
-  const allTransactions = useSelector((state) => state.transacctionsReducer.data);
+  const allTransactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const localItems = useMemo(() => {
     return originalIds
       .filter((id) => !deletedIds.has(id))
       .map((id) => allTransactions.find((t) => t._id === id))
-      .filter(Boolean)
+      .filter((t): t is TransactionData => Boolean(t))
       .filter((t) => {
+        const itemWithCat = t as ItemWithCategory;
         if (item.isBill !== undefined && t.isBill !== item.isBill) {
           return false;
         }
@@ -68,12 +142,12 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
           // drill-down) re-check against subCategory, not category - the
           // matching below assumes `item` is a category otherwise.
           if (item.filterBy === "subCategory") {
-            return (t.subCategory?.name || null) === item.name;
+            return (itemWithCat.subCategory?.name || null) === item.name;
           }
           const catId = item._id;
           const catName = item.type || item.name;
-          const tCatId = t.category?._id;
-          const tCatName = t.category?.name || "No category";
+          const tCatId = itemWithCat.category?._id;
+          const tCatName = itemWithCat.category?.name || "No category";
           if (catId && catId !== "No category" && tCatId) {
             return String(tCatId) === String(catId);
           }
@@ -83,13 +157,13 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
       });
   }, [allTransactions, originalIds, deletedIds, item]);
 
-  const [selected, setSelected] = useState(new Set());
-  const [editTrans, setEditTrans] = useState(null);
-  const [editKey, setEditKey] = useState(0);
-  const [quickEditField, setQuickEditField] = useState(null);
-  const [generalEditOpen, setGeneralEditOpen] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [editTrans, setEditTrans] = useState<TransactionData | null>(null);
+  const [editKey, setEditKey] = useState<number>(0);
+  const [quickEditField, setQuickEditField] = useState<string | null>(null);
+  const [generalEditOpen, setGeneralEditOpen] = useState<boolean>(false);
+  const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteState | null>(null);
+  const [deleting, setDeleting] = useState<boolean>(false);
 
   // Sort order for the transaction list below - defaults to largest-first,
   // since that's what every caller (Top 6/Top 12 categories, Top 6/Top 12
@@ -97,19 +171,19 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
   // actually wants. Centralized here rather than in each caller, since this
   // one modal is shared across all of them - whatever order `item.children`
   // happened to arrive in otherwise leaked straight through unsorted.
-  const [sortBy, setSortBy] = useState("amount");
-  const [sortDir, setSortDir] = useState("desc");
+  const [sortBy, setSortBy] = useState<string>("amount");
+  const [sortDir, setSortDir] = useState<string>("desc");
 
-  const [dupMode, setDupMode] = useState(false);
-  const [dupCriteria, setDupCriteria] = useState({ name: true, date: true, amount: true, category: false, subcategory: false });
-  const [dupDateTolerance, setDupDateTolerance] = useState(0);
-  const [dupAmountTolerance, setDupAmountTolerance] = useState(0);
-  const [comparing, setComparing] = useState(false);
-  const [dupDeleteAll, setDupDeleteAll] = useState(false);
+  const [dupMode, setDupMode] = useState<boolean>(false);
+  const [dupCriteria, setDupCriteria] = useState<DuplicateCriteriaState>({ name: true, date: true, amount: true, category: false, subcategory: false });
+  const [dupDateTolerance, setDupDateTolerance] = useState<number>(0);
+  const [dupAmountTolerance, setDupAmountTolerance] = useState<number>(0);
+  const [comparing, setComparing] = useState<boolean>(false);
+  const [dupDeleteAll, setDupDeleteAll] = useState<boolean>(false);
 
   const displayItems = useMemo(() => {
     if (!dupMode) return localItems;
-    const dups = getDuplicates(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance);
+    const dups = getDuplicates(localItems as unknown as DuplicateTransaction[], dupCriteria, dupDateTolerance, dupAmountTolerance);
     const dupIds = new Set(dups.map((d) => d._id));
     return localItems.filter((t) => dupIds.has(t._id));
   }, [localItems, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
@@ -119,17 +193,21 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
     withOrder.sort((a, b) => {
       const diff =
         sortBy === "date"
-          ? new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt)
+          ? +new Date(a.date || a.createdAt) - +new Date(b.date || b.createdAt)
           : getPrimaryAmount(a) - getPrimaryAmount(b);
       return sortDir === "asc" ? diff : -diff;
     });
     return withOrder;
   }, [displayItems, sortBy, sortDir]);
 
-  const toggleSelect = (id) =>
+  const toggleSelect = (id: string) =>
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
 
@@ -137,10 +215,10 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
     setSelected(
       selected.size === displayItems.length && displayItems.length > 0
         ? new Set()
-        : new Set(displayItems.map((t) => t._id))
+        : new Set(displayItems.map((t) => t._id as string))
     );
 
-  const removeLocal = (ids) => {
+  const removeLocal = (ids: string[]) => {
     const idSet = new Set(ids);
     setDeletedIds((prev) => new Set([...prev, ...idSet]));
     setSelected((prev) => {
@@ -154,12 +232,12 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
     if (remaining.length === 0) close();
   };
 
-  const handleEdit = (trans) => {
+  const handleEdit = (trans: TransactionData) => {
     setEditTrans(trans);
     setEditKey((k) => k + 1);
   };
 
-  const executeDeleteSingle = async (id) => {
+  const executeDeleteSingle = async (id: string) => {
     try {
       setDeleting(true);
       const res = await toFetch.post(
@@ -180,7 +258,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
     }
   };
 
-  const executeDeleteMany = async (ids) => {
+  const executeDeleteMany = async (ids: string[]) => {
     try {
       setDeleting(true);
       const res = await toFetch.post(
@@ -201,7 +279,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     setConfirmDelete({ type: "single", id });
   };
 
@@ -214,7 +292,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
   const selectionCount = selected.size;
   const allSelected = selectionCount > 0 && selectionCount === localItems.length;
   const isMulti = localItems.length > 1;
-  const selectedTransObjects = localItems.filter((t) => selected.has(t._id));
+  const selectedTransObjects = localItems.filter((t) => selected.has(t._id as string));
 
   // A category/subcategory list (has children) already names itself as the
   // title - only a single transaction needs its category spelled out
@@ -405,16 +483,16 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
                       <button
                         onClick={() => {
                           const idsToDelete = dupDeleteAll
-                            ? getAllMatchingIds(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance)
-                            : getDuplicatesToDelete(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance);
-                          setSelected(new Set(idsToDelete));
+                            ? getAllMatchingIds(localItems as unknown as DuplicateTransaction[], dupCriteria, dupDateTolerance, dupAmountTolerance)
+                            : getDuplicatesToDelete(localItems as unknown as DuplicateTransaction[], dupCriteria, dupDateTolerance, dupAmountTolerance);
+                          setSelected(new Set(idsToDelete as string[]));
                         }}
                         className="bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1 rounded-lg font-medium transition-colors border border-purple-400/50 shadow-2xs"
                       >
                         Select possible duplicates ({
                           dupDeleteAll
-                            ? getAllMatchingIds(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance).length
-                            : getDuplicatesToDelete(localItems, dupCriteria, dupDateTolerance, dupAmountTolerance).length
+                            ? getAllMatchingIds(localItems as unknown as DuplicateTransaction[], dupCriteria, dupDateTolerance, dupAmountTolerance).length
+                            : getDuplicatesToDelete(localItems as unknown as DuplicateTransaction[], dupCriteria, dupDateTolerance, dupAmountTolerance).length
                         })
                       </button>
 
@@ -504,12 +582,12 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
             )}
             {sortedDisplayItems.map((transaction) => (
               <TransactionItemList
-                movement={transaction}
+                movement={transaction as unknown as TransactionItemMovement}
                 key={`top-modal-${transaction._id}`}
-                handleEdit={handleEdit}
+                handleEdit={handleEdit as unknown as (m?: TransactionItemMovement) => void}
                 handleDelete={handleDelete}
                 selectable={isMulti}
-                selected={selected.has(transaction._id)}
+                selected={selected.has(transaction._id as string)}
                 onSelect={toggleSelect}
               />
             ))}
@@ -540,7 +618,7 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
       {editTrans && createPortal(
         <EditSingleTransModal
           key={`edit-single-${editTrans._id}-${editKey}`}
-          trans={editTrans}
+          trans={editTrans as unknown as EditSingleTransItem}
           onClose={() => setEditTrans(null)}
         />,
         document.body
@@ -585,19 +663,22 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
               {confirmDelete.type === "single" ? (
                 <DeletePreviewRow
                   transaction={
-                    allTransactions.find((t) => t._id === confirmDelete.id) ||
-                    localItems.find((t) => t._id === confirmDelete.id)
+                    (allTransactions.find((t) => t._id === confirmDelete.id) ||
+                    localItems.find((t) => t._id === confirmDelete.id)) as unknown as DeletePreviewRowTransaction
                   }
                 />
               ) : dupMode ? (
                 <DuplicateComparisonTable
-                  pairs={getDuplicatePairs(localItems, confirmDelete.ids, dupCriteria, dupDateTolerance, dupAmountTolerance)}
+                  pairs={getDuplicatePairs(localItems as unknown as DuplicateTransaction[], confirmDelete.ids, dupCriteria, dupDateTolerance, dupAmountTolerance) as unknown as DuplicatePair[]}
                   selectedIds={selected}
                   onToggleSelect={(id) => {
                     setSelected((prev) => {
                       const next = new Set(prev);
-                      if (next.has(id)) next.delete(id);
-                      else next.add(id);
+                      if (next.has(id)) {
+                        next.delete(id);
+                      } else {
+                        next.add(id);
+                      }
                       return next;
                     });
                   }}
@@ -607,8 +688,8 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
                   <DeletePreviewRow
                     key={id}
                     transaction={
-                      allTransactions.find((t) => t._id === id) ||
-                      localItems.find((t) => t._id === id)
+                      (allTransactions.find((t) => t._id === id) ||
+                      localItems.find((t) => t._id === id)) as unknown as DeletePreviewRowTransaction
                     }
                   />
                 ))
@@ -682,13 +763,16 @@ function ModalContentTopMonthItem({ item, close, onBack }) {
           </p>
           <div className="max-h-[60vh] overflow-y-auto pr-1">
             <DuplicateComparisonTable
-              pairs={getDuplicatePairs(localItems, Array.from(selected), dupCriteria, dupDateTolerance, dupAmountTolerance)}
+              pairs={getDuplicatePairs(localItems as unknown as DuplicateTransaction[], Array.from(selected), dupCriteria, dupDateTolerance, dupAmountTolerance) as unknown as DuplicatePair[]}
               selectedIds={selected}
               onToggleSelect={(id) => {
                 setSelected((prev) => {
                   const next = new Set(prev);
-                  if (next.has(id)) next.delete(id);
-                  else next.add(id);
+                  if (next.has(id)) {
+                    next.delete(id);
+                  } else {
+                    next.add(id);
+                  }
                   return next;
                 });
               }}

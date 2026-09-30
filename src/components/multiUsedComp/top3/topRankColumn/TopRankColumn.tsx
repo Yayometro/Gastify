@@ -7,17 +7,12 @@ import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import type { PrimaryAmountItem } from "@/helpers/timeFunctions/timeFunctions";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
 import useModal from "@/hooks/useModalBasic";
-import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
+import ModalContentTopMonthItem, {
+  type ModalContentTopMonthItemItem,
+} from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
-
-const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<{
-  item: unknown;
-  close?: () => void;
-  onBack?: () => void;
-  [key: string]: unknown;
-}>;
 
 export interface RankRowItem extends PrimaryAmountItem {
   name?: string;
@@ -93,7 +88,7 @@ function TopRankColumn<T extends RankRowItem = RankRowItem>({ items, style, titl
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const { close, handleClose, renderModal, modalContent } = useModal();
   function renderModalContent(item: unknown) {
-    renderModal(<TypedModalContentTopMonthItem item={item} close={handleClose} />);
+    renderModal(<ModalContentTopMonthItem item={item as ModalContentTopMonthItemItem} close={handleClose} />);
   }
 
   return (

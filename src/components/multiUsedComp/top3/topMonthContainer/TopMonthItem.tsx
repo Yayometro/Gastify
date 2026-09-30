@@ -5,16 +5,11 @@ import TopTransactionRow from "./TopTransactionRow";
 import TopCategoryRow, { TopCategoryRowItem } from "./TopCategoryRow";
 import type { TransactionItemMovement } from "@/components/Transactions/ItemList/TransactionItemList";
 import BasicTooltip from "../../Tooltips/BasicTooltip";
-import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
+import ModalContentTopMonthItem, {
+  type ModalContentTopMonthItemItem,
+} from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
-
-const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<{
-  item: unknown;
-  close?: () => void;
-  onBack?: () => void;
-  [key: string]: unknown;
-}>;
 
 export interface TopMonthItemProps<T = unknown> {
   childs?: T[] | null;
@@ -46,7 +41,7 @@ function TopMonthItem<T = unknown>({
 }: TopMonthItemProps<T>): React.JSX.Element {
   const { close, handleClose, renderModal, modalContent } = useModal();
   function renderModalContent(item: unknown) {
-    renderModal(<TypedModalContentTopMonthItem item={item} close={handleClose} />);
+    renderModal(<ModalContentTopMonthItem item={item as ModalContentTopMonthItemItem} close={handleClose} />);
   }
   return (
     <>

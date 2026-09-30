@@ -6,15 +6,10 @@ import TopCategoryRow, { TopCategoryRowItem } from "./TopCategoryRow";
 import type { TransactionItemMovement } from "@/components/Transactions/ItemList/TransactionItemList";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
-import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
+import ModalContentTopMonthItem, {
+  type ModalContentTopMonthItemItem,
+} from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import type { RelativeMonthGroup } from "@/helpers/transformers/transactionsChange";
-
-const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<{
-  item: unknown;
-  close?: () => void;
-  onBack?: () => void;
-  [key: string]: unknown;
-}>;
 
 export interface CompareColumn<T = unknown> extends Partial<RelativeMonthGroup<T>> {
   index?: number;
@@ -120,7 +115,7 @@ function CompareSection({ title, rows, mode, labelLeft, labelRight, onOpenItem }
 function TopElementsCompareTable({ transactionRows, categoryRows, labelLeft, labelRight, elementsToDisplay }: TopElementsCompareTableProps): React.JSX.Element {
   const { close, handleClose, renderModal, modalContent } = useModal();
   function onOpenItem(item: unknown) {
-    renderModal(<TypedModalContentTopMonthItem item={item} close={handleClose} />);
+    renderModal(<ModalContentTopMonthItem item={item as ModalContentTopMonthItemItem} close={handleClose} />);
   }
   return (
     <div className="w-full flex flex-col items-start">
