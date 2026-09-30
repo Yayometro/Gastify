@@ -504,7 +504,9 @@ Componentes hoja; casi todos dependen de `fetcher`/`gastifyNotifier` (Historia 1
 - `components/Providers/AllDataProvider.jsx` (29)
 - `lib/ReduxProvider.js` (11)
 
-### Código muerto: 26 archivos, 2102 líneas (decisión pendiente del usuario: borrar o migrar)
+### Código muerto: 26 archivos, 2102 líneas (DECISIÓN DEL USUARIO, 2026-09-30: por ahora se ignoran; ni se borran ni se migran)
+
+**Decisión:** el usuario decidió ignorarlos por ahora - no entran en ninguna historia, no se borran y no se migran; se quedan como `.js`/`.jsx` en el repo. Se puede reabrir la decisión más adelante. Cualquier conteo de "archivos pendientes" debe excluirlos.
 
 No los importa ningún archivo alcanzable (verificado también con grep en todo el repo, scripts y CSS). `apiSlice.js` está 100% comentado. Ojo: `EditTransModal.jsx` y `VoiceRecognicionComponent.jsx` son funcionalidad grande (401 y 303 líneas) que quedó sin uso; `defCategoriesCreator.js.js` tiene doble extensión.
 
