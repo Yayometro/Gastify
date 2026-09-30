@@ -4264,8 +4264,23 @@
           ]
         },
         "src/app/api/mcp/[token]/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T04:09:43.446Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T04:11:31.684Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 a TypeScript de la ruta de API que expone el servidor MCP remoto autenticado por token embebido en la URL ([token]).\n\n- Tipos usados:\n  - `ResolvedApiTokenAuth` importado de `@/lib/auth/apiTokens` para tipar la variable `auth`.\n  - `NextRequest` de `next/server` y `Request` nativo para tipar `request: Request | NextRequest`.\n  - `{ params: { token: string } }` para tipar el contexto dinámico de la ruta App Router.\n  - `Promise<Response>` para el tipo de retorno de `handleMcpRequest`, `POST`, `GET` y `DELETE`.\n  - Reutiliza `handleGastifyMcpTransport` de `@/lib/mcp/buildGastifyMcpServer`.\n\n- Casts y guards agregados:\n  - Ninguno (0 casts, 0 type guards). La verificación de tipos compila limpiamente sin artificios ni aserciones de tipo forzadas.\n\n- Verificaciones:\n  - `npx tsc --noEmit`: 0 errores en todo el proyecto.\n  - `npx eslint src/app/api/mcp/[token]/route.ts`: 0 errores.\n  - `npx vitest run`: 30/30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-30T04:12:35.421Z",
+              "event": "approved",
+              "notes": "Migración trivial y limpia, cero casts, cero guards. params tipado como { token: string } síncrono (no Promise<>) - correcto porque el proyecto usa Next.js 14.2.35 (confirmado en package.json), donde params es genuinamente síncrono; coincide exactamente con el original que tampoco hacía await de params. Nota: otras rutas dinámicas ya migradas (transactions/[id]/route.ts) usan un tipo unión Promise<>|{} más defensivo con await, pero eso no es requerido aquí - preservar el comportamiento exacto del archivo original (sin await) es lo correcto según la regla de oro. Reutiliza ResolvedApiTokenAuth y handleGastifyMcpTransport, ambos ya migrados en esta historia. Ya autentica cada request vía resolveApiToken(params.token), sin fix de seguridad necesario. tsc/eslint/vitest limpios (324/324). Con este archivo, Historia 15 (MCP tools) queda 9/9 completa."
+            }
+          ]
         }
       }
     }
