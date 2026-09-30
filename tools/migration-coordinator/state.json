@@ -4661,40 +4661,175 @@
       "label": "Fundaciones consumidas por codigo ya migrado (Historia 18). 17 archivos: dbConnection.js (50 importadores migrados), fetcher.js (38), gastifyNotifier.js (29), Wallet.js (12 + los WalletModelBridge de apiTokens.ts/createTransaction.ts/rutas), moneySchemas.js (5), nucleo de dinero (conversion, ecbClient, transactionMoney, transactionMoneyService), CategoryRule.js, gastifyTemplate.js, slices, helpers. Igual que con los transformers, al dejar de ser any implicito pueden aparecer errores de tipos en muchos consumidores: se resuelven ajustando primero el tipo del helper y solo si no hay opcion con un cast minimo en el consumidor, sin tocar runtime. Al migrar Wallet.js se deben poder BORRAR los typed bridges WalletModelBridge (verificando con tsc que ya no hacen falta).",
       "files": {
         "src/app/api/dbConnection.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:50:23.353Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:51:01.745Z",
+              "event": "submitted",
+              "notes": "Migrado src/app/api/dbConnection.js -> .ts.\n- Tipos creados/importados: Promise<Mongoose> como tipo de retorno de dbConnection, importando type Mongoose de mongoose.\n- Casts/guards: `e as unknown as string` en el bloque catch para cumplir con throw new Error(e) según la convención del repo.\n- Consumidores: los ~50 consumidores compilaron limpiamente sin necesidad de modificaciones.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: ninguno.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:13.911Z",
+              "event": "approved",
+              "notes": "Solo tipo de retorno Promise<Mongoose> y el cast as unknown as string del catch (patrón de las rutas). Los ~50 consumidores compilan sin cambios. tsc/eslint/vitest limpios."
+            }
+          ]
         },
         "src/helpers/fetcher.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:51:08.403Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:52:16.376Z",
+              "event": "submitted",
+              "notes": "Migrado src/helpers/fetcher.js -> .ts.\n- Tipos creados/importados: interface FetcherInstance definiendo los métodos `get: <T = any>(path: string) => Promise<T>`, `post: <T = any>(path: string, content?: unknown) => Promise<T>`, y `getFullPath: (path: string) => string`.\n- Casts/guards/any: Generic `<T = any>` acotado como default en `get` y `post` para soportar las respuestas JSON variables de los endpoints ({ok, data, message, etc.}) requeridas por los ~38 consumidores en todo el proyecto; `e as unknown as string` en los catch para throw new Error(e).\n- Consumidores tocados: 0 modificados; los ~38 archivos que consumen `fetcher()` compilaron limpiamente sin modificaciones.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: `process.env.NEXT_PUBLIC_API_ROUTE.concat(...)` directo sin guard si la variable de entorno fuera undefined (preservado idéntico); `console.log(e)` en catch de post preservado.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:13.922Z",
+              "event": "approved",
+              "notes": "any acotado y justificado: get/post son genéricos con default <T = any> porque los endpoints devuelven JSON de forma variable ({ok, data, message, status}) consumido de distintas formas por ~38 archivos; los 38 compilan sin tocar ninguno. let->const en fullPath (nunca reasignado, inerte). Bugs preservados: baseUrl.concat sin guard si NEXT_PUBLIC_API_ROUTE es undefined; console.log(e) en el catch de post."
+            }
+          ]
         },
         "src/helpers/gastifyNotifier.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:52:18.432Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:53:09.693Z",
+              "event": "submitted",
+              "notes": "Migrado src/helpers/gastifyNotifier.js -> .ts.\n- Tipos creados/importados: type NotifyType = \"ok\" | \"error\" | \"info\" | \"warning\" | string; función runNotify(nType?: NotifyType, nMessage?: React.ReactNode): Id | number | string | void.\n- Casts/guards/any: cero `any`; nMessage tipado como React.ReactNode para admitir strings, números y nodos JSX según el contrato de react-toastify.\n- Consumidores tocados: 0 modificados; los 29 consumidores compilaron limpiamente sin modificaciones.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: espacio inicial en los templates de \"error\", \"info\" y \"warning\" (` ${nMessage}`) vs \"ok\" (`${nMessage}`) preservado idéntico.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:13.930Z",
+              "event": "approved",
+              "notes": "Tipos de firma; se quitó el import ToastContainer que estaba sin usar (inerte). nType es unión con string (algún consumidor pasa otros valores), nMessage ReactNode. Lógica idéntica. Bug preservado: los mensajes error/info/warning llevan un espacio inicial y el de ok no."
+            }
+          ]
         },
         "src/helpers/downloadBackupCodes.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:53:11.673Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:53:56.922Z",
+              "event": "submitted",
+              "notes": "Migrado src/helpers/downloadBackupCodes.js -> .ts.\n- Tipos creados/importados: export default function downloadBackupCodes(codes: string[] | readonly string[], filename: string = \"gastify-backup-codes.txt\"): void.\n- Casts/guards/any: cero casts, cero guards extra, cero any.\n- Consumidores tocados: 0 modificados; los consumidores (`Verify2FAClient.tsx`, `TwoFactorPanel.tsx`) compilaron limpiamente sin modificaciones.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: ninguno.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:13.939Z",
+              "event": "approved",
+              "notes": "Solo anotaciones de firma."
+            }
+          ]
         },
         "src/helpers/orderFunctions/orderFunctions.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:54:00.001Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:54:28.285Z",
+              "event": "submitted",
+              "notes": "Migrado src/helpers/orderFunctions/orderFunctions.js -> .ts.\n- Tipos creados/importados: interface NamedOrTypedItem con `name?: string; type?: string; [key: string]: unknown`; función genérica `sortItemsByName<T extends NamedOrTypedItem>(arr: T[]): T[]`.\n- Casts/guards/any: cero any explícito; genérico tolerante para cualquier objeto con nombre o tipo.\n- Consumidores tocados: 0 modificados; `categoriesTransformers.ts` compila sin cambios.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: typo en el mensaje de error `\"the arr shoudl be a instance of Array\"` preservado; crash potencial si ni `name` ni `type` existen preservado idéntico.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:13.952Z",
+              "event": "approved",
+              "notes": "Genérico <T extends NamedOrTypedItem>. Bug preservado: typo \"shoudl\" en el mensaje de error. Ojo: el sort muta el array recibido (ya documentado para categoriesTransformers, fila 119)."
+            }
+          ]
         },
         "src/helpers/defaultIconsDB.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:54:30.036Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:55:05.453Z",
+              "event": "submitted",
+              "notes": "Migrado src/helpers/defaultIconsDB.js -> .ts.\n- Tipos creados/importados: interface IconCategory { name: string; icons: string[]; }; export const defaultIcons: IconCategory[].\n- Casts/guards/any: cero any, cero casts, cero guards.\n- Consumidores tocados: 0 modificados; `IconDisplayerMenu.tsx` compila perfectamente.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: typos en nombres de categorías (\"EASHTETIC\", etc.) preservados idénticos.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:13.976Z",
+              "event": "approved",
+              "notes": "Solo interface IconCategory y anotación del array. Bug preservado: nombres de categoría con typos (p. ej. \"EASHTETIC\")."
+            }
+          ]
         },
         "src/lib/features/loadGeneralDataSlice.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:55:07.675Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:55:44.263Z",
+              "event": "submitted",
+              "notes": "Migrado src/lib/features/loadGeneralDataSlice.js -> .ts.\n- Tipos creados/importados: type GeneralDataState = unknown[]; PayloadAction<GeneralDataState> en reducer setGeneralData.\n- Casts/guards/any: cero any, cero casts, cero guards.\n- Consumidores tocados: 0 modificados; `src/lib/store.ts` compone `RootState` y compila limpiamente.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: ninguno.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:13.984Z",
+              "event": "approved",
+              "notes": "PayloadAction tipado; state->_state (param sin uso, inerte). Sin cambios de lógica."
+            }
+          ]
         },
         "src/lib/features/tagsSlice.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:55:47.570Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:56:15.815Z",
+              "event": "submitted",
+              "notes": "Migrado src/lib/features/tagsSlice.js -> .ts.\n- Tipos creados/importados: interface TagItem con `_id?: string; name?: string; color?: string; wallet?: string; user?: string; [key: string]: unknown;`; type TagsState = TagItem[]; PayloadAction<TagsState | unknown> en el reducer setTags.\n- Casts/guards/any: cast estructural `as TagsState` en setTags para tolerar tanto TagsState como payload desconocido de useFetchAndGetAllReduxInfo.\n- Consumidores tocados: 0 modificados; `src/lib/store.ts` y `useFetchAndGetAllReduxInfo.ts` compilaron limpiamente.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: ninguno.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:13.994Z",
+              "event": "approved",
+              "notes": "TagItem/TagsState y cast del payload en el reducer (el payload viene de useFetchAndGetAllReduxInfo sin tipar). Sin cambios de lógica."
+            }
+          ]
         },
         "src/lib/files/gastifyTemplate.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:56:19.163Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:56:55.656Z",
+              "event": "submitted",
+              "notes": "Migrado src/lib/files/gastifyTemplate.js -> .ts.\n- Tipos creados/importados: type ColumnsConfig = typeof COLUMNS; type ColumnKey = keyof typeof COLUMNS; COLUMNS as const; HEADERS: string[]; COLUMN_WIDTHS: number[].\n- Casts/guards/any: cero any, cero casts, cero guards.\n- Consumidores tocados: 0 modificados; las rutas de files (`deduplicate`, `export`, `template`, `upload`) compilaron limpiamente.\n- Bridges borrados: ninguno aplicable.\n- Bugs preexistentes preservados: ninguno.\n- Verificaciones: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), vitest (30/30 suites, 324/324 passed)."
+            },
+            {
+              "ts": "2026-09-30T11:58:14.003Z",
+              "event": "approved",
+              "notes": "COLUMNS as const (se borra al compilar) y anotaciones de tipo en las constantes. Las 4 rutas de Excel que lo consumen compilan sin cambios."
+            }
+          ]
         },
         "src/model/schemas/moneySchemas.js": {
           "status": "pending",
