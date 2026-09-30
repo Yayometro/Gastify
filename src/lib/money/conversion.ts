@@ -6,10 +6,40 @@
 import Decimal from "decimal.js";
 import { assertSupportedCurrency, getMinorUnits } from "./currencies";
 
+export type FxRatesMap = Record<string, Decimal.Value | number | string | undefined | null>;
+
+export interface ConvertMinorParams {
+  amountMinor: number;
+  fromCurrency: string;
+  toCurrency: string;
+  rates?: FxRatesMap | null;
+  roundingMode?: Decimal.Rounding;
+}
+
+export interface ConvertMinorResult {
+  amountMinor: number;
+  currency: string;
+  rate: string;
+}
+
+export interface MoneyAmountParam {
+  amountMinor: number;
+  currency: string;
+}
+
+export interface DeriveEffectiveRateParams {
+  sourceMoney: MoneyAmountParam;
+  targetMoney: MoneyAmountParam;
+}
+
 // ECB publishes "units of X per 1 EUR". Cross rate from -> to is:
 //   rate(from -> to) = rates[to] / rates[from]
 // because both sides are already expressed per-EUR.
-export function crossRate(rates, fromCurrency, toCurrency) {
+export function crossRate(
+  rates: FxRatesMap | undefined | null,
+  fromCurrency: string,
+  toCurrency: string
+): Decimal {
   assertSupportedCurrency(fromCurrency);
   assertSupportedCurrency(toCurrency);
 
@@ -36,7 +66,13 @@ export function crossRate(rates, fromCurrency, toCurrency) {
 // Converts an integer minor-unit amount from one currency to another using a
 // rates map. Rounds once, at the very end, to the target currency's minor
 // units, half-up (away from zero for negative amounts).
-export function convertMinor({ amountMinor, fromCurrency, toCurrency, rates, roundingMode = Decimal.ROUND_HALF_UP }) {
+export function convertMinor({
+  amountMinor,
+  fromCurrency,
+  toCurrency,
+  rates,
+  roundingMode = Decimal.ROUND_HALF_UP,
+}: ConvertMinorParams): ConvertMinorResult {
   assertSupportedCurrency(fromCurrency);
   assertSupportedCurrency(toCurrency);
 
@@ -67,7 +103,10 @@ export function convertMinor({ amountMinor, fromCurrency, toCurrency, rates, rou
 // Given a source money value and the target money value it was actually
 // converted to (e.g. a manual/provider-supplied equivalent), derive the
 // effective rate actually used - which may differ from the neutral ECB rate.
-export function deriveEffectiveRate({ sourceMoney, targetMoney }) {
+export function deriveEffectiveRate({
+  sourceMoney,
+  targetMoney,
+}: DeriveEffectiveRateParams): string {
   assertSupportedCurrency(sourceMoney.currency);
   assertSupportedCurrency(targetMoney.currency);
 
@@ -87,7 +126,10 @@ export function deriveEffectiveRate({ sourceMoney, targetMoney }) {
 // Percentage difference between two rate values (e.g. comparing a manual
 // bank rate against the neutral ECB reference). Positive means rateA is
 // higher than rateB.
-export function percentageDifference(rateA, rateB) {
+export function percentageDifference(
+  rateA: Decimal.Value | number | string,
+  rateB: Decimal.Value | number | string
+): number {
   const a = new Decimal(rateA);
   const b = new Decimal(rateB);
   if (b.isZero()) {
