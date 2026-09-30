@@ -6,7 +6,9 @@ import Transaction from "@/model/Transaction";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
 
-export const removeTransferSchema = z
+// Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const removeTransferSchema = z
   .object({
     transferGroupId: z.string().optional().nullable(),
   })

@@ -5,7 +5,9 @@ import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
 import { createTransaction } from "@/lib/transactions/createTransaction";
 
-export const createTransactionSchema = z
+// Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const createTransactionSchema = z
   .object({
     name: z.string().optional().nullable(),
     amount: z.union([z.number(), z.string()]).optional().nullable(),

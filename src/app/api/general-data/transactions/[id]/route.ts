@@ -17,7 +17,9 @@ import { convert } from "@/lib/money/server/fxRateService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { auth } from "@/lib/auth/betterAuth";
 
-export const updateTransactionSchema = z
+// Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const updateTransactionSchema = z
   .object({
     name: z.string().optional().nullable(),
     amount: z.union([z.number(), z.string()]).optional().nullable(),

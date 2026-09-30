@@ -13,7 +13,9 @@ import { buildSameCurrencyReportingMoney } from "@/lib/money/transactionMoney";
 import { convert } from "@/lib/money/server/fxRateService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 
-export const transferTransactionSchema = z
+// Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const transferTransactionSchema = z
   .object({
     user: z.unknown().optional(),
     wallet: z.unknown().optional(),

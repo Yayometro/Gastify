@@ -11,7 +11,9 @@ import "@/model/Category";
 import "@/model/SubCategory";
 import { auth } from "@/lib/auth/betterAuth";
 
-export const linkBudgetSchema = z
+// Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const linkBudgetSchema = z
   .object({
     transactionId: z.string({
       required_error: "Transaction id is required",

@@ -5,7 +5,7 @@ import Transaction, { type ITransaction } from "@/model/Transaction";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
 
-export const removeTransactionParamsSchema = z.object({
+const removeTransactionParamsSchema = z.object({
   id: z.string().min(1, "Transaction ID is required"),
 });
 

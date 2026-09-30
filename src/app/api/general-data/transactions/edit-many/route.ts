@@ -14,7 +14,9 @@ import { minorToMajor } from "@/lib/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoney } from "@/lib/money/server/transactionReadService";
 
-export const editManyTransactionsSchema = z
+// Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const editManyTransactionsSchema = z
   .object({
     transactions: z.array(z.string()).optional().nullable(),
     fields: z.array(z.string()).optional().nullable(), // array of field names to update, e.g. ["name"] or ["category","subCategory"]
