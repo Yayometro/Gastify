@@ -524,6 +524,20 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 75 | `IncomeSourcesPanel.tsx` | En el submit, `Number(form.amount)` convierte una cadena vacía `""` a `0` sin validar que el usuario haya escrito un monto real. | Historia 14 |
 | 76 | `IncomeSourcesPanel.tsx` | `RECURRENCE_LABELS[source.recurrence]` puede evaluar a `undefined` si la recurrencia es personalizada o está ausente, sin fallback textual. | Historia 14 |
 | 77 | `projection-baseline/update/route.ts` | `new Date(effectiveTo)` se usa directo sin sanear cadenas no parseables, pudiendo guardar una fecha inválida en el historial de baseline. | Historia 14 |
+| 78 | `apiTokens.ts` | `authHeader.split(" ")` en `getUserFromApiToken` falla si el header `Authorization` tiene más de un espacio consecutivo (ej. `"Bearer  token"`), resolviendo el token a `""` y arrojando "Missing or malformed Authorization header". | Historia 15 |
+| 79 | `apiTokens.ts` | `resolveApiToken` asume que `user.apiTokens.find(...)` siempre regresa un elemento tras el `findOne` previo - una condición de carrera externa que modifique el array en memoria lanzaría un `TypeError` real al asignar `lastUsedAt`. | Historia 15 |
+| 80 | `currencies.ts` | `majorToMinor` puede retornar `-0` en vez de `0` cuando `Math.sign(-0) * Math.round(0)` (`Object.is(-0, 0)` es `false`). | Historia 15 |
+| 81 | `currencies.ts` | `formatMoneyMajor` crea una nueva instancia de `Intl.NumberFormat` en cada invocación en vez de memoizarla. | Historia 15 |
+| 82 | `currencies.ts` | `amount ?? 0` en `formatMoneyMajor` no protege contra `NaN` (nullish coalescing solo atrapa `null`/`undefined`) - si se pasa `NaN`, formatea literalmente como `"NaN"`/`"$NaN"`. | Historia 15 |
+| 83 | `currencies.ts` | `assertSupportedCurrency` se invoca de forma redundante hasta 3 veces en la cadena `formatMoneyMinor` → `minorToMajor` → `getMinorUnits`, y otra vez en `formatMoneyMajor`. | Historia 15 |
+| 84 | `transactionReadService.ts` | En `attachDisplayMoney`, cuando `reporting.currency === walletPrimaryCurrency`, el flag `stale` se fija estáticamente en `false`, sin considerar si el snapshot original ya era stale. | Historia 15 |
+| 85 | `transactionReadService.ts` | `attachDisplayMoneyToList` corre todas las conversiones vía `Promise.all` sin límite de concurrencia - si una sola falla, rechaza la lista completa. | Historia 15 |
+| 86 | `createTransaction.ts` | Si `tags` se pasa como string en vez de array (permitido por `new-transaction/route.ts`), el `for...of` itera carácter por carácter, creando un tag por letra. | Historia 15 |
+| 87 | `createTransaction.ts` | `if (!newTag) throw ...` y `if (!savedTransacction) throw ...` son código muerto - Mongoose nunca regresa falsy ahí (el constructor/`.save()` fallarían lanzando, no regresando `null`/`undefined`). | Historia 15 |
+| 88 | `createTransaction.ts` | `if (!amount) throw ...` rechaza montos de exactamente `0` al ser un valor falsy. | Historia 15 |
+| 89 | `createTransaction.ts` | `if (!isReadable) isReadable = true;` imposibilita persistir una transacción con `isReadable: false` explícito. | Historia 15 |
+| 90 | `createTransaction.ts` | Typos preexistentes: mensajes con "finded" en vez de "found", y variables `newTransacction`/`savedTransacction` con doble "c". | Historia 15 |
+| 91 | `mcpProjections.ts` | En rangos que cruzan año, el segundo año del loop en `buildProjectionsForRange` recibe el mismo `startingBalance` estático de las cuentas en vez de encadenar el balance proyectado al cierre del año anterior. | Historia 15 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
@@ -995,3 +1009,66 @@ API donde se aplicaron los fixes de seguridad (esperado y deliberado,
 no rework). Con esta historia el total de fixes de seguridad de toda
 la migración llega a **42**, y el total de bugs de comportamiento
 documentados en la tabla de pendientes llega a **77**.
+
+## 2026-09-29 — Historia 15 (MCP tools) completa: 9/9 archivos
+
+El servidor MCP remoto de Gastify que expone herramientas
+(`create_transaction`, `get_monthly_summary`, `get_projections`, etc.)
+a conectores de IA externos (Claude, ChatGPT) vía HTTP autenticado por
+token personal: `apiTokens.ts` [54→95 líneas, `getUserFromApiToken`/
+`resolveApiToken`], `currencies.ts` [88→131 líneas, helpers de dinero
+compartidos por todo el proyecto], `transactionReadService.ts`
+[66→142 líneas, DTO `displayMoney`], `fxRateService.ts` [135→196
+líneas, cache-aside sobre snapshots ECB], `createTransaction.ts`
+[184→227 líneas, función compartida de creación de transacciones],
+`mcpProjections.ts` [120→170 líneas, proyecciones para la tool
+`get_projections`], `buildGastifyMcpServer.ts` [703→763 líneas, el más
+grande y sensible: las 12 MCP tools], y las 2 rutas de API que exponen
+el servidor (`app/api/mcp/route.ts` [31→32 líneas, auth por header
+Bearer] y `app/api/mcp/[token]/route.ts` [34→47 líneas, auth por token
+en la URL]).
+
+**Sin fixes de seguridad nuevos** - las 9 rutas/módulos de este árbol
+ya estaban bien diseñados desde el original: cada tool handler deriva
+`user`/`wallet` del closure ya autenticado por `resolveApiToken()`,
+nunca de ids que vengan del cliente, y las 2 rutas de exposición
+autentican cada request individualmente antes de delegar. Se investigó
+un posible problema en `mcpProjections.ts` (`ProjectionSettings`/
+`ProjectionBaseline` filtrando solo por `wallet`, sin `user`) y se
+confirmó que NO es un IDOR real - `User.wallet` es un ObjectId único
+(relación 1:1 usuario-wallet), así que filtrar por `wallet._id` ya
+escopea correctamente sin ambigüedad.
+
+**Cero rondas de rework en toda la historia**, incluyendo
+`buildGastifyMcpServer.js` (703 líneas, el archivo más grande y
+complejo de toda la migración hasta ahora) - cada cast/guard agregado
+se verificó individualmente revirtiéndolo y recompilando antes de
+aprobar, sin necesitar una sola vuelta con agy. Los dos transformers
+compartidos más grandes de toda la app (`transactionsChange.js`,
+`projectionsChange.js`) se consumieron como `any` implícito sin
+inventar un typed bridge, siguiendo el mismo patrón ya establecido por
+`useProjectionTable.ts` (Historia 10). `Wallet.js`, `transactionMoney.js`,
+`transactionMoneyService.js`, `ecbClient.js` y `conversion.js`
+(todos aún sin migrar) se dejaron como imports `.js` normales sin
+typed bridge cuando ya había precedente de otros archivos migrados
+consumiéndolos igual (`Transaction.ts`, `transfer/route.ts`).
+
+**14 bugs de comportamiento nuevos encontrados y preservados sin
+arreglar** (ver tabla de bugs pendientes, filas 78-91): en `apiTokens.ts`
+(el `split(" ")` del header Authorization falla con espacios múltiples,
+acceso a `apiTokens.find()` sin proteger una eventual condición de
+carrera); en `currencies.ts` (4 bugs: `-0` en `majorToMinor`,
+`Intl.NumberFormat` no memoizado, `NaN` no protegido en
+`formatMoneyMajor`, validación redundante en cascada); en
+`transactionReadService.ts` (`stale` fijo en `false` sin considerar el
+snapshot original, `Promise.all` sin límite de concurrencia); en
+`createTransaction.ts` (5 bugs, el más interesante nuevo: `tags` como
+string en vez de array itera carácter por carácter creando un tag por
+letra - además del código muerto en `!newTag`/`!savedTransacción`,
+`amount: 0` rechazado, `isReadable: false` imposible de persistir, y
+los typos ya conocidos); y en `mcpProjections.ts` (el balance inicial
+no se encadena entre años en rangos multi-año).
+
+Con esta historia el total de fixes de seguridad de toda la migración
+se mantiene en **42** (sin nuevos), y el total de bugs de
+comportamiento documentados en la tabla de pendientes llega a **91**.
