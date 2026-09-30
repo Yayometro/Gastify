@@ -414,31 +414,7 @@ Generado con un análisis de imports real sobre `src/` (estáticos y `import()` 
 
 ### Historia 19 — COMPLETA (2026-09-30): 16/16 archivos, sin fixes de seguridad. Ver `migration-ts-logs.md`.
 
-### Historia 20 — UI restante (budgets, tarjetas, gráficas, tabs, categorías): 21 archivos, 2409 líneas
-
-Componentes hoja; casi todos dependen de `fetcher`/`gastifyNotifier` (Historia 18).
-
-- `components/buttons/selectCategoryBtn/SelectCategoryBtn.jsx` (13)
-- `components/categories/categoriesModalList/CategoriesModalList.jsx` (69)
-- `components/categories/categoryCircle/CategoryCircle.jsx` (45)
-- `components/categories/categoryCircleWithChilds/CategoryCircleWithChilds.jsx` (53)
-- `components/categories/categorySearchedItem/CategorySearchedItem.jsx` (18)
-- `components/categories/renderCateoriesSelect/RenderCategoriesSearch.jsx` (33)
-- `components/inputs/search/SearchInput.jsx` (25)
-- `components/multiUsedComp/AmountEquivalentPreview.jsx` (25)
-- `components/multiUsedComp/BudgetCont.jsx` (266)
-- `components/multiUsedComp/Budgets/UnbudgetedSpending.jsx` (373)
-- `components/multiUsedComp/CategorySuggestionsModal.jsx` (29)
-- `components/multiUsedComp/ChargedElsewhereSection.jsx` (64)
-- `components/multiUsedComp/CreditCard.jsx` (362)
-- `components/multiUsedComp/DedupPreviewModal.jsx` (220)
-- `components/multiUsedComp/ResumeTabsTrans.jsx` (145)
-- `components/multiUsedComp/TabsTrans.jsx` (235)
-- `components/multiUsedComp/ToolsFab.jsx` (30)
-- `components/multiUsedComp/ToolsModal.jsx` (78)
-- `components/multiUsedComp/chartsComponents/columnChartAntComparative/ColumnChartAntComparative.jsx` (120)
-- `components/multiUsedComp/chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent.jsx` (159)
-- `hooks/money/useTransactionAmountEquivalent.js` (47)
+### Historia 20 — COMPLETA (2026-09-30): 21/21 archivos, sin fixes de seguridad. Ver `migration-ts-logs.md`.
 
 ### Historia 21 — Entradas de Next y providers (cierre): 4 archivos, 274 líneas
 
