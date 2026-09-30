@@ -6,14 +6,32 @@ const ECB_BASE_URL = "https://data-api.ecb.europa.eu/service/data/EXR";
 const REQUESTED_CURRENCIES = ["USD", "MXN", "JPY"];
 const FETCH_TIMEOUT_MS = 8000;
 
-function toIsoDate(date) {
+export interface EcbRates {
+  EUR: string;
+  USD: string;
+  MXN: string;
+  JPY: string;
+  [key: string]: string;
+}
+
+export interface ParseEcbCsvResult {
+  rates: EcbRates;
+  rawSourceDate?: string;
+}
+
+export interface FetchEcbRatesParams {
+  startDate: Date;
+  endDate: Date;
+}
+
+function toIsoDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
 // Parses the ECB SDMX CSV response. Expected columns include (at minimum)
 // CURRENCY and OBS_VALUE, plus a date column (TIME_PERIOD). Column order is
 // not assumed - resolved by header name.
-function parseEcbCsv(csvText) {
+function parseEcbCsv(csvText: string): ParseEcbCsvResult {
   const lines = csvText.trim().split(/\r?\n/);
   if (lines.length < 2) {
     throw new Error("ecbClient: CSV response has no data rows");
@@ -30,7 +48,7 @@ function parseEcbCsv(csvText) {
 
   // Keep only the most recent observation per currency (rows are typically
   // ordered oldest->newest for the requested range).
-  const byCurrency = {};
+  const byCurrency: Record<string, { value: string; date: string }> = {};
   for (let i = 1; i < lines.length; i++) {
     const raw = lines[i];
     if (!raw) continue;
@@ -67,7 +85,7 @@ function parseEcbCsv(csvText) {
 
 // Fetches ECB reference rates for USD/MXN/JPY (vs EUR) for the given date
 // range. Returns { rates, rawSourceDate } or throws. Callers decide caching.
-export async function fetchEcbRates({ startDate, endDate }) {
+export async function fetchEcbRates({ startDate, endDate }: FetchEcbRatesParams): Promise<ParseEcbCsvResult> {
   const start = toIsoDate(startDate);
   const end = toIsoDate(endDate);
   const key = `D.${REQUESTED_CURRENCIES.join("+")}.EUR.SP00.A`;
