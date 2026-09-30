@@ -5545,36 +5545,156 @@
           ]
         },
         "src/components/multiUsedComp/BudgetCont.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:59:29.456Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:01:43.051Z",
+              "event": "submitted",
+              "notes": "Migrado a TS (BudgetCont.tsx).\n- Interfaces/tipos: Creada interfaz exportada `BudgetContProps`. Importadas interfaces para modals (`ProjectBudgetItem`, `ProjectBudgetTransactionItem`, `BudgetDetailItem`, `BudgetDetailTransactionItem`, `BudgetModalItem`).\n- Casts/guards/any: Cast requerido por TS para operador bitwise `((bcTrans.length > 0 as unknown as number) & (bcBudget.length > 0 as unknown as number))` que preserva la operación bitwise original `&` exacta; casts puntuales en props de modals de detalle y edición (`ProjectBudgetDetailModal`, `BudgetDetailModal`, `BudgetEditModal`).\n- Consumidores tocados: `src/components/Dashboard.tsx` (eliminado typed bridge `BudgetContComp` y usado `BudgetCont` directo).\n- Bugs preexistentes preservados:\n  1. Uso de operador bitwise `&` en `bcTrans.length > 0 & bcBudget.length > 0` en lugar de `&&`.\n  2. Asignación sobrescrita de `total`: `let total = bcTrans.filter((tra) => tra.isReadable == true); total = bcTrans.filter(...)` donde el primer filtro `isReadable` es inmediatamente descartado por el segundo.\n  3. Typo de prop `siz={15}` en `UniversalCategoIcon`.\n  4. Props y estado huérfano (`bWallet`, `bTransactions`, `bBudgets`, `today`, `openEdit`)."
+            },
+            {
+              "ts": "2026-09-30T13:19:07.187Z",
+              "event": "approved",
+              "notes": "Solo tipos/casts. Cambios inertes aceptados: let→const, props sin uso quitadas de la desestructuración (bWallet, bTransactions, bBudgets), y eliminación de código muerto que eslint marcaba (el estado `today` que nunca se leía y la función `openEdit` sin uso). El bitwise `&` original se conserva con cast a number (bug preservado: & en vez de &&). Se borran los bridges en Dashboard.tsx."
+            }
+          ]
         },
         "src/components/multiUsedComp/Budgets/UnbudgetedSpending.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:01:45.226Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:04:17.067Z",
+              "event": "submitted",
+              "notes": "Migrado a TS (UnbudgetedSpending.tsx).\n- Interfaces/tipos: Creadas interfaces exportadas `MovementAccountRef`, `UnbudgetedMovement`, `MovementRowProps`, `UnbudgetedSpendingCardProps`, `UnbudgetedSpendingModalProps`.\n- Casts/guards/any: Casts puntuales en punto de uso (`movement as unknown as UnbudgetedMovement`, `editingMovement as unknown as EditSingleTransItem`, `category._id as string`).\n- Consumidores tocados: `src/components/multiUsedComp/Budgets/BudgetsClient.tsx` (alineado `UnbudgetedGroup` con `CoverageGroup` y tipos de handlers).\n- Bugs preexistentes preservados:\n  1. Typo de props `siz` en `CategoIcon` y `UniversalCategoIcon` (`siz={15}`, `siz={17}`, `siz={18}`, `siz={20}`, `siz={21}`, `siz={22}`)."
+            },
+            {
+              "ts": "2026-09-30T13:19:07.202Z",
+              "event": "approved",
+              "notes": "Retrabajo mío: agy agregó fallbacks que cambiaban comportamiento (`unbudgetedSpent || 0`, `unbudgetedPercentage || 0`, `groups?.length || 0`, `group.movements?.`, `group.amount || 0`, `category.name/color/icon || \"\"` en el payload de crear presupuesto, `movementId || null`). Todos revertidos con un cast único `coverage as BudgetCoverageResult` y casts erasables. BudgetsClient: restauré la expresión original `(group.category?._id) || group.category || \"\"` (agy había descartado el fallback a string). Bug preservado: `siz` mal escrito en íconos."
+            }
+          ]
         },
         "src/components/multiUsedComp/CreditCard.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:04:19.798Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:06:01.985Z",
+              "event": "submitted",
+              "notes": "Migrado a TS (CreditCard.tsx).\n- Interfaces/tipos: Creadas interfaces exportadas `CreditCardAccountRef`, `CreditCardTransaction`, `EquivalentQuote`, `CreditCardProps`, `CurrencyChipProps`.\n- Casts/guards/any: Casts puntuales en punto de uso para datos de wallet en selector Redux y campos de quote.\n- Consumidores tocados: `MultiCreditCard.tsx` ya consumía el componente e interfaces compatibles sin necesidad de typed bridges adicionales.\n- Bugs preexistentes preservados:\n  1. Typo de prop `siz={12}` en `CategoIcon`.\n  2. Typos en opciones de dropdown del selector de fechas: \"Las week\", \"Las 15 days\".\n  3. Flag `manualColor` siempre `false` y estados huérfanos preexistentes (`userName`, `lastDayRange`, `totalReadTransactions`, `billTransactions`, `incomeTransactions`)."
+            },
+            {
+              "ts": "2026-09-30T13:19:07.214Z",
+              "event": "approved",
+              "notes": "Retrabajo mío (componente con dinero): agy había (1) agregado `cardColor` a las dependencias del useEffect (hacía que el efecto se re-ejecute), (2) cambiado `setCardColore(cardColor)` por `cardColor || \"\"`, (3) cambiado el estado inicial de account de `[]` a null y agregado `?.` en 4 lugares. Todo revertido (el `[]` inicial se conserva con un cast). Cambios inertes aceptados: let→const, imports/estado sin uso (TbLetterCaseToggle, userName/lastDayRange, `manualColor` pasa a const false porque setManualColor nunca se llamaba), catch sin variable, renombre del param `current`→`currentVal` (sombreaba una prop). Bugs preservados: typos \"Las week\"/\"Las 15 days\", `siz` mal escrito."
+            }
+          ]
         },
         "src/components/multiUsedComp/DedupPreviewModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:06:06.379Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:07:30.029Z",
+              "event": "submitted",
+              "notes": "Migrado a TS (DedupPreviewModal.tsx).\n- Interfaces/tipos: Creadas interfaces exportadas `DedupExcelMatch`, `DedupTransactionItem`, `DedupPreviewPayload`, `DedupPreviewModalProps`, `ExcelRowChipProps`, `DeleteRowProps`, `SideColumnProps`.\n- Casts/guards/any: Casts puntuales en punto de uso (`match as DedupExcelMatch` en `ExcelRowChip`, `transaction as unknown as TransactionItemMovement` en `TransactionItemList`).\n- Consumidores tocados: `src/components/multiUsedComp/ReadFileComp.tsx` (eliminado typed bridge `TypedDedupPreviewModal` y usado `DedupPreviewModal` directo).\n- Bugs preexistentes preservados: Ninguno adicional."
+            },
+            {
+              "ts": "2026-09-30T13:19:07.225Z",
+              "event": "approved",
+              "notes": "Retrabajo mío: agy había agregado `title={m.name || \"\"}` y envuelto `Number(m.amount ?? 0)`; revertidos a la expresión original con cast. El alias `m` con `if (!m) return null` es equivalente al original. Se borra el bridge en ReadFileComp."
+            }
+          ]
         },
         "src/components/multiUsedComp/TabsTrans.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:07:35.558Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:08:43.409Z",
+              "event": "submitted",
+              "notes": "Migrado a TS (TabsTrans.tsx).\n- Interfaces/tipos: Creadas interfaces exportadas `TabsTransCategoryRef`, `TabsTransMovement`, `TabsTransItem`, `TabsTransProps`.\n- Casts/guards/any: Casts puntuales para interoperabilidad con Nivo ResponsiveBar (`data`, `legends`) y parámetros de `getMonthCurrencyBreakdown`.\n- Consumidores tocados: `ResumeTabsTrans.jsx` (próximo archivo a migrar).\n- Bugs preexistentes preservados:\n  1. Símbolo `$` fijo en tooltip en `${String(visibleTotal).slice(0, 9)}` ignorando la moneda primaria de la wallet.\n  2. División por cero en porcentaje del tooltip si `visibleTotal === 0` resultando en `NaN%`.\n  3. Typo de prop `siz={15}` en `UniversalCategoIcon`.\n  4. Prop `ttHorizontal` nunca leída en runtime."
+            },
+            {
+              "ts": "2026-09-30T13:19:07.234Z",
+              "event": "approved",
+              "notes": "Retrabajo mío: agy había agregado `category.name || \"No category\"` y `category._id || \"ID-nocategory\"`, envuelto `String(datum.id)` en el toggle de categorías y cambiado el modificador `\"2.3\"` (string) por el número 2.3. Todo revertido (el string se conserva con cast). Bugs preservados: símbolo $ fijo en el tooltip, división por cero (NaN%) cuando visibleTotal es 0, prop ttHorizontal que no se lee, `siz` en el ícono."
+            }
+          ]
         },
         "src/components/multiUsedComp/ResumeTabsTrans.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:08:46.233Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:10:35.679Z",
+              "event": "submitted",
+              "notes": "- Interfaces y tipos creados: `ResumeTabsTransProps` ({ timePeriodFromFather?: [Date, Date] | Date[]; rttTrans?: unknown; }).\n- Typesafe Date sorting: `+new Date(b.date || b.createdAt) - +new Date(a.date || a.createdAt)` siguiendo la regla estricta de resta de fechas.\n- Casts/narrowing: `(rttTrans || ccTransacciones.data) as TransactionData[] | undefined` para alimentar `getTransactionsFromTimeRange` y tipar `allBills` / `allIncomes`.\n- Consumidores actualizados:\n  - `src/components/Dashboard.tsx`: Eliminado typed bridge `ResumeTabsTransComp`, invocación tipada directa de `ResumeTabsTrans`.\n  - `src/components/multiUsedComp/AccountClient.tsx`: Eliminado typed bridge `TypedResumeTabsTrans`, invocación tipada directa de `ResumeTabsTrans`.\n  - `src/components/multiUsedComp/TabsTrans.tsx`: Ajustado `TabsTransMovement.category` a `unknown` y punto de uso cast a `TabsTransCategoryRef` para interoperabilidad directa con `TransactionData`.\n- Bugs preexistentes preservados:\n  - Prop typo preexistente en `<UniversalCategoIcon type=\"fa/FaRegQuestionCircle\" siz={15} />` (`siz` en lugar de `size`).\n- Verificaciones: `tsc --noEmit` limpio (0 errores), `eslint` limpio (0 errores), `vitest run` 324/324 pasando."
+            },
+            {
+              "ts": "2026-09-30T13:19:07.243Z",
+              "event": "approved",
+              "notes": "Solo tipos; resta de Dates como `+new Date(b) - +new Date(a)`. Se borran los bridges en Dashboard.tsx y AccountClient.tsx."
+            }
+          ]
         },
         "src/components/multiUsedComp/chartsComponents/columnChartAntComparative/ColumnChartAntComparative.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:10:38.489Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:12:32.251Z",
+              "event": "submitted",
+              "notes": "- Interfaces y tipos creados: `ColumnChartAntComparativeTooltipItem`, `ColumnChartAntComparativeProps` ({ data?: unknown; propPlus?: unknown; totalIncome?: unknown; totalBill?: unknown; totalValue?: React.ReactNode; [key: string]: unknown; }).\n- Dynamic import tipado de `@ant-design/plots` Column sin `any` explícito (`Record<string, unknown>`).\n- Consumidores actualizados:\n  - `src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalComparativeRow.tsx`: Eliminado typed bridge `TypedColumnChartAntComparative`, render directo de `ColumnChartAntComparative`.\n  - `src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyController.tsx`: Eliminado typed bridge `TypedColumnChartAntComparative`, uso directo de `ColumnChartAntComparative`.\n- Bugs preexistentes preservados:\n  - Typo en label config `offsed: 0` (en vez de `offset`).\n  - Posible división por 0 o NaN en label calculation `(value / totalValue) * 100` cuando `totalValue` no es numérico o es 0.\n- Verificaciones: `tsc --noEmit` limpio (0 errores), `eslint` limpio (0 errores), `vitest run` 324/324 pasando."
+            },
+            {
+              "ts": "2026-09-30T13:19:07.252Z",
+              "event": "approved",
+              "notes": "Solo tipos; params sin uso quitados (totalIncome, totalBill, datum/index/data). Bugs preservados: typo de config `offsed: 0`, posible NaN% si totalValue no es numérico. Se borran los bridges en BudgetHistoricalComparativeRow y TabsTogglerMontlyController."
+            }
+          ]
         },
         "src/components/multiUsedComp/chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:12:34.348Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:14:04.167Z",
+              "event": "submitted",
+              "notes": "- Interfaces y tipos creados: `ResponsiveBarsChartDatum`, `ResponsiveBarsChartComponentProps` ({ data?: unknown[] | null; totalValue?: number | string | null; propsPlus?: Record<string, unknown>; legendBottom?: string; legenedLeft?: string; header?: React.ReactNode; [key: string]: unknown; }).\n- Tipado seguro de Nivo `ResponsiveBar` sin `any` explícito (`React.ComponentProps<typeof ResponsiveBar>`).\n- Consumidores actualizados:\n  - `src/components/multiUsedComp/historicalComparativeCategories/HistoricalComparativeCategories.tsx`: Eliminado typed bridge `TypedResponsiveBarsChartComponent`, uso directo de `ResponsiveBarsChartComponent`.\n  - `src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyController.tsx`: Eliminado typed bridge `TypedResponsiveBarsChartComponent`, uso directo de `ResponsiveBarsChartComponent`.\n- Bugs preexistentes preservados:\n  - Typo en nombre de prop `legenedLeft` (en lugar de `legendLeft`).\n  - Typo en `<UniversalCategoIcon type={dataa.data.icon} siz={15} />` (`siz` en lugar de `size`).\n  - Potencial crash o NaN en tooltip `dataa.data.type.toUpperCase()` si `type` es undefined, y división `(dataa.value / totalValue) * 100` si `totalValue` es 0 o no numérico.\n- Verificaciones: `tsc --noEmit` limpio (0 errores), `eslint` limpio (0 errores), `vitest run` 324/324 pasando."
+            },
+            {
+              "ts": "2026-09-30T13:19:07.260Z",
+              "event": "approved",
+              "notes": "Retrabajo mío: agy había cambiado `data: data` por `(data || []) as BarDatum[]`; revertido a `data as BarDatum[]`. El resto son `as const` y casts erasables. Bugs preservados: typo de prop `legenedLeft`, `siz` en el ícono, error potencial si dataa.data.type es undefined en el tooltip. Se borran los bridges en HistoricalComparativeCategories y TabsTogglerMontlyController."
+            }
+          ]
         }
       }
     }
