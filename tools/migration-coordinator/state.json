@@ -5702,20 +5702,80 @@
       "label": "Entradas de Next y providers (Historia 21, cierre): ReduxProvider.js, AllDataProvider.jsx (contexto que consumen useGetInfoFromProvider.ts y dashboard/layout.tsx), app/layout.js (layout raiz con metadata y script de tema; AllDataProvider esta solo comentado ahi) y app/page.js (landing publica de 186 lineas). Atencion en page.js: usa la etiqueta <navbar> (no existe en HTML: TS la rechaza) - debe preservarse tal cual renderiza (mismo tag en el DOM) con un cast o ts-expect-error, sin cambiarla a <nav>. Sin cambios de seguridad esperados.",
       "files": {
         "src/lib/ReduxProvider.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:21:04.858Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:22:17.896Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de `src/lib/ReduxProvider.js` a `src/lib/ReduxProvider.tsx`.\n\n1. Interfaces y tipos creados:\n- `export interface ReduxProviderProps { children?: React.ReactNode; }`\n- Tipado del componente `ReduxProvider({ children }: ReduxProviderProps): React.JSX.Element`.\n\n2. Casts, guards o anys:\n- Ninguno requerido. Cero guards, conversiones o casts añadidos.\n\n3. Consumidores tocados:\n- Ninguno modificado (`src/app/layout.js` lo importa directamente y compila limpio).\n\n4. Bugs preexistentes preservados:\n- Ninguno en este archivo de 11 líneas.\n\n5. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/lib/ReduxProvider.tsx`: 0 errores.\n- `npx vitest run`: 30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-30T13:28:37.718Z",
+              "event": "approved",
+              "notes": "Solo tipos (children). Se conserva \"use client\" y los comentarios."
+            }
+          ]
         },
         "src/components/Providers/AllDataProvider.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:22:19.903Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:23:21.369Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de `src/components/Providers/AllDataProvider.jsx` a `src/components/Providers/AllDataProvider.tsx`.\n\n1. Interfaces y tipos creados:\n- `export interface AllDataProviderProps { children?: React.ReactNode; }`\n- `import type { AllDataContextValue } from '@/hooks/getAllInfo/useGetInfoFromProvider'` (type-only import para evitar dependencias circulares en runtime).\n- `export const AllDataContext = createContext<AllDataContextValue>({ ... })` preservando idéntico el objeto de valores por defecto original.\n- Tipado de `AllDataProvider({ children }: AllDataProviderProps)`.\n\n2. Casts, guards o anys:\n- `data as AllDataContextValue` en `<AllDataContext.Provider value={data as AllDataContextValue}>`: exigido por TypeScript (TS2322: 'ReduxAllInfo' is not assignable to 'AllDataContextValue' debido a la firma de índice `[key: string]: unknown` en la interfaz `AllDataContextValue`). Cero guards o conversiones de runtime agregados.\n\n3. Consumidores tocados:\n- Ninguno modificado (`src/app/dashboard/layout.tsx` y `src/hooks/getAllInfo/useGetInfoFromProvider.ts` ya tipados compilan sin cambios).\n\n4. Bugs preexistentes preservados:\n- Ninguno.\n\n5. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/components/Providers/AllDataProvider.tsx`: 0 errores.\n- `npx vitest run`: 30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-30T13:28:37.730Z",
+              "event": "approved",
+              "notes": "createContext<AllDataContextValue> con el valor por defecto idéntico; import type evita el ciclo con useGetInfoFromProvider. Único cast: value={data as AllDataContextValue} (el tipo tiene index signature)."
+            }
+          ]
         },
         "src/app/layout.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:23:24.567Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:23:59.317Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de `src/app/layout.js` a `src/app/layout.tsx`.\n\n1. Interfaces y tipos creados:\n- `import type { Metadata } from \"next\";`\n- `export const metadata: Metadata = { ... }`\n- `export interface RootLayoutProps { children: React.ReactNode; }`\n- `export default function RootLayout({ children }: RootLayoutProps)`.\n\n2. Casts, guards o anys:\n- Ninguno requerido. Cero guards, conversiones o casts añadidos.\n\n3. Consumidores y runtime:\n- Preservado como Server Component (sin \"use client\").\n- Script inline de tema `themeInitScript` y comentarios de prefetch/preconnect preservados íntegramente.\n\n4. Bugs preexistentes preservados:\n- Ninguno.\n\n5. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/layout.tsx`: 0 errores.\n- `npx vitest run`: 30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-30T13:28:37.739Z",
+              "event": "approved",
+              "notes": "metadata: Metadata y children tipado; script de tema, preconnect y comentarios intactos; sigue siendo Server Component. Verificado con next build."
+            }
+          ]
         },
         "src/app/page.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T13:24:01.415Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T13:24:49.379Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de `src/app/page.js` a `src/app/page.tsx`.\n\n1. Interfaces y tipos creados:\n- `const Navbar = \"navbar\" as unknown as React.ElementType;` para preservar la etiqueta DOM `<navbar>` exacta sin alterar el HTML renderizado.\n- Componente `export default function Home()`.\n\n2. Casts, guards o anys:\n- Cast `\"navbar\" as unknown as React.ElementType`: exigido por TypeScript dado que `<navbar>` no es un elemento intrínseco de JSX/HTML estándar. Cero guards o modificaciones de lógica añadidas.\n\n3. Consumidores y runtime:\n- Preservado como Server Component (sin \"use client\").\n- Removido el import no utilizado `Image from \"next/image\"`.\n\n4. Bugs preexistentes preservados (reportados para evaluación):\n- Etiqueta `<navbar>` no estándar en lugar de `<nav>`.\n- Múltiples elementos `<img>` sin atributo `alt` (accesibilidad) y uso de `srcSet` con un único recurso estático.\n- Typo en texto descriptivo (\"XLM files\" en lugar de \"XML\").\n- Año estático \"© 2014 Gastify\" en el footer.\n\n5. Verificación:\n- `npx tsc --noEmit`: 0 errores.\n- `npx eslint src/app/page.tsx`: 0 errores (solo warnings preexistentes de img/alt preservados).\n- `npx vitest run`: 30 suites pasadas, 324/324 tests pasados."
+            },
+            {
+              "ts": "2026-09-30T13:28:37.748Z",
+              "event": "approved",
+              "notes": "La etiqueta <navbar> (inexistente en HTML) se preserva en el DOM con const Navbar = \"navbar\" as unknown as React.ElementType. Se quitó el import next/image sin uso. Bugs preservados: <navbar> no estándar, <img> sin alt, typo \"XLM files\" (en otra línea dice XML), copyright \"© 2014\" fijo. Verificado con next build."
+            }
+          ]
         }
       }
     }
