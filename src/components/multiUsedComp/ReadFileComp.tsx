@@ -98,15 +98,6 @@ interface UploadApiResponse {
   [key: string]: unknown;
 }
 
-// Typed bridges for unmigrated child JSX components
-const TypedDedupPreviewModal = DedupPreviewModal as React.ComponentType<{
-  preview: DedupPreviewData;
-  deleteAll: boolean;
-  onConfirm: (idsToDelete: string[]) => void | Promise<void>;
-  onCancel: () => void;
-  confirming: boolean;
-}>;
-
 
 export interface ReadFileCompProps {
   [key: string]: never;
@@ -488,7 +479,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       </div>
 
       {dedupPreview && (
-        <TypedDedupPreviewModal
+        <DedupPreviewModal
           preview={dedupPreview}
           deleteAll={dedupDeleteAll}
           onConfirm={handleDedupConfirm}

@@ -1,31 +1,75 @@
 "use client";
 
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { useState } from "react";
-import TransactionItemList from "@/components/Transactions/ItemList/TransactionItemList";
+import TransactionItemList, { type TransactionItemMovement } from "@/components/Transactions/ItemList/TransactionItemList";
 import dayjs from "dayjs";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 
-function ExcelRowChip({ match }) {
-  if (!match) return null;
+export interface DedupExcelMatch {
+  name?: string | null;
+  date?: string | Date | null;
+  amount?: number | string | null;
+  currency?: string | null;
+  [key: string]: unknown;
+}
+
+export interface DedupTransactionItem {
+  _id?: string | unknown;
+  _match?: unknown;
+  name?: string | null;
+  amount?: number | string | null;
+  date?: string | Date | null;
+  createdAt?: string | Date | null;
+  [key: string]: unknown;
+}
+
+export interface DedupPreviewPayload {
+  toDelete?: DedupTransactionItem[];
+  toKeep?: DedupTransactionItem[];
+  scanned?: number;
+  [key: string]: unknown;
+}
+
+export interface DedupPreviewModalProps {
+  preview: DedupPreviewPayload;
+  deleteAll: boolean;
+  onConfirm: (ids: string[]) => void;
+  onCancel: () => void;
+  confirming: boolean;
+}
+
+export interface ExcelRowChipProps {
+  match?: unknown;
+}
+
+function ExcelRowChip({ match }: ExcelRowChipProps): React.JSX.Element | null {
+  const m = match as DedupExcelMatch | null | undefined;
+  if (!m) return null;
   return (
     <div className="h-full bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2 flex flex-col justify-center gap-[3px] min-h-0">
-      <p className="text-xs font-medium text-amber-400 truncate" title={match.name}>
-        {match.name}
+      <p className="text-xs font-medium text-amber-400 truncate" title={m.name}>
+        {m.name}
       </p>
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] text-amber-400 whitespace-nowrap">
-          {dayjs(match.date).format("DD/MM/YYYY")}
+          {dayjs(m.date).format("DD/MM/YYYY")}
         </p>
         <p className="text-[11px] font-semibold text-amber-400 whitespace-nowrap">
-          {formatMoneyMajor(match.amount ?? 0, match.currency || "MXN")}
+          {formatMoneyMajor((m.amount ?? 0) as number, m.currency || "MXN")}
         </p>
       </div>
     </div>
   );
 }
 
-function DeleteRow({ transaction, selected, onToggle }) {
+export interface DeleteRowProps {
+  transaction: DedupTransactionItem;
+  selected: boolean;
+  onToggle: (id: string) => void;
+}
+
+function DeleteRow({ transaction, selected, onToggle }: DeleteRowProps): React.JSX.Element {
   const id = String(transaction._id);
   return (
     <div
@@ -42,14 +86,22 @@ function DeleteRow({ transaction, selected, onToggle }) {
         />
       </div>
       <div className="min-w-0">
-        <TransactionItemList movement={transaction} />
+        <TransactionItemList movement={transaction as unknown as TransactionItemMovement} />
       </div>
       <ExcelRowChip match={transaction._match} />
     </div>
   );
 }
 
-function SideColumn({ title, colorClass, children, maxH = "max-h-[55vh]", headerRight }) {
+export interface SideColumnProps {
+  title: string;
+  colorClass: string;
+  children: React.ReactNode;
+  maxH?: string;
+  headerRight?: React.ReactNode;
+}
+
+function SideColumn({ title, colorClass, children, maxH = "max-h-[55vh]", headerRight }: SideColumnProps): React.JSX.Element {
   return (
     <div className="flex flex-col gap-2 flex-1 min-w-0">
       <div className="flex items-center justify-between">
@@ -63,12 +115,12 @@ function SideColumn({ title, colorClass, children, maxH = "max-h-[55vh]", header
   );
 }
 
-function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming }) {
+function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming }: DedupPreviewModalProps): React.JSX.Element | React.ReactPortal {
   const { toDelete = [], toKeep = [], scanned = 0 } = preview;
 
-  const [deselected, setDeselected] = useState(new Set());
+  const [deselected, setDeselected] = useState<Set<string>>(new Set());
 
-  const toggle = (id) => {
+  const toggle = (id: string) => {
     setDeselected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -143,7 +195,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
                 ? <p className="text-xs text-gf-text-muted italic">Nothing to keep.</p>
                 : toKeep.map((t) => (
                     <div key={String(t._id)} className="min-w-0">
-                      <TransactionItemList movement={t} />
+                      <TransactionItemList movement={t as unknown as TransactionItemMovement} />
                     </div>
                   ))
               }
