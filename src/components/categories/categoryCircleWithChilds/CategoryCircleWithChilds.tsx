@@ -1,18 +1,36 @@
 import React from "react";
-import CategoryCircle from "../categoryCircle/CategoryCircle";
+import CategoryCircle, { type CategoryFatherLike } from "../categoryCircle/CategoryCircle";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { Tooltip } from "antd";
 import { FaRegQuestionCircle } from "react-icons/fa";
 
-function CategoryCircleWithChilds({
+export interface SubCategoryItem {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string | null;
+  fatherCategory?: CategoryFatherLike | null | unknown;
+  [key: string]: unknown;
+}
+
+export interface CategoryCircleWithChildsProps<T = unknown> {
+  size?: number | string;
+  category?: T;
+  color?: string;
+  name?: string;
+  icon?: string;
+  onSelect?: (category?: unknown) => void;
+  childs?: (SubCategoryItem | unknown)[] | null;
+}
+
+function CategoryCircleWithChilds<T = unknown>({
   size,
   category,
-  color,
   name,
   icon,
   onSelect,
   childs,
-}) {
+}: CategoryCircleWithChildsProps<T>): React.JSX.Element {
   return (
     <div className="father-container flex flex-col justify-start items-center gap-2">
       <span
@@ -32,7 +50,7 @@ function CategoryCircleWithChilds({
         {!childs ? (
           <p>{"This component hasn't sub-categories..."} 🤷</p>
         ) : (
-          childs.map((sub) => (
+          (childs as SubCategoryItem[]).map((sub) => (
             <CategoryCircle
               size={size || 50}
               category={sub}
