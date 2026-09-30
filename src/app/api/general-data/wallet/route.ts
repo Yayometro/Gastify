@@ -1,15 +1,62 @@
 import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 import { auth } from "@/lib/auth/betterAuth";
 
-export async function GET() {
+export interface WalletGetResponse {
+  mes: string;
+}
+
+export interface UpdateWalletRequestBody {
+  name?: string | null;
+  cash?: number | null;
+  totalBudget?: number | null;
+  totalSavings?: number | null;
+  isSurpassed?: boolean | null;
+  isSaved?: boolean | null;
+  primaryCurrency?: string | null;
+}
+
+export interface WalletBudget {
+  totalBudget?: number;
+  totalSavings?: number;
+  isSurpassed?: boolean;
+  isSaved?: boolean;
+}
+
+export interface IWalletDocument {
+  _id?: unknown;
+  name?: string;
+  cash?: number;
+  budget: WalletBudget;
+  primaryCurrency?: string;
+  currencyUpdatedAt?: Date | null;
+  save: () => Promise<IWalletDocument>;
+  [key: string]: unknown;
+}
+
+interface WalletModelBridge {
+  findById: (id: unknown) => Promise<IWalletDocument | null>;
+}
+
+export interface WalletPostSuccessResponse {
+  message: string;
+  data: IWalletDocument;
+  status: number;
+  ok: boolean;
+}
+
+export type WalletPostResponse = WalletPostSuccessResponse;
+
+export async function GET(): Promise<NextResponse<WalletGetResponse>> {
   return NextResponse.json({ mes: "Work" });
 }
 
-export async function POST(request) {
+export async function POST(
+  request: NextRequest | Request,
+): Promise<NextResponse<WalletPostResponse>> {
   try {
     if (!request) throw new Error("No data in request on REMOVE-ACCOUNT POST");
     const {
@@ -20,7 +67,7 @@ export async function POST(request) {
       isSurpassed,
       isSaved,
       primaryCurrency,
-    } = await request.json();
+    } = (await request.json()) as UpdateWalletRequestBody;
     // Security fix: this route had zero session check - it updated whatever
     // Wallet matched the client-sent walletId (name/cash/budget/currency),
     // and this endpoint isn't covered by middleware.ts's matcher, so it was
@@ -36,7 +83,9 @@ export async function POST(request) {
     if (!userFound) throw new Error("User not found on WALLET POST");
     const walletId = userFound.wallet;
     // FIND WALLET
-    const findWallet = await Wallet.findById(walletId);
+    const findWallet = await (Wallet as unknown as WalletModelBridge).findById(
+      walletId,
+    );
     //IF ERROR
     if (!findWallet)
       throw new Error(`No Account was identified to be removed 🤕`);
@@ -52,9 +101,7 @@ export async function POST(request) {
     findWallet.budget.totalSavings = !totalSavings
       ? findWallet.budget.totalSavings
       : totalSavings;
-    findWallet.budget.isSaved = !isSaved
-      ? findWallet.budget.isSaved
-      : isSaved;
+    findWallet.budget.isSaved = !isSaved ? findWallet.budget.isSaved : isSaved;
 
     // Multi-currency: changes presentation/reporting only, never
     // reinterprets already-stored native Account/Transaction money.
@@ -78,6 +125,6 @@ export async function POST(request) {
     });
   } catch (e) {
     console.log(e);
-    throw new Error(e);
+    throw new Error(e as unknown as string);
   }
 }
