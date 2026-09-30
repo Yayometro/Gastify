@@ -2,9 +2,30 @@ import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 
-function TooltipForChart({item, name, value, totalValue, color, walletPrimaryCurrency = "MXN"}) {
+export interface TooltipForChartItem {
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface TooltipForChartProps {
+  item: TooltipForChartItem;
+  name?: string;
+  value: number;
+  totalValue: number;
+  color?: string;
+  walletPrimaryCurrency?: string;
+}
+
+function TooltipForChart({
+  item,
+  name,
+  value,
+  totalValue,
+  color,
+  walletPrimaryCurrency = "MXN",
+}: TooltipForChartProps): React.JSX.Element {
   return (
-    <div className="w-full flex items-center gap-2 text-xs" key={name + value}>
+    <div className="w-full flex items-center gap-2 text-xs" key={(name as string) + value}>
       <div
         style={{ backgroundColor: `${color}` }}
         className="flex items-center justify-center shrink-0 min-w-[36px] h-[36px] rounded-full"
