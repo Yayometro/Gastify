@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-19-top3-movements",
+  "activeStory": "historia-20-ui-remaining",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -5291,6 +5291,95 @@
               "notes": "Renombrado a .tsx (tiene JSX en tooltips). Retrabajo mío: agy envolvió los keys en String(...) (`String(item.type)+String(item.value)+...`, `String(name)+value`); los reemplacé por casts erasables para no cambiar la semántica de la concatenación. Callbacks de G2 tipados sin any. let→const en isRepeated (inerte)."
             }
           ]
+        }
+      }
+    },
+    "historia-20-ui-remaining": {
+      "label": "UI restante (Historia 20): 21 componentes/hooks hoja de budgets, tarjetas, graficas, tabs y categorias. Tanda A (13): componentes chicos de categorias, herramientas y el hook useTransactionAmountEquivalent; tanda B (8): BudgetCont, UnbudgetedSpending, CreditCard, DedupPreviewModal, TabsTrans, ResumeTabsTrans y las 2 graficas. Casi todos usan fetcher/gastifyNotifier (ya migrados, Historia 18) y DedupPreviewModal usa TransactionItemList (Historia 19). Sin cambios de seguridad esperados; regla de oro: 1:1 sin guards nuevos.",
+      "files": {
+        "src/components/buttons/selectCategoryBtn/SelectCategoryBtn.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/categories/categoryCircle/CategoryCircle.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/categories/categoryCircleWithChilds/CategoryCircleWithChilds.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/categories/categoriesModalList/CategoriesModalList.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/categories/categorySearchedItem/CategorySearchedItem.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/inputs/search/SearchInput.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/categories/renderCateoriesSelect/RenderCategoriesSearch.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/AmountEquivalentPreview.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CategorySuggestionsModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/ChargedElsewhereSection.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/ToolsFab.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/ToolsModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/hooks/money/useTransactionAmountEquivalent.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/BudgetCont.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Budgets/UnbudgetedSpending.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/CreditCard.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/DedupPreviewModal.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TabsTrans.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/ResumeTabsTrans.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/chartsComponents/columnChartAntComparative/ColumnChartAntComparative.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent.jsx": {
+          "status": "pending",
+          "history": []
         }
       }
     }
