@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-15-mcp-tools",
+  "activeStory": "historia-16-transformers",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -4279,6 +4279,47 @@
               "ts": "2026-09-30T04:12:35.421Z",
               "event": "approved",
               "notes": "Migración trivial y limpia, cero casts, cero guards. params tipado como { token: string } síncrono (no Promise<>) - correcto porque el proyecto usa Next.js 14.2.35 (confirmado en package.json), donde params es genuinamente síncrono; coincide exactamente con el original que tampoco hacía await de params. Nota: otras rutas dinámicas ya migradas (transactions/[id]/route.ts) usan un tipo unión Promise<>|{} más defensivo con await, pero eso no es requerido aquí - preservar el comportamiento exacto del archivo original (sin await) es lo correcto según la regla de oro. Reutiliza ResolvedApiTokenAuth y handleGastifyMcpTransport, ambos ya migrados en esta historia. Ya autentica cada request vía resolveApiToken(params.token), sin fix de seguridad necesario. tsc/eslint/vitest limpios (324/324). Con este archivo, Historia 15 (MCP tools) queda 9/9 completa."
+            }
+          ]
+        }
+      }
+    },
+    "historia-16-transformers": {
+      "label": "Transformers restantes - los 6 helpers de src/helpers/transformers/ aun en .js. Los 2 GRANDES los migra Claude directamente (no agy): transactionsChange.js [627 lineas, 38 archivos ya migrados lo consumen como any implicito] y projectionsChange.js [508 lineas, consumido por useProjectionTable.ts, mcpProjections.ts, buildGastifyMcpServer.ts, etc.] - marcados 'claimed' por Claude. Los 4 CHICOS los migra agy y Claude los audita: transactionDuplicates.js [124], budgetCoverage.js [135], categoryRuleMatcher.js [66], categoriesTransformers.js [50]. Al pasar de any implicito a tipos reales, los consumidores existentes pueden empezar a fallar tsc: se arreglan con el cast/tipo minimo en el consumidor o ajustando el tipo, nunca cambiando runtime.",
+      "files": {
+        "src/helpers/transformers/transactionDuplicates.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/transformers/budgetCoverage.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/transformers/categoryRuleMatcher.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/transformers/categoriesTransformers.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/transformers/transactionsChange.js": {
+          "status": "claimed",
+          "history": [
+            {
+              "ts": "2026-09-30T10:49:10.596Z",
+              "event": "claimed",
+              "notes": "Migrado directamente por Claude (pedido explicito del usuario), no por agy."
+            }
+          ]
+        },
+        "src/helpers/transformers/projectionsChange.js": {
+          "status": "claimed",
+          "history": [
+            {
+              "ts": "2026-09-30T10:49:10.596Z",
+              "event": "claimed",
+              "notes": "Migrado directamente por Claude (pedido explicito del usuario), no por agy."
             }
           ]
         }
