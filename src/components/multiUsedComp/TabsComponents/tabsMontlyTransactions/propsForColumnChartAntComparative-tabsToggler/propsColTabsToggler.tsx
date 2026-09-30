@@ -1,8 +1,47 @@
+import React from "react";
 import AtomicTop from "@/components/multiUsedComp/top3/atomicTop/AtomicTop";
-import TooltipForChart from "@/components/toltips/tooltipsForCharts/TooltipForChart";
+import TooltipForChart, {
+  type TooltipForChartItem,
+} from "@/components/toltips/tooltipsForCharts/TooltipForChart";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 
-export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setClickedItems, totalAmount, walletPrimaryCurrency = "MXN" }) => {
+export interface ClickedItem {
+  type?: string | number;
+  value?: number | string;
+  isBill?: boolean | number;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface GeneratePropForChartColAntTogglerTabsOptions {
+  data: unknown[][];
+  clickedItems: ClickedItem[];
+  setClickedItems: React.Dispatch<React.SetStateAction<ClickedItem[]>>;
+  totalAmount: number[];
+  walletPrimaryCurrency?: string;
+}
+
+export interface TooltipItemInfo {
+  channel?: TooltipForChartItem;
+  value: number;
+  color?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface ChartDatumLegend {
+  id?: string;
+  [key: string]: unknown;
+}
+
+export const generatePropForChartColAntTogglerTabs = ({
+  data,
+  clickedItems,
+  setClickedItems,
+  totalAmount,
+  walletPrimaryCurrency = "MXN",
+}: GeneratePropForChartColAntTogglerTabsOptions) => {
   return {
     data: data[2],
     totalValue: (
@@ -23,20 +62,20 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
             <div className="w-full grid grid-cols-2 items-center gap-2 min-[452px]:flex min-[452px]:justify-start min-[452px]:flex-wrap">
               {clickedItems.map((item, index) => (
                 <AtomicTop
-                  key={item.type + item.value + item.isBill + index}
+                  key={(item.type as string) + (item.value as number) + (item.isBill as boolean) + index}
                   index={index}
                   color={item.color}
                   icon={item.icon}
                   name={String(item.type).toUpperCase()}
                   isBill={item.isBill ? true : false}
-                  value={item.value}
+                  value={item.value as number | string}
                   fatherStyle={
                     "flex relative justify-between gap-1 items-center flex-1 rounded-3xl px-2 py-2 hover:mix-blend-multiply min-[352px]:justify-center min-[352px]:flex-col min-[352px]:px-2"
                   }
                   tooltip={
                     <div className="flex flex-col justify-center items-center">
                       <b>Type: {item.type}</b>
-                      <b>Value: {formatMoneyMajor(item.value, walletPrimaryCurrency)}</b>
+                      <b>Value: {formatMoneyMajor(item.value as number, walletPrimaryCurrency)}</b>
                     </div>
                   }
                 />
@@ -62,7 +101,7 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
     propPlus: {
       legend: {
         color: {
-          itemMarkerFill: (datum, index, data) => {
+          itemMarkerFill: (datum: ChartDatumLegend) => {
             return datum.id === "bill" ? "#ff8c8c" : "#88FFE3";
           },
         },
@@ -84,7 +123,7 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
           // tooltip interaction itself - same backdrop problem, separate
           // switch.
           crosshairs: false,
-          render: (e, { items, title }) => {
+          render: (_e: unknown, { items, title }: { items: TooltipItemInfo[]; title: string | number }) => {
             return (
               <div
                 className="max-w-[250px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
@@ -100,7 +139,7 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
                       item={channel}
                       value={value}
                       color={color}
-                      key={name + value}
+                      key={(name as string) + value}
                       totalValue={
                         name === "bill" ? totalAmount[1] : totalAmount[0]
                       }
@@ -114,7 +153,7 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
         },
       },
       label: {
-        text: ({ value, isBill }) => {
+        text: ({ value, isBill }: { value: number; isBill?: boolean | number }) => {
           if (isBill) {
             return ((value / totalAmount[1]) * 100).toFixed(1) + "%";
           } else {
@@ -124,14 +163,14 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
         textBaseline: "bottom",
       },
       style: {
-        fill: ({ color }) => color,
+        fill: ({ color }: { color?: string }) => color,
         inset: 0.2,
       },
-      onReady: ({ chart }) => {
-        chart.on("interval:click", (evt) => {
+      onReady: ({ chart }: { chart: { on: (event: string, handler: (evt: { data?: { data?: ClickedItem } }) => void) => void } }) => {
+        chart.on("interval:click", (evt: { data?: { data?: ClickedItem } }) => {
           const { data } = evt;
           setClickedItems((prev) => {
-            let isRepeated = new Set(prev.map((i) => JSON.stringify(i)));
+            const isRepeated = new Set(prev.map((i) => JSON.stringify(i)));
             return isRepeated.has(JSON.stringify(data?.data))
               ? [...prev]
               : [...prev, data?.data];
@@ -141,6 +180,37 @@ export const generatePropForChartColAntTogglerTabs = ({data, clickedItems, setCl
     },
   };
 };
+
+export interface PeriodCompareDatum {
+  type: string;
+  value: number;
+  color?: string;
+  transactionType?: string;
+  absValue?: number;
+  [key: string]: unknown;
+}
+
+export interface PeriodCompareTotals {
+  incomeA?: number;
+  billA?: number;
+  incomeB?: number;
+  billB?: number;
+}
+
+export interface GeneratePropForChartColAntPeriodCompareOptions {
+  compareData: PeriodCompareDatum[];
+  totals: PeriodCompareTotals;
+  labelA: string;
+  labelB: string;
+  walletPrimaryCurrency?: string;
+}
+
+export interface PeriodCompareTooltipItem {
+  value: number;
+  color?: string;
+  name?: string;
+  [key: string]: unknown;
+}
 
 // Props for the "Compare periods" tab: two independent [start,end] ranges,
 // each split into income/bill, bucketed by position-within-range (so bars
@@ -153,7 +223,7 @@ export const generatePropForChartColAntPeriodCompare = ({
   labelA,
   labelB,
   walletPrimaryCurrency = "MXN",
-}) => {
+}: GeneratePropForChartColAntPeriodCompareOptions) => {
   const balanceA = (totals.incomeA || 0) - (totals.billA || 0);
   const balanceB = (totals.incomeB || 0) - (totals.billB || 0);
   // Each x-axis bucket is "Month N Income"/"Month N Bill", so a 3-month
@@ -209,7 +279,7 @@ export const generatePropForChartColAntPeriodCompare = ({
       // separate columns that only happen to sit next to each other.
       group: false,
       style: {
-        fill: ({ color }) => color,
+        fill: ({ color }: { color?: string }) => color,
         inset: 0,
       },
       // The base ColumnChartAntComparative's default label divides by the
@@ -224,7 +294,7 @@ export const generatePropForChartColAntPeriodCompare = ({
       // "negative spending."
       label: showInlineLabels
         ? {
-            text: ({ value }) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency),
+            text: ({ value }: { value: number }) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency),
             // A plain white label sits directly on top of light-colored bars
             // (e.g. the mint "income" fill) and disappears - G2's own
             // contrastReverse transform picks white or dark text per label
@@ -249,7 +319,7 @@ export const generatePropForChartColAntPeriodCompare = ({
           // Explicitly off since the tooltip itself already marks which
           // bar is active.
           crosshairs: false,
-          render: (e, { items, title }) => {
+          render: (_e: unknown, { items, title }: { items: PeriodCompareTooltipItem[]; title: string | number }) => {
             return (
               <div
                 className="max-w-[280px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
