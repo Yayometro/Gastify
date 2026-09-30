@@ -10,7 +10,6 @@ import "@/model/Account";
 import Wallet from "@/model/Wallet";
 import {
   suggestCategory,
-  type CategoryRuleLike,
   type NativeMoneyInput,
 } from "@/helpers/transformers/categoryRuleMatcher";
 import {
@@ -51,25 +50,6 @@ export interface SuggestSuccessResponse {
 
 export type SuggestResponse = SuggestSuccessResponse;
 
-interface WalletModelBridge {
-  findById: (id: unknown) => {
-    lean: () => Promise<{
-      primaryCurrency?: string;
-      [key: string]: unknown;
-    } | null>;
-  };
-}
-
-interface CategoryRuleModelBridge {
-  find: (filter: unknown) => {
-    populate: (path: string) => {
-      populate: (path: string) => {
-        lean: () => Promise<CategoryRuleLike[]>;
-      };
-    };
-  };
-}
-
 export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<SuggestResponse>> {
@@ -102,12 +82,11 @@ export async function POST(
         .populate("account")
         .populate("tags")
         .lean(),
-      (CategoryRule as unknown as CategoryRuleModelBridge)
-        .find({ wallet: walletId })
+      CategoryRule.find({ wallet: walletId })
         .populate("category")
         .populate("subCategory")
         .lean(),
-      (Wallet as unknown as WalletModelBridge).findById(walletId).lean(),
+      Wallet.findById(walletId).lean(),
     ]);
 
     const uncategorizedRaw = transactions.filter(

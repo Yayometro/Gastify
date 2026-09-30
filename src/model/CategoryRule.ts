@@ -1,7 +1,41 @@
 import mongoose, { Schema } from "mongoose";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 
-const categoryRuleSchema = new Schema(
+export interface ICategoryRuleCategoryRef {
+  _id?: mongoose.Types.ObjectId | string | unknown;
+  name?: string;
+  icon?: string;
+  color?: string;
+  [key: string]: unknown;
+}
+
+export interface ICategoryRule extends mongoose.Document {
+  user?: mongoose.Types.ObjectId | string;
+  wallet?: mongoose.Types.ObjectId | string;
+  pattern?: string;
+  // Legacy major-unit thresholds, implicitly MXN. Preserved until Phase 8
+  // migrates categoryRuleMatcher to compare against minAmountMinor/
+  // maxAmountMinor in amountCurrency instead.
+  minAmount?: number;
+  maxAmount?: number;
+  minAmountMinor?: number | null;
+  maxAmountMinor?: number | null;
+  amountCurrency?: string;
+  category?: mongoose.Types.ObjectId | string | ICategoryRuleCategoryRef;
+  subCategory?: mongoose.Types.ObjectId | string | ICategoryRuleCategoryRef;
+  // Higher priority is evaluated first, so a specific rule (e.g. "UBER EATS")
+  // can win over a broader one that would otherwise also match (e.g. "UBER").
+  priority?: number;
+  // "low" confidence rules (e.g. a department store that sells many kinds of
+  // things) should be surfaced for closer review rather than one-click applied.
+  confidence?: "high" | "low" | string;
+  source?: "seed" | "manual" | "learned" | string;
+  timesApplied?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const categoryRuleSchema = new Schema<ICategoryRule>(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -44,7 +78,7 @@ const categoryRuleSchema = new Schema(
 
 categoryRuleSchema.index({ wallet: 1, priority: -1 });
 
-const CategoryRule =
-  mongoose.models.CategoryRule || mongoose.model("CategoryRule", categoryRuleSchema);
+const CategoryRule: mongoose.Model<ICategoryRule> =
+  mongoose.models.CategoryRule || mongoose.model<ICategoryRule>("CategoryRule", categoryRuleSchema);
 
 export default CategoryRule;

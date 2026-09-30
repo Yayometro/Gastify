@@ -18,8 +18,8 @@ export interface CategoryRuleLike {
   _id?: string | unknown;
   pattern?: string | null;
   priority?: number | null;
-  category?: CategoryRuleCategoryRef | null;
-  subCategory?: CategoryRuleCategoryRef | null;
+  category?: CategoryRuleCategoryRef | unknown;
+  subCategory?: CategoryRuleCategoryRef | unknown;
   confidence?: string | null;
   minAmountMinor?: number | null;
   maxAmountMinor?: number | null;
@@ -71,11 +71,11 @@ function passesAmountThreshold(nativeMoney?: NativeMoneyInput | null, rule?: Cat
 // (highest priority first) so a narrow rule (e.g. "UBER EATS") wins over a broader
 // one that would otherwise also match (e.g. "UBER"). First match wins - this is a
 // deterministic rule engine, not a scored/fuzzy classifier.
-export function suggestCategory<R extends CategoryRuleLike = CategoryRuleLike>(
+export function suggestCategory<R extends CategoryRuleLike = CategoryRuleLike, C = CategoryRuleCategoryRef>(
   transactionName?: string | null,
   nativeMoney?: NativeMoneyInput | null,
   rules?: R[] | null
-): CategorySuggestionResult<NonNullable<R["category"]>> | null {
+): CategorySuggestionResult<C> | null {
   if (!transactionName || !Array.isArray(rules) || rules.length === 0) return null;
 
   const sorted = [...rules].sort((a, b) => (b.priority || 0) - (a.priority || 0));
@@ -96,8 +96,8 @@ export function suggestCategory<R extends CategoryRuleLike = CategoryRuleLike>(
 
     return {
       ruleId: rule._id,
-      category: (rule.category as NonNullable<R["category"]>) || null,
-      subCategory: (rule.subCategory as NonNullable<R["category"]>) || null,
+      category: (rule.category as unknown as C) || null,
+      subCategory: (rule.subCategory as unknown as C) || null,
       confidence: rule.confidence || "high",
     };
   }
