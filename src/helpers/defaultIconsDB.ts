@@ -1,5 +1,9 @@
+export interface IconCategory {
+  name: string;
+  icons: string[];
+}
 
-export const defaultIcons = [
+export const defaultIcons: IconCategory[] = [
     {
       name: "FOOD",
       icons: [
