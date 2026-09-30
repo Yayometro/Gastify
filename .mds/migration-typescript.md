@@ -408,23 +408,7 @@ El inventario real está en la sección siguiente.
 Generado con un análisis de imports real sobre `src/` (estáticos y `import()` dinámicos), no a ojo. Total de `.js`/`.jsx` sin contar tests: **97 archivos / 9,560 líneas**; de ellos **71 están vivos (7,458 líneas)** y **26 son código muerto (2,102 líneas)**, sin ningún importador alcanzable desde una página, ruta o archivo `.ts/.tsx` (ver lista abajo). Una sola Historia con los 71 vivos sería ~4.5 veces la más grande hecha hasta ahora, y mezclaría fixes de seguridad con UI; se recomienda dividir en 5.
 
 
-### Historia 17 — API routes restantes (SEGURIDAD primero): 13 archivos, 1458 líneas
-
-13 rutas de `general-data/*` sin `getSession` (solo `wallet/route.js` lo tiene) y el middleware solo cubre `/dashboard/*`. Incluye `user/remove-user` (borra un usuario y todos sus datos por el `mail` del body), `files/upload|export|template|deduplicate` (por id/email en la URL), `tags/*`, `category-rules/*`. Mismos patrones IDOR de las historias 1-14: se corrigen al migrar.
-
-- `app/api/general-data/[id]/route.js` (100)
-- `app/api/general-data/category-rules/apply-suggestions/route.js` (47)
-- `app/api/general-data/category-rules/suggest/route.js` (70)
-- `app/api/general-data/files/deduplicate/[id]/route.js` (231)
-- `app/api/general-data/files/export/[email]/route.js` (125)
-- `app/api/general-data/files/template/[email]/route.js` (162)
-- `app/api/general-data/files/upload/[id]/route.js` (374)
-- `app/api/general-data/route.js` (120)
-- `app/api/general-data/tags/new/route.js` (36)
-- `app/api/general-data/tags/remove/route.js` (25)
-- `app/api/general-data/tags/update/route.js` (33)
-- `app/api/general-data/user/remove-user/route.js` (52)
-- `app/api/general-data/wallet/route.js` (83)
+### Historia 17 — COMPLETA (2026-09-30): 13/13 rutas migradas, 12 fixes de seguridad (#43-54). Ver `migration-ts-logs.md`.
 
 ### Historia 18 — Fundaciones consumidas por código ya migrado: 17 archivos, 1033 líneas
 

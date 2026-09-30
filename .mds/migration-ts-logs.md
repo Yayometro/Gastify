@@ -272,6 +272,18 @@ correctamente, quedando los 3 conectores reales sin tocar.
 | 40 | `general-data/income-sources/update` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía a cualquiera (autenticado o no) modificar amount/recurrence/currency/anchorDate/active de la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo nivel de gravedad que el bug de `remove-many` (fila 28). | `55300de` | Crítica |
 | 41 | `general-data/income-sources/new` (POST) | Cero verificación de sesión - el `user`/`wallet` del body se pasaban tal cual al crear la income source, permitiendo forjar income sources atribuidas a cualquier usuario/wallet. Mismo patrón que el fix #27 (`new-transaction`). | `231d055` | Crítica |
 | 42 | `general-data/income-sources/remove` (POST) | Cero verificación de sesión NI de ownership - `IncomeSource.findById(id)` a secas permitía archivar (soft-delete) la income source de cualquier usuario conociendo/adivinando el ObjectId. Mismo patrón que el fix #40. | `8241872` | Crítica |
+| 43 | `general-data/user/remove-user (POST)` | Cero verificación de sesión - `User.findOneAndDelete({mail})` con el mail del body borraba a cualquier usuario y TODOS sus datos (wallet, cuentas, transacciones, categorías, subcategorías, tags y colecciones de Better Auth). Junto con remove-many (#28) y las de income-sources, la más destructiva de la migración. | `ebb06d5` | Crítica |
+| 44 | `general-data/tags/new (POST)` | Cero verificación de sesión - user/wallet del body se guardaban tal cual: se podían forjar tags en cualquier usuario/wallet. | `c571d48` | Alta |
+| 45 | `general-data/tags/remove (POST)` | Cero verificación de sesión NI ownership - `Tag.findByIdAndDelete(id)` a secas. | `7c85fa2` | Alta |
+| 46 | `general-data/tags/update (POST)` | Cero verificación de sesión NI ownership - `Tag.findById(id)` a secas permitía editar tags ajenos. | `f617970` | Alta |
+| 47 | `general-data/category-rules/apply-suggestions (POST)` | Cero sesión; `Transaction.findById` a secas permitía recategorizar transacciones ajenas y los category/subCategory del cliente se asignaban sin verificar dueño. | `772280b` | Crítica |
+| 48 | `general-data/category-rules/suggest (POST)` | Cero sesión; confiaba en el mail del body: exponía transacciones sin categorizar y reglas de cualquier usuario. | `3c9d20e` | Alta |
+| 49 | `general-data/[id] (GET)` | Cero sesión; `params.id` (un mail) devolvía el volcado completo (user, wallet, cuentas, budgets, transacciones, categorías, tags) de cualquier cuenta. | `20ed990` | Crítica |
+| 50 | `general-data (POST)` | Cero sesión; el mail llegaba como body crudo y devolvía el volcado completo de cualquier cuenta (misma clase que get-all, #25). | `0570f20` | Crítica |
+| 51 | `general-data/files/upload/[id] (POST)` | Cero sesión; mail en la URL: se podían inyectar transacciones en la cuenta de cualquier usuario subiendo un Excel. | `b3e17f9` | Crítica |
+| 52 | `general-data/files/deduplicate/[id] (POST)` | Cero sesión; mail en la URL y `Transaction.deleteMany({_id:{$in}})` sin scope: permitía borrar transacciones de otro usuario. | `4f0d32d` | Crítica |
+| 53 | `general-data/files/export/[email] (POST)` | Cero sesión; mail en la URL: exportaba a Excel las transacciones de cualquier usuario dados sus ids. | `37cd4bf` | Alta |
+| 54 | `general-data/files/template/[email] (GET)` | Cero sesión; mail en la URL: descargaba las cuentas, categorías y subcategorías personalizadas de cualquier usuario. | `e85c2a0` | Media |
 
 Los #1-5, #7, #9, #16-19 comparten la misma causa raíz (confiar en un `mail`
 mandado por el cliente en vez de derivar el usuario de la sesión
@@ -566,6 +578,19 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 117 | `categoriesTransformers.ts` | `organizedCategoriesAndSubCategories`: raíces sin `_id` ni `name` colisionan en la clave `"undefined"` y se sobrescriben. | Historia 16 |
 | 118 | `categoriesTransformers.ts` | `organizedCategoriesAndSubCategories`: una subcategoría cuyo `fatherCategory` es un string ID que no existe en el mapa se descarta en silencio (la rama else solo procesa objetos con `name`). | Historia 16 |
 | 119 | `categoriesTransformers.ts` | `sortItemsByName` muta en el lugar el array devuelto por `Object.values(categoryMap)`. | Historia 16 |
+| 120 | `user/remove-user/route.ts` | El mensaje de éxito usa `removedUser.name`, pero el modelo User guarda `fullName`: responde "undefined removed successfully 🤓". | Historia 17 |
+| 121 | `user/remove-user/route.ts` | El borrado en cascada no es atómico (sin transacción): si falla a mitad, quedan datos parcialmente borrados; y los `if(!x) throw` tras `deleteMany` son código muerto porque nunca devuelve falsy. Además no exige step-up 2FA (`markStepUpVerified`) para una operación destructiva. | Historia 17 |
+| 122 | `tags/remove/route.ts, tags/update/route.ts` | El mensaje de error "No request received from NEW TAG" está copiado de tags/new en las tres rutas. | Historia 17 |
+| 123 | `tags/update/route.ts` | `!color ? updatedTag.color : color` (y lo mismo con name) impide vaciar el color o el nombre de un tag. | Historia 17 |
+| 124 | `wallet/route.ts` | `!cash`, `!totalBudget`, `!isSurpassed`, etc. impiden poner un valor en 0 o false; los mensajes de error dicen "REMOVE-ACCOUNT" (copiados de otra ruta). | Historia 17 |
+| 125 | `category-rules/apply-suggestions/route.ts` | No valida que category y subCategory sean coherentes entre sí (padre-hijo), y un id inválido en medio del lote aborta la petición con las transacciones anteriores ya guardadas (sin transacción de BD). | Historia 17 |
+| 126 | `general-data/[id]/route.ts` | `if (!params) Error(...)` sin `throw`; los mensajes dicen "GENERAL-DATA POST" en un GET; responde `status: 201` en un GET; encadena `.lean().populate()` sobre Wallet. | Historia 17 |
+| 127 | `general-data/route.ts, general-data/[id]/route.ts` | HALLAZGO DE SEGURIDAD PENDIENTE DE DECISIÓN: `data.user` incluye `password` (hash) y `apiTokens` (con `tokenHash`) del documento User, y `[id]` hace `console.log(userFound)` volcando ese documento a los logs del servidor. Hoy solo lo ve el dueño de la cuenta y ninguna pantalla llama a estas rutas (solo código comentado), así que se dejó sin tocar; convendría quitar esos campos o borrar las rutas. | Historia 17 |
+| 128 | `general-data/route.ts` | `status: 201` en GET y POST, typos "Data founded"/"Wallet no found", y el `console.log(dataRequest)` original se conserva. | Historia 17 |
+| 129 | `files/deduplicate/[id]/route.ts` | La ventana de duplicados es de ±30 horas y las filas sin concepto se omiten en silencio. | Historia 17 |
+| 130 | `files/upload/[id]/route.ts` | Si la subcategoría tiene categoría padre, esa gana sobre la categoría de la columna del Excel; las fechas se parsean con zona horaria local. | Historia 17 |
+| 131 | `files/template/[email]/route.ts` | Las validaciones de datos del Excel están hardcodeadas a las filas 3-202 y la fila de ejemplo lleva `new Date()` en el momento de descarga. | Historia 17 |
+| 132 | `files/export/[email]/route.ts` | El estilo de la fila de nota es estático y la fecha cae a `createdAt` solo si `date` es falsy. | Historia 17 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
@@ -1156,3 +1181,15 @@ HEAD, tsc/eslint limpios y los tests existentes (`transactionsChange.test.js`,
 `projectionsChange.test.js`, `walletAnalyzer.test.js`, 324/324 en total).
 Con esta historia el total de fixes de seguridad se mantiene en **42** y el
 de bugs pendientes llega a **119**.
+
+## 2026-09-30 — Historia 17 (API routes restantes) completa: 13/13 archivos
+
+Las 13 rutas de `general-data/*` que seguían en `.js` (todas alcanzables sin autenticar porque el middleware solo cubre `/dashboard/*`): `user/remove-user`, `tags/new|remove|update`, `wallet`, `category-rules/apply-suggestions|suggest`, `general-data/[id]`, `general-data` (raíz) y `files/upload|deduplicate|export|template`. Migradas por agy en 3 tandas y auditadas una por una por Claude.
+
+**12 fixes de seguridad nuevos (#43-54)**, todos del mismo patrón ya visto: identidad tomada del mail/id que manda el cliente en lugar de `auth.api.getSession`. La única que ya tenía el fix era `wallet` (solo se migró). Las más graves: `remove-user` (borraba cualquier cuenta y todos sus datos), los dos volcados completos por mail (`general-data` y `[id]`), `upload` (inyectar transacciones en cualquier cuenta) y `deduplicate` (borrar transacciones ajenas). Los call sites reales de cliente ya mandaban el correo de su propia sesión, así que ningún flujo legítimo cambió. Las rutas destructivas no se ejercitaron en vivo: se verificaron con tsc, eslint y vitest (los 2 tests de `files/*` solo ganaron el mock de `getSession`).
+
+**Retrabajos hechos por Claude sobre el trabajo de agy** (mismo tipo de error repetido, ya dejado como regla en los prompts): schemas Zod exportados que nunca validaban nada, `|| {}` agregado a `request.json()` (cambia el comportamiento con body null), `if (!sheet) return ...` en las 4 rutas de Excel, un `?.` extra en el catch de `template`, y filtros `user` de más en `category-rules/suggest` que podían ocultar reglas existentes (el original ya acotaba por wallet, relación 1:1 con el usuario).
+
+**Hallazgo abierto (no corregido, decisión pendiente del usuario):** los volcados de `general-data` y `general-data/[id]` devuelven el documento User con `password` (hash) y `apiTokens.tokenHash`, y `[id]` lo escribe en los logs del servidor. Ninguna pantalla llama a esas rutas (solo hay código comentado), así que lo más limpio sería borrarlas o quitar esos campos.
+
+**13 bugs de comportamiento nuevos** preservados sin arreglar (filas 120-132). Nuevo archivo `src/types/xlsx-populate.d.ts` (la librería no trae tipos). Con esta historia el total de fixes de seguridad de toda la migración pasa de 42 a **54**.
