@@ -1,10 +1,13 @@
-import Image from "next/image";
+import React from "react";
 import Link from "next/link";
+
+// Pre-existing bug: <navbar> is not a valid HTML tag, but preserved in the DOM 1:1.
+const Navbar = "navbar" as unknown as React.ElementType;
 
 export default function Home() {
   return (
     <main className="flex bg-gf-bg min-h-screen flex-col items-center justify-between px-1">
-      <navbar className=" w-full px-2 pt-1 pb-1 flex justify-between items-center">
+      <Navbar className=" w-full px-2 pt-1 pb-1 flex justify-between items-center">
         <div className="nav-logo w-[80px] h-[60px] sm:w-[100px] sm:h-[80px] md:w-[130px] md:h-[100px]">
           <Link
             href="/"
@@ -30,7 +33,7 @@ export default function Home() {
             login
           </Link>
         </div>
-      </navbar>
+      </Navbar>
       <div className="bg-gf-bg flex flex-col items-center py-4">
         <div className="w-full max-w-[1218px] mt-6 max-md:max-w-full max-md:mt-10">
           <div className="gap-5 flex max-md:flex-col max-md:items-stretch max-md:gap-0">
