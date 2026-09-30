@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { usdFormatChanger, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
-import { matchBillToBudget, getBudgetPeriodRange, getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
+import { matchBillToBudget, getBudgetPeriodRange, getMonthCurrencyBreakdown, type MatchableBudget } from "@/helpers/transformers/projectionsChange";
 import { getBudgetBarGradient, getBudgetMoodEmoji, getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import EmptyModule from "@/components/multiUsedComp/EmptyModule";
 import { Tooltip, Modal } from "antd";
@@ -163,7 +163,7 @@ function BudgetDetailModal({
     for (const t of transacciones) {
       const tMs = t.date ? new Date(t.date).getTime() : 0;
       if (tMs >= startMs && tMs <= endMs) {
-        if (matchBillToBudget(t, budget)) {
+        if (matchBillToBudget(t, budget as MatchableBudget)) {
           matched.push(t);
           const amount = getPrimaryAmount(t);
           spent += amount;

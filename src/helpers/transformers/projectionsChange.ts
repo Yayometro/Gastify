@@ -39,8 +39,10 @@ export interface MatchableBudget {
   history?: BudgetHistoryEntryLike[];
 }
 
-export interface BillLike extends TransactionLike {
+export interface BillLike extends Omit<TransactionLike, "category" | "subCategory"> {
   _id?: unknown;
+  category?: unknown;
+  subCategory?: unknown;
 }
 
 export interface IncomeSourceHistoryEntryLike {
@@ -231,22 +233,22 @@ export function matchBillToBudget(bill: BillLike, budget: MatchableBudget): bool
     return budget.categories.some((entry) => {
       if (entry.subCategory) {
         const subCategoryId = (entry.subCategory as IdRef)?._id || entry.subCategory;
-        return String(bill.subCategory?._id) === String(subCategoryId);
+        return String((bill.subCategory as IdRef)?._id) === String(subCategoryId);
       }
       if (entry.category) {
         const categoryId = (entry.category as IdRef)?._id || entry.category;
-        return String(bill.category?._id) === String(categoryId);
+        return String((bill.category as IdRef)?._id) === String(categoryId);
       }
       return false;
     });
   }
   if (budget.subCategory) {
     const subCategoryId = (budget.subCategory as IdRef)?._id || budget.subCategory;
-    return String(bill.subCategory?._id) === String(subCategoryId);
+    return String((bill.subCategory as IdRef)?._id) === String(subCategoryId);
   }
   if (budget.category) {
     const categoryId = (budget.category as IdRef)?._id || budget.category;
-    return String(bill.category?._id) === String(categoryId);
+    return String((bill.category as IdRef)?._id) === String(categoryId);
   }
   return false;
 }
@@ -254,9 +256,9 @@ export function matchBillToBudget(bill: BillLike, budget: MatchableBudget): bool
 export function getBudgetPeriodRange(
   budget: { period?: string },
   referenceDate: DateLike | null = new Date(),
-  fallbackStartDate: Date | null = null,
-  fallbackEndDate: Date | null = null
-): { startDate: Date; endDate: Date } {
+  fallbackStartDate: Date | string | null = null,
+  fallbackEndDate: Date | string | null = null
+): { startDate: Date | string; endDate: Date | string } {
   const period = budget.period || "monthly";
   if (period === "monthly") {
     if (fallbackStartDate && fallbackEndDate) {
@@ -356,11 +358,11 @@ export function getMonthBucketBreakdown(bills: BillLike[], budgets: MatchableBud
 // is already in the wallet's own currency, so callers can hide the
 // breakdown UI entirely in the common single-currency case.
 export function getMonthCurrencyBreakdown(
-  transactions: CurrencyBreakdownTransaction[] | null | undefined,
+  transactions: unknown[] | null | undefined,
   walletPrimaryCurrency: string
 ): { breakdown: CurrencyBreakdownGroup[]; isMultiCurrency: boolean } {
   const groups: Record<string, CurrencyBreakdownGroup> = {};
-  for (const t of transactions || []) {
+  for (const t of (transactions || []) as CurrencyBreakdownTransaction[]) {
     const native = t?.displayMoney?.native;
     const primary = t?.displayMoney?.primary;
     if (!native || !primary) continue;
