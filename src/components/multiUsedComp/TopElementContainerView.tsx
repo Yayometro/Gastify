@@ -1,11 +1,24 @@
 "use client";
+
+import React from "react";
 import { getDateInYearMonthDay } from "@/helpers/timeFunctions/timeFunctions";
 import { Skeleton, Tooltip } from "antd";
-import React from "react";
 import UniversalCategoIcon from "./UniversalCategoIcon";
-import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
+import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
-import TabsToggler from "./TabsComponents/TabsToggler";
+import TabsToggler, { TabsTogglerComponentItem } from "./TabsComponents/TabsToggler";
+
+export interface TopElementContainerViewProps {
+  isLoading: number;
+  timePeriod: (string | Date | number | null | undefined)[];
+  periodFromFather?: SelecterPeriod | string | number;
+  elementsToDisplay?: number;
+  timePeriodsForSelecter?: SelecterPeriod[];
+  components?: TabsTogglerComponentItem<object>[] | null;
+  handleRangeDate?: (dates: unknown) => void;
+  getValueFromSelecter?: (val: string) => void;
+  getValueFromItems: (n: number) => void;
+}
 
 function TopElementContainerView({
   isLoading,
@@ -17,7 +30,7 @@ function TopElementContainerView({
   handleRangeDate,
   getValueFromSelecter,
   getValueFromItems,
-}) {
+}: TopElementContainerViewProps): React.JSX.Element {
   return (
     <div className="gf-glass-card w-full h-full rounded-[32px] p-4">
       <h1 className="text-center 5xl font-bold">Top {elementsToDisplay} elements by month</h1>
@@ -27,13 +40,13 @@ function TopElementContainerView({
           <b>
             {!timePeriod[0]
               ? "No time selected"
-              : getDateInYearMonthDay(timePeriod[0])}
+              : getDateInYearMonthDay(timePeriod[0] as string | number | Date)}
           </b>{" "}
           to :{" "}
           <b>
             {!timePeriod[1]
               ? "No time selected"
-              : getDateInYearMonthDay(timePeriod[1])}
+              : getDateInYearMonthDay(timePeriod[1] as string | number | Date)}
           </b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
