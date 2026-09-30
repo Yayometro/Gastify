@@ -4989,52 +4989,232 @@
       "label": "Top3, movimientos historicos y modal de detalle (Historia 19). 16 archivos de UI conectados por ModalContentTopMonthItem.jsx (704 lineas, el mas grande) y TransactionItemList.jsx. Tanda A: 12 componentes chicos/medianos (hojas y contenedores); tanda B: los 4 grandes (ModalContentTopMonthItem, TopElementsContainer, HistoricalMovementsController, propsColTabsToggler). Sin rutas de API ni cambios de seguridad esperados; regla de oro: 1:1 sin guards nuevos. DedupPreviewModal (Historia 20) depende de TransactionItemList.",
       "files": {
         "src/components/Transactions/ItemList/TransactionItemList.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:15:06.981Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:16:17.535Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TransactionItemList.jsx a TransactionItemList.tsx.\n- Interfaces/tipos creados: TransactionMoneySnapshot, TransactionCategory, TransactionAccount, TransactionItemMovement, TransactionItemListProps.\n- Casts/guards/any exigidos por el compilador: TypedUniversalCategoIcon y TypedCategoIcon para permitir compatibilidad de props con 'size' preservando el código original; cast de movement.amount as number para currencyFormatter; cast de primary.effectiveDate as string | number | Date para new Date.\n- Consumidores tocados: Ninguno (consumidores existentes compilan sin cambios).\n- Bugs preexistentes preservados: Typos 'size={10}' en UniversalCategoIcon y 'size={15}' en CategoIcon (ambos esperan 'siz'), cadenas por defecto y estructura de tags/displayMoney 1:1.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.414Z",
+              "event": "approved",
+              "notes": "Solo tipos/casts erasables. Los wrappers TypedUniversalCategoIcon/TypedCategoIcon existen para PRESERVAR el bug de prop `size` (los componentes leen `siz`), misma raíz que el bug #8. Sin guards nuevos. tsc/eslint/vitest limpios."
+            }
+          ]
         },
         "src/components/multiUsedComp/Tooltips/BasicTooltip.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:16:20.106Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:16:43.969Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de BasicTooltip.jsx a BasicTooltip.tsx.\n- Interfaces/tipos creados: BasicTooltipStyle, BasicTooltipProps.\n- Casts/guards/any exigidos por el compilador: Ninguno.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Typo 'iconZise' en el prop de estilo preservado tal cual en la interfaz y en el render.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.429Z",
+              "event": "approved",
+              "notes": "Solo tipos. Bug preservado: typo `style?.iconZise`."
+            }
+          ]
         },
         "src/components/toltips/tooltipsForCharts/TooltipForChart.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:16:46.067Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:17:14.566Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TooltipForChart.jsx a TooltipForChart.tsx.\n- Interfaces/tipos creados: TooltipForChartItem, TooltipForChartProps.\n- Casts/guards/any exigidos por el compilador: Cast de name as string en la key del div raíz.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Formato de porcentaje cortado con slice(0, 4) y default de walletPrimaryCurrency=\"MXN\".\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.443Z",
+              "event": "approved",
+              "notes": "Solo tipos y un cast (name as string) en la key. Bug preservado: el porcentaje se recorta con String(...).slice(0, 4)."
+            }
+          ]
         },
         "src/components/multiUsedComp/top3/atomicTop/AtomicTop.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:17:16.517Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:17:47.082Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de AtomicTop.jsx a AtomicTop.tsx.\n- Interfaces/tipos creados: AtomicTopProps<T>.\n- Casts/guards/any exigidos por el compilador: TypedUniversalCategoIcon para admitir prop size={25} preservando el código original; RootState en useSelector.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Typo size={25} en UniversalCategoIcon preservado tal cual.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.458Z",
+              "event": "approved",
+              "notes": "Solo tipos (genérico <T>, RootState) y wrapper para preservar `size={25}` (bug #8). Sin guards nuevos."
+            }
+          ]
         },
         "src/components/multiUsedComp/top3/topMonthContainer/TopCategoryRow.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:17:49.012Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:18:29.081Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TopCategoryRow.jsx a TopCategoryRow.tsx.\n- Interfaces/tipos creados: TopCategoryRowItem (extiende PrimaryAmountItem), TopCategoryRowProps.\n- Casts/guards/any exigidos por el compilador: TypedUniversalCategoIcon para admitir la prop size={10} preservando el JSX original; RootState en useSelector.\n- Consumidores tocados: Ninguno (CategoriesCompareTable y demás compilan limpio).\n- Bugs preexistentes preservados: Typo size={10} en UniversalCategoIcon preservado tal cual; fallback a 'No category'.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.468Z",
+              "event": "approved",
+              "notes": "Solo tipos; wrapper para preservar `size={10}` (bug #8)."
+            }
+          ]
         },
         "src/components/multiUsedComp/top3/topMonthContainer/TopTransactionRow.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:18:32.489Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:19:00.801Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TopTransactionRow.jsx a TopTransactionRow.tsx.\n- Interfaces/tipos creados: TopTransactionRowProps (reutiliza TransactionItemMovement de TransactionItemList).\n- Casts/guards/any exigidos por el compilador: Ninguno.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Manejo de accesibilidad y onClick 1:1.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.477Z",
+              "event": "approved",
+              "notes": "Solo tipos; reutiliza TransactionItemMovement."
+            }
+          ]
         },
         "src/components/multiUsedComp/top3/topMonthContainer/TopElementsCompareTable.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:19:05.246Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:20:34.473Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TopElementsCompareTable.jsx a TopElementsCompareTable.tsx.\n- Interfaces/tipos creados: CompareColumn<T>, CompareRow<T>, CompareCellProps<T>, CompareSectionProps<T>, TopElementsCompareTableProps<T>.\n- Casts/guards/any exigidos por el compilador: TypedModalContentTopMonthItem para renderizar el modal no migrado sin exigir onBack obligatorio; casts en map para TopCategoryRowItem y TransactionItemMovement.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Verificación sin optional-chaining en childrens.length 1:1 con el JS original.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.487Z",
+              "event": "approved",
+              "notes": "Solo tipos y casts erasables. Usa un bridge TypedModalContentTopMonthItem para el modal aún .jsx: SE BORRARÁ al migrar ModalContentTopMonthItem (tanda B). Reutiliza RelativeMonthGroup de transactionsChange.ts."
+            }
+          ]
         },
         "src/components/multiUsedComp/top3/topMonthContainer/TopMonthItem.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:20:36.780Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:21:17.291Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TopMonthItem.jsx a TopMonthItem.tsx.\n- Interfaces/tipos creados: TopMonthItemProps<T>.\n- Casts/guards/any exigidos por el compilador: TypedModalContentTopMonthItem bridge para renderizar ModalContentTopMonthItem; casts en map para TopCategoryRowItem y TransactionItemMovement.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Extracción de número de mes vía regex match(/\\d+/), textos por defecto 'No value' y 'No childs to display...'.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.495Z",
+              "event": "approved",
+              "notes": "Solo tipos/casts. El param `index` que se desestructuraba sin usarse se quitó (inerte). Mismo bridge de modal temporal que TopElementsCompareTable."
+            }
+          ]
         },
         "src/components/multiUsedComp/top3/topMonthContainer/TopMonthContainer.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:21:20.537Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:21:54.360Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TopMonthContainer.jsx a TopMonthContainer.tsx.\n- Interfaces/tipos creados: TopMonthContainerStyle, TopMonthContainerItem (extiende PrimaryAmountItem), TopMonthContainerProps<T>.\n- Casts/guards/any exigidos por el compilador: RootState en useSelector.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Mapeo y formateo a mayúsculas con fallback a month/name/type, texto 'No items to display'.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.504Z",
+              "event": "approved",
+              "notes": "Solo tipos (genérico, RootState)."
+            }
+          ]
         },
         "src/components/multiUsedComp/top3/topRankColumn/TopRankColumn.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:21:57.000Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:22:57.774Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TopRankColumn.jsx a TopRankColumn.tsx.\n- Interfaces/tipos creados: RankRowItem (extiende PrimaryAmountItem), RankRowProps<T>, TopRankColumnStyle, TopRankColumnProps<T>.\n- Casts/guards/any exigidos por el compilador: TypedModalContentTopMonthItem bridge para ModalContentTopMonthItem; cast de WalletData en useSelector para resolver primaryCurrency.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Fallback visual 'No name', 'No items to display...', manejo de accesibilidad y onClick de fila 1:1.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.512Z",
+              "event": "approved",
+              "notes": "Solo tipos; cast (state.walletReducer?.data as WalletData) sobre la selección existente, sin cambiar la lógica. Mismo bridge de modal temporal."
+            }
+          ]
         },
         "src/components/multiUsedComp/TopElementContainerView.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:23:06.159Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:24:03.348Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de TopElementContainerView.jsx a TopElementContainerView.tsx.\n- Interfaces/tipos creados: TopElementContainerViewProps.\n- Casts/guards/any exigidos por el compilador: Cast de timePeriod[0] y timePeriod[1] as string | number | Date para getDateInYearMonthDay.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Clase 5xl en h1, texto de tooltip 'Filter de date...', comparación isLoading <= 0 1:1 con el JS original.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.521Z",
+              "event": "approved",
+              "notes": "Retrabajo mío: agy dejó dos `any` explícitos con eslint-disable (TabsTogglerComponentItem<any> y handleRangeDate: (dates: any)); sin justificación real, los cambié a <object> y unknown y tsc sigue limpio. Casts de timePeriod[0]/[1] erasables. Bugs preservados: clase `5xl` sin prefijo text-, typo en el tooltip (\"Filter de date\"), comparación `isLoading <= 0`."
+            }
+          ]
         },
         "src/components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsView.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:24:06.565Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:24:39.367Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de HistoricalMovementsView.jsx a HistoricalMovementsView.tsx.\n- Interfaces/tipos creados: HistoricalMovementsViewProps.\n- Casts/guards/any exigidos por el compilador: Ninguno.\n- Consumidores tocados: Ninguno.\n- Bugs preexistentes preservados: Comparación isLoading <= 0 1:1 con el JS original.\n- Verificación: npx tsc --noEmit (0 errores), npx eslint (0 warnings/errores), npx vitest run (30 test files, 324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:27:37.529Z",
+              "event": "approved",
+              "notes": "Solo tipos; reordenó imports (inerte). Bugs preservados: `isLoading <= 0` y fallback `tabs || [\"Bills\",\"Incomes\"]`."
+            }
+          ]
         },
         "src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx": {
           "status": "pending",
