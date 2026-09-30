@@ -1,15 +1,15 @@
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from "@/lib/ReduxProvider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import ThemeProvider from "./ThemeProvider";
 // import AllDataProvider from "@/components/Providers/AllDataProvider";
-
-
+import React from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Gastify 💸",
   description: "Take control of your incomes and bills",
 };
@@ -19,7 +19,11 @@ export const metadata = {
 // entry here since it's already the plain :root default in globals.css.
 const themeInitScript = `(function(){try{if(localStorage.getItem("gf-theme")==="light"){document.documentElement.setAttribute("data-theme","light");}}catch(e){}})();`;
 
-export default function RootLayout({ children }) {
+export interface RootLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <head>
