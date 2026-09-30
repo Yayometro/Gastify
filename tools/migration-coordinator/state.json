@@ -5298,56 +5298,251 @@
       "label": "UI restante (Historia 20): 21 componentes/hooks hoja de budgets, tarjetas, graficas, tabs y categorias. Tanda A (13): componentes chicos de categorias, herramientas y el hook useTransactionAmountEquivalent; tanda B (8): BudgetCont, UnbudgetedSpending, CreditCard, DedupPreviewModal, TabsTrans, ResumeTabsTrans y las 2 graficas. Casi todos usan fetcher/gastifyNotifier (ya migrados, Historia 18) y DedupPreviewModal usa TransactionItemList (Historia 19). Sin cambios de seguridad esperados; regla de oro: 1:1 sin guards nuevos.",
       "files": {
         "src/components/buttons/selectCategoryBtn/SelectCategoryBtn.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:45:45.684Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:46:25.550Z",
+              "event": "submitted",
+              "notes": "Migrado SelectCategoryBtn a TSX.\n- Interfaz creada: SelectCategoryBtnProps (size?: number | string, style?: string, click?: () => void, icon?: string | null).\n- Comportamiento 1:1 exacto preservado byte a byte, incluyendo el prop `siz={size||25}` para UniversalCategoIcon (bug/typo histórico de prop intencionalmente preservado).\n- Casts/guards/any añadidos: ninguno.\n- Consumidores actualizados: se eliminó el bridge `TypedSelectCategoryBtn` en `BtnSelectCategoryContext.tsx`.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.178Z",
+              "event": "approved",
+              "notes": "Solo tipos; se borra el bridge TypedSelectCategoryBtn de BtnSelectCategoryContext. Bug preservado: pasa `siz={size||25}` (el ícono ya usa el prop bien escrito aquí)."
+            }
+          ]
         },
         "src/components/categories/categoryCircle/CategoryCircle.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:46:27.651Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:47:08.129Z",
+              "event": "submitted",
+              "notes": "Migrado CategoryCircle a TSX.\n- Interfaces creadas: CategoryCircleProps<T = unknown>, CategoryFatherLike.\n- Cast/bridge local TypedUniversalCategoIcon requerido para compilar el bug/typo preexistente `size={40}` pasado a UniversalCategoIcon (en vez de `siz={40}`), preservando exactamente el runtime original.\n- Comportamiento 1:1 exacto preservado byte a byte (incluyendo template string `${icon}` || \"md/MdFilterNone\" y onclick directo).\n- Consumidores/bridges: no se requirieron cambios en otros archivos (CategoriesModalList y CategoryCircleWithChilds consumen CategoryCircle sin bridges tipados).\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.193Z",
+              "event": "approved",
+              "notes": "Solo tipos y un cast erasable en father?.color; wrapper TypedUniversalCategoIcon para preservar `size={40}` (bug #8). onSelect(category) sin guard preservado."
+            }
+          ]
         },
         "src/components/categories/categoryCircleWithChilds/CategoryCircleWithChilds.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:47:10.044Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:48:00.664Z",
+              "event": "submitted",
+              "notes": "Migrado CategoryCircleWithChilds a TSX.\n- Interfaces creadas: SubCategoryItem, CategoryCircleWithChildsProps<T = unknown>.\n- Removido `color` de los props desestructurados ya que no se usaba en el cuerpo del componente (permitido para eslint no-unused-vars; se mantiene en CategoryCircleWithChildsProps).\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: ninguno.\n- Consumidores/bridges: CategoriesModalList consume CategoryCircleWithChilds sin bridges.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.204Z",
+              "event": "approved",
+              "notes": "Solo tipos; el param `color` sin uso se quitó de la desestructuración (inerte)."
+            }
+          ]
         },
         "src/components/categories/categoriesModalList/CategoriesModalList.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:48:03.719Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:49:20.037Z",
+              "event": "submitted",
+              "notes": "Migrado CategoriesModalList a TSX.\n- Interfaz creada: CategoriesModalListProps (onSelect?: (category: CategoryItem) => void, onlyFathers?: boolean).\n- Usado CategoryItem de SelectCategoryProvider para tipar las categorías obtenidas del contexto SelectCategoryContext.\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Consumidores/bridges: se eliminó el bridge `TypedCategoriesModalList` en `ModalCategoryContent.tsx`.\n- Ajustes en dependencias relacionadas: CategoryCircleProps extendido para aceptar father como false/unknown con cast en border, CategoryCircleWithChildsProps actualizado para childs de CategoryItem/SubCategoryItem.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.215Z",
+              "event": "approved",
+              "notes": "Solo tipos; alias `categories = newCategories as CategoryItem[]` (cast erasable). Se borra el bridge en ModalCategoryContent."
+            }
+          ]
         },
         "src/components/categories/categorySearchedItem/CategorySearchedItem.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:49:25.279Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:49:50.041Z",
+              "event": "submitted",
+              "notes": "Migrado CategorySearchedItem a TSX.\n- Interfaz creada: CategorySearchedItemProps<T = unknown> (style?: string, category?: T, name?: string, icon?: string, onSelect?: (category: T) => void, size?: number | string).\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: ninguno.\n- Consumidores/bridges: RenderCategoriesSearch consume CategorySearchedItem sin bridges.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.224Z",
+              "event": "approved",
+              "notes": "Solo tipos."
+            }
+          ]
         },
         "src/components/inputs/search/SearchInput.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:49:52.093Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:50:24.275Z",
+              "event": "submitted",
+              "notes": "Migrado SearchInput a TSX.\n- Interfaz creada: SearchInputProps (onChange?: React.ChangeEventHandler<HTMLInputElement>, renderBtn?: React.ReactNode, style?: string).\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: ninguno.\n- Consumidores/bridges: RenderCategoriesSearch consume SearchInput sin bridges.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.234Z",
+              "event": "approved",
+              "notes": "Solo tipos."
+            }
+          ]
         },
         "src/components/categories/renderCateoriesSelect/RenderCategoriesSearch.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:50:27.004Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:51:07.634Z",
+              "event": "submitted",
+              "notes": "Migrado RenderCategoriesSearch a TSX.\n- Interfaz creada: RenderCategoriesSearchProps (getSelected?: (category: CategoryItem) => void, onlyFathers?: boolean).\n- Usa CategoryItem de SelectCategoryProvider para tipar los resultados de búsqueda.\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: cast en onChange={handleSearch as React.ChangeEventHandler<HTMLInputElement>} debido a la firma amplia de handleSearch en SelectCategoryContextType.\n- Consumidores/bridges: se eliminó el bridge `TypedRenderCategoriesSearch` en `ModalCategoryContent.tsx`.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.242Z",
+              "event": "approved",
+              "notes": "Solo tipos y casts erasables; se borra el bridge en ModalCategoryContent."
+            }
+          ]
         },
         "src/components/multiUsedComp/AmountEquivalentPreview.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:51:11.713Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:52:18.470Z",
+              "event": "submitted",
+              "notes": "Migrado AmountEquivalentPreview a TSX.\n- Interfaces creadas: AmountEquivalentQuote (amountMinor?: number, currency?: string, rate?: number | string, source?: string, effectiveDate?: string | number | Date, estimated?: boolean, stale?: boolean), AmountEquivalentPreviewProps.\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: ninguno.\n- Consumidores/bridges: se eliminó el bridge `TypedAmountEquivalentPreview` en `AddTransactionComp.tsx` y `EditSingleTransModal.tsx`.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.251Z",
+              "event": "approved",
+              "notes": "Solo tipos; se borran los bridges en AddTransactionComp y EditSingleTransModal."
+            }
+          ]
         },
         "src/components/multiUsedComp/CategorySuggestionsModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:52:20.994Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:53:41.197Z",
+              "event": "submitted",
+              "notes": "Migrado CategorySuggestionsModal a TSX.\n- Interfaz creada: CategorySuggestionsModalProps<T = CategorySuggestionEntry, A = CategorySuggestionApplication> (suggestions: T[], onConfirm: (applications: A[]) => boolean | Promise<boolean | void> | void, onCancel: () => void, confirming?: boolean).\n- Reutiliza los tipos CategorySuggestionEntry y CategorySuggestionApplication de SuggestionsList.\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: cast seguro en SuggestionsList props (suggestions as unknown as CategorySuggestionEntry[], onConfirm as ...) para admitir tipos estructurales de transacciones de consumidores como ReadFileComp.\n- Consumidores/bridges: se eliminó el bridge `TypedCategorySuggestionsModal` en `ReadFileComp.tsx`.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.260Z",
+              "event": "approved",
+              "notes": "Solo tipos y casts erasables hacia SuggestionsList; se borra el bridge en ReadFileComp."
+            }
+          ]
         },
         "src/components/multiUsedComp/ChargedElsewhereSection.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:53:43.773Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:54:42.175Z",
+              "event": "submitted",
+              "notes": "Migrado ChargedElsewhereSection a TSX.\n- Interfaz creada: ChargedElsewhereSectionProps (enabled?: boolean, onToggle?: (checked: boolean) => void, merchantAmount?: string | number, merchantCurrency?: string, onMerchantAmountChange?: (value: string) => void, onMerchantCurrencyChange?: (value: string) => void, quoting?: boolean).\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: ninguno.\n- Consumidores/bridges: se eliminaron los bridges `TypedChargedElsewhereSection` en `AddTransactionComp.tsx` y `EditSingleTransModal.tsx`.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.269Z",
+              "event": "approved",
+              "notes": "Solo tipos; se borran los bridges en AddTransactionComp y EditSingleTransModal."
+            }
+          ]
         },
         "src/components/multiUsedComp/ToolsFab.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:54:44.888Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:55:41.067Z",
+              "event": "submitted",
+              "notes": "Migrado ToolsFab a TSX.\n- Interfaz creada: ToolsFabProps (mail?: string | null).\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: ninguno.\n- Consumidores/bridges: DashboardLayout consume ToolsFab directamente sin bridges tipados.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.278Z",
+              "event": "approved",
+              "notes": "Solo tipos."
+            }
+          ]
         },
         "src/components/multiUsedComp/ToolsModal.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:55:43.276Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:56:31.200Z",
+              "event": "submitted",
+              "notes": "Migrado ToolsModal a TSX.\n- Interfaces creadas: ToolsModalProps (mail?: string | null, onClose?: () => void), ToolTab (id: string, label: string, title: string, tooltip: string, render: () => React.JSX.Element).\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: ninguno.\n- Consumidores/bridges: se eliminó el bridge `TypedToolsModal` en `CategorySuggestionsSection.tsx`.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.286Z",
+              "event": "approved",
+              "notes": "Solo tipos; se borra el bridge en CategorySuggestionsSection."
+            }
+          ]
         },
         "src/hooks/money/useTransactionAmountEquivalent.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:56:44.298Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:57:26.064Z",
+              "event": "submitted",
+              "notes": "Migrado useTransactionAmountEquivalent a TS (.ts, sin JSX).\n- Interfaz creada: UseTransactionAmountEquivalentOptions (amount?: number | string | null, accountCurrency?: string | null, walletPrimaryCurrency?: string | null), FxQuoteApiResponse.\n- Reutiliza AmountEquivalentQuote de AmountEquivalentPreview.\n- Comportamiento 1:1 exacto preservado byte a byte.\n- Casts/guards/any añadidos: cast en la respuesta de fetcher (`res as FxQuoteApiResponse`).\n- Consumidores/bridges: consumido directamente por AddTransactionComp.tsx y EditSingleTransModal.tsx sin bridges.\n- Verificación: tsc --noEmit (0 errores), eslint limpio, vitest (324 passed)."
+            },
+            {
+              "ts": "2026-09-30T12:58:50.295Z",
+              "event": "approved",
+              "notes": "Hook .ts (sin JSX). Solo tipos, cast de la respuesta del fetcher y catch (e) → catch (inerte)."
+            }
+          ]
         },
         "src/components/multiUsedComp/BudgetCont.jsx": {
           "status": "pending",
