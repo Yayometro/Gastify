@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import xlsxPopulate from "xlsx-populate";
@@ -14,12 +14,41 @@ import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
+import { auth } from "@/lib/auth/betterAuth";
 
-function escapeRegex(str) {
+export interface SkippedRow {
+  row: number;
+  reason: string;
+}
+
+export interface UploadSuccessResponse {
+  data: unknown[];
+  message: string;
+  skipped: SkippedRow[];
+  status: number;
+  ok: true;
+}
+
+export interface UploadErrorResponse {
+  ok: false;
+  message: string;
+  versionMismatch?: boolean;
+  currentVersion?: string;
+}
+
+export type UploadResponse = UploadSuccessResponse | UploadErrorResponse;
+
+interface WalletModelBridge {
+  findById: (id: unknown) => {
+    lean: () => Promise<{ primaryCurrency?: string } | null>;
+  };
+}
+
+function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function excelSerialDateToJSDate(serial) {
+function excelSerialDateToJSDate(serial: number): Date {
   const utc_days = Math.floor(serial - 25569);
   const utc_value = utc_days * 86400;
   const date_info = new Date(utc_value * 1000);
@@ -27,7 +56,7 @@ function excelSerialDateToJSDate(serial) {
   return new Date(date_info.getTime() + offset);
 }
 
-function parseFlexibleDate(value) {
+function parseFlexibleDate(value: unknown): Date | null {
   if (value === null || value === undefined) return null;
 
   // Excel serial number
@@ -58,12 +87,12 @@ function parseFlexibleDate(value) {
   return isNaN(fallback.getTime()) ? null : fallback;
 }
 
-function normalizeCurrency(raw) {
+function normalizeCurrency(raw: unknown): string {
   if (raw === null || raw === undefined) return "";
   return String(raw).trim().toUpperCase();
 }
 
-async function resolveCategory(name, userId) {
+async function resolveCategory(name: unknown, userId: unknown) {
   if (name === null || name === undefined) return null;
   const safe = escapeRegex(String(name).trim());
   if (!safe) return null;
@@ -74,7 +103,7 @@ async function resolveCategory(name, userId) {
   return cat ? cat._id : null;
 }
 
-async function resolveSubCategory(name, userId) {
+async function resolveSubCategory(name: unknown, userId: unknown) {
   if (name === null || name === undefined) return { subCategoryId: null, categoryId: null };
   const safe = escapeRegex(String(name).trim());
   if (!safe) return { subCategoryId: null, categoryId: null };
@@ -83,10 +112,10 @@ async function resolveSubCategory(name, userId) {
     $or: [{ user: userId }, { isDefaultSubCatego: true }],
   }).lean();
   if (!subCat) return { subCategoryId: null, categoryId: null };
-  return { subCategoryId: subCat._id, categoryId: subCat.fatherCategory || null };
+  return { subCategoryId: subCat._id, categoryId: (subCat as { fatherCategory?: unknown }).fatherCategory || null };
 }
 
-async function resolveAccount(name, userId, walletId) {
+async function resolveAccount(name: unknown, userId: unknown, walletId: unknown) {
   if (name === null || name === undefined) return null;
   const safe = escapeRegex(String(name).trim());
   if (!safe) return null;
@@ -98,10 +127,10 @@ async function resolveAccount(name, userId, walletId) {
   return acc || null;
 }
 
-async function resolveTags(rawTags, userId, walletId) {
+async function resolveTags(rawTags: unknown, userId: unknown, walletId: unknown) {
   if (!rawTags) return [];
   const names = String(rawTags).split(",").map((t) => t.trim()).filter(Boolean);
-  const tagIds = [];
+  const tagIds: unknown[] = [];
   for (const name of names) {
     const safe = escapeRegex(String(name));
     let tag = await Tag.findOne({
@@ -116,11 +145,19 @@ async function resolveTags(rawTags, userId, walletId) {
   return tagIds;
 }
 
-export async function POST(request, { params }) {
-  let tmpFilePath = null;
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<UploadResponse>> {
+  let tmpFilePath: string | null = null;
   try {
+    // Security fix: this route previously lacked session authentication and trusted
+    // params.id from the URL to identify the target user account (IDOR).
+    // We now derive user identity strictly from auth.api.getSession, ignoring params.id.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
+
     const data = await request.formData();
-    const file = data.get("file");
+    const file = data.get("file") as File | null;
     if (!file) {
       return NextResponse.json({ ok: false, message: "No file received" }, { status: 400 });
     }
@@ -133,11 +170,13 @@ export async function POST(request, { params }) {
     const workbook = await xlsxPopulate.fromFileAsync(tmpFilePath);
 
     // --- Version check ---
-    let fileVersion = null;
+    let fileVersion: unknown = null;
     try {
       const dataSheet = workbook.sheet("_data");
       if (dataSheet) fileVersion = dataSheet.cell(1, 3).value();
-    } catch (_) {}
+    } catch {
+      // ignore if sheet is missing
+    }
 
     if (!fileVersion || String(fileVersion).trim() !== TEMPLATE_VERSION) {
       return NextResponse.json({
@@ -150,23 +189,19 @@ export async function POST(request, { params }) {
 
     const sheet = workbook.sheet(0);
 
-    if (!params?.id) {
-      return NextResponse.json({ ok: false, message: "No user ID in URL" }, { status: 400 });
-    }
-
     await dbConnection();
-    const userFound = await User.findOne({ mail: params.id }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound) {
       return NextResponse.json({ ok: false, message: "User not found" }, { status: 404 });
     }
-    const parentWallet = await Wallet.findById(userFound.wallet).lean();
+    const parentWallet = await (Wallet as unknown as WalletModelBridge).findById(userFound.wallet).lean();
     const walletPrimaryCurrency = parentWallet?.primaryCurrency || "MXN";
 
     // Data starts at row 3 (row 1 = headers, row 2 = note)
     let i = 3;
-    const transactions = [];
-    const skipped = [];
-    const cell = (col) => sheet.cell(i, col).value();
+    const transactions: Record<string, unknown>[] = [];
+    const skipped: SkippedRow[] = [];
+    const cell = (col: number) => sheet.cell(i, col).value();
 
     while (true) {
       const rawDate = cell(COLUMNS.DATE);
@@ -190,11 +225,11 @@ export async function POST(request, { params }) {
       }
 
       const accountName = cell(COLUMNS.ACCOUNT);
-      const resolvedAccount = await resolveAccount(accountName, userFound._id, userFound.wallet);
+      const resolvedAccount = await resolveAccount(accountName, userFound._id, userFound.wallet) as { _id: unknown; name?: string; currency?: string } | null;
 
       // Account currency is authoritative when an Account is selected.
       const rawAccountCurrency = normalizeCurrency(cell(COLUMNS.ACCOUNT_CURRENCY));
-      let accountCurrency;
+      let accountCurrency: string;
       if (resolvedAccount) {
         accountCurrency = resolvedAccount.currency || walletPrimaryCurrency;
         if (rawAccountCurrency && rawAccountCurrency !== accountCurrency) {
@@ -263,8 +298,8 @@ export async function POST(request, { params }) {
       const isBill = type !== "income";
       const isIncome = type === "income";
 
-      let finalCategoryId = null;
-      let finalSubCategoryId = null;
+      let finalCategoryId: unknown = null;
+      let finalSubCategoryId: unknown = null;
 
       if (subCatName) {
         const { subCategoryId, categoryId } = await resolveSubCategory(subCatName, userFound._id);
@@ -287,7 +322,7 @@ export async function POST(request, { params }) {
         userFound.wallet
       );
 
-      let money;
+      let money: unknown;
       try {
         money = await buildTransactionMoney({
           accountAmount,
@@ -299,12 +334,12 @@ export async function POST(request, { params }) {
           manualReportingAmount: hasReportingAmount ? Number(reportingAmountRaw) : undefined,
         });
       } catch (fxError) {
-        skipped.push({ row: i, reason: fxError?.message || "Could not resolve this row's exchange rate" });
+        skipped.push({ row: i, reason: (fxError as Error)?.message || "Could not resolve this row's exchange rate" });
         i++;
         continue;
       }
 
-      const transaction = {
+      const transaction: Record<string, unknown> = {
         date,
         name: concept || "no concept",
         amount: isNaN(accountAmount) ? 0 : accountAmount,
@@ -330,7 +365,7 @@ export async function POST(request, { params }) {
     if (transactions.length === 0) {
       return NextResponse.json({
         ok: false,
-        message: `No valid transactions found in the file. ${skipped.length > 0 ? `Skipped rows: ${skipped.map(s => `row ${s.row} (${s.reason})`).join(", ")}` : ""}`,
+        message: `No valid transactions found in the file. ${skipped.length > 0 ? `Skipped rows: ${skipped.map((s) => `row ${s.row} (${s.reason})`).join(", ")}` : ""}`,
       }, { status: 400 });
     }
 
@@ -366,7 +401,7 @@ export async function POST(request, { params }) {
     console.error("Upload error:", e);
     return NextResponse.json({
       ok: false,
-      message: e?.message || "Unexpected error processing the file",
+      message: (e as Error)?.message || "Unexpected error processing the file",
     }, { status: 500 });
   } finally {
     if (tmpFilePath) await unlink(tmpFilePath).catch(() => {});

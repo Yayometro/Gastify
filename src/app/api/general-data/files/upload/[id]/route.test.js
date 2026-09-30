@@ -11,6 +11,9 @@ vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/lib/money/server/transactionMoneyService", () => ({ buildTransactionMoney: vi.fn() }));
 vi.mock("@/lib/money/server/transactionReadService", () => ({ attachDisplayMoneyToList: vi.fn() }));
+vi.mock("@/lib/auth/betterAuth", () => ({
+  auth: { api: { getSession: vi.fn() } },
+}));
 
 const { TransactionMock } = vi.hoisted(() => {
   const TransactionMock = { create: vi.fn(), find: vi.fn() };
@@ -24,6 +27,7 @@ import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import Transaction from "@/model/Transaction";
+import { auth } from "@/lib/auth/betterAuth";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { POST } from "./route";
@@ -44,6 +48,7 @@ async function buildWorkbookBuffer(rows, version = TEMPLATE_VERSION) {
 
 function mockFileRequest(buffer) {
   return {
+    headers: new Headers(),
     formData: vi.fn().mockResolvedValue({
       get: (key) => (key === "file" ? { arrayBuffer: () => Promise.resolve(buffer) } : null),
     }),
@@ -61,6 +66,7 @@ function chainablePopulateLean(result) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.api.getSession.mockResolvedValue({ user: { email: "user@test.com" } });
   User.findOne.mockReturnValue(chainableLean({ _id: "u1", wallet: "w1" }));
   Wallet.findById.mockReturnValue(chainableLean({ primaryCurrency: "MXN" }));
   Account.findOne.mockReturnValue(chainableLean(null));
