@@ -4,7 +4,7 @@
 // by anything else; a real file the user can drop into a password manager,
 // notes app, or cloud drive (the way Uber and other apps handle this) is
 // the actual safety net.
-export default function downloadBackupCodes(codes, filename = "gastify-backup-codes.txt") {
+export default function downloadBackupCodes(codes: string[] | readonly string[], filename: string = "gastify-backup-codes.txt"): void {
   const content = [
     "Gastify - códigos de respaldo de verificación en dos pasos",
     "Cada código solo funciona una vez. Guárdalos en un lugar seguro.",
