@@ -10,20 +10,63 @@ import {
   computeYearRowsWithBalance,
   estimateHistoricalBalances,
 } from "@/helpers/transformers/projectionsChange";
+import type { IUser } from "@/model/User";
+import type { ApiTokenWallet } from "@/lib/auth/apiTokens";
+
+export interface ProjectionRowSlice {
+  month: string;
+  type: string;
+  income: number;
+  expense: number;
+  net: number;
+  balance: number | null;
+  balanceIsEstimated: boolean;
+}
+
+export interface BuildProjectionsResult {
+  rows: ProjectionRowSlice[];
+  startingBalance: number;
+  walletPrimaryCurrency: string;
+}
+
+export interface BuildProjectionsForRangeParams {
+  user: IUser | { _id: unknown };
+  wallet: ApiTokenWallet | { _id: unknown; primaryCurrency?: string };
+  transactions?: unknown[];
+  budgets?: unknown[];
+  range: { start: Date; end: Date };
+  today?: Date;
+}
+
+interface HasMoneyField {
+  amountMinor: number;
+  currency?: string;
+}
 
 // Same major-unit FX conversion useProjectionTable's own effects do via a
 // browser fetch to /general-data/fx/quote - there's no browser here, so this
 // calls the server-side convert() directly instead. Falls through to the
 // raw (unconverted) amount when no rate is available, same as the client
 // hook's own catch branch - never fakes a rate.
-async function convertMajor(amount, fromCurrency, toCurrency) {
+async function convertMajor(
+  amount: number | undefined | null,
+  fromCurrency: string,
+  toCurrency: string
+): Promise<number> {
   if (!amount || fromCurrency === toCurrency) return amount || 0;
   const result = await convert({ amountMinor: majorToMinor(amount, fromCurrency), fromCurrency, toCurrency });
   if (!result.available) return amount;
   return minorToMajor(result.amountMinor, toCurrency);
 }
 
-async function convertMoneyEntries(entries, moneyField, walletPrimaryCurrency) {
+async function convertMoneyEntries<
+  K extends string,
+  T extends { [P in K]?: HasMoneyField | null }
+>(
+  entries: T[] | undefined | null,
+  moneyField: K,
+  walletPrimaryCurrency: string
+): Promise<T[]> {
   return Promise.all(
     (entries || []).map(async (entry) => {
       const money = entry[moneyField];
@@ -47,7 +90,14 @@ async function convertMoneyEntries(entries, moneyField, walletPrimaryCurrency) {
 // browser making that request here). Spans 1 or 2 calendar years exactly
 // like HistoricalProjectionsTable does when the range crosses a year
 // boundary, then slices the combined rows down to the requested range.
-export async function buildProjectionsForRange({ user, wallet, transactions, budgets, range, today = new Date() }) {
+export async function buildProjectionsForRange({
+  user,
+  wallet,
+  transactions,
+  budgets,
+  range,
+  today = new Date(),
+}: BuildProjectionsForRangeParams): Promise<BuildProjectionsResult> {
   const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
   const yearStart = range.start.getFullYear();
   const yearEnd = range.end.getFullYear();
@@ -83,7 +133,7 @@ export async function buildProjectionsForRange({ user, wallet, transactions, bud
 
   const settingsByYear = new Map(settingsDocs.map((s) => [s.year, s]));
 
-  const slicedRows = [];
+  const slicedRows: ProjectionRowSlice[] = [];
   years.forEach((year) => {
     const settings = settingsByYear.get(year);
     const rows = buildYearProjectionTable({
