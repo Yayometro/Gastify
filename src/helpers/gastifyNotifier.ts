@@ -1,7 +1,10 @@
-import { toast, ToastContainer } from "react-toastify";
+import React from "react";
+import { toast, type Id } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function runNotify(nType, nMessage){
+export type NotifyType = "ok" | "error" | "info" | "warning" | string;
+
+export default function runNotify(nType?: NotifyType, nMessage?: React.ReactNode): Id | number | string | void {
     if(nType === "ok"){
         return toast.success(`${nMessage}`, {
           position: "top-right",
