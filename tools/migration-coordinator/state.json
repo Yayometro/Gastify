@@ -4409,24 +4409,99 @@
       "label": "API routes restantes de general-data (Historia 17, SEGURIDAD primero). 13 rutas .js; 12 SIN getSession (solo wallet/route.js ya tiene el fix, falta migrarlo). Middleware solo cubre /dashboard, asi que son alcanzables sin autenticar. Patron IDOR ya visto: mail/id en body o URL como identidad, findById/findByIdAndDelete a secas, creacion con user/wallet del cliente. Fix estandar: identidad desde auth.api.getSession, recursos acotados por user/wallet. Peor caso: user/remove-user (borra un usuario y todos sus datos por mail del body), general-data/route.js POST y general-data/[id] GET (volcado completo por mail), files/* (upload/deduplicate/export/template por mail en la URL). Wallet.js y CategoryRule.js siguen en .js (Historia 18): se consumen sin migrar.",
       "files": {
         "src/app/api/general-data/user/remove-user/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:23:52.186Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:25:02.191Z",
+              "event": "submitted",
+              "notes": "1. Vulnerabilidad exacta: La ruta carecía por completo de verificación de sesión (auth.api.getSession) y está fuera del middleware de /dashboard. Confiaba ciegamente en el mail enviado en el body (const {mail} = await request.json()), permitiendo a cualquier atacante no autenticado borrar a cualquier usuario de la base de datos junto con su Wallet, Accounts, Transactions, Categories, SubCategories, Tags y colecciones de BetterAuth (account, session, passkey).\n2. Fix aplicado:\n```ts\n    const sesion = await auth.api.getSession({ headers: request.headers });\n    if (!sesion) throw new Error(\"No session\");\n    const mail = sesion.user.email;\n\n    await dbConnection();\n    const removedUser = await User.findOneAndDelete({ mail });\n    if (!removedUser)\n      throw new Error(`User not removed, please verify the email`);\n```\n3. Call sites revisados: Grep en src/ no arrojó llamadas activas desde el cliente (solo referenciado en comentarios de src/lib/auth/markStepUpVerified.ts).\n4. Casts/guards agregados:\n- Typed bridge WalletModelBridge para Wallet.findOneAndDelete({ user: removedUser._id }) requerido por TS2349 debido a la unión de firmas del modelo unmigrado Wallet.js.\n- (removedUser as unknown as { name?: string }).name para acceder al campo legacy .name sin error TS en IUser.\n- e as unknown as string en el catch.\n5. Bugs preexistentes preservados: El modelo User tiene fullName en vez de name, por lo que removedUser.name evalúa a undefined en runtime (\"undefined removed successfully 🤓\"). Se preservó sin corregir a fullName.\nVerificado con tsc --noEmit (0 errores), eslint (0 errores), vitest run (324 tests pasados)."
+            },
+            {
+              "ts": "2026-09-30T11:29:56.751Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #43 (Crítica): la ruta no tenía sesión y borraba User.findOneAndDelete({mail}) con el mail del body, más Wallet/Accounts/Transactions/Categories/SubCategories/Tags y las colecciones de Better Auth (account, session, passkey): cualquiera podía borrar la cuenta y todos los datos de cualquier usuario. Ahora el mail sale de auth.api.getSession y el body se ignora; ya no hay call site de UI (solo un comentario en markStepUpVerified.ts). Lógica de borrado, orden y mensajes preservados. Cast WalletModelBridge requerido por TS2349 (Wallet.js sin migrar). Bugs preservados: el mensaje usa removedUser.name pero el modelo guarda fullName (dice \"undefined removed successfully\"); si falla a la mitad quedan borrados datos parciales (sin transacción); los throw dentro de if(!x) son casi código muerto porque deleteMany nunca devuelve falsy. Recomendación abierta: exigir step-up 2FA (markStepUpVerified) para esta operación destructiva. Verificado solo con tsc/eslint/vitest; no se llamó la ruta (destructiva)."
+            }
+          ]
         },
         "src/app/api/general-data/tags/new/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:25:04.569Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:26:01.142Z",
+              "event": "submitted",
+              "notes": "1. Vulnerabilidad exacta: La ruta carecía de verificación de sesión (auth.api.getSession) y estaba expuesta sin middleware. Aceptaba `user` y `wallet` directamente del cuerpo de la petición (const { user, wallet, name, color } = await request.json()), lo que permitía a cualquier llamador crear tags arbitrarios asociados a cuentas o wallets de cualquier otro usuario.\n2. Fix aplicado:\n```ts\n    const sesion = await auth.api.getSession({ headers: request.headers });\n    if (!sesion) throw new Error(\"No session\");\n\n    await dbConnection();\n    const userFound = await User.findOne({ mail: sesion.user.email }).lean();\n    if (!userFound) throw new Error(\"User not found on NEW TAG\");\n\n    const newTag = new Tag({\n      user: userFound._id,\n      wallet: userFound.wallet,\n      name: !name ? \"write a name for this TAG 🤨\" : name,\n      color: !color ? null : color,\n    });\n```\n3. Call sites revisados: Grep sobre src/ no mostró llamadas activas a la ruta desde los componentes del cliente.\n4. Casts/guards agregados:\n- Schema Zod `newTagSchema` y tipo derivado `NewTagRequestBody`.\n- `e as unknown as string` en el throw del catch.\n- Sin console.log preservando el original que no lo tenía.\n5. Bugs preexistentes preservados: Mensaje placeholder `\"write a name for this TAG 🤨\"` cuando no se provee `name`.\nVerificado con tsc --noEmit (0 errores), eslint (0 errores), vitest run (324 tests pasados)."
+            },
+            {
+              "ts": "2026-09-30T11:29:56.765Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #44 (Alta): sin sesión y con user/wallet del body → se podían forjar tags en cualquier usuario/wallet. Ahora user/wallet salen del usuario de la sesión. Se descartan los checks if(!user)/if(!wallet) porque esas entradas ya no se usan. Retrabajo mío sobre agy: quité el schema Zod exportado que nunca se usaba para validar (queda interface) y el `|| {}` que agy agregó a request.json() (guard no forzado que cambiaba el comportamiento con body null). Mensaje \"No request received from NEW TAG\" y placeholder de nombre preservados. tsc/eslint/vitest limpios."
+            }
+          ]
         },
         "src/app/api/general-data/tags/remove/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:26:03.492Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:26:32.123Z",
+              "event": "submitted",
+              "notes": "1. Vulnerabilidad exacta: La ruta no validaba sesión (auth.api.getSession) y estaba desprotegida por middleware. Ejecutaba `Tag.findByIdAndDelete(id)` sin ninguna verificación de pertenencia (IDOR), permitiendo a cualquier llamador borrar tags de cualquier otro usuario.\n2. Fix aplicado:\n```ts\n    const sesion = await auth.api.getSession({ headers: request.headers });\n    if (!sesion) throw new Error(\"No session\");\n\n    await dbConnection();\n    const userFound = await User.findOne({ mail: sesion.user.email }).lean();\n    if (!userFound) throw new Error(\"User not found on REMOVE TAG\");\n\n    const removedTag = await Tag.findOneAndDelete({\n      _id: id,\n      user: userFound._id,\n      wallet: userFound.wallet,\n    });\n```\n3. Call sites revisados: Búsqueda con grep en src/ no arrojó llamadas activas a la ruta desde la interfaz de usuario.\n4. Casts/guards agregados:\n- Schema Zod `removeTagSchema` con tipo `RemoveTagRequestBody`.\n- `e as unknown as string` en el throw del catch.\n- Sin console.log respetando el original.\n5. Bugs preexistentes preservados: El mensaje de validación inicial dice `\"No request received from NEW TAG\"` (copiado de la ruta `tags/new`).\nVerificado con tsc --noEmit (0 errores), eslint (0 errores), vitest run (324 tests pasados)."
+            },
+            {
+              "ts": "2026-09-30T11:29:56.776Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #45 (Alta): Tag.findByIdAndDelete(id) sin sesión ni ownership → cualquiera borraba tags ajenos. Ahora sesión + Tag.findOneAndDelete({_id:id, user, wallet}). Mismo retrabajo mío que tags/new (interface en vez de Zod sin uso, sin `|| {}`). Mensaje de error copiado de NEW TAG preservado. Sin call sites de cliente."
+            }
+          ]
         },
         "src/app/api/general-data/tags/update/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:26:34.697Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:27:05.643Z",
+              "event": "submitted",
+              "notes": "1. Vulnerabilidad exacta: La ruta carecía de autenticación de sesión (auth.api.getSession) y estaba desprotegida por middleware. Ejecutaba `Tag.findById(id)` directamente sobre el `id` del cuerpo sin verificar propiedad (IDOR), permitiendo a cualquier atacante modificar tags pertenecientes a cualquier otro usuario.\n2. Fix aplicado:\n```ts\n    const sesion = await auth.api.getSession({ headers: request.headers });\n    if (!sesion) throw new Error(\"No session\");\n\n    await dbConnection();\n    const userFound = await User.findOne({ mail: sesion.user.email }).lean();\n    if (!userFound) throw new Error(\"User not found on UPDATE TAG\");\n\n    const updatedTag = await Tag.findOne({\n      _id: id,\n      user: userFound._id,\n      wallet: userFound.wallet,\n    });\n```\n3. Call sites revisados: Grep sobre src/ no encontró llamadas activas desde los componentes del cliente.\n4. Casts/guards agregados:\n- Schema Zod `updateTagSchema` y tipo inferido `UpdateTagRequestBody`.\n- `e as unknown as string` en el throw del catch.\n- Sin console.log preservando el archivo original.\n5. Bugs preexistentes preservados: Mensaje de error `\"No request received from NEW TAG\"` (heredado por copy-paste de `tags/new`).\nVerificado con tsc --noEmit (0 errores), eslint (0 errores), vitest run (324 tests pasados)."
+            },
+            {
+              "ts": "2026-09-30T11:29:56.784Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #46 (Alta): Tag.findById(id) sin sesión ni ownership → cualquiera editaba tags ajenos. Ahora sesión + Tag.findOne({_id:id, user, wallet}). Mismo retrabajo mío (interface en vez de Zod sin uso, sin `|| {}`). name/color con !x ? viejo : nuevo preservado (no permite vaciar el color)."
+            }
+          ]
         },
         "src/app/api/general-data/wallet/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:27:08.857Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:28:01.200Z",
+              "event": "submitted",
+              "notes": "1. Vulnerabilidad exacta: Originalmente carecía de verificación de sesión y actualizaba cualquier wallet por id enviado desde el cliente (IDOR); dicho fix de seguridad ya había sido aplicado en Historia 5.\n2. Fix aplicado: Se preservó la lógica de seguridad de sesión ya existente sin cambios de comportamiento:\n```ts\n    const sesion = await auth.api.getSession({ headers: request.headers });\n    if (!sesion) throw new Error(\"No session\");\n    await dbConnection();\n    const userFound = await User.findOne({ mail: sesion.user.email }).lean();\n    if (!userFound) throw new Error(\"User not found on WALLET POST\");\n    const walletId = userFound.wallet;\n    // FIND WALLET\n    const findWallet = await (\n      Wallet as unknown as WalletModelBridge\n    ).findById(walletId);\n```\n3. Call sites revisados: PrimaryCurrencySelector.jsx (envía walletId y primaryCurrency, ahora autenticado por sesión).\n4. Casts/guards agregados:\n- Typed bridge WalletModelBridge para Wallet.findById(walletId) por TS2349 debido al modelo unmigrado Wallet.js.\n- Schema Zod updateWalletSchema e interfaces IWalletDocument, WalletBudget, UpdateWalletRequestBody.\n- e as unknown as string en el catch y console.log(e) preservado del original.\n5. Bugs preexistentes preservados:\n- Mensaje de error inicial `\"No data in request on REMOVE-ACCOUNT POST\"` (heredado por copy-paste de remove-account).\n- Mensaje si no encuentra la wallet `\"No Account was identified to be removed 🤕\"`.\nVerificado con tsc --noEmit (0 errores), eslint (0 errores), vitest run (324 tests pasados)."
+            },
+            {
+              "ts": "2026-09-30T11:29:56.793Z",
+              "event": "approved",
+              "notes": "Sin cambio de seguridad (el fix de sesión ya existía desde Historia 2/8; diff contra HEAD confirma que la lógica de sesión, el update de wallet y la validación de moneda quedan idénticos). Solo tipos: WalletModelBridge (TS2349 por Wallet.js sin migrar), interface del body, respuesta tipada. Retrabajo mío: quité el schema Zod sin uso y el `|| {}` agregado a request.json(). Bugs preservados: mensajes copiados (\"REMOVE-ACCOUNT POST\", \"No Account was identified to be removed\"); !cash/!totalBudget/etc. impiden poner un valor en 0 o false."
+            }
+          ]
         },
         "src/app/api/general-data/category-rules/apply-suggestions/route.js": {
           "status": "pending",
