@@ -330,32 +330,42 @@ bug #13 de `ReadFileComp.tsx`, Historia 8) - todos documentados en
 NO incluyó: `EditTransModal.jsx` (otro consumidor de `ThemeProvider`
 pero fuera de este árbol, su propia historia futura si hiciera falta).
 
-**Historia activa: Historia 14 — Projections** (16 archivos: la página
+**Historia 14 (Projections) completa** - 16/16 archivos: la página
 `/dashboard/projections` completa de gestión - distinta de la tabla de
 solo-lectura `HistoricalProjectionsTable.tsx` ya migrada en Historia 10.
-`ProjectionsClient.jsx` [221 líneas, entry], `IncomeSourcesPanel.jsx`
-[256 líneas, CRUD de fuentes de ingreso], `HistoricalBaselinePanel.jsx`
-[272 líneas, CRUD de baseline histórico], `ProjectionMonthDetailModal.jsx`
-[325 líneas, el más grande, usa `Movements.tsx` ya migrado y
-`CurrencyBreakdownChips.jsx`], `ProjectionAccuracyReport.jsx` [86
-líneas], `ProjectionAccuracyInfoModal.jsx` [80 líneas],
-`ProjectionsInfoModal.jsx` [74 líneas], `ProjectionVarianceCell.jsx`
-[39 líneas], `CurrencyBreakdownChips.jsx` [38 líneas, pequeño y
+`ProjectionsClient.tsx` [221→239 líneas, entry], `IncomeSourcesPanel.tsx`
+[256 líneas, CRUD de fuentes de ingreso], `HistoricalBaselinePanel.tsx`
+[272 líneas, CRUD de baseline histórico], `ProjectionMonthDetailModal.tsx`
+[325→379 líneas, el más grande, usa `Movements.tsx` ya migrado y
+`CurrencyBreakdownChips.tsx`], `ProjectionAccuracyReport.tsx` [86
+líneas], `ProjectionAccuracyInfoModal.tsx` [80 líneas],
+`ProjectionsInfoModal.tsx` [74 líneas], `ProjectionVarianceCell.tsx`
+[39 líneas], `CurrencyBreakdownChips.tsx` [38 líneas, pequeño y
 compartido, también usado por `BudgetDetailModal.tsx` ya migrado], y
-`dashboard/projections/page.jsx`. **6 rutas de API de escritura que
-Historia 9 dejó explícitamente pendientes para esta historia** -
-candidatas típicas a IDOR como se ha visto repetidamente en la
-migración: `projections/update`, `projection-baseline/update`,
-`projection-baseline/delete`, `income-sources/update`,
-`income-sources/new`, `income-sources/remove`. Los modelos y rutas de
-lectura que este árbol necesita ya están migrados (Historia 9 y 10).
-Deliberadamente NO incluye: `projectionsChange.js` (helper compartido
-grande, pospuesto igual que `transactionsChange.js`); `mcpProjections.js`
-(parte de la futura historia de MCP tools).
+`dashboard/projections/page.tsx` [21→20 líneas, final]. **6 fixes de
+seguridad nuevos (#37-42)** en las rutas de API de escritura que
+Historia 9 dejó explícitamente pendientes para esta historia:
+`projections/update`, `projection-baseline/update`,
+`projection-baseline/delete` (confiaban en el `mail` del body),
+`income-sources/update` y `income-sources/remove` (cero sesión NI
+ownership, mismo nivel que el bug de `remove-many` de Historia 8), e
+`income-sources/new` (forjaba `user`/`wallet` desde el body, mismo
+patrón que `new-transaction`). **Cero rondas de rework** - incluyendo
+`ProjectionsClient.tsx`, que cruzó por compilador las interfaces de los
+6 hijos ya migrados sin ajustes. 36 bugs de comportamiento nuevos
+documentados (filas 42-77 de `migration-ts-logs.md`), el conteo más
+alto en una sola historia hasta ahora. Deliberadamente NO incluyó:
+`projectionsChange.js` (helper compartido grande, pospuesto igual que
+`transactionsChange.js`); `mcpProjections.js` (parte de la futura
+historia de MCP tools).
 
-Historias siguientes (orden real a confirmar): MCP
-tools (`buildGastifyMcpServer.js`), `transactionsChange.js` (el
-transformer más grande y compartido de toda la app, deliberadamente
-pospuesto historia tras historia). Los modelos Mongoose que aún faltan
-(Wallet, CategoryRule) se migran conforme cada historia los necesite,
-no todos de un jalón. `scripts/` sueltos al final.
+**Historia activa: Historia 15 — MCP tools** (`buildGastifyMcpServer.js`
+y archivos relacionados bajo `src/lib/mcp/`, por confirmar alcance
+exacto explorando el árbol antes de reclamar archivos).
+
+Historias siguientes (orden real a confirmar):
+`transactionsChange.js` (el transformer más grande y compartido de toda
+la app, deliberadamente pospuesto historia tras historia). Los modelos
+Mongoose que aún faltan (Wallet, CategoryRule) se migran conforme cada
+historia los necesite, no todos de un jalón. `scripts/` sueltos al
+final.

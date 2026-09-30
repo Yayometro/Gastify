@@ -497,6 +497,33 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 48 | `income-sources/remove/route.ts` | La respuesta de una operación de archivado/borrado usa `status: 201` en vez de 200/204. | Historia 14 |
 | 49 | `income-sources/remove/route.ts` | Typo en el mensaje de error: "No ID was provided to **removed** the income source" (debería ser "remove"). | Historia 14 |
 | 50 | `income-sources/remove/route.ts` | Si hubiera múltiples entradas sin `effectiveTo` en `history` por alguna inconsistencia previa de datos, `.find()` solo cierra la primera, dejando las demás "abiertas" indefinidamente. | Historia 14 |
+| 51 | `ProjectionVarianceCell.tsx` | Usa `usdFormatChanger` (formato fijo `en-US`/USD) en vez de considerar la moneda primaria real de la wallet del usuario. | Historia 14 |
+| 52 | `ProjectionVarianceCell.tsx` | Cuando `value === 0`, tanto con `betterWhenPositive: true` como `false`/`undefined`, `0 >= 0` y `0 <= 0` evalúan ambos a `true` - siempre produce "mejor de lo esperado" incluso cuando en realidad no hubo variación. | Historia 14 |
+| 53 | `ProjectionAccuracyInfoModal.tsx` | Botón de cierre es un `<div onClick={onClose}>` sin `aria-label`, `role="button"` ni soporte de teclado - no accesible. | Historia 14 |
+| 54 | `ProjectionsInfoModal.tsx` | Mismo patrón que el bug #53 (botón de cerrar es `<div>` no semántico), ocurrencia en archivo distinto. | Historia 14 |
+| 55 | `ProjectionsInfoModal.tsx` | Inconsistencia de `z-index`: el contenedor interno usa `z-[1001]` mientras `BasicModal` maneja `z-[5000]`. | Historia 14 |
+| 56 | `ProjectionsInfoModal.tsx` | Typo gramatical menor en el título: "How Projections works" (debería ser "work"). | Historia 14 |
+| 57 | `ProjectionAccuracyReport.tsx` | Mismo patrón que los bugs #53/#54 (trigger del modal de ayuda es un `<div>` no accesible), ocurrencia en archivo distinto. | Historia 14 |
+| 58 | `ProjectionAccuracyReport.tsx` | Cada `<tr onClick={() => onRowClick(row.monthName)}>` actúa como botón interactivo pero sin `role="button"`, `tabIndex` ni `onKeyDown` - no operable por teclado. | Historia 14 |
+| 59 | `ProjectionAccuracyReport.tsx` | Mismo patrón que el bug #51 (`usdFormatChanger` con formato fijo USD), ocurrencia en archivo distinto. | Historia 14 |
+| 60 | `ProjectionAccuracyReport.tsx` | Campos numéricos opcionales de `row` (`actualIncome`, `projectedIncome`, etc.) se pasan sin coalescing a `usdFormatChanger`/`ProjectionVarianceCell` - pueden producir `NaN` si son `undefined`. | Historia 14 |
+| 61 | `CurrencyBreakdownChips.tsx` | Si `breakdown.isMultiCurrency` es `true` pero la propiedad interna `breakdown.breakdown` es `undefined`/`null`, `.map()` lanza un `TypeError` real en runtime - no se agregó `?.` defensivo por regla de oro. | Historia 14 |
+| 62 | `CurrencyBreakdownChips.tsx` | Si `g.currency !== walletPrimaryCurrency` y `walletPrimaryCurrency` es `undefined`, `formatMoneyMinor` lanza error de "moneda no soportada" al convertir. | Historia 14 |
+| 63 | `CurrencyBreakdownChips.tsx` | Si `g.effectiveDate` no es parseable por `Date`, el tooltip muestra literalmente "Invalid Date". | Historia 14 |
+| 64 | `ProjectionMonthDetailModal.tsx` | En `handleSaveBalance`, si `manualBalance` no existe el estado inicial es `""`; `Number("")` evalúa a `0`, así que guardar sin ingresar valor registra un balance de `$0` en vez de `null`/cancelar. | Historia 14 |
+| 65 | `ProjectionMonthDetailModal.tsx` | Si algún elemento de `bufferRevisions` no tiene `updatedAt` válido, `+new Date(undefined)` da `NaN`, produciendo un orden inestable en el sort. | Historia 14 |
+| 66 | `ProjectionMonthDetailModal.tsx` | `{row.occurrences * row.amount}` en la lista de ingresos esperados asume ambos campos numéricos válidos - si alguno fuera `undefined`, el resultado es `NaN`. | Historia 14 |
+| 67 | `HistoricalBaselinePanel.tsx` | `onChange()` se invoca directo en `handleSubmit`/`handleRemove` sin verificar si la prop fue provista. | Historia 14 |
+| 68 | `HistoricalBaselinePanel.tsx` | `minorToMajor` lanza `Error: Unsupported currency: ...` si `entry[moneyField]?.currency` no está en `SUPPORTED_CURRENCIES`, sin manejo específico. | Historia 14 |
+| 69 | `HistoricalBaselinePanel.tsx` | Si `amount` está vacío (`""`) en el submit, `Number(amount \|\| 0)` evalúa a `0`, creando/actualizando una entrada con valor 0 en vez de validar. | Historia 14 |
+| 70 | `HistoricalBaselinePanel.tsx` | `formatMonthYear` con fecha nula/indefinida produce `"Fecha no válida"`/`"Invalid Date"` en vez de manejarlo explícitamente. | Historia 14 |
+| 71 | `IncomeSourcesPanel.tsx` | `handleDateChange` llama `newValue.format()` sin proteger contra `null` - crash real si el usuario limpia el campo de fecha. Preservado deliberadamente (instrucción explícita a agy de NO agregar guard). | Historia 14 |
+| 72 | `IncomeSourcesPanel.tsx` | `onChange()` se invoca directo en `handleSubmit`/`handleRemove` sin verificar si la prop fue provista - mismo patrón que el bug #67. | Historia 14 |
+| 73 | `IncomeSourcesPanel.tsx` | `form.currency` se inicializa una sola vez vía `useState(() => getEmptyForm(defaultCurrency))` - si `walletPrimaryCurrency` cambia después del montaje, el formulario no se resincroniza. | Historia 14 |
+| 74 | `IncomeSourcesPanel.tsx` | En `startEdit`, `source.amount || ""` convierte un monto real de `0` a cadena vacía (valor falsy). | Historia 14 |
+| 75 | `IncomeSourcesPanel.tsx` | En el submit, `Number(form.amount)` convierte una cadena vacía `""` a `0` sin validar que el usuario haya escrito un monto real. | Historia 14 |
+| 76 | `IncomeSourcesPanel.tsx` | `RECURRENCE_LABELS[source.recurrence]` puede evaluar a `undefined` si la recurrencia es personalizada o está ausente, sin fallback textual. | Historia 14 |
+| 77 | `projection-baseline/update/route.ts` | `new Date(effectiveTo)` se usa directo sin sanear cadenas no parseables, pudiendo guardar una fecha inválida en el historial de baseline. | Historia 14 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
@@ -890,3 +917,81 @@ Historia 8 - `useSelector` lee `.data` en vez del slice completo con
 `TransferExchangeModal.tsx` necesitó 1 ronda de rework, por ser
 justamente el archivo con lógica de dinero real donde más importaba
 revisar dos veces cada `?.` nuevo.
+
+## 2026-09-29 — Historia 14 (Projections) completa: 16/16 archivos
+
+La página `/dashboard/projections` completa de gestión, distinta de la
+tabla de solo-lectura `HistoricalProjectionsTable.tsx` ya migrada en
+Historia 10: `dashboard/projections/page.tsx` [entry de Next.js, 21→20
+líneas, trivial], `ProjectionsClient.tsx` [221→239 líneas, entry de
+cliente, cablea los 6 hijos ya migrados de esta misma historia],
+`IncomeSourcesPanel.tsx` [256 líneas, CRUD de fuentes de ingreso],
+`HistoricalBaselinePanel.tsx` [272 líneas, CRUD de baseline histórico
+de ingreso/gasto], `ProjectionMonthDetailModal.tsx` [325→379 líneas, el
+más grande, usa `Movements.tsx` ya migrado y `CurrencyBreakdownChips.tsx`],
+`ProjectionAccuracyReport.tsx` [86 líneas], `ProjectionAccuracyInfoModal.tsx`
+[80 líneas], `ProjectionsInfoModal.tsx` [74 líneas], `ProjectionVarianceCell.tsx`
+[39 líneas], y `CurrencyBreakdownChips.tsx` [38 líneas, compartido, también
+usado por `BudgetDetailModal.tsx`].
+
+**6 fixes de seguridad nuevos (#37-42), las 6 rutas de escritura que
+Historia 9 dejó explícitamente pendientes para esta historia** (ver
+tabla consolidada arriba): `projections/update` y `projection-baseline/update`/
+`delete` (el clásico "confiar en el `mail` del body" en vez de derivar
+el usuario de la sesión), e `income-sources/update`/`new`/`remove` - estas
+3 últimas la familia más grave encontrada en una sola historia hasta
+ahora: `update` y `remove` no verificaban sesión NI ownership
+(`IncomeSource.findById(id)` a secas, mismo nivel que el bug de
+`remove-many` de Historia 8), y `new` forjaba la atribución de
+`user`/`wallet` directo desde el body (mismo patrón que `new-transaction`
+de Historia 8). Las 3 se corrigieron acotando por `wallet` del usuario
+autenticado o derivando `user`/`wallet` de la sesión, sin cambiar
+ningún comportamiento de los call sites reales.
+
+**Cero rondas de rework en toda la historia** - ni siquiera en
+`ProjectionsClient.tsx`, el archivo que finalmente cruzó y validó por
+compilador las interfaces de los 6 hijos ya migrados (todas resultaron
+compatibles sin ajustes). Sí hubo una investigación profunda de un
+guard sospechoso en ese archivo - `(monthRanges.get(selectedRow.monthName)
+|| {}) as MonthDateRange` - que se comprobó matemáticamente inerte
+(`monthRanges` y `selectedRow.monthName` derivan de la misma función
+`getYearMonthDateRange()` para el mismo año) y se aceptó sin cambios,
+documentado en detalle en la revisión.
+
+**36 bugs de comportamiento nuevos encontrados y preservados sin
+arreglar** (ver tabla de bugs pendientes, filas 42-77) - el conteo más
+alto encontrado en una sola historia hasta ahora, repartido en: 3
+rutas de `income-sources` (imposibilidad de fijar monto a `0`,
+`status: 201` que no coincide con el código HTTP real, mensajes con
+typos o interpolación rota, entrada de `history` sin inicializar
+subdocumento de dinero multi-moneda, `.find()` que solo cierra la
+primera entrada abierta si hubiera varias); `ProjectionVarianceCell.tsx`
+y `ProjectionAccuracyReport.tsx` (formato de moneda fijo a USD en vez
+de la moneda primaria real de la wallet, la misma familia de bug de
+`usdFormatChanger` vista en historias anteriores; evaluación de
+"mejor de lo esperado" siempre verdadera cuando el valor es exactamente
+`0`); 3 modales de ayuda (`ProjectionAccuracyInfoModal.tsx`,
+`ProjectionsInfoModal.tsx`, `ProjectionAccuracyReport.tsx`) con el mismo
+patrón de accesibilidad roto (`<div onClick>` en vez de `<button>`, filas
+de tabla clickeables sin soporte de teclado); `CurrencyBreakdownChips.tsx`
+(crash potencial de `.map()` si el breakdown interno es `undefined` pese
+a `isMultiCurrency: true`, error de moneda no soportada si falta la
+moneda primaria, "Invalid Date" en el tooltip); `ProjectionMonthDetailModal.tsx`
+(guardar balance sin valor registra `$0` en vez de `null`, sort inestable
+con fechas inválidas, `NaN` en el cálculo de ingresos esperados);
+`HistoricalBaselinePanel.tsx` (4 bugs: `onChange()` sin guard, crash de
+moneda no soportada, monto vacío tratado como `0`, fecha inválida sin
+manejo); `IncomeSourcesPanel.tsx` (6 bugs: el crash de `handleDateChange`
+preservado deliberadamente por instrucción explícita a agy de no
+agregarle guard, `onChange()` sin guard, desincronización de moneda
+post-montaje, `0` tratado como vacío, conversión ciega de monto, lookup
+de recurrencia sin fallback); y `projection-baseline/update/route.ts`
+(fecha `effectiveTo` sin sanear). El patrón `throw new Error(objeto)`
+(bug #3, ya documentado) reapareció en las 3 rutas de `projections`/
+`projection-baseline`.
+
+Los 16 archivos limpios a la primera revisión salvo por las 6 rutas de
+API donde se aplicaron los fixes de seguridad (esperado y deliberado,
+no rework). Con esta historia el total de fixes de seguridad de toda
+la migración llega a **42**, y el total de bugs de comportamiento
+documentados en la tabla de pendientes llega a **77**.
