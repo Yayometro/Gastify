@@ -107,12 +107,6 @@ const TypedDedupPreviewModal = DedupPreviewModal as React.ComponentType<{
   confirming: boolean;
 }>;
 
-const TypedCategorySuggestionsModal = CategorySuggestionsModal as React.ComponentType<{
-  suggestions: CategorySuggestionItem[];
-  onConfirm: (applications: SuggestionApplication[]) => Promise<boolean>;
-  onCancel: () => void;
-  confirming: boolean;
-}>;
 
 export interface ReadFileCompProps {
   [key: string]: never;
@@ -504,7 +498,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       )}
 
       {suggestions && (
-        <TypedCategorySuggestionsModal
+        <CategorySuggestionsModal
           suggestions={suggestions}
           onConfirm={handleApplySuggestions}
           onCancel={() => setSuggestions(null)}
