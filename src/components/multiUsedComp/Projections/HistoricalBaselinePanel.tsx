@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { ConfigProvider, DatePicker, Spin } from "antd";
+import type { Dayjs } from "dayjs";
 import esES from "antd/locale/es_ES";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
@@ -9,9 +10,45 @@ import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
 import { formatMoneyMajor, minorToMajor, SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
+import type { ProjectionBaselineData } from "@/hooks/useProjectionTable";
 
-function formatMonthYear(date) {
-  return new Date(date).toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+export interface BaselineTimelineEntry {
+  _id?: string;
+  effectiveFrom?: Date | string;
+  effectiveTo?: Date | string;
+  incomeMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+  expenseMoney?: {
+    amountMinor: number;
+    currency: string;
+  };
+}
+
+export type MoneyField = "incomeMoney" | "expenseMoney";
+
+export interface BaselineTimelineEditorProps {
+  kind: "income" | "expense" | string;
+  label: string;
+  placeholder?: string;
+  entries?: BaselineTimelineEntry[] | null;
+  moneyField: MoneyField;
+  walletPrimaryCurrency?: string;
+  mail?: string;
+  onChange: () => void;
+}
+
+export interface HistoricalBaselinePanelProps {
+  baseline?: ProjectionBaselineData | null;
+  walletPrimaryCurrency?: string;
+  mail?: string;
+  onChange: () => void;
+  defaultOpen?: boolean;
+}
+
+function formatMonthYear(date?: string | number | Date | null): string {
+  return new Date(date as string | number | Date).toLocaleDateString("es-MX", { month: "long", year: "numeric" });
 }
 
 const pickerTheme = { token: { colorPrimary: "#9333ea", borderRadius: 999 } };
@@ -24,17 +61,26 @@ const pickerTheme = { token: { colorPrimary: "#9333ea", borderRadius: 999 } };
 // simultaneous jobs - both count toward that month's total, so leaving
 // "Hasta" empty just means "still ongoing" rather than replacing an earlier
 // entry.
-function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField, walletPrimaryCurrency, mail, onChange }) {
+function BaselineTimelineEditor({
+  kind,
+  label,
+  placeholder,
+  entries,
+  moneyField,
+  walletPrimaryCurrency,
+  mail,
+  onChange,
+}: BaselineTimelineEditorProps): React.JSX.Element {
   const defaultCurrency = walletPrimaryCurrency || "MXN";
-  const [isLoading, setIsLoading] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [effectiveFrom, setEffectiveFrom] = useState(null);
-  const [effectiveTo, setEffectiveTo] = useState(null);
-  const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState(defaultCurrency);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [editingId, setEditingId] = useState<string | null | undefined>(null);
+  const [effectiveFrom, setEffectiveFrom] = useState<Dayjs | null>(null);
+  const [effectiveTo, setEffectiveTo] = useState<Dayjs | null>(null);
+  const [amount, setAmount] = useState<string | number>("");
+  const [currency, setCurrency] = useState<string>(defaultCurrency);
   const toFetch = fetcher();
 
-  const sorted = [...(entries || [])].sort((a, b) => new Date(a.effectiveFrom) - new Date(b.effectiveFrom));
+  const sorted = [...(entries || [])].sort((a, b) => +new Date(a.effectiveFrom as string | number | Date) - +new Date(b.effectiveFrom as string | number | Date));
 
   const resetForm = () => {
     setEditingId(null);
@@ -44,7 +90,7 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
     setCurrency(defaultCurrency);
   };
 
-  const startEdit = (entry) => {
+  const startEdit = (entry: BaselineTimelineEntry) => {
     setEditingId(entry._id);
     setEffectiveFrom(dayjs(entry.effectiveFrom));
     setEffectiveTo(entry.effectiveTo ? dayjs(entry.effectiveTo) : null);
@@ -52,7 +98,7 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
     setCurrency(entry[moneyField]?.currency || defaultCurrency);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!effectiveFrom) return;
     try {
@@ -83,7 +129,7 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
     }
   };
 
-  const handleRemove = async (entryId) => {
+  const handleRemove = async (entryId?: string) => {
     try {
       setIsLoading(true);
       const res = await toFetch.post("general-data/projection-baseline/delete", { mail, kind, entryId });
@@ -162,7 +208,7 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
               className="ant-date-picker-range3"
               value={effectiveTo ? effectiveTo.locale("es") : null}
               onChange={(d) => setEffectiveTo(d)}
-              disabledDate={(d) => effectiveFrom && d.isBefore(effectiveFrom, "month")}
+              disabledDate={(d) => Boolean(effectiveFrom && d.isBefore(effectiveFrom, "month"))}
               format="MMMM YYYY"
               placeholder="En curso"
               allowClear
@@ -219,8 +265,14 @@ function BaselineTimelineEditor({ kind, label, placeholder, entries, moneyField,
 // above) so two simultaneous jobs both count, and each can carry its own
 // currency (e.g. a USD paycheck) - converted to the Wallet's primary
 // currency at read time by ProjectionsClient, same as Income Sources.
-function HistoricalBaselinePanel({ baseline, walletPrimaryCurrency, mail, onChange, defaultOpen }) {
-  const [isOpen, setIsOpen] = useState(!!defaultOpen);
+function HistoricalBaselinePanel({
+  baseline,
+  walletPrimaryCurrency,
+  mail,
+  onChange,
+  defaultOpen,
+}: HistoricalBaselinePanelProps): React.JSX.Element {
+  const [isOpen, setIsOpen] = useState<boolean>(!!defaultOpen);
   const totalEntries = (baseline?.incomeHistory?.length || 0) + (baseline?.expenseHistory?.length || 0);
 
   return (

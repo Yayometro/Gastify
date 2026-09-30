@@ -4050,8 +4050,23 @@
           ]
         },
         "src/components/multiUsedComp/Projections/HistoricalBaselinePanel.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T03:07:23.673Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T03:09:32.114Z",
+              "event": "submitted",
+              "notes": "Migración a TypeScript 1:1 de HistoricalBaselinePanel (incluye BaselineTimelineEditor y HistoricalBaselinePanel).\nInterfaces creadas: BaselineTimelineEntry, MoneyField, BaselineTimelineEditorProps, HistoricalBaselinePanelProps. Importa ProjectionBaselineData de useProjectionTable.\nResta de fechas resuelta con operador unario +: `+new Date(a.effectiveFrom as string | number | Date) - +new Date(b.effectiveFrom as string | number | Date)` (patrón idéntico al verificado en ProjectionMonthDetailModal.tsx).\nCasts/guards mínimos necesarios: `as string | number | Date` para new Date() y `Boolean(...)` en disabledDate de DatePicker para compatibilidad estricta con Antd.\nBugs preexistentes preservados intactos: onChange() invocado sin guard; minorToMajor puede fallar si la moneda no está soportada; Number(amount || 0) envía 0 si el campo está vacío; formatMonthYear con null/undefined produce 'Invalid Date'.\nVerificación: npx tsc --noEmit limpio (0 errores en todo el proyecto), eslint limpio, vitest 324/324 pasando en 30 suites."
+            },
+            {
+              "ts": "2026-09-30T03:10:48.114Z",
+              "event": "approved",
+              "notes": "Migración byte-idéntica en lógica, verificada vía diff completo. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324.\n\nResta de fechas resuelta con el mismo patrón ya verificado en ProjectionMonthDetailModal.tsx: `+new Date(a.effectiveFrom) - +new Date(b.effectiveFrom)` es matemáticamente idéntico a la resta original de objetos Date (mismo `.valueOf()` invocado en ambos casos).\n\nVerifiqué específicamente `disabledDate={(d) => Boolean(effectiveFrom && d.isBefore(effectiveFrom, \"month\"))}`: el `Boolean(...)` NO es requerido por el compilador (probé quitándolo, tsc --noEmit sigue limpio con strict:false). Es inerte en runtime: antd solo evalúa el retorno de `disabledDate` como truthy/falsy internamente, y tanto `null` (rama original sin Boolean) como `false` (rama con Boolean) son falsy - el comportamiento de habilitar/deshabilitar fechas es idéntico en ambos casos.\n\n`MoneyField = \"incomeMoney\" | \"expenseMoney\"` permite indexación tipada segura sin index signatures. Reutiliza `ProjectionBaselineData` real de useProjectionTable.ts.\n\n4 bugs preexistentes documentados sin arreglar: `onChange()` llamado sin verificar que exista; `minorToMajor` puede lanzar error si la moneda de una entrada no está soportada; `Number(amount || 0)` con amount vacío crea/actualiza con monto 0 en vez de validar; `formatMonthYear` con fecha inválida/ausente da \"Invalid Date\". Sin rework."
+            }
+          ]
         },
         "src/components/multiUsedComp/Projections/ProjectionsClient.jsx": {
           "status": "pending",
