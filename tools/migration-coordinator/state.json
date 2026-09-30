@@ -4169,8 +4169,23 @@
           ]
         },
         "src/lib/money/server/fxRateService.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T03:43:42.634Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T03:45:50.562Z",
+              "event": "submitted",
+              "notes": "Migración de src/lib/money/server/fxRateService.js a .ts.\n\n1. Tipos e interfaces creados:\n- FxRateSnapshotDTO: DTO de snapshot con source, baseCurrency, effectiveDate, rates (IFxRates de @/model/FxRateSnapshot), fetchedAt, rawSourceDate.\n- FxSnapshotResult: { snapshot: FxRateSnapshotDTO | null, stale: boolean, fetchError?: string }.\n- GetRateParams / ConvertParams: parámetros tipados para getRate y convert ({ fromCurrency, toCurrency, date? } y { amountMinor, fromCurrency, toCurrency, date? }).\n- FxRateUnavailableResult, FxRateSuccessResult, FxRateResult (unión discriminada para getRate).\n- FxConvertSuccessResult, FxConvertResult (unión discriminada para convert).\n\n2. Casts y guards:\n- Cero casts ('as ...') y cero any.\n- Cero guards nuevos ('?.' / 'if' artificiales no presentes en el original).\n- En los bloques catch (err), err.message compila limpiamente sin cast.\n- Preservado idéntico el objeto unavailable() y el Boolean(stale).\n\n3. Imports:\n- FxRateSnapshot importado con tipos reales desde @/model/FxRateSnapshot (.ts).\n- ecbClient y conversion mantenidos como imports .js normales sin typed bridge.\n\n4. Bugs preexistentes (sin arreglar):\n- Ninguno crítico. Se constató que convert() al fallar retorna el objeto de unavailable() sin campos amountMinor/currency, lo cual es manejado correctamente por los consumidores chequeando .available primero.\n\n5. Verificaciones:\n- npx tsc --noEmit: 0 errores en todo el proyecto.\n- npx eslint src/lib/money/server/fxRateService.ts: 0 errores, 0 warnings.\n- npx vitest run src/lib/money/server/fxRateService.test.js: 7/7 tests pasados.\n- npx vitest run: 30 test files pasados (324 tests exitosos)."
+            },
+            {
+              "ts": "2026-09-30T03:46:23.739Z",
+              "event": "approved",
+              "notes": "Migración limpia 1:1, cero guards nuevos, cero casts. unavailable(fetchError || null) y Boolean(stale) preservados exactos. err.message en los catch compila sin cast (catch variables son any por default con strict:false, confirmado). ecbClient.js y conversion.js dejados como imports .js normales sin typed bridge, mismo precedente que transfer/route.ts. Usa los tipos reales de FxRateSnapshot.ts (ya migrado). tsc/eslint/vitest limpios (324/324, incluyendo fxRateService.test.js 7/7)."
+            }
+          ]
         },
         "src/lib/transactions/createTransaction.js": {
           "status": "pending",
