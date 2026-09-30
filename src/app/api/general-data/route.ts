@@ -35,12 +35,6 @@ export interface GeneralDataPostResponse {
   ok: true;
 }
 
-interface WalletModelBridge {
-  findById: (id: unknown) => {
-    lean: () => Promise<Record<string, unknown> | null>;
-  };
-}
-
 export async function GET(): Promise<NextResponse<GeneralDataStaticGetResponse>> {
   try {
     return NextResponse.json({
@@ -82,7 +76,7 @@ export async function POST(
     const walletId = userFound.wallet;
 
     // FIND WALLET
-    const walletFound = await (Wallet as unknown as WalletModelBridge)
+    const walletFound = await Wallet
       .findById(walletId)
       .lean();
     // IF ERROR

@@ -1,6 +1,6 @@
 import type { Types } from "mongoose";
 import User from "@/model/User";
-import Wallet from "@/model/Wallet";
+import Wallet, { type IWallet } from "@/model/Wallet";
 import Account from "@/model/Account";
 import Transaction from "@/model/Transaction";
 import Category from "@/model/Category";
@@ -17,9 +17,7 @@ export interface ProvisionUserParam {
 }
 
 export interface ProvisionNewUserDataResult {
-  // Typed as any because the Wallet model (src/model/Wallet.js) has not yet been migrated to TypeScript.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wallet: any;
+  wallet: IWallet;
 }
 
 // The starter Wallet/Account/Category/SubCategory/Tag/Budget/Transaction a

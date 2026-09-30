@@ -3,26 +3,21 @@ import type { NextRequest } from "next/server";
 import type mongoose from "mongoose";
 import dbConnection from "@/app/api/dbConnection";
 import User, { type IUser } from "@/model/User";
-import Wallet from "@/model/Wallet";
+import Wallet, { type IWalletBudget } from "@/model/Wallet";
 
 export interface GeneratedApiToken {
   token: string;
   tokenHash: string;
 }
 
-export interface ApiTokenWalletBudget {
-  totalBudget?: number;
-  totalSavings?: number;
-  isSurpassed?: boolean;
-  isSaved?: boolean;
-}
+export type ApiTokenWalletBudget = IWalletBudget;
 
 export interface ApiTokenWallet {
-  _id: string | mongoose.Types.ObjectId;
+  _id?: string | mongoose.Types.ObjectId;
   name?: string;
   cash?: number;
-  user: string | mongoose.Types.ObjectId;
-  budget?: ApiTokenWalletBudget;
+  user?: string | mongoose.Types.ObjectId;
+  budget?: IWalletBudget;
   primaryCurrency?: string;
   currencyUpdatedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -32,12 +27,6 @@ export interface ApiTokenWallet {
 export interface ResolvedApiTokenAuth {
   user: IUser;
   wallet: ApiTokenWallet;
-}
-
-interface WalletModelBridge {
-  findById: (id: unknown) => {
-    lean: () => Promise<ApiTokenWallet | null>;
-  };
 }
 
 // Personal access tokens for third-party AI-agent connectors. A random
@@ -73,7 +62,7 @@ export async function resolveApiToken(token: string): Promise<ResolvedApiTokenAu
   matchedToken.lastUsedAt = new Date();
   await user.save();
 
-  const wallet = await (Wallet as unknown as WalletModelBridge)
+  const wallet = await Wallet
     .findById(user.wallet)
     .lean();
   if (!wallet) throw new Error("No wallet found for this user");

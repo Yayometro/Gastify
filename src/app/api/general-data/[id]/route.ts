@@ -29,14 +29,6 @@ export interface GeneralDataGetResponse {
   ok: true;
 }
 
-interface WalletModelBridge {
-  findById: (id: unknown) => {
-    lean: () => {
-      populate: (options: { path: string }) => Promise<Record<string, unknown> | null>;
-    };
-  };
-}
-
 export async function GET(
   request: NextRequest | Request,
   { params }: { params: { id: string } }
@@ -67,7 +59,7 @@ export async function GET(
     console.log(userFound);
 
     // FIND WALLET
-    const walletFound = await (Wallet as unknown as WalletModelBridge)
+    const walletFound = await Wallet
       .findById(walletId)
       .lean()
       .populate({

@@ -15,12 +15,6 @@ export interface TemplateErrorResponse {
   ok: false;
 }
 
-interface WalletModelBridge {
-  findById: (id: unknown) => {
-    lean: () => Promise<{ primaryCurrency?: string } | null>;
-  };
-}
-
 export async function GET(
   request: NextRequest | Request
 ): Promise<NextResponse | Response> {
@@ -45,7 +39,7 @@ export async function GET(
         $or: [{ user: userFound._id }, { isDefaultSubCatego: true }],
       }).lean(),
       Account.find({ user: userFound._id, wallet: userFound.wallet }).lean(),
-      (Wallet as unknown as WalletModelBridge).findById(userFound.wallet).lean(),
+      Wallet.findById(userFound.wallet).lean(),
     ]);
 
     const catNames = categories.map((c) => c.name).filter(Boolean);

@@ -36,12 +36,6 @@ export interface DedupErrorResponse {
 
 export type DedupResponse = DedupPreviewResponse | DedupExecuteResponse | DedupErrorResponse;
 
-interface WalletModelBridge {
-  findById: (id: unknown) => {
-    lean: () => Promise<{ primaryCurrency?: string } | null>;
-  };
-}
-
 interface ParsedExcelRow {
   date: Date;
   name: string;
@@ -146,7 +140,7 @@ export async function POST(
     if (!userFound) {
       return NextResponse.json({ ok: false, message: "User not found" }, { status: 404 });
     }
-    const parentWallet = await (Wallet as unknown as WalletModelBridge).findById(userFound.wallet).lean();
+    const parentWallet = await Wallet.findById(userFound.wallet).lean();
     const walletPrimaryCurrency = parentWallet?.primaryCurrency || "MXN";
 
     const sheet = workbook.sheet(0);

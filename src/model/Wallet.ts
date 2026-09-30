@@ -1,7 +1,31 @@
-import mongoose, {Schema, model} from 'mongoose'
+import mongoose, {Schema} from 'mongoose'
 import { SUPPORTED_CURRENCIES } from '@/lib/money/currencies'
 
-const walletSchema = new Schema({
+export interface IWalletBudget {
+    totalBudget?: number;
+    totalSavings?: number;
+    isSurpassed?: boolean;
+    isSaved?: boolean;
+}
+
+export interface IWallet extends mongoose.Document {
+    name?: string;
+    // Deprecated/legacy - not used by any current consumer, do not add new
+    // readers. Preserved during the multi-currency migration only.
+    cash?: number;
+    user?: mongoose.Types.ObjectId | string;
+    // Deprecated/legacy - superseded by real Budget documents. Preserved
+    // during the multi-currency migration only.
+    budget?: IWalletBudget;
+    // Multi-currency: controls how totals/reports display for this wallet.
+    // Never reinterprets already-stored native money when changed.
+    primaryCurrency?: string;
+    currencyUpdatedAt?: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const walletSchema = new Schema<IWallet>({
     name: {type: String},
     // Deprecated/legacy - not used by any current consumer, do not add new
     // readers. Preserved during the multi-currency migration only.
@@ -34,6 +58,6 @@ const walletSchema = new Schema({
 }, {timestamps: true})
 
 
-const Wallet = mongoose.models.Wallet || mongoose.model('Wallet', walletSchema); 
+const Wallet: mongoose.Model<IWallet> = mongoose.models.Wallet || mongoose.model<IWallet>('Wallet', walletSchema); 
 
 export default Wallet

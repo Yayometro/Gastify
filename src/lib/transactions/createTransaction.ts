@@ -38,12 +38,6 @@ export interface CreateTransactionResult<T = Record<string, unknown>> {
   name?: string;
 }
 
-interface WalletModelBridge {
-  findById: (id: unknown) => {
-    lean: () => Promise<{ primaryCurrency?: string } | null>;
-  };
-}
-
 // Throws `message` unless `doc` exists and either carries `defaultFlag` (a
 // shared default, usable by any user) or actually belongs to this user's
 // wallet. Deliberately uses the same "not found" message whether the id
@@ -111,7 +105,7 @@ export async function createTransaction({
   if (account) {
     assertOwnedOrDefault(selectedAccount, user, wallet, "Account not found for this user");
   }
-  const parentWallet = await (Wallet as unknown as WalletModelBridge)
+  const parentWallet = await Wallet
     .findById(wallet)
     .lean();
   if (!parentWallet) throw new Error("No Wallet found to create a new Transaction");

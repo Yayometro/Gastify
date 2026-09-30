@@ -38,12 +38,6 @@ export interface UploadErrorResponse {
 
 export type UploadResponse = UploadSuccessResponse | UploadErrorResponse;
 
-interface WalletModelBridge {
-  findById: (id: unknown) => {
-    lean: () => Promise<{ primaryCurrency?: string } | null>;
-  };
-}
-
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -194,7 +188,7 @@ export async function POST(
     if (!userFound) {
       return NextResponse.json({ ok: false, message: "User not found" }, { status: 404 });
     }
-    const parentWallet = await (Wallet as unknown as WalletModelBridge).findById(userFound.wallet).lean();
+    const parentWallet = await Wallet.findById(userFound.wallet).lean();
     const walletPrimaryCurrency = parentWallet?.primaryCurrency || "MXN";
 
     // Data starts at row 3 (row 1 = headers, row 2 = note)

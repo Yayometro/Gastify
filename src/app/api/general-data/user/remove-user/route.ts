@@ -19,10 +19,6 @@ export interface RemoveUserSuccessResponse {
 
 export type RemoveUserResponse = RemoveUserSuccessResponse;
 
-interface WalletModelBridge {
-  findOneAndDelete: (filter: unknown) => Promise<unknown>;
-}
-
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveUserResponse>> {
@@ -41,9 +37,7 @@ export async function POST(
     const removedUser = await User.findOneAndDelete({ mail });
     if (!removedUser)
       throw new Error(`User not removed, please verify the email`);
-    const removeWalletAssociated = await (
-      Wallet as unknown as WalletModelBridge
-    ).findOneAndDelete({
+    const removeWalletAssociated = await Wallet.findOneAndDelete({
       user: removedUser._id,
     });
     if (!removeWalletAssociated)

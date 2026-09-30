@@ -1,4 +1,4 @@
-import Wallet from "@/model/Wallet";
+import Wallet, { IWallet } from "@/model/Wallet";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse, type NextRequest } from "next/server";
@@ -26,24 +26,9 @@ export interface WalletBudget {
   isSaved?: boolean;
 }
 
-export interface IWalletDocument {
-  _id?: unknown;
-  name?: string;
-  cash?: number;
-  budget: WalletBudget;
-  primaryCurrency?: string;
-  currencyUpdatedAt?: Date | null;
-  save: () => Promise<IWalletDocument>;
-  [key: string]: unknown;
-}
-
-interface WalletModelBridge {
-  findById: (id: unknown) => Promise<IWalletDocument | null>;
-}
-
 export interface WalletPostSuccessResponse {
   message: string;
-  data: IWalletDocument;
+  data: IWallet;
   status: number;
   ok: boolean;
 }
@@ -83,7 +68,7 @@ export async function POST(
     if (!userFound) throw new Error("User not found on WALLET POST");
     const walletId = userFound.wallet;
     // FIND WALLET
-    const findWallet = await (Wallet as unknown as WalletModelBridge).findById(
+    const findWallet = await Wallet.findById(
       walletId,
     );
     //IF ERROR
