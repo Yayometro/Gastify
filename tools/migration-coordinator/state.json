@@ -4288,38 +4288,118 @@
       "label": "Transformers restantes - los 6 helpers de src/helpers/transformers/ aun en .js. Los 2 GRANDES los migra Claude directamente (no agy): transactionsChange.js [627 lineas, 38 archivos ya migrados lo consumen como any implicito] y projectionsChange.js [508 lineas, consumido por useProjectionTable.ts, mcpProjections.ts, buildGastifyMcpServer.ts, etc.] - marcados 'claimed' por Claude. Los 4 CHICOS los migra agy y Claude los audita: transactionDuplicates.js [124], budgetCoverage.js [135], categoryRuleMatcher.js [66], categoriesTransformers.js [50]. Al pasar de any implicito a tipos reales, los consumidores existentes pueden empezar a fallar tsc: se arreglan con el cast/tipo minimo en el consumidor o ajustando el tipo, nunca cambiando runtime.",
       "files": {
         "src/helpers/transformers/transactionDuplicates.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T10:50:05.043Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T10:51:06.986Z",
+              "event": "submitted",
+              "notes": "Migrado 1:1 a TypeScript (transactionDuplicates.ts).\n- Tipos creados/exportados: DuplicateCriteria, DuplicateTransaction, DuplicatePair<T>.\n- Funciones tipadas con genéricos <T extends DuplicateTransaction>: buildDupGroups, getDuplicates, getDuplicatesToDelete, getAllMatchingIds, getDuplicatePairs.\n- Casts mínimos agregados: as number en amountMinor/amount/dateTol/amountTol para operaciones aritméticas exactas; Record<number, number[]> para comps en buildDupGroups.\n- Tests vitest pasando (8/8) y eslint limpio.\n- Bugs preexistentes detectados y preservados:\n  1. areDuplicates: String(date).slice(0, 10) produce texto inválido si date es instancia Date en lugar de string ISO.\n  2. areDuplicates: if (diffDays > dateTol) evalúa false si dateTol es undefined (nunca descalifica por fecha si se omite dateTol).\n  3. nativeAmountMinor: si displayMoney.native existe pero amountMinor es undefined, retorna undefined sin fallback a amount legacy."
+            },
+            {
+              "ts": "2026-09-30T10:59:57.802Z",
+              "event": "approved",
+              "notes": "Auditado por Claude. Diff: solo anotaciones + casts as number (erasados) + reformateo de find/union a multilinea (misma semántica). Sin guards nuevos. Bugs preservados: String(Date) truncado a 10 chars si date es Date; dateTol undefined nunca descalifica; native.amountMinor undefined no cae al cálculo legacy. tsc/eslint/vitest limpios (8/8 en su test)."
+            }
+          ]
         },
         "src/helpers/transformers/budgetCoverage.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T10:51:09.078Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T10:52:16.805Z",
+              "event": "submitted",
+              "notes": "Migrado 1:1 a TypeScript (budgetCoverage.ts).\n- Tipos creados/exportados: CategoryEntry, BudgetCoverageInput, CoverageCategoryItem, CoverageTransaction, CoverageGroup, GetBudgetCoverageParams<T, B>, BudgetCoverageConflict<T, B>, BudgetCoverageResult<T, B>.\n- Tipos reutilizados de budgetTypes.ts: BudgetTypeInput, TransactionLike, isSpendingBudget, getExplicitBudgetId.\n- Funciones tipadas con genéricos: getBudgetCategoryEntries, categoryEntriesOverlap, findCoverageConflicts, getBudgetCoverage, getUncoveredCatalogCategories.\n- Casts mínimos: asId/asAmount y casts numéricos en Date comparisons para preservar semántica de comparación de JavaScript.\n- eslint limpio y 171/171 tests en transformers pasando.\n- Bugs preexistentes detectados y preservados:\n  1. getBudgetCoverage: comparación directa date >= startDate / <= endDate coerciona Date a String si startDate/endDate son strings (\"YYYY-MM-DD\").\n  2. getBudgetCoverage: si date y createdAt son undefined, new Date() es Invalid Date (NaN) y las comparaciones de rango retornan false.\n  3. getBudgetCoverage: si un movimiento tiene explicitBudgetId pero dicho budget no está en activeBudgets (ej. archivado), queda como uncovered sin evaluar categoryBudgets."
+            },
+            {
+              "ts": "2026-09-30T10:59:57.815Z",
+              "event": "approved",
+              "notes": "Auditado por Claude, con retrabajo mío (no de agy): los tipos de entrada de agy eran demasiado estrictos y dejaban 14 errores de tsc en BudgetsClient/BudgetEditModal (category/subCategory como objeto en vez de unknown, index signatures que los consumidores no tienen, Result como interface no asignable a SpendingSummaryCoverage). Corregido: category/subCategory unknown, sin index signatures en CategoryEntry/BudgetCoverageInput/CoverageTransaction, Result/Conflict como type alias. Runtime intacto: los as unknown as number en comparaciones de fechas se erasan (misma coerción que el original). Bug documentado: date>=startDate con startDate string compara Date(→número) contra string(→NaN), falso siempre; Invalid Date se excluye del rango; movimiento con budget explícito archivado queda uncovered sin evaluar categoryBudgets."
+            }
+          ]
         },
         "src/helpers/transformers/categoryRuleMatcher.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T10:52:18.843Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T10:52:59.303Z",
+              "event": "submitted",
+              "notes": "Migrado 1:1 a TypeScript (categoryRuleMatcher.ts).\n- Tipos creados/exportados: NativeMoneyInput, CategoryRuleCategoryRef, CategoryRuleLike, CategorySuggestionResult<C>.\n- Funciones tipadas con genéricos: suggestCategory<R extends CategoryRuleLike>.\n- Casts mínimos: as number en amountMinor/minAmount/maxAmount para comparaciones exactas.\n- eslint limpio y vitest 12/12 tests pasando.\n- Bugs preexistentes detectados y preservados:\n  1. passesAmountThreshold: si nativeMoney.amountMinor es null/undefined pero el objeto nativeMoney existe, las comparaciones relativas (< y >) retornan false pasando silenciosamente los umbrales.\n  2. suggestCategory: new RegExp(rule.pattern, \"i\") evalúa patrones directamente como regex; patrones con caracteres especiales de regex no escapados pueden causar syntax errors atrapados por el try/catch o comportamiento de matching no deseado si se pretendía coincidencia literal."
+            },
+            {
+              "ts": "2026-09-30T10:59:57.824Z",
+              "event": "approved",
+              "notes": "Auditado por Claude. Solo anotaciones y casts as number (erasados); catch (e) -> catch (inerte, para eslint). Sin guards nuevos. Bugs preservados: si nativeMoney existe con amountMinor null/undefined, las comparaciones (null->0, undefined->NaN) pasan umbrales sin validar; el pattern se usa como regex sin escapar (por diseño, errores atrapados y regla saltada). 12/12 tests."
+            }
+          ]
         },
         "src/helpers/transformers/categoriesTransformers.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T10:53:01.529Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T10:53:55.007Z",
+              "event": "submitted",
+              "notes": "Migrado 1:1 a TypeScript (categoriesTransformers.ts).\n- Tipos creados/exportados: RawCategoryItem, OrganizedCategoryItem<T>.\n- Función tipada con genéricos: organizedCategoriesAndSubCategories<T extends RawCategoryItem>.\n- Casts mínimos: narrowing de typeof item.fatherCategory y typing de categoryMap.\n- eslint limpio y 324/324 tests pasando en vitest.\n- Bugs preexistentes detectados y preservados:\n  1. organizedCategoriesAndSubCategories: typo en mensaje de error lanzado (\"the element shoudl be a instance of Array\").\n  2. organizedCategoriesAndSubCategories: si _id y name faltan, key se evalúa como \"undefined\" provocando que múltiples raíces sin identificador se sobreescriban.\n  3. organizedCategoriesAndSubCategories: si fatherCategory es string ID y no está en categoryMap, la rama else solo procesa objetos, por lo que subcategorías con fatherCategory string huérfana se descartan silenciosamente.\n  4. sortItemsByName: muta in-place el array de valores retornado."
+            },
+            {
+              "ts": "2026-09-30T10:59:57.835Z",
+              "event": "approved",
+              "notes": "Auditado por Claude, con un retrabajo mío: agy agregó 3 veces `&& item.fatherCategory !== null` dentro de `if (item.fatherCategory)` - guard no forzado (probado: quitarlo compila igual) e inalcanzable, pero lo quité para dejar el archivo fiel al original. let->const en fatherKey es inerte. Bugs preservados: typo \"shoudl\" en el mensaje de error; raíces sin _id ni name colisionan en la clave \"undefined\"; subcategorías cuyo fatherCategory es un string ID huérfano se descartan en silencio; sortItemsByName muta el array in-place."
+            }
+          ]
         },
         "src/helpers/transformers/transactionsChange.js": {
-          "status": "claimed",
+          "status": "approved",
           "history": [
             {
               "ts": "2026-09-30T10:49:10.596Z",
               "event": "claimed",
               "notes": "Migrado directamente por Claude (pedido explicito del usuario), no por agy."
+            },
+            {
+              "ts": "2026-09-30T11:00:09.151Z",
+              "event": "submitted",
+              "notes": "Migrado directamente por Claude (pedido explícito del usuario). Solo firmas/anotaciones; único cambio dentro de un cuerpo: cast local en getPrimaryAmount. Ajustes de consumidores sin tocar runtime: walletAnalyzer (reduce<number>, t: object), Movements (start/end as Date). tsc/eslint limpios, 104 tests (transactionsChange + walletAnalyzer)."
+            },
+            {
+              "ts": "2026-09-30T11:00:21.461Z",
+              "event": "approved",
+              "notes": "Migrado y verificado por Claude (sin revisor independiente, a pedido del usuario). Verificación: diff contra HEAD muestra solo líneas de firma/anotación y el cast local en getPrimaryAmount; tsc sin errores; eslint limpio; 104 tests (transactionsChange.test.js + walletAnalyzer.test.js) y 324/324 en total. Bugs preservados: sort in-place (orderByHighestValue, sortBasedOnValueProperty, sortByIndex mutan el array de entrada; con arrays de Redux congelados lanzarían); orderByHighestValue usa (value||amount) así que value 0 cae a amount; reduceAndTransforToCategories agrupa por category.name (dos categorías con el mismo nombre se fusionan); buildCategoryHierarchy accede t.category._id sin ?. cuando hay subCategory (crash si falta category, mismo patrón que TransResumeChart); reduceTransToTransMonths/transformTransactionsToMonthsChartObject bucketean por mes sin año (el segundo usa siempre el año actual y devuelve null para otros años; ignora createdAt); mapedMonths.get(...) sin guard crashea con fecha inválida; reduceTransactionsToMonthSpentObjects lee transaction.type sin guard tras chequear transaction; filterBillsOrIncomes cuenta como income todo lo que no es isBill ni transfer/exchange (refund/fee incluidos); reduceTransCategoriesSliced acepta un parámetro slice que nunca usa; usdFormatChanger fija en-US/USD (origen de los bugs #51/#59)."
             }
           ]
         },
         "src/helpers/transformers/projectionsChange.js": {
-          "status": "claimed",
+          "status": "approved",
           "history": [
             {
               "ts": "2026-09-30T10:49:10.596Z",
               "event": "claimed",
               "notes": "Migrado directamente por Claude (pedido explicito del usuario), no por agy."
+            },
+            {
+              "ts": "2026-09-30T11:00:09.161Z",
+              "event": "submitted",
+              "notes": "Migrado directamente por Claude (pedido explícito del usuario). Solo firmas/anotaciones + casts erasables (IdRef, amount as number, cast del array en getMonthCurrencyBreakdown) y +monthStart - +anchor en vez de resta directa de Dates. Ajuste de consumidor: BudgetDetailModal (cast a MatchableBudget). tsc/eslint limpios, 28/28 tests de projectionsChange."
+            },
+            {
+              "ts": "2026-09-30T11:00:21.474Z",
+              "event": "approved",
+              "notes": "Migrado y verificado por Claude (sin revisor independiente, a pedido del usuario). Verificación: diff contra HEAD muestra solo firmas, anotaciones, casts erasables y +monthStart - +anchor (mismo valueOf/NaN que la resta directa); tsc sin errores; eslint limpio; 28/28 tests de projectionsChange y 324/324 en total. Bugs preservados: getBudgetActualSpend suma bill.amount legacy, no getPrimaryAmount (ignora multi-moneda); en getBudgetActualSpend una fecha inválida no se excluye (NaN<start y NaN>end son false) a diferencia de getTransactionsFromTimeRange que sí la excluye; una factura que calza con varios budgets se cuenta completa en cada uno (sumPerBucketMax y getMonthBucketBreakdown); goalAmount de budgets y montos de baseline se asumen ya en la moneda primaria (budget.currency nunca se convierte); sumBaselineEntriesAtDate cae a \"MXN\" cuando falta currency en vez de la moneda primaria de la wallet; getBudgetPeriodRange trata cualquier period desconocido como yearly y en monthly ignora referenceDate si hay fallbacks; biweekly/weekly sin anchorDate asumen 2/4 ocurrencias fijas; countIntervalOccurrences suma ms fijos así que el DST puede correr un día; getMonthCurrencyBreakdown se salta transacciones sin displayMoney (subcuenta) y la tasa mostrada por moneda es la de una sola transacción (la más reciente)."
             }
           ]
         }
