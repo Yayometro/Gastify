@@ -3,7 +3,34 @@ import { useEffect, useState } from "react";
 import fetcher from "@/helpers/fetcher";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 
-function sameCurrencyState(accounts, walletPrimaryCurrency) {
+export interface LinkedAccountItem {
+  _id?: string | unknown;
+  amount?: number | string | null;
+  currency?: string | null;
+}
+
+export interface LinkedAccountBreakdownGroup {
+  currency: string;
+  nativeAmountMinor: number;
+  primaryAmountMinor: number;
+  rate: number | string;
+  effectiveDate: Date | string | null;
+}
+
+export interface LinkedAccountsBreakdown {
+  isMultiCurrency: boolean;
+  breakdown: LinkedAccountBreakdownGroup[];
+}
+
+export interface LinkedAccountsTotalResult {
+  total: number;
+  breakdown: LinkedAccountsBreakdown;
+}
+
+function sameCurrencyState(
+  accounts: LinkedAccountItem[],
+  walletPrimaryCurrency: string
+): { total: number; groups: LinkedAccountBreakdownGroup[] } {
   const sameCurrencyAccounts = accounts.filter(
     (a) => (a?.currency || walletPrimaryCurrency) === walletPrimaryCurrency
   );
@@ -12,7 +39,7 @@ function sameCurrencyState(accounts, walletPrimaryCurrency) {
     0
   );
   const total = sameCurrencyAccounts.reduce((sum, a) => sum + (Number(a?.amount) || 0), 0);
-  const groups =
+  const groups: LinkedAccountBreakdownGroup[] =
     sameCurrencyAccounts.length > 0
       ? [{ currency: walletPrimaryCurrency, nativeAmountMinor, primaryAmountMinor: nativeAmountMinor, rate: 1, effectiveDate: null }]
       : [];
@@ -31,15 +58,18 @@ function sameCurrencyState(accounts, walletPrimaryCurrency) {
 // pattern used for Projections' starting balance and CreditCard's
 // account-equivalent valuation. Never fakes a rate - a quote that fails is
 // simply left out of the total rather than assumed to be 1:1.
-export function useLinkedAccountsTotal(linkedAccounts, walletPrimaryCurrency) {
-  const accounts = linkedAccounts || [];
+export function useLinkedAccountsTotal<T = LinkedAccountItem>(
+  linkedAccounts?: T[] | null,
+  walletPrimaryCurrency?: string
+): LinkedAccountsTotalResult {
+  const accounts = (linkedAccounts || []) as LinkedAccountItem[];
   const { total: sameCurrencyTotal, groups: sameCurrencyGroups } = sameCurrencyState(accounts, walletPrimaryCurrency);
   const foreignAccounts = accounts.filter(
     (a) => (a?.currency || walletPrimaryCurrency) !== walletPrimaryCurrency
   );
   const foreignKey = foreignAccounts.map((a) => `${a?._id}:${a?.amount}:${a?.currency}`).join(",");
 
-  const [result, setResult] = useState({
+  const [result, setResult] = useState<LinkedAccountsTotalResult>({
     total: sameCurrencyTotal,
     breakdown: { isMultiCurrency: false, breakdown: sameCurrencyGroups },
   });
@@ -52,7 +82,7 @@ export function useLinkedAccountsTotal(linkedAccounts, walletPrimaryCurrency) {
     let cancelled = false;
     const toFetch = fetcher();
     (async () => {
-      const foreignGroupsByCurrency = {};
+      const foreignGroupsByCurrency: Record<string, LinkedAccountBreakdownGroup> = {};
       let foreignConvertedTotal = 0;
       for (const acc of foreignAccounts) {
         try {
@@ -77,7 +107,7 @@ export function useLinkedAccountsTotal(linkedAccounts, walletPrimaryCurrency) {
             g.effectiveDate = res.data.effectiveDate;
             foreignGroupsByCurrency[acc.currency] = g;
           }
-        } catch (e) {
+        } catch {
           // Silently unavailable - that account is left out of the total.
         }
       }
