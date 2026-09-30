@@ -4088,8 +4088,23 @@
           ]
         },
         "src/app/dashboard/projections/page.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T03:17:35.601Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T03:18:18.995Z",
+              "event": "submitted",
+              "notes": "Migrado src/app/dashboard/projections/page.jsx -> src/app/dashboard/projections/page.tsx siguiendo el mismo patron que dashboard/budgets/page.tsx y dashboard/history/page.tsx. Se tipó el Server Component con tipo de retorno explícito Promise<React.JSX.Element>, validando la sesión via auth.api.getSession y redirigiendo a /login si no existe sesión ni email antes de pasar mcSession={sesion.user.email} a ProjectionsClient. No se requirieron interfaces adicionales ni guards/casts. No se detectaron bugs preexistentes. tsc, eslint y vitest (324/324) pasando al 100%."
+            },
+            {
+              "ts": "2026-09-30T03:18:56.794Z",
+              "event": "approved",
+              "notes": "Migración trivial y byte-idéntica, solo reformateo de comillas/indentación y tipo de retorno `Promise<React.JSX.Element>`. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324. Cero guards/casts, sin bugs nuevos. Sin rework.\n\nHistoria 14 completa: 16/16 archivos."
+            }
+          ]
         }
       }
     }
