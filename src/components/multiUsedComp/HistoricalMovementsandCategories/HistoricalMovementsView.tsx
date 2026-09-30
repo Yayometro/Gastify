@@ -1,9 +1,31 @@
 "use client";
-import { Skeleton } from "antd";
+
 import React from "react";
+import { Skeleton } from "antd";
 import SelecterItemsToDisplay from "@/components/Filters/selecterItemsToDisplay/SelecterItemsToDisplay";
-import TabsToggler from "../TabsComponents/TabsToggler";
+import TabsToggler, { TabsTogglerComponentItem } from "../TabsComponents/TabsToggler";
 import PeriodFiltersWithCompare from "../periodFiltersWithCompare/PeriodFiltersWithCompare";
+import type { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
+
+export interface HistoricalMovementsViewProps {
+  isLoading: number;
+  timePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;
+  periodFromFather?: SelecterPeriod | string | number;
+  elementsToDisplay?: number;
+  timePeriodsForSelecter?: SelecterPeriod[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  components?: TabsTogglerComponentItem<any>[] | null;
+  tabs?: string[] | null;
+  handleRangeDate?: (startDate: Date | null, endDate: Date | null) => void;
+  getValueFromSelecter?: (v: string) => void;
+  getValueFromItems?: (n: number | string) => void;
+  compareEnabled?: boolean;
+  setCompareEnabled?: React.Dispatch<React.SetStateAction<boolean>> | ((enabled: boolean) => void);
+  comparePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;
+  getCompareValueFromSelecter?: (v: string) => void;
+  handleCompareRangeDate?: (startDate: Date | null, endDate: Date | null) => void;
+  timePeriodsForCompareSelecter?: SelecterPeriod[];
+}
 
 function HistoricalMovementsView({
   isLoading,
@@ -22,7 +44,7 @@ function HistoricalMovementsView({
   getCompareValueFromSelecter,
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
-}) {
+}: HistoricalMovementsViewProps): React.JSX.Element {
   return (
     <div className="w-full h-full">
       <h1>Top {elementsToDisplay} elements by month</h1>
