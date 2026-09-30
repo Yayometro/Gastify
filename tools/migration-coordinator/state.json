@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-17-api-routes",
+  "activeStory": "historia-18-foundations",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -4654,6 +4654,79 @@
               "notes": "FIX DE SEGURIDAD #54 (Media): sin sesión, mail en la URL; cualquiera descargaba la plantilla con las cuentas, categorías y subcategorías personalizadas de otro usuario (fuga de nombres de cuentas bancarias). Ahora identidad desde la sesión; las queries originales (user/default y user+wallet) no cambian. Retrabajo mío: quité el `if (!mainSheet) return 500` y el `?.` que agy agregó a `e.message` en el catch (el original hacía e.message). Bugs preservados: validación de datos hardcodeada de filas 3 a 202; fila de ejemplo con fecha new Date()."
             }
           ]
+        }
+      }
+    },
+    "historia-18-foundations": {
+      "label": "Fundaciones consumidas por codigo ya migrado (Historia 18). 17 archivos: dbConnection.js (50 importadores migrados), fetcher.js (38), gastifyNotifier.js (29), Wallet.js (12 + los WalletModelBridge de apiTokens.ts/createTransaction.ts/rutas), moneySchemas.js (5), nucleo de dinero (conversion, ecbClient, transactionMoney, transactionMoneyService), CategoryRule.js, gastifyTemplate.js, slices, helpers. Igual que con los transformers, al dejar de ser any implicito pueden aparecer errores de tipos en muchos consumidores: se resuelven ajustando primero el tipo del helper y solo si no hay opcion con un cast minimo en el consumidor, sin tocar runtime. Al migrar Wallet.js se deben poder BORRAR los typed bridges WalletModelBridge (verificando con tsc que ya no hacen falta).",
+      "files": {
+        "src/app/api/dbConnection.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/fetcher.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/gastifyNotifier.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/downloadBackupCodes.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/orderFunctions/orderFunctions.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/defaultIconsDB.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/features/loadGeneralDataSlice.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/features/tagsSlice.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/files/gastifyTemplate.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/schemas/moneySchemas.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/Wallet.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/model/CategoryRule.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/money/conversion.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/money/server/ecbClient.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/money/transactionMoney.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/money/server/transactionMoneyService.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/helpers/hooks/useLinkedAccountsTotal.js": {
+          "status": "pending",
+          "history": []
         }
       }
     }
