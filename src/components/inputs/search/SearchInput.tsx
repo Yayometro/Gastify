@@ -1,4 +1,12 @@
-function SearchInput({ onChange, renderBtn, style }) {
+import React from "react";
+
+export interface SearchInputProps {
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  renderBtn?: React.ReactNode;
+  style?: string;
+}
+
+function SearchInput({ onChange, renderBtn, style }: SearchInputProps): React.JSX.Element {
   return (
     <div
       className={
