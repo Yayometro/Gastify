@@ -359,9 +359,33 @@ alto en una sola historia hasta ahora. Deliberadamente NO incluyó:
 `transactionsChange.js`); `mcpProjections.js` (parte de la futura
 historia de MCP tools).
 
-**Historia activa: Historia 15 — MCP tools** (`buildGastifyMcpServer.js`
-y archivos relacionados bajo `src/lib/mcp/`, por confirmar alcance
-exacto explorando el árbol antes de reclamar archivos).
+**Historia activa: Historia 15 — MCP tools** (9 archivos: el servidor
+MCP remoto de Gastify que expone herramientas - `create_transaction`,
+`get_monthly_summary`, `get_projections`, etc. - a conectores de IA
+(Claude, ChatGPT) vía HTTP autenticado por token personal.
+`buildGastifyMcpServer.js` [703 líneas, el más grande, define todas las
+tools con schemas Zod], `mcpProjections.js` [120 líneas, construye
+proyecciones para una tool MCP, usa `projectionsChange.js`], las 2
+rutas de API que exponen el servidor (`app/api/mcp/route.js` [31
+líneas, auth por header Bearer, usada por el conector de Claude] y
+`app/api/mcp/[token]/route.js` [34 líneas, auth por token en la URL,
+usada por conectores sin header custom como ChatGPT] - ambas ya
+autentican cada request individualmente, pero es el punto de entrada
+de acceso externo a la cuenta del usuario así que se revisan con el
+mismo cuidado que cualquier ruta de escritura). Dependencias pequeñas
+aún no migradas que SÍ entran en esta historia por ser pequeñas y
+cargar directamente: `apiTokens.js` [54 líneas, `getUserFromApiToken`/
+`resolveApiToken`, ya gatekeepea `api-tokens/*` desde Historia 8],
+`createTransaction.js` [184 líneas], `currencies.js` [88 líneas],
+`transactionReadService.js` [66 líneas], `fxRateService.js` [~130
+líneas + test file]. Los modelos y helpers que este árbol necesita ya
+están migrados (Category, SubCategory, Account, Budget, Transaction,
+IncomeSource, ProjectionSettings, ProjectionBaseline, `walletAnalyzer.ts`
+de Historia 9, `timeFunctions.ts` de Historia 10). Deliberadamente NO
+incluye: `transactionsChange.js` [627 líneas] ni `projectionsChange.js`
+[508 líneas] - los dos transformers compartidos más grandes de toda la
+app, consumidos vía typed bridge igual que en todas las historias
+anteriores, pospuestos indefinidamente.
 
 Historias siguientes (orden real a confirmar):
 `transactionsChange.js` (el transformer más grande y compartido de toda

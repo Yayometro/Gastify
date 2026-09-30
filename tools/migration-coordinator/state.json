@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-14-projections",
+  "activeStory": "historia-15-mcp-tools",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -4105,6 +4105,47 @@
               "notes": "Migración trivial y byte-idéntica, solo reformateo de comillas/indentación y tipo de retorno `Promise<React.JSX.Element>`. tsc --noEmit limpio (proyecto completo), eslint limpio, vitest 324/324. Cero guards/casts, sin bugs nuevos. Sin rework.\n\nHistoria 14 completa: 16/16 archivos."
             }
           ]
+        }
+      }
+    },
+    "historia-15-mcp-tools": {
+      "label": "MCP tools - el servidor MCP remoto de Gastify que expone herramientas (create_transaction, get_monthly_summary, get_projections, etc.) a conectores de IA (Claude, ChatGPT) via HTTP autenticado por token personal. buildGastifyMcpServer.js [703 lineas, el mas grande, define todas las tools del servidor MCP con schemas Zod], mcpProjections.js [120 lineas, construye proyecciones para el rango pedido por una tool MCP, usa projectionsChange.js], las 2 rutas de API que exponen el servidor (app/api/mcp/route.js [31 lineas, auth por header Bearer, usada por el conector de Claude] y app/api/mcp/[token]/route.js [34 lineas, auth por token en la URL, usada por conectores que no soportan header custom como ChatGPT] - ambas ya autentican cada request individualmente via apiTokens.js, revisar con cuidado de todas formas por ser el punto de entrada de acceso externo a la cuenta del usuario). Dependencias pequenas aun no migradas que este arbol necesita y SI entran en esta historia (por ser pequenas y cargar directamente): apiTokens.js [54 lineas, getUserFromApiToken/resolveApiToken, valida y resuelve el token personal a {user, wallet} - ya gatekeepea list/new/remove de api-tokens desde Historia 8], createTransaction.js [184 lineas, usado por la tool create_transaction/create_transactions], currencies.js [88 lineas, majorToMinor/minorToMajor/formatMoneyMinor, usado en varias tools y por mcpProjections.js], transactionReadService.js [66 lineas, attachDisplayMoneyToList], fxRateService.js [~130 lineas + su test file, convert() para FX server-side, usado por mcpProjections.js]. Los modelos Mongoose que este arbol necesita ya estan migrados (Category, SubCategory, Account, Budget, Transaction, IncomeSource, ProjectionSettings, ProjectionBaseline), asi como walletAnalyzer.ts (Historia 9) y timeFunctions.ts (Historia 10). Deliberadamente NO incluye: transactionsChange.js (627 lineas) ni projectionsChange.js (508 lineas) - los dos transformers compartidos mas grandes de toda la app, consumidos por buildGastifyMcpServer.js/mcpProjections.js via typed bridge igual que en todas las historias anteriores, pospuestos indefinidamente.",
+      "files": {
+        "src/lib/auth/apiTokens.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/money/currencies.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/money/server/transactionReadService.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/money/server/fxRateService.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/transactions/createTransaction.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/mcp/mcpProjections.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/lib/mcp/buildGastifyMcpServer.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/mcp/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/mcp/[token]/route.js": {
+          "status": "pending",
+          "history": []
         }
       }
     }
