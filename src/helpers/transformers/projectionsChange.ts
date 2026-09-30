@@ -1,26 +1,191 @@
 import { getYearMonthDateRange } from "../timeFunctions/timeFunctions";
-import { getTransactionsFromTimeRange, filterBillsOrIncomes, getPrimaryAmount } from "./transactionsChange";
+import {
+  getTransactionsFromTimeRange,
+  filterBillsOrIncomes,
+  getPrimaryAmount,
+  type TransactionLike,
+} from "./transactionsChange";
 import { getValueActiveInMonth } from "./budgetHistory";
 import { isSpendingBudget } from "./budgetTypes";
 import { minorToMajor } from "@/lib/money/currencies";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-function sum(arr) {
+type DateLike = Date | string | number;
+
+type IdRef = { _id?: unknown; name?: string } | null | undefined;
+
+export interface BudgetCategoryEntryLike {
+  category?: unknown;
+  subCategory?: unknown;
+}
+
+export interface BudgetHistoryEntryLike {
+  effectiveFrom?: Date | string | null;
+  effectiveTo?: Date | string | null;
+  goalAmount?: number;
+}
+
+export interface MatchableBudget {
+  isSaving?: boolean | null;
+  budgetType?: string | null;
+  name?: string;
+  goalAmount?: number;
+  period?: string;
+  archived?: boolean;
+  categories?: BudgetCategoryEntryLike[];
+  category?: unknown;
+  subCategory?: unknown;
+  history?: BudgetHistoryEntryLike[];
+}
+
+export interface BillLike extends TransactionLike {
+  _id?: unknown;
+}
+
+export interface IncomeSourceHistoryEntryLike {
+  effectiveFrom?: Date | string | null;
+  effectiveTo?: Date | string | null;
+  amount?: number;
+  recurrence?: string;
+}
+
+export interface ExpectedOccurrenceSource {
+  recurrence?: string;
+  anchorDate?: DateLike | null;
+}
+
+export interface ProjectionIncomeSource extends ExpectedOccurrenceSource {
+  amount?: number;
+  active?: boolean;
+  archived?: boolean;
+  history?: IncomeSourceHistoryEntryLike[];
+}
+
+export interface MonthlyBufferRevisionLike {
+  updatedAt?: DateLike;
+  unexpectedBuffer?: number;
+  unexpectedIncomeBuffer?: number;
+}
+
+export interface MonthlyBufferEntryLike {
+  month?: number;
+  unexpectedBuffer?: number;
+  unexpectedIncomeBuffer?: number;
+  revisions?: MonthlyBufferRevisionLike[];
+}
+
+export interface MonthlyBalanceEntryLike {
+  month?: number;
+  balance?: number;
+}
+
+export interface ProjectionSettingsLike {
+  monthlyBuffers?: MonthlyBufferEntryLike[] | null;
+}
+
+export type BaselineMoneyField = "incomeMoney" | "expenseMoney";
+
+export interface BaselineEntryLike {
+  effectiveFrom?: DateLike;
+  effectiveTo?: DateLike | null;
+  incomeMoney?: { amountMinor: number; currency: string };
+  expenseMoney?: { amountMinor: number; currency: string };
+}
+
+export interface ProjectionBaselineLike {
+  incomeHistory?: BaselineEntryLike[];
+  expenseHistory?: BaselineEntryLike[];
+}
+
+export interface MonthBucketBreakdownRow {
+  label: string;
+  budgeted: number;
+  actual: number;
+}
+
+export interface CurrencyBreakdownTransaction {
+  displayMoney?: {
+    native?: { amountMinor: number; currency: string };
+    primary?: { amountMinor: number; currency: string; rate?: number | string | null; effectiveDate?: Date | string | null };
+  };
+}
+
+export interface CurrencyBreakdownGroup {
+  currency: string;
+  nativeAmountMinor: number;
+  primaryAmountMinor: number;
+  rate: number | string | null;
+  effectiveDate: Date | string | null;
+}
+
+export interface YearProjectionRow {
+  monthName: string;
+  year: number;
+  type: "actual" | "estimate" | "current";
+  income?: number;
+  expense?: number;
+  historicalIncome?: number;
+  historicalExpense?: number;
+  hasTransactions?: boolean;
+  shadowIncome?: number;
+  actualIncome?: number;
+  projectedIncome?: number;
+  shadowExpense?: number;
+  actualExpense?: number;
+  projectedExpense?: number;
+}
+
+export interface YearProjectionRowWithBalance extends YearProjectionRow {
+  net: number;
+  balance: number | null;
+  manualBalance?: number;
+  estimatedBalance?: number | null;
+}
+
+export interface BuildYearProjectionTableParams {
+  transactions: BillLike[];
+  budgets?: MatchableBudget[] | null;
+  incomeSources?: ProjectionIncomeSource[] | null;
+  projectionSettings?: ProjectionSettingsLike | null;
+  projectionBaseline?: ProjectionBaselineLike | null;
+  year: number;
+  today: Date;
+}
+
+export interface ProjectionAccuracyEntry {
+  monthName: string;
+  projectedIncome: number;
+  projectedExpense: number;
+  actualIncome: number;
+  actualExpense: number;
+  varianceIncome: number;
+  varianceExpense: number;
+}
+
+export type ProjectionMonthComparison = {
+  type: "closed" | "in-progress";
+  projectedIncome: number;
+  actualIncome: number;
+  projectedExpense: number;
+  actualExpense: number;
+};
+
+function sum(arr: (number | undefined | null)[]): number {
   return arr.reduce((acc, n) => acc + (n || 0), 0);
 }
 
-function startOfMonth(date) {
+function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
-function endOfMonth(date) {
+function endOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
 }
 
-function countIntervalOccurrences(anchorDate, intervalDays, monthStart, monthEnd) {
+function countIntervalOccurrences(anchorDate: DateLike, intervalDays: number, monthStart: Date, monthEnd: Date): number {
   const anchor = new Date(anchorDate);
-  const diffDays = Math.floor((monthStart - anchor) / MS_PER_DAY);
+  const diffDays = Math.floor((+monthStart - +anchor) / MS_PER_DAY);
   // No clamping to 0: months before the anchor date must walk the periodic
   // sequence backward (negative k) too, otherwise every month before the
   // anchor incorrectly shows 0 expected occurrences.
@@ -42,7 +207,7 @@ function countIntervalOccurrences(anchorDate, intervalDays, monthStart, monthEnd
 // How many payments of this income source are expected to land inside [monthStart, monthEnd].
 // `semimonthly` (fixed paydays, e.g. 15th + last day) is always exactly 2/month.
 // `biweekly` (every 14 days from anchorDate) can occasionally land 3 in a month due to calendar drift.
-export function getExpectedOccurrencesInMonth(incomeSource, monthStart, monthEnd) {
+export function getExpectedOccurrencesInMonth(incomeSource: ExpectedOccurrenceSource, monthStart: Date, monthEnd: Date): number {
   switch (incomeSource.recurrence) {
     case "monthly":
       return 1;
@@ -61,32 +226,37 @@ export function getExpectedOccurrencesInMonth(incomeSource, monthStart, monthEnd
   }
 }
 
-export function matchBillToBudget(bill, budget) {
+export function matchBillToBudget(bill: BillLike, budget: MatchableBudget): boolean {
   if (budget.categories && Array.isArray(budget.categories) && budget.categories.length > 0) {
     return budget.categories.some((entry) => {
       if (entry.subCategory) {
-        const subCategoryId = entry.subCategory?._id || entry.subCategory;
+        const subCategoryId = (entry.subCategory as IdRef)?._id || entry.subCategory;
         return String(bill.subCategory?._id) === String(subCategoryId);
       }
       if (entry.category) {
-        const categoryId = entry.category?._id || entry.category;
+        const categoryId = (entry.category as IdRef)?._id || entry.category;
         return String(bill.category?._id) === String(categoryId);
       }
       return false;
     });
   }
   if (budget.subCategory) {
-    const subCategoryId = budget.subCategory?._id || budget.subCategory;
+    const subCategoryId = (budget.subCategory as IdRef)?._id || budget.subCategory;
     return String(bill.subCategory?._id) === String(subCategoryId);
   }
   if (budget.category) {
-    const categoryId = budget.category?._id || budget.category;
+    const categoryId = (budget.category as IdRef)?._id || budget.category;
     return String(bill.category?._id) === String(categoryId);
   }
   return false;
 }
 
-export function getBudgetPeriodRange(budget, referenceDate = new Date(), fallbackStartDate = null, fallbackEndDate = null) {
+export function getBudgetPeriodRange(
+  budget: { period?: string },
+  referenceDate: DateLike | null = new Date(),
+  fallbackStartDate: Date | null = null,
+  fallbackEndDate: Date | null = null
+): { startDate: Date; endDate: Date } {
   const period = budget.period || "monthly";
   if (period === "monthly") {
     if (fallbackStartDate && fallbackEndDate) {
@@ -121,7 +291,12 @@ export function getBudgetPeriodRange(budget, referenceDate = new Date(), fallbac
   return { startDate, endDate };
 }
 
-export function getBudgetActualSpend(budget, allTransactions, fallbackStartDate = null, fallbackEndDate = null) {
+export function getBudgetActualSpend(
+  budget: MatchableBudget,
+  allTransactions: BillLike[] | null | undefined,
+  fallbackStartDate: Date | null = null,
+  fallbackEndDate: Date | null = null
+): number {
   const refDate = fallbackStartDate || new Date();
   const { startDate, endDate } = getBudgetPeriodRange(budget, refDate, fallbackStartDate, fallbackEndDate);
   const matched = (allTransactions || []).filter((tra) => {
@@ -130,14 +305,14 @@ export function getBudgetActualSpend(budget, allTransactions, fallbackStartDate 
     if (tDate < startDate || tDate > endDate) return false;
     return matchBillToBudget(tra, budget);
   });
-  return matched.reduce((acc, bill) => acc + (bill.amount || 0), 0);
+  return matched.reduce((acc, bill) => acc + ((bill.amount as number) || 0), 0);
 }
 
 
 // Per Budget bucket: MAX(budgeted goal, real spend this month). Bills matching no
 // Budget fall into the "unexpected" bucket, compared the same way against the buffer.
-function sumPerBucketMax(bills, budgets, bufferAmount) {
-  const matchedBillIds = new Set();
+function sumPerBucketMax(bills: BillLike[], budgets: MatchableBudget[], bufferAmount?: number): number {
+  const matchedBillIds = new Set<string>();
   let total = 0;
   budgets.forEach((budget) => {
     const matched = bills.filter((bill) => matchBillToBudget(bill, budget));
@@ -152,13 +327,13 @@ function sumPerBucketMax(bills, budgets, bufferAmount) {
 }
 
 // Per-bucket breakdown (one row per Budget + one "Unexpected" row) for the detail-modal chart.
-export function getMonthBucketBreakdown(bills, budgets, bufferAmount) {
-  const matchedBillIds = new Set();
+export function getMonthBucketBreakdown(bills: BillLike[], budgets: MatchableBudget[], bufferAmount?: number): MonthBucketBreakdownRow[] {
+  const matchedBillIds = new Set<string>();
   const rows = budgets.map((budget) => {
     const matched = bills.filter((bill) => matchBillToBudget(bill, budget));
     matched.forEach((bill) => matchedBillIds.add(String(bill._id)));
     return {
-      label: budget.name || budget.subCategory?.name || budget.category?.name || "Budget",
+      label: budget.name || (budget.subCategory as IdRef)?.name || (budget.category as IdRef)?.name || "Budget",
       budgeted: budget.goalAmount || 0,
       actual: sum(matched.map(getPrimaryAmount)),
     };
@@ -180,8 +355,11 @@ export function getMonthBucketBreakdown(bills, budgets, bufferAmount) {
 // skipped rather than guessed. `isMultiCurrency` is false when everything
 // is already in the wallet's own currency, so callers can hide the
 // breakdown UI entirely in the common single-currency case.
-export function getMonthCurrencyBreakdown(transactions, walletPrimaryCurrency) {
-  const groups = {};
+export function getMonthCurrencyBreakdown(
+  transactions: CurrencyBreakdownTransaction[] | null | undefined,
+  walletPrimaryCurrency: string
+): { breakdown: CurrencyBreakdownGroup[]; isMultiCurrency: boolean } {
+  const groups: Record<string, CurrencyBreakdownGroup> = {};
   for (const t of transactions || []) {
     const native = t?.displayMoney?.native;
     const primary = t?.displayMoney?.primary;
@@ -213,7 +391,10 @@ export function getMonthCurrencyBreakdown(transactions, walletPrimaryCurrency) {
 // Each month's unexpected buffers are set independently (see monthlyBuffers on
 // ProjectionSettings) - a value entered while looking at August must not leak
 // into any other month, so this always looks up that specific month's entry.
-function getMonthBuffer(monthlyBuffers, monthIndex) {
+function getMonthBuffer(
+  monthlyBuffers: MonthlyBufferEntryLike[] | null | undefined,
+  monthIndex: number
+): { unexpectedBuffer: number; unexpectedIncomeBuffer: number } {
   const entry = (monthlyBuffers || []).find((m) => m.month === monthIndex);
   return {
     unexpectedBuffer: entry?.unexpectedBuffer || 0,
@@ -226,7 +407,11 @@ function getMonthBuffer(monthlyBuffers, monthIndex) {
 // today doesn't rewrite what it "was" back then. Falls back to the entry's
 // flat fields when there's no revisions[] yet (pre-feature data, or a month
 // never touched again after its first save).
-function getMonthBufferAtDate(monthlyBuffers, monthIndex, asOfDate) {
+function getMonthBufferAtDate(
+  monthlyBuffers: MonthlyBufferEntryLike[] | null | undefined,
+  monthIndex: number,
+  asOfDate: Date
+): { unexpectedBuffer: number; unexpectedIncomeBuffer: number } {
   const entry = (monthlyBuffers || []).find((m) => m.month === monthIndex);
   if (!entry) return { unexpectedBuffer: 0, unexpectedIncomeBuffer: 0 };
   const revisions = entry.revisions || [];
@@ -261,7 +446,11 @@ function getMonthBufferAtDate(monthlyBuffers, monthIndex, asOfDate) {
 // month), so each is resolved on its own. Only meant as a fallback for
 // months with no real Budget/IncomeSource/transaction data at all (see
 // callers).
-function sumBaselineEntriesAtDate(entries, monthStart, moneyField) {
+function sumBaselineEntriesAtDate(
+  entries: BaselineEntryLike[] | null | undefined,
+  monthStart: Date,
+  moneyField: BaselineMoneyField
+): number | null {
   const active = (entries || []).filter((entry) => {
     const from = new Date(entry.effectiveFrom);
     const to = entry.effectiveTo ? new Date(entry.effectiveTo) : null;
@@ -271,11 +460,11 @@ function sumBaselineEntriesAtDate(entries, monthStart, moneyField) {
   return sum(active.map((entry) => minorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || "MXN")));
 }
 
-function getBaselineIncomeAtDate(projectionBaseline, monthStart) {
+function getBaselineIncomeAtDate(projectionBaseline: ProjectionBaselineLike | null | undefined, monthStart: Date): number | null {
   return sumBaselineEntriesAtDate(projectionBaseline?.incomeHistory, monthStart, "incomeMoney");
 }
 
-function getBaselineExpenseAtDate(projectionBaseline, monthStart) {
+function getBaselineExpenseAtDate(projectionBaseline: ProjectionBaselineLike | null | undefined, monthStart: Date): number | null {
   return sumBaselineEntriesAtDate(projectionBaseline?.expenseHistory, monthStart, "expenseMoney");
 }
 
@@ -284,14 +473,22 @@ function getBaselineExpenseAtDate(projectionBaseline, monthStart) {
 //   values that were active back then (for the detail-modal chart, not the headline number).
 // - future months: pure estimate, using the CURRENTLY active Budgets/IncomeSources.
 // - the current month: MAX(estimate, real-so-far) per bucket, see sumPerBucketMax.
-export function buildYearProjectionTable({ transactions, budgets, incomeSources, projectionSettings, projectionBaseline, year, today }) {
+export function buildYearProjectionTable({
+  transactions,
+  budgets,
+  incomeSources,
+  projectionSettings,
+  projectionBaseline,
+  year,
+  today,
+}: BuildYearProjectionTableParams): YearProjectionRow[] {
   const monthRanges = getYearMonthDateRange(new Date(year, 0, 1));
   const nonSavingBudgets = (budgets || []).filter(isSpendingBudget);
   const monthlyBuffers = projectionSettings?.monthlyBuffers || [];
   const todayMonthStart = startOfMonth(today);
   const todayMonthEnd = endOfMonth(today);
 
-  return [...monthRanges.entries()].map(([monthName, { start, end }], monthIndex) => {
+  return [...monthRanges.entries()].map(([monthName, { start, end }], monthIndex): YearProjectionRow => {
     const monthTx = getTransactionsFromTimeRange(transactions, start, end);
     const { incomes, bills } = filterBillsOrIncomes(monthTx);
     const actualIncome = sum(incomes.map(getPrimaryAmount));
@@ -361,7 +558,12 @@ export function buildYearProjectionTable({ transactions, budgets, incomeSources,
 // resolvable ProjectionBaseline entry. Used to skip months that would
 // otherwise show a false "0 projected" mismatch, since there's no way to
 // know what, if anything, was actually projected for them.
-function hasProjectionDataForMonth(projectionSettings, projectionBaseline, monthIndex, monthStart) {
+function hasProjectionDataForMonth(
+  projectionSettings: ProjectionSettingsLike | null | undefined,
+  projectionBaseline: ProjectionBaselineLike | null | undefined,
+  monthIndex: number,
+  monthStart: Date
+): boolean {
   const monthlyBuffers = projectionSettings?.monthlyBuffers || [];
   if (monthlyBuffers.find((m) => m.month === monthIndex)) return true;
   return getBaselineIncomeAtDate(projectionBaseline, monthStart) != null || getBaselineExpenseAtDate(projectionBaseline, monthStart) != null;
@@ -369,7 +571,15 @@ function hasProjectionDataForMonth(projectionSettings, projectionBaseline, month
 
 // Projected-vs-actual accuracy, one row per closed month that has at least
 // one recorded buffer entry OR a resolvable ProjectionBaseline entry.
-export function buildProjectionAccuracyReport({ transactions, budgets, incomeSources, projectionSettings, projectionBaseline, year, today }) {
+export function buildProjectionAccuracyReport({
+  transactions,
+  budgets,
+  incomeSources,
+  projectionSettings,
+  projectionBaseline,
+  year,
+  today,
+}: BuildYearProjectionTableParams): ProjectionAccuracyEntry[] {
   const rows = buildYearProjectionTable({ transactions, budgets, incomeSources, projectionSettings, projectionBaseline, year, today });
   const monthRanges = [...getYearMonthDateRange(new Date(year, 0, 1)).values()];
   return rows
@@ -395,7 +605,15 @@ export function buildProjectionAccuracyReport({ transactions, budgets, incomeSou
 // entirely - no new projection math - and returns null when there's nothing
 // meaningful to show: a future month (hasn't happened yet) or a closed month
 // with no buffer/baseline data recorded for it at all.
-export function buildProjectionComparisonForMonth({ transactions, budgets, incomeSources, projectionSettings, projectionBaseline, referenceDate, today }) {
+export function buildProjectionComparisonForMonth({
+  transactions,
+  budgets,
+  incomeSources,
+  projectionSettings,
+  projectionBaseline,
+  referenceDate,
+  today,
+}: Omit<BuildYearProjectionTableParams, "year"> & { referenceDate: Date }): ProjectionMonthComparison | null {
   const year = referenceDate.getFullYear();
   const monthIndex = referenceDate.getMonth();
   const rows = buildYearProjectionTable({ transactions, budgets, incomeSources, projectionSettings, projectionBaseline, year, today });
@@ -429,8 +647,10 @@ export function buildProjectionComparisonForMonth({ transactions, budgets, incom
 // ProjectionBaseline guess active that month. When the year has no anchor
 // at all, seeds January at $0 instead - an explicitly relative, same-year
 // trendline rather than a real total.
-export function estimateHistoricalBalances(rows, monthStarts, projectionBaseline) {
-  const netOf = (i) => {
+export function estimateHistoricalBalances<
+  R extends { type: string; hasTransactions?: boolean; income?: number; expense?: number; balance?: number | null; estimatedBalance?: number | null }
+>(rows: R[], monthStarts: Date[], projectionBaseline: ProjectionBaselineLike | null | undefined): R[] {
+  const netOf = (i: number): number => {
     const row = rows[i];
     if (row.hasTransactions) return (row.income || 0) - (row.expense || 0);
     const income = getBaselineIncomeAtDate(projectionBaseline, monthStarts[i]) || 0;
@@ -483,10 +703,16 @@ export function estimateHistoricalBalances(rows, monthStarts, projectionBaseline
 // shadow projection beyond what's already actually happened
 // (`projected - actual`, both directions), and every month after that just
 // adds its own net.
-export function computeYearRowsWithBalance(rows, monthlyBalances, startingBalance, year, today) {
+export function computeYearRowsWithBalance(
+  rows: YearProjectionRow[],
+  monthlyBalances: MonthlyBalanceEntryLike[] | null | undefined,
+  startingBalance: number,
+  year: number,
+  today: Date
+): YearProjectionRowWithBalance[] {
   let runningBalance = startingBalance;
   let reachedCurrent = false;
-  return rows.map((row, index) => {
+  return rows.map((row, index): YearProjectionRowWithBalance => {
     const net = row.type === "current" ? row.projectedIncome - row.projectedExpense : row.income - row.expense;
     const isCurrentOrLater = year > today.getFullYear() || row.type !== "actual";
     const manualEntry = (monthlyBalances || []).find((m) => m.month === index);
