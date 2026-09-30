@@ -4207,8 +4207,23 @@
           ]
         },
         "src/lib/mcp/mcpProjections.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T03:52:55.055Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T03:54:55.778Z",
+              "event": "submitted",
+              "notes": "Migrado 1:1 a TypeScript (src/lib/mcp/mcpProjections.ts).\n\nInterfaces/Tipos creados:\n- ProjectionRowSlice: objeto de fila de proyección recortada ({ month, type, income, expense, net, balance, balanceIsEstimated }).\n- BuildProjectionsResult: { rows, startingBalance, walletPrimaryCurrency }.\n- BuildProjectionsForRangeParams: { user: IUser | { _id: unknown }, wallet: ApiTokenWallet | { _id: unknown; primaryCurrency?: string }, transactions?: unknown[], budgets?: unknown[], range: { start: Date; end: Date }, today?: Date }.\n- HasMoneyField: helper interno para la función genérica convertMoneyEntries<K, T>.\n- Tipos reutilizados de módulos migrados: IUser de User, ApiTokenWallet de apiTokens, convert/majorToMinor/minorToMajor de money helpers, getYearMonthDateRange de timeFunctions.\n- projectionsChange.js consumido directo sin bridge inventado ni casts, idéntico a useProjectionTable.ts.\n\nCasts/Guards agregados:\n- Cero casts ni guards no forzados agregados. Todos los operadores preexistentes (||, ??, ternarios, == null) se preservaron exactamente byte a byte.\n\nBugs preexistentes encontrados (preservados sin arreglar):\n1. En rangos multi-año, computeYearRowsWithBalance en el segundo año recibe el startingBalance estático actual en vez de encadenar el balance proyectado al cierre del año anterior.\n2. ProjectionSettings.find y ProjectionBaseline.findOne filtran solo por { wallet: wallet._id } omitiendo { user: user._id }, a diferencia de Account e IncomeSource que filtran por ambos.\n\nVerificaciones:\n- npx tsc --noEmit: 0 errores\n- npx eslint src/lib/mcp/mcpProjections.ts: 0 errores / 0 warnings\n- npx vitest run: 30/30 suites pasaron (324 tests)"
+            },
+            {
+              "ts": "2026-09-30T03:55:42.097Z",
+              "event": "approved",
+              "notes": "Migración limpia, cero casts, cero guards nuevos. Todos los ||/??/ternarios preexistentes preservados exactos y en el mismo orden. Las 3 funciones de projectionsChange.js (aún no migrado, deliberadamente pospuesto) se consumen como any implícito, mismo patrón que useProjectionTable.ts ya establece - sin typed bridge inventado. Reutiliza tipos reales de fxRateService.ts, currencies.ts, apiTokens.ts (todos ya migrados en esta historia). Sobre el \"bug #2\" reportado (ProjectionSettings/ProjectionBaseline filtran solo por wallet, sin user): verificado que NO es un problema real - User.wallet es un ObjectId único (relación 1:1 usuario-wallet, confirmado en User.ts), así que filtrar solo por wallet._id ya escopea correctamente sin ambigüedad; la inconsistencia con IncomeSource/Account (que sí filtran por ambos) es solo estilística, no un IDOR. El bug #1 (starting balance no encadenado entre años en rangos multi-año) sí es real y se documenta. tsc/eslint/vitest limpios (324/324)."
+            }
+          ]
         },
         "src/lib/mcp/buildGastifyMcpServer.js": {
           "status": "pending",
