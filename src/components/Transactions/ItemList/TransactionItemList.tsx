@@ -1,14 +1,96 @@
 "use client";
 
+import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
-import Tag from "@/components/multiUsedComp/Tag";
+import Tag, { TagItem } from "@/components/multiUsedComp/Tag";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import currencyFormatter from "currency-formatter";
 import dayjs from "dayjs";
 import { Tooltip } from "antd";
 import { formatMoneyMinor } from "@/lib/money/currencies";
 
-function TransactionItemList({ movement, handleDelete, handleEdit, style, selectable, selected, onSelect }) {
+const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
+  type?: string;
+  size?: number | string;
+  siz?: number | string;
+  colore?: string;
+  className?: string;
+  [key: string]: unknown;
+}>;
+
+const TypedCategoIcon = CategoIcon as React.ComponentType<{
+  type: string;
+  size?: number | string;
+  siz?: number | string;
+  className?: string;
+  [key: string]: unknown;
+}>;
+
+export interface TransactionMoneySnapshot {
+  amountMinor: number;
+  currency: string;
+  rate?: number;
+  source?: string;
+  effectiveDate?: string | Date;
+  estimated?: boolean;
+  stale?: boolean;
+  [key: string]: unknown;
+}
+
+export interface TransactionCategory {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface TransactionAccount {
+  _id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface TransactionItemMovement {
+  _id?: string;
+  name?: string;
+  amount?: number;
+  isBill?: boolean;
+  isIncome?: boolean;
+  kind?: string;
+  date?: string | Date;
+  createdAt?: string | Date;
+  category?: TransactionCategory | null;
+  account?: TransactionAccount | null;
+  tags?: TagItem[] | null;
+  displayMoney?: {
+    native?: TransactionMoneySnapshot | null;
+    primary?: TransactionMoneySnapshot | null;
+    merchant?: TransactionMoneySnapshot | null;
+    [key: string]: unknown;
+  } | null;
+  [key: string]: unknown;
+}
+
+export interface TransactionItemListProps {
+  movement: TransactionItemMovement;
+  handleDelete?: (id?: string) => void;
+  handleEdit?: (movement?: TransactionItemMovement) => void;
+  style?: string;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelect?: (id?: string) => void;
+}
+
+function TransactionItemList({
+  movement,
+  handleDelete,
+  handleEdit,
+  style,
+  selectable,
+  selected,
+  onSelect,
+}: TransactionItemListProps): React.JSX.Element {
   // displayMoney is attached server-side (transactionReadService) by every
   // read route this component's data comes through. Fall back to the plain
   // legacy amount for any caller that hasn't been updated yet, rather than
@@ -21,7 +103,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
   const hasFxDetail = Boolean(merchant) || showEquivalent;
   const amountLabel = native
     ? formatMoneyMinor(native.amountMinor, native.currency)
-    : currencyFormatter.format(movement.amount, { locale: "en-US" });
+    : currencyFormatter.format(movement.amount as number, { locale: "en-US" });
 
   const fxTooltipTitle = hasFxDetail ? (
     <div className="flex flex-col gap-0.5 text-[11px]">
@@ -31,7 +113,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
         <>
           <div>Reported ({primary.currency}): {formatMoneyMinor(primary.amountMinor, primary.currency)}</div>
           <div>Rate: {primary.rate} ({primary.source})</div>
-          <div>{new Date(primary.effectiveDate).toLocaleDateString()} — {primary.estimated ? "estimated" : "exact"}{primary.stale ? ", stale" : ""}</div>
+          <div>{new Date(primary.effectiveDate as string | number | Date).toLocaleDateString()} — {primary.estimated ? "estimated" : "exact"}{primary.stale ? ", stale" : ""}</div>
         </>
       ) : (
         <div>Exchange-rate estimate unavailable</div>
@@ -63,7 +145,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
           }}
           className={`circle-ico min-w-[50px] min-h-[50px] rounded-full flex items-center justify-center hover:brightness-90 transition-[filter]`}
         >
-          <UniversalCategoIcon
+          <TypedUniversalCategoIcon
             type={`${movement?.category?.icon || "md/MdFilterNone"}`}
             size={10}
           />
@@ -98,7 +180,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
           <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-400" : movement.isBill ? "text-red-400" : "text-green-400"} flex gap-1 items-center font-medium`}>
             <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? "Currency exchange" : "Transfer"} — not counted as income or spending` : ""}>
               <span className="flex items-center">
-                <CategoIcon type={isTransferLeg ? "MdSwapHoriz" : movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
+                <TypedCategoIcon type={isTransferLeg ? "MdSwapHoriz" : movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
               </span>
             </Tooltip>
             <p className="tra-amount ">{amountLabel}</p>
@@ -125,7 +207,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
               onClick={() => handleDelete(movement._id)}
               className="hover:text-red-400 micro-pulse"
             >
-              <CategoIcon type={"MdDelete"} size={15} />
+              <TypedCategoIcon type={"MdDelete"} size={15} />
             </button>
           )}
           {handleEdit && (
@@ -133,7 +215,7 @@ function TransactionItemList({ movement, handleDelete, handleEdit, style, select
               onClick={() => handleEdit(movement)}
               className="hover:text-purple-600 micro-pulse"
             >
-              <CategoIcon type={"MdOutlineCreate"} size={15} />
+              <TypedCategoIcon type={"MdOutlineCreate"} size={15} />
             </button>
           )}
         </div>
