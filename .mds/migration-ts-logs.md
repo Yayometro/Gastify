@@ -538,6 +538,34 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 89 | `createTransaction.ts` | `if (!isReadable) isReadable = true;` imposibilita persistir una transacción con `isReadable: false` explícito. | Historia 15 |
 | 90 | `createTransaction.ts` | Typos preexistentes: mensajes con "finded" en vez de "found", y variables `newTransacction`/`savedTransacction` con doble "c". | Historia 15 |
 | 91 | `mcpProjections.ts` | En rangos que cruzan año, el segundo año del loop en `buildProjectionsForRange` recibe el mismo `startingBalance` estático de las cuentas en vez de encadenar el balance proyectado al cierre del año anterior. | Historia 15 |
+| 92 | `transactionsChange.ts` | `orderByHighestValue`, `sortBasedOnValueProperty` y `sortByIndex` usan `Array.prototype.sort` sobre el array recibido (mutan la entrada). Con un array congelado de Redux lanzarían `Cannot assign to read only property`. | Historia 16 |
+| 93 | `transactionsChange.ts` | `orderByHighestValue` ordena por `(b.value || b.amount)`: un `value` de exactamente `0` se trata como ausente y cae a `amount`, mezclando dos campos como llave de orden. | Historia 16 |
+| 94 | `transactionsChange.ts` | `reduceAndTransforToCategories` agrupa por `category.name`, no por id: dos categorías distintas con el mismo nombre se fusionan en una sola fila. | Historia 16 |
+| 95 | `transactionsChange.ts` | `buildCategoryHierarchy` lee `t.category._id` sin `?.` para transacciones con subCategory: si tienen subCategory pero no category, lanza `TypeError` (mismo patrón raíz que el bug #24 de `TransResumeChart.tsx`, ahora en el helper compartido). | Historia 16 |
+| 96 | `transactionsChange.ts` | `reduceTransToTransMonths` y `transformTransactionsToMonthsChartObject` bucketean por nombre de mes sin año. La segunda además usa siempre los rangos del año en curso (`new Date()`), devuelve `null` para fechas de otros años e ignora el fallback a `createdAt` que sí usan las demás. | Historia 16 |
+| 97 | `transactionsChange.ts` | `reduceTransToTransMonths` hace `mapedMonths.get(...).name` sin guard: una fecha inválida produce `getMonth()` NaN y lanza `TypeError`. | Historia 16 |
+| 98 | `transactionsChange.ts` | `reduceTransactionsToMonthSpentObjects` comprueba `transaction && acc[transaction?.type]` pero en la rama else lee `transaction.type` sin guard (crash si `transaction` es null). | Historia 16 |
+| 99 | `transactionsChange.ts` | `filterBillsOrIncomes` clasifica como ingreso todo lo que no es `isBill` ni transfer/exchange, incluyendo kinds `refund` y `fee`. | Historia 16 |
+| 100 | `transactionsChange.ts` | `reduceTransCategoriesSliced` recibe un parámetro `slice` que nunca usa (se conserva con un eslint-disable). | Historia 16 |
+| 101 | `transactionsChange.ts` | `usdFormatChanger` fija formato en-US/USD sin considerar la moneda primaria de la wallet. Es el origen de los bugs #51 y #59 (Historia 14); lo importan varios componentes ya migrados. | Historia 16 |
+| 102 | `projectionsChange.ts` | `getBudgetActualSpend` suma el `amount` legacy en vez de `getPrimaryAmount`: ignora la conversión multi-moneda que sí aplican las demás funciones del archivo. | Historia 16 |
+| 103 | `projectionsChange.ts` | `getBudgetActualSpend` no excluye fechas inválidas (`NaN < start` y `NaN > end` son ambos false, así que pasan el filtro), al contrario que `getTransactionsFromTimeRange`, que sí las descarta. | Historia 16 |
+| 104 | `projectionsChange.ts` | `sumPerBucketMax` y `getMonthBucketBreakdown`: una factura que calza con varios budgets se cuenta completa en cada uno (solo se deduplica para el bucket "unexpected"). | Historia 16 |
+| 105 | `projectionsChange.ts` | Los goalAmount de los budgets y los montos de baseline se asumen ya en la moneda primaria: `budget.currency` nunca se convierte en el cálculo de proyecciones. | Historia 16 |
+| 106 | `projectionsChange.ts` | `sumBaselineEntriesAtDate` cae a `"MXN"` cuando a una entrada le falta `currency`, en lugar de la moneda primaria de la wallet (con una wallet en JPY usaría los decimales equivocados). | Historia 16 |
+| 107 | `projectionsChange.ts` | `getBudgetPeriodRange` trata cualquier `period` desconocido como yearly, y en `monthly` ignora `referenceDate` si se pasan fallbackStart/End. | Historia 16 |
+| 108 | `projectionsChange.ts` | `getExpectedOccurrencesInMonth` asume 2 (biweekly) o 4 (weekly) ocurrencias fijas cuando falta `anchorDate`; `countIntervalOccurrences` suma milisegundos fijos, así que el cambio de horario (DST) puede correr una ocurrencia un día. | Historia 16 |
+| 109 | `projectionsChange.ts` | `getMonthCurrencyBreakdown` omite en silencio las transacciones sin `displayMoney` (subcuenta el desglose) y la tasa mostrada por moneda es la de una sola transacción (la de fecha más reciente), no un promedio. | Historia 16 |
+| 110 | `transactionDuplicates.ts` | `areDuplicates` compara `String(a.date || a.createdAt).slice(0, 10)`: si `date` es una instancia `Date` (no string ISO), el slice toma el inicio de `"Wed Aug 20 …"` y no una fecha. | Historia 16 |
+| 111 | `transactionDuplicates.ts` | `areDuplicates`: con el criterio de fecha activo y `dateTol` undefined, `diffDays > undefined` es false, así que nunca descalifica por fecha. | Historia 16 |
+| 112 | `transactionDuplicates.ts` | `nativeAmountMinor`: si `displayMoney.native` existe pero su `amountMinor` es undefined, devuelve undefined en vez de caer al cálculo legacy con `amount`. | Historia 16 |
+| 113 | `budgetCoverage.ts` | `getBudgetCoverage` compara `date >= startDate` directo: si startDate/endDate llegan como string, Date se convierte a número y el string a NaN, así que la comparación es siempre false y el rango no filtra lo que debería. | Historia 16 |
+| 114 | `budgetCoverage.ts` | `getBudgetCoverage`: un movimiento con `explicitBudgetId` cuyo budget no está activo (p. ej. archivado) queda `uncovered` sin evaluar los budgets de categoría. | Historia 16 |
+| 115 | `categoryRuleMatcher.ts` | `passesAmountThreshold`: si `nativeMoney` existe pero `amountMinor` es null/undefined, las comparaciones (null→0, undefined→NaN) hacen que la regla pase los umbrales sin validar el monto. | Historia 16 |
+| 116 | `categoriesTransformers.ts` | Typo preexistente en el mensaje de error: `"the element shoudl be a instance of Array"`. | Historia 16 |
+| 117 | `categoriesTransformers.ts` | `organizedCategoriesAndSubCategories`: raíces sin `_id` ni `name` colisionan en la clave `"undefined"` y se sobrescriben. | Historia 16 |
+| 118 | `categoriesTransformers.ts` | `organizedCategoriesAndSubCategories`: una subcategoría cuyo `fatherCategory` es un string ID que no existe en el mapa se descarta en silencio (la rama else solo procesa objetos con `name`). | Historia 16 |
+| 119 | `categoriesTransformers.ts` | `sortItemsByName` muta en el lugar el array devuelto por `Object.values(categoryMap)`. | Historia 16 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
@@ -1072,3 +1100,59 @@ no se encadena entre años en rangos multi-año).
 Con esta historia el total de fixes de seguridad de toda la migración
 se mantiene en **42** (sin nuevos), y el total de bugs de
 comportamiento documentados en la tabla de pendientes llega a **91**.
+
+## 2026-09-30 — Historia 16 (Transformers restantes) completa: 6/6 archivos
+
+Los 6 helpers de `src/helpers/transformers/` que seguían en `.js`. Por pedido
+explícito del usuario, **los 2 grandes los migró Claude directamente** (no
+agy) y **los 4 chicos los migró agy y Claude los auditó**:
+`transactionsChange.ts` [627→~790 líneas, 38 archivos lo consumían como `any`
+implícito], `projectionsChange.ts` [508→~680 líneas], y los chicos
+`transactionDuplicates.ts` [124], `budgetCoverage.ts` [135],
+`categoryRuleMatcher.ts` [66] y `categoriesTransformers.ts` [50].
+
+**Sin fixes de seguridad** (helpers puros, sin I/O ni acceso a datos ajenos).
+
+**Lo nuevo de esta historia respecto a las anteriores:** por primera vez el
+compilador validó de verdad las llamadas que hacían decenas de archivos ya
+migrados a estos helpers (hasta ahora `any` implícito). Salieron ~30 errores
+de consumidores, todos por tipos de consumidor demasiado laxos o demasiado
+estrictos, ninguno por lógica: se resolvieron ajustando los tipos del helper
+(genéricos `<T extends ...>`, `category`/`subCategory` como `unknown` porque
+así los declaran `BudgetData`/`TransactionData`, buckets como `type` alias
+para ser asignables a consumidores con index signature) y, donde no había
+mejor opción, con un cast mínimo en el consumidor (`Movements.tsx`,
+`BudgetDetailModal.tsx`) o `reduce<number>` explícito en 13 callbacks de
+`walletAnalyzer.ts` (su `t: unknown` heredado de cuando el helper era `any`
+hacía que `reduce` resolviera al overload sin acumulador). Cero cambios de
+runtime en el código migrado: en los diffs contra HEAD solo cambian firmas,
+anotaciones, casts erasables, un `+a - +b` en lugar de restar `Date`s
+(mismo `valueOf`) y el cast local de `getPrimaryAmount`.
+
+**Retrabajos sobre el trabajo de agy (hechos por Claude):**
+- `budgetCoverage.ts`: los tipos de entrada de agy dejaban 14 errores de tsc
+  en `BudgetsClient`/`BudgetEditModal`/`BudgetDetailModal` (category como
+  objeto en vez de `unknown`, index signatures que los consumidores no tienen,
+  `Result` como `interface` no asignable a `SpendingSummaryCoverage`).
+- `categoriesTransformers.ts`: agy agregó 3 veces `&& item.fatherCategory !==
+  null` dentro de `if (item.fatherCategory)`: guard no forzado (compila igual
+  sin él) e inalcanzable; se quitó para dejar el archivo fiel al original.
+
+**Corrección de hoy en `getPrimaryAmount`:** acepta `PrimaryAmountItem | object`
+porque el weak-type check de TS rechazaba objetos sin campos en común (p. ej.
+`TransResumeTransaction`) aunque el helper es duck-typed por diseño.
+
+**28 bugs de comportamiento nuevos** preservados sin arreglar (filas 92-119).
+Los más relevantes: los tres `sort` que mutan el array recibido (con arrays
+congelados de Redux lanzarían), `buildCategoryHierarchy` con el mismo crash de
+`category._id` del bug #24 pero ahora en el helper compartido,
+`getBudgetActualSpend` que ignora multi-moneda y no excluye fechas inválidas,
+facturas contadas en cada budget con el que calzan, y el fallback a `"MXN"`
+en las entradas de baseline sin `currency`.
+
+**Nota de proceso:** los 2 archivos grandes fueron auto-revisados por Claude
+(sin revisor independiente, tal como se pidió); la evidencia es el diff contra
+HEAD, tsc/eslint limpios y los tests existentes (`transactionsChange.test.js`,
+`projectionsChange.test.js`, `walletAnalyzer.test.js`, 324/324 en total).
+Con esta historia el total de fixes de seguridad se mantiene en **42** y el
+de bugs pendientes llega a **119**.

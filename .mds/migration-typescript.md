@@ -384,15 +384,39 @@ bridge, mismo patrón que `useProjectionTable.ts` ya establecía
 bridge" - impreciso, en realidad nunca hizo falta un bridge, `any`
 implícito basta con `strict: false`).
 
-**No hay historia activa en este momento** - las 3 historias pedidas
-(Navbar/alta rápida, Projections, MCP tools) están completas.
-Candidatas para una futura historia 16 (orden real a confirmar):
-`transactionsChange.js` [627 líneas] y `projectionsChange.js` [508
-líneas] (los dos transformers más grandes y compartidos de toda la
-app, deliberadamente pospuestos historia tras historia - consumidos
-como `any` implícito por todo el resto del código ya migrado, así que
-migrarlos ahora sería la primera vez que se validan de verdad por
-compilador). Los modelos Mongoose que aún faltan (`Wallet.js`,
-`CategoryRule`, `transactionMoney.js`, `transactionMoneyService.js`,
-`ecbClient.js`, `conversion.js`) se migran conforme cada historia los
-necesite, no todos de un jalón. `scripts/` sueltos al final.
+**Historia 16 (Transformers restantes) completa** - 6/6 archivos: los 2
+grandes (`transactionsChange.ts`, `projectionsChange.ts`) migrados
+directamente por Claude por pedido explícito del usuario, y los 4 chicos
+(`transactionDuplicates.ts`, `budgetCoverage.ts`, `categoryRuleMatcher.ts`,
+`categoriesTransformers.ts`) migrados por agy y auditados por Claude (2
+retrabajos hechos por Claude: tipos de `budgetCoverage.ts` y un guard no
+forzado en `categoriesTransformers.ts`). Sin fixes de seguridad. Primera
+vez que el compilador valida las ~38 llamadas de consumidores que antes
+eran `any` implícito: ~30 errores, todos de tipos, resueltos sin cambiar
+runtime. 28 bugs nuevos documentados (filas 92-119 de
+`migration-ts-logs.md`).
+
+**No hay historia activa en este momento.** Corrección importante: esta
+sección decía antes que solo faltaban unos modelos/helpers de dinero y
+`scripts/`; eso era incorrecto. Un `find` real en `src/` muestra **98
+archivos `.js`/`.jsx` (sin contar tests) aún sin migrar**, además de ~10
+scripts en `scripts/` y los configs raíz (`next.config.js`, etc.).
+Distribución aproximada:
+- `components/multiUsedComp/` (24 sueltos) + árbol `top3/` (~9) +
+  `HistoricalMovementsandCategories/` (2) + gráficas/tooltips/props sueltos
+  (~7) + `Budgets/` (1): ~43 componentes de UI (Top3, TransTable,
+  EditTransModal, DedupPreviewModal, CategorySuggestionsModal, GoalGauge*,
+  NestCircle, etc.).
+- Providers, entradas de Next y wiring: `app/layout.js`, `app/page.js`,
+  `StoreProvider.js`, `ReduxProvider.js`, `AllDataProvider.jsx`,
+  `app/api/general-data/route.js`, `dbConnection.js`,
+  `defCategoriesCreator.js.js`, `lib/hooks.js`.
+- `lib/`: `services/` (2), `features/` (2), `files/` (1), `money/` (2) y
+  `money/server/` (2: `transactionMoneyService`, `ecbClient`).
+- `helpers/`: `fetcher`, `gastifyNotifier`, `downloadBackupCodes`,
+  `defaultIconsDB`, `orderFunctions`, `hooks/`.
+- `hooks/`, `resources/Time/`, `model/` (`Wallet.js`, `CategoryRule.js`,
+  `schemas/`), `components/renderTransactionsInModal`, etc.
+Antes de definir la Historia 17 hay que sacar el inventario completo
+(`find src \( -name "*.js" -o -name "*.jsx" \) ! -name "*.test.*"`) y
+agrupar por feature, igual que en las historias anteriores.
