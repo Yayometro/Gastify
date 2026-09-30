@@ -10,8 +10,27 @@ import {
   buildMerchantMoney,
   buildManualReportingMoney,
   buildSameCurrencyReportingMoney,
+  type AccountMoneyResult,
+  type MerchantMoneyResult,
+  type ReportingMoneyResult,
 } from "@/lib/money/transactionMoney";
 import { convert } from "./fxRateService";
+
+export interface BuildTransactionMoneyParams {
+  accountAmount: number | string;
+  accountCurrency: string;
+  merchantAmount?: number | string | null;
+  merchantCurrency?: string | null;
+  walletPrimaryCurrency: string;
+  date?: Date | string | null;
+  manualReportingAmount?: number | string | null;
+}
+
+export interface BuildTransactionMoneyResult {
+  account: AccountMoneyResult;
+  merchant: MerchantMoneyResult | null;
+  reporting: ReportingMoneyResult;
+}
 
 // Never fakes a rate - if ECB is unreachable and there is no usable cache for
 // a genuinely cross-currency Transaction, this throws rather than silently
@@ -25,12 +44,12 @@ export async function buildTransactionMoney({
   walletPrimaryCurrency,
   date,
   manualReportingAmount,
-}) {
+}: BuildTransactionMoneyParams): Promise<BuildTransactionMoneyResult> {
   const account = buildAccountMoney({ amount: accountAmount, currency: accountCurrency });
   const merchant = buildMerchantMoney({ amount: merchantAmount, currency: merchantCurrency });
-  const effectiveDate = date || new Date();
+  const effectiveDate = (date as Date) || new Date();
 
-  let reporting;
+  let reporting: ReportingMoneyResult;
   if (manualReportingAmount !== undefined && manualReportingAmount !== null && manualReportingAmount !== "") {
     reporting = buildManualReportingMoney({
       amount: manualReportingAmount,
