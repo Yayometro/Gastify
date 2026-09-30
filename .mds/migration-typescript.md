@@ -416,14 +416,7 @@ Generado con un análisis de imports real sobre `src/` (estáticos y `import()` 
 
 ### Historia 20 — COMPLETA (2026-09-30): 21/21 archivos, sin fixes de seguridad. Ver `migration-ts-logs.md`.
 
-### Historia 21 — Entradas de Next y providers (cierre): 4 archivos, 274 líneas
-
-`layout.js`, `page.js`, `AllDataProvider`, `ReduxProvider`: envuelven todo, mejor al final.
-
-- `app/layout.js` (48)
-- `app/page.js` (186)
-- `components/Providers/AllDataProvider.jsx` (29)
-- `lib/ReduxProvider.js` (11)
+### Historia 21 — COMPLETA (2026-09-30): 4/4 archivos. Migración de `src/` terminada; quedan 26 archivos de código muerto ignorados por decisión del usuario. Ver `migration-ts-logs.md`.
 
 ### Código muerto: 26 archivos, 2102 líneas (DECISIÓN DEL USUARIO, 2026-09-30: por ahora se ignoran; ni se borran ni se migran)
 

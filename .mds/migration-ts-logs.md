@@ -608,6 +608,10 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 147 | `ColumnChartAntComparative.tsx` | Typo de configuración `offsed: 0` (en vez de `offset`, así que se ignora) y posible NaN% en la etiqueta si `totalValue` no es numérico. | Historia 20 |
 | 148 | `ResponsiveBarsChartComponent.tsx` | Typo de prop `legenedLeft` y el tooltip lee `dataa.data.type` sin guard (error si es undefined). | Historia 20 |
 | 149 | `UnbudgetedSpending.tsx, CreditCard.tsx, BudgetCont.tsx, TabsTrans.tsx, ResumeTabsTrans.tsx, CategoryCircle.tsx, SelectCategoryBtn.tsx, ResponsiveBarsChartComponent.tsx` | Siguen mandando `siz`/`size` mal escrito a `CategoIcon`/`UniversalCategoIcon` (el tamaño no se aplica). Misma raíz que el bug #8; ocurrencias nuevas, preservadas. | Historia 20 |
+| 150 | `page.tsx` | Usa la etiqueta `<navbar>`, que no existe en HTML (debería ser `<nav>`); se preservó en el DOM con un cast. | Historia 21 |
+| 151 | `page.tsx` | Las etiquetas `<img>` no tienen atributo `alt` (accesibilidad) y usan `srcSet` con un único asset. | Historia 21 |
+| 152 | `page.tsx` | Typo en el texto de la landing: "Excel or XLM files" (más abajo dice XML). | Historia 21 |
+| 153 | `page.tsx` | Copyright fijo "© 2014 Gastify". | Historia 21 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
@@ -1245,3 +1249,24 @@ Categorías (`SelectCategoryBtn`, `CategoryCircle`, `CategoryCircleWithChilds`, 
 **La tanda A (13 archivos chicos) salió limpia.** **La tanda B (8 grandes) trajo el mismo tipo de error de siempre, esta vez en componentes con dinero:** en `CreditCard` agy agregó `cardColor` a las dependencias de un `useEffect`, un `|| ""` sobre `cardColor`, y cambió el estado inicial de `account` de `[]` a `null` con `?.` en cuatro lugares; en `UnbudgetedSpending` puso fallbacks `|| 0`/`?.` en el resumen y `|| ""` en el payload de crear presupuesto; en `TabsTrans` agregó fallbacks, un `String(...)` y cambió el modificador `"2.3"` por el número 2.3; en `DedupPreviewModal` un `|| ""` y un `Number(...)`; en `ResponsiveBarsChartComponent` `data || []`; y en `BudgetsClient` descartó un fallback a string. Todo revertido por Claude tras comprobar que el compilador no lo exigía (los cambios inertes como `let`→`const`, imports/estado muerto y `catch` sin variable sí se aceptaron).
 
 **6 filas de bugs nuevas** (144-149). Verificación: tsc, eslint (0 errores) y vitest 324/324; sin probar la UI en el navegador.
+
+## 2026-09-30 — Historia 21 (Entradas de Next y providers) completa: 4/4 archivos. MIGRACIÓN DE `src/` TERMINADA
+
+`ReduxProvider`, `AllDataProvider`, `app/layout` y `app/page`, migrados por agy y auditados por Claude; sin cambios de seguridad. 4 filas de bugs nuevas (150-153).
+
+**Hallazgo importante de esta historia: `next build` estaba roto.** Al correr el build de producción por primera vez desde que empezó la migración, falló porque 11 rutas migradas en las Historias 8 y 14 exportaban su schema de Zod, y un `route.ts` de Next.js solo puede exportar handlers (`GET`, `POST`...) y config. Ni tsc, ni eslint, ni vitest lo detectan; solo `next build`. Se quitó el `export` de esos schemas (ninguno se usaba fuera de su archivo; 10 de ellos solo eran fuente de tipo y llevan un `eslint-disable` con nota). Ahora `next build` compila todas las rutas. **Regla desde aquí: correr `next build` al cerrar cada historia que toque rutas o páginas.**
+
+### Estado final
+
+- **`.js`/`.jsx` en `src/` (sin tests): 26, todos código muerto** que el usuario decidió ignorar por ahora (no se migran ni se borran). Los tests (`*.test.js`), `scripts/` y los configs raíz se quedan en JavaScript.
+- **Historias 1-21 completas.** Fixes de seguridad totales: **54**. Bugs de comportamiento documentados sin arreglar: **153** (tabla de arriba).
+- Verificación final: `tsc --noEmit` limpio, `eslint` 0 errores, `vitest` 324/324, `next build` OK.
+
+### Pendientes para recordarle al usuario
+
+1. Los dos TO-DOs de seguridad (sección "TO-DOs PENDIENTES" de este archivo): datos sensibles en `general-data` y `general-data/[id]`, y 2FA en `remove-user`.
+2. La tabla de bugs pendientes (153 filas).
+3. Decisión sobre los 26 archivos de código muerto.
+4. Limpieza menor opcional: 4 bridges `TypedModalContentTopMonthItem` en consumidores de las Historias 12-13.
+5. Nunca se probó la UI en el navegador durante las Historias 17-21 (solo tsc/eslint/vitest/next build).
+6. `typescript-migration` sigue sin mergearse a `main` (a la espera de instrucción del usuario) y este archivo y `.mds/migration-typescript.md` se borran cuando el usuario dé el visto bueno final.
