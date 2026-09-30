@@ -91,21 +91,7 @@ export interface CategorySelection {
   [key: string]: unknown;
 }
 
-const TypedAmountEquivalentPreview = AmountEquivalentPreview as React.ComponentType<{
-  quote?: unknown;
-  [key: string]: unknown;
-}>;
 
-const TypedChargedElsewhereSection = ChargedElsewhereSection as React.ComponentType<{
-  enabled?: boolean;
-  onToggle?: (checked: boolean) => void;
-  merchantAmount?: string;
-  merchantCurrency?: string;
-  onMerchantAmountChange?: (value: string) => void;
-  onMerchantCurrencyChange?: (value: string) => void;
-  quoting?: boolean;
-  [key: string]: unknown;
-}>;
 
 function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionCompProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
@@ -377,8 +363,8 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
               onChange={handleChange}
               placeholder="Amount"
             />
-            <TypedAmountEquivalentPreview quote={amountEquivalent} />
-            <TypedChargedElsewhereSection
+            <AmountEquivalentPreview quote={amountEquivalent} />
+            <ChargedElsewhereSection
               enabled={chargedElsewhere}
               onToggle={setChargedElsewhere}
               merchantAmount={merchantAmount}

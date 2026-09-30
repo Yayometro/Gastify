@@ -1,7 +1,18 @@
 "use client";
 
+import React from "react";
 import { Switch } from "antd";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+
+export interface ChargedElsewhereSectionProps {
+  enabled?: boolean;
+  onToggle?: (checked: boolean) => void;
+  merchantAmount?: string | number;
+  merchantCurrency?: string;
+  onMerchantAmountChange?: (value: string) => void;
+  onMerchantCurrencyChange?: (value: string) => void;
+  quoting?: boolean;
+}
 
 // Advanced "Charged in another currency" disclosure (plan section 12.2).
 // The main Amount field stays in the Account's own currency (what actually
@@ -19,7 +30,7 @@ function ChargedElsewhereSection({
   onMerchantAmountChange,
   onMerchantCurrencyChange,
   quoting,
-}) {
+}: ChargedElsewhereSectionProps): React.JSX.Element {
   return (
     <div className="w-full flex flex-col gap-1">
       <div className="flex items-center gap-2">

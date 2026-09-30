@@ -32,21 +32,7 @@ const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.Componen
   [key: string]: unknown;
 }>;
 
-const TypedAmountEquivalentPreview = AmountEquivalentPreview as React.ComponentType<{
-  quote?: unknown;
-  [key: string]: unknown;
-}>;
 
-const TypedChargedElsewhereSection = ChargedElsewhereSection as React.ComponentType<{
-  enabled?: boolean;
-  onToggle?: (checked: boolean) => void;
-  merchantAmount?: string;
-  merchantCurrency?: string;
-  onMerchantAmountChange?: (value: string) => void;
-  onMerchantCurrencyChange?: (value: string) => void;
-  quoting?: boolean;
-  [key: string]: unknown;
-}>;
 
 export interface CurrencyStrategyOption {
   value: string;
@@ -430,7 +416,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             onChange={handleChange}
             placeholder="Amount"
           />
-          <TypedAmountEquivalentPreview quote={amountEquivalent} />
+          <AmountEquivalentPreview quote={amountEquivalent} />
           {selectedAccountCurrency !== (wallet?.primaryCurrency || "MXN") && (
             <div className="-mt-1">
               {!reportedOverrideOpen ? (
@@ -480,7 +466,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
               )}
             </div>
           )}
-          <TypedChargedElsewhereSection
+          <ChargedElsewhereSection
             enabled={chargedElsewhere}
             onToggle={(checked: boolean) => {
               setMerchantSectionTouched(true);
