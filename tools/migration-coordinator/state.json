@@ -4131,8 +4131,23 @@
           ]
         },
         "src/lib/money/currencies.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T03:33:33.618Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T03:37:35.923Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de src/lib/money/currencies.js a TypeScript (src/lib/money/currencies.ts).\n\n1. Interfaces y tipos creados:\n- `SUPPORTED_CURRENCIES: string[]`: Declarado con tipo string[] para mantener compatibilidad total con consumidores existentes que llaman `.includes(string)` (rutas de API de accounts y projection-baseline) y schemas Mongoose sin romper inferencia.\n- `SupportedCurrency`: Union type literal (\"MXN\" | \"USD\" | \"EUR\" | \"JPY\").\n- `CurrencyMeta`: Interfaz para los metadatos de moneda ({ code: SupportedCurrency; minorUnits: number; locale: string; label: string; symbol: string }).\n- `FormatMoneyOptions`: Opciones de formateo ({ showCode?: boolean; locale?: string }).\n- `TransactionMoneyAmount`: Shape de dinero normalizado ({ amountMinor: number; currency: string }).\n- `TransactionWithMoney`: Interfaz estructural para transacciones con money/displayMoney ({ money?: { account?: ... }, displayMoney?: { primary?: ... } }).\n- `CURRENCY_META`: Record<string, CurrencyMeta> para tipar cada entrada con su forma real permitiendo acceso indexado por código de moneda.\n\n2. Casts y guards:\n- `isSupportedCurrency(currency: unknown): currency is SupportedCurrency`: Type guard estándar.\n- Preservados al 100% los 2 únicos optional chainings preexistentes (`transaction?.money?.account` y `transaction?.displayMoney?.primary`). Cero `?.` nuevos añadidos.\n- Cero `any` explícitos/implícitos, cero `[key: string]: any`.\n- Parámetros tipados como `SupportedCurrency | string | unknown` para interoperabilidad con consumidores existentes (como CategoryCirclePacking y TransResumeChart que pasan unknown desde Redux).\n\n3. Bugs preexistentes identificados (preservados sin alterar):\n- `majorToMinor(-0, currency)`: Math.sign(-0) devuelve -0, produciendo -0 en lugar de 0.\n- `formatMoneyMajor`: Instancia `new Intl.NumberFormat` en cada invocación sin memoización.\n- `formatMoneyMajor`: `amount ?? 0` usa nullish coalescing, por lo que un valor `NaN` se formatea como 'NaN' sin caer a 0.\n- Invocación redundante de `assertSupportedCurrency` en cadena dentro de `formatMoneyMinor` -> `minorToMajor` -> `getMinorUnits`.\n\n4. Verificaciones ejecutadas:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/lib/money/currencies.ts`: 0 errores y 0 warnings.\n- `npx vitest run`: 30 suites pasadas, 324 tests exitosos (11/11 en currencies.test.js)."
+            },
+            {
+              "ts": "2026-09-30T03:38:47.754Z",
+              "event": "approved",
+              "notes": "Migración limpia. Único punto investigado: isSupportedCurrency agregó `typeof currency === \"string\" &&` antes del `.includes()` original. Verificado NO requerido por el compilador (quitarlo y castear compila igual), pero confirmado behavioralmente inerte: Array.includes usa igualdad estricta y ya devolvía false para cualquier valor no-string sin lanzar excepción, así que el resultado es idéntico para todo input real. Aceptado sin rework. Los dos optional chainings preexistentes (transaction?.money?.account, transaction?.displayMoney?.primary) se preservaron intactos, sin nuevos guards. `amount ?? 0` preservado en formatMoneyMajor (bug de NaN documentado, no arreglado). SUPPORTED_CURRENCIES se tipó como string[] genérico (no tupla literal) tras confirmar compatibilidad con tsc --noEmit de todo el proyecto. tsc/eslint/vitest limpios (324/324)."
+            }
+          ]
         },
         "src/lib/money/server/transactionReadService.js": {
           "status": "pending",
