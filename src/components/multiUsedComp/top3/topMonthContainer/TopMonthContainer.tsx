@@ -1,11 +1,44 @@
 "use client";
+
+import React from "react";
 import { useSelector } from "react-redux";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import type { PrimaryAmountItem } from "@/helpers/timeFunctions/timeFunctions";
 import TopMonthItem from "./TopMonthItem";
+import type { RootState } from "@/lib/store";
 
-function TopMonthContainer({ items, style, title, mode = "transaction" }) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+export interface TopMonthContainerStyle {
+  father?: string;
+  child?: string;
+  [key: string]: unknown;
+}
+
+export interface TopMonthContainerItem extends PrimaryAmountItem {
+  name?: string;
+  type?: string;
+  month?: string;
+  childrens?: unknown[];
+  color?: string;
+  icon?: string;
+  value?: number;
+  [key: string]: unknown;
+}
+
+export interface TopMonthContainerProps<T extends TopMonthContainerItem = TopMonthContainerItem> {
+  items?: T[] | null;
+  style?: TopMonthContainerStyle;
+  title?: React.ReactNode;
+  mode?: "category" | "transaction" | string;
+}
+
+function TopMonthContainer<T extends TopMonthContainerItem = TopMonthContainerItem>({
+  items,
+  style,
+  title,
+  mode = "transaction",
+}: TopMonthContainerProps<T>): React.JSX.Element {
+  const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   return (
     <div
       className={
