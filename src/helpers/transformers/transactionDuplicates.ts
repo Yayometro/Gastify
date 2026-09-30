@@ -5,16 +5,53 @@
 // never duplicates merely because both contain the number 100, regardless
 // of which criteria checkboxes are enabled.
 
-function nativeAmountMinor(t) {
-  if (t.displayMoney?.native) return t.displayMoney.native.amountMinor;
-  return Math.round(Math.abs(t.amount || 0) * 100);
+export interface DuplicateCriteria {
+  name?: boolean;
+  date?: boolean;
+  amount?: boolean;
+  category?: boolean;
+  subcategory?: boolean;
+  [key: string]: boolean | undefined;
 }
 
-function nativeCurrency(t) {
+export interface DuplicateTransaction {
+  _id?: string | unknown;
+  name?: string | null;
+  date?: string | Date | null;
+  createdAt?: string | Date | null;
+  amount?: number | null;
+  category?: { _id?: string | unknown; [key: string]: unknown } | null;
+  subCategory?: { _id?: string | unknown; [key: string]: unknown } | null;
+  displayMoney?: {
+    native?: {
+      amountMinor?: number;
+      currency?: string;
+    } | null;
+  } | null;
+  [key: string]: unknown;
+}
+
+export interface DuplicatePair<T = DuplicateTransaction> {
+  original: T;
+  duplicate: T;
+}
+
+function nativeAmountMinor(t: DuplicateTransaction): number {
+  if (t.displayMoney?.native) return t.displayMoney.native.amountMinor as number;
+  return Math.round(Math.abs((t.amount as number) || 0) * 100);
+}
+
+function nativeCurrency(t: DuplicateTransaction): string {
   return t.displayMoney?.native?.currency || "MXN";
 }
 
-export function areDuplicates(a, b, criteria, dateTol, amountTol) {
+export function areDuplicates(
+  a: DuplicateTransaction,
+  b: DuplicateTransaction,
+  criteria: DuplicateCriteria,
+  dateTol?: number,
+  amountTol?: number
+): boolean {
   // Unconditional - currency mismatch always disqualifies, since the
   // numbers being compared are only meaningful within the same currency.
   if (nativeCurrency(a) !== nativeCurrency(b)) return false;
@@ -30,12 +67,12 @@ export function areDuplicates(a, b, criteria, dateTol, amountTol) {
     const da = new Date(daStr).getTime();
     const db = new Date(dbStr).getTime();
     const diffDays = Math.round(Math.abs(da - db) / 86400000);
-    if (diffDays > dateTol) return false;
+    if (diffDays > (dateTol as number)) return false;
   }
   if (criteria.amount) {
     // Compare in native minor units (integer-safe) - amountTol is a
     // major-unit tolerance in that same native currency.
-    const amountTolMinor = Math.round((amountTol || 0) * 100);
+    const amountTolMinor = Math.round(((amountTol as number) || 0) * 100);
     const diff = Math.abs(nativeAmountMinor(a) - nativeAmountMinor(b));
     if (diff > amountTolMinor) return false;
   }
@@ -49,11 +86,24 @@ export function areDuplicates(a, b, criteria, dateTol, amountTol) {
 }
 
 // Union-Find over transaction indices.
-export function buildDupGroups(transactions, criteria, dateTol, amountTol) {
+export function buildDupGroups<T extends DuplicateTransaction>(
+  transactions: T[],
+  criteria: DuplicateCriteria,
+  dateTol?: number,
+  amountTol?: number
+): number[][] {
   const n = transactions.length;
   const parent = transactions.map((_, i) => i);
-  const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
-  const union = (i, j) => { parent[find(i)] = find(j); };
+  const find = (i: number): number => {
+    while (parent[i] !== i) {
+      parent[i] = parent[parent[i]];
+      i = parent[i];
+    }
+    return i;
+  };
+  const union = (i: number, j: number): void => {
+    parent[find(i)] = find(j);
+  };
 
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
@@ -62,7 +112,7 @@ export function buildDupGroups(transactions, criteria, dateTol, amountTol) {
       }
     }
   }
-  const comps = {};
+  const comps: Record<number, number[]> = {};
   transactions.forEach((_, i) => {
     const root = find(i);
     if (!comps[root]) comps[root] = [];
@@ -71,34 +121,55 @@ export function buildDupGroups(transactions, criteria, dateTol, amountTol) {
   return Object.values(comps).filter((g) => g.length > 1);
 }
 
-export function getDuplicates(transactions, criteria, dateTol, amountTol) {
+export function getDuplicates<T extends DuplicateTransaction>(
+  transactions: T[],
+  criteria: DuplicateCriteria,
+  dateTol?: number,
+  amountTol?: number
+): T[] {
   const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-  const dupIds = new Set();
+  const dupIds = new Set<string>();
   groups.forEach((g) => g.forEach((i) => dupIds.add(String(transactions[i]._id))));
   return transactions.filter((t) => dupIds.has(String(t._id)));
 }
 
 // Every group member except the first (keep one original).
-export function getDuplicatesToDelete(transactions, criteria, dateTol, amountTol) {
+export function getDuplicatesToDelete<T extends DuplicateTransaction>(
+  transactions: T[],
+  criteria: DuplicateCriteria,
+  dateTol?: number,
+  amountTol?: number
+): Array<T["_id"]> {
   const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-  const toDelete = [];
+  const toDelete: Array<T["_id"]> = [];
   groups.forEach((g) => g.slice(1).forEach((i) => toDelete.push(transactions[i]._id)));
   return toDelete;
 }
 
 // Every group member, including the first (delete all matches).
-export function getAllMatchingIds(transactions, criteria, dateTol, amountTol) {
+export function getAllMatchingIds<T extends DuplicateTransaction>(
+  transactions: T[],
+  criteria: DuplicateCriteria,
+  dateTol?: number,
+  amountTol?: number
+): Array<T["_id"]> {
   const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
-  const toDelete = [];
+  const toDelete: Array<T["_id"]> = [];
   groups.forEach((g) => g.forEach((i) => toDelete.push(transactions[i]._id)));
   return toDelete;
 }
 
 // Strict 1-to-1 { original, duplicate } pairs for side-by-side comparison.
-export function getDuplicatePairs(transactions, selectedIds, criteria, dateTol, amountTol) {
+export function getDuplicatePairs<T extends DuplicateTransaction>(
+  transactions: T[],
+  selectedIds: Array<string | unknown> | null | undefined,
+  criteria: DuplicateCriteria,
+  dateTol?: number,
+  amountTol?: number
+): DuplicatePair<T>[] {
   const groups = buildDupGroups(transactions, criteria, dateTol, amountTol);
   const selectedSet = new Set((selectedIds || []).map(String));
-  const pairs = [];
+  const pairs: DuplicatePair<T>[] = [];
   groups.forEach((g) => {
     if (!g || g.length === 0) return;
     const original = transactions[g[0]];
