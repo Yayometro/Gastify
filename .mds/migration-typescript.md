@@ -412,26 +412,7 @@ Generado con un análisis de imports real sobre `src/` (estáticos y `import()` 
 
 ### Historia 18 — COMPLETA (2026-09-30): 17/17 archivos, sin fixes de seguridad, todos los WalletModelBridge borrados. Ver `migration-ts-logs.md`.
 
-### Historia 19 — Top3, movimientos históricos y modal de detalle: 16 archivos, 2284 líneas
-
-Árbol conectado por `ModalContentTopMonthItem.jsx` (704 líneas, el más grande) y `TransactionItemList.jsx`. Va antes que la UI restante porque `DedupPreviewModal` depende de `TransactionItemList`.
-
-- `components/Transactions/ItemList/TransactionItemList.jsx` (145)
-- `components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx` (704)
-- `components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsController.jsx` (286)
-- `components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsView.jsx` (63)
-- `components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js` (283)
-- `components/multiUsedComp/Tooltips/BasicTooltip.jsx` (19)
-- `components/multiUsedComp/TopElementContainerView.jsx` (87)
-- `components/multiUsedComp/TopElementsContainer.jsx` (214)
-- `components/multiUsedComp/top3/atomicTop/AtomicTop.jsx` (56)
-- `components/multiUsedComp/top3/topMonthContainer/TopCategoryRow.jsx` (48)
-- `components/multiUsedComp/top3/topMonthContainer/TopElementsCompareTable.jsx` (102)
-- `components/multiUsedComp/top3/topMonthContainer/TopMonthContainer.jsx` (49)
-- `components/multiUsedComp/top3/topMonthContainer/TopMonthItem.jsx` (90)
-- `components/multiUsedComp/top3/topMonthContainer/TopTransactionRow.jsx` (26)
-- `components/multiUsedComp/top3/topRankColumn/TopRankColumn.jsx` (80)
-- `components/toltips/tooltipsForCharts/TooltipForChart.jsx` (32)
+### Historia 19 — COMPLETA (2026-09-30): 16/16 archivos, sin fixes de seguridad. Ver `migration-ts-logs.md`.
 
 ### Historia 20 — UI restante (budgets, tarjetas, gráficas, tabs, categorías): 21 archivos, 2409 líneas
 

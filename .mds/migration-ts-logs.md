@@ -596,6 +596,12 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 135 | `defaultIconsDB.ts` | Nombres de categoría de íconos con typos preexistentes (p. ej. "EASHTETIC"). | Historia 18 |
 | 136 | `orderFunctions.ts` | Mensaje de error con typo: "the arr shoudl be a instance of Array". | Historia 18 |
 | 137 | `Wallet.ts` | El schema declara `user: { require: true }` (typo de `required`): Mongoose lo ignora, así que un Wallet sin `user` se guarda igual (mismo typo que en otros modelos). | Historia 18 |
+| 138 | `TransactionItemList.tsx, AtomicTop.tsx, TopCategoryRow.tsx, ModalContentTopMonthItem.tsx` | Mandan `size={...}` (o `siz` mal escrito) a `UniversalCategoIcon`/`CategoIcon`, que leen `siz`: el tamaño nunca se aplica. Misma raíz que el bug #8, ocurrencias nuevas; se preservó con wrappers tipados. | Historia 19 |
+| 139 | `BasicTooltip.tsx` | Typo en la propiedad de estilo `style?.iconZise`. | Historia 19 |
+| 140 | `TooltipForChart.tsx` | El porcentaje se recorta con `String(...).slice(0, 4)` en vez de redondearse. | Historia 19 |
+| 141 | `TopElementContainerView.tsx, HistoricalMovementsView.tsx, TopElementsContainer.tsx, HistoricalMovementsController.tsx` | Los controllers pasan la prop `isloading` (minúscula) pero las vistas leen `isLoading`, que llega `undefined`: la comparación `isLoading <= 0` es falsa y el skeleton de carga nunca se muestra. | Historia 19 |
+| 142 | `TopElementContainerView.tsx` | Clase Tailwind `5xl` sin el prefijo `text-` en el `<h1>` y typo en el tooltip ("Filter de date by generic filter"). | Historia 19 |
+| 143 | `TopElementsContainer.tsx, HistoricalMovementsController.tsx` | `setUser(ccUser.data)` y `setTransacctions(ccTransacciones.data)` se llaman sin `dispatch(...)` en el `useEffect`: nunca actualizan el store (7ma y 8va ocurrencia del patrón de los bugs #15, #16, #27, #28). | Historia 19 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
@@ -1217,3 +1223,11 @@ Los archivos de base que decenas de archivos ya migrados consumían como `any` i
 - `useLinkedAccountsTotal.ts`: `majorToMinor(a?.amount || 0, ...)` se envolvió en `Number(...)`; `majorToMinor` ya hace `Number()` y lanza si el valor no es finito, así que con un monto no numérico pasaba de lanzar a valer 0. Revertido.
 
 El único `any` explícito nuevo es el default genérico de `fetcher` (`<T = any>` en `get`/`post`), justificado porque los endpoints devuelven JSON de forma variable consumido de distintas formas por ~38 archivos. **5 bugs de comportamiento nuevos** preservados (filas 133-137). Los tests de `conversion`, `ecbClient`, `transactionMoney` y `transactionMoneyService` siguen pasando (324/324 en total).
+
+## 2026-09-30 — Historia 19 (Top3 y movimientos históricos) completa: 16/16 archivos
+
+`TransactionItemList`, `BasicTooltip`, `TooltipForChart`, `AtomicTop`, `TopCategoryRow`, `TopTransactionRow`, `TopElementsCompareTable`, `TopMonthItem`, `TopMonthContainer`, `TopRankColumn`, `TopElementContainerView`, `HistoricalMovementsView` (tanda A, 12 archivos) y `ModalContentTopMonthItem` (704 líneas), `TopElementsContainer`, `HistoricalMovementsController` y `propsColTabsToggler` (tanda B). Migrados por agy y auditados por Claude. **Sin fixes de seguridad** (UI pura).
+
+**Retrabajos de Claude sobre agy:** en `ModalContentTopMonthItem` agy coló 8 guards que el compilador no exigía (`item?.`, `t?._id` y un `Boolean(id) &&` que cambiaba qué ids pasaban el filtro), todos revertidos tras comprobar con tsc; en `propsColTabsToggler` reemplacé los `String(...)` de las keys por casts erasables; en `TopElementContainerView` cambié dos `any` explícitos por `object`/`unknown`. Al migrar el modal se borraron sus bridges temporales en 3 componentes de la tanda A y el de `HistoricalMovementsController` en `HistoryClient`. **Pendiente menor de limpieza:** quedan bridges `TypedModalContentTopMonthItem` (con `item: unknown`) en 4 consumidores de historias anteriores (`HistoricalComparativeCategories`, `HistoricalWalletAnalyzer`, `WalletAnalyzerInsightsStrip`, `WalletAnalyzerView`); quitarlos exige casts en ~10 sitios, no aporta seguridad y se dejó.
+
+**6 filas de bugs nuevas** (138-143), sin tocar comportamiento. Verificación: tsc, eslint (0 errores) y vitest 324/324; no se probó la UI en el navegador.
