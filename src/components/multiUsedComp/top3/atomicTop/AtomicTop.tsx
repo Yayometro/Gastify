@@ -4,9 +4,43 @@ import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
 import CategoIcon from "../../CategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { RootState } from "@/lib/store";
 
-function AtomicTop({item, color, index, icon, name, isBill, value, fatherStyle, tooltip, getItem}) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
+  type?: string;
+  size?: number | string;
+  siz?: number | string;
+  colore?: string;
+  className?: string;
+  [key: string]: unknown;
+}>;
+
+export interface AtomicTopProps<T = unknown> {
+  item?: T;
+  color?: string;
+  index: number;
+  icon?: string;
+  name?: string;
+  isBill?: boolean;
+  value: number | string;
+  fatherStyle?: string;
+  tooltip?: React.ReactNode;
+  getItem?: (item?: T) => void;
+}
+
+function AtomicTop<T = unknown>({
+  item,
+  color,
+  index,
+  icon,
+  name,
+  isBill,
+  value,
+  fatherStyle,
+  tooltip,
+  getItem,
+}: AtomicTopProps<T>): React.JSX.Element {
+  const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   return (
     <>
     <Tooltip title={tooltip}>
@@ -23,7 +57,7 @@ function AtomicTop({item, color, index, icon, name, isBill, value, fatherStyle, 
           </div>
           <div className="w-full flex items-center justify-center gap-2 min-[352px]:flex-col min-[352px]:justify-start ">
             <div className="t3-tra-icon-cont flex justify-center items-center min-w-[10px] min-[352px]:min-w-[30px] ">
-                <UniversalCategoIcon
+                <TypedUniversalCategoIcon
                   type={`${icon}`}
                   size={25}
                 />
