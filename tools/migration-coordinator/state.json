@@ -4580,20 +4580,80 @@
           ]
         },
         "src/app/api/general-data/files/upload/[id]/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:39:12.395Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:41:15.559Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`src/app/api/general-data/files/upload/[id]/route.ts`).\n1. Vulnerabilidad: IDOR y falta de autenticación de sesión; la ruta aceptaba `params.id` de la URL para identificar al usuario sin validar sesión con Better Auth ni estar protegida por el matcher de middleware.\n2. Fix aplicado:\n```ts\nconst sesion = await auth.api.getSession({ headers: request.headers });\nif (!sesion) throw new Error(\"No session\");\nawait dbConnection();\nconst userFound = await User.findOne({ mail: sesion.user.email }).lean();\nif (!userFound) {\n  return NextResponse.json({ ok: false, message: \"User not found\" }, { status: 404 });\n}\n```\nQueries de Account, Category, SubCategory, Tag y creación de Transaction acotadas a `userFound._id` y `userFound.wallet`.\n3. Call sites revisados: `ReadFileComp.tsx` (línea 183) envía `userEmail` de su propia sesión.\n4. Casts/guards: `WalletModelBridge` para `Wallet.findById` (.js), tipos mínimos para `xlsx-populate` en `src/types/xlsx-populate.d.ts` sin any injustificado, `(e as Error)?.message` en catch.\n5. Bugs preservados: orden de resolución de categoría padre cuando hay subcategoría; fallback a `new Date(s)` en `parseFlexibleDate`."
+            },
+            {
+              "ts": "2026-09-30T11:47:45.270Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #51 (Crítica): sin sesión; el mail venía de params.id, así que cualquiera podía inyectar transacciones (Transaction.create) en la cuenta de cualquier usuario subiendo un Excel. Ahora identidad solo desde la sesión; params.id ignorado (ReadFileComp ya manda su propio correo). Las resoluciones por nombre de categoría/subcategoría/cuenta/tag siguen acotadas por el userId/walletId del usuario resuelto. Retrabajo mío sobre agy: quité el `if (!sheet) return 400` que agy agregó (guard no forzado: sin él el original fallaba con TypeError → 500 del catch). El test route.test.js solo cambió para mockear getSession y mandar headers (necesario tras el fix, no debilita aserciones). Se agrega src/types/xlsx-populate.d.ts (la lib no trae tipos; sin any explícito, solo index signatures unknown). Bugs preservados: preferencia de la categoría padre de la subcategoría sobre la columna de categoría; parsing de fechas flexible con zona horaria local."
+            }
+          ]
         },
         "src/app/api/general-data/files/deduplicate/[id]/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:41:19.651Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:43:31.623Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`src/app/api/general-data/files/deduplicate/[id]/route.ts`).\n1. Vulnerabilidad: IDOR y falta de autenticación de sesión; la ruta aceptaba `params.id` de la URL para identificar la cuenta de usuario a desduplicar/borrar movimientos sin validar sesión con Better Auth ni estar protegida por middleware. Además, `Transaction.deleteMany` no acotaba por `user`/`wallet`.\n2. Fix aplicado:\n```ts\nconst sesion = await auth.api.getSession({ headers: request.headers });\nif (!sesion) throw new Error(\"No session\");\nawait dbConnection();\nconst userFound = await User.findOne({ mail: sesion.user.email }).lean();\nif (!userFound) {\n  return NextResponse.json({ ok: false, message: \"User not found\" }, { status: 404 });\n}\n```\nY en execute mode:\n```ts\nawait Transaction.deleteMany({\n  _id: { $in: toDelete },\n  user: userFound._id,\n  wallet: userFound.wallet,\n});\n```\n3. Call sites revisados: `ReadFileComp.tsx` (línea 250) envía `userEmail` de su propia sesión.\n4. Casts/guards: `WalletModelBridge` para `Wallet.findById` (.js), cast tipado para `buildLegacyMoney` sin fecha obligatoria, `.toObject()` en docs de preview, `(e as Error)?.message` en catch.\n5. Bugs preservados: ventana de fecha de ±30h; rows sin concepto ignoradas silenciosamente."
+            },
+            {
+              "ts": "2026-09-30T11:47:45.281Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #52 (Crítica): sin sesión, mail en la URL; con deleteAll/execute cualquiera podía borrar transacciones de otro usuario (Transaction.deleteMany({_id:{$in}}) sin scope). Ahora sesión, params.id ignorado, y el deleteMany final lleva user y wallet del usuario de la sesión además del $in (defensa en profundidad: los ids salen de candidatos ya acotados por wallet). Retrabajo mío: quité el `if (!sheet) return 400` agregado por agy. Test solo agrega el mock de getSession. Bugs preservados: ventana de ±30h de duplicados; filas sin concepto se omiten en silencio."
+            }
+          ]
         },
         "src/app/api/general-data/files/export/[email]/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:43:47.690Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:45:33.191Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`src/app/api/general-data/files/export/[email]/route.ts`).\n1. Vulnerabilidad: IDOR y falta de verificación de sesión; la ruta aceptaba `params.email` de la URL para identificar el usuario y exportar sus transacciones sin validar sesión con Better Auth ni estar protegida por middleware.\n2. Fix aplicado:\n```ts\nconst sesion = await auth.api.getSession({ headers: request.headers });\nif (!sesion) throw new Error(\"No session\");\nawait dbConnection();\nconst user = await User.findOne({ mail: sesion.user.email }).lean();\nif (!user) return NextResponse.json({ ok: false, message: \"User not found\" }, { status: 404 });\nconst transactions = await Transaction.find({\n  _id: { $in: transactionIds },\n  user: user._id,\n})\n```\n3. Call sites revisados: `Movements.tsx` (línea 454) envía `userEmail` de su propia sesión.\n4. Casts/guards: `buffer as unknown as BodyInit` para `NextResponse`, cast tipado en `buildLegacyMoney`, side-effect imports para registro de modelos de populate, `(e as Error)?.message` en catch.\n5. Bugs preservados: fallback de fecha a `createdAt`; formato estático de fila de nota."
+            },
+            {
+              "ts": "2026-09-30T11:47:45.290Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #53 (Alta): sin sesión, mail en la URL; exportaba a Excel las transacciones (con categorías, cuentas, tags y montos) de cualquier usuario dados sus ids. Ahora identidad desde la sesión; la query ya filtraba por user y se conserva. Retrabajo mío: quité el `if (!sheet) return 500` agregado por agy. Casts a Record<string, unknown> y a la firma de buildLegacyMoney (.js sin migrar) son erasables. El catch conserva `e?.message` (ya estaba en el original)."
+            }
+          ]
         },
         "src/app/api/general-data/files/template/[email]/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T11:45:37.356Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T11:46:05.155Z",
+              "event": "submitted",
+              "notes": "Migrado a TypeScript (`src/app/api/general-data/files/template/[email]/route.ts`).\n1. Vulnerabilidad: IDOR y falta de autenticación de sesión; la ruta aceptaba `params.email` de la URL para consultar y volcar en una plantilla de Excel las categorías, subcategorías y nombres de cuentas bancarias del usuario sin validar sesión con Better Auth ni estar protegida por middleware.\n2. Fix aplicado:\n```ts\nconst sesion = await auth.api.getSession({ headers: request.headers });\nif (!sesion) throw new Error(\"No session\");\nawait dbConnection();\nconst userFound = await User.findOne({ mail: sesion.user.email }).lean();\nif (!userFound) throw new Error(\"User not found for template generation\");\nconst [categories, subCategories, accounts, wallet] = await Promise.all([\n  Category.find({\n    $or: [{ user: userFound._id }, { isDefaultCatego: true }],\n  }).lean(),\n  SubCategory.find({\n    $or: [{ user: userFound._id }, { isDefaultSubCatego: true }],\n  }).lean(),\n  Account.find({ user: userFound._id, wallet: userFound.wallet }).lean(),\n  (Wallet as unknown as WalletModelBridge).findById(userFound.wallet).lean(),\n]);\n```\n3. Call sites revisados: `ReadFileComp.tsx` (línea 152) envía `userEmail` de su propia sesión.\n4. Casts/guards: `WalletModelBridge` para `Wallet.findById` (.js), `buffer as unknown as BodyInit` para `NextResponse`, `(e as Error)?.message` en catch, `console.log(e)` preservado.\n5. Bugs preservados: validación de datos hardcodeada para filas 3-202; fecha actual de ejemplo en fila 3."
+            },
+            {
+              "ts": "2026-09-30T11:47:45.300Z",
+              "event": "approved",
+              "notes": "FIX DE SEGURIDAD #54 (Media): sin sesión, mail en la URL; cualquiera descargaba la plantilla con las cuentas, categorías y subcategorías personalizadas de otro usuario (fuga de nombres de cuentas bancarias). Ahora identidad desde la sesión; las queries originales (user/default y user+wallet) no cambian. Retrabajo mío: quité el `if (!mainSheet) return 500` y el `?.` que agy agregó a `e.message` en el catch (el original hacía e.message). Bugs preservados: validación de datos hardcodeada de filas 3 a 202; fila de ejemplo con fecha new Date()."
+            }
+          ]
         }
       }
     }
