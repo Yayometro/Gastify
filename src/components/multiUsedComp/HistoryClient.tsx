@@ -42,10 +42,6 @@ const TypedHistoricalBudgetsComparative = HistoricalBudgetsComparative as React.
   periodState: PeriodComparisonState;
 }>;
 
-const TypedHistoricalMovementsController = HistoricalMovementsController as React.ComponentType<{
-  periodState: PeriodComparisonState;
-}>;
-
 export interface HistoryClientProps {
   email?: string | null;
 }
@@ -120,7 +116,7 @@ function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
             <TypedHistoricalBudgetsComparative periodState={periodState} />
           </div>
           <div className="w-full h-fulls historical-transactions-container">
-            <TypedHistoricalMovementsController periodState={periodState} />
+            <HistoricalMovementsController periodState={periodState} />
           </div>
         </div>
       </div>

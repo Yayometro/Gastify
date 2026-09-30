@@ -8,7 +8,8 @@ import PeriodFiltersWithCompare from "../periodFiltersWithCompare/PeriodFiltersW
 import type { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 
 export interface HistoricalMovementsViewProps {
-  isLoading: number;
+  isLoading?: number | boolean;
+  isloading?: unknown;
   timePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;
   periodFromFather?: SelecterPeriod | string | number;
   elementsToDisplay?: number;
@@ -25,6 +26,7 @@ export interface HistoricalMovementsViewProps {
   getCompareValueFromSelecter?: (v: string) => void;
   handleCompareRangeDate?: (startDate: Date | null, endDate: Date | null) => void;
   timePeriodsForCompareSelecter?: SelecterPeriod[];
+  [key: string]: unknown;
 }
 
 function HistoricalMovementsView({
@@ -68,7 +70,7 @@ function HistoricalMovementsView({
         handleCompareRangeDate={handleCompareRangeDate}
         timePeriodsForCompareSelecter={timePeriodsForCompareSelecter}
       />
-      {isLoading <= 0 ? (
+      {(isLoading as number) <= 0 ? (
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler

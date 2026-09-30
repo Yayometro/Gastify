@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from "react";
 import HistoricalMovementsView from "./HistoricalMovementsView";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUser, setUser } from "@/lib/features/userSlice";
+import { fetchUser, setUser, type UserState } from "@/lib/features/userSlice";
 import {
   fetchTrans,
   setTransacctions,
+  type TransacctionsState,
 } from "@/lib/features/transacctionsSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import {
@@ -16,44 +17,109 @@ import {
   orderItemsInRelativeMonth,
   reduceTransCategoriesSliced,
   sortByIndex,
+  type TransactionLike,
+  type RelativeMonthGroup,
 } from "@/helpers/transformers/transactionsChange";
 import {
   getPeriodLabel,
   orderItemsInTheirMonth,
   slicedAndReduceNewValuesForMonths,
+  type MonthTransactionsBucket,
+  type MonthTransactionItem,
 } from "@/helpers/timeFunctions/timeFunctions";
 import TopMonthContainer from "../top3/topMonthContainer/TopMonthContainer";
-import TopElementsCompareTable from "../top3/topMonthContainer/TopElementsCompareTable";
+import TopElementsCompareTable, { type CompareRow } from "../top3/topMonthContainer/TopElementsCompareTable";
+import type { PeriodComparisonState } from "@/hooks/usePeriodComparison";
+import type { RootState, AppDispatch } from "@/lib/store";
+import type { TabsTogglerComponentItem } from "../TabsComponents/TabsToggler";
+import type { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
+
+export interface MonthBucket<T = unknown> {
+  index?: number;
+  monthLabel?: string;
+  name?: string;
+  icon?: string;
+  value?: number;
+  childrens: T[];
+  [key: string]: unknown;
+}
+
+export interface ContainerTransactionItem {
+  _id?: string;
+  name?: string;
+  value?: number;
+  amount?: number;
+  isBill?: boolean;
+  isIncome?: boolean;
+  kind?: string;
+  date?: Date | string | number | null;
+  createdAt?: Date | string | number | null;
+  category?: {
+    _id?: string;
+    name?: string;
+    icon?: string;
+    color?: string;
+    [key: string]: unknown;
+  } | null;
+  subCategory?: {
+    _id?: string;
+    name?: string;
+    [key: string]: unknown;
+  } | null;
+  [key: string]: unknown;
+}
+
+export interface HistoricalMovementsCompareTableKind {
+  transactionRows: CompareRow[];
+  categoryRows: CompareRow[];
+}
+
+export interface HistoricalMovementsCompareTablesState {
+  bills: HistoricalMovementsCompareTableKind;
+  incomes: HistoricalMovementsCompareTableKind;
+  labelLeft: string;
+  labelRight: string;
+}
+
+export interface HistoricalMovementsControllerProps {
+  periodState: PeriodComparisonState;
+}
 
 // Slices each relative-month bucket down to its top N highest-value
 // transactions, for the compare table (same "top N" idea as the single-period
 // view's slicedAndReduceNewValuesForMonths, just keyed by relative index).
-function sliceTopTransactionMonths(monthsArr, n) {
+function sliceTopTransactionMonths<T extends TransactionLike = TransactionLike>(
+  monthsArr: RelativeMonthGroup<T>[],
+  n: number
+): RelativeMonthGroup<T>[] {
   return monthsArr.map((m) => ({
     ...m,
-    childrens: orderByHighestValue([...m.childrens]).slice(0, n),
+    childrens: (orderByHighestValue([...m.childrens] as unknown as { value?: number }[]).slice(0, n) as unknown as T[]),
   }));
 }
 
 // Same idea, but collapses each month's transactions into per-category
 // totals first (reduceTransCategoriesSliced), then keeps the top N categories.
-function sliceTopCategoryMonths(monthsArr, n) {
+function sliceTopCategoryMonths<T extends TransactionLike = TransactionLike>(
+  monthsArr: RelativeMonthGroup<T>[],
+  n: number
+): RelativeMonthGroup<unknown>[] {
   return monthsArr.map((m) => ({
     ...m,
     childrens: orderByHighestValue(reduceTransCategoriesSliced(m.childrens, n)).slice(0, n),
   }));
 }
 
-function HistoricalMovementsController({ periodState }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [elementsToDisplay, setElementsToDisplay] = useState(6);
-  const [transactionsLocal, setTransactionsLocal] = useState([]);
-  const [transactionCategories, setTransactionCategories] = useState([]);
-  const [compareTables, setCompareTables] = useState(null);
+function HistoricalMovementsController({ periodState }: HistoricalMovementsControllerProps): React.JSX.Element {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [elementsToDisplay, setElementsToDisplay] = useState<number>(6);
+  const [transactionsLocal, setTransactionsLocal] = useState<MonthBucket[][]>([]);
+  const [transactionCategories, setTransactionCategories] = useState<MonthBucket[][]>([]);
+  const [compareTables, setCompareTables] = useState<HistoricalMovementsCompareTablesState | null>(null);
   // Redux
-  const dispatch = useDispatch();
-  const ccUser = useSelector((state) => state.userReducer);
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
+  const dispatch = useDispatch<AppDispatch>();
+  const ccUser = useSelector((state: RootState) => state.userReducer);
+  const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
 
   const { email } = useGetUserSession();
   // Period state (timePeriod/comparePeriod/compareEnabled + selector
@@ -83,18 +149,18 @@ function HistoricalMovementsController({ periodState }) {
       dispatch(fetchTrans(email));
     }
     if (ccUser.status == "succeeded") {
-      setUser(ccUser.data);
+      setUser(ccUser.data as unknown as UserState);
     }
     //Transactions
     if (ccTransacciones.status == "succeeded") {
-      setTransacctions(ccTransacciones.data);
+      setTransacctions(ccTransacciones.data as unknown as TransacctionsState);
       setIsLoading(false);
     }
     if (ccTransacciones.data && ccTransacciones.data.length >= 1) {
       // Order by time and by the amount
       const transactionsOrdered = orderByHighestValue(
         getTransactionsFromTimeRange(
-          ccTransacciones.data,
+          ccTransacciones.data as unknown as ContainerTransactionItem[],
           timePeriod[0],
           timePeriod[1]
         )
@@ -102,31 +168,36 @@ function HistoricalMovementsController({ periodState }) {
       // Divide in bills or incomes
       const dividedTrans = filterBillsOrIncomes(transactionsOrdered);
       // Order items in their month and create subarray
-      const billsPerMonth = sortByIndex(orderItemsInTheirMonth(dividedTrans.bills));
-      const incomesPerMonth = sortByIndex(orderItemsInTheirMonth(dividedTrans.incomes));
+      const billsPerMonth = sortByIndex(
+        orderItemsInTheirMonth(dividedTrans.bills as unknown as TransactionLike[]) as unknown as { index: number }[]
+      ) as unknown as MonthTransactionsBucket<TransactionLike>[];
+      const incomesPerMonth = sortByIndex(
+        orderItemsInTheirMonth(dividedTrans.incomes as unknown as TransactionLike[]) as unknown as { index: number }[]
+      ) as unknown as MonthTransactionsBucket<TransactionLike>[];
       // Cut the months subArray childrens and re-vaule the total per month
       const billsSliced = slicedAndReduceNewValuesForMonths(
-        billsPerMonth,
+        billsPerMonth as unknown as MonthTransactionsBucket<MonthTransactionItem>[],
         elementsToDisplay
       );
       const incomesSliced = slicedAndReduceNewValuesForMonths(
-        incomesPerMonth,
+        incomesPerMonth as unknown as MonthTransactionsBucket<MonthTransactionItem>[],
         elementsToDisplay
       );
-      setTransactionsLocal([incomesSliced, billsSliced]);
+      setTransactionsLocal([incomesSliced as unknown as MonthBucket[], billsSliced as unknown as MonthBucket[]]);
       // Re-structure the data to categories.
       const finalBillsCategories = billsPerMonth.map((month) => {
         const toCategoriesSliced = orderByHighestValue(reduceTransCategoriesSliced(month.childrens, elementsToDisplay)).slice(0, elementsToDisplay);
-        const totalValuee = toCategoriesSliced.reduce((acc, item) => acc += (item.value || item.amount), 0)
+        const totalValuee = toCategoriesSliced.reduce((acc: number, item: ContainerTransactionItem) => acc += (item.value || item.amount), 0);
         return { ...month, childrens: toCategoriesSliced, value: totalValuee };
       });
       const finalIncomesCategories = incomesPerMonth.map((month) => {
         const toCategoriesSliced = orderByHighestValue(reduceTransCategoriesSliced(month.childrens, elementsToDisplay)).slice(0, elementsToDisplay);
-        const totalValuee = toCategoriesSliced.reduce((acc, item) => acc += (item.value || item.amount), 0)
+        const totalValuee = toCategoriesSliced.reduce((acc: number, item: ContainerTransactionItem) => acc += (item.value || item.amount), 0);
         return { ...month, childrens: toCategoriesSliced, value: totalValuee };
       });
-      setTransactionCategories([finalIncomesCategories, finalBillsCategories]);
+      setTransactionCategories([finalIncomesCategories as unknown as MonthBucket[], finalBillsCategories as unknown as MonthBucket[]]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ccUser, ccTransacciones, timePeriod, elementsToDisplay]);
 
   // "Compare vs another period" table - mirrors the effect above but for
@@ -148,24 +219,24 @@ function HistoricalMovementsController({ periodState }) {
         : [comparePeriod[0], comparePeriod[1], timePeriod[0], timePeriod[1]];
 
     const leftDivided = filterBillsOrIncomes(
-      getTransactionsFromTimeRange(ccTransacciones.data, leftStart, leftEnd)
+      getTransactionsFromTimeRange(ccTransacciones.data as unknown as ContainerTransactionItem[], leftStart, leftEnd)
     );
     const rightDivided = filterBillsOrIncomes(
-      getTransactionsFromTimeRange(ccTransacciones.data, rightStart, rightEnd)
+      getTransactionsFromTimeRange(ccTransacciones.data as unknown as ContainerTransactionItem[], rightStart, rightEnd)
     );
 
-    function buildKind(leftArr, rightArr) {
-      const leftMonths = orderItemsInRelativeMonth(leftArr, leftStart);
-      const rightMonths = orderItemsInRelativeMonth(rightArr, rightStart);
+    function buildKind(leftArr: unknown[], rightArr: unknown[]): HistoricalMovementsCompareTableKind {
+      const leftMonths = orderItemsInRelativeMonth(leftArr as TransactionLike[], leftStart);
+      const rightMonths = orderItemsInRelativeMonth(rightArr as TransactionLike[], rightStart);
       return {
         transactionRows: mergeTopElementsForCompareTable(
           sliceTopTransactionMonths(leftMonths, elementsToDisplay),
           sliceTopTransactionMonths(rightMonths, elementsToDisplay)
-        ),
+        ) as CompareRow[],
         categoryRows: mergeTopElementsForCompareTable(
           sliceTopCategoryMonths(leftMonths, elementsToDisplay),
           sliceTopCategoryMonths(rightMonths, elementsToDisplay)
-        ),
+        ) as CompareRow[],
       };
     }
 
@@ -186,7 +257,7 @@ function HistoricalMovementsController({ periodState }) {
 
   // COMPONENTS AND VARIABLES
   const styleChildTopMontContainer = "text-3xl text-purple-300 mt-2";
-  const components = [
+  const components: TabsTogglerComponentItem<object>[] = [
     {
       tab: "bills",
       props: {
@@ -194,7 +265,7 @@ function HistoricalMovementsController({ periodState }) {
         title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Transactions</h1>,
         mode: "transaction",
       },
-      Component: TopMonthContainer,
+      Component: TopMonthContainer as unknown as React.ComponentType<object>,
     },
     {
       tab: "incomes",
@@ -203,7 +274,7 @@ function HistoricalMovementsController({ periodState }) {
         title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Transactions</h1>,
         mode: "transaction",
       },
-      Component: TopMonthContainer,
+      Component: TopMonthContainer as unknown as React.ComponentType<object>,
     },
     {
       tab: "bills",
@@ -212,7 +283,7 @@ function HistoricalMovementsController({ periodState }) {
         title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Categories</h1>,
         mode: "category",
       },
-      Component: TopMonthContainer,
+      Component: TopMonthContainer as unknown as React.ComponentType<object>,
     },
     {
       tab: "incomes",
@@ -221,11 +292,11 @@ function HistoricalMovementsController({ periodState }) {
         title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Categories</h1>,
         mode: "category",
       },
-      Component: TopMonthContainer,
+      Component: TopMonthContainer as unknown as React.ComponentType<object>,
     },
   ];
 
-  const tabs = ["Bills", "Incomes"];
+  const tabs: string[] = ["Bills", "Incomes"];
   if (compareEnabled && compareTables) {
     components.push(
       {
@@ -237,7 +308,7 @@ function HistoricalMovementsController({ periodState }) {
           labelRight: compareTables.labelRight,
           elementsToDisplay,
         },
-        Component: TopElementsCompareTable,
+        Component: TopElementsCompareTable as unknown as React.ComponentType<object>,
       },
       {
         tab: "compare incomes",
@@ -248,23 +319,23 @@ function HistoricalMovementsController({ periodState }) {
           labelRight: compareTables.labelRight,
           elementsToDisplay,
         },
-        Component: TopElementsCompareTable,
+        Component: TopElementsCompareTable as unknown as React.ComponentType<object>,
       }
     );
     tabs.push("Compare bills", "Compare incomes");
   }
 
   // FUNCTIONS
-  const getValueFromItems = React.useCallback((e) => {
-    setElementsToDisplay(+e)
-  }, [])
+  const getValueFromItems = React.useCallback((e: number | string) => {
+    setElementsToDisplay(+e);
+  }, []);
 
   return (
     <HistoricalMovementsView
       isloading={isLoading}
       timePeriod={timePeriod}
-      periodFromFather={timePeriodsForSelecter[0]}
-      timePeriodsForSelecter={timePeriodsForSelecter}
+      periodFromFather={timePeriodsForSelecter[0] as unknown as SelecterPeriod}
+      timePeriodsForSelecter={timePeriodsForSelecter as unknown as SelecterPeriod[]}
       elementsToDisplay={elementsToDisplay}
       transactions={transactionsLocal}
       transactionsCategories={transactionCategories}
@@ -278,7 +349,7 @@ function HistoricalMovementsController({ periodState }) {
       comparePeriod={comparePeriod}
       getCompareValueFromSelecter={getCompareValueFromSelecter}
       handleCompareRangeDate={handleCompareRangeDate}
-      timePeriodsForCompareSelecter={timePeriodsForSelecter}
+      timePeriodsForCompareSelecter={timePeriodsForSelecter as unknown as SelecterPeriod[]}
     />
   );
 }
