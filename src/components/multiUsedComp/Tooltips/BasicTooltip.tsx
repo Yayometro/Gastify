@@ -1,8 +1,22 @@
-"use client"
+"use client";
+
+import React from "react";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 
-function BasicTooltip({ title, content, style }) {
+export interface BasicTooltipStyle {
+  tooltip?: string;
+  iconZise?: number | string;
+  [key: string]: unknown;
+}
+
+export interface BasicTooltipProps {
+  title?: React.ReactNode;
+  content?: React.ReactNode;
+  style?: BasicTooltipStyle;
+}
+
+function BasicTooltip({ title, content, style }: BasicTooltipProps): React.JSX.Element {
   return (
     <Tooltip title={title} className={style?.tooltip}>
       {content ? (
