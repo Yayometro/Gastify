@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import xlsxPopulate from "xlsx-populate";
@@ -9,8 +9,47 @@ import User from "@/model/User";
 import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
 import { SUPPORTED_CURRENCIES, majorToMinor, getTransactionNativeMoney } from "@/lib/money/currencies";
 import { buildLegacyMoney } from "@/lib/money/transactionMoney";
+import { auth } from "@/lib/auth/betterAuth";
 
-function excelSerialDateToJSDate(serial) {
+export interface DedupPreviewResponse {
+  ok: true;
+  preview: true;
+  scanned: number;
+  toDelete: unknown[];
+  toKeep: unknown[];
+  message: string;
+}
+
+export interface DedupExecuteResponse {
+  ok: true;
+  removed: number;
+  removedIds: string[];
+  scanned: number;
+  message: string;
+}
+
+export interface DedupErrorResponse {
+  ok: false;
+  message: string;
+  versionMismatch?: boolean;
+}
+
+export type DedupResponse = DedupPreviewResponse | DedupExecuteResponse | DedupErrorResponse;
+
+interface WalletModelBridge {
+  findById: (id: unknown) => {
+    lean: () => Promise<{ primaryCurrency?: string } | null>;
+  };
+}
+
+interface ParsedExcelRow {
+  date: Date;
+  name: string;
+  currency: string;
+  amountMinor: number;
+}
+
+function excelSerialDateToJSDate(serial: number): Date {
   const utc_days = Math.floor(serial - 25569);
   const utc_value = utc_days * 86400;
   const date_info = new Date(utc_value * 1000);
@@ -18,7 +57,7 @@ function excelSerialDateToJSDate(serial) {
   return new Date(date_info.getTime() + offset);
 }
 
-function parseFlexibleDate(value) {
+function parseFlexibleDate(value: unknown): Date | null {
   if (value === null || value === undefined) return null;
   if (typeof value === "number") {
     const d = excelSerialDateToJSDate(value);
@@ -37,7 +76,7 @@ function parseFlexibleDate(value) {
 
 // ±30h window — covers a full calendar day in any timezone even if the
 // transaction was created at an arbitrary time (not just midnight).
-function dateWindow(date) {
+function dateWindow(date: Date) {
   const ms = date.getTime();
   return {
     $gte: new Date(ms - 30 * 60 * 60 * 1000),
@@ -49,15 +88,29 @@ function dateWindow(date) {
 // Phase 5's money-aware writes has no `money` field in its stored BSON at
 // all, so it needs the same legacy MXN-rate-1 fallback used everywhere else
 // in this migration rather than being treated as currency-less.
-function nativeMoneyOf(transaction) {
-  return getTransactionNativeMoney(transaction) || buildLegacyMoney({ amount: transaction.amount }).account;
+function nativeMoneyOf(transaction: unknown) {
+  return (
+    getTransactionNativeMoney(transaction) ||
+    (buildLegacyMoney as (opts: { amount?: number; date?: Date }) => { account: { amountMinor: number; currency: string } })({
+      amount: (transaction as { amount?: number }).amount,
+    }).account
+  );
 }
 
-export async function POST(request, { params }) {
-  let tmpFilePath = null;
+export async function POST(
+  request: NextRequest | Request
+): Promise<NextResponse<DedupResponse>> {
+  let tmpFilePath: string | null = null;
   try {
+    // Security fix: this route previously lacked session authentication and trusted
+    // params.id from the URL to identify the target user account (IDOR).
+    // We now derive user identity strictly from auth.api.getSession, ignoring params.id,
+    // and scope queries and deletions to the session user's wallet.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
+
     const data = await request.formData();
-    const file = data.get("file");
+    const file = data.get("file") as File | null;
     const deleteAll = data.get("deleteAll") === "true";
     const preview = data.get("preview") === "true";
     if (!file) {
@@ -72,11 +125,13 @@ export async function POST(request, { params }) {
     const workbook = await xlsxPopulate.fromFileAsync(tmpFilePath);
 
     // Version check
-    let fileVersion = null;
+    let fileVersion: unknown = null;
     try {
       const dataSheet = workbook.sheet("_data");
       if (dataSheet) fileVersion = dataSheet.cell(1, 3).value();
-    } catch (_) {}
+    } catch {
+      // ignore if missing
+    }
 
     if (!fileVersion || String(fileVersion).trim() !== TEMPLATE_VERSION) {
       return NextResponse.json({
@@ -86,22 +141,18 @@ export async function POST(request, { params }) {
       }, { status: 400 });
     }
 
-    if (!params?.id) {
-      return NextResponse.json({ ok: false, message: "No user ID in URL" }, { status: 400 });
-    }
-
     await dbConnection();
-    const userFound = await User.findOne({ mail: params.id }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound) {
       return NextResponse.json({ ok: false, message: "User not found" }, { status: 404 });
     }
-    const parentWallet = await Wallet.findById(userFound.wallet).lean();
+    const parentWallet = await (Wallet as unknown as WalletModelBridge).findById(userFound.wallet).lean();
     const walletPrimaryCurrency = parentWallet?.primaryCurrency || "MXN";
 
     const sheet = workbook.sheet(0);
 
     // Parse all rows from Excel
-    const excelRows = [];
+    const excelRows: ParsedExcelRow[] = [];
     let i = 3;
     while (true) {
       const rawDate = sheet.cell(i, COLUMNS.DATE).value();
@@ -147,21 +198,21 @@ export async function POST(request, { params }) {
     // stored `money.account.amountMinor` to filter on at the database level
     // (plan section 15.4: dedup must compare native currency + native
     // amount minor, never legacy `amount` alone).
-    const findCandidates = (row) => Transaction.find({
+    const findCandidates = (row: ParsedExcelRow) => Transaction.find({
       user: userFound._id,
       name: { $regex: new RegExp(`^${row.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
       date: dateWindow(row.date),
     });
 
-    const matchesNative = (transaction, row) => {
+    const matchesNative = (transaction: unknown, row: ParsedExcelRow) => {
       const native = nativeMoneyOf(transaction);
       return native.currency === row.currency && native.amountMinor === row.amountMinor;
     };
 
     // Preview mode: scan, build lists, return without deleting
     if (preview) {
-      const previewToDelete = [];
-      const previewToKeep = [];
+      const previewToDelete: Record<string, unknown>[] = [];
+      const previewToKeep: Record<string, unknown>[] = [];
 
       for (const row of excelRows) {
         const candidates = await findCandidates(row).populate(POPULATE_OPTIONS);
@@ -170,17 +221,17 @@ export async function POST(request, { params }) {
         const matchInfo = { date: row.date, name: row.name, amount: row.amountMinor / 100, currency: row.currency };
         if (deleteAll ? matches.length >= 1 : matches.length > 1) {
           if (deleteAll) {
-            previewToDelete.push(...matches.map((m) => ({ ...m.toObject(), _match: matchInfo })));
+            previewToDelete.push(...matches.map((m) => ({ ...(m as { toObject: () => Record<string, unknown> }).toObject(), _match: matchInfo })));
           } else {
-            previewToKeep.push({ ...matches[0].toObject(), _match: matchInfo });
-            previewToDelete.push(...matches.slice(1).map((m) => ({ ...m.toObject(), _match: matchInfo })));
+            previewToKeep.push({ ...(matches[0] as { toObject: () => Record<string, unknown> }).toObject(), _match: matchInfo });
+            previewToDelete.push(...matches.slice(1).map((m) => ({ ...(m as { toObject: () => Record<string, unknown> }).toObject(), _match: matchInfo })));
           }
         }
       }
 
       // Deduplicate by _id (a row could match the same DB transaction twice)
-      const dedup = (arr) => {
-        const seen = new Set();
+      const dedup = (arr: Record<string, unknown>[]) => {
+        const seen = new Set<string>();
         return arr.filter((t) => { const k = String(t._id); if (seen.has(k)) return false; seen.add(k); return true; });
       };
 
@@ -196,7 +247,7 @@ export async function POST(request, { params }) {
 
     // Execute mode: scan and delete
     let totalRemoved = 0;
-    const removedIds = [];
+    const removedIds: string[] = [];
 
     for (const row of excelRows) {
       const candidates = await findCandidates(row).select("_id amount money").lean();
@@ -204,9 +255,13 @@ export async function POST(request, { params }) {
 
       if (deleteAll ? matches.length >= 1 : matches.length > 1) {
         const toDelete = deleteAll
-          ? matches.map((m) => m._id)
-          : matches.slice(1).map((m) => m._id);
-        await Transaction.deleteMany({ _id: { $in: toDelete } });
+          ? matches.map((m) => (m as { _id: unknown })._id)
+          : matches.slice(1).map((m) => (m as { _id: unknown })._id);
+        await Transaction.deleteMany({
+          _id: { $in: toDelete },
+          user: userFound._id,
+          wallet: userFound.wallet,
+        });
         totalRemoved += toDelete.length;
         removedIds.push(...toDelete.map(String));
       }
@@ -224,7 +279,7 @@ export async function POST(request, { params }) {
     });
   } catch (e) {
     console.error("Deduplicate error:", e);
-    return NextResponse.json({ ok: false, message: e?.message || "Unexpected error" }, { status: 500 });
+    return NextResponse.json({ ok: false, message: (e as Error)?.message || "Unexpected error" }, { status: 500 });
   } finally {
     if (tmpFilePath) await unlink(tmpFilePath).catch(() => {});
   }

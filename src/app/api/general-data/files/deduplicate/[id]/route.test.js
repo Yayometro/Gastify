@@ -5,6 +5,9 @@ import { COLUMNS, TEMPLATE_VERSION } from "@/lib/files/gastifyTemplate";
 vi.mock("@/app/api/dbConnection", () => ({ default: vi.fn() }));
 vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
+vi.mock("@/lib/auth/betterAuth", () => ({
+  auth: { api: { getSession: vi.fn() } },
+}));
 
 const { TransactionMock } = vi.hoisted(() => ({ TransactionMock: { find: vi.fn(), deleteMany: vi.fn() } }));
 vi.mock("@/model/Transaction", () => ({ default: TransactionMock }));
@@ -12,6 +15,7 @@ vi.mock("@/model/Transaction", () => ({ default: TransactionMock }));
 import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import Transaction from "@/model/Transaction";
+import { auth } from "@/lib/auth/betterAuth";
 import { POST } from "./route";
 
 async function buildWorkbookBuffer(rows, version = TEMPLATE_VERSION) {
@@ -30,6 +34,7 @@ async function buildWorkbookBuffer(rows, version = TEMPLATE_VERSION) {
 
 function mockFileRequest(buffer, { deleteAll = "false", preview = "true" } = {}) {
   return {
+    headers: new Headers(),
     formData: vi.fn().mockResolvedValue({
       get: (key) => {
         if (key === "file") return { arrayBuffer: () => Promise.resolve(buffer) };
@@ -72,6 +77,7 @@ function mockFindReturning(docs) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.api.getSession.mockResolvedValue({ user: { email: "user@test.com" } });
   User.findOne.mockReturnValue(chainableLean({ _id: "u1", wallet: "w1" }));
   Wallet.findById.mockReturnValue(chainableLean({ primaryCurrency: "MXN" }));
 });
