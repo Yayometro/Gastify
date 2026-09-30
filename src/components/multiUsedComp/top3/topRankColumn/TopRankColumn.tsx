@@ -1,17 +1,61 @@
 "use client";
+
+import React from "react";
 import { useSelector } from "react-redux";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
+import type { PrimaryAmountItem } from "@/helpers/timeFunctions/timeFunctions";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
 import useModal from "@/hooks/useModalBasic";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
+import type { RootState } from "@/lib/store";
+import type { WalletData } from "@/lib/features/walletSlice";
+
+const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<{
+  item: unknown;
+  close?: () => void;
+  onBack?: () => void;
+  [key: string]: unknown;
+}>;
+
+export interface RankRowItem extends PrimaryAmountItem {
+  name?: string;
+  type?: string;
+  color?: string;
+  icon?: string;
+  category?: {
+    color?: string;
+    icon?: string;
+    name?: string;
+    [key: string]: unknown;
+  } | null;
+  [key: string]: unknown;
+}
+
+export interface RankRowProps<T extends RankRowItem = RankRowItem> {
+  index: number;
+  item: T;
+  currency?: string | unknown;
+  onClick: () => void;
+}
+
+export interface TopRankColumnStyle {
+  father?: string;
+  [key: string]: unknown;
+}
+
+export interface TopRankColumnProps<T extends RankRowItem = RankRowItem> {
+  items?: T[] | null;
+  style?: TopRankColumnStyle;
+  title?: React.ReactNode;
+}
 
 // One ranked row - same visual language as WalletAnalyzerView's RankRow
 // (numbered, icon circle, name + amount) so "Top elements by month" reads
 // as the same design family as the Wallet Analyzer's own Top 12 section,
 // instead of the old AtomicTop tile-strip look.
-function RankRow({ index, item, currency, onClick }) {
+function RankRow<T extends RankRowItem = RankRowItem>({ index, item, currency, onClick }: RankRowProps<T>): React.JSX.Element {
   const name = item.name || item.type || "No name";
   const color = item?.color || item.category?.color || "#DADADA";
   const icon = item.icon || item.category?.icon;
@@ -45,11 +89,11 @@ function RankRow({ index, item, currency, onClick }) {
   );
 }
 
-function TopRankColumn({ items, style, title }) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+function TopRankColumn<T extends RankRowItem = RankRowItem>({ items, style, title }: TopRankColumnProps<T>): React.JSX.Element {
+  const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const { close, handleClose, renderModal, modalContent } = useModal();
-  function renderModalContent(item) {
-    renderModal(<ModalContentTopMonthItem item={item} close={handleClose} />);
+  function renderModalContent(item: unknown) {
+    renderModal(<TypedModalContentTopMonthItem item={item} close={handleClose} />);
   }
 
   return (
