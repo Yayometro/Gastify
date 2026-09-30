@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-16-transformers",
+  "activeStory": "historia-17-api-routes",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -4402,6 +4402,63 @@
               "notes": "Migrado y verificado por Claude (sin revisor independiente, a pedido del usuario). Verificación: diff contra HEAD muestra solo firmas, anotaciones, casts erasables y +monthStart - +anchor (mismo valueOf/NaN que la resta directa); tsc sin errores; eslint limpio; 28/28 tests de projectionsChange y 324/324 en total. Bugs preservados: getBudgetActualSpend suma bill.amount legacy, no getPrimaryAmount (ignora multi-moneda); en getBudgetActualSpend una fecha inválida no se excluye (NaN<start y NaN>end son false) a diferencia de getTransactionsFromTimeRange que sí la excluye; una factura que calza con varios budgets se cuenta completa en cada uno (sumPerBucketMax y getMonthBucketBreakdown); goalAmount de budgets y montos de baseline se asumen ya en la moneda primaria (budget.currency nunca se convierte); sumBaselineEntriesAtDate cae a \"MXN\" cuando falta currency en vez de la moneda primaria de la wallet; getBudgetPeriodRange trata cualquier period desconocido como yearly y en monthly ignora referenceDate si hay fallbacks; biweekly/weekly sin anchorDate asumen 2/4 ocurrencias fijas; countIntervalOccurrences suma ms fijos así que el DST puede correr un día; getMonthCurrencyBreakdown se salta transacciones sin displayMoney (subcuenta) y la tasa mostrada por moneda es la de una sola transacción (la más reciente)."
             }
           ]
+        }
+      }
+    },
+    "historia-17-api-routes": {
+      "label": "API routes restantes de general-data (Historia 17, SEGURIDAD primero). 13 rutas .js; 12 SIN getSession (solo wallet/route.js ya tiene el fix, falta migrarlo). Middleware solo cubre /dashboard, asi que son alcanzables sin autenticar. Patron IDOR ya visto: mail/id en body o URL como identidad, findById/findByIdAndDelete a secas, creacion con user/wallet del cliente. Fix estandar: identidad desde auth.api.getSession, recursos acotados por user/wallet. Peor caso: user/remove-user (borra un usuario y todos sus datos por mail del body), general-data/route.js POST y general-data/[id] GET (volcado completo por mail), files/* (upload/deduplicate/export/template por mail en la URL). Wallet.js y CategoryRule.js siguen en .js (Historia 18): se consumen sin migrar.",
+      "files": {
+        "src/app/api/general-data/user/remove-user/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/tags/new/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/tags/remove/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/tags/update/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/wallet/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/category-rules/apply-suggestions/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/category-rules/suggest/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/[id]/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/files/upload/[id]/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/files/deduplicate/[id]/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/files/export/[email]/route.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/api/general-data/files/template/[email]/route.js": {
+          "status": "pending",
+          "history": []
         }
       }
     }
