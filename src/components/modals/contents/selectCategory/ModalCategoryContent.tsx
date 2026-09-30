@@ -8,16 +8,6 @@ import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import React, { useContext } from "react";
 import { BiSolidCategory } from "react-icons/bi";
 
-const TypedCategoriesModalList = CategoriesModalList as React.ComponentType<{
-  onlyFathers?: boolean;
-  onSelect?: (cat: unknown) => void;
-}>;
-
-const TypedRenderCategoriesSearch = RenderCategoriesSearch as React.ComponentType<{
-  onlyFathers?: boolean;
-  getSelected?: (cat: unknown) => unknown;
-}>;
-
 export interface ModalCategoryContentProps {
   getSelected?: (category: unknown) => void;
   close?: () => void;
@@ -42,7 +32,7 @@ function ModalCategoryContent({
       </header>
       <div className={`w-full h-full overflow-y-scroll mb-[10px]`}>
         <section className="w-full h-full flex flex-col items-center justify-start gap-1">
-          <TypedRenderCategoriesSearch
+          <RenderCategoriesSearch
             onlyFathers={onlyFathers}
             getSelected={(cat: CategoryItem) => {
               if (onlyFathers && cat?.fatherCategory) return null;
@@ -50,7 +40,7 @@ function ModalCategoryContent({
             }}
           />
           <div className="cat-container w-full flex flex-col justify-start items-center gap-2">
-            <TypedCategoriesModalList
+            <CategoriesModalList
               onlyFathers={onlyFathers}
               onSelect={(cat: CategoryItem) => handleSelect(cat, getSelected, close)}
             />
