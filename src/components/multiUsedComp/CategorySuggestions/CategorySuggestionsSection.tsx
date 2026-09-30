@@ -10,12 +10,6 @@ import ToolsModal from "@/components/multiUsedComp/ToolsModal";
 // tool the floating Tools button opens globally - this page gets its own section
 // instead of the suggestion being hidden behind a click.
 
-interface ToolsModalProps {
-  mail?: string | null;
-  onClose: () => void;
-}
-
-const TypedToolsModal = ToolsModal as React.ComponentType<ToolsModalProps>;
 
 interface SuggestApiResponse {
   ok?: boolean;
@@ -77,7 +71,7 @@ function CategorySuggestionsSection({ mail }: CategorySuggestionsSectionProps): 
       )}
 
       {showModal && (
-        <TypedToolsModal
+        <ToolsModal
           mail={mail}
           onClose={() => setShowModal(false)}
         />

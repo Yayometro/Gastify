@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Tooltip } from "antd";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import ToolsModal from "@/components/multiUsedComp/ToolsModal";
 
+export interface ToolsFabProps {
+  mail?: string | null;
+}
+
 // Floating entry point for utility tools (currently: category suggestions).
 // Fixed to the viewport so it stays reachable while the page scrolls.
-function ToolsFab({ mail }) {
+function ToolsFab({ mail }: ToolsFabProps): React.JSX.Element {
   const [open, setOpen] = useState(false);
 
   return (

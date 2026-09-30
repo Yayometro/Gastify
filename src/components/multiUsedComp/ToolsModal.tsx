@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import { Tooltip } from "antd";
@@ -7,9 +8,22 @@ import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import UncategorizedSuggestionsTab from "@/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab";
 
+export interface ToolTab {
+  id: string;
+  label: string;
+  title: string;
+  tooltip: string;
+  render: () => React.JSX.Element;
+}
+
+export interface ToolsModalProps {
+  mail?: string | null;
+  onClose?: () => void;
+}
+
 // Array-driven so adding a tool later (e.g. "possibly miscategorized") is just
 // another entry here - the tab bar only renders once there's more than one.
-function buildTabs(mail) {
+function buildTabs(mail?: string | null): ToolTab[] {
   return [
     {
       id: "uncategorized",
@@ -21,7 +35,7 @@ function buildTabs(mail) {
   ];
 }
 
-function ToolsModal({ mail, onClose }) {
+function ToolsModal({ mail, onClose }: ToolsModalProps): React.JSX.Element {
   const tabs = buildTabs(mail);
   const [activeTab, setActiveTab] = useState(tabs[0].id);
   const current = tabs.find((t) => t.id === activeTab) || tabs[0];
