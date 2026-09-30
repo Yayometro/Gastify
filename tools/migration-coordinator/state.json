@@ -4245,8 +4245,23 @@
           ]
         },
         "src/app/api/mcp/route.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T04:05:55.375Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T04:08:32.328Z",
+              "event": "submitted",
+              "notes": "- Tipos usados:\n  * `request: Request | NextRequest` para los route handlers exportados (`POST`, `GET`, `DELETE`) y la función auxiliar `handleMcpRequest`.\n  * `auth: ResolvedApiTokenAuth` importado de `@/lib/auth/apiTokens` para la variable que recibe el resultado de `getUserFromApiToken(request)`.\n  * `Promise<Response>` como tipo de retorno explícito para `handleMcpRequest`, `POST`, `GET` y `DELETE` (alineado con `handleGastifyMcpTransport` de `@/lib/mcp/buildGastifyMcpServer` y `Response.json`).\n\n- Casts / Guards agregados:\n  * Ninguno. La configuración `strict: false` permite que `catch (e)` preserve directamente `e.message || \"Unauthorized\"` sin requerir type assertions ni guards adicionales.\n  * Preservación 1:1 exacta del comportamiento y manejo de errores (código HTTP 401 y formato JSON de error).\n\n- Verificaciones ejecutadas:\n  * `npx tsc --noEmit`: Exitoso (0 errores en todo el proyecto).\n  * `npx eslint src/app/api/mcp/route.ts`: Exitoso (0 errores, 0 warnings).\n  * `npx vitest run`: Exitoso (30/30 suites pasadas, 324/324 tests)."
+            },
+            {
+              "ts": "2026-09-30T04:09:03.436Z",
+              "event": "approved",
+              "notes": "Migración trivial y limpia. Cero casts, cero guards. catch (e) compila sin anotar (strict:false), e.message || \"Unauthorized\" preservado exacto. Usa ResolvedApiTokenAuth (apiTokens.ts) y handleGastifyMcpTransport (buildGastifyMcpServer.ts), ambos ya migrados en esta historia. Ya autentica cada request vía getUserFromApiToken, sin fix de seguridad necesario. tsc/eslint/vitest limpios (324/324)."
+            }
+          ]
         },
         "src/app/api/mcp/[token]/route.js": {
           "status": "pending",
