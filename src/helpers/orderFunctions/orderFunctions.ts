@@ -1,4 +1,10 @@
-export function sortItemsByName(arr) {
+export interface NamedOrTypedItem {
+  name?: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
+export function sortItemsByName<T extends NamedOrTypedItem>(arr: T[]): T[] {
     if (!(arr instanceof Array))
     throw new Error("the arr shoudl be a instance of Array");
   return arr.sort((a, b) => {
