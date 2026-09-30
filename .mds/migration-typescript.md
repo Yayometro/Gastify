@@ -401,22 +401,141 @@ sección decía antes que solo faltaban unos modelos/helpers de dinero y
 `scripts/`; eso era incorrecto. Un `find` real en `src/` muestra **98
 archivos `.js`/`.jsx` (sin contar tests) aún sin migrar**, además de ~10
 scripts en `scripts/` y los configs raíz (`next.config.js`, etc.).
-Distribución aproximada:
-- `components/multiUsedComp/` (24 sueltos) + árbol `top3/` (~9) +
-  `HistoricalMovementsandCategories/` (2) + gráficas/tooltips/props sueltos
-  (~7) + `Budgets/` (1): ~43 componentes de UI (Top3, TransTable,
-  EditTransModal, DedupPreviewModal, CategorySuggestionsModal, GoalGauge*,
-  NestCircle, etc.).
-- Providers, entradas de Next y wiring: `app/layout.js`, `app/page.js`,
-  `StoreProvider.js`, `ReduxProvider.js`, `AllDataProvider.jsx`,
-  `app/api/general-data/route.js`, `dbConnection.js`,
-  `defCategoriesCreator.js.js`, `lib/hooks.js`.
-- `lib/`: `services/` (2), `features/` (2), `files/` (1), `money/` (2) y
-  `money/server/` (2: `transactionMoneyService`, `ecbClient`).
-- `helpers/`: `fetcher`, `gastifyNotifier`, `downloadBackupCodes`,
-  `defaultIconsDB`, `orderFunctions`, `hooks/`.
-- `hooks/`, `resources/Time/`, `model/` (`Wallet.js`, `CategoryRule.js`,
-  `schemas/`), `components/renderTransactionsInModal`, etc.
-Antes de definir la Historia 17 hay que sacar el inventario completo
-(`find src \( -name "*.js" -o -name "*.jsx" \) ! -name "*.test.*"`) y
-agrupar por feature, igual que en las historias anteriores.
+El inventario real está en la sección siguiente.
+
+## Inventario de lo que falta migrar (Historias 17 en adelante)
+
+Generado con un análisis de imports real sobre `src/` (estáticos y `import()` dinámicos), no a ojo. Total de `.js`/`.jsx` sin contar tests: **97 archivos / 9,560 líneas**; de ellos **71 están vivos (7,458 líneas)** y **26 son código muerto (2,102 líneas)**, sin ningún importador alcanzable desde una página, ruta o archivo `.ts/.tsx` (ver lista abajo). Una sola Historia con los 71 vivos sería ~4.5 veces la más grande hecha hasta ahora, y mezclaría fixes de seguridad con UI; se recomienda dividir en 5.
+
+
+### Historia 17 — API routes restantes (SEGURIDAD primero): 13 archivos, 1458 líneas
+
+13 rutas de `general-data/*` sin `getSession` (solo `wallet/route.js` lo tiene) y el middleware solo cubre `/dashboard/*`. Incluye `user/remove-user` (borra un usuario y todos sus datos por el `mail` del body), `files/upload|export|template|deduplicate` (por id/email en la URL), `tags/*`, `category-rules/*`. Mismos patrones IDOR de las historias 1-14: se corrigen al migrar.
+
+- `app/api/general-data/[id]/route.js` (100)
+- `app/api/general-data/category-rules/apply-suggestions/route.js` (47)
+- `app/api/general-data/category-rules/suggest/route.js` (70)
+- `app/api/general-data/files/deduplicate/[id]/route.js` (231)
+- `app/api/general-data/files/export/[email]/route.js` (125)
+- `app/api/general-data/files/template/[email]/route.js` (162)
+- `app/api/general-data/files/upload/[id]/route.js` (374)
+- `app/api/general-data/route.js` (120)
+- `app/api/general-data/tags/new/route.js` (36)
+- `app/api/general-data/tags/remove/route.js` (25)
+- `app/api/general-data/tags/update/route.js` (33)
+- `app/api/general-data/user/remove-user/route.js` (52)
+- `app/api/general-data/wallet/route.js` (83)
+
+### Historia 18 — Fundaciones consumidas por código ya migrado: 17 archivos, 1033 líneas
+
+`dbConnection.js` (50 importadores ya migrados), `fetcher.js` (38), `gastifyNotifier.js` (29), `Wallet.js` (12; permite borrar los `WalletModelBridge` de `apiTokens.ts` y `createTransaction.ts`) y el núcleo de dinero (`conversion`, `transactionMoney`, `transactionMoneyService`, `ecbClient`). Riesgo: mismo efecto que los transformers (~30 errores de tipos en consumidores).
+
+- `app/api/dbConnection.js` (13)
+- `helpers/defaultIconsDB.js` (240)
+- `helpers/downloadBackupCodes.js` (23)
+- `helpers/fetcher.js` (51)
+- `helpers/gastifyNotifier.js` (54)
+- `helpers/hooks/useLinkedAccountsTotal.js` (100)
+- `helpers/orderFunctions/orderFunctions.js` (8)
+- `lib/features/loadGeneralDataSlice.js` (16)
+- `lib/features/tagsSlice.js` (16)
+- `lib/files/gastifyTemplate.js` (59)
+- `lib/money/conversion.js` (97)
+- `lib/money/server/ecbClient.js` (94)
+- `lib/money/server/transactionMoneyService.js` (66)
+- `lib/money/transactionMoney.js` (74)
+- `model/CategoryRule.js` (50)
+- `model/Wallet.js` (39)
+- `model/schemas/moneySchemas.js` (33)
+
+### Historia 19 — Top3, movimientos históricos y modal de detalle: 16 archivos, 2284 líneas
+
+Árbol conectado por `ModalContentTopMonthItem.jsx` (704 líneas, el más grande) y `TransactionItemList.jsx`. Va antes que la UI restante porque `DedupPreviewModal` depende de `TransactionItemList`.
+
+- `components/Transactions/ItemList/TransactionItemList.jsx` (145)
+- `components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx` (704)
+- `components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsController.jsx` (286)
+- `components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsView.jsx` (63)
+- `components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js` (283)
+- `components/multiUsedComp/Tooltips/BasicTooltip.jsx` (19)
+- `components/multiUsedComp/TopElementContainerView.jsx` (87)
+- `components/multiUsedComp/TopElementsContainer.jsx` (214)
+- `components/multiUsedComp/top3/atomicTop/AtomicTop.jsx` (56)
+- `components/multiUsedComp/top3/topMonthContainer/TopCategoryRow.jsx` (48)
+- `components/multiUsedComp/top3/topMonthContainer/TopElementsCompareTable.jsx` (102)
+- `components/multiUsedComp/top3/topMonthContainer/TopMonthContainer.jsx` (49)
+- `components/multiUsedComp/top3/topMonthContainer/TopMonthItem.jsx` (90)
+- `components/multiUsedComp/top3/topMonthContainer/TopTransactionRow.jsx` (26)
+- `components/multiUsedComp/top3/topRankColumn/TopRankColumn.jsx` (80)
+- `components/toltips/tooltipsForCharts/TooltipForChart.jsx` (32)
+
+### Historia 20 — UI restante (budgets, tarjetas, gráficas, tabs, categorías): 21 archivos, 2409 líneas
+
+Componentes hoja; casi todos dependen de `fetcher`/`gastifyNotifier` (Historia 18).
+
+- `components/buttons/selectCategoryBtn/SelectCategoryBtn.jsx` (13)
+- `components/categories/categoriesModalList/CategoriesModalList.jsx` (69)
+- `components/categories/categoryCircle/CategoryCircle.jsx` (45)
+- `components/categories/categoryCircleWithChilds/CategoryCircleWithChilds.jsx` (53)
+- `components/categories/categorySearchedItem/CategorySearchedItem.jsx` (18)
+- `components/categories/renderCateoriesSelect/RenderCategoriesSearch.jsx` (33)
+- `components/inputs/search/SearchInput.jsx` (25)
+- `components/multiUsedComp/AmountEquivalentPreview.jsx` (25)
+- `components/multiUsedComp/BudgetCont.jsx` (266)
+- `components/multiUsedComp/Budgets/UnbudgetedSpending.jsx` (373)
+- `components/multiUsedComp/CategorySuggestionsModal.jsx` (29)
+- `components/multiUsedComp/ChargedElsewhereSection.jsx` (64)
+- `components/multiUsedComp/CreditCard.jsx` (362)
+- `components/multiUsedComp/DedupPreviewModal.jsx` (220)
+- `components/multiUsedComp/ResumeTabsTrans.jsx` (145)
+- `components/multiUsedComp/TabsTrans.jsx` (235)
+- `components/multiUsedComp/ToolsFab.jsx` (30)
+- `components/multiUsedComp/ToolsModal.jsx` (78)
+- `components/multiUsedComp/chartsComponents/columnChartAntComparative/ColumnChartAntComparative.jsx` (120)
+- `components/multiUsedComp/chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent.jsx` (159)
+- `hooks/money/useTransactionAmountEquivalent.js` (47)
+
+### Historia 21 — Entradas de Next y providers (cierre): 4 archivos, 274 líneas
+
+`layout.js`, `page.js`, `AllDataProvider`, `ReduxProvider`: envuelven todo, mejor al final.
+
+- `app/layout.js` (48)
+- `app/page.js` (186)
+- `components/Providers/AllDataProvider.jsx` (29)
+- `lib/ReduxProvider.js` (11)
+
+### Código muerto: 26 archivos, 2102 líneas (decisión pendiente del usuario: borrar o migrar)
+
+No los importa ningún archivo alcanzable (verificado también con grep en todo el repo, scripts y CSS). `apiSlice.js` está 100% comentado. Ojo: `EditTransModal.jsx` y `VoiceRecognicionComponent.jsx` son funcionalidad grande (401 y 303 líneas) que quedó sin uso; `defCategoriesCreator.js.js` tiene doble extensión.
+
+- `app/StoreProvider.js` (0)
+- `app/api/defCategoriesCreator.js.js` (195)
+- `components/DatePiker.jsx` (16)
+- `components/HOCs/modalHocRenderTrans/modalWithRenderTrans.js` (9)
+- `components/HOCs/withIncomes.js` (4)
+- `components/buttons/btnWithModal/BtnWithModal.jsx` (17)
+- `components/multiUsedComp/Category.jsx` (32)
+- `components/multiUsedComp/EditTransModal.jsx` (401)
+- `components/multiUsedComp/GastifyModal.jsx` (0)
+- `components/multiUsedComp/GoalGaugeRange.jsx` (159)
+- `components/multiUsedComp/GoalLiquid.jsx` (32)
+- `components/multiUsedComp/GoalSavingsRange.jsx` (84)
+- `components/multiUsedComp/NestCircle.jsx` (88)
+- `components/multiUsedComp/RangePicker.jsx` (55)
+- `components/multiUsedComp/Top3.jsx` (213)
+- `components/multiUsedComp/Top3ContComp.jsx` (112)
+- `components/multiUsedComp/TransTable.jsx` (63)
+- `components/multiUsedComp/VoiceRecognicionComponent.jsx` (303)
+- `components/multiUsedComp/top3/top-container/TopContainer.jsx` (61)
+- `components/multiUsedComp/top3/topMonthContainer/TopItemContainer.jsx` (93)
+- `components/renderTransactionsInModal/RenderTransactionsInModal.jsx` (35)
+- `hooks/Categories/useHandleCategorySelect.js` (0)
+- `lib/hooks.js` (1)
+- `lib/services/apiSlice.js` (41)
+- `lib/services/generalDataApiRedux.js` (31)
+- `resources/Time/timeSelectorsHistory.js` (57)
+
+### Fuera de `src/`
+
+`scripts/` (10 archivos, ~1,290 líneas: migraciones y utilidades de una sola corrida ya ejecutadas) y configs raíz (`next.config.js`, `tailwind.config.js`, `postcss.config.js`, `vitest.config.mjs`). Recomendación: dejarlos en `.js`; se corren directo con node y migrarlos no valida nada del app.
+
