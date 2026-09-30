@@ -1,6 +1,23 @@
+import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 
-function CategorySearchedItem({ style, category, name, icon, onSelect, size }) {
+export interface CategorySearchedItemProps<T = unknown> {
+  style?: string;
+  category?: T;
+  name?: string;
+  icon?: string;
+  onSelect?: (category: T) => void;
+  size?: number | string;
+}
+
+function CategorySearchedItem<T = unknown>({
+  style,
+  category,
+  name,
+  icon,
+  onSelect,
+  size,
+}: CategorySearchedItemProps<T>): React.JSX.Element {
   return (
     <div
       className={
