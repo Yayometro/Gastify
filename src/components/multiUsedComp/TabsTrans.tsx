@@ -5,20 +5,53 @@ import UniversalCategoIcon from "./UniversalCategoIcon";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
 import { formatMoneyMajor, formatMoneyMinor } from "@/lib/money/currencies";
+import type { RootState } from "@/lib/store";
 
-function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
-  const [newData, setNewData] = useState([]);
+export interface TabsTransCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface TabsTransMovement {
+  category?: unknown;
+  amount?: number | string | null;
+  [key: string]: unknown;
+}
+
+export interface TabsTransItem {
+  type: string;
+  value: number;
+  idCategory: string;
+  color: string;
+  icon: string;
+  transaction: TabsTransMovement;
+  transactions: TabsTransMovement[];
+  [key: string]: unknown;
+}
+
+export interface TabsTransProps {
+  ttTrans?: TabsTransMovement[] | null;
+  ttIsbill?: boolean;
+  ttHorizontal?: boolean;
+}
+
+function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
+  const [newData, setNewData] = useState<TabsTransItem[]>([]);
   // Categories hidden by clicking their legend dot. Kept as native amount-0
   // in the chart data (rather than filtered out) so the axis/legend don't
   // reflow - clicking again brings the bar right back where it was.
-  const [hiddenIds, setHiddenIds] = useState(() => new Set());
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
+  const reduxWalletPrimaryCurrency = (useSelector((state: RootState) => state.walletReducer?.data) as { primaryCurrency?: string })?.primaryCurrency;
+  const walletPrimaryCurrency = reduxWalletPrimaryCurrency || "MXN";
 
-  const toggleCategory = (datum) => {
+  const toggleCategory = (datum: { id?: string | number }) => {
     setHiddenIds((prev) => {
       const next = new Set(prev);
-      if (next.has(datum.id)) next.delete(datum.id);
-      else next.add(datum.id);
+      if (next.has(datum.id as string)) next.delete(datum.id as string);
+      else next.add(datum.id as string);
       return next;
     });
   };
@@ -40,18 +73,18 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
       // transaction must be converted before summing - raw trans.amount is
       // in that transaction's own native currency, which only happens to
       // match the Wallet primary when every transaction shares one currency.
-      let createNewOrder = ttTrans.map((trans) => {
-        const category = trans.category;
+      const createNewOrder = ttTrans.map((trans) => {
+        const category = trans.category as TabsTransCategoryRef | null | undefined;
         return {
-          type: category ? category.name : "No category",
+          type: category ? (category.name as string) : "No category",
           value: getPrimaryAmount(trans),
-          idCategory: category ? category._id : "ID-nocategory",
+          idCategory: category ? (category._id as string) : "ID-nocategory",
           color: (category && category.color) || "#ABABAB",
           icon: (category && category.icon) || "MdFilterNone",
           transaction: trans,
         };
       });
-      const reducedData = createNewOrder.reduce((acc, item) => {
+      const reducedData = createNewOrder.reduce<Record<string, TabsTransItem>>((acc, item) => {
         if (acc[item.idCategory]) {
           acc[item.idCategory].value += item.value;
           acc[item.idCategory].transactions.push(item.transaction);
@@ -72,7 +105,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
       </span>
       <div className="flex-1 min-h-0">
       <ResponsiveBar
-        data={chartData}
+        data={chartData as unknown as readonly Record<string, string | number>[]}
         indexBy="type"
         keys={["value"]}
         margin={{ top: 10, right: 100, bottom: 50, left: 60 }}
@@ -121,7 +154,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
         labelSkipHeight={1}
         labelTextColor={{
           from: "color",
-          modifiers: [["darker", "2.3"]],
+          modifiers: [["darker", "2.3" as unknown as number]],
         }}
         legends={[
           {
@@ -146,7 +179,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
                 },
               },
             ],
-          },
+          } as unknown as NonNullable<React.ComponentProps<typeof ResponsiveBar>["legends"]>[number],
         ]}
         tooltip={(dataa) => {
           // console.log(dataa);
@@ -176,7 +209,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
                   }}
                   className="flex items-center justify-center text-[17px] min-w-[60px] h-[60px] rounded-3xl"
                 >
-                  <UniversalCategoIcon type={dataa.data.icon} siz={15} />
+                  <UniversalCategoIcon type={dataa.data.icon as string} siz={15} />
                 </div>
                 <div className="flex flex-col text-[13px] font-semibold">
                   <div className="flex gap-2">
@@ -197,7 +230,7 @@ function TabsTrans({ ttTrans, ttIsbill, ttHorizontal }) {
               </div>
               {(() => {
                 const { breakdown, isMultiCurrency } = getMonthCurrencyBreakdown(
-                  dataa.data.transactions,
+                  dataa.data.transactions as unknown as Parameters<typeof getMonthCurrencyBreakdown>[0],
                   walletPrimaryCurrency
                 );
                 if (!isMultiCurrency) return null;
