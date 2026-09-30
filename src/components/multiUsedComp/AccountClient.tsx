@@ -31,10 +31,6 @@ import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import type { RootState, AppDispatch } from "@/lib/store";
 
 // Typed bridge components for unmigrated JS components
-const TypedResumeTabsTrans = ResumeTabsTrans as React.ComponentType<{
-  timePeriodFromFather?: Date[];
-  rttTrans?: unknown;
-}>;
 
 const TypedDisplayerCategoryTreemap = DisplayerCategoryTreemap as React.ComponentType<{
   dccpIncomes?: unknown;
@@ -380,7 +376,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                       finalAccounts.length <= 0 ? (
                         <Skeleton active />
                       ) : (
-                        <TypedResumeTabsTrans
+                        <ResumeTabsTrans
                           rttTrans={
                             finalAccounts[carruselCurrent]?.allTransactionsList
                           }

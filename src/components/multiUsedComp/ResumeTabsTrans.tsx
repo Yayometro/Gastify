@@ -13,21 +13,28 @@ import {
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
+import type { RootState } from "@/lib/store";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
 
 const today = new Date();
 
-function ResumeTabsTrans({ timePeriodFromFather, rttTrans }) {
+export interface ResumeTabsTransProps {
+  timePeriodFromFather?: [Date, Date] | Date[];
+  rttTrans?: unknown;
+}
+
+function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProps): React.JSX.Element {
   const [isBillTab, setIsBillTab] = useState(true);
-  const [allBills, setAllBills] = useState([]);
-  const [allIncomes, setAllIncomes] = useState([]);
-  const [timePeriod, setTimePeriod] = useState(
+  const [allBills, setAllBills] = useState<TransactionData[]>([]);
+  const [allIncomes, setAllIncomes] = useState<TransactionData[]>([]);
+  const [timePeriod, setTimePeriod] = useState<[Date, Date] | Date[]>(
     timePeriodFromFather || [
       new Date(today.getFullYear(), today.getMonth(), 1),
       getLastDayOfMonth(today.getFullYear(), today.getMonth()),
     ]
   );
 
-  const ccTransacciones = useSelector((state) => state.transacctionsReducer);
+  const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
   const timePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(today.getFullYear());
 
   useEffect(() => {
@@ -42,7 +49,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }) {
     // account via the carousel updates this section too. Falls back to the
     // full wallet's redux transactions for callers (Dashboard.jsx) that
     // don't scope to a single account.
-    const sourceTransactions = rttTrans || ccTransacciones.data;
+    const sourceTransactions = (rttTrans || ccTransacciones.data) as TransactionData[] | undefined;
     if (!sourceTransactions || sourceTransactions.length === 0) {
       setAllBills([]);
       setAllIncomes([]);
@@ -50,24 +57,24 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }) {
     }
     const [start, end] = timePeriod;
     const filtered = getTransactionsFromTimeRange(sourceTransactions, start, end).sort(
-      (a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)
+      (a, b) => +new Date(b.date || b.createdAt) - +new Date(a.date || a.createdAt)
     );
     setAllBills(filtered.filter((t) => t.isBill && !t.isIncome));
     setAllIncomes(filtered.filter((t) => t.isIncome && !t.isBill));
   }, [ccTransacciones.data, rttTrans, timePeriod]);
 
-  function getValueFromSelecter(v) {
+  function getValueFromSelecter(v: string) {
     const [start, end] = v.split("*");
     setTimePeriod([new Date(start), new Date(end)]);
   }
 
-  function handleRangeDate(dateStart, dateEnd) {
+  function handleRangeDate(dateStart: Date, dateEnd: Date) {
     if (dateStart && dateEnd) {
       setTimePeriod([dateStart, dateEnd]);
     }
   }
 
-  const handleTab = (budType) => setIsBillTab(budType === "bill");
+  const handleTab = (budType: string) => setIsBillTab(budType === "bill");
 
   return (
     <div className="rtt-cont gf-glass-card w-full h-full rounded-[32px] p-4">
