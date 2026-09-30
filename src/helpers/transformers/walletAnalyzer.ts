@@ -716,8 +716,8 @@ export function getMonthTotals(
 ): WalletAnalyzerTotals {
   const monthTx = getTransactionsFromTimeRange(transactions, monthStart, monthEnd);
   const { incomes, bills } = filterBillsOrIncomes(monthTx);
-  const income = incomes.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
-  const expense = bills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+  const income = incomes.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
+  const expense = bills.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
   const balance = income - expense;
   return { income, expense, balance, savingsRate: income > 0 ? balance / income : 0, transactionCount: bills.length };
 }
@@ -838,7 +838,7 @@ export function computeCategoryHistoryAverage(
     const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
     const total = set
       .filter((t) => (t.category?.name || "No category") === categoryName)
-      .reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+      .reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     monthlyTotals.push(total);
     monthlyTotalsLabeled.push({ label: `${months[monthDate.getMonth()]} ${monthDate.getFullYear()}`, amount: total });
   }
@@ -867,7 +867,7 @@ export function computeCategoryHistoryAverageForRange(
     const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
     const total = set
       .filter((t) => (t.category?.name || "No category") === categoryName)
-      .reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+      .reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     totals.push(total);
     totalsLabeled.push({ label: formatPeriodLabel(period), amount: total });
   });
@@ -955,8 +955,8 @@ export function computeTrendForRange(
     const { incomes, bills } = filterBillsOrIncomes(tx);
     return {
       label: formatPeriodLabel(period),
-      income: incomes.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0),
-      expense: bills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0),
+      income: incomes.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0),
+      expense: bills.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0),
       transactionCount: bills.length,
     };
   });
@@ -1132,7 +1132,7 @@ function computeBiggestSpendPatternsCore(
   const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills as WalletAnalyzerTransaction[];
   if (bills.length === 0) return null;
 
-  const totalSpend = bills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+  const totalSpend = bills.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
 
   const biggestTransactionRaw = [...bills].sort(
     (a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)
@@ -1252,7 +1252,7 @@ export function computeMonthlyChampions(
   const windowStart = new Date(ref.getFullYear(), ref.getMonth() - (monthsBack - 1), 1, 0, 0, 0, 0);
   const windowEnd = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
   const windowBills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, windowStart, windowEnd)).bills as WalletAnalyzerTransaction[];
-  const windowTotal = windowBills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+  const windowTotal = windowBills.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
 
   const monthEntries: WalletAnalyzerMonthlyChampionEntry[] = [];
   for (let m = monthsBack - 1; m >= 0; m--) {
@@ -1266,7 +1266,7 @@ export function computeMonthlyChampions(
       continue;
     }
 
-    const total = bills.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+    const total = bills.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     const biggestTransactionRaw = [...bills].sort(
       (a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)
     )[0];
@@ -1410,7 +1410,7 @@ export function computeSpendingPace(
   const currentSet = isBill
     ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, monthStart, soFarEnd)).bills
     : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, monthStart, soFarEnd)).incomes;
-  const spentSoFar = currentSet.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+  const spentSoFar = currentSet.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
 
   const pastPaces: number[] = [];
   const monthlyDetail: SpendingPaceMonthlyDetail[] = [];
@@ -1423,7 +1423,7 @@ export function computeSpendingPace(
     const pastSet = isBill
       ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, pastStart, pastEnd)).bills
       : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, pastStart, pastEnd)).incomes;
-    const amount = pastSet.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+    const amount = pastSet.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     pastPaces.push(amount);
     monthlyDetail.push({ label: `${months[pastMonthDate.getMonth()]} ${pastMonthDate.getFullYear()}`, throughDay: cappedDay, amount });
   }
@@ -1457,7 +1457,7 @@ export function computeSpendingPaceForRange(
   const currentSet = isBill
     ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, soFarEnd)).bills
     : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, soFarEnd)).incomes;
-  const spentSoFar = currentSet.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+  const spentSoFar = currentSet.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
 
   const pastPaces: number[] = [];
   const monthlyDetail: SpendingPaceMonthlyDetail[] = [];
@@ -1467,7 +1467,7 @@ export function computeSpendingPaceForRange(
     const pastSet = isBill
       ? filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, period.start, pastEnd)).bills
       : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, period.start, pastEnd)).incomes;
-    const amount = pastSet.reduce((a: number, t: unknown) => a + getPrimaryAmount(t), 0);
+    const amount = pastSet.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     pastPaces.push(amount);
     monthlyDetail.push({ label: formatPeriodLabel(period), throughDay: cappedDays, amount });
   });

@@ -5,10 +5,137 @@ import {
   months,
   normalizeDateToUTC,
 } from "../timeFunctions/timeFunctions";
+import type { PrimaryAmountItem } from "../timeFunctions/timeFunctions";
 import currencyFormatter from "currency-formatter";
 import { minorToMajor } from "@/lib/money/currencies";
 
-export function usdFormatChanger(currency) {
+type DateLike = Date | string | number;
+
+export interface CategoryLike {
+  _id?: string;
+  name?: string;
+  icon?: string;
+  color?: string;
+}
+
+export interface TransactionLike extends PrimaryAmountItem {
+  date?: DateLike | null;
+  createdAt?: DateLike | null;
+  isBill?: boolean;
+  isIncome?: boolean;
+  kind?: string;
+  category?: CategoryLike | null;
+  subCategory?: CategoryLike | null;
+}
+
+export interface CategoryFather<T> {
+  name: string;
+  type: string;
+  icon: string;
+  color: string;
+  value: number;
+  isBill?: boolean;
+  children: T[];
+}
+
+export interface CategoryHierarchyChild<T> {
+  childId: string;
+  name: string;
+  loc: number;
+  color: string;
+  icon: string;
+  transactions?: T[];
+}
+
+interface CategoryHierarchyInput<T> {
+  fatherId: string;
+  name: string;
+  loc?: number;
+  color: string;
+  icon: string;
+  children: CategoryHierarchyChild<T>[];
+}
+
+export interface CategoryHierarchyCategory<T> {
+  fatherId: string;
+  name: string;
+  loc: number;
+  color: string;
+  icon: string;
+  children: CategoryHierarchyChild<T>[];
+  transactions?: T[];
+}
+
+export interface CategoryHierarchyRoot<T> {
+  name: string;
+  color: string;
+  icon: string;
+  children: CategoryHierarchyCategory<T>[];
+}
+
+export type MonthValueBucket = {
+  type: string;
+  value: number;
+  color?: string;
+  icon?: string;
+  index?: number;
+  isBill?: boolean | null;
+  isIncome?: boolean | null;
+};
+
+export type RelativeMonthBucket = {
+  type: string;
+  index: number;
+  monthLabel: string;
+  value: number;
+  isBill: boolean | null;
+  isIncome: boolean | null;
+};
+
+export interface RelativeMonthGroup<T> {
+  index: number;
+  monthLabel: string;
+  value: number;
+  childrens: T[];
+}
+
+export type CategoryValueEntry = {
+  _id: string;
+  type: string;
+  value: number;
+  icon: string;
+  color: string;
+  date: DateLike | null | undefined;
+  isBill: boolean | undefined;
+};
+
+export type CategoryValueSliced<T> = CategoryValueEntry & {
+  children: T[];
+};
+
+export type MonthsChartObject = {
+  type: string;
+  color: string;
+  value: number;
+  icon: string;
+  index: number;
+  isBill: boolean | null;
+  isIncome: boolean | null;
+  january?: number;
+  february?: number;
+  march?: number;
+  april?: number;
+  may?: number;
+  june?: number;
+  july?: number;
+  august?: number;
+  september?: number;
+  october?: number;
+  november?: number;
+  december?: number;
+};
+
+export function usdFormatChanger(currency: number | string): string {
   return currencyFormatter.format(currency, {
     locale: "en-US",
   });
@@ -23,19 +150,20 @@ export function usdFormatChanger(currency) {
 // one of these same reducers - has `.value`/`.amount` but no `.displayMoney`
 // of its own) and passes its value through unchanged, since that value was
 // already currency-normalized the first time around.
-export function getPrimaryAmount(item) {
-  const primary = item?.displayMoney?.primary;
+export function getPrimaryAmount(item?: PrimaryAmountItem | object | null): number {
+  const typedItem = item as PrimaryAmountItem | null | undefined;
+  const primary = typedItem?.displayMoney?.primary;
   if (primary) return minorToMajor(primary.amountMinor, primary.currency);
-  return Number(item?.value ?? item?.amount) || 0;
+  return Number(typedItem?.value ?? typedItem?.amount) || 0;
 }
 
-export function orderByHighestValue(arr) {
+export function orderByHighestValue<T extends { value?: number; amount?: number }>(arr: T[]): T[] {
   if (!(arr instanceof Array))
     throw new Error("arr should be an instance of Array");
   return arr.sort((a, b) => (b.value || b.amount) - (a.value || a.amount));
 }
 
-export function get_total_value_of_all_transactions(arr){
+export function get_total_value_of_all_transactions(arr: PrimaryAmountItem[]): number {
   if (!(arr instanceof Array))
     throw new Error("arr should be an instance of Array");
   return arr.reduce((prev, current) => {
@@ -43,7 +171,9 @@ export function get_total_value_of_all_transactions(arr){
   }, 0)
 }
 
-export function mapToAddTypeTransactionAndColor(arr) {
+export function mapToAddTypeTransactionAndColor<T extends { isBill?: boolean }>(
+  arr: T[]
+): (T & { color: string; transactionType: "bill" | "income" })[] {
   if (!(arr instanceof Array))
     throw new Error("arr should be an instance of Array");
   return arr.map((monthTrans) => {
@@ -59,7 +189,9 @@ export function mapToAddTypeTransactionAndColor(arr) {
   });
 }
 
-export function filterBillsOrIncomes(trans) {
+export function filterBillsOrIncomes<T extends { kind?: string; isBill?: boolean }>(
+  trans: T[]
+): { incomes: T[]; bills: T[] } {
   // A transfer/exchange leg has isBill=false AND isIncome=false by design
   // (plan section 13) - without this exclusion, `!tra.isBill` alone
   // silently counted every transfer leg as income everywhere this function
@@ -70,10 +202,12 @@ export function filterBillsOrIncomes(trans) {
   return { incomes, bills };
 }
 
-export function reduceAndTransforToCategories(array) {
+export function reduceAndTransforToCategories<T extends TransactionLike>(
+  array: T[]
+): { array: CategoryFather<T>[]; totalAmount: number } {
   if (!(array instanceof Array))
     throw new Error("array should be an Array instance");
-  const categoriesFathers = array.reduce((acc, trans) => {
+  const categoriesFathers = array.reduce((acc: Record<string, CategoryFather<T>>, trans) => {
     const category = trans.category;
     const amount = getPrimaryAmount(trans);
     if (acc[category?.name]) {
@@ -112,7 +246,10 @@ export function reduceAndTransforToCategories(array) {
 // subCategory) contributes directly to that category with no children; a
 // transaction with neither is grouped under a single synthetic
 // "No category" bucket.
-export function buildCategoryHierarchy(transactions, isBill) {
+export function buildCategoryHierarchy<T extends TransactionLike>(
+  transactions: T[] | null | undefined,
+  isBill?: boolean
+): CategoryHierarchyRoot<T> {
   const rootName = isBill ? "Total expenses" : "Total incomes";
   const rootColor = isBill ? "#FF9797" : "#A7E295";
   if (!transactions || transactions.length === 0) {
@@ -123,7 +260,7 @@ export function buildCategoryHierarchy(transactions, isBill) {
   const transWithCategory = transactions.filter((t) => t?.category && !t?.subCategory);
   const transWithSubCat = transactions.filter((t) => t?.subCategory);
 
-  const cateFaseOne = transNoCategory.map((t) => ({
+  const cateFaseOne: CategoryHierarchyInput<T>[] = transNoCategory.map((t) => ({
     fatherId: "Generic-1",
     name: "No category",
     loc: getPrimaryAmount(t),
@@ -132,7 +269,7 @@ export function buildCategoryHierarchy(transactions, isBill) {
     children: [],
   }));
 
-  let cateFaseDos = transWithCategory.map((t) => ({
+  let cateFaseDos: CategoryHierarchyInput<T>[] = transWithCategory.map((t) => ({
     fatherId: t.category._id,
     name: t?.category.name,
     loc: getPrimaryAmount(t),
@@ -161,7 +298,7 @@ export function buildCategoryHierarchy(transactions, isBill) {
 
   cateFaseDos = cateFaseDos.concat(cateFaseOne);
 
-  const result = cateFaseDos.reduce((acc, item) => {
+  const result = cateFaseDos.reduce((acc: Record<string, CategoryHierarchyCategory<T>>, item) => {
     if (!acc[item.fatherId]) {
       acc[item.fatherId] = { ...item, loc: 0, children: [] };
     }
@@ -184,13 +321,13 @@ export function buildCategoryHierarchy(transactions, isBill) {
   // transactions - e.g. the Wallet treemap, once a category/subcategory has
   // few enough branches that showing them one aggregate tile each would
   // waste the space - can do so without re-deriving this grouping.
-  const directTxByCategoryId = new Map();
+  const directTxByCategoryId = new Map<string, T[]>();
   transWithCategory.forEach((t) => {
     const key = t.category._id;
     if (!directTxByCategoryId.has(key)) directTxByCategoryId.set(key, []);
     directTxByCategoryId.get(key).push(t);
   });
-  const txBySubCategoryId = new Map();
+  const txBySubCategoryId = new Map<string, T[]>();
   transWithSubCat.forEach((t) => {
     const key = t.subCategory._id;
     if (!txBySubCategoryId.has(key)) txBySubCategoryId.set(key, []);
@@ -214,16 +351,16 @@ export function buildCategoryHierarchy(transactions, isBill) {
   };
 }
 
-export function getTotalValue(arr) {
+export function getTotalValue(arr: PrimaryAmountItem[]): number {
   if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
   return arr.reduce((acc, item) => (acc += getPrimaryAmount(item)), 0);
 }
 
-export function reduceTransToTransMonths(arr) {
+export function reduceTransToTransMonths(arr: TransactionLike[]): Record<string, MonthValueBucket> {
   if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
-  return arr.reduce((acc, transaction) => {
+  return arr.reduce((acc: Record<string, MonthValueBucket>, transaction) => {
     const transactionOfMonth = mapedMonths.get(
       getMonthOfTransaction(new Date(transaction.date).getMonth()).toLowerCase()
     );
@@ -247,8 +384,10 @@ export function reduceTransToTransMonths(arr) {
   }, {});
 }
 
-export function reduceTransactionsToMonthSpentObjects(monTransactions) {
-  const newOrder = monTransactions.reduce((acc, transaction) => {
+export function reduceTransactionsToMonthSpentObjects<T extends { type: string; value: number }>(
+  monTransactions: T[]
+): Record<string, T> {
+  const newOrder = monTransactions.reduce((acc: Record<string, T>, transaction) => {
     if (transaction && acc[transaction?.type]) {
       acc[transaction.type].value += transaction.value;
     } else {
@@ -259,7 +398,7 @@ export function reduceTransactionsToMonthSpentObjects(monTransactions) {
   }, {});
   return newOrder;
 }
-export function transactionsToMonths(allTrans) {
+export function transactionsToMonths(allTrans: TransactionLike[]): { array: MonthValueBucket[]; totalValue: number } {
   const transformed = reduceTransToTransMonths(allTrans);
   // remove the entry with the name and left only the values
   const final = Object.values(transformed).sort((a, b) => a.index - b.index);
@@ -276,9 +415,12 @@ export function transactionsToMonths(allTrans) {
 // by relative position, not by which real month they happened to fall in.
 // `rangeStart` should be the same Date passed to getTransactionsFromTimeRange
 // for this same array, so bucket 0 always means "this range's first month."
-export function transactionsToRelativeMonths(trans, rangeStart) {
+export function transactionsToRelativeMonths(
+  trans: TransactionLike[],
+  rangeStart: DateLike
+): { array: RelativeMonthBucket[]; totalValue: number } {
   const start = new Date(rangeStart);
-  const buckets = trans.reduce((acc, transaction) => {
+  const buckets = trans.reduce((acc: Record<number, RelativeMonthBucket>, transaction) => {
     const txDate = new Date(transaction.date || transaction.createdAt);
     const monthsSinceStart =
       (txDate.getFullYear() - start.getFullYear()) * 12 +
@@ -308,11 +450,14 @@ export function transactionsToRelativeMonths(trans, rangeStart) {
 // keeps every underlying transaction per bucket (as `childrens`) instead of
 // collapsing to a single total - the Top-elements compare table needs the
 // actual items to list per month, not just a sum.
-export function orderItemsInRelativeMonth(arr, rangeStart) {
+export function orderItemsInRelativeMonth<T extends TransactionLike>(
+  arr: T[],
+  rangeStart: DateLike
+): RelativeMonthGroup<T>[] {
   if (!(arr instanceof Array))
     throw new Error("arr param should be an Array instance");
   const start = new Date(rangeStart);
-  const buckets = arr.reduce((acc, item) => {
+  const buckets = arr.reduce((acc: Record<number, RelativeMonthGroup<T>>, item) => {
     const txDate = new Date(item.date || item.createdAt);
     const index =
       (txDate.getFullYear() - start.getFullYear()) * 12 +
@@ -335,14 +480,17 @@ export function orderItemsInRelativeMonth(arr, rangeStart) {
 // months missing from one side (a shorter period, or simply no data that
 // month) come through as a null column rather than being dropped, so the
 // row grid stays intact.
-export function mergeTopElementsForCompareTable(monthsA, monthsB) {
+export function mergeTopElementsForCompareTable<A extends { index: number }, B extends { index: number }>(
+  monthsA: A[],
+  monthsB: B[]
+): { index: number; colA: A | null; colB: B | null }[] {
   const mapA = new Map(monthsA.map((m) => [m.index, m]));
   const mapB = new Map(monthsB.map((m) => [m.index, m]));
   const maxIndex = Math.max(
     monthsA.length ? Math.max(...monthsA.map((m) => m.index)) : -1,
     monthsB.length ? Math.max(...monthsB.map((m) => m.index)) : -1
   );
-  const rows = [];
+  const rows: { index: number; colA: A | null; colB: B | null }[] = [];
   for (let i = 0; i <= maxIndex; i++) {
     const colA = mapA.get(i) || null;
     const colB = mapB.get(i) || null;
@@ -352,7 +500,11 @@ export function mergeTopElementsForCompareTable(monthsA, monthsB) {
   return rows;
 }
 
-export function getTransactionsFromTimeRange(trans, start, end) {
+export function getTransactionsFromTimeRange<T extends { date?: DateLike | null; createdAt?: DateLike | null }>(
+  trans: T[],
+  start: Date,
+  end: Date
+): T[] {
   if (!(start instanceof Date) || !(end instanceof Date)) {
     throw new Error("Start and end parameters must be valid Date objects.");
   }
@@ -362,21 +514,23 @@ export function getTransactionsFromTimeRange(trans, start, end) {
   });
 }
 
-export function sortBasedOnValueProperty(numberElemenets, array) {
+export function sortBasedOnValueProperty<T extends { value: number }>(numberElemenets: number, array: T[]): T[] {
   if (!(array instanceof Array))
     throw new Error("the element shoudl be a instance of Array");
   return array.sort((a, b) => a.value - b.value).slice(0, numberElemenets);
 }
-export function sortByIndex(arr) {
+export function sortByIndex<T extends { index: number }>(arr: T[]): T[] {
   if (!(arr instanceof Array))
     throw new Error("the element shoudl be a instance of Array");
   return arr.sort((a, b) => a.index - b.index);
 }
 
-export function reduceTransCategoriesSliced(arr, slice) {
+// `slice` is accepted but never used by the original implementation; kept for signature parity.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function reduceTransCategoriesSliced<T extends TransactionLike>(arr: T[], slice?: number): CategoryValueSliced<T>[] {
   if (!(arr instanceof Array))
     throw new Error("the element shoudl be a instance of Array");
-  const reduceObj = arr.reduce((acc, transaction) => {
+  const reduceObj = arr.reduce((acc: Record<string, CategoryValueSliced<T>>, transaction) => {
     const categoryName = transaction?.category?.name || "No category";
     const value = getPrimaryAmount(transaction);
     const icon = transaction.category?.icon || "MdFilterNone";
@@ -403,10 +557,12 @@ export function reduceTransCategoriesSliced(arr, slice) {
   return Object.values(reduceObj);
 }
 
-export function reduceTransCategories(array) {
+export function reduceTransCategories<T extends { type: string; value: number }>(
+  array: T[]
+): { array: T[]; totalValue: number } {
   if (!(array instanceof Array))
     throw new Error("the element shoudl be a instance of Array");
-  const reducedObject = array.reduce((acc, item) => {
+  const reducedObject = array.reduce((acc: Record<string, T>, item) => {
     if (acc[item.type]) {
       acc[item.type].value += item.value;
     } else {
@@ -422,7 +578,7 @@ export function reduceTransCategories(array) {
   };
 }
 
-export function transactionsToCategories(arr) {
+export function transactionsToCategories(arr: TransactionLike[]): CategoryValueEntry[] {
   if (!(arr instanceof Array))
     throw new Error(
       "The paramenter is not an instance of Array and it should be, it's typeof is: " +
@@ -441,7 +597,9 @@ export function transactionsToCategories(arr) {
   });
 }
 
-export function transformTransactionsToMonthsChartObject(trans) {
+export function transformTransactionsToMonthsChartObject(
+  trans: TransactionLike[]
+): (MonthsChartObject | null)[] {
   const monthRanges = getYearMonthDateRange(new Date());
 
   const transactionsChanged = trans.map((tra) => {

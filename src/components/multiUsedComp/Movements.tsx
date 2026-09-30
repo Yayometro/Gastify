@@ -290,7 +290,7 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
     if (reduxAllTrans.status == "succeeded") setLoadingComponent(false);
 
     const [start, end] = timePeriod;
-    let filtered = getTransactionsFromTimeRange(rdxTransactions, start, end).sort(
+    let filtered = getTransactionsFromTimeRange(rdxTransactions, start as Date, end as Date).sort(
       (a: MovementItem, b: MovementItem) => +new Date((b.date || b.createdAt) as string | number | Date) - +new Date((a.date || a.createdAt) as string | number | Date)
     );
 
