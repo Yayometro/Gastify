@@ -1,32 +1,52 @@
 "use client";
+
 import React from "react";
 import TopTransactionRow from "./TopTransactionRow";
-import TopCategoryRow from "./TopCategoryRow";
+import TopCategoryRow, { TopCategoryRowItem } from "./TopCategoryRow";
+import type { TransactionItemMovement } from "@/components/Transactions/ItemList/TransactionItemList";
 import BasicTooltip from "../../Tooltips/BasicTooltip";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 
+const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<{
+  item: unknown;
+  close?: () => void;
+  onBack?: () => void;
+  [key: string]: unknown;
+}>;
+
+export interface TopMonthItemProps<T = unknown> {
+  childs?: T[] | null;
+  icon?: string;
+  name?: string;
+  fatherStyle?: string;
+  value?: number | string;
+  index?: number;
+  mode?: "category" | "transaction" | string;
+  color?: string;
+  [key: string]: unknown;
+}
+
 // `icon` here is one of the calendar-month icons from monthObjects
 // (e.g. "md/MdOutlineFilter6" for June, "md/Md10Mp" for October) - it was
 // only ever standing in for the month's calendar number, so pull that
 // number back out instead of rendering the glyph itself.
-function monthNumberFromIcon(icon) {
+function monthNumberFromIcon(icon?: string): string {
   return icon?.match(/\d+/)?.[0] || "";
 }
 
-function TopMonthItem({
+function TopMonthItem<T = unknown>({
   childs,
   icon,
   name,
   fatherStyle,
   value,
-  index,
   mode = "transaction",
-}) {
+}: TopMonthItemProps<T>): React.JSX.Element {
   const { close, handleClose, renderModal, modalContent } = useModal();
-  function renderModalContent(item) {
-    renderModal(<ModalContentTopMonthItem item={item} close={handleClose} />);
+  function renderModalContent(item: unknown) {
+    renderModal(<TypedModalContentTopMonthItem item={item} close={handleClose} />);
   }
   return (
     <>
@@ -65,15 +85,15 @@ function TopMonthItem({
             : childs.map((item, i) =>
                 mode === "category" ? (
                   <TopCategoryRow
-                    key={`topRow-${i}-${item._id || item.type || item.name || "no-name"}`}
-                    item={item}
+                    key={`topRow-${i}-${(item as TopCategoryRowItem)._id || (item as TopCategoryRowItem).type || (item as TopCategoryRowItem).name || "no-name"}`}
+                    item={item as TopCategoryRowItem}
                     index={i}
                     onClick={renderModalContent}
                   />
                 ) : (
                   <TopTransactionRow
-                    key={`topRow-${i}-${item._id || i}`}
-                    transaction={item}
+                    key={`topRow-${i}-${(item as TransactionItemMovement)._id || i}`}
+                    transaction={item as TransactionItemMovement}
                     onClick={renderModalContent}
                   />
                 )
