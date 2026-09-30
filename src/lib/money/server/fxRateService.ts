@@ -1,4 +1,4 @@
-import FxRateSnapshot from "@/model/FxRateSnapshot";
+import FxRateSnapshot, { type IFxRateSnapshot, type IFxRates } from "@/model/FxRateSnapshot";
 import { fetchEcbRates } from "./ecbClient";
 import { crossRate, convertMinor } from "@/lib/money/conversion";
 
@@ -6,13 +6,74 @@ const SOURCE = "ecb";
 const BASE_CURRENCY = "EUR";
 const LOOKBACK_DAYS_ON_FETCH = 10; // covers weekends + a short holiday run
 
-function startOfUtcDay(date) {
+export interface FxRateSnapshotDTO {
+  source: string;
+  baseCurrency: string;
+  effectiveDate: Date;
+  rates: IFxRates;
+  fetchedAt: Date;
+  rawSourceDate?: string | null;
+}
+
+export interface FxSnapshotResult {
+  snapshot: FxRateSnapshotDTO | null;
+  stale: boolean;
+  fetchError?: string;
+}
+
+export interface GetRateParams {
+  fromCurrency: string;
+  toCurrency: string;
+  date?: Date | string | number | null;
+}
+
+export interface ConvertParams {
+  amountMinor: number;
+  fromCurrency: string;
+  toCurrency: string;
+  date?: Date | string | number | null;
+}
+
+export interface FxRateUnavailableResult {
+  available: false;
+  rate: null;
+  effectiveDate: null;
+  estimated: true;
+  stale: true;
+  fetchError: string | null;
+}
+
+export interface FxRateSuccessResult {
+  available: true;
+  rate: string;
+  effectiveDate: Date;
+  source: "ecb_reference";
+  estimated: true;
+  stale: boolean;
+}
+
+export type FxRateResult = FxRateSuccessResult | FxRateUnavailableResult;
+
+export interface FxConvertSuccessResult {
+  available: true;
+  amountMinor: number;
+  currency: string;
+  rate: string;
+  effectiveDate: Date;
+  source: "ecb_reference";
+  estimated: true;
+  stale: boolean;
+}
+
+export type FxConvertResult = FxConvertSuccessResult | FxRateUnavailableResult;
+
+function startOfUtcDay(date: Date | string | number): Date {
   const d = new Date(date);
   d.setUTCHours(0, 0, 0, 0);
   return d;
 }
 
-function toSnapshotDTO(doc) {
+function toSnapshotDTO(doc: IFxRateSnapshot | null | undefined): FxRateSnapshotDTO | null {
   if (!doc) return null;
   return {
     source: doc.source,
@@ -26,7 +87,7 @@ function toSnapshotDTO(doc) {
 
 // Fetches a fresh ECB window ending at `date` and upserts every observed date
 // into the cache (idempotent - unique index on source+baseCurrency+effectiveDate).
-async function fetchAndCacheWindow(date) {
+async function fetchAndCacheWindow(date: Date | string | number): Promise<FxRateSnapshotDTO | null> {
   const endDate = startOfUtcDay(date);
   const startDate = new Date(endDate.getTime() - LOOKBACK_DAYS_ON_FETCH * 24 * 60 * 60 * 1000);
 
@@ -45,7 +106,7 @@ async function fetchAndCacheWindow(date) {
 
 // Latest cached snapshot with effectiveDate <= `date` (weekend/holiday
 // fallback: reuses the most recent earlier business-day rate).
-async function findCachedOnOrBefore(date) {
+async function findCachedOnOrBefore(date: Date | string | number): Promise<FxRateSnapshotDTO | null> {
   const doc = await FxRateSnapshot.findOne({
     source: SOURCE,
     baseCurrency: BASE_CURRENCY,
@@ -57,7 +118,7 @@ async function findCachedOnOrBefore(date) {
 // Today's valuation snapshot. Fetches ECB at most once for the current
 // effective date; reuses Mongo afterward. On ECB failure, falls back to the
 // newest cached snapshot and marks the result stale.
-export async function getLatestSnapshot() {
+export async function getLatestSnapshot(): Promise<FxSnapshotResult> {
   const today = startOfUtcDay(new Date());
   const cached = await findCachedOnOrBefore(today);
   if (cached && startOfUtcDay(cached.effectiveDate).getTime() === today.getTime()) {
@@ -77,7 +138,7 @@ export async function getLatestSnapshot() {
 
 // Historical snapshot for a specific transaction date. Cache-aside: Mongo
 // first, ECB only when nothing usable is cached yet.
-export async function getSnapshotOnOrBefore(date) {
+export async function getSnapshotOnOrBefore(date: Date | string | number): Promise<FxSnapshotResult> {
   const target = startOfUtcDay(date);
   const cached = await findCachedOnOrBefore(target);
   if (cached) return { snapshot: cached, stale: false };
@@ -92,11 +153,11 @@ export async function getSnapshotOnOrBefore(date) {
 
 // Returns a structured unavailable result rather than ever defaulting to
 // rate 1 - callers must handle `available: false` explicitly.
-function unavailable(fetchError) {
+function unavailable(fetchError?: string | null): FxRateUnavailableResult {
   return { available: false, rate: null, effectiveDate: null, estimated: true, stale: true, fetchError: fetchError || null };
 }
 
-export async function getRate({ fromCurrency, toCurrency, date }) {
+export async function getRate({ fromCurrency, toCurrency, date }: GetRateParams): Promise<FxRateResult> {
   const { snapshot, stale, fetchError } = date
     ? await getSnapshotOnOrBefore(date)
     : await getLatestSnapshot();
@@ -114,7 +175,7 @@ export async function getRate({ fromCurrency, toCurrency, date }) {
   };
 }
 
-export async function convert({ amountMinor, fromCurrency, toCurrency, date }) {
+export async function convert({ amountMinor, fromCurrency, toCurrency, date }: ConvertParams): Promise<FxConvertResult> {
   const { snapshot, stale, fetchError } = date
     ? await getSnapshotOnOrBefore(date)
     : await getLatestSnapshot();
