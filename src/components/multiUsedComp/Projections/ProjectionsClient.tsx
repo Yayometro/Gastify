@@ -10,24 +10,41 @@ import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import IncomeSourcesPanel from "./IncomeSourcesPanel";
 import HistoricalBaselinePanel from "./HistoricalBaselinePanel";
-import ProjectionsView from "./ProjectionsView";
+import ProjectionsView, { type ProjectionRow } from "./ProjectionsView";
 import ProjectionAccuracyReport from "./ProjectionAccuracyReport";
-import ProjectionMonthDetailModal from "./ProjectionMonthDetailModal";
+import ProjectionMonthDetailModal, {
+  type BucketBreakdownItem,
+  type IncomeOccurrenceItem,
+  type SaveBuffersPayload,
+} from "./ProjectionMonthDetailModal";
 import ProjectionsInfoModal from "./ProjectionsInfoModal";
 import { getTransactionsFromTimeRange, filterBillsOrIncomes } from "@/helpers/transformers/transactionsChange";
 import { getMonthBucketBreakdown, getExpectedOccurrencesInMonth, getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
 import { getValueActiveInMonth } from "@/helpers/transformers/budgetHistory";
 import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
-import PrimaryCurrencySelector from "../PrimaryCurrencySelector";
+import PrimaryCurrencySelector, { type PrimaryCurrencySelectorWallet } from "../PrimaryCurrencySelector";
+import type { MonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
+import type { CurrencyBreakdownData } from "../CurrencyBreakdownChips";
 
-function ProjectionsClient({ mcSession }) {
+export interface ProjectionsClientProps {
+  mcSession?: string | null;
+}
+
+export interface SelectedMonthDetails {
+  bucketBreakdown: BucketBreakdownItem[];
+  incomeOccurrences: IncomeOccurrenceItem[];
+  incomeCurrencyBreakdown: CurrencyBreakdownData | null;
+  expenseCurrencyBreakdown: CurrencyBreakdownData | null;
+}
+
+function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Element {
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [selectedMonthName, setSelectedMonthName] = useState(null);
-  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [selectedMonthName, setSelectedMonthName] = useState<string | null>(null);
+  const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
   const toFetch = fetcher();
 
-  const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
+  const walletPrimaryCurrency = (wallet as { primaryCurrency?: string } | null | undefined)?.primaryCurrency || "MXN";
 
   // Fetch + currency-conversion + running-balance pipeline lives in
   // useProjectionTable (shared with /dashboard/history's own projections
@@ -38,6 +55,7 @@ function ProjectionsClient({ mcSession }) {
     startingBalance,
     incomeSources,
     incomeSourcesConverted,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     projectionSettings,
     setProjectionSettings,
     projectionBaseline,
@@ -61,9 +79,9 @@ function ProjectionsClient({ mcSession }) {
   const selectedUnexpectedBuffer = selectedMonthBufferEntry?.unexpectedBuffer || 0;
   const selectedUnexpectedIncomeBuffer = selectedMonthBufferEntry?.unexpectedIncomeBuffer || 0;
 
-  const selectedMonthDetails = useMemo(() => {
+  const selectedMonthDetails = useMemo<SelectedMonthDetails>(() => {
     if (!selectedRow) return { bucketBreakdown: [], incomeOccurrences: [], incomeCurrencyBreakdown: null, expenseCurrencyBreakdown: null };
-    const { start, end } = monthRanges.get(selectedRow.monthName);
+    const { start, end } = (monthRanges.get(selectedRow.monthName) || {}) as MonthDateRange;
     const monthTx = getTransactionsFromTimeRange(transacciones || [], start, end);
     const { bills, incomes } = filterBillsOrIncomes(monthTx);
     const expenseCurrencyBreakdown = getMonthCurrencyBreakdown(bills, walletPrimaryCurrency);
@@ -89,13 +107,13 @@ function ProjectionsClient({ mcSession }) {
             .filter((s) => s.active && !s.archived)
             .map((s) => ({
               name: s.name,
-              amount: s.amount,
+              amount: s.amount as number,
               occurrences: getExpectedOccurrencesInMonth(s, start, end),
             }));
     return { bucketBreakdown, incomeOccurrences, incomeCurrencyBreakdown, expenseCurrencyBreakdown };
   }, [selectedRow, monthRanges, transacciones, budgets, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency]);
 
-  const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }) => {
+  const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }: SaveBuffersPayload): Promise<void> => {
     const res = await toFetch.post("general-data/projections/update", {
       mail: mcSession,
       year,
@@ -108,7 +126,7 @@ function ProjectionsClient({ mcSession }) {
     if (res.ok) setProjectionSettings(res.data);
   };
 
-  const handleSaveMonthBalance = async (balance) => {
+  const handleSaveMonthBalance = async (balance: number): Promise<void> => {
     const res = await toFetch.post("general-data/projections/update", {
       mail: mcSession,
       year,
@@ -129,7 +147,7 @@ function ProjectionsClient({ mcSession }) {
       <div className="w-full flex items-center justify-center pt-2">
         <Tooltip title="Every figure in these projections is expressed in this currency. Change it here if you want projections in a different currency.">
           <div>
-            <PrimaryCurrencySelector pcsWallet={wallet} />
+            <PrimaryCurrencySelector pcsWallet={wallet as PrimaryCurrencySelectorWallet | null | undefined} />
           </div>
         </Tooltip>
       </div>
@@ -160,8 +178,8 @@ function ProjectionsClient({ mcSession }) {
 
         <IncomeSourcesPanel
           incomeSources={incomeSources}
-          userId={user?._id}
-          walletId={wallet?._id}
+          userId={user?._id as string | undefined}
+          walletId={wallet?._id as string | undefined}
           walletPrimaryCurrency={walletPrimaryCurrency}
           onChange={loadSettings}
         />
@@ -169,7 +187,7 @@ function ProjectionsClient({ mcSession }) {
         <HistoricalBaselinePanel
           baseline={projectionBaseline}
           walletPrimaryCurrency={walletPrimaryCurrency}
-          mail={mcSession}
+          mail={mcSession || undefined}
           onChange={loadBaseline}
           defaultOpen={
             (projectionBaseline?.incomeHistory?.length || 0) === 0 &&
@@ -182,7 +200,7 @@ function ProjectionsClient({ mcSession }) {
           <Skeleton active />
         ) : (
           <ProjectionsView
-            rows={rowsWithEstimates}
+            rows={rowsWithEstimates as unknown as ProjectionRow[]}
             onRowClick={(row) => setSelectedMonthName(row.monthName)}
           />
         )}
@@ -208,7 +226,7 @@ function ProjectionsClient({ mcSession }) {
             onSaveBuffers={handleSaveBuffers}
             onSaveMonthBalance={handleSaveMonthBalance}
             onClose={() => setSelectedMonthName(null)}
-            mail={mcSession}
+            mail={mcSession || undefined}
           />
         )}
 
