@@ -9,7 +9,7 @@
 // positions shifted (Amount moved from column C-only to Account
 // Amount/Currency spanning C-D, and every column after D shifted right).
 
-export const TEMPLATE_VERSION = "3.0";
+export const TEMPLATE_VERSION: string = "3.0";
 
 // 1-indexed column numbers (matches xlsx-populate's cell(row, col) API).
 export const COLUMNS = {
@@ -27,9 +27,12 @@ export const COLUMNS = {
   REPORTING_AMOUNT: 12,
   REPORTING_CURRENCY: 13,
   FX_SOURCE: 14,
-};
+} as const;
 
-export const HEADERS = [
+export type ColumnsConfig = typeof COLUMNS;
+export type ColumnKey = keyof typeof COLUMNS;
+
+export const HEADERS: string[] = [
   "Date *",
   "Concept *",
   "Account Amount *",
@@ -46,14 +49,14 @@ export const HEADERS = [
   "FX Source",
 ];
 
-export const COLUMN_WIDTHS = [18, 25, 16, 16, 18, 20, 20, 26, 20, 16, 16, 16, 16, 14];
+export const COLUMN_WIDTHS: number[] = [18, 25, 16, 16, 18, 20, 20, 26, 20, 16, 16, 16, 16, 14];
 
-export const TEMPLATE_NOTE =
+export const TEMPLATE_NOTE: string =
   "📌 REQUIRED: Date, Concept, Account Amount, Type (* = required). Type defaults to Bill if empty. " +
   "Account Currency: required if no Account is selected (blank + no Account defaults to your Wallet's primary currency); when an Account is selected, it must match that Account's currency or be left blank. " +
   "Fill Category OR SubCategory — not both. Merchant Amount needs a Merchant Currency (and vice versa) - only fill these if you were charged in a different currency than your Account. " +
   "Reporting Amount is the exact equivalent in your Wallet's primary currency, if you already know it; its currency must equal your Wallet's primary currency. Leave both blank to let Gastify estimate it from historical exchange rates. " +
   "FX Source: leave blank for an automatic estimate, or write \"manual\" if Reporting Amount is an exact value you're entering yourself.";
 
-export const EXPORT_NOTE_PREFIX =
+export const EXPORT_NOTE_PREFIX: string =
   "Columns A-N are re-importable with the v3.0 template. Reporting Amount/Currency/FX Source reflect the exact historical value recorded for each transaction.";
