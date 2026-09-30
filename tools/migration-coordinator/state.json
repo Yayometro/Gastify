@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-20-ui-remaining",
+  "activeStory": "historia-21-entries",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -5695,6 +5695,27 @@
               "notes": "Retrabajo mío: agy había cambiado `data: data` por `(data || []) as BarDatum[]`; revertido a `data as BarDatum[]`. El resto son `as const` y casts erasables. Bugs preservados: typo de prop `legenedLeft`, `siz` en el ícono, error potencial si dataa.data.type es undefined en el tooltip. Se borran los bridges en HistoricalComparativeCategories y TabsTogglerMontlyController."
             }
           ]
+        }
+      }
+    },
+    "historia-21-entries": {
+      "label": "Entradas de Next y providers (Historia 21, cierre): ReduxProvider.js, AllDataProvider.jsx (contexto que consumen useGetInfoFromProvider.ts y dashboard/layout.tsx), app/layout.js (layout raiz con metadata y script de tema; AllDataProvider esta solo comentado ahi) y app/page.js (landing publica de 186 lineas). Atencion en page.js: usa la etiqueta <navbar> (no existe en HTML: TS la rechaza) - debe preservarse tal cual renderiza (mismo tag en el DOM) con un cast o ts-expect-error, sin cambiarla a <nav>. Sin cambios de seguridad esperados.",
+      "files": {
+        "src/lib/ReduxProvider.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/Providers/AllDataProvider.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/layout.js": {
+          "status": "pending",
+          "history": []
+        },
+        "src/app/page.js": {
+          "status": "pending",
+          "history": []
         }
       }
     }
