@@ -97,16 +97,7 @@ export interface ResponsiveBarsChartPropsPlus {
   [key: string]: unknown;
 }
 
-export interface ResponsiveBarsChartComponentProps {
-  data?: unknown[];
-  totalValue?: number;
-  legendBottom?: string;
-  legenedLeft?: string;
-  header?: React.ReactNode;
-  propsPlus?: ResponsiveBarsChartPropsPlus;
-  [key: string]: unknown;
-}
-const TypedResponsiveBarsChartComponent = ResponsiveBarsChartComponent as unknown as React.ComponentType<ResponsiveBarsChartComponentProps>;
+
 
 export interface ModalContentTopMonthItemProps {
   item: unknown;
@@ -254,7 +245,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
           },
         },
       },
-      Component: TypedResponsiveBarsChartComponent,
+      Component: ResponsiveBarsChartComponent,
     },
     {
       tab: "incomes",
@@ -269,7 +260,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
           },
         },
       },
-      Component: TypedResponsiveBarsChartComponent,
+      Component: ResponsiveBarsChartComponent,
     },
   ];
 

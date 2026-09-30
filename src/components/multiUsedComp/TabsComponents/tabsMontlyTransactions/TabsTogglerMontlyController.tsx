@@ -99,22 +99,9 @@ interface TabsTogglerMontlyViewProps {
 }
 const TypedTabsTogglerMontlyView = TabsTogglerMontlyView as unknown as React.ComponentType<TabsTogglerMontlyViewProps>;
 
-interface ResponsiveBarsChartComponentProps {
-  data?: unknown[];
-  totalValue?: number;
-  legendBottom?: string;
-  legenedLeft?: string;
-  [key: string]: unknown;
-}
-const TypedResponsiveBarsChartComponent = ResponsiveBarsChartComponent as unknown as React.ComponentType<ResponsiveBarsChartComponentProps>;
 
-interface ColumnChartAntComparativeProps {
-  data?: unknown;
-  totalValue?: React.ReactNode;
-  propPlus?: Record<string, unknown>;
-  [key: string]: unknown;
-}
-const TypedColumnChartAntComparative = ColumnChartAntComparative as unknown as React.ComponentType<ColumnChartAntComparativeProps>;
+
+
 
 function TabsTogglerMontlyController({
   periodState,
@@ -290,7 +277,7 @@ function TabsTogglerMontlyController({
         legendBottom: "months",
         legenedLeft: "Amount",
       },
-      Component: TypedResponsiveBarsChartComponent,
+      Component: ResponsiveBarsChartComponent,
     },
     {
       tab: "bills",
@@ -300,7 +287,7 @@ function TabsTogglerMontlyController({
         legendBottom: "Months",
         legenedLeft: "Amount",
       },
-      Component: TypedResponsiveBarsChartComponent,
+      Component: ResponsiveBarsChartComponent,
     },
     {
       tab: "comparative",
@@ -311,7 +298,7 @@ function TabsTogglerMontlyController({
         totalAmount,
         walletPrimaryCurrency,
       }),
-      Component: TypedColumnChartAntComparative,
+      Component: ColumnChartAntComparative,
     },
   ];
 
@@ -326,7 +313,7 @@ function TabsTogglerMontlyController({
         labelB: compareChartData.labelB,
         walletPrimaryCurrency,
       }),
-      Component: TypedColumnChartAntComparative,
+      Component: ColumnChartAntComparative,
     });
     tabs.push("Compare periods");
   }

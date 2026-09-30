@@ -1,17 +1,32 @@
-"use client"
+"use client";
+import React from "react";
 import dynamic from "next/dynamic";
 
 const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
   ssr: false,
 });
 
+export interface ColumnChartAntComparativeTooltipItem {
+  color?: string;
+  name?: string;
+  value?: string | number;
+  [key: string]: unknown;
+}
+
+export interface ColumnChartAntComparativeProps {
+  data?: unknown;
+  propPlus?: unknown;
+  totalIncome?: unknown;
+  totalBill?: unknown;
+  totalValue?: React.ReactNode;
+  [key: string]: unknown;
+}
+
 function ColumnChartAntComparative({
   data,
   propPlus,
-  totalIncome,
-  totalBill,
   totalValue,
-}) {
+}: ColumnChartAntComparativeProps): React.JSX.Element {
   const config = {
     data: data,
     xField: "type",
@@ -27,7 +42,7 @@ function ColumnChartAntComparative({
     theme: "classicDark",
     style: {
       // Here you can destructerd the object and get the specific prop that you want, in this case I want the property color and that the only one that I get
-      fill: ({ color }) => color,
+      fill: ({ color }: { color?: string }) => color,
       // 矩形四个方向的内边距
       inset: 0.2,
       // 矩形单个方向的内边距
@@ -37,33 +52,31 @@ function ColumnChartAntComparative({
       // insetTop:10
     //   click: (d,e,f) => {
     //     console.log(d,e,f)
-
     //   }
     },
     label: {
-      text: ({ value }) => {
-        return ((value / totalValue) * 100).toFixed(1) + "%";
+      text: ({ value }: { value?: number }) => {
+        return (((value as number) / (totalValue as number)) * 100).toFixed(1) + "%";
       },
       offsed: 0,
     },
-    tooltip: (item) => {
+    tooltip: (item: { color?: string; value?: unknown; [key: string]: unknown }) => {
         // console.log(item)
         return {
             color: item.color,
             channel: item,
             value: item.value
         }
-        
     },
     legend: {
         color: {
-            itemMarker: (datum, index, data) => {
+            itemMarker: () => {
                 // console.log(datum, index, data)
             },
-            itemMarkerFill: (datum, index, data) => {
+            itemMarkerFill: () => {
                 // console.log(datum, index, data)
             },
-            itemValueFill: (datum, index, data) => {
+            itemValueFill: () => {
                 // console.log(datum, index, data)
             },
         }
@@ -81,7 +94,7 @@ function ColumnChartAntComparative({
         // the whole point of a tooltip. Matches the dark "glass chip" style
         // already used by ResponsiveBarsChartComponent's tooltip instead of
         // G2's own default (light, cramped) tooltip box.
-        render: (e, { items, title }) => (
+        render: (_e: unknown, { items, title }: { items: ColumnChartAntComparativeTooltipItem[]; title: string | number }) => (
           <div
             className="max-w-[250px] gf-glass-chip text-gf-text rounded-2xl p-3 flex flex-col gap-1.5"
             key={title}
@@ -105,14 +118,14 @@ function ColumnChartAntComparative({
         ),
       },
     },
-    ...propPlus,
+    ...(propPlus as Record<string, unknown>),
   };
   return (
     <div className="responsive-bars-chart-comp w-full h-full">
       <span className=" text-center text-xs">
         {totalValue}
       </span>
-      <Column {...config} />
+      <Column {...(config as Record<string, unknown>)} />
     </div>
   );
 }

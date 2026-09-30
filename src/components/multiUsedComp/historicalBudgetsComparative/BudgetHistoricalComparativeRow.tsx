@@ -3,10 +3,7 @@
 import React from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import ColumnChartAntComparative from "../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
-import {
-  generatePropForBudgetMonthlyChart,
-  type BudgetMonthlyChartProps,
-} from "./propsForBudgetMonthlyChart";
+import { generatePropForBudgetMonthlyChart } from "./propsForBudgetMonthlyChart";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
 
 export interface BudgetCategoryLike {
@@ -22,8 +19,7 @@ export interface BudgetHistoricalComparativeRowProps {
   onOpenDetail: (row: BudgetHistoricalComparativeRowData) => void;
 }
 
-// Typed bridge for shared chart component outside migration scope
-const TypedColumnChartAntComparative = ColumnChartAntComparative as unknown as React.ComponentType<BudgetMonthlyChartProps>;
+
 
 // One row per Budget: a compliance headline (X of Y months met) plus a
 // grouped-bar chart (Actual vs. Goal, one pair per month) using the same
@@ -84,7 +80,7 @@ function BudgetHistoricalComparativeRow({
         <p className={`text-sm font-bold ${pctColor}`}>{pct}% compliance</p>
       </div>
       <div className="w-full" style={{ height: 200 }}>
-        <TypedColumnChartAntComparative {...chartProps} />
+        <ColumnChartAntComparative {...chartProps} />
       </div>
     </div>
   );

@@ -1,9 +1,28 @@
 "use client";
-import { ResponsiveBar } from "@nivo/bar";
+import { ResponsiveBar, type BarDatum } from "@nivo/bar";
 import React from "react";
 import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { RootState } from "@/lib/store";
+
+export interface ResponsiveBarsChartDatum {
+  type: string;
+  value: number;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface ResponsiveBarsChartComponentProps {
+  data?: unknown[] | null;
+  totalValue?: number | string | null;
+  propsPlus?: Record<string, unknown>;
+  legendBottom?: string;
+  legenedLeft?: string;
+  header?: React.ReactNode;
+  [key: string]: unknown;
+}
 
 function ResponsiveBarsChartComponent({
   data,
@@ -11,20 +30,20 @@ function ResponsiveBarsChartComponent({
   propsPlus,
   legendBottom,
   legenedLeft,
-  header
-}) {
-  const walletPrimaryCurrency = useSelector((state) => state.walletReducer?.data?.primaryCurrency) || "MXN";
+  header,
+}: ResponsiveBarsChartComponentProps): React.JSX.Element {
+  const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const rest = {
-    data: data,
+    data: data as BarDatum[],
     indexBy: "type",
     keys: ["value"],
     margin: { top: 10, right: 100, bottom: 50, left: 60 },
     padding: 0.15,
-    valueScale: { type: "linear" },
-    indexScale: { type: "band", round: true },
+    valueScale: { type: "linear" as const },
+    indexScale: { type: "band" as const, round: true },
     valueFormat: " >-,~r",
-    colors: (cData) => String(cData.data[`color`]),
-    borderColor: { from: "color", modifiers: [["darker", 1.6]] },
+    colors: (cData: { data: Record<string, unknown> }) => String(cData.data[`color`]),
+    borderColor: { from: "color", modifiers: [["darker", 1.6] as [string, number]] },
     // Nivo's default theme assumes a light page - axis numbers, tick
     // labels, axis titles and the right-side legend all default to a dark
     // grey that reads as near-invisible against this app's dark surfaces.
@@ -51,7 +70,7 @@ function ResponsiveBarsChartComponent({
       tickPadding: 5,
       tickRotation: 0,
       legend: legendBottom,
-      legendPosition: "middle",
+      legendPosition: "middle" as const,
       legendOffset: 40,
       truncateTickAt: 3,
     },
@@ -60,19 +79,19 @@ function ResponsiveBarsChartComponent({
       tickPadding: 5,
       tickRotation: 0,
       legend: legenedLeft,
-      legendPosition: "middle",
+      legendPosition: "middle" as const,
       legendOffset: -50,
       truncateTickAt: 0,
     },
     enableGridX: true,
     labelSkipWidth: 10,
     labelSkipHeight: 1,
-    labelTextColor: { from: "color", modifiers: [["darker", "2.3"]] },
+    labelTextColor: { from: "color", modifiers: [["darker", "2.3"] as [string, string]] },
     legends: [
       {
-        dataFrom: "indexes",
-        anchor: "right",
-        direction: "column",
+        dataFrom: "indexes" as const,
+        anchor: "right" as const,
+        direction: "column" as const,
         justify: false,
         translateX: 100,
         translateY: 0,
@@ -80,10 +99,10 @@ function ResponsiveBarsChartComponent({
         itemHeight: 20,
         itemsSpacing: 2,
         symbolSize: 20,
-        itemDirection: "left-to-right",
+        itemDirection: "left-to-right" as const,
         effects: [
           {
-            on: "hover",
+            on: "hover" as const,
             style: {
               itemOpacity: 3,
             },
@@ -91,7 +110,11 @@ function ResponsiveBarsChartComponent({
         ],
       },
     ],
-    tooltip: (dataa) => {
+    tooltip: (dataa: {
+      color?: string;
+      value: number;
+      data: { type: string; icon?: string; [key: string]: unknown };
+    }) => {
       return (
         <div
           style={{
@@ -121,7 +144,7 @@ function ResponsiveBarsChartComponent({
             <div className="flex flex-col text-[13px] font-semibold">
               <div className="flex gap-2">
                 <p className="font-semibold">Total spent:</p>
-                {formatMoneyMajor(totalValue, walletPrimaryCurrency)}
+                {formatMoneyMajor(totalValue as number, walletPrimaryCurrency)}
               </div>
               <div className="flex gap-2 underline">
                 <p className="font-semibold">Amount:</p>
@@ -129,7 +152,7 @@ function ResponsiveBarsChartComponent({
               </div>
               <div className="flex gap-2">
                 <p className="font-semibold">Percentage:</p>
-                {String((dataa.value / totalValue) * 100).slice(0, 4)}%
+                {String(((dataa.value / (totalValue as number)) * 100)).slice(0, 4)}%
               </div>
             </div>
           </div>
@@ -138,9 +161,9 @@ function ResponsiveBarsChartComponent({
     },
     motionConfig: "gentle",
     role: "application",
-    label: (d) => d.formattedValue,
+    label: (d: { formattedValue: string | number }) => d.formattedValue,
     enableTotals: true,
-    ...propsPlus
+    ...(propsPlus as Record<string, unknown>),
   };
   return (
     <div className="responsive-bars-chart-comp w-[100%] h-[400px] min-h-[300px] max-h-[600px]">
@@ -148,10 +171,10 @@ function ResponsiveBarsChartComponent({
       <span className=" text-center text-xs">
         Total:{" "}
         <b>
-          {formatMoneyMajor(totalValue, walletPrimaryCurrency)}
+          {formatMoneyMajor(totalValue as number, walletPrimaryCurrency)}
         </b>
       </span>
-      <ResponsiveBar {...rest} />
+      <ResponsiveBar {...(rest as unknown as React.ComponentProps<typeof ResponsiveBar>)} />
     </div>
   );
 }
