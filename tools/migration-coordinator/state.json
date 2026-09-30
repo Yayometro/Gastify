@@ -4150,8 +4150,23 @@
           ]
         },
         "src/lib/money/server/transactionReadService.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T03:39:55.608Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T03:41:37.882Z",
+              "event": "submitted",
+              "notes": "Migración 1:1 de src/lib/money/server/transactionReadService.js a TypeScript (src/lib/money/server/transactionReadService.ts).\n\n1. Interfaces y tipos creados:\n- `DisplayNativeMoney`: { amountMinor: number; currency: string }\n- `DisplayMerchantMoney`: { amountMinor: number; currency: string }\n- `DisplayPrimaryMoney`: { amountMinor: number; currency: string; rate: string; source: string; effectiveDate: Date; estimated?: boolean; stale: boolean }\n- `DisplayHistoricalReportingMoney`: { amountMinor: number; currency: string; rate: string; source: string; effectiveDate: Date; estimated?: boolean; snapshot?: unknown }\n- `DisplayMoneyDTO`: DTO { native, merchant, primary, historicalReporting }\n- `TransactionInputMoney` y `TransactionInput`: Tipos estructurales mínimos para lo que la función realmente lee (.money, .amount, .date) tanto para documentos Mongoose como objetos .lean().\n- `WithDisplayMoney<T>`: Tipo genérico de retorno (T & { displayMoney: DisplayMoneyDTO }) que preserva exactamente todas las propiedades del objeto o documento original sin pérdida de campos por el spread.\n- `attachDisplayMoney<T extends TransactionInput>` y `attachDisplayMoneyToList<T extends TransactionInput>`.\n\n2. Casts y guards agregados:\n- `const money: TransactionInputMoney = ...`: Anotación requerida por el compilador para evitar TS2339 al acceder a `money.merchant`, ya que el fallback `buildLegacyMoney` (aún en .js) no declara `merchant` en su objeto retornado.\n- Preservados al 100% el único optional chaining preexistente (`transaction.money?.account`) y los fallback or preexistentes (`money.merchant || null`, `money.reporting || null`).\n- Cero guards no forzados añadidos (`?.`, `if`, `|| {}`), cero `any`, cero `[key: string]: any`.\n\n3. Bugs preexistentes identificados (preservados sin alterar):\n- Cuando `reporting.currency === walletPrimaryCurrency`, `stale` se fija a `false` de forma estática ignorando si el snapshot histórico original se obtuvo con flag stale.\n- `attachDisplayMoneyToList` ejecuta todas las conversiones en paralelo con `Promise.all` sin limitador de concurrencia; un fallo en una sola conversión rechaza toda la lista.\n\n4. Verificaciones ejecutadas:\n- `npx tsc --noEmit`: 0 errores en todo el proyecto.\n- `npx eslint src/lib/money/server/transactionReadService.ts`: 0 errores y 0 warnings.\n- `npx vitest run`: 30 suites pasadas, 324 tests exitosos (7/7 en transactionReadService.test.js)."
+            },
+            {
+              "ts": "2026-09-30T03:42:18.581Z",
+              "event": "approved",
+              "notes": "Migración limpia. Preservados intactos transaction.money?.account, money.merchant || null, money.reporting || null - cero guards nuevos. La anotación `const money: TransactionInputMoney = ...` no es un guard runtime, es puramente un tipo de compilación (sin ella `money` colapsaría a `any` porque buildLegacyMoney/transactionMoney.js aún no está migrado - decisión correcta de tipar explícitamente en vez de dejarlo any). transactionMoney.js y fxRateService.js (este último aún no migrado en este momento) se dejaron como imports .js normales sin typed bridge, siguiendo el precedente ya establecido en Transaction.ts. tsc/eslint/vitest limpios (324/324, incluyendo transactionReadService.test.js 7/7)."
+            }
+          ]
         },
         "src/lib/money/server/fxRateService.js": {
           "status": "pending",
