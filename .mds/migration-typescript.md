@@ -410,27 +410,7 @@ Generado con un análisis de imports real sobre `src/` (estáticos y `import()` 
 
 ### Historia 17 — COMPLETA (2026-09-30): 13/13 rutas migradas, 12 fixes de seguridad (#43-54). Ver `migration-ts-logs.md`.
 
-### Historia 18 — Fundaciones consumidas por código ya migrado: 17 archivos, 1033 líneas
-
-`dbConnection.js` (50 importadores ya migrados), `fetcher.js` (38), `gastifyNotifier.js` (29), `Wallet.js` (12; permite borrar los `WalletModelBridge` de `apiTokens.ts` y `createTransaction.ts`) y el núcleo de dinero (`conversion`, `transactionMoney`, `transactionMoneyService`, `ecbClient`). Riesgo: mismo efecto que los transformers (~30 errores de tipos en consumidores).
-
-- `app/api/dbConnection.js` (13)
-- `helpers/defaultIconsDB.js` (240)
-- `helpers/downloadBackupCodes.js` (23)
-- `helpers/fetcher.js` (51)
-- `helpers/gastifyNotifier.js` (54)
-- `helpers/hooks/useLinkedAccountsTotal.js` (100)
-- `helpers/orderFunctions/orderFunctions.js` (8)
-- `lib/features/loadGeneralDataSlice.js` (16)
-- `lib/features/tagsSlice.js` (16)
-- `lib/files/gastifyTemplate.js` (59)
-- `lib/money/conversion.js` (97)
-- `lib/money/server/ecbClient.js` (94)
-- `lib/money/server/transactionMoneyService.js` (66)
-- `lib/money/transactionMoney.js` (74)
-- `model/CategoryRule.js` (50)
-- `model/Wallet.js` (39)
-- `model/schemas/moneySchemas.js` (33)
+### Historia 18 — COMPLETA (2026-09-30): 17/17 archivos, sin fixes de seguridad, todos los WalletModelBridge borrados. Ver `migration-ts-logs.md`.
 
 ### Historia 19 — Top3, movimientos históricos y modal de detalle: 16 archivos, 2284 líneas
 

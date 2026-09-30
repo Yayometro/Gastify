@@ -591,6 +591,11 @@ de aquí se toca sin que el usuario lo pida explícitamente.
 | 130 | `files/upload/[id]/route.ts` | Si la subcategoría tiene categoría padre, esa gana sobre la categoría de la columna del Excel; las fechas se parsean con zona horaria local. | Historia 17 |
 | 131 | `files/template/[email]/route.ts` | Las validaciones de datos del Excel están hardcodeadas a las filas 3-202 y la fila de ejemplo lleva `new Date()` en el momento de descarga. | Historia 17 |
 | 132 | `files/export/[email]/route.ts` | El estilo de la fila de nota es estático y la fecha cae a `createdAt` solo si `date` es falsy. | Historia 17 |
+| 133 | `fetcher.ts` | `baseUrl.concat(apiRoute)` sin guard: si `NEXT_PUBLIC_API_ROUTE` no está definida lanza `TypeError` al crear el fetcher; `post` hace `console.log(e)` de cada error antes de relanzarlo. | Historia 18 |
+| 134 | `gastifyNotifier.ts` | Los toasts `error`, `info` y `warning` llevan un espacio inicial en el mensaje (`` ` ${nMessage}` ``) y el de `ok` no. | Historia 18 |
+| 135 | `defaultIconsDB.ts` | Nombres de categoría de íconos con typos preexistentes (p. ej. "EASHTETIC"). | Historia 18 |
+| 136 | `orderFunctions.ts` | Mensaje de error con typo: "the arr shoudl be a instance of Array". | Historia 18 |
+| 137 | `Wallet.ts` | El schema declara `user: { require: true }` (typo de `required`): Mongoose lo ignora, así que un Wallet sin `user` se guarda igual (mismo typo que en otros modelos). | Historia 18 |
 
 Bugs que SÍ se corrigieron (ya no están pendientes, solo para contexto):
 22 bugs de seguridad de control de acceso en `get-user`, `update-user`,
@@ -1200,3 +1205,15 @@ Estos dos puntos se dejaron adrede para después. **Claude debe recordárselos a
 
 1. **Datos sensibles en los volcados de `general-data`** (hallazgo de la Historia 17). `general-data/route.ts` (POST) y `general-data/[id]/route.ts` (GET) devuelven el documento User completo en `data.user`, incluyendo `password` (hash) y `apiTokens` (con `tokenHash`); `[id]` además hace `console.log(userFound)` y lo escribe en los logs del servidor. Hoy solo lo ve el dueño de la cuenta (ya tienen el fix de sesión) y ninguna pantalla llama a estas rutas (solo hay código comentado en `apiSlice.js` / `generalDataApiRedux.js`). Decisión a tomar: **borrar las dos rutas** (lo más limpio si de verdad son código muerto) o quitar esos campos de la respuesta y el `console.log`.
 2. **`user/remove-user` debe exigir la verificación en dos pasos (step-up 2FA).** Es una operación destructiva (borra la cuenta y todos los datos). Ya exige sesión (fix #43), pero no usa el mecanismo de step-up que ya existe en la app (`src/lib/auth/markStepUpVerified.ts`). Hay que revisar cómo se exige en las otras operaciones sensibles y aplicarlo aquí. Además esta ruta no tiene ningún call site en la UI hoy (solo un comentario en `markStepUpVerified.ts`): confirmar si se usa antes de invertir en ella.
+
+## 2026-09-30 — Historia 18 (Fundaciones) completa: 17/17 archivos
+
+Los archivos de base que decenas de archivos ya migrados consumían como `any` implícito: `dbConnection.ts` (50 importadores), `fetcher.ts` (38), `gastifyNotifier.ts` (29), los modelos `Wallet.ts` y `CategoryRule.ts`, `moneySchemas.ts`, el núcleo de dinero (`conversion.ts`, `ecbClient.ts`, `transactionMoney.ts`, `transactionMoneyService.ts`), `gastifyTemplate.ts`, los slices `tagsSlice.ts`/`loadGeneralDataSlice.ts`, `useLinkedAccountsTotal.ts` y los helpers `downloadBackupCodes.ts`, `orderFunctions.ts`, `defaultIconsDB.ts`. Migrados por agy en 2 tandas y auditados por Claude. **Sin fixes de seguridad.**
+
+**Resultado más limpio que en la Historia 16:** ninguno de los ~130 consumidores necesitó cambios para compilar con los tipos nuevos. Además, al tipar `Wallet` y `CategoryRule` se **borraron todos los typed bridges** (`WalletModelBridge` en 11 archivos y `CategoryRuleModelBridge`; `grep` confirma 0 restantes) y el `wallet: any` de `provisionNewUserData.ts`.
+
+**Retrabajos hechos por Claude sobre el trabajo de agy (2 cambios de comportamiento colados):**
+- `transactionMoney.ts`: `Math.abs(amount || 0)` pasó a `Math.abs(Number(amount) || 0)` (un valor no numérico pasaba de dar NaN a 0); revertido a la expresión original con un cast que se borra al compilar.
+- `useLinkedAccountsTotal.ts`: `majorToMinor(a?.amount || 0, ...)` se envolvió en `Number(...)`; `majorToMinor` ya hace `Number()` y lanza si el valor no es finito, así que con un monto no numérico pasaba de lanzar a valer 0. Revertido.
+
+El único `any` explícito nuevo es el default genérico de `fetcher` (`<T = any>` en `get`/`post`), justificado porque los endpoints devuelven JSON de forma variable consumido de distintas formas por ~38 archivos. **5 bugs de comportamiento nuevos** preservados (filas 133-137). Los tests de `conversion`, `ecbClient`, `transactionMoney` y `transactionMoneyService` siguen pasando (324/324 en total).
