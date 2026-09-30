@@ -1,5 +1,5 @@
 {
-  "activeStory": "historia-18-foundations",
+  "activeStory": "historia-19-top3-movements",
   "stories": {
     "historia-1-login-auth": {
       "label": "Login y autenticación completa (password, Google, passkeys, 2FA)",
@@ -4982,6 +4982,75 @@
               "notes": "Retrabajo mío: agy envolvió a?.amount y acc.amount en Number(...) dentro de majorToMinor; majorToMinor ya hace Number() y lanza si no es finito, así que con un monto no numérico pasaba de lanzar a valer 0. Revertido a las expresiones originales. `catch (e)` -> `catch` (variable sin uso, inerte). Genérico <T> con cast interno del array a LinkedAccountItem[]."
             }
           ]
+        }
+      }
+    },
+    "historia-19-top3-movements": {
+      "label": "Top3, movimientos historicos y modal de detalle (Historia 19). 16 archivos de UI conectados por ModalContentTopMonthItem.jsx (704 lineas, el mas grande) y TransactionItemList.jsx. Tanda A: 12 componentes chicos/medianos (hojas y contenedores); tanda B: los 4 grandes (ModalContentTopMonthItem, TopElementsContainer, HistoricalMovementsController, propsColTabsToggler). Sin rutas de API ni cambios de seguridad esperados; regla de oro: 1:1 sin guards nuevos. DedupPreviewModal (Historia 20) depende de TransactionItemList.",
+      "files": {
+        "src/components/Transactions/ItemList/TransactionItemList.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/Tooltips/BasicTooltip.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/toltips/tooltipsForCharts/TooltipForChart.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/top3/atomicTop/AtomicTop.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/top3/topMonthContainer/TopCategoryRow.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/top3/topMonthContainer/TopTransactionRow.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/top3/topMonthContainer/TopElementsCompareTable.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/top3/topMonthContainer/TopMonthItem.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/top3/topMonthContainer/TopMonthContainer.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/top3/topRankColumn/TopRankColumn.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TopElementContainerView.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsView.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TopElementsContainer.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsController.jsx": {
+          "status": "pending",
+          "history": []
+        },
+        "src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js": {
+          "status": "pending",
+          "history": []
         }
       }
     }
