@@ -5217,20 +5217,80 @@
           ]
         },
         "src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:28:28.981Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:33:09.637Z",
+              "event": "submitted",
+              "notes": "Migrado 1:1 de ModalContentTopMonthItem.jsx a .tsx (704 lineas). Interfaces y tipos creados: ModalContentTopMonthItemProps, ModalContentTopMonthItemItem, ModalCategoryRef, ModalSubCategoryRef, QuickActionItem, ConfirmDeleteState, DuplicateCriteriaState, ItemWithCategory. Casts aplicados: +new Date() - +new Date() en sort por fecha; casts de trans y pares para EditSingleTransModal, DeletePreviewRow y DuplicateComparisonTable. Bridges TypedModalContentTopMonthItem eliminados en TopElementsCompareTable.tsx, TopMonthItem.tsx y TopRankColumn.tsx usando ModalContentTopMonthItem directamente con cast item as ModalContentTopMonthItemItem en punto de uso. Bugs preexistentes preservados: props con typo siz/colore en UniversalCategoIcon y CategoIcon, doble acceso children/childrens, comportamiento exacto de fetcher/runNotify/Redux dispatch. tsc, eslint y vitest 324/324 pasando sin errores."
+            },
+            {
+              "ts": "2026-09-30T12:43:50.648Z",
+              "event": "approved",
+              "notes": "Retrabajo mío (guards colados por agy, todos comprobados como NO exigidos por el compilador y revertidos): `item?.`/`t?._id` en el useMemo de ids y en el filtro de displayItems (siete sitios), y `Boolean(id) &&` en el filter de ids no borrados (cambiaba qué ids pasan). Se conservan los cambios inertes: Date restado con `+new Date(a) - +new Date(b)`, ternario-statement → if/else en toggleSelect y en dos toggles (mismo efecto), casts as unknown as erasables, quitar bridges TypedModalContentTopMonthItem de TopElementsCompareTable/TopMonthItem/TopRankColumn. Los fetch/dispatch/notify no se tocaron. Bug preservado: prop `siz` mal escrita en UniversalCategoIcon."
+            }
+          ]
         },
         "src/components/multiUsedComp/TopElementsContainer.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:33:13.996Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:37:00.254Z",
+              "event": "submitted",
+              "notes": "Migrado 1:1 de TopElementsContainer.jsx a .tsx (214 lineas). Interfaces y tipos creados: TopElementsContainerProps, TotalTransactionsLocalState, CategoryGroupItem, TransactionCategoriesState, ContainerTransactionItem. Casts y tipos: getLastDayOfMonth(...) as unknown as number en new Date(...), setUser(ccUser.data as unknown as UserState) y setTransacctions(ccTransacciones.data as unknown as TransacctionsState) sin dispatch. Consumidores/hijos tocados: TopElementContainerView.tsx actualizado en TopElementContainerViewProps con isLoading?: number | boolean e isloading?: unknown. Bugs preexistentes preservados: setUser/setTransacctions llamados sin dispatch (patron preexistente documentado), typo isloading con minuscula hacia TopElementContainerView, Date como 3er parametro en new Date(), dependencias del useEffect sin dispatch/email. tsc, eslint y vitest 324/324 pasando sin errores."
+            },
+            {
+              "ts": "2026-09-30T12:43:50.658Z",
+              "event": "approved",
+              "notes": "Solo tipos y casts erasables (as unknown as); se quitaron imports sin uso (sortByIndex, orderItemsInTheirMonth, slicedAndReduceNewValuesForMonths, timeperiodRangesArray). Bugs preservados 1:1: setUser(...) y setTransacctions(...) llamados SIN dispatch en los useEffect (nunca actualizan el store; ocurrencia nueva del patrón); las vistas reciben `isloading` (minúscula) pero leen `isLoading`, por eso el skeleton nunca se muestra."
+            }
+          ]
         },
         "src/components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsController.jsx": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:37:10.971Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:39:46.118Z",
+              "event": "submitted",
+              "notes": "Migrado 1:1 de HistoricalMovementsController.jsx a .tsx (286 lineas). Interfaces y tipos creados: HistoricalMovementsControllerProps, MonthBucket, ContainerTransactionItem, HistoricalMovementsCompareTableKind, HistoricalMovementsCompareTablesState. Casts aplicados: setUser(ccUser.data as unknown as UserState) y setTransacctions(ccTransacciones.data as unknown as TransacctionsState) sin dispatch, y adaptaciones estructurales de buckets relativos a MonthTransactionsBucket. Consumidores/hijos tocados: HistoricalMovementsView.tsx actualizado en HistoricalMovementsViewProps con isLoading?: number | boolean e isloading?: unknown; bridge TypedHistoricalMovementsController eliminado en HistoryClient.tsx. Bugs preexistentes preservados: setUser/setTransacctions llamados sin dispatch (patron preexistente documentado), typo isloading con minuscula hacia HistoricalMovementsView, props no leidas transactions y transactionsCategories pasadas a la vista, dependencias de useEffect sin dispatch/email. tsc, eslint y vitest 324/324 pasando sin errores."
+            },
+            {
+              "ts": "2026-09-30T12:43:50.667Z",
+              "event": "approved",
+              "notes": "Solo tipos y casts erasables. Se borra el bridge TypedHistoricalMovementsController de HistoryClient.tsx. Bugs preservados 1:1: setUser/setTransacctions sin dispatch (ocurrencia nueva del patrón), prop `isloading` vs `isLoading`."
+            }
+          ]
         },
         "src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.js": {
-          "status": "pending",
-          "history": []
+          "status": "approved",
+          "history": [
+            {
+              "ts": "2026-09-30T12:39:50.120Z",
+              "event": "claimed"
+            },
+            {
+              "ts": "2026-09-30T12:42:21.178Z",
+              "event": "submitted",
+              "notes": "- Renombrado propsColTabsToggler.js -> propsColTabsToggler.tsx con git mv (contiene JSX en totalValue y tooltip renders de AntV G2).\n- Creadas interfaces de opciones y datos: ClickedItem, GeneratePropForChartColAntTogglerTabsOptions, TooltipItemInfo, ChartDatumLegend, PeriodCompareDatum, PeriodCompareTotals, GeneratePropForChartColAntPeriodCompareOptions, PeriodCompareTooltipItem.\n- Tipados los callbacks de Ant Design Charts / G2: legend itemMarkerFill, tooltip render, label text, style fill, onReady event listener sin usar any.\n- Conservación 1:1 estricta: JSX, cálculos de balance y porcentajes, renderizadores de tooltips, condicionales de totalAmount y clickedItems preservados sin agregar guards ni conversiones.\n- Consumidor verificado: TabsTogglerMontlyController.tsx compila limpio con tsc, eslint pasa en 0 errores/warnings y vitest pasa 324/324 tests."
+            },
+            {
+              "ts": "2026-09-30T12:43:50.676Z",
+              "event": "approved",
+              "notes": "Renombrado a .tsx (tiene JSX en tooltips). Retrabajo mío: agy envolvió los keys en String(...) (`String(item.type)+String(item.value)+...`, `String(name)+value`); los reemplacé por casts erasables para no cambiar la semántica de la concatenación. Callbacks de G2 tipados sin any. let→const en isRepeated (inerte)."
+            }
+          ]
         }
       }
     }
