@@ -153,18 +153,6 @@ const MultiCreditCardComp = MultiCreditCard as React.ComponentType<{
   mail?: string;
 }>;
 
-const ResumeTabsTransComp = ResumeTabsTrans as React.ComponentType<{
-  timePeriodFromFather?: Date[];
-  rttTrans?: unknown;
-}>;
-
-const BudgetContComp = BudgetCont as React.ComponentType<{
-  bWallet?: unknown;
-  bTransactions?: unknown;
-  bBudgets?: unknown;
-  bcSession?: string;
-}>;
-
 const today = new Date();
 
 function Wallet({ session }: DashboardProps): React.JSX.Element {
@@ -632,7 +620,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                   <Skeleton active />
                 </div>
               ) : (
-                <ResumeTabsTransComp timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
+                <ResumeTabsTrans timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
               )}
             </div>
             <div className="top-3-general-container w-full">
@@ -692,7 +680,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                    
                 </div>
                 <div className="budget w-full">
-                  <BudgetContComp bcSession={session} />
+                  <BudgetCont bcSession={session} />
                 </div>
               </div>
             </div>

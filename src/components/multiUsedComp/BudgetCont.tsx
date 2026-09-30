@@ -3,12 +3,12 @@ import { Skeleton, Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import EmptyModule from "./EmptyModule";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTrans } from "@/lib/features/transacctionsSlice";
-import { fetchBudget } from "@/lib/features/budgetSlice";
+import { fetchTrans, TransactionData } from "@/lib/features/transacctionsSlice";
+import { fetchBudget, BudgetData } from "@/lib/features/budgetSlice";
 import BudgetBarRow from "./Budgets/BudgetBarRow";
-import BudgetEditModal from "./Budgets/BudgetEditModal";
-import BudgetDetailModal from "./Budgets/BudgetDetailModal";
-import ProjectBudgetDetailModal from "./Budgets/ProjectBudgetDetailModal";
+import BudgetEditModal, { BudgetModalItem } from "./Budgets/BudgetEditModal";
+import BudgetDetailModal, { BudgetDetailItem, BudgetDetailTransactionItem } from "./Budgets/BudgetDetailModal";
+import ProjectBudgetDetailModal, { ProjectBudgetItem, ProjectBudgetTransactionItem } from "./Budgets/ProjectBudgetDetailModal";
 import { getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
 import { getLastDayOfMonth, generate_timeperiod_ranges_array_for_dashboard } from "@/helpers/timeFunctions/timeFunctions";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
@@ -17,27 +17,36 @@ import { getBudgetCoverage } from "@/helpers/transformers/budgetCoverage";
 import { UnbudgetedSpendingCard } from "./Budgets/UnbudgetedSpending";
 import { useRouter } from "next/navigation";
 import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget } from "@/helpers/transformers/budgetTypes";
+import { RootState, AppDispatch } from "@/lib/store";
+
+export interface BudgetContProps {
+  bWallet?: unknown;
+  bTransactions?: unknown;
+  bBudgets?: unknown;
+  bcSession?: string | null | unknown;
+}
 
 const initialToday = new Date();
 
-function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
+function BudgetCont({
+  bcSession,
+}: BudgetContProps): React.JSX.Element {
   const router = useRouter();
-  let [startDate, setStartDate] = useState(new Date(initialToday.getFullYear(), initialToday.getMonth(), 1));
-  let [endDate, setEndDate] = useState(getLastDayOfMonth(initialToday.getFullYear(), initialToday.getMonth()));
-  let [bills, setBills] = useState([]);
-  let [savings, setSavings] = useState([]);
-  let [budgets, setBudgets] = useState([]);
-  let [projects, setProjects] = useState([]);
-  let [today, setToday] = useState(new Date());
-  let [isBudget, setIsBudget] = useState(true);
+  const [startDate, setStartDate] = useState(new Date(initialToday.getFullYear(), initialToday.getMonth(), 1));
+  const [endDate, setEndDate] = useState(getLastDayOfMonth(initialToday.getFullYear(), initialToday.getMonth()));
+  const [bills, setBills] = useState<TransactionData[]>([]);
+  const [savings, setSavings] = useState<BudgetData[]>([]);
+  const [budgets, setBudgets] = useState<BudgetData[]>([]);
+  const [projects, setProjects] = useState<BudgetData[]>([]);
+  const [isBudget, setIsBudget] = useState(true);
   const [loadingComponent, setLoadingComponent] = useState(true);
-  const [editingBudget, setEditingBudget] = useState(null);
-  const [selectedDetailBudget, setSelectedDetailBudget] = useState(null);
-  const [returnToDetailBudget, setReturnToDetailBudget] = useState(null);
+  const [editingBudget, setEditingBudget] = useState<BudgetData | null>(null);
+  const [selectedDetailBudget, setSelectedDetailBudget] = useState<BudgetData | null>(null);
+  const [returnToDetailBudget, setReturnToDetailBudget] = useState<BudgetData | null>(null);
   //REDUX
-  const dispatch = useDispatch();
-  const ccBudget = useSelector((state) => state.budgetReducer)
-  const ccTrans = useSelector((state) => state.transacctionsReducer);
+  const dispatch = useDispatch<AppDispatch>();
+  const ccBudget = useSelector((state: RootState) => state.budgetReducer);
+  const ccTrans = useSelector((state: RootState) => state.transacctionsReducer);
   //
   const bcBudget = ccBudget.data;
   const bcTrans = ccTrans.data;
@@ -48,16 +57,16 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
   // USE EFFECTS
   useEffect(() => {
     if(ccBudget.status == 'idle'){
-      dispatch(fetchBudget(bcSession))
+      dispatch(fetchBudget(bcSession as unknown as Parameters<typeof fetchBudget>[0]))
     }
     if(ccTrans.status == 'idle'){
-      dispatch(fetchTrans(bcSession))
+      dispatch(fetchTrans(bcSession as unknown as Parameters<typeof fetchTrans>[0]))
     }
   }, [])
   //
   useEffect(() => {
     if (!startDate || !endDate) return;
-    if ( bcTrans.length > 0 & bcBudget.length > 0) {
+    if (((bcTrans.length > 0 as unknown as number) & (bcBudget.length > 0 as unknown as number))) {
       setLoadingComponent(false)
     //SET TIME TRANSACTIONS
     let total = bcTrans.filter((tra) => tra.isReadable == true);
@@ -69,40 +78,35 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
     const tempBills = total.filter((tra) => tra.isBill == true);
     setBills(tempBills);
     // SAVINGS
-    let tempSaving = bcBudget.filter((budg) => isSavingBudget(budg) && !budg.archived);
+    const tempSaving = bcBudget.filter((budg) => isSavingBudget(budg) && !budg.archived);
     setSavings(tempSaving);
     // BUDGETS
-    let tempBudget = bcBudget.filter((budg) => isSpendingBudget(budg) && !budg.archived);
+    const tempBudget = bcBudget.filter((budg) => isSpendingBudget(budg) && !budg.archived);
     setBudgets(tempBudget);
     setProjects(bcBudget.filter((budg) => isProjectBudget(budg) && !budg.archived));
     }
   }, [startDate, endDate, ccTrans, ccBudget]);
-  const handleTab = (budType) => {
+  const handleTab = (budType: string) => {
     if (budType === "budget") {
       setIsBudget(true);
     } else {
       setIsBudget(false);
     }
   };
-  const handleRangeDate = (sDate, eDate) => {
+  const handleRangeDate = (sDate: Date | null, eDate: Date | null) => {
     if (sDate) setStartDate(sDate);
     if (eDate) setEndDate(eDate);
   };
-  function getValueFromSelecter(v) {
+  function getValueFromSelecter(v?: string | null) {
     if (!v || !v.includes("*")) return;
     const [start, end] = v.split("*");
     setStartDate(new Date(start));
     setEndDate(new Date(end));
   }
-  const openDetail = (budget) => {
+  const openDetail = (budget: BudgetData) => {
     setSelectedDetailBudget(budget);
   };
-  const openEdit = (budget) => {
-    setSelectedDetailBudget(null);
-    setReturnToDetailBudget(null);
-    setEditingBudget(budget);
-  };
-  const openEditFromDetail = (budget) => {
+  const openEditFromDetail = (budget: BudgetData) => {
     setSelectedDetailBudget(null);
     setReturnToDetailBudget(budget);
     setEditingBudget(budget);
@@ -236,25 +240,25 @@ function BudgetCont({ bWallet, bTransactions, bBudgets, bcSession }) {
       )}
       {selectedDetailBudget && isProjectBudget(selectedDetailBudget) ? (
         <ProjectBudgetDetailModal
-          budget={selectedDetailBudget}
-          transacciones={bcTrans}
+          budget={selectedDetailBudget as unknown as ProjectBudgetItem}
+          transacciones={bcTrans as unknown as ProjectBudgetTransactionItem[]}
           onClose={() => setSelectedDetailBudget(null)}
-          onEdit={openEditFromDetail}
+          onEdit={openEditFromDetail as unknown as (budget: ProjectBudgetItem) => void}
         />
       ) : selectedDetailBudget && (
         <BudgetDetailModal
-          budget={selectedDetailBudget}
-          transacciones={bcTrans}
+          budget={selectedDetailBudget as unknown as BudgetDetailItem}
+          transacciones={bcTrans as unknown as BudgetDetailTransactionItem[]}
           startDate={startDate}
           endDate={endDate}
           onClose={() => setSelectedDetailBudget(null)}
-          onEdit={openEditFromDetail}
+          onEdit={openEditFromDetail as unknown as (budget: BudgetDetailItem) => void}
         />
       )}
       {editingBudget && (
         <BudgetEditModal
           mode="edition"
-          budget={editingBudget}
+          budget={editingBudget as unknown as BudgetModalItem}
           onClose={closeModal}
           onBack={returnToDetailBudget ? handleBackToDetail : null}
         />
