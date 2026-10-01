@@ -311,6 +311,13 @@ export const timeperiodRangesArray: TimePeriodOption[] = [
 ];
 export const generate_timeperiod_ranges_array_for_dashboard = (year: number): TimePeriodOption[] => {
   const today = new Date();
+  // "Last 3 months" ends at the END OF TODAY, not at the current instant:
+  // this array is rebuilt on every render, and `${new Date()}` carries the
+  // seconds, so the option's value used to change every second and the
+  // controlled <select> (which stores the value it was given) stopped
+  // matching any option and fell back to the wrong label. The end of the day
+  // is stable for the whole day and still covers everything up to now.
+  const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
   return [
     {
       value: `${new Date(year, today.getMonth(), 1)}*${getLastDayOfMonth(
@@ -346,7 +353,7 @@ export const generate_timeperiod_ranges_array_for_dashboard = (year: number): Ti
         today.getFullYear(),
         today.getMonth() - 2,
         1
-      )}*${today}`,
+      )}*${endOfToday}`,
       name: "Last 3 months",
     },
     ...timeperiodRangesArray,
