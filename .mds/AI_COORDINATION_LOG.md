@@ -1408,3 +1408,9 @@ When taking over this task, Claude should perform the following steps:
 - **Pruebas**: vitest 345/345, tsc limpio; HTTP contra el servidor de desarrollo con cuentas desechables (todas borradas) y en el Chrome del usuario (login+TOTP, onboarding, reto de re-verificación, borrado desde el Perfil). Sin probar: Google y passkey real.
 - **Nuevos hallazgos** (filas 158-161 y S5 de `.mds/POST_MIGRATION_BUGS.md`): la tienda Redux no se limpia al cerrar sesión (fuga de datos entre cuentas en la misma pestaña), `/verify-2fa` lanza solo la ceremonia de passkey aunque no haya ninguno, toast duplicado al registrarse, 2 documentos huérfanos de septiembre en la BD real.
 
+### Entry #33 - Claude - 2026-10-01 - Rama `post-migration-bugs-resolver`: bugs 158, 154 y 155 + hueco de /update-session
+- **Sello (S2)**: se encontró que `POST /api/auth/update-session` aceptaba `stepUpVerifiedAt` (campo adicional declarado) y una sesión sin 2FA podía sellarse sola; ahora `input: false` (commit `7ceb73d`).
+- **158** (commit `4ee7e05`): `src/lib/rootReducer.ts` (`resetStore`) + `src/lib/SessionStoreReset.tsx` montado en `ReduxProvider`: la tienda se vacía al cerrar sesión o cambiar de usuario. Probado en Chrome: sesión Uno -> cerrar sesión -> sesión Dos en la misma pestaña sin recargar, muestra solo datos de Dos.
+- **154 y 155** (commit `6e7bde3`): el fin de "Last 3 months" en `generate_timeperiod_ranges_array_for_dashboard` pasa de la hora exacta a las 23:59:59 de hoy. Mismo origen para ambos; 155 reproducido con el código viejo y resuelto con el nuevo en Chrome.
+- Tests: vitest 349/349, tsc limpio, cuentas de prueba borradas (0 usuarios `@example.com`). Pendientes sin tocar por decisión del usuario: S5, Google/passkey real, passkey para borrar cuenta.
+
