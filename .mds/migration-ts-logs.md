@@ -1222,7 +1222,8 @@ Las 13 rutas de `general-data/*` que seguían en `.js` (todas alcanzables sin au
 
 Estos dos puntos se dejaron adrede para después. **Claude debe recordárselos al usuario al terminar la migración y siempre que pregunte "qué quedó pendiente"**, junto con la tabla de bugs pendientes.
 
-1. **Datos sensibles en los volcados de `general-data`** (hallazgo de la Historia 17). `general-data/route.ts` (POST) y `general-data/[id]/route.ts` (GET) devuelven el documento User completo en `data.user`, incluyendo `password` (hash) y `apiTokens` (con `tokenHash`); `[id]` además hace `console.log(userFound)` y lo escribe en los logs del servidor. Hoy solo lo ve el dueño de la cuenta (ya tienen el fix de sesión) y ninguna pantalla llama a estas rutas (solo hay código comentado en `apiSlice.js` / `generalDataApiRedux.js`). Decisión a tomar: **borrar las dos rutas** (lo más limpio si de verdad son código muerto) o quitar esos campos de la respuesta y el `console.log`.
+1. ~~**Datos sensibles en los volcados de `general-data`**~~ **RESUELTO el 2026-10-01 (commit `001e93a`; ver la sección "Rutas `general-data` ELIMINADAS y fix de datos sensibles" al final).** Texto original conservado abajo:
+   **Datos sensibles en los volcados de `general-data`** (hallazgo de la Historia 17). `general-data/route.ts` (POST) y `general-data/[id]/route.ts` (GET) devuelven el documento User completo en `data.user`, incluyendo `password` (hash) y `apiTokens` (con `tokenHash`); `[id]` además hace `console.log(userFound)` y lo escribe en los logs del servidor. Hoy solo lo ve el dueño de la cuenta (ya tienen el fix de sesión) y ninguna pantalla llama a estas rutas (solo hay código comentado en `apiSlice.js` / `generalDataApiRedux.js`). Decisión a tomar: **borrar las dos rutas** (lo más limpio si de verdad son código muerto) o quitar esos campos de la respuesta y el `console.log`.
 
    **Ampliación verificada el 2026-09-30 (el problema es más grande que las dos rutas):**
    - **Logs, lo más grave (rutas VIVAS):** `user/update-user` hace `console.log(dataRequest)` (línea 55) y `console.log(userFounded)` (línea 122). La pantalla de Perfil (`ProfileClient.tsx:191`) manda `password` y `passwordConfirm` en texto plano en ese body cuando alguien cambia su contraseña, así que **la contraseña nueva en texto plano se escribe en los logs del servidor**; el segundo log vuelca además el documento User (hash de `password` y `apiTokens`).
@@ -1280,3 +1281,36 @@ Categorías (`SelectCategoryBtn`, `CategoryCircle`, `CategoryCircleWithChilds`, 
 4. Limpieza menor opcional: 4 bridges `TypedModalContentTopMonthItem` en consumidores de las Historias 12-13.
 5. Nunca se probó la UI en el navegador durante las Historias 17-21 (solo tsc/eslint/vitest/next build).
 6. `typescript-migration` sigue sin mergearse a `main` (a la espera de instrucción del usuario) y este archivo y `.mds/migration-typescript.md` se borran cuando el usuario dé el visto bueno final.
+
+## 2026-10-01 — Rutas `general-data` ELIMINADAS y fix de datos sensibles (commit `001e93a`)
+
+**Registro de borrado, por si después aparece algún problema.**
+
+### Qué eran las dos rutas que se borraron
+- `src/app/api/general-data/route.ts` — `GET` devolvía un mensaje fijo ("Data founded"); `POST` recibía un correo como body crudo y devolvía **todo** el contenido de la cuenta en una sola respuesta: `user`, `wallet`, `accounts`, `budgets`, `transactions` (con tags/cuenta/categoría/subcategoría/budget poblados), `categories` (las del usuario + las default), `subCategories` y `tags`.
+- `src/app/api/general-data/[id]/route.ts` — `GET` hacía lo mismo tomando el correo del segmento de la URL (`/api/general-data/<correo>`), sin mezclar las categorías default.
+- Eran los endpoints "agregados" de la primera versión de la app: traer todo de golpe. El plan de multi-moneda ya los llamaba *"Legacy aggregate endpoints"*. Los reemplazaron endpoints específicos: `transactions/get-all`, `categories/get-all`, `budget/get`, `accounts/get-account`, `wallet/get-wallet`, `subcategory/get-sub-categories`, etc. Los consumían los slices de RTK Query `src/lib/services/apiSlice.js` y `generalDataApiRedux.js`, que hoy están **100 % comentados** (siguen en el repo como código muerto, dentro de los 26 archivos ignorados).
+- Ya tenían el fix de sesión (#49 y #50) pero seguían devolviendo `password` (hash) y `apiTokens` (con `tokenHash`) sin limpiar, y `[id]` además hacía `console.log(userFound)`.
+
+### Por qué se concluyó que nada las usaba (verificado el 2026-10-01)
+1. Búsqueda de `general-data` en `src`, `scripts`, `public` y configs (91 referencias): la ruta raíz y `general-data/<id>` solo aparecen en código **comentado** de los dos archivos muertos. Todas las llamadas vivas van a rutas específicas.
+2. Ningún archivo importa esos módulos; no tenían pruebas; no hay `vercel.json`, crons ni CI que las llamen.
+3. Historial de git: el último llamador vivo se eliminó hace mucho (commit `0f69cf9`, "cleaning up everything").
+4. Borrarlas no cambia el registro de modelos de Mongoose: en desarrollo un módulo solo se carga cuando alguien pide su ruta, y nadie pedía estas.
+5. Los logs de producción de Vercel (30 días) tienen solo 4 líneas, todas de `/api/mcp`, así que **no sirven como evidencia** ni a favor ni en contra.
+- **Lo que NO se pudo comprobar:** un cliente externo al repo (un script propio, Postman, otra app). Si algo externo las llamaba, ahora recibirá 404.
+
+### Cómo restaurarlas si hace falta
+Última versión de ambas: commit `443abec`. Para recuperarlas:
+```bash
+git checkout 443abec -- src/app/api/general-data/route.ts "src/app/api/general-data/[id]/route.ts"
+```
+Vuelven **con** el fix de sesión pero **sin** limpiar la respuesta: antes de usarlas hay que envolver `user: userFound` con `toPublicUser(...)` (ver abajo) y quitar los `console.log`. Alternativa sin restaurar: usar `transactions/get-all` + `categories/get-all`, que ya devuelven casi lo mismo.
+
+### El fix de datos sensibles (TO-DO #1, ahora RESUELTO)
+- Nuevo helper `src/lib/auth/publicUser.ts` (`toPublicUser`) que quita `password` y `apiTokens` de un usuario (acepta objeto plano o documento de Mongoose); 5 pruebas en `publicUser.test.ts`.
+- Aplicado en `transactions/get-all`, `categories/get-all`, `user/get-user` y `user/update-user` (antes cada una ponía `password = null`/`""` a mano y seguía mandando `apiTokens`; `update-user` devolvía el documento completo).
+- `user/update-user` ya **no** hace `console.log(dataRequest)` (llevaba `password`/`passwordConfirm` en texto plano cuando alguien cambia su contraseña desde Perfil) ni `console.log(userFounded)`.
+- Verificado: el cliente no lee `password` ni `apiTokens` del estado del usuario (`ProfileClient` arma su formulario campo por campo), así que ninguna pantalla depende de ellos. `tsc` limpio, `eslint` 0 errores, `vitest` 329/329, `next build` OK sin esas dos rutas.
+- **Lo que este fix NO cubre:** (a) los logs que ya se escribieron antes del fix pueden contener contraseñas en texto plano (se recomendó al usuario cambiar su contraseña y revisar la retención de logs de Vercel); (b) el campo `password` legacy sigue guardado en la base de datos (limpiarlo sería una decisión aparte que requiere aprobación explícita antes de escribir en la BD); (c) `update-user` todavía registra el teléfono (`console.log(parsedPhone)`).
+- Los dos primeros puntos de la sección "TO-DOs PENDIENTES" quedan así: **#1 resuelto**, **#2 (2FA en `remove-user`) sigue pendiente**.

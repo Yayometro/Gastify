@@ -199,8 +199,8 @@ que usa `Movements.jsx`, no este árbol)
 - [ ] `general-data/user/remove-user` - borrado de cuenta, prioridad alta si no tiene verificación.
 
 **Genéricas**
-- [ ] `general-data/[id]/route.js` - ruta dinámica genérica, revisar qué hace.
-- [ ] `general-data/route.js` - raíz de general-data, revisar qué hace.
+- [x] `general-data/[id]/route.js` - ruta dinámica genérica. ELIMINADA el 2026-10-01 (commit `001e93a`): no tenía llamadores; ver `.mds/migration-ts-logs.md`.
+- [x] `general-data/route.js` - raíz de general-data. ELIMINADA el 2026-10-01 (commit `001e93a`): no tenía llamadores; ver `.mds/migration-ts-logs.md`.
 
 ## Cómo usar este checklist más adelante
 
