@@ -67,7 +67,11 @@ export const auth = betterAuth({
   // automatically, instead of needing a second query everywhere it's read.
   session: {
     additionalFields: {
-      stepUpVerifiedAt: { type: "date", required: false },
+      // `input: false` keeps clients from writing this field themselves:
+      // without it Better Auth's own POST /update-session accepts any
+      // declared additional field from the request body, which let a plain
+      // session stamp itself as step-up verified and skip the 2FA gate.
+      stepUpVerifiedAt: { type: "date", required: false, input: false },
     },
   },
   // No `advanced.database.generateId` override, deliberately: the Mongo
