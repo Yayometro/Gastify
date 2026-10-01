@@ -6,7 +6,7 @@ import dbConnection from "@/app/api/dbConnection";
 // is exactly the "delete my account" case) it does no attempt limiting at
 // all. A stolen session could otherwise guess 6-digit codes on this
 // destructive route, so failed attempts are counted here, on the caller's own
-// session document (same native-driver pattern as markStepUpVerified.ts).
+// session document (native-driver write on the session document, same pattern as the step-up stamp in betterAuth.ts).
 export const MAX_DELETE_ACCOUNT_FAILURES = 5;
 export const DELETE_ACCOUNT_LOCK_MS = 15 * 60 * 1000;
 

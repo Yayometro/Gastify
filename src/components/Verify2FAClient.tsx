@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import QRCode from "qrcode";
 import { authClient } from "@/lib/auth/authClient";
-import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
 import { store } from "@/lib/store";
@@ -182,17 +181,12 @@ function Verify2FAClient(): React.JSX.Element {
   async function finishStepUp(): Promise<void> {
     setRedirecting(true);
     clearLoopGuard();
-    // Tried firing this write and the navigation concurrently (not
-    // awaiting before router.push) to shave the round trip off the
-    // "¡Listo!" wait - live-tested it and it's genuinely unsafe: the
-    // /dashboard SSR check can run before the write lands, bounces to
-    // /verify-2fa, and that back-and-forth was observed to spiral into a
-    // real "Maximum update depth exceeded" React crash (blank page), not
-    // just one harmless extra hop. Reverted to awaiting the write first.
-    // dashboard/loading.js already covers the perceived-speed goal safely
-    // (instant spinner on navigation, no frozen wait) without this race.
-    const toFetch = fetcher();
-    await toFetch.post("auth-extra/mark-step-up", {});
+    // The server stamps the step-up on the session inside the very request
+    // that verified the passkey / TOTP / backup code (betterAuth.ts
+    // hooks.after), so by the time we get here the stamp is already written -
+    // there is no separate write to await, and so no race with the
+    // /dashboard SSR check (the old client-side write was observed to spiral
+    // into "Maximum update depth exceeded" when not awaited).
     router.push("/dashboard");
   }
 

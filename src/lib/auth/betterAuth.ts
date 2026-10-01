@@ -1,6 +1,7 @@
 import type { Db, MongoClient } from "mongodb";
 import bcryptjs from "bcryptjs";
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware, getSessionFromCtx, isAPIError } from "better-auth/api";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { passkey } from "@better-auth/passkey";
 import { twoFactor } from "better-auth/plugins/two-factor";
@@ -28,6 +29,17 @@ async function bcryptVerify({ hash, password }: { hash: string; password: string
   return bcryptjs.compare(password, hash);
 }
 
+// Endpoints whose SUCCESS is the step-up proof itself: a TOTP code, a backup
+// code, a passkey sign-in, or a passkey registration (onboarding). Better Auth
+// has just verified the proof inside that same request, so the freshness stamp
+// is written here on the server - the client can no longer ask for it.
+const STEP_UP_PROOF_PATHS = new Set([
+  "/two-factor/verify-totp",
+  "/two-factor/verify-backup-code",
+  "/passkey/verify-authentication",
+  "/passkey/verify-registration",
+]);
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
@@ -49,9 +61,8 @@ export const auth = betterAuth({
     },
   },
   // `stepUpVerifiedAt` is the app's own step-up-freshness marker (see
-  // dashboard/layout.js and IdleStepUpGuard.jsx) - unrelated to sign-in
-  // itself, never written by Better Auth's own code, only by
-  // markStepUpVerified.js. Declaring it here just makes
+  // dashboard/layout.tsx and IdleStepUpGuard.tsx) - never written by Better
+  // Auth's own code, only by the `hooks.after` below. Declaring it here just makes
   // auth.api.getSession() return it alongside every other session field
   // automatically, instead of needing a second query everywhere it's read.
   session: {
@@ -106,6 +117,23 @@ export const auth = betterAuth({
       // claim directly, nothing more.
       requireLocalEmailVerified: false,
     },
+  },
+  // Top-level hook (NOT the twoFactor plugin's own hook, which must stay at its
+  // default - see the twoFactor comment below). Runs after EVERY endpoint call
+  // and stamps `stepUpVerifiedAt` on the session only when one of the proof
+  // endpoints above succeeded. A wrong code makes the endpoint return an
+  // APIError, which is skipped, so the stamp cannot be forged from the client.
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (!STEP_UP_PROOF_PATHS.has(ctx.path)) return;
+      if (isAPIError(ctx.context.returned)) return;
+      // A fresh sign-in (TOTP/backup code challenge, passkey login) just
+      // created its session; otherwise it is the caller's existing one.
+      const sessionToken =
+        ctx.context.newSession?.session.token ?? (await getSessionFromCtx(ctx))?.session.token;
+      if (!sessionToken) return;
+      await db.collection("session").updateOne({ token: sessionToken }, { $set: { stepUpVerifiedAt: new Date() } });
+    }),
   },
   databaseHooks: {
     user: {

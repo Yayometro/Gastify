@@ -6,7 +6,6 @@ import { FaKey } from "react-icons/fa";
 import { authClient } from "@/lib/auth/authClient";
 import Link from "next/link";
 import runNotify from "@/helpers/gastifyNotifier";
-import fetcher from "@/helpers/fetcher";
 
 
 const MAX_TWO_FACTOR_ATTEMPTS = 3;
@@ -38,9 +37,9 @@ function LoginComponent(): React.JSX.Element {
   const searchParamas = useSearchParams();
   const email = searchParamas ? searchParamas.get("mail") : null;
 
+  // The server already stamped the step-up on the session when it verified
+  // the passkey / TOTP code (betterAuth.ts hooks.after), so just navigate.
   async function markStepUpVerifiedAndGo(): Promise<void> {
-    const toFetch = fetcher();
-    await toFetch.post("auth-extra/mark-step-up", {});
     router.push("/dashboard");
   }
 
