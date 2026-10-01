@@ -4,6 +4,7 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import { toPublicUser } from "@/lib/auth/publicUser";
 
 export interface CategoriesGetAllData {
   user: unknown;
@@ -48,7 +49,6 @@ export async function POST(
       );
     const userId = userFound._id;
     const walletId = userFound.wallet;
-    userFound.password = null;
     //FIND CATEGORIES
     const categoriesFounded = await Category.find({
       user: userId,
@@ -80,7 +80,7 @@ export async function POST(
         "No SubCategories found, review the user and wallet id on GENERAL-DATA POST"
       );
     const dataFull = {
-      user: userFound,
+      user: toPublicUser(userFound),
       categories: categoriesFounded,
       defCat: defaultCategoriesFounded,
       subCategories: subCategoriesFounded,

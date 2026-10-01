@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "../../../dbConnection";
 import User, { type IUser } from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
 // export async function POST(request){
 //     try{
 
@@ -26,7 +27,7 @@ export interface UpdateUserRequestBody {
 
 export interface UpdateUserSuccessResponse {
   message: string;
-  data: IUser | null;
+  data: PublicUser<IUser> | null;
   status: number;
   ok: boolean;
 }
@@ -52,7 +53,6 @@ export async function POST(
   try {
     if (!request) throw new Error("No data in request on GENERAL-DATA POST");
     const dataRequest: UpdateUserRequestBody = await request.json();
-    console.log(dataRequest);
     let parsedPhone: number | undefined;
     if (typeof dataRequest.phone === "string") {
       console.log(dataRequest.phone);
@@ -119,10 +119,9 @@ export async function POST(
         } as unknown as string
       );
     }
-    console.log(userFounded);
     return NextResponse.json({
       message: `User ${userFounded?.fullName || ""} was updated 🤓`,
-      data: userUpdated,
+      data: toPublicUser(userUpdated),
       status: 201,
       ok: true,
     });

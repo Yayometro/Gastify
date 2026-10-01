@@ -8,6 +8,7 @@ import Account from "@/model/Account";
 import "@/model/Tag";
 import "@/model/Budget";
 import { auth } from "@/lib/auth/betterAuth";
+import { toPublicUser } from "@/lib/auth/publicUser";
 
 export interface TransactionsGetAllData {
   user: unknown;
@@ -54,7 +55,6 @@ export async function POST(
       );
     const userId = userFound._id;
     const walletId = userFound.wallet;
-    (userFound as { password?: unknown }).password = null;
 
     //FIND TRANSACTIONS
     const movementsFounded = await Transaction.find({
@@ -125,7 +125,7 @@ export async function POST(
       );
 
     const dataFull = {
-      user: userFound,
+      user: toPublicUser(userFound),
       transaction: movementsFounded,
       categories: categoriesFounded,
       defCat: defaultCategoriesFounded,

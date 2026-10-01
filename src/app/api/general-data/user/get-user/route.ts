@@ -2,10 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "../../../dbConnection";
 import User, { type IUser } from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
 
 export interface GetUserSuccessResponse {
   message: string;
-  data: IUser | Record<string, unknown>;
+  data: PublicUser<IUser> | Record<string, unknown>;
   status: number;
   ok: boolean;
 }
@@ -38,10 +39,9 @@ export async function POST(
             "User not found, review the email provided in GENERAL-DATA POST",
         } as unknown as string
       );
-    userFounded.password = "";
     return NextResponse.json({
       message: `User founded`,
-      data: userFounded,
+      data: toPublicUser(userFounded),
       status: 201,
       ok: true,
     });
