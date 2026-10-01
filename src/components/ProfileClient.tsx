@@ -16,6 +16,7 @@ import { CldUploadWidget, type CloudinaryUploadWidgetResults } from "next-cloudi
 import ApiTokensPanel from "./multiUsedComp/ApiTokensPanel";
 import PasskeysPanel from "./multiUsedComp/PasskeysPanel";
 import TwoFactorPanel from "./multiUsedComp/TwoFactorPanel";
+import DeleteAccountPanel from "./multiUsedComp/DeleteAccountPanel";
 import type { RootState, AppDispatch } from "@/lib/store";
 
 // Typed bridge components for unmigrated JS components
@@ -314,11 +315,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                 <TwoFactorPanel />
                 <TypedApiTokensPanel mail={pcSession} />
               </div>
-              <div className="remove-account-prof w-full pt-8 pb-[100px] flex justify-center">
-                <button type="button" className="remove-acc gf-glass-button-danger text-white text-sm font-medium rounded-full px-6 py-2">
-                  Remove account
-                </button>
-              </div>
+              <DeleteAccountPanel />
             </div>
           ) : (
             <div className="w-full h-full content-wallet-glass rounded-t-[100px] relative">
@@ -470,11 +467,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                   </button>
                 </div>
               </form>
-              <div className="remove-account-prof w-full pt-8 pb-[100px] flex justify-center">
-                <button type="button" className="remove-acc gf-glass-button-danger text-white text-sm font-medium rounded-full px-6 py-2">
-                  Remove account
-                </button>
-              </div>
+              <DeleteAccountPanel />
             </div>
           )}
         </div>
