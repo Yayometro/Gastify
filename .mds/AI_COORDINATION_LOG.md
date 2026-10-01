@@ -1401,3 +1401,10 @@ When taking over this task, Claude should perform the following steps:
   - **Still open from this fix**: change the account password(s) used while `update-user` was logging bodies and check Vercel's log retention; the legacy `User.password` field is still stored in MongoDB (clearing it needs explicit user approval before any DB write); `update-user` still logs the phone number.
   - **Still pending (user postponed)**: `user/remove-user` should require the step-up 2FA that already exists (`src/lib/auth/markStepUpVerified.ts`), and confirm whether anything calls it.
   - The user also wants the full pending-bug list (rows 1-156) reviewed once the migration wraps up; 26 dead-code `.js/.jsx` files were deliberately left untouched.
+
+### Entry #32 - Claude - 2026-10-01 - Rama `post-migration-bugs-resolver`: remove-user con TOTP + sello de step-up en el servidor
+- **remove-user** (commit `ce875f5`): exige TOTP o código de respaldo verificado en el servidor + correo escrito, 5 intentos fallidos por sesión (bloqueo 15 min, `src/lib/auth/deleteAccountGuard.ts`), borra también `twoFactor` (bug 157) y usa `fullName` (bug 120). Botón/panel `DeleteAccountPanel.tsx` en el Perfil.
+- **mark-step-up** (commit `8a5e801`): ruta y `markStepUpVerified.ts` borrados; `hooks.after` en `src/lib/auth/betterAuth.ts` escribe `stepUpVerifiedAt` solo tras éxito de verify-totp, verify-backup-code, passkey verify-authentication/verify-registration. `LoginComponent` y `Verify2FAClient` ya no llaman al endpoint.
+- **Pruebas**: vitest 345/345, tsc limpio; HTTP contra el servidor de desarrollo con cuentas desechables (todas borradas) y en el Chrome del usuario (login+TOTP, onboarding, reto de re-verificación, borrado desde el Perfil). Sin probar: Google y passkey real.
+- **Nuevos hallazgos** (filas 158-161 y S5 de `.mds/POST_MIGRATION_BUGS.md`): la tienda Redux no se limpia al cerrar sesión (fuga de datos entre cuentas en la misma pestaña), `/verify-2fa` lanza solo la ceremonia de passkey aunque no haya ninguno, toast duplicado al registrarse, 2 documentos huérfanos de septiembre en la BD real.
+
