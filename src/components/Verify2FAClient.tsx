@@ -8,6 +8,7 @@ import QRCode from "qrcode";
 import { authClient } from "@/lib/auth/authClient";
 import runNotify from "@/helpers/gastifyNotifier";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
+import { FACTOR_CHANGE_STEP_UP_TTL_MINUTES, STEP_UP_TTL_MINUTES } from "@/lib/auth/stepUpConfig";
 import { store } from "@/lib/store";
 import { fetchUser } from "@/lib/features/userSlice";
 import { fetchWallet } from "@/lib/features/walletSlice";
@@ -106,9 +107,12 @@ type ThunkWithEmail = (email: string) => Parameters<AppDispatch>[0];
 export interface Verify2FAClientProps {
   // Where to go once verified (set when a profile factor change asked for it).
   nextPath?: string | null;
+  // True when a factor change (profile) sent the user here: the proof is
+  // asked for more often than for the dashboard, and the copy says so.
+  reauth?: boolean;
 }
 
-function Verify2FAClient({ nextPath }: Verify2FAClientProps = {}): React.JSX.Element {
+function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}): React.JSX.Element {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { data: rawSession, isPending: sessionPending } = authClient.useSession();
@@ -504,8 +508,9 @@ function Verify2FAClient({ nextPath }: Verify2FAClientProps = {}): React.JSX.Ele
           <l-quantum size="80" speed="3.1" color="purple"></l-quantum>
           <h1 className="text-white text-2xl font-normal text-center">Verifica tu identidad</h1>
           <p className="text-gf-text-muted text-sm text-center">
-            Han pasado más de 15 minutos, o iniciaste sesión de una forma que aún no comprobamos con tu segundo
-            factor. Pon tu huella, Face ID o código del dispositivo para continuar.
+            {reauth
+              ? `Para cambiar tus factores de verificación (passkeys, app autenticadora o códigos de respaldo) te pedimos confirmar tu identidad cada ${FACTOR_CHANGE_STEP_UP_TTL_MINUTES} minutos. Pon tu huella, Face ID o código del dispositivo para continuar.`
+              : `Han pasado más de ${STEP_UP_TTL_MINUTES} minutos, o iniciaste sesión de una forma que aún no comprobamos con tu segundo factor. Pon tu huella, Face ID o código del dispositivo para continuar.`}
           </p>
           <button type="button" disabled={loading} onClick={handleChallengePasskey} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
             Verificar con mi passkey

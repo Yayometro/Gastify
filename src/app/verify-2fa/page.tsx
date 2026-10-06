@@ -31,7 +31,7 @@ async function Verify2FAPage({ searchParams }: Verify2FAPageProps = {}): Promise
 
   return (
     <div className="bg-gf-bg p-4 w-full h-screen flex justify-center items-center bg-origin-border bg-center" style={{ backgroundImage: "url('/infoTwo.jpg')" }}>
-      <Verify2FAClient nextPath={nextPath} />
+      <Verify2FAClient nextPath={nextPath} reauth={reauth} />
     </div>
   );
 }
