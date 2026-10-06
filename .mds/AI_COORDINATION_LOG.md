@@ -1414,3 +1414,8 @@ When taking over this task, Claude should perform the following steps:
 - **154 y 155** (commit `6e7bde3`): el fin de "Last 3 months" en `generate_timeperiod_ranges_array_for_dashboard` pasa de la hora exacta a las 23:59:59 de hoy. Mismo origen para ambos; 155 reproducido con el código viejo y resuelto con el nuevo en Chrome.
 - Tests: vitest 349/349, tsc limpio, cuentas de prueba borradas (0 usuarios `@example.com`). Pendientes sin tocar por decisión del usuario: S5, Google/passkey real, passkey para borrar cuenta.
 
+### Entry #34 - Claude - 2026-10-06 - Rama `post-migration-bugs-resolver`: S5, cambiar factores exige step-up de 5 min
+- Commit `2b868a0`. `hooks.before` + `factorChangePolicy.ts` (política pura, 7 tests), `stepUpRedirect.ts` (cliente), `/verify-2fa?reauth=1&next=` y manejo en `TwoFactorPanel`/`PasskeysPanel`. Detalle y matriz de pruebas en la fila S5 de `.mds/POST_MIGRATION_BUGS.md`.
+- Pruebas: vitest 356/356, tsc y eslint limpios; HTTP con cuentas desechables (incluida cuenta sin contraseña simulada y passkey falso en la BD de prueba) y Chrome del usuario. Todas las cuentas de prueba se borraron.
+- Pendiente: probar con dispositivo real añadir/borrar passkey con sello vencido; T1-T3 (borrar con passkey, avisos de UI).
+
