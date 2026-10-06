@@ -6,6 +6,7 @@ import { Spin } from "antd";
 import QRCode from "qrcode";
 import { authClient } from "@/lib/auth/authClient";
 import runNotify from "@/helpers/gastifyNotifier";
+import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
 import CategoIcon from "./CategoIcon";
 
@@ -114,6 +115,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { data, error } = await authClient.twoFactor.enable({ method: "totp", password: currentPassword || undefined });
       if (error) {
+        if (redirectIfStepUpRequired(error)) return;
         if (error.code === "INVALID_PASSWORD") {
           // Only a real wrong-password attempt gets a toast - the very
           // first, password-less try failing this way just means the
@@ -165,6 +167,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.twoFactor.disable({ password: currentPassword || undefined });
       if (error) {
+        if (redirectIfStepUpRequired(error)) return;
         if (error.code === "INVALID_PASSWORD") {
           if (currentPassword) runNotify("error", "Contraseña incorrecta 🤕");
           setSetupStep("password-disable");
@@ -194,6 +197,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { data, error } = await authClient.twoFactor.generateBackupCodes({ password: currentPassword || undefined });
       if (error) {
+        if (redirectIfStepUpRequired(error)) return;
         if (error.code === "INVALID_PASSWORD") {
           if (currentPassword) runNotify("error", "Contraseña incorrecta 🤕");
           setSetupStep("password-regenerate");

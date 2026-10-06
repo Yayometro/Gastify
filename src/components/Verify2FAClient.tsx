@@ -103,7 +103,12 @@ type ThunkWithEmail = (email: string) => Parameters<AppDispatch>[0];
 //   passkey ceremony fires automatically the moment this mode is reached
 //   (no click needed first) - the fingerprint/Face ID/PIN prompt itself IS
 //   the security gate, an extra click in front of it doesn't add anything.
-function Verify2FAClient(): React.JSX.Element {
+export interface Verify2FAClientProps {
+  // Where to go once verified (set when a profile factor change asked for it).
+  nextPath?: string | null;
+}
+
+function Verify2FAClient({ nextPath }: Verify2FAClientProps = {}): React.JSX.Element {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { data: rawSession, isPending: sessionPending } = authClient.useSession();
@@ -187,7 +192,7 @@ function Verify2FAClient(): React.JSX.Element {
     // there is no separate write to await, and so no race with the
     // /dashboard SSR check (the old client-side write was observed to spiral
     // into "Maximum update depth exceeded" when not awaited).
-    router.push("/dashboard");
+    router.push(nextPath || "/dashboard");
   }
 
   async function failAttempt(message?: string): Promise<void> {

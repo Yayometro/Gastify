@@ -5,6 +5,7 @@ import { Spin } from "antd";
 import dayjs from "dayjs";
 import { authClient } from "@/lib/auth/authClient";
 import runNotify from "@/helpers/gastifyNotifier";
+import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
 import CategoIcon from "./CategoIcon";
 
 // Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
@@ -38,6 +39,7 @@ function PasskeysPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.passkey.addPasskey({ name: newPasskeyName.trim() });
       if (error) {
+        if (redirectIfStepUpRequired(error)) return;
         runNotify("error", error.message || "Could not register that passkey 🤕");
         return;
       }
@@ -55,6 +57,7 @@ function PasskeysPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.passkey.deletePasskey({ id });
       if (error) {
+        if (redirectIfStepUpRequired(error)) return;
         runNotify("error", error.message || "Could not remove that passkey 🤕");
         return;
       }

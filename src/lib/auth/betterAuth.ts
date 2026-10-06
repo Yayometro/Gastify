@@ -1,7 +1,9 @@
 import type { Db, MongoClient } from "mongodb";
 import bcryptjs from "bcryptjs";
 import { betterAuth } from "better-auth";
-import { createAuthMiddleware, getSessionFromCtx, isAPIError } from "better-auth/api";
+import { APIError, createAuthMiddleware, getSessionFromCtx, isAPIError } from "better-auth/api";
+import { ObjectId } from "mongodb";
+import { FACTOR_CHANGE_PATHS, requiresFreshStepUp, STEP_UP_REQUIRED_CODE } from "./factorChangePolicy";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { passkey } from "@better-auth/passkey";
 import { twoFactor } from "better-auth/plugins/two-factor";
@@ -128,6 +130,30 @@ export const auth = betterAuth({
   // endpoints above succeeded. A wrong code makes the endpoint return an
   // APIError, which is skipped, so the stamp cannot be forged from the client.
   hooks: {
+    // Adding / removing / regenerating a second factor needs a fresh step-up
+    // when the account already has one (see factorChangePolicy.ts). Without
+    // this, an account with no password (Google / passkey) let a bare stolen
+    // session switch off the TOTP, enroll its own and stamp itself.
+    before: createAuthMiddleware(async (ctx) => {
+      if (!FACTOR_CHANGE_PATHS.has(ctx.path)) return;
+      const current = await getSessionFromCtx(ctx);
+      if (!current) return; // the endpoint itself answers 401
+      const userId = current.user.id;
+      const passkeys = await db
+        .collection("passkey")
+        .countDocuments({ userId: { $in: [new ObjectId(userId), userId] } });
+      const needsFresh = requiresFreshStepUp({
+        path: ctx.path,
+        hasSecondFactor: Boolean(current.user.twoFactorEnabled) || passkeys > 0,
+        stepUpVerifiedAt: current.session.stepUpVerifiedAt,
+      });
+      if (needsFresh) {
+        throw APIError.from("FORBIDDEN", {
+          code: STEP_UP_REQUIRED_CODE,
+          message: "Confirma tu identidad otra vez para cambiar tus factores de verificación.",
+        });
+      }
+    }),
     after: createAuthMiddleware(async (ctx) => {
       if (!STEP_UP_PROOF_PATHS.has(ctx.path)) return;
       if (isAPIError(ctx.context.returned)) return;
