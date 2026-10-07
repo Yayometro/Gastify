@@ -255,6 +255,10 @@ function BudgetDetailModal({
   const handleRemoveTrans = (id?: string) => {
     if (!id) return;
     Modal.confirm({
+      // This detail modal is a BasicModal portal (z-index 5000); antd's confirm
+      // defaults to 2000 and used to open BEHIND it, invisible and unclickable,
+      // so deleting from here could never be confirmed.
+      zIndex: 10000,
       title: "Delete this movement?",
       content: "Are you sure you want to remove this transaction?",
       okText: "Yes, delete",
