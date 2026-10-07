@@ -1426,3 +1426,9 @@ When taking over this task, Claude should perform the following steps:
 - **Prueba de punta a punta**: cuenta desechable -> registro -> login con contraseña + TOTP -> borrado -> 0 huérfanos.
 - **Hallazgo**: la credencial de la cuenta real del usuario en `account` no tiene hash de contraseña (cuenta efectivamente sin contraseña), por lo que el S5 sí la afectaba; corregida mi afirmación anterior en la fila S5.
 
+### Entry #36 - Claude - 2026-10-07 - Rama `post-migration-bugs-resolver`: S4, 121, 156 y 160
+- **S4**: `update-user` ya no registra el teléfono. **156**: `files/deduplicate/[id]` importa los 4 modelos que popula (test de registro de modelos que falla sin el arreglo; un escaneo de todas las rutas con `.populate` no halló otra igual).
+- **121**: `remove-user` borra primero los datos (repetible) y al final passkey/account/twoFactor/session + el usuario en UNA transacción de Mongo (`startSession().withTransaction`); ya no lanza "Wallet not removed" si no hay wallet. Verificado contra el cluster real con una cuenta desechable (transacción OK, 0 huérfanos). Commit `8bc7098`.
+- **160**: aviso "created successfully" único (`useRef` contra StrictMode) y inputs/botón de Login y Registro deshabilitados hasta que la página hidrata (`src/hooks/useHydrated.ts`; el HTML del servidor trae los campos `disabled`, y evita que un clic temprano mande el formulario como GET con la contraseña en la URL). Verificado en Chrome.
+- vitest 365/365, tsc limpio, eslint sin errores nuevos.
+

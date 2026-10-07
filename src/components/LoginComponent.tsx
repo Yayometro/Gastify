@@ -1,11 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaKey } from "react-icons/fa";
 import { authClient } from "@/lib/auth/authClient";
 import Link from "next/link";
 import runNotify from "@/helpers/gastifyNotifier";
+import useHydrated from "@/hooks/useHydrated";
 
 
 const MAX_TWO_FACTOR_ATTEMPTS = 3;
@@ -34,6 +35,7 @@ function LoginComponent(): React.JSX.Element {
   const [twoFactorAttempts, setTwoFactorAttempts] = useState<number>(0);
 
   const router = useRouter();
+  const hydrated = useHydrated();
   const searchParamas = useSearchParams();
   const email = searchParamas ? searchParamas.get("mail") : null;
 
@@ -43,7 +45,11 @@ function LoginComponent(): React.JSX.Element {
     router.push("/dashboard");
   }
 
+  // React StrictMode (dev) runs effects twice; the ref keeps the notices to one.
+  const noticesShown = useRef<boolean>(false);
   useEffect(() => {
+    if (noticesShown.current) return;
+    noticesShown.current = true;
     if (email) {
       runNotify("ok", `${email} was created successfully 🤓`);
     }
@@ -238,6 +244,7 @@ function LoginComponent(): React.JSX.Element {
               placeholder="roberto.Gomez@gmail.com..."
               value={email ? (formData.mail = email) : formData.mail}
               onChange={handleChange}
+              disabled={!hydrated}
               autoComplete="username webauthn"
               required
             />
@@ -259,6 +266,7 @@ function LoginComponent(): React.JSX.Element {
               id="passwordForm"
               value={formData.password}
               onChange={handleChange}
+              disabled={!hydrated}
             />
             {/* <div
                 className={"tooltipPwass"}
@@ -284,7 +292,7 @@ function LoginComponent(): React.JSX.Element {
               {errorForm}
             </div>
           )}
-          <button type="submit" className="social-btn-lf gf-glass-button">
+          <button type="submit" className="social-btn-lf gf-glass-button" disabled={!hydrated}>
             Submit
           </button>
           <div className="divider border-t-2 border-gf-border w-[70%] mt-5"></div>

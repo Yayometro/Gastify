@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/authClient";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
+import useHydrated from "@/hooks/useHydrated";
 
 interface RegisterFormData {
   fullName: string;
@@ -44,6 +45,7 @@ export default function RegisterComp(): React.JSX.Element {
     passSpecial: "hidden",
   });
   const router = useRouter();
+  const hydrated = useHydrated();
   const [loading, setLoading] = useState<boolean>(false);
 
   //Loader
@@ -171,6 +173,7 @@ export default function RegisterComp(): React.JSX.Element {
               placeholder="Type your full name or alias."
               value={formData.fullName}
               onChange={handleChange}
+              disabled={!hydrated}
               required
               autoFocus
             />
@@ -189,6 +192,7 @@ export default function RegisterComp(): React.JSX.Element {
               placeholder="roberto.Gomez@gmail.com..."
               value={formData.mail}
               onChange={handleChange}
+              disabled={!hydrated}
               required
             />
             <div
@@ -209,6 +213,7 @@ export default function RegisterComp(): React.JSX.Element {
               id="passwordForm"
               value={formData.password}
               onChange={handleChange}
+              disabled={!hydrated}
             />
             <div
               className={"tooltipPwass"}
@@ -237,6 +242,7 @@ export default function RegisterComp(): React.JSX.Element {
                   id="exampleCheck1"
                   checked={formData.termnsYes}
                   onChange={handleChange}
+              disabled={!hydrated}
                 />
               </div>
               <div className="form-text-never w-fit font-light text-[12px] text-gf-text-muted">
@@ -249,7 +255,7 @@ export default function RegisterComp(): React.JSX.Element {
                 </div>
               )}
           </div>
-          <button type="submit" className="social-btn-lf gf-glass-button">
+          <button type="submit" className="social-btn-lf gf-glass-button" disabled={!hydrated}>
             Submit
           </button>
           <div className="divider border-t-2 border-gf-border w-[70%] mt-5"></div>
