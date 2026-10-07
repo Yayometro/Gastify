@@ -1432,3 +1432,10 @@ When taking over this task, Claude should perform the following steps:
 - **160**: aviso "created successfully" único (`useRef` contra StrictMode) y inputs/botón de Login y Registro deshabilitados hasta que la página hidrata (`src/hooks/useHydrated.ts`; el HTML del servidor trae los campos `disabled`, y evita que un clic temprano mande el formulario como GET con la contraseña en la URL). Verificado en Chrome.
 - vitest 365/365, tsc limpio, eslint sin errores nuevos.
 
+### Entry #37 - Claude - 2026-10-07 - Rama `post-migration-bugs-resolver`: Ola 1 de los bugs de la tabla (G6, G4, G1)
+- **Agrupación**: los 152 bugs pendientes se agruparon en 16 áreas y 4 olas (ver conversación y `.mds/POST_MIGRATION_BUGS.md`). G15 (#126-128) se cerró: sus rutas se borraron el 30-sep.
+- **G6** (commit `e9e2216` + `17af0df`): 11 bugs de botones/formularios. **G4** (`8f11ae4`): 23 de cierres por nulos/NaN, con `percentOf` y tests. **G1** (`1c840c1`): 10 de typos/textos. Total 44 filas resueltas + 1 parcial (#146); quedan 105 pendientes.
+- **Verificado en el Chrome del usuario** con cuentas desechables (todas borradas): borrar movimiento en presupuestos (#10, POST 200 y BD), editor masivo desvincula cuenta (#12, BD), transferencia re-autocompleta (#39), botón de subir imagen no envía el perfil (#4), recorrido de 8 pantallas sin errores de consola, portada y opciones "Last week/15 days".
+- **Hallazgos**: #163 (confirmación detrás del modal, resuelto) y #164 (aviso `value null` en `AddTransactionComp`, pendiente).
+- vitest 373/373, tsc y eslint limpios. Nota: en desarrollo la página se recarga sola cuando Next compila algo por primera vez y vacía lo escrito en el formulario (no es del código de la app).
+
