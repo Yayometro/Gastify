@@ -74,7 +74,6 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
               alt={`${ccUser?.fullName} profile account`}
               width={50}
               height={50}
-              objectPosition="center"
             />
             <p className="text-[10px] sm:text-[8px] w-[45px] break-word text-ellipsis overflow-hidden group truncate">{ccUser?.fullName}</p>
             <p className="hidden hoverTooltip">Profile</p>
@@ -194,7 +193,6 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
               alt={`${ccUser?.fullName} profile account`}
               width={50}
               height={50}
-              objectPosition="center"
             />
           </Link>
         </li>

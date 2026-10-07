@@ -246,7 +246,6 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
               alt={`${userData?.fullName} profile account`}
               width={150}
               height={150}
-              objectPosition="center"
             />
           </div>
           {!onEdition ? (
