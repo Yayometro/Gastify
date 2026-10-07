@@ -1419,3 +1419,10 @@ When taking over this task, Claude should perform the following steps:
 - Pruebas: vitest 356/356, tsc y eslint limpios; HTTP con cuentas desechables (incluida cuenta sin contraseña simulada y passkey falso en la BD de prueba) y Chrome del usuario. Todas las cuentas de prueba se borraron.
 - Pendiente: probar con dispositivo real añadir/borrar passkey con sello vencido; T1-T3 (borrar con passkey, avisos de UI).
 
+### Entry #35 - Claude - 2026-10-07 - Rama `post-migration-bugs-resolver`: respaldo, S3, 161 y 162 (escrituras en la BD real con aprobación del usuario)
+- **Respaldo completo antes de escribir**: `backups/full-db-pre-cleanup-2026-10-07T15-26-40-622Z/` (EJSON, 19 colecciones, releído y comparado con la BD; `.gitignore` ya cubre `/backups/`).
+- **Código** (commit `1a6bf65`): `remove-user` borra también `Budget`, `CategoryRule`, `IncomeSource`, `ProjectionBaseline`, `ProjectionSettings` (bug 162); `password` fuera del modelo `User` y de `get-sub-categories` (S3). vitest 358/358, tsc y eslint limpios.
+- **Escrituras en la BD real**: (1) borrados exactamente 21 huérfanos mostrados por _id antes (19 `budgets` de cuentas de prueba, 1 `twoFactor`, 1 `session`), con guarda que aborta si el conteo difiere de lo aprobado; (2) `$unset` de `users.password` en los 12 usuarios. Verificado: 0 huérfanos, 0 `password` en `users`, `account` intacto.
+- **Prueba de punta a punta**: cuenta desechable -> registro -> login con contraseña + TOTP -> borrado -> 0 huérfanos.
+- **Hallazgo**: la credencial de la cuenta real del usuario en `account` no tiene hash de contraseña (cuenta efectivamente sin contraseña), por lo que el S5 sí la afectaba; corregida mi afirmación anterior en la fila S5.
+
