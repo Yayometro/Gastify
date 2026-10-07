@@ -211,7 +211,7 @@ export async function POST(
         for (const tagName of tags.filter(Boolean)) {
           let found = await Tag.findOne({ name: tagName, user: transaction.user });
           if (!found) {
-            found = await Tag.create({ name: tagName, user: transaction.user });
+            found = await Tag.create({ name: tagName, user: transaction.user, wallet: userWallet });
           }
           newTags.push(found._id as mongoose.Types.ObjectId);
         }

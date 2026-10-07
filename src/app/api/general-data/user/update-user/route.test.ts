@@ -52,3 +52,14 @@ describe("POST /api/general-data/user/update-user", () => {
     );
   });
 });
+
+describe("phone sent as a number (bug 2)", () => {
+  it("is saved too, not only a string", async () => {
+    await POST(req({ phone: 5512345678 }));
+    expect(userModel.findOneAndUpdate).toHaveBeenCalledWith(
+      { mail: "me@example.com" },
+      { $set: expect.objectContaining({ phone: 5512345678 }) },
+      { new: true }
+    );
+  });
+});

@@ -21,7 +21,7 @@ export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<RemoveTagResponse>> {
   try {
-    if (!request) throw new Error("No request received from NEW TAG");
+    if (!request) throw new Error("No request received from REMOVE TAG");
     const { id } = (await request.json()) as RemoveTagRequestBody;
 
     // Security fix: this route previously lacked session verification and called

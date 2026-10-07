@@ -79,17 +79,19 @@ export async function POST(
       throw new Error(`kind must be "income" or "expense" 🤕`);
     if (currency && !SUPPORTED_CURRENCIES.includes(currency))
       throw new Error(`Unsupported currency: ${currency} 🤕`);
+    // Unparseable dates used to slip through (every comparison with an Invalid Date is false)
+    // and were saved as Invalid Date (bug 77).
+    if (Number.isNaN(new Date(effectiveFrom).getTime()))
+      throw new Error(`effectiveFrom is not a valid date 🤕`);
+    if (effectiveTo && Number.isNaN(new Date(effectiveTo).getTime()))
+      throw new Error(`effectiveTo is not a valid date 🤕`);
     if (effectiveTo && new Date(effectiveTo) <= new Date(effectiveFrom))
       throw new Error(`effectiveTo must be after effectiveFrom 🤕`);
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error(
-        {
-          error: "User not found, review the email provided in GENERAL-DATA POST",
-        } as unknown as string
-      );
+      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
     const userId = userFound._id;
     const walletId = userFound.wallet;
     const parentWallet = (await (

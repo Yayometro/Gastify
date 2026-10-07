@@ -59,6 +59,9 @@ export async function resolveApiToken(token: string): Promise<ResolvedApiTokenAu
   if (!user) throw new Error("Invalid API token");
 
   const matchedToken = user.apiTokens.find((t) => t.tokenHash === tokenHash);
+  // The token can vanish between the lookup and here (revoked at the same moment): that is
+  // an invalid token, not a TypeError (bug 79).
+  if (!matchedToken) throw new Error("Invalid API token");
   matchedToken.lastUsedAt = new Date();
   await user.save();
 
@@ -76,7 +79,8 @@ export async function getUserFromApiToken(
   request: Request | NextRequest
 ): Promise<ResolvedApiTokenAuth> {
   const authHeader = request.headers.get("authorization") || "";
-  const [scheme, token] = authHeader.split(" ");
+  // Any run of spaces separates the scheme from the token (a double space used to leave the token empty, bug 78).
+  const [scheme, token] = authHeader.trim().split(/\s+/);
   if (scheme !== "Bearer" || !token) {
     throw new Error("Missing or malformed Authorization header");
   }

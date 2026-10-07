@@ -33,12 +33,7 @@ export async function POST(
     await dbConnection();
     const userFounded = await User.findOne({ mail }).lean();
     if (!userFounded)
-      throw new Error(
-        {
-          error:
-            "User not found, review the email provided in GENERAL-DATA POST",
-        } as unknown as string
-      );
+      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
     return NextResponse.json({
       message: `User founded`,
       data: toPublicUser(userFounded),

@@ -171,22 +171,23 @@ export async function createTransaction({
     }
     newTransaction.budget = linkedBudget._id;
   }
-  if (tags) {
-    if (tags.length > 0) {
-      for (const tag of tags) {
-        //Use "for of", because it handles async rather than map or foreach
-        const findTag = await Tag.findOne({ name: tag, user, wallet });
-        if (!findTag) {
-          const newTag = new Tag({ name: tag, user, wallet });
-          if (!newTag)
-            throw new Error("No tag created on NEW TRANSACTION POST");
-          newTransaction.tags.push(newTag._id);
-          await newTag.save();
-        }
-        if (findTag) {
-          newTransaction.tags.push(findTag._id);
-        }
-      }
+  // `tags` may arrive as a comma-separated string (the new-transaction route allows it): iterating a
+  // string walked it character by character and created one tag per letter (bug 86).
+  const tagNames: string[] = (typeof tags === "string" ? (tags as string).split(",") : tags || [])
+    .map((tag) => String(tag).trim())
+    .filter(Boolean);
+  for (const tag of tagNames) {
+    //Use "for of", because it handles async rather than map or foreach
+    const findTag = await Tag.findOne({ name: tag, user, wallet });
+    if (!findTag) {
+      const newTag = new Tag({ name: tag, user, wallet });
+      if (!newTag)
+        throw new Error("No tag created on NEW TRANSACTION POST");
+      newTransaction.tags.push(newTag._id);
+      await newTag.save();
+    }
+    if (findTag) {
+      newTransaction.tags.push(findTag._id);
     }
   }
   const savedTransaction = await newTransaction.save();

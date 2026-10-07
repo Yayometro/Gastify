@@ -23,7 +23,7 @@ export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<UpdateTagResponse>> {
   try {
-    if (!request) throw new Error("No request received from NEW TAG");
+    if (!request) throw new Error("No request received from UPDATE TAG");
     const { id, name, color } = (await request.json()) as UpdateTagRequestBody;
 
     // Security fix: this route previously lacked session verification and called

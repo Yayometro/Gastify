@@ -55,11 +55,7 @@ export async function POST(
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error(
-        {
-          error: "User not found, review the email provided in GENERAL-DATA POST",
-        } as unknown as string
-      );
+      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
     const walletId = userFound.wallet;
 
     // Not every wallet has one yet - null is a valid, expected result.

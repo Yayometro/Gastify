@@ -102,7 +102,7 @@ export async function POST(
     return NextResponse.json({
       message: `${savedIncomeSource.name} was updated successfully 🤓`,
       data: savedIncomeSource,
-      status: 201,
+      status: 200, // matches the real HTTP status (it said 201 while answering 200, bug 44)
       ok: true,
     });
   } catch (e) {

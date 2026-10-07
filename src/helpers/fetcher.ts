@@ -9,7 +9,9 @@ export interface FetcherInstance {
 export default function fetcher(): FetcherInstance {
     // 
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_ROUTE
+    // Without NEXT_PUBLIC_API_ROUTE the requests are same-origin relative ("/api/..."); it used to throw
+    // a TypeError as soon as a fetcher was created (bug 133).
+    const baseUrl = process.env.NEXT_PUBLIC_API_ROUTE ?? ""
     const apiRoute = "/api/"
     const fullPath = baseUrl.concat(apiRoute);
     
@@ -45,7 +47,7 @@ export default function fetcher(): FetcherInstance {
                 const data = await res.json()
                 return data
             } catch(e){
-                console.log(e)
+                // (it used to console.log every error here and then rethrow it; the caller decides what to show)
                 throw new Error(e as unknown as string)
                 // throw new Error("Something went wrong in the POST request to backend using FETCHER: ", e)
             }

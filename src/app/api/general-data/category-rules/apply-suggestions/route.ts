@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
-import Transaction from "@/model/Transaction";
+import Transaction, { type ITransaction } from "@/model/Transaction";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import "@/model/Tag";
@@ -65,7 +65,15 @@ export async function POST(
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound) throw new Error("User not found on APPLY SUGGESTIONS POST");
 
-    const updated: unknown[] = [];
+    // Two passes (bug 125): everything is validated FIRST (ownership, a category that matches its
+    // sub-category, valid ids) and nothing is saved until the whole batch is valid. It used to save as
+    // it went, so a bad id in the middle left the earlier movements already changed.
+    type PreparedApplication = {
+      transaction: ITransaction;
+      subCategory?: string;
+      category?: string;
+    };
+    const prepared: PreparedApplication[] = [];
     for (const app of applications) {
       if (!app.transactionId) continue;
       const transaction = await Transaction.findOne({
@@ -74,16 +82,16 @@ export async function POST(
         wallet: userFound.wallet,
       });
       if (!transaction) continue;
+      let foundSub: { fatherCategory?: unknown } | null = null;
       if (app.subCategory) {
-        const foundSub = await SubCategory.findById(app.subCategory).lean();
+        foundSub = await SubCategory.findById(app.subCategory).lean();
         assertOwnedOrDefault(
-          foundSub,
+          foundSub as { user?: unknown; wallet?: unknown } | null,
           userFound._id,
           userFound.wallet,
           "No SUB-CATEGORY found at APPLY SUGGESTIONS",
           "isDefaultSubCatego"
         );
-        transaction.subCategory = app.subCategory;
       }
       if (app.category) {
         const foundCat = await Category.findById(app.category).lean();
@@ -94,8 +102,18 @@ export async function POST(
           "Category not found for this user",
           "isDefaultCatego"
         );
-        transaction.category = app.category;
       }
+      // A sub-category must belong to the category it is applied with.
+      if (foundSub && app.category && String(foundSub.fatherCategory) !== String(app.category)) {
+        throw new Error("The sub-category does not belong to that category 🤕");
+      }
+      prepared.push({ transaction, subCategory: app.subCategory, category: app.category });
+    }
+
+    const updated: unknown[] = [];
+    for (const { transaction, subCategory, category } of prepared) {
+      if (subCategory) transaction.subCategory = subCategory as unknown as typeof transaction.subCategory;
+      if (category) transaction.category = category as unknown as typeof transaction.category;
       await transaction.save();
       updated.push(transaction._id);
     }

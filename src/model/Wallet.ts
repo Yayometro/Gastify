@@ -35,7 +35,7 @@ const walletSchema = new Schema<IWallet>({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        require: true
+        required: true
     },
     // Deprecated/legacy - superseded by real Budget documents. Preserved
     // during the multi-currency migration only.

@@ -74,13 +74,16 @@ export async function POST(
       throw new Error("Income Source was not removed, verify data ❌");
     removedIncomeSource.archived = true;
     removedIncomeSource.active = false;
-    const openEntry = removedIncomeSource.history?.find((h) => !h.effectiveTo);
-    if (openEntry) openEntry.effectiveTo = new Date();
+    // Close EVERY open history entry, not just the first one found (bug 50).
+    const closedAt = new Date();
+    (removedIncomeSource.history || []).forEach((h) => {
+      if (!h.effectiveTo) h.effectiveTo = closedAt;
+    });
     await removedIncomeSource.save();
     return NextResponse.json({
       message: `Income Source ${removedIncomeSource?.name} was removed 🤓`,
       data: removedIncomeSource,
-      status: 201,
+      status: 200, // it said 201 while answering 200 (bug 48)
       ok: true,
     });
   } catch (e) {

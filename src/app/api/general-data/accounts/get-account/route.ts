@@ -23,11 +23,7 @@ export async function POST(
     // User find
     const userFound = await User.findOne({ mail: userMail }).lean();
     if (!userFound)
-      throw new Error(
-        {
-          error: "User not found, review the email provided in GET-ACCOUNT POST",
-        } as unknown as string
-      );
+      throw new Error("User not found, review the email provided in GET-ACCOUNT POST");
     const userId = userFound._id;
     const walletId = userFound.wallet;
 

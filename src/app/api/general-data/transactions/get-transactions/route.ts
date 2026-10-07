@@ -39,11 +39,7 @@ export async function POST(
     // User find
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error(
-        {
-          error: "User not found, review the email provided in GENERAL-DATA POST",
-        } as unknown as string
-      );
+      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
     const userId = userFound._id;
     const walletId = userFound.wallet;
     // Structural typing with unknown avoids any while resolving TS2349 union incompatibility on unmigrated Wallet.js

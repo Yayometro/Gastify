@@ -17,7 +17,17 @@ vi.mock("@/model/Transaction", () => {
   (TransactionMock as unknown as { findById: () => typeof chain }).findById = () => chain;
   return { default: TransactionMock };
 });
-vi.mock("@/model/Tag", () => ({ default: {} }));
+const tagCalls = vi.hoisted(() => ({ created: [] as string[] }));
+vi.mock("@/model/Tag", () => ({
+  default: Object.assign(
+    function TagMock(this: Record<string, unknown>, args: { name: string }) {
+      this._id = `tag-${args.name}`;
+      tagCalls.created.push(args.name);
+      this.save = async () => this;
+    },
+    { findOne: async () => null }
+  ),
+}));
 vi.mock("@/model/SubCategory", () => ({ default: {} }));
 vi.mock("@/model/Category", () => ({ default: {} }));
 vi.mock("@/model/Account", () => ({ default: {} }));
@@ -34,6 +44,7 @@ const base = { user: "u1", wallet: "w1", name: "Coffee", isBill: true };
 
 beforeEach(() => {
   created.last = null;
+  tagCalls.created = [];
 });
 
 describe("createTransaction", () => {
@@ -62,5 +73,16 @@ describe("createTransaction", () => {
 
   it("uses the found-wording in its errors (bug 90)", async () => {
     await expect(createTransaction({ amount: 1 } as never)).rejects.toThrow("No User ID found");
+  });
+});
+
+describe("tags (bug 86)", () => {
+  it("a comma-separated string makes one tag per name, not one per letter", async () => {
+    await createTransaction({ ...base, amount: 5, tags: "food, trip" } as never);
+    expect(tagCalls.created).toEqual(["food", "trip"]);
+  });
+  it("an array still works and blanks are ignored", async () => {
+    await createTransaction({ ...base, amount: 5, tags: ["a", "", "b"] } as never);
+    expect(tagCalls.created).toEqual(["a", "b"]);
   });
 });

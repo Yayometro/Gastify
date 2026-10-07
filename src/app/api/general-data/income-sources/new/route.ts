@@ -102,7 +102,7 @@ export async function POST(
     if (!savedIncomeSource)
       throw new Error("New Income Source was not saved 🤕");
     return NextResponse.json({
-      message: `${savedIncomeSource.name} was created successfully 🤓`,
+      message: `${savedIncomeSource.name || "Income source"} was created successfully 🤓`,
       data: savedIncomeSource,
       status: 201,
       ok: true,

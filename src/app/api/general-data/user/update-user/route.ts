@@ -55,7 +55,8 @@ export async function POST(
     const dataRequest: UpdateUserRequestBody = await request.json();
     let parsedPhone: number | undefined;
     // The phone number is personal data: it is deliberately never logged here.
-    if (typeof dataRequest.phone === "string") {
+    // A phone sent as a NUMBER used to be ignored (only strings were read, bug 2).
+    if (typeof dataRequest.phone === "string" || typeof dataRequest.phone === "number") {
       parsedPhone = Number(dataRequest.phone);
     }
     // Security fix: this used to look up (and then update) the user by
@@ -75,12 +76,7 @@ export async function POST(
     await dbConnection();
     const userFounded = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFounded)
-      throw new Error(
-        {
-          error:
-            "User not found, review the email provided in GENERAL-DATA POST",
-        } as unknown as string
-      );
+      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
 
     // Credential logins are checked against the `account` collection now
     // (see src/lib/auth/betterAuth.js), not `User.password` - writing a
@@ -111,12 +107,7 @@ export async function POST(
     );
 
     if (!userUpdated) {
-      throw new Error(
-        {
-          error:
-            "User not found, review the email provided in GENERAL-DATA POST",
-        } as unknown as string
-      );
+      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
     }
     return NextResponse.json({
       message: `User ${userFounded?.fullName || ""} was updated 🤓`,
