@@ -181,8 +181,6 @@ export async function createTransaction({
     const findTag = await Tag.findOne({ name: tag, user, wallet });
     if (!findTag) {
       const newTag = new Tag({ name: tag, user, wallet });
-      if (!newTag)
-        throw new Error("No tag created on NEW TRANSACTION POST");
       newTransaction.tags.push(newTag._id);
       await newTag.save();
     }
@@ -191,8 +189,6 @@ export async function createTransaction({
     }
   }
   const savedTransaction = await newTransaction.save();
-  if (!savedTransaction)
-    throw new Error("NEW TRANSACTIONS could not be saved on POST");
   const finalTransaction = await Transaction.findById(savedTransaction._id)
     .populate({
       path: "tags",

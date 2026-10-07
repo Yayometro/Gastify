@@ -27,12 +27,14 @@ function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReport
     <div className="w-full mt-6">
       <h2 className="text-purple-300 text-lg mb-2 flex items-center">
         Precisión de tus proyecciones
-        <div
+        <button
+          type="button"
+          aria-label="How to read this table"
           className="inline-block ml-1 align-middle cursor-pointer text-purple-500"
           onClick={() => setShowInfoModal(true)}
         >
           <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={14} />
-        </div>
+        </button>
       </h2>
       <div className="w-full overflow-x-auto">
         <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
@@ -52,6 +54,14 @@ function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReport
                 key={row.monthName}
                 className="capitalize cursor-pointer hover:bg-gf-accent-soft-bg border-b border-gf-border"
                 onClick={() => onRowClick(row.monthName)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e: React.KeyboardEvent<HTMLTableRowElement>) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onRowClick(row.monthName);
+                  }
+                }}
               >
                 <td className="py-2 px-3">{row.monthName}</td>
                 <td className="py-2 px-3 text-gf-text-muted">{usdFormatChanger(row.projectedIncome ?? 0)}</td>

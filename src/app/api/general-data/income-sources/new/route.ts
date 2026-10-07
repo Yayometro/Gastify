@@ -94,13 +94,8 @@ export async function POST(
         },
       ],
     });
-    //IF ERROR
-    if (!newIncomeSource) throw new Error(`No Income Source was identified 🤕`);
     // SAVE
     const savedIncomeSource = await newIncomeSource.save();
-    //IF ERROR
-    if (!savedIncomeSource)
-      throw new Error("New Income Source was not saved 🤕");
     return NextResponse.json({
       message: `${savedIncomeSource.name || "Income source"} was created successfully 🤓`,
       data: savedIncomeSource,

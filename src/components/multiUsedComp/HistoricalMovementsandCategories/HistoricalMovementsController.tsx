@@ -104,7 +104,7 @@ function sliceTopCategoryMonths<T extends TransactionLike = TransactionLike>(
 ): RelativeMonthGroup<unknown>[] {
   return monthsArr.map((m) => ({
     ...m,
-    childrens: orderByHighestValue(reduceTransCategoriesSliced(m.childrens, n)).slice(0, n),
+    childrens: orderByHighestValue(reduceTransCategoriesSliced(m.childrens)).slice(0, n),
   }));
 }
 
@@ -180,12 +180,12 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
       setTransactionsLocal([incomesSliced as unknown as MonthBucket[], billsSliced as unknown as MonthBucket[]]);
       // Re-structure the data to categories.
       const finalBillsCategories = billsPerMonth.map((month) => {
-        const toCategoriesSliced = orderByHighestValue(reduceTransCategoriesSliced(month.childrens, elementsToDisplay)).slice(0, elementsToDisplay);
+        const toCategoriesSliced = orderByHighestValue(reduceTransCategoriesSliced(month.childrens)).slice(0, elementsToDisplay);
         const totalValuee = toCategoriesSliced.reduce((acc: number, item: ContainerTransactionItem) => acc += (item.value || item.amount), 0);
         return { ...month, childrens: toCategoriesSliced, value: totalValuee };
       });
       const finalIncomesCategories = incomesPerMonth.map((month) => {
-        const toCategoriesSliced = orderByHighestValue(reduceTransCategoriesSliced(month.childrens, elementsToDisplay)).slice(0, elementsToDisplay);
+        const toCategoriesSliced = orderByHighestValue(reduceTransCategoriesSliced(month.childrens)).slice(0, elementsToDisplay);
         const totalValuee = toCategoriesSliced.reduce((acc: number, item: ContainerTransactionItem) => acc += (item.value || item.amount), 0);
         return { ...month, childrens: toCategoriesSliced, value: totalValuee };
       });

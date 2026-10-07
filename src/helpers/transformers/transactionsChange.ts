@@ -533,9 +533,7 @@ export function sortByIndex<T extends { index: number }>(arr: T[]): T[] {
   return [...arr].sort((a, b) => a.index - b.index);
 }
 
-// `slice` is accepted but never used by the original implementation; kept for signature parity.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function reduceTransCategoriesSliced<T extends TransactionLike>(arr: T[], slice?: number): CategoryValueSliced<T>[] {
+export function reduceTransCategoriesSliced<T extends TransactionLike>(arr: T[]): CategoryValueSliced<T>[] {
   if (!(arr instanceof Array))
     throw new Error("the element should be an instance of Array");
   const reduceObj = arr.reduce((acc: Record<string, CategoryValueSliced<T>>, transaction) => {

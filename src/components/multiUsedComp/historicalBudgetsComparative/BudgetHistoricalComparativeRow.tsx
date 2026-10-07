@@ -50,7 +50,11 @@ function BudgetHistoricalComparativeRow({
       role="button"
       tabIndex={0}
       onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === "Enter" || e.key === " ") onOpenDetail(row);
+        if (e.key === "Enter" || e.key === " ") {
+          // Space would otherwise also scroll the page (bug 33).
+          e.preventDefault();
+          onOpenDetail(row);
+        }
       }}
     >
       <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">

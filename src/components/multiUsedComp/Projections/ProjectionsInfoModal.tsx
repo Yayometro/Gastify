@@ -14,12 +14,14 @@ function ProjectionsInfoModal({ onClose }: ProjectionsInfoModalProps): React.JSX
       close={onClose}
       renderContent={
         <div className="content absolute gf-glass-violet flex flex-col w-[95%] max-w-[550px] max-h-[85%] rounded-2xl items-center overflow-y-auto z-[5001] p-6">
-          <div
+          <button
+            type="button"
+            aria-label="Close"
             className="close-con absolute top-2 right-2 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors cursor-pointer"
             onClick={onClose}
           >
             <CategoIcon type={"MdClose"} siz={20} />
-          </div>
+          </button>
           <h1 className="text-2xl text-purple-300 mb-4">How Projections work</h1>
 
           <div className="w-full flex flex-col gap-4 text-left">

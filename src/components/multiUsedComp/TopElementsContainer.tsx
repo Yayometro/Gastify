@@ -134,7 +134,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       setTransactionsLocal([incomesTransactionsSlices as unknown as RankRowItem[], billsTransactionsSlices as unknown as RankRowItem[]]);
       // Transform to categories
       const toCategoriesSliced = orderByHighestValue(
-        reduceTransCategoriesSliced(dividedTrans.bills as unknown as TransactionLike[], dividedTrans.bills.length)
+        reduceTransCategoriesSliced(dividedTrans.bills as unknown as TransactionLike[])
       ).slice(0, elementsToDisplay);
       const totalValue = toCategoriesSliced.reduce(
         (acc: number, item: ContainerTransactionItem) => (acc += item.value || item.amount),
@@ -145,7 +145,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
         total: formatMoneyMajor(totalValue, walletPrimaryCurrency),
       };
       const toCategoriesSlicedIncomes = orderByHighestValue(
-        reduceTransCategoriesSliced(dividedTrans.incomes as unknown as TransactionLike[], dividedTrans.incomes.length)
+        reduceTransCategoriesSliced(dividedTrans.incomes as unknown as TransactionLike[])
       ).slice(0, elementsToDisplay);
       const totalValueIncome = toCategoriesSlicedIncomes.reduce(
         (acc: number, item: ContainerTransactionItem) => (acc += item.value || item.amount),
