@@ -1452,3 +1452,8 @@ When taking over this task, Claude should perform the following steps:
 - **G12**: sin cambios por diseño (#129-132). #84 no se puede arreglar; #107/#109 por diseño; #7 obsoleto.
 - **Verificado en el Chrome del usuario** (cuenta desechable, borrada; 0 huérfanos): tags en oscuro/claro, modal de proyecciones se cierra con teclado (botón con `aria-label="Close"`), montos en Cuentas/Presupuestos/Proyecciones sin NaN, barrido de Movimientos, Cuentas, Categorías, Historial, Presupuestos y Proyecciones. Único warning de consola: `objectPosition` obsoleto en `<Image>` del avatar (Navbar/ProfileClient); quitado (es el valor por defecto).
 - **Pendientes (8)**: #31, #91, #96 (parcial), #99, #104, #105 (conversión FX), #135 (typos en nombres de íconos guardados en datos), #159 (con T1-T3). 
+
+### Entry #40 - Claude - 2026-10-07 - Rama `post-migration-bugs-resolver`: #105, #104, #99, #31, #91, #135 y #168
+- #105: presupuestos convertidos a moneda primaria (tasa de hoy) en Proyecciones, Historial, Presupuestos, BudgetCont y WalletAnalyzer. #104: factura contada una vez (más específico gana). #99 explícito, #31, #91 (encadena saldo entre años), #135 (typo). Nuevo #168 (detalle sumaba ingresos).
+- Verificado en el Chrome del usuario (cuenta desechable borrada, 0 huérfanos): 500 USD = $8,475.50; proyecciones y saldos coherentes. #91 solo con unitarias. vitest 476/476, tsc y eslint limpios.
+- Pendientes: #96 (parcial por diseño), #159 con T1-T3.
