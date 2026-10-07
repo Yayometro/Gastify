@@ -11,7 +11,6 @@ import { formatMoneyMinor } from "@/lib/money/currencies";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
-  size?: number | string;
   siz?: number | string;
   colore?: string;
   className?: string;
@@ -20,7 +19,6 @@ const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
 
 const TypedCategoIcon = CategoIcon as React.ComponentType<{
   type: string;
-  size?: number | string;
   siz?: number | string;
   className?: string;
   [key: string]: unknown;
@@ -147,7 +145,7 @@ function TransactionItemList({
         >
           <TypedUniversalCategoIcon
             type={`${movement?.category?.icon || "md/MdFilterNone"}`}
-            size={10}
+            siz={10}
           />
         </div>
         <div className="center-cont min-w-0 overflow-hidden flex flex-col">
@@ -207,7 +205,7 @@ function TransactionItemList({
               onClick={() => handleDelete(movement._id)}
               className="hover:text-red-400 micro-pulse"
             >
-              <TypedCategoIcon type={"MdDelete"} size={15} />
+              <TypedCategoIcon type={"MdDelete"} siz={15} />
             </button>
           )}
           {handleEdit && (
@@ -215,7 +213,7 @@ function TransactionItemList({
               onClick={() => handleEdit(movement)}
               className="hover:text-purple-600 micro-pulse"
             >
-              <TypedCategoIcon type={"MdOutlineCreate"} size={15} />
+              <TypedCategoIcon type={"MdOutlineCreate"} siz={15} />
             </button>
           )}
         </div>

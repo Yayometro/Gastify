@@ -8,7 +8,6 @@ import type { RootState } from "@/lib/store";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
-  size?: number | string;
   siz?: number | string;
   colore?: string;
   className?: string;
@@ -59,7 +58,7 @@ function AtomicTop<T = unknown>({
             <div className="t3-tra-icon-cont flex justify-center items-center min-w-[10px] min-[352px]:min-w-[30px] ">
                 <TypedUniversalCategoIcon
                   type={`${icon}`}
-                  size={25}
+                  siz={25}
                 />
             </div>
             <p className="w-full text-[15px] font-semibold truncate">

@@ -4,7 +4,6 @@ import { Tooltip } from "antd";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
-  size?: number | string;
   siz?: number | string;
   className?: string;
 }>;
@@ -52,7 +51,7 @@ function CategoryCircle<T = unknown>({
           <div className={`cat-ico-cont  flex justify-center items-center`}>
             <TypedUniversalCategoIcon
               type={`${icon}` || "md/MdFilterNone"}
-              size={40}
+              siz={40}
               className={`w-[28px] h-[28px] min-[400px]:w-[35px] min-[400px]:h-[35px] `}
             />
           </div>

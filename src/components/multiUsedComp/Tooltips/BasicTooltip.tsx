@@ -6,7 +6,7 @@ import UniversalCategoIcon from "../UniversalCategoIcon";
 
 export interface BasicTooltipStyle {
   tooltip?: string;
-  iconZise?: number | string;
+  iconSize?: number | string;
   [key: string]: unknown;
 }
 
@@ -23,7 +23,7 @@ function BasicTooltip({ title, content, style }: BasicTooltipProps): React.JSX.E
         content
       ) : (
         <div>
-          <UniversalCategoIcon type={`${"fa/FaRegQuestionCircle"}`} siz={style?.iconZise || 20} />
+          <UniversalCategoIcon type={`${"fa/FaRegQuestionCircle"}`} siz={style?.iconSize || 20} />
         </div>
       )}
     </Tooltip>

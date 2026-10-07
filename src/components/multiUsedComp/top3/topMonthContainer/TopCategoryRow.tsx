@@ -11,7 +11,6 @@ import type { RootState } from "@/lib/store";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
-  size?: number | string;
   siz?: number | string;
   colore?: string;
   className?: string;
@@ -59,7 +58,7 @@ function TopCategoryRow({ item, index, onClick }: TopCategoryRowProps): React.JS
           style={{ backgroundColor: item.color || "#DADADA" }}
           className="gf-glass-tile rounded-full min-w-[50px] min-h-[50px] w-[50px] h-[50px] flex items-center justify-center shrink-0 hover:brightness-90"
         >
-          <TypedUniversalCategoIcon type={item.icon || "md/MdFilterNone"} size={10} />
+          <TypedUniversalCategoIcon type={item.icon || "md/MdFilterNone"} siz={10} />
         </div>
         <p className="truncate text-start text-[15px] font-medium">
           {item.type || item.name || "No category"}

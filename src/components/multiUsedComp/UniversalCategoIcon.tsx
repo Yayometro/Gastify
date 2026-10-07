@@ -12,58 +12,30 @@ export interface UniversalCategoIconProps {
   className?: string;
 }
 
-function UniversalCategoIcon({ type, siz, colore, className }: UniversalCategoIconProps): React.JSX.Element | null {
+const COLLECTIONS: Record<string, Record<string, IconType>> = {
+  md: md as unknown as Record<string, IconType>,
+  fa: fa as unknown as Record<string, IconType>,
+  ai: ai as unknown as Record<string, IconType>,
+  gi: gi as unknown as Record<string, IconType>,
+};
+
+// An icon is named "collection/IconName" ("md/MdFilterNone"). Several producers
+// (the category/chart transformers' fallbacks) hand over the bare name
+// ("MdFilterNone"), which used to resolve to nothing and draw no icon (bug 23): the
+// collection is inferred from the name's first two letters, the way the old
+// commented-out branch of this component did.
+export function resolveIcon(type?: string): IconType | null {
   if (!type) return null;
-  // if (type.includes("/")) {
-    // console.log(type);
-    const [collectionName, iconName] = type.split("/");
-    // Material
-    if (collectionName === "md") {
-      const Icon = (md as Record<string, IconType>)[iconName];
-      return <Icon size={siz} color={colore} className={className} />;
-    }
-    if (collectionName === "fa") {
-      const Icon = (fa as Record<string, IconType>)[iconName];
-      return <Icon size={siz} color={colore} className={className} />;
-    }
-    if (collectionName === "ai") {
-      const Icon = (ai as Record<string, IconType>)[iconName];
-      return <Icon size={siz} color={colore} className={className} />;
-    }
-    if (collectionName === "gi") {
-      const Icon = (gi as Record<string, IconType>)[iconName];
-      return <Icon size={siz} color={colore} className={className} />;
-    }
-    //
-  // } 
-  // else {
-  //   // console.log(type)
-  //   // Convertir las dos primeras letras a minúsculas
-  //   const startingWith = type.substring(0, 2).toLowerCase();
-  //   let Icon = null;
+  const hasPrefix = type.includes("/");
+  const collectionName = hasPrefix ? type.split("/")[0] : type.substring(0, 2).toLowerCase();
+  const iconName = hasPrefix ? type.split("/")[1] : type;
+  return COLLECTIONS[collectionName]?.[iconName] ?? null;
+}
 
-  //   const mdRegex = /^md/i;
-  //   const faRegex = /^fa/i;
-  //   const aiRegex = /^ai/i;
-  //   const giRegex = /^gi/i;
-
-  //   if (mdRegex.test(startingWith)) {
-  //     Icon = md[type];
-  //   } else if (faRegex.test(startingWith)) {
-  //     Icon = fa[type];
-  //   } else if (aiRegex.test(startingWith)) {
-  //     Icon = ai[type];
-  //   } else if (giRegex.test(startingWith)) {
-  //     Icon = gi[type];
-  //   }
-
-  //   if (Icon) {
-  //     return <Icon size={siz} color={colore} className={className} />;
-  //   } else {
-  //       throw new Error(`There was a problem rendering the icon in UniversalIconComponent`)
-  //   }
-  // }
-  return null;
+function UniversalCategoIcon({ type, siz, colore, className }: UniversalCategoIconProps): React.JSX.Element | null {
+  const Icon = resolveIcon(type);
+  if (!Icon) return null;
+  return <Icon size={siz} color={colore} className={className} />;
 }
 
 export default UniversalCategoIcon;

@@ -133,13 +133,13 @@ export default SubCategoryList;
 //           {!subCategory.icon ? (
 //             <UniversalCategoIcon
 //               type={"md/MdFilterNone"}
-//               size={40}
+//               siz={40}
 //               className={`w-[100px] min-[400px]:w-[150px]`}
 //             />
 //           ) : (
 //             <UniversalCategoIcon
 //               type={`${subCategory.icon}`}
-//               size={40}
+//               siz={40}
 //               className={`w-[28px] h-[28px] min-[400px]:w-[35px] min-[400px]:h-[35px] `}
 //             />
 //           )}
@@ -195,13 +195,13 @@ export default SubCategoryList;
 //             {!category.icon ? (
 //               <UniversalCategoIcon
 //                 type={"md/MdFilterNone"}
-//                 size={40}
+//                 siz={40}
 //                 className={`w-[100px] min-[400px]:w-[150px]`}
 //               />
 //             ) : (
 //               <UniversalCategoIcon
 //                 type={`${category.icon}`}
-//                 size={40}
+//                 siz={40}
 //                 className={`w-[28px] h-[28px] min-[400px]:w-[35px] min-[400px]:h-[35px] `}
 //               />
 //             )}
