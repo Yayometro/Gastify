@@ -163,7 +163,9 @@ function BudgetDetailModal({
     for (const t of transacciones) {
       const tMs = t.date ? new Date(t.date).getTime() : 0;
       if (tMs >= startMs && tMs <= endMs) {
-        if (matchBillToBudget(t, budget as MatchableBudget)) {
+        // Only spending counts against a budget; an income in the same category
+        // used to be added to "Spent" here while the list ignored it (bug 168).
+        if (t.isBill && matchBillToBudget(t, budget as MatchableBudget)) {
           matched.push(t);
           const amount = getPrimaryAmount(t);
           spent += amount;
