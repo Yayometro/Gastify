@@ -36,14 +36,16 @@ interface ProviderData {
   [key: string]: unknown;
 }
 
-const EMPTY_FORM: TransferExchangeFormState = {
+// A function, not a constant: the date used to be taken once when the bundle
+// loaded, so "Clear Form" in a long session restored an old date (bug 38).
+const getEmptyForm = (): TransferExchangeFormState => ({
   name: "",
   sourceAccountId: "",
   sourceAmount: "",
   destinationAccountId: "",
   destinationAmount: "",
   date: new Date(),
-};
+});
 
 // Internal transfer/exchange between two of the user's own Accounts - never
 // treated as income or spending (plan section 2.6/13). "transfer" requires
@@ -54,7 +56,7 @@ function TransferExchangeModal(): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
   const { user, accounts = [] } = useGetDataFromProvider<ProviderData>();
-  const [form, setForm] = useState<TransferExchangeFormState>(EMPTY_FORM);
+  const [form, setForm] = useState<TransferExchangeFormState>(getEmptyForm);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [quoting, setQuoting] = useState<boolean>(false);
   const [destinationTouched, setDestinationTouched] = useState<boolean>(false);
@@ -119,7 +121,7 @@ function TransferExchangeModal(): React.JSX.Element {
   }, [form.sourceAccountId, form.destinationAccountId, form.sourceAmount, isCrossCurrency]);
 
   const clearForm = () => {
-    setForm(EMPTY_FORM);
+    setForm(getEmptyForm());
     setDestinationTouched(false);
   };
 

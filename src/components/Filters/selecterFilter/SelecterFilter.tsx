@@ -27,7 +27,7 @@ function SelecterFilter({
     { value: 15, name: "Last 15 days" },
     { value: 30, name: "Last 30 days" },
     { value: 60, name: "Last 60 days" },
-    { value: 30, name: "Last 90 days" },
+    { value: 90, name: "Last 90 days" },
   ];
   const [internalPeriod, setInternalPeriod] = useState<SelecterPeriod | string | number>(
     periodFromFather || periods[0]

@@ -1,8 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type React from "react";
-import { getPeriodLabel, timeperiodRangesArray } from "@/helpers/timeFunctions/timeFunctions";
+import {
+  getLast3MonthsPeriod,
+  getPeriodLabel,
+  getTimeperiodRangesArray,
+  shiftPeriodBackOneYear,
+} from "@/helpers/timeFunctions/timeFunctions";
 
 export interface TimePeriodOption {
   value: string;
@@ -27,8 +32,6 @@ export interface PeriodComparisonState {
   labelB: string;
 }
 
-const today = new Date();
-
 // Shared "period A vs period B" state for every /dashboard/history section.
 // Before this, TabsTogglerMontlyController, HistoricalComparativeCategories,
 // and HistoricalMovementsController each independently reimplemented this
@@ -38,31 +41,46 @@ const today = new Date();
 // HistoryClient owns a single instance and passes it to every section
 // (including HistoricalWalletAnalyzer) so they always agree.
 export default function usePeriodComparison(): PeriodComparisonState {
-  const [timePeriod, setTimePeriod] = useState<[Date, Date]>([
-    new Date(today.getFullYear(), today.getMonth() - 2, 1),
-    today,
-  ]);
+  // "Today" is taken when the hook mounts, not when the bundle loads (a tab left
+  // open across midnight used to keep the old day, bug 17). The default period
+  // and the first option of the selector come from the same pair of dates so the
+  // label of the default period is recognised.
+  const [defaultLast3Months] = useState<[Date, Date]>(() => getLast3MonthsPeriod());
+  const [timePeriod, setTimePeriod] = useState<[Date, Date]>(defaultLast3Months);
   const [compareEnabled, setCompareEnabled] = useState<boolean>(false);
   // Default: the same span the user is already looking at, shifted back
   // exactly one year - the most common comparison ("this vs. last year").
-  const [comparePeriod, setComparePeriod] = useState<[Date, Date]>(() => [
-    new Date(timePeriod[0].getFullYear() - 1, timePeriod[0].getMonth(), timePeriod[0].getDate()),
-    new Date(timePeriod[1].getFullYear() - 1, timePeriod[1].getMonth(), timePeriod[1].getDate()),
-  ]);
+  const [comparePeriod, setComparePeriodState] = useState<[Date, Date]>(() => shiftPeriodBackOneYear(timePeriod));
+  // Once the user picks the comparison period themselves it is left alone;
+  // until then it follows the main period (it used to stay on the initial one
+  // when the user changed the main period and then turned "Compare" on, bug 18).
+  const compareAdjusted = useRef<boolean>(false);
+  const setComparePeriod: React.Dispatch<React.SetStateAction<[Date, Date]>> = (value) => {
+    compareAdjusted.current = true;
+    setComparePeriodState(value);
+  };
+  const firstRun = useRef<boolean>(true);
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    if (!compareAdjusted.current) setComparePeriodState(shiftPeriodBackOneYear(timePeriod));
+  }, [timePeriod]);
 
-  // Stable across the hook's lifetime (only depends on the module-level
-  // `today`) - memoized so consumers can safely put it in an effect's
+  // Stable across the hook's lifetime (it only depends on the day the hook
+  // mounted) - memoized so consumers can safely put it in an effect's
   // dependency array without a new array reference re-triggering it on
   // every render.
   const timePeriodsForSelecter: TimePeriodOption[] = useMemo(
     () => [
       {
-        value: `${new Date(today.getFullYear(), today.getMonth() - 2, 1)}*${today}`,
+        value: `${defaultLast3Months[0]}*${defaultLast3Months[1]}`,
         name: "Last 3 months",
       },
-      ...timeperiodRangesArray,
+      ...getTimeperiodRangesArray(defaultLast3Months[1].getFullYear()),
     ],
-    []
+    [defaultLast3Months]
   );
 
   function getValueFromSelecter(v: string): void {

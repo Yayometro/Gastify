@@ -216,18 +216,9 @@ export function getYearMonthDateRange(today: Date): Map<string, MonthDateRange> 
   const year = today.getFullYear();
 
   const monthNames = [
-    { color: "#FF5733", name: "january" },
-    { color: "#33FF57", name: "february" },
-    { color: "#3357FF", name: "march" },
-    { color: "#FF33A8", name: "april" },
-    { color: "#FFD633", name: "may" },
-    { color: "#33FFF6", name: "june" },
-    { color: "#8D33FF", name: "july" },
-    { color: "#FF8D33", name: "august" },
-    { color: "#33FF8D", name: "september" },
-    { color: "#5733FF", name: "october" },
-    { color: "#FF3333", name: "november" },
-    { color: "#33D4FF", name: "december" },
+    // One palette for the whole app (monthObjects); this function used to carry its own
+    // 12 colours, so the same month could be painted two different ways (bug 21).
+    ...monthObjects.map((m) => ({ color: m.color, name: m.name })),
   ];
 
   const dateRangeMap = new Map<string, MonthDateRange>();
@@ -274,8 +265,10 @@ export function generatePeriodsForSelector(year: number): TimePeriodOption[] {
     },
   ];
 }
-const year = new Date().getFullYear();
-export const timeperiodRangesArray: TimePeriodOption[] = [
+// Built on demand with the year it is asked for: this used to be a module-level
+// constant, frozen to the year the bundle loaded in (bug 19).
+export function getTimeperiodRangesArray(year: number = new Date().getFullYear()): TimePeriodOption[] {
+  return [
   {
     value: `${new Date(year, 0, 1)}*${getLastDayOfQuarter(year, 1)}`,
     name: "First quarter (Q1)",
@@ -309,15 +302,33 @@ export const timeperiodRangesArray: TimePeriodOption[] = [
     name: `All ${year - 1}`,
   },
 ];
+}
+
+// End of the given day (23:59:59): stable for the whole day and covers every
+// movement of that day. Used as the end of the "Last 3 months" period so its
+// value does not change on every render (bug 154).
+export function getEndOfDay(date: Date = new Date()): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+}
+
+// "Last 3 months": from the 1st of two months ago to the end of today, in the
+// given year (it used to ignore `year` and always use the current one, bug 20).
+export function getLast3MonthsPeriod(now: Date = new Date(), year: number = now.getFullYear()): [Date, Date] {
+  return [new Date(year, now.getMonth() - 2, 1), getEndOfDay(new Date(year, now.getMonth(), now.getDate()))];
+}
+
+// The same span shifted back exactly one year ("this vs. last year").
+export function shiftPeriodBackOneYear(period: readonly [Date, Date]): [Date, Date] {
+  const [start, end] = period;
+  return [
+    new Date(start.getFullYear() - 1, start.getMonth(), start.getDate()),
+    new Date(end.getFullYear() - 1, end.getMonth(), end.getDate()),
+  ];
+}
+
 export const generate_timeperiod_ranges_array_for_dashboard = (year: number): TimePeriodOption[] => {
   const today = new Date();
-  // "Last 3 months" ends at the END OF TODAY, not at the current instant:
-  // this array is rebuilt on every render, and `${new Date()}` carries the
-  // seconds, so the option's value used to change every second and the
-  // controlled <select> (which stores the value it was given) stopped
-  // matching any option and fell back to the wrong label. The end of the day
-  // is stable for the whole day and still covers everything up to now.
-  const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+  const [last3Start, last3End] = getLast3MonthsPeriod(today, year);
   return [
     {
       value: `${new Date(year, today.getMonth(), 1)}*${getLastDayOfMonth(
@@ -349,14 +360,10 @@ export const generate_timeperiod_ranges_array_for_dashboard = (year: number): Ti
       name: "Second half of month",
     },
     {
-      value: `${new Date(
-        today.getFullYear(),
-        today.getMonth() - 2,
-        1
-      )}*${endOfToday}`,
+      value: `${last3Start}*${last3End}`,
       name: "Last 3 months",
     },
-    ...timeperiodRangesArray,
+    ...getTimeperiodRangesArray(year),
   ];
 };
 
