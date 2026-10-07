@@ -151,7 +151,10 @@ function resolveMonthlyGoalAmount(
     if (resolved) return { goalAmount: resolved.goalAmount || 0, estimated: false };
     return { goalAmount: earliestKnown.goalAmount, estimated: true };
   }
-  const isBeforeCreation = earliestKnown.earliestFrom && monthStart < earliestKnown.earliestFrom;
+  // No history: the current goal is only a record from the budget's creation on.
+  // With no creation date either (legacy docs) there is no month it is known to
+  // be real for, so every month is an assumption (bug 31).
+  const isBeforeCreation = !earliestKnown.earliestFrom || monthStart < earliestKnown.earliestFrom;
   return { goalAmount: budget.goalAmount || 0, estimated: Boolean(isBeforeCreation) };
 }
 

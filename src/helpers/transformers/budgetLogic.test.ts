@@ -27,6 +27,18 @@ describe("buildBudgetHistoricalComparative (bugs 30, 32)", () => {
   });
   const bill = { isBill: true, category: { _id: "c1" }, date: new Date(2026, 6, 10), amount: 50 };
 
+  it("a budget with no history and no createdAt marks every month as estimated (bug 31)", () => {
+    const legacy = { _id: "old", name: "Old", goalAmount: 100, period: "monthly", category: "c1" };
+    const [row] = buildBudgetHistoricalComparative({ budgets: [legacy as never], transactions: [bill as never], ...range });
+    expect(row.monthlySeries.every((m: { estimated: boolean }) => m.estimated)).toBe(true);
+    const [dated] = buildBudgetHistoricalComparative({
+      budgets: [{ ...legacy, createdAt: new Date(2026, 0, 1) } as never],
+      transactions: [bill as never],
+      ...range,
+    });
+    expect(dated.monthlySeries.every((m: { estimated: boolean }) => !m.estimated)).toBe(true);
+  });
+
   it("budgets with the same compliance keep a fixed order by name", () => {
     const rows = buildBudgetHistoricalComparative({
       budgets: [budget({ name: "Zeta" }), budget({ name: "Alpha" }), budget({ name: "Mid" })] as never,
