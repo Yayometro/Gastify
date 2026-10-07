@@ -1439,3 +1439,9 @@ When taking over this task, Claude should perform the following steps:
 - **Hallazgos**: #163 (confirmación detrás del modal, resuelto) y #164 (aviso `value null` en `AddTransactionComp`, pendiente).
 - vitest 373/373, tsc y eslint limpios. Nota: en desarrollo la página se recarga sola cuando Next compila algo por primera vez y vacía lo escrito en el formulario (no es del código de la app).
 
+### Entry #38 - Claude - 2026-10-07 - Rama `post-migration-bugs-resolver`: Ola 2 (G3, G7, G10, G5, G2) + bug 164
+- **G3** `cd23042`: períodos ya no se congelan al cargar (`getTimeperiodRangesArray`, `getLast3MonthsPeriod`, `usePeriodComparison` toma "hoy" al montar y la comparación sigue al período principal). **G7** `65d9a27`: 0/false/vacío en rutas y formularios (+ #164). **G10** `b5314b0`: ordenamientos sin mutar, categorías por id, subcategorías huérfanas bajo "Unknown category". **G5** `0011e44`: se QUITAN los `setUser`/`setTransacctions` sin dispatch (despacharlos habría corrompido el slice), selectores con las claves reales. **G2** `7ff0b60`: `siz` en vez de `size`, íconos con nombre sin prefijo, `iconSize`.
+- **Verificado en el Chrome del usuario** (cuenta desechable, borrada): comparación Q3 2026 vs Q3 2025 (#18), movimiento con monto 0 y no legible persistido (#88/#89), fuente de ingreso a 0 con historial (#42/#43), recorrido de 8 pantallas sin errores de consola.
+- **Regresión mía encontrada y corregida** (bug 165, `e66fcba`): `getDateInYearMonthDay` usaba UTC y el fin del día (23:59:59 local, del arreglo del 154) se mostraba como el día siguiente.
+- Quedan 69 filas pendientes (G8, G9, G11, G12, G13, G14, G16 y las parciales 96, 99, 146). vitest 420/420, tsc y eslint (0 errores).
+
