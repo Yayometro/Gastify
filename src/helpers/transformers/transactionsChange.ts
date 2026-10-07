@@ -199,6 +199,11 @@ export function filterBillsOrIncomes<T extends { kind?: string; isBill?: boolean
   // (plan section 13) - without this exclusion, `!tra.isBill` alone
   // silently counted every transfer leg as income everywhere this function
   // is used (Dashboard, Top3, History, Projections).
+  //
+  // `refund` and `fee` kinds follow the same sign flag as everything else: a fee
+  // is saved with isBill=true (spending) and a refund with isBill=false (money
+  // coming back, counted on the income side). Nothing in the app creates them
+  // today; if one ever does, it must set isBill accordingly (bug 99).
   const nonTransfers = trans.filter((tra) => tra.kind !== "transfer" && tra.kind !== "exchange");
   const incomes = nonTransfers.filter((tra) => !tra.isBill);
   const bills = nonTransfers.filter((tra) => tra.isBill);

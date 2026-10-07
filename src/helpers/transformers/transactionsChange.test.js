@@ -118,6 +118,14 @@ describe("filterBillsOrIncomes", () => {
     expect(bills).toHaveLength(1);
     expect(incomes).toHaveLength(1);
   });
+
+  it("a fee counts as spending and a refund as money coming back, following isBill (bug 99)", () => {
+    const fee = { isBill: true, isIncome: false, kind: "fee", amount: 5 };
+    const refund = { isBill: false, isIncome: true, kind: "refund", amount: 20 };
+    const { incomes, bills } = filterBillsOrIncomes([fee, refund]);
+    expect(bills).toEqual([fee]);
+    expect(incomes).toEqual([refund]);
+  });
 });
 
 describe("orderItemsInRelativeMonth", () => {
