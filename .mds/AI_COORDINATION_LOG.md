@@ -1457,3 +1457,11 @@ When taking over this task, Claude should perform the following steps:
 - #105: presupuestos convertidos a moneda primaria (tasa de hoy) en Proyecciones, Historial, Presupuestos, BudgetCont y WalletAnalyzer. #104: factura contada una vez (más específico gana). #99 explícito, #31, #91 (encadena saldo entre años), #135 (typo). Nuevo #168 (detalle sumaba ingresos).
 - Verificado en el Chrome del usuario (cuenta desechable borrada, 0 huérfanos): 500 USD = $8,475.50; proyecciones y saldos coherentes. #91 solo con unitarias. vitest 476/476, tsc y eslint limpios.
 - Pendientes: #96 (parcial por diseño), #159 con T1-T3.
+
+### Entry #41 - Claude - 2026-10-07 - Rama `post-migration-bugs-resolver`: #159, T2, T3 y verificación final
+- **#159/T2** (`Verify2FAClient.tsx`): sin passkey registrado el reto abre directo el código TOTP (ya no se abre el cuadro del sistema); cancelar el cuadro del passkey no gasta intento y muestra aviso; "usa un código" solo aparece si hay TOTP. Verificado en el Chrome del usuario con cuenta desechable (borrada, 0 huérfanos).
+- **T3** (`PasskeysPanel.tsx`): al borrar un passkey sale un aviso de que el dispositivo/gestor de contraseñas puede conservar su copia. No probado con dispositivo real.
+- Intentado y revertido: quitar los 3 puentes `TypedModalContentTopMonthItem` (hay un desajuste real de tipos entre `TransactionData` y el modal; requiere tipar de nuevo).
+- `npm audit`: los arreglos disponibles incluyen cambios mayores (Next 16, Tailwind 4); no se aplicó nada.
+- Final: tsc limpio, eslint 0 errores (16 avisos de exhaustive-deps), vitest 476/476.
+- Pendiente real: T1 (borrar cuenta con passkey, requiere diseño de seguridad), #96 parcial por diseño, dependencias vulnerables, 26 archivos muertos ignorados.
