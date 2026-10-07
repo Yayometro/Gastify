@@ -156,3 +156,21 @@ describe("a bill claimed by several budgets counts once (bug 104)", () => {
     expect(june.projectedExpense).toBe(180);
   });
 });
+
+describe("getYearEndBalance (bug 91)", () => {
+  it("returns December's balance, or null for a year with no projected balance", async () => {
+    const { getYearEndBalance, computeYearRowsWithBalance } = await import("./projectionsChange");
+    expect(getYearEndBalance([{ balance: 10 }, { balance: 250.5 }])).toBe(250.5);
+    expect(getYearEndBalance([{ balance: 10 }, { balance: null }])).toBeNull();
+    expect(getYearEndBalance([])).toBeNull();
+    expect(getYearEndBalance(null)).toBeNull();
+
+    // Chaining: year 2 opens with year 1's closing balance.
+    const estimateRow = (income: number, expense: number) => ({ type: "estimate", income, expense, monthName: "x", year: 2026 });
+    const y1 = computeYearRowsWithBalance(Array.from({ length: 12 }, () => estimateRow(100, 40)) as never, [], 1000, 2026, new Date(2025, 11, 1));
+    const y1End = getYearEndBalance(y1);
+    expect(y1End).toBe(1000 + 12 * 60);
+    const y2 = computeYearRowsWithBalance(Array.from({ length: 12 }, () => estimateRow(100, 40)) as never, [], y1End ?? 0, 2027, new Date(2025, 11, 1));
+    expect(y2[0].balance).toBe(1000 + 13 * 60);
+  });
+});

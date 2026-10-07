@@ -159,6 +159,9 @@ export interface UseProjectionTableOptions {
   budgets?: BudgetData[] | null;
   accounts?: AccountData[] | null;
   walletPrimaryCurrency?: string;
+  // Opening balance to use instead of the live sum of the accounts - for a
+  // second calendar year chained after the first one's closing balance.
+  startingBalanceOverride?: number | null;
 }
 
 export interface UseProjectionTableReturn {
@@ -202,6 +205,7 @@ export default function useProjectionTable({
   budgets,
   accounts,
   walletPrimaryCurrency,
+  startingBalanceOverride,
 }: UseProjectionTableOptions): UseProjectionTableReturn {
   const [incomeSources, setIncomeSources] = useState<IncomeSourceItem[]>([]);
   const [projectionSettings, setProjectionSettings] = useState<ProjectionSettingsData | null>(null);
@@ -396,9 +400,9 @@ export default function useProjectionTable({
   const today = new Date();
   const rowsWithBalance = useMemo(() => {
     if (!year) return [];
-    return computeYearRowsWithBalance(rows, monthlyBalances, startingBalance, year, today);
+    return computeYearRowsWithBalance(rows, monthlyBalances, startingBalanceOverride ?? startingBalance, year, today);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, startingBalance, year, monthlyBalances]);
+  }, [rows, startingBalance, startingBalanceOverride, year, monthlyBalances]);
 
   const monthRanges = useMemo(() => (year ? getYearMonthDateRange(new Date(year, 0, 1)) : new Map<string, MonthDateRange>()), [year]);
 

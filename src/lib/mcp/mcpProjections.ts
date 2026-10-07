@@ -8,6 +8,7 @@ import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
 import {
   buildYearProjectionTable,
   computeYearRowsWithBalance,
+  getYearEndBalance,
   estimateHistoricalBalances,
 } from "@/helpers/transformers/projectionsChange";
 import type { IUser } from "@/model/User";
@@ -134,6 +135,9 @@ export async function buildProjectionsForRange({
   const settingsByYear = new Map(settingsDocs.map((s) => [s.year, s]));
 
   const slicedRows: ProjectionRowSlice[] = [];
+  // A range crossing a year boundary chains the tables: the second year starts
+  // from the first one's closing balance, not from today's balance again (bug 91).
+  let carriedBalance: number | null = null;
   years.forEach((year) => {
     const settings = settingsByYear.get(year);
     const rows = buildYearProjectionTable({
@@ -145,7 +149,8 @@ export async function buildProjectionsForRange({
       year,
       today,
     });
-    const rowsWithBalance = computeYearRowsWithBalance(rows, settings?.monthlyBalances || [], startingBalance, year, today);
+    const rowsWithBalance = computeYearRowsWithBalance(rows, settings?.monthlyBalances || [], carriedBalance ?? startingBalance, year, today);
+    carriedBalance = getYearEndBalance(rowsWithBalance);
     const monthRangesForYear = getYearMonthDateRange(new Date(year, 0, 1));
     const monthStarts = [...monthRangesForYear.values()].map((r) => r.start);
     const rowsWithEstimates = estimateHistoricalBalances(rowsWithBalance, monthStarts, projectionBaselineConverted);

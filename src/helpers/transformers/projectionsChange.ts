@@ -740,6 +740,14 @@ export function estimateHistoricalBalances<
 // shadow projection beyond what's already actually happened
 // (`projected - actual`, both directions), and every month after that just
 // adds its own net.
+// Balance at the end of a year's table (December), or null when the whole year
+// is in the past and has no projected balance. Used to start the next year's
+// table from where this one ends instead of from today's balance again.
+export function getYearEndBalance(rows: { balance?: number | null }[] | null | undefined): number | null {
+  const last = rows && rows.length > 0 ? rows[rows.length - 1] : null;
+  return typeof last?.balance === "number" && Number.isFinite(last.balance) ? last.balance : null;
+}
+
 export function computeYearRowsWithBalance(
   rows: YearProjectionRow[],
   monthlyBalances: MonthlyBalanceEntryLike[] | null | undefined,

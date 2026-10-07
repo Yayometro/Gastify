@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import useProjectionTable from "@/hooks/useProjectionTable";
+import { getYearEndBalance } from "@/helpers/transformers/projectionsChange";
 import ProjectionsView from "../Projections/ProjectionsView";
 import PeriodFiltersWithCompare from "../periodFiltersWithCompare/PeriodFiltersWithCompare";
 import type { PeriodStateProps } from "./HistoricalWalletAnalyzer";
@@ -115,6 +116,7 @@ function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableP
     accounts,
     walletPrimaryCurrency,
   }) as unknown as ProjectionTableResult;
+  // The second year picks up where the first one closes, not from today's balance again.
   const tableB = useProjectionTable({
     mail: email,
     year: secondYear,
@@ -122,6 +124,7 @@ function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableP
     budgets,
     accounts,
     walletPrimaryCurrency,
+    startingBalanceOverride: getYearEndBalance(tableA.rows),
   }) as unknown as ProjectionTableResult;
 
   const rows = useMemo(() => {
