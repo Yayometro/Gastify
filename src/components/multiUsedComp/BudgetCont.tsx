@@ -5,6 +5,8 @@ import EmptyModule from "./EmptyModule";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTrans, TransactionData } from "@/lib/features/transacctionsSlice";
 import { fetchBudget, BudgetData } from "@/lib/features/budgetSlice";
+import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurrency";
+import { getStoredBudget } from "@/helpers/transformers/budgetCurrency";
 import BudgetBarRow from "./Budgets/BudgetBarRow";
 import BudgetEditModal, { BudgetModalItem } from "./Budgets/BudgetEditModal";
 import BudgetDetailModal, { BudgetDetailItem, BudgetDetailTransactionItem } from "./Budgets/BudgetDetailModal";
@@ -48,7 +50,9 @@ function BudgetCont({
   const ccBudget = useSelector((state: RootState) => state.budgetReducer);
   const ccTrans = useSelector((state: RootState) => state.transacctionsReducer);
   //
-  const bcBudget = ccBudget.data;
+  const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as { primaryCurrency?: string } | undefined)?.primaryCurrency) || "MXN";
+  // Budgets in the primary currency, like the spending they are compared with.
+  const bcBudget = useBudgetsInPrimaryCurrency(ccBudget.data, walletPrimaryCurrency);
   const bcTrans = ccTrans.data;
   const coverage = useMemo(
     () => getBudgetCoverage({ transactions: bcTrans, budgets: [...budgets, ...projects], startDate, endDate }),
@@ -88,7 +92,7 @@ function BudgetCont({
     setBudgets(tempBudget);
     setProjects(bcBudget.filter((budg) => isProjectBudget(budg) && !budg.archived));
     }
-  }, [startDate, endDate, ccTrans, ccBudget]);
+  }, [startDate, endDate, ccTrans, ccBudget, bcBudget]);
   const handleTab = (budType: string) => {
     if (budType === "budget") {
       setIsBudget(true);
@@ -112,7 +116,7 @@ function BudgetCont({
   const openEditFromDetail = (budget: BudgetData) => {
     setSelectedDetailBudget(null);
     setReturnToDetailBudget(budget);
-    setEditingBudget(budget);
+    setEditingBudget(getStoredBudget(budget));
   };
   const closeModal = () => {
     setEditingBudget(null);

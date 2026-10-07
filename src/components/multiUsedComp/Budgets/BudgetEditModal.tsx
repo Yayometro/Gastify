@@ -432,7 +432,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
           <p className="label-tfp mt-1">{isSaving ? "Savings target" : isProject ? "Project spending limit" : "Spending limit"}</p>
           <div className="flex items-stretch gap-2">
             <input type="number" min="0" name="goalAmount" value={form.goalAmount} onChange={handleChange} required className="flex-1 min-w-0" />
-            <Tooltip title="Which currency this budget's numbers are shown in. Doesn't convert or move any money.">
+            <Tooltip title="The currency this limit is written in. Reports and projections convert it to your primary currency at today's rate. Doesn't move any money.">
               <select
                 name="currency"
                 value={form.currency}

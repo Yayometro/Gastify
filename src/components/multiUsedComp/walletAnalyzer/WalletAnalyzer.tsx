@@ -9,6 +9,7 @@ import runNotify from "@/helpers/gastifyNotifier";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurrency";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
@@ -133,9 +134,10 @@ function formatMonthLabel(date: Date): string {
 // ignored once the user has picked their own month.
 function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): React.JSX.Element | null {
   const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
-  const budgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
+  const storedBudgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
   const accounts: AccountData[] = useSelector((state: RootState) => state.accountsReducer?.data) || EMPTY_ARRAY;
   const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
+  const budgets = useBudgetsInPrimaryCurrency(storedBudgets, walletPrimaryCurrency);
 
   const today = useMemo(() => new Date(), []);
   const initialMonth = timePeriodFromFather?.[0]

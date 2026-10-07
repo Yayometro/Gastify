@@ -11,6 +11,7 @@ import {
   computeYearRowsWithBalance,
 } from "@/helpers/transformers/projectionsChange";
 import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurrency";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
@@ -167,6 +168,8 @@ export interface UseProjectionTableReturn {
   startingBalance: number;
   incomeSources: IncomeSourceItem[];
   incomeSourcesConverted: IncomeSourceItem[];
+  // Budgets with their numbers expressed in the Wallet's primary currency.
+  budgetsConverted: BudgetData[];
   projectionSettings: ProjectionSettingsData | null;
   setProjectionSettings: React.Dispatch<React.SetStateAction<ProjectionSettingsData | null>>;
   projectionBaseline: ProjectionBaselineData | null;
@@ -325,31 +328,35 @@ export default function useProjectionTable({
     };
   }, [projectionBaseline, walletPrimaryCurrency]);
 
+  // Budgets are entered in their own currency like income sources, so they get
+  // the same treatment: the math below only ever sees primary-currency numbers.
+  const budgetsConverted = useBudgetsInPrimaryCurrency((budgets || []) as BudgetData[], walletPrimaryCurrency || "MXN");
+
   const rows = useMemo(() => {
     if (!year || !transactions || !budgets) return [];
     return buildYearProjectionTable({
       transactions,
-      budgets,
+      budgets: budgetsConverted,
       incomeSources: incomeSourcesConverted,
       projectionSettings: { monthlyBuffers },
       projectionBaseline: projectionBaselineConverted,
       year,
       today: new Date(),
     });
-  }, [year, transactions, budgets, incomeSourcesConverted, monthlyBuffers, projectionBaselineConverted]);
+  }, [year, transactions, budgets, budgetsConverted, incomeSourcesConverted, monthlyBuffers, projectionBaselineConverted]);
 
   const accuracyRows = useMemo(() => {
     if (!year || !transactions || !budgets) return [];
     return buildProjectionAccuracyReport({
       transactions,
-      budgets,
+      budgets: budgetsConverted,
       incomeSources: incomeSourcesConverted,
       projectionSettings: { monthlyBuffers },
       projectionBaseline: projectionBaselineConverted,
       year,
       today: new Date(),
     });
-  }, [year, transactions, budgets, incomeSourcesConverted, monthlyBuffers, projectionBaselineConverted]);
+  }, [year, transactions, budgets, budgetsConverted, incomeSourcesConverted, monthlyBuffers, projectionBaselineConverted]);
 
   // Converts every non-credit Account's own native balance into the Wallet's
   // primary currency using the latest reference rate - a live, right-now
@@ -408,6 +415,7 @@ export default function useProjectionTable({
     startingBalance,
     incomeSources,
     incomeSourcesConverted,
+    budgetsConverted,
     projectionSettings,
     setProjectionSettings,
     projectionBaseline,

@@ -16,6 +16,8 @@ import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import EmptyModule from "../EmptyModule";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
+import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurrency";
+import { getStoredBudget } from "@/helpers/transformers/budgetCurrency";
 import BudgetBarRow, { type BudgetBarRowBudgetItem } from "./BudgetBarRow";
 import BudgetEditModal, {
   type BudgetModalItem,
@@ -75,9 +77,14 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
 
+  // Every number shown or summed on this page is in the primary currency, like
+  // the spending it is compared with. The editor still gets the stored budget
+  // (see getStoredBudget) so it keeps showing what the user typed.
+  const walletPrimaryCurrency = (wallet as WalletData | undefined)?.primaryCurrency || "MXN";
+  const convertedBudgets = useBudgetsInPrimaryCurrency((budgets as BudgetData[]) || [], walletPrimaryCurrency);
   const activeBudgets = useMemo(
-    () => ((budgets as BudgetData[]) || []).filter((b) => !b.archived),
-    [budgets]
+    () => convertedBudgets.filter((b) => !b.archived),
+    [convertedBudgets]
   );
   const spendingBudgets = useMemo(
     () => activeBudgets.filter(isSpendingBudget),
@@ -182,13 +189,13 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   const openEdit = (budget: BudgetModalItem): void => {
     setSelectedDetailBudget(null);
     setReturnToDetailBudget(null);
-    setEditingBudget(budget);
+    setEditingBudget(getStoredBudget(budget as BudgetData) as BudgetModalItem);
     setModalMode("edition");
   };
   const openEditFromDetail = (budget: BudgetDetailItem | ProjectBudgetItem): void => {
     setSelectedDetailBudget(null);
     setReturnToDetailBudget(budget as BudgetDetailItem);
-    setEditingBudget(budget as BudgetModalItem);
+    setEditingBudget(getStoredBudget(budget as unknown as BudgetData) as BudgetModalItem);
     setModalMode("edition");
   };
   const closeModal = (): void => {
@@ -274,7 +281,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
     setShowUnbudgeted(false);
     setReturnToUnbudgeted(true);
     setReturnToDetailBudget(null);
-    setEditingBudget({ ...budget, pendingCategory: categoryEntryFromGroup(group) } as BudgetModalItem);
+    setEditingBudget({ ...getStoredBudget(budget), pendingCategory: categoryEntryFromGroup(group) } as BudgetModalItem);
     setModalMode("edition");
   };
 

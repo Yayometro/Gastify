@@ -114,7 +114,7 @@ function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableP
     budgets,
     accounts,
     walletPrimaryCurrency,
-  }) as ProjectionTableResult;
+  }) as unknown as ProjectionTableResult;
   const tableB = useProjectionTable({
     mail: email,
     year: secondYear,
@@ -122,7 +122,7 @@ function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableP
     budgets,
     accounts,
     walletPrimaryCurrency,
-  }) as ProjectionTableResult;
+  }) as unknown as ProjectionTableResult;
 
   const rows = useMemo(() => {
     if (!timePeriod?.[0] || !timePeriod?.[1]) return [];

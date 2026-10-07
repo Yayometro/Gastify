@@ -55,6 +55,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
     startingBalance,
     incomeSources,
     incomeSourcesConverted,
+    budgetsConverted,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     projectionSettings,
     setProjectionSettings,
@@ -89,7 +90,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
     // Past months compare against the goalAmount that was actually active back
     // then (via history[]), not today's value - otherwise the chart would show
     // a budget you only set recently as if it applied to a much older month.
-    const nonSavingBudgets = (budgets || []).filter(isSpendingBudget);
+    const nonSavingBudgets = (budgetsConverted || []).filter(isSpendingBudget);
     const budgetsForChart =
       selectedRow.type === "actual"
         ? nonSavingBudgets
@@ -111,7 +112,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
               occurrences: getExpectedOccurrencesInMonth(s, start, end),
             }));
     return { bucketBreakdown, incomeOccurrences, incomeCurrencyBreakdown, expenseCurrencyBreakdown };
-  }, [selectedRow, monthRanges, transacciones, budgets, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency]);
+  }, [selectedRow, monthRanges, transacciones, budgetsConverted, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency]);
 
   const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }: SaveBuffersPayload): Promise<void> => {
     const res = await toFetch.post("general-data/projections/update", {
