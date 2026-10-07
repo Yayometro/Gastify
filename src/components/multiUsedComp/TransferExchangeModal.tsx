@@ -72,6 +72,10 @@ function TransferExchangeModal(): React.JSX.Element {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === "destinationAmount") setDestinationTouched(true);
+    // A manual destination amount only holds for the accounts and source
+    // amount it was typed for; changing any of those re-enables the automatic
+    // quote (it used to stay off until "Clear Form").
+    else if (name === "sourceAccountId" || name === "destinationAccountId" || name === "sourceAmount") setDestinationTouched(false);
     setForm((f) => ({ ...f, [name]: value }));
   };
 

@@ -241,7 +241,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
   }, []);
   return (
     <TopElementContainerView
-      isloading={isLoading}
+      isLoading={isLoading}
       timePeriod={timePeriod}
       periodFromFather={timePeriodsForSelecter[0]}
       timePeriodsForSelecter={timePeriodsForSelecter}

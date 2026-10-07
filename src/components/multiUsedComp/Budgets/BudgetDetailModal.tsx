@@ -262,11 +262,15 @@ function BudgetDetailModal({
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          dispatch(removeOneTransacction(id));
-          const res = await (fetcher as unknown as { post: (path: string) => Promise<{ ok?: boolean }> }).post(
+          // `fetcher` is a factory: it used to be called as `fetcher.post`, which
+          // is undefined, so this ALWAYS failed while the movement had already
+          // been dropped from the screen (and came back on refresh). The
+          // request goes first now and the screen only changes if it worked.
+          const res = await fetcher().post<{ ok?: boolean }>(
             `general-data/transactions/remove-transaction/${id}`
           );
           if (res.ok) {
+            dispatch(removeOneTransacction(id));
             runNotify("ok", "Movement deleted successfully!");
           } else {
             runNotify("error", "Error removing transaction.");

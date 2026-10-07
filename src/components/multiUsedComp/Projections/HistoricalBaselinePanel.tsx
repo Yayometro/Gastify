@@ -36,14 +36,14 @@ export interface BaselineTimelineEditorProps {
   moneyField: MoneyField;
   walletPrimaryCurrency?: string;
   mail?: string;
-  onChange: () => void;
+  onChange?: () => void;
 }
 
 export interface HistoricalBaselinePanelProps {
   baseline?: ProjectionBaselineData | null;
   walletPrimaryCurrency?: string;
   mail?: string;
-  onChange: () => void;
+  onChange?: () => void;
   defaultOpen?: boolean;
 }
 
@@ -120,7 +120,7 @@ function BaselineTimelineEditor({
       if (res.ok) {
         runNotify("ok", res.message);
         resetForm();
-        onChange();
+        onChange?.();
       }
     } catch (err) {
       runNotify("error", String(err));
@@ -136,7 +136,7 @@ function BaselineTimelineEditor({
       if (res.ok) {
         runNotify("ok", res.message);
         if (editingId === entryId) resetForm();
-        onChange();
+        onChange?.();
       }
     } catch (err) {
       runNotify("error", String(err));

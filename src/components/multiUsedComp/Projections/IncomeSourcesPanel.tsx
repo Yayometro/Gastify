@@ -113,7 +113,7 @@ function IncomeSourcesPanel({
       if (res.ok) {
         runNotify("ok", res.message);
         resetForm();
-        onChange();
+        onChange?.();
       }
     } catch (err) {
       runNotify("error", String(err));
@@ -128,7 +128,7 @@ function IncomeSourcesPanel({
       const res = await toFetch.post("general-data/income-sources/remove", { id });
       if (res.ok) {
         runNotify("ok", res.message);
-        onChange();
+        onChange?.();
       }
     } catch (err) {
       runNotify("error", String(err));
@@ -159,7 +159,7 @@ function IncomeSourcesPanel({
                 <div className="flex flex-col">
                   <p className="text-purple-300">{source.name}</p>
                   <p className="text-xs text-gf-text-muted">
-                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence as string]}
+                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence as string] ?? source.recurrence ?? "Custom"}
                   </p>
                 </div>
                 <div className="flex gap-2">

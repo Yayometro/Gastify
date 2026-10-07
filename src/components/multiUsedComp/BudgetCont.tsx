@@ -66,14 +66,17 @@ function BudgetCont({
   //
   useEffect(() => {
     if (!startDate || !endDate) return;
-    if (((bcTrans.length > 0 as unknown as number) & (bcBudget.length > 0 as unknown as number))) {
+    if (bcTrans.length > 0 && bcBudget.length > 0) {
       setLoadingComponent(false)
     //SET TIME TRANSACTIONS
-    let total = bcTrans.filter((tra) => tra.isReadable == true);
-    total = bcTrans.filter((tra) => {
-      const transactionDate = new Date(tra.date || tra.createdAt);
-      return transactionDate >= startDate && transactionDate <= endDate;
-    });
+    // Readable movements inside the selected range (the isReadable filter used
+    // to be thrown away by the reassignment right after it).
+    const total = bcTrans
+      .filter((tra) => tra.isReadable == true)
+      .filter((tra) => {
+        const transactionDate = new Date(tra.date || tra.createdAt);
+        return transactionDate >= startDate && transactionDate <= endDate;
+      });
     //BILLS
     const tempBills = total.filter((tra) => tra.isBill == true);
     setBills(tempBills);

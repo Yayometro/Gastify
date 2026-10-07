@@ -9,8 +9,7 @@ import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import TabsToggler, { TabsTogglerComponentItem } from "./TabsComponents/TabsToggler";
 
 export interface TopElementContainerViewProps {
-  isLoading?: number | boolean;
-  isloading?: unknown;
+  isLoading?: boolean;
   timePeriod: (string | Date | number | null | undefined)[];
   periodFromFather?: SelecterPeriod | string | number;
   elementsToDisplay?: number;
@@ -85,7 +84,7 @@ function TopElementContainerView({
           ))}
         </div>
       </div>
-      {(isLoading as number) <= 0 ? (
+      {isLoading ? (
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler

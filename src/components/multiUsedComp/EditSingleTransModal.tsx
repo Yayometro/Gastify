@@ -487,7 +487,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
 
           <div className="switchers-cont flex gap-3">
             <ConfigProvider theme={{ token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" } }}>
-              <Space direction={"" as "horizontal"} size={12}>
+              <Space direction="horizontal" size={12}>
                 <div className="switch-int-cont">
                   <p className="label-tfp">Is Income:</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "income")} value={form.isIncome} />

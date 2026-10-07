@@ -28,6 +28,9 @@ const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.Componen
   [key: string]: unknown;
 }>;
 
+// Select value that means "unlink the account" (the empty value means "do not touch it").
+const NO_ACCOUNT_VALUE = "__no_account__";
+
 export interface DataProviderAccount {
   _id: string;
   name?: string;
@@ -158,7 +161,7 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
   const handleDefAccount = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     setTransactionInfo((prev) => ({
       ...prev,
-      account: e.target.value === "No account" ? null : e.target.value,
+      account: e.target.value === NO_ACCOUNT_VALUE ? null : e.target.value,
     }));
   };
 
@@ -181,7 +184,8 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
     if (transactionInfo.date) fields.push("date");
     if (transactionInfo.category || transactionInfo.subCategory) { fields.push("category"); fields.push("subCategory"); }
     if (tagsArr.length > 0) fields.push("tags");
-    if (transactionInfo.account) fields.push("account");
+    // "" = leave the account as it is; null = unlink it from every selected movement.
+    if (transactionInfo.account !== "") fields.push("account");
 
     const payload = {
       ...transactionInfo,
@@ -326,10 +330,11 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
-              value={transactionInfo.account || ""}
+              value={transactionInfo.account === null ? NO_ACCOUNT_VALUE : transactionInfo.account}
               onChange={handleDefAccount}
             >
-              <option value="">No account</option>
+              <option value="">Keep current account</option>
+              <option value={NO_ACCOUNT_VALUE}>No account</option>
               {accounts?.map((acc) => (
                 <option value={acc._id} key={acc._id}>{acc.name}</option>
               ))}

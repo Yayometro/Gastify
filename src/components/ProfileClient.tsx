@@ -439,6 +439,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                         {({ open }) => {
                           return (
                             <button
+                              type="button"
                               className="py-1 px-2 gf-glass-button rounded-2xl text-white"
                               onClick={() => open()}
                             >

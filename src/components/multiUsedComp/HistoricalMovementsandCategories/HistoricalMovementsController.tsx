@@ -332,7 +332,7 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
 
   return (
     <HistoricalMovementsView
-      isloading={isLoading}
+      isLoading={isLoading}
       timePeriod={timePeriod}
       periodFromFather={timePeriodsForSelecter[0] as unknown as SelecterPeriod}
       timePeriodsForSelecter={timePeriodsForSelecter as unknown as SelecterPeriod[]}
