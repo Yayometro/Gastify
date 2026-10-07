@@ -33,6 +33,11 @@ vi.mock("@/model/Transaction", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/Category", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/SubCategory", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/Tag", () => ({ default: { deleteMany: vi.fn() } }));
+vi.mock("@/model/Budget", () => ({ default: { deleteMany: vi.fn() } }));
+vi.mock("@/model/CategoryRule", () => ({ default: { deleteMany: vi.fn() } }));
+vi.mock("@/model/IncomeSource", () => ({ default: { deleteMany: vi.fn() } }));
+vi.mock("@/model/ProjectionBaseline", () => ({ default: { deleteMany: vi.fn() } }));
+vi.mock("@/model/ProjectionSettings", () => ({ default: { deleteMany: vi.fn() } }));
 
 import { POST } from "./route";
 import { auth } from "@/lib/auth/betterAuth";
@@ -44,6 +49,11 @@ import Account from "@/model/Account";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
+import Budget from "@/model/Budget";
+import CategoryRule from "@/model/CategoryRule";
+import IncomeSource from "@/model/IncomeSource";
+import ProjectionBaseline from "@/model/ProjectionBaseline";
+import ProjectionSettings from "@/model/ProjectionSettings";
 
 const api = auth.api as unknown as {
   getSession: ReturnType<typeof vi.fn>;
@@ -75,7 +85,7 @@ beforeEach(() => {
   userDelete.mockResolvedValue(userDoc);
   walletDelete.mockResolvedValue({ _id: "w1" });
   txDelete.mockResolvedValue({ deletedCount: 3 });
-  for (const model of [Account, Category, SubCategory, Tag]) {
+  for (const model of [Account, Category, SubCategory, Tag, Budget, CategoryRule, IncomeSource, ProjectionBaseline, ProjectionSettings]) {
     (model as unknown as { deleteMany: ReturnType<typeof vi.fn> }).deleteMany.mockResolvedValue({ deletedCount: 1 });
   }
 });
@@ -158,6 +168,22 @@ describe("POST /api/general-data/user/remove-user", () => {
     const cleaned = deleteMany.mock.calls.map((c) => c[0]);
     expect(cleaned).toEqual(["account", "session", "passkey", "twoFactor"]);
     deleteMany.mock.calls.forEach((c) => expect(c[1]).toEqual({ userId: "u1" }));
+  });
+
+  it("also deletes budgets, category rules, income sources and projections (they used to be left behind as orphans)", async () => {
+    const res = await POST(req(goodBody));
+    expect(res.status).toBe(200);
+    for (const model of [Budget, CategoryRule, IncomeSource, ProjectionBaseline, ProjectionSettings]) {
+      expect((model as unknown as { deleteMany: ReturnType<typeof vi.fn> }).deleteMany).toHaveBeenCalledWith({ user: "u1" });
+    }
+  });
+
+  it("does not touch any of those collections when the code is wrong", async () => {
+    api.verifyTOTP.mockRejectedValue(apiError());
+    await POST(req(goodBody));
+    for (const model of [Budget, CategoryRule, IncomeSource, ProjectionBaseline, ProjectionSettings]) {
+      expect((model as unknown as { deleteMany: ReturnType<typeof vi.fn> }).deleteMany).not.toHaveBeenCalled();
+    }
   });
 
   it("a backup code is verified with verifyBackupCode and never opens a new session", async () => {

@@ -42,7 +42,6 @@ export async function POST(
       );
     const userId = userFound._id;
     const walletId = userFound.wallet;
-    userFound.password = null;
     //
     // console.log(userFound)
     //FIND CATEGORIES

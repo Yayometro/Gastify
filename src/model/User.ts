@@ -3,12 +3,6 @@ import mongoose, {Schema} from 'mongoose'
 export interface IUser extends mongoose.Document {
     fullName?: string;
     mail: string;
-    // Schema marks this `require: true`, but Better Auth's own
-    // account-creation path (the native MongoClient/mongodbAdapter, not this
-    // model's own validators) can create Google-only users with no password
-    // at all - confirmed against real production data this session, so this
-    // stays optional here rather than blindly mirroring the schema flag.
-    password?: string;
     image?: string;
     phone?: number;
     wallet: mongoose.Types.ObjectId;
@@ -25,7 +19,6 @@ export interface IUser extends mongoose.Document {
 const userSchema = new Schema<IUser>({
     fullName: {type: String},
     mail: {type: String, require: true, unique: true},
-    password: {type: String, require: true},
     image: {type: String},
     phone: {type: Number},
     wallet: {

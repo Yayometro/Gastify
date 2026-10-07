@@ -9,6 +9,11 @@ import Transaction from "@/model/Transaction";
 import Category from "@/model/Category";
 import Tag from "@/model/Tag";
 import SubCategory from "@/model/SubCategory";
+import Budget from "@/model/Budget";
+import CategoryRule from "@/model/CategoryRule";
+import IncomeSource from "@/model/IncomeSource";
+import ProjectionBaseline from "@/model/ProjectionBaseline";
+import ProjectionSettings from "@/model/ProjectionSettings";
 import { auth } from "@/lib/auth/betterAuth";
 import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
 import {
@@ -148,6 +153,16 @@ export async function POST(
     const removeTags = await Tag.deleteMany({ user: removedUser._id });
     if (!removeTags)
       throw new Error("Tags not removed, please verify the email");
+    // Every other collection that keeps data per user. These used to be left
+    // behind (budgets piled up as orphans; the rest would have too the day a
+    // real account with rules/income sources/projections was deleted).
+    // Any NEW per-user model must be added here (the route test checks each
+    // of these is cleaned).
+    await Budget.deleteMany({ user: removedUser._id });
+    await CategoryRule.deleteMany({ user: removedUser._id });
+    await IncomeSource.deleteMany({ user: removedUser._id });
+    await ProjectionBaseline.deleteMany({ user: removedUser._id });
+    await ProjectionSettings.deleteMany({ user: removedUser._id });
     // Better Auth's own collections (created outside a Mongoose model,
     // on purpose - see src/lib/auth/betterAuth.js) aren't cleaned up by
     // deleting the User document itself. `userId` on each of these is a
