@@ -91,7 +91,11 @@ export function getDateInYearMonthDay(date?: Date | string | number | null): str
     date instanceof Date && !isNaN(date.getTime()) ? date : new Date(date as string | number | Date);
 
   if (!isNaN(validDate.getTime())) {
-    return validDate.toISOString().split("T")[0];
+    // LOCAL calendar date. It used toISOString() (UTC), so the end of a day
+    // (23:59:59 local) showed up as the NEXT day for anyone west of UTC.
+    const month = String(validDate.getMonth() + 1).padStart(2, "0");
+    const day = String(validDate.getDate()).padStart(2, "0");
+    return `${validDate.getFullYear()}-${month}-${day}`;
   } else {
     return "Date invalid to parse";
   }

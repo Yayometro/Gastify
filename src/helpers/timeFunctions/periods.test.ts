@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
+  getDateInYearMonthDay,
   getEndOfDay,
   getLast3MonthsPeriod,
   getTimeperiodRangesArray,
@@ -61,5 +62,16 @@ describe("month palette (bug 21)", () => {
   it("getYearMonthDateRange paints each month with the colour of monthObjects", () => {
     const ranges = getYearMonthDateRange(new Date(2026, 0, 1));
     for (const month of monthObjects) expect(ranges.get(month.name)?.color).toBe(month.color);
+  });
+});
+
+describe("getDateInYearMonthDay", () => {
+  it("shows the LOCAL calendar day, also for the end of a day (23:59:59)", () => {
+    expect(getDateInYearMonthDay(new Date(2026, 9, 7, 23, 59, 59))).toBe("2026-10-07");
+    expect(getDateInYearMonthDay(new Date(2026, 9, 7, 0, 0, 0))).toBe("2026-10-07");
+    expect(getDateInYearMonthDay(new Date(2026, 0, 1))).toBe("2026-01-01");
+  });
+  it("keeps reporting an invalid date", () => {
+    expect(getDateInYearMonthDay("nope")).toBe("Date invalid to parse");
   });
 });
