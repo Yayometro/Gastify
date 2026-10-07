@@ -157,7 +157,10 @@ export function getBudgetCoverage<
   const bills = (transactions || []).filter((transaction) => {
     if (!transaction?.isBill) return false;
     const date = new Date((transaction.date || transaction.createdAt) as string | number | Date);
-    return (!startDate || (date as unknown as number) >= (startDate as unknown as number)) && (!endDate || (date as unknown as number) <= (endDate as unknown as number));
+    // startDate / endDate may arrive as strings: compare timestamps (a string compared with a
+    // Date became NaN and the range filtered nothing, bug 113).
+    const time = date.getTime();
+    return (!startDate || time >= new Date(startDate).getTime()) && (!endDate || time <= new Date(endDate).getTime());
   });
 
   const uncovered: T[] = [];

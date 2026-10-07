@@ -37,7 +37,10 @@ export interface CategorySuggestionResult<C = CategoryRuleCategoryRef> {
 }
 
 function passesAmountThreshold(nativeMoney?: NativeMoneyInput | null, rule?: CategoryRuleLike): boolean {
-  if (!nativeMoney) return true;
+  // No usable amount (no money at all, or an amountMinor that is null/undefined/NaN) cannot be
+  // compared with a threshold: it is treated the same in every case instead of null counting
+  // as 0 and undefined as NaN (bug 115).
+  if (!nativeMoney || !Number.isFinite(nativeMoney.amountMinor as number)) return true;
 
   const hasNewMin = rule.minAmountMinor != null;
   const hasNewMax = rule.maxAmountMinor != null;

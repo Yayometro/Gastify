@@ -126,3 +126,33 @@ describe("getBudgetActualSpend (bugs 102, 103)", () => {
     expect(getBudgetActualSpend(budget, [good, bad] as never, start, end)).toBe(10);
   });
 });
+
+import { areDuplicates } from "./transactionDuplicates";
+
+describe("areDuplicates (bugs 110, 111, 112)", () => {
+  const tx = (overrides: Record<string, unknown>) => ({ name: "Coffee", amount: 5, date: "2026-08-10", ...overrides });
+
+  it("compares Date objects by their real calendar day (not as the year 2001)", () => {
+    const a = tx({ date: new Date(2026, 7, 10, 9, 0) });
+    const b = tx({ date: new Date(2026, 7, 10, 18, 30) });
+    const c = tx({ date: new Date(2026, 8, 20) });
+    expect(areDuplicates(a as never, b as never, { date: true }, 0)).toBe(true);
+    expect(areDuplicates(a as never, c as never, { date: true }, 0)).toBe(false);
+  });
+
+  it("with no tolerance given the date must be the same day", () => {
+    expect(areDuplicates(tx({ date: "2026-08-10" }) as never, tx({ date: "2026-08-12" }) as never, { date: true })).toBe(false);
+    expect(areDuplicates(tx({ date: "2026-08-10" }) as never, tx({ date: "2026-08-10" }) as never, { date: true })).toBe(true);
+    expect(areDuplicates(tx({ date: "2026-08-10" }) as never, tx({ date: "2026-08-12" }) as never, { date: true }, 3)).toBe(true);
+  });
+
+  it("a movement with no valid date is never a date duplicate", () => {
+    expect(areDuplicates(tx({ date: "nope" }) as never, tx({ date: "2026-08-10" }) as never, { date: true }, 5)).toBe(false);
+  });
+
+  it("falls back to the legacy amount when the native money has no amountMinor", () => {
+    const a = tx({ amount: 5, displayMoney: { native: { currency: "MXN" } } });
+    const b = tx({ amount: 5 });
+    expect(areDuplicates(a as never, b as never, { amount: true }, 0, 0)).toBe(true);
+  });
+});

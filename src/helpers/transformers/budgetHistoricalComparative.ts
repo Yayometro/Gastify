@@ -118,8 +118,13 @@ function getMonthsInRange(start: Date, end: Date): MonthRangeItem[] {
 // history at all (meaning it's never changed since creation). Used to
 // extrapolate backward into months that predate any known config.
 function getEarliestKnownGoal(budget: BudgetHistoricalInput): EarliestKnownGoalResult {
-  if (Array.isArray(budget.history) && budget.history.length > 0) {
-    const earliest = budget.history.reduce((a, b) =>
+  // Entries with a missing or invalid effectiveFrom cannot be ordered (an Invalid Date
+  // compares false with everything and used to poison the result, bug 30).
+  const datedHistory = Array.isArray(budget.history)
+    ? budget.history.filter((entry) => !Number.isNaN(new Date(entry.effectiveFrom as string | Date).getTime()))
+    : [];
+  if (datedHistory.length > 0) {
+    const earliest = datedHistory.reduce((a, b) =>
       new Date(a.effectiveFrom as string | Date) < new Date(b.effectiveFrom as string | Date) ? a : b
     );
     return { goalAmount: earliest.goalAmount || 0, earliestFrom: new Date(earliest.effectiveFrom as string | Date) };
@@ -203,6 +208,11 @@ export function buildBudgetHistoricalComparative<
     })
     .filter((row) => row.monthsTracked > 0);
 
-  rows.sort((a, b) => (a.complianceRate ?? 1) - (b.complianceRate ?? 1));
+  // Worst compliance first; budgets with the same rate keep a fixed order by name (bug 32).
+  rows.sort(
+    (a, b) =>
+      (a.complianceRate ?? 1) - (b.complianceRate ?? 1) ||
+      String(a.budget?.name || "").localeCompare(String(b.budget?.name || ""))
+  );
   return rows;
 }

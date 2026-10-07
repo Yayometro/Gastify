@@ -37,8 +37,19 @@ export interface DuplicatePair<T = DuplicateTransaction> {
 }
 
 function nativeAmountMinor(t: DuplicateTransaction): number {
-  if (t.displayMoney?.native) return t.displayMoney.native.amountMinor as number;
+  // A native money object WITHOUT a usable amountMinor used to return undefined (and
+  // every comparison with it was false); it falls back to the legacy amount now (bug 112).
+  const native = t.displayMoney?.native?.amountMinor;
+  if (typeof native === "number" && Number.isFinite(native)) return native;
   return Math.round(Math.abs((t.amount as number) || 0) * 100);
+}
+
+// Local calendar day of a movement as a timestamp, or NaN when it has no valid date.
+// This used to slice String(date) to 10 characters: fine for an ISO string, but a Date
+// object stringifies as "Wed Oct 07 ..." and was read back as the year 2001 (bug 110).
+function dayStamp(t: DuplicateTransaction): number {
+  const d = new Date((t.date || t.createdAt) as string | number | Date);
+  return Number.isNaN(d.getTime()) ? NaN : new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
 function nativeCurrency(t: DuplicateTransaction): string {
@@ -62,12 +73,14 @@ export function areDuplicates(
     if (na !== nb) return false;
   }
   if (criteria.date) {
-    const daStr = String(a.date || a.createdAt || "").slice(0, 10);
-    const dbStr = String(b.date || b.createdAt || "").slice(0, 10);
-    const da = new Date(daStr).getTime();
-    const db = new Date(dbStr).getTime();
+    const da = dayStamp(a);
+    const db = dayStamp(b);
+    // No usable date on either side: it cannot be the same day (it used to pass).
+    if (Number.isNaN(da) || Number.isNaN(db)) return false;
     const diffDays = Math.round(Math.abs(da - db) / 86400000);
-    if (diffDays > (dateTol as number)) return false;
+    // With no tolerance given, the date must be the same day (undefined made the
+    // comparison false and never disqualified anything, bug 111).
+    if (diffDays > (dateTol ?? 0)) return false;
   }
   if (criteria.amount) {
     // Compare in native minor units (integer-safe) - amountTol is a

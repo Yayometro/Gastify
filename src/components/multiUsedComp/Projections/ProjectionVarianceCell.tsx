@@ -29,22 +29,27 @@ function ProjectionVarianceCell({
   value,
   betterWhenPositive,
 }: ProjectionVarianceCellProps): React.JSX.Element {
-  const isBetter = betterWhenPositive ? value >= 0 : value <= 0;
+  // No variance at all is neither better nor worse (0 satisfied both comparisons and always read
+  // "better than expected", bug 52).
+  const isNeutral = value === 0;
+  const isBetter = betterWhenPositive ? value > 0 : value < 0;
   const sign = value > 0 ? "+" : "";
   const verb = betterWhenPositive ? "ganaste" : "gastaste";
   const comparison = value >= 0 ? "más" : "menos";
-  const verdict = isBetter ? "mejor de lo esperado" : "peor de lo esperado";
+  const verdict = isNeutral ? "igual a lo esperado" : isBetter ? "mejor de lo esperado" : "peor de lo esperado";
   const tooltip = (
     <>
       {label} real ({usdFormatChanger(actual)}) − {label.toLowerCase()} proyectado ({usdFormatChanger(projected)}) = {sign}{usdFormatChanger(value)}.
       <br />
-      {verb.charAt(0).toUpperCase() + verb.slice(1)} {usdFormatChanger(Math.abs(value))} {comparison} de lo que proyectabas — {verdict}.
+      {isNeutral
+        ? `Sin variación respecto a lo que proyectabas — ${verdict}.`
+        : `${verb.charAt(0).toUpperCase() + verb.slice(1)} ${usdFormatChanger(Math.abs(value))} ${comparison} de lo que proyectabas — ${verdict}.`}
     </>
   );
   return (
     <Tooltip title={tooltip}>
       <span className="text-gf-text-muted cursor-help">
-        {label}: <span className={isBetter ? "text-green-400 font-medium" : "text-red-400 font-medium"}>{sign}{usdFormatChanger(value)}</span>
+        {label}: <span className={isNeutral ? "text-gf-text font-medium" : isBetter ? "text-green-400 font-medium" : "text-red-400 font-medium"}>{sign}{usdFormatChanger(value)}</span>
       </span>
     </Tooltip>
   );

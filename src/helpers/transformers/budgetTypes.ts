@@ -16,6 +16,8 @@ export function getBudgetType(budget?: BudgetTypeInput | null): BudgetType {
   // Mongoose may expose the new schema default even when it was never stored.
   if (budget?.isSaving === true) return BUDGET_TYPES.SAVING;
   if (budget?.budgetType === BUDGET_TYPES.PROJECT) return BUDGET_TYPES.PROJECT;
+  // An explicit budgetType of "saving" is a saving budget even without the legacy isSaving flag (bug 29).
+  if (budget?.budgetType === BUDGET_TYPES.SAVING) return BUDGET_TYPES.SAVING;
   return BUDGET_TYPES.SPENDING;
 }
 

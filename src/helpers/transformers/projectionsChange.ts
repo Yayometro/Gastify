@@ -188,21 +188,29 @@ function endOfMonth(date: Date): Date {
 
 function countIntervalOccurrences(anchorDate: DateLike, intervalDays: number, monthStart: Date, monthEnd: Date): number {
   const anchor = new Date(anchorDate);
-  const diffDays = Math.floor((+monthStart - +anchor) / MS_PER_DAY);
+  // Calendar-day arithmetic (setDate keeps the local clock time) instead of adding fixed
+  // 24 h blocks: a daylight-saving change used to push an occurrence a day off (bug 108).
+  const occurrence = (k: number): Date => {
+    const d = new Date(anchor);
+    d.setDate(d.getDate() + k * intervalDays);
+    return d;
+  };
+  const dayNumber = (d: Date): number => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / MS_PER_DAY;
+  const diffDays = Math.floor(dayNumber(monthStart) - dayNumber(anchor));
   // No clamping to 0: months before the anchor date must walk the periodic
   // sequence backward (negative k) too, otherwise every month before the
   // anchor incorrectly shows 0 expected occurrences.
   let k = Math.floor(diffDays / intervalDays);
-  let current = new Date(anchor.getTime() + k * intervalDays * MS_PER_DAY);
+  let current = occurrence(k);
   while (current < monthStart) {
     k += 1;
-    current = new Date(anchor.getTime() + k * intervalDays * MS_PER_DAY);
+    current = occurrence(k);
   }
   let count = 0;
   while (current <= monthEnd) {
     count += 1;
     k += 1;
-    current = new Date(anchor.getTime() + k * intervalDays * MS_PER_DAY);
+    current = occurrence(k);
   }
   return count;
 }
