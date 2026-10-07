@@ -128,6 +128,7 @@ function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}
   const [code, setCode] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loopBroken, setLoopBroken] = useState<boolean>(false);
+  const [passkeyNotice, setPasskeyNotice] = useState<string>("");
   const autoTriggered = useRef<boolean>(false);
   const prefetchTriggered = useRef<boolean>(false);
 
@@ -159,8 +160,11 @@ function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}
   useEffect(() => {
     if (loopBroken || sessionPending || passkeysPending || phaseDetermined.current) return;
     phaseDetermined.current = true;
-    const hasAnySecondFactor = (passkeys && passkeys.length > 0) || Boolean(session?.user?.twoFactorEnabled);
-    setPhase(hasAnySecondFactor ? "challenge" : "onboard-choose");
+    const hasPasskey = Boolean(passkeys && passkeys.length > 0);
+    const hasTotp = Boolean(session?.user?.twoFactorEnabled);
+    // An account with only the authenticator app has no passkey to ask for: the
+    // OS passkey dialog used to open anyway and a cancel cost an attempt (bug 159).
+    setPhase(hasPasskey ? "challenge" : hasTotp ? "challenge-totp" : "onboard-choose");
   }, [loopBroken, sessionPending, passkeysPending, passkeys, session]);
 
   // Warms up the Wallet's own Redux data while the user is still proving
@@ -304,8 +308,19 @@ function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}
   async function handleChallengePasskey(): Promise<void> {
     try {
       setLoading(true);
+      setPasskeyNotice("");
       const { error } = await authClient.signIn.passkey();
       if (error) {
+        // Closing the system dialog (Esc / Cancel) is not a failed guess: no
+        // attempt is spent, the user is told what happened and can retry or use a code.
+        if ((error as { code?: string }).code === "AUTH_CANCELLED" || /cancel/i.test(error.message || "")) {
+          setPasskeyNotice(
+            hasTotp
+              ? "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo o usar un código de tu app autenticadora."
+              : "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo."
+          );
+          return;
+        }
         await failAttempt(error.message);
         return;
       }
@@ -359,6 +374,7 @@ function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}
     }
   }
 
+  const hasTotp = Boolean(session?.user?.twoFactorEnabled);
   const cardClasses = "verify-2fa-cont gf-glass-card flex flex-col w-[95%] sm:w-[550px] relative rounded-[40px] items-center justify-center p-6 sm:p-10 gap-4";
 
   if (loopBroken) {
@@ -512,12 +528,15 @@ function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}
               ? `Para cambiar tus factores de verificación (passkeys, app autenticadora o códigos de respaldo) te pedimos confirmar tu identidad cada ${FACTOR_CHANGE_STEP_UP_TTL_MINUTES} minutos. Pon tu huella, Face ID o código del dispositivo para continuar.`
               : `Han pasado más de ${STEP_UP_TTL_MINUTES} minutos, o iniciaste sesión de una forma que aún no comprobamos con tu segundo factor. Pon tu huella, Face ID o código del dispositivo para continuar.`}
           </p>
+          {passkeyNotice && <p className="text-xs text-amber-300 text-center">{passkeyNotice}</p>}
           <button type="button" disabled={loading} onClick={handleChallengePasskey} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
             Verificar con mi passkey
           </button>
-          <button type="button" className="text-purple-300 text-xs hover:underline" onClick={() => setPhase("challenge-totp")}>
-            ¿No tienes tu dispositivo? Usa un código
-          </button>
+          {hasTotp && (
+            <button type="button" className="text-purple-300 text-xs hover:underline" onClick={() => setPhase("challenge-totp")}>
+              ¿No tienes tu dispositivo? Usa un código
+            </button>
+          )}
         </>
       )}
 
