@@ -1,6 +1,7 @@
 import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import { percentOf } from "@/helpers/percent";
 
 export interface TooltipForChartItem {
   icon?: string;
@@ -43,7 +44,7 @@ function TooltipForChart({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-gf-text-muted">Percentage:</span>
-          <b className="text-gf-text">{String((value / totalValue) * 100).slice(0, 4)}%</b>
+          <b className="text-gf-text">{percentOf(value, totalValue)}%</b>
         </div>
       </div>
     </div>

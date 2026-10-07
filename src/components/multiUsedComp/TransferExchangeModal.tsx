@@ -140,6 +140,11 @@ function TransferExchangeModal(): React.JSX.Element {
       return;
     }
 
+    if (!(user as UserData | null | undefined)?._id) {
+      runNotify("error", "Your profile is still loading, try again in a moment");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const res = (await toFetch.post("general-data/transactions/transfer", {
@@ -261,7 +266,8 @@ function TransferExchangeModal(): React.JSX.Element {
                     className="text-center flex items-center justify-between border-2"
                     slotProps={{ textField: { size: "small" } }}
                     onChange={(newValue: Dayjs | null) =>
-                      setForm((f) => ({ ...f, date: new Date(newValue.format()) }))
+                      // Clearing the field keeps the previous date (it used to crash).
+                      newValue && setForm((f) => ({ ...f, date: new Date(newValue.format()) }))
                     }
                     value={dayjs(form.date)}
                     sx={{

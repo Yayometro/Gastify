@@ -29,21 +29,28 @@ export interface CurrencyBreakdownChipsProps {
 // getMonthCurrencyBreakdown / useLinkedAccountsTotal. Each foreign-currency
 // chip shows the native amount, its converted equivalent, and the rate
 // applied so the number isn't a mystery.
+// An effective date that is missing or cannot be parsed reads "n/a" (it used to print "Invalid Date").
+function formatRateDate(date?: string | Date | null): string {
+  if (!date) return "n/a";
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime()) ? "n/a" : parsed.toLocaleDateString();
+}
+
 function CurrencyBreakdownChips({
   breakdown,
-  walletPrimaryCurrency,
+  walletPrimaryCurrency = "MXN",
   className,
 }: CurrencyBreakdownChipsProps): React.JSX.Element | null {
   if (!breakdown?.isMultiCurrency) return null;
   return (
     <div className={`flex flex-wrap gap-1 mt-1.5 ${className || ""}`}>
-      {breakdown.breakdown.map((g) => (
+      {(breakdown.breakdown ?? []).map((g) => (
         <Tooltip
           key={g.currency}
           title={
             g.currency === walletPrimaryCurrency
               ? "Already in your wallet's currency - no conversion needed."
-              : `Converted at ${g.rate} (${walletPrimaryCurrency} per ${g.currency}) as of ${g.effectiveDate ? new Date(g.effectiveDate).toLocaleDateString() : "n/a"}.`
+              : `Converted at ${g.rate} (${walletPrimaryCurrency} per ${g.currency}) as of ${formatRateDate(g.effectiveDate)}.`
           }
         >
           <div className="bg-gf-surface border border-purple-200 rounded-full px-2 py-0.5 text-[11px] text-purple-300">

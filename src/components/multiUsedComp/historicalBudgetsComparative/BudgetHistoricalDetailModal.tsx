@@ -20,7 +20,7 @@ export interface BudgetHistoricalDetailModalProps {
 // `renderContent` bypasses BasicModal's default chrome entirely.
 function BudgetHistoricalDetailModal({
   row,
-  walletPrimaryCurrency,
+  walletPrimaryCurrency = "MXN",
   close,
 }: BudgetHistoricalDetailModalProps): React.JSX.Element {
   const { budget, monthlySeries, monthsTracked, monthsMet } = row;

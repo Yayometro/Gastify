@@ -280,7 +280,7 @@ export function buildCategoryHierarchy<T extends TransactionLike>(
 
   transWithSubCat.forEach((t) => {
     cateFaseDos.push({
-      fatherId: t.category._id,
+      fatherId: t.category?._id,
       name: t.category?.name,
       color: t.category?.color || "#ABABAB",
       icon: t?.category?.icon || "MdFilterNone",
@@ -361,9 +361,10 @@ export function reduceTransToTransMonths(arr: TransactionLike[]): Record<string,
   if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
   return arr.reduce((acc: Record<string, MonthValueBucket>, transaction) => {
-    const transactionOfMonth = mapedMonths.get(
-      getMonthOfTransaction(new Date(transaction.date).getMonth()).toLowerCase()
-    );
+    const monthName = getMonthOfTransaction(new Date(transaction.date).getMonth());
+    const transactionOfMonth = monthName ? mapedMonths.get(monthName.toLowerCase()) : undefined;
+    // An invalid date has no month: skip that movement instead of throwing.
+    if (!transactionOfMonth) return acc;
     const month = transactionOfMonth.name;
     const amount = getPrimaryAmount(transaction);
     if (acc[month]) {
@@ -388,7 +389,8 @@ export function reduceTransactionsToMonthSpentObjects<T extends { type: string; 
   monTransactions: T[]
 ): Record<string, T> {
   const newOrder = monTransactions.reduce((acc: Record<string, T>, transaction) => {
-    if (transaction && acc[transaction?.type]) {
+    if (!transaction) return acc;
+    if (acc[transaction.type]) {
       acc[transaction.type].value += transaction.value;
     } else {
       acc[transaction.type] = { ...transaction };

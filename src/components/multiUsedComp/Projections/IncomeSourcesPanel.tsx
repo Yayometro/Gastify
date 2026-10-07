@@ -66,6 +66,8 @@ function IncomeSourcesPanel({
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
+    // Clearing the field keeps the previous date (it used to crash).
+    if (!newValue) return;
     setForm({ ...form, anchorDate: new Date(newValue.format()) });
   };
 
@@ -73,7 +75,7 @@ function IncomeSourcesPanel({
     setEditingId(source._id ? String(source._id) : null);
     setForm({
       name: source.name || "",
-      amount: source.amount || "",
+      amount: source.amount ?? "",
       currency: source.currency || defaultCurrency,
       recurrence: source.recurrence || "monthly",
       anchorDate: source.anchorDate ? new Date(source.anchorDate) : new Date(),

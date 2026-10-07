@@ -71,3 +71,13 @@ describe("formatMoneyMinor", () => {
     expect(formatted).not.toMatch(/\.\d/); // no decimal point followed by digits
   });
 });
+
+describe("formatMoneyMajor with bad numbers (bug 82)", () => {
+  it("shows a zero amount instead of NaN or Infinity", async () => {
+    const { formatMoneyMajor } = await import("./currencies");
+    expect(formatMoneyMajor(NaN, "MXN", { showCode: false })).toBe(formatMoneyMajor(0, "MXN", { showCode: false }));
+    expect(formatMoneyMajor(Infinity, "USD", { showCode: false })).toBe(formatMoneyMajor(0, "USD", { showCode: false }));
+    expect(formatMoneyMajor("abc", "USD", { showCode: false })).toBe(formatMoneyMajor(0, "USD", { showCode: false }));
+    expect(formatMoneyMajor(12.5, "USD", { showCode: false })).toBe("$12.50");
+  });
+});

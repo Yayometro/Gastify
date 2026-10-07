@@ -6,6 +6,7 @@ import { buildCategoryHierarchy, getPrimaryAmount } from "@/helpers/transformers
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { percentOf } from "@/helpers/percent";
 
 export interface CategoryPackingNode {
   name?: string;
@@ -124,7 +125,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }: CategoryCirclePa
                       </div>
                       <div className="flex gap-2">
                         <p className="font-semibold">Percentage:</p>
-                        {String((dataa.value / totalValueOn) * 100).slice(0, 4)}%
+                        {percentOf(dataa.value, totalValueOn)}%
                       </div>
                     </div>
                   </div>

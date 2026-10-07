@@ -6,6 +6,7 @@ import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
 import { formatMoneyMajor, formatMoneyMinor } from "@/lib/money/currencies";
 import type { RootState } from "@/lib/store";
+import { percentOf } from "@/helpers/percent";
 
 export interface TabsTransCategoryRef {
   _id?: string;
@@ -224,7 +225,7 @@ function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
                   </div>
                   <div className="flex gap-2">
                     <p className="font-semibold">Percentage:</p>
-                    {String((dataa.value / visibleTotal) * 100).slice(0, 4)}%
+                    {percentOf(dataa.value, visibleTotal)}%
                   </div>
                 </div>
               </div>

@@ -7,6 +7,7 @@ import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { percentOf } from "@/helpers/percent";
 
 export interface TransCategoryRef {
   _id?: string;
@@ -102,7 +103,7 @@ function TransResumeChart({ trchTransactions, trchIsBill }: TransResumeChartProp
           const subCat = traSub.subCategory as TransSubCategoryRef;
           const amount = getPrimaryAmount(traSub);
           cateFaseDos.push({
-            fatherId: cat._id,
+            fatherId: cat?._id,
             name: cat?.name,
             color: cat?.color ? cat?.color : "#ABABAB",
             icon: cat?.icon || "MdFilterNone",
@@ -254,7 +255,7 @@ const resetDrilldown = () => {
                       </div>
                       <div className="flex gap-2">
                         <p className="font-semibold">Percentage:</p>
-                        {String((dataa.value / totalValueOn) * 100).slice(0, 4)}%
+                        {percentOf(dataa.value, totalValueOn)}%
                       </div>
                     </div>
                   </div>

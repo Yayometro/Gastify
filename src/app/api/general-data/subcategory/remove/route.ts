@@ -36,8 +36,9 @@ export async function POST(
     }).lean();
 
     //UPDATE
-    if (!removeSub)
-      throw new Error(`${removeSub.name || "SubCategory"} not removed 🤕`);
+    // (this used to read removeSub.name while removeSub was null: a TypeError
+    // instead of the intended message)
+    if (!removeSub) throw new Error("SubCategory not removed 🤕");
     return NextResponse.json({
       message: `${removeSub.name || "Sub-Category"} was removed successfully 🤓`,
       data: removeSub,

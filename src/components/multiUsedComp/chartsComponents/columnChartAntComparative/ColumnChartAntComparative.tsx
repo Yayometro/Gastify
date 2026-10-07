@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import dynamic from "next/dynamic";
+import { percentOf } from "@/helpers/percent";
 
 const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
   ssr: false,
@@ -56,9 +57,8 @@ function ColumnChartAntComparative({
     },
     label: {
       text: ({ value }: { value?: number }) => {
-        return (((value as number) / (totalValue as number)) * 100).toFixed(1) + "%";
+        return percentOf(value as number, totalValue as number) + "%";
       },
-      offsed: 0,
     },
     tooltip: (item: { color?: string; value?: unknown; [key: string]: unknown }) => {
         // console.log(item)

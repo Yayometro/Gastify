@@ -238,7 +238,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
         data: transactionCategories[0] || [],
         totalValue: (totalAmount as number[])[0] || 0,
         legendBottom: "Months",
-        legenedLeft: "Amount",
+        legendLeft: "Amount",
         propsPlus: {
           onClick: (a: { data: unknown; [key: string]: unknown }) => {
             renderModal(<TypedModalContentTopMonthItem item={a.data} close={handleClose} />);
@@ -253,7 +253,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
         data: transactionCategories[1] || [],
         totalValue: (totalAmount as number[])[1] || 0,
         legendBottom: "Months",
-        legenedLeft: "Amount",
+        legendLeft: "Amount",
         propsPlus: {
           onClick: (a: { data: unknown; [key: string]: unknown }) => {
             renderModal(<TypedModalContentTopMonthItem item={a.data} close={handleClose} />);

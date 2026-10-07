@@ -111,7 +111,7 @@ export function formatMoneyMajor(
     currency: currency as string,
     minimumFractionDigits: meta.minorUnits,
     maximumFractionDigits: meta.minorUnits,
-  }).format(((amount ?? 0) as number));
+  }).format(Number.isFinite(Number(amount ?? 0)) ? Number(amount ?? 0) : 0); // NaN / Infinity read as 0, not "NaN"
   return showCode ? `${currency} ${formatted}` : formatted;
 }
 

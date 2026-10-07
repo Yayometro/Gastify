@@ -48,7 +48,9 @@ export interface HistoricalBaselinePanelProps {
 }
 
 function formatMonthYear(date?: string | number | Date | null): string {
-  return new Date(date as string | number | Date).toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+  const parsed = date ? new Date(date) : null;
+  if (!parsed || Number.isNaN(parsed.getTime())) return "fecha desconocida";
+  return parsed.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
 }
 
 const pickerTheme = { token: { colorPrimary: "#9333ea", borderRadius: 999 } };

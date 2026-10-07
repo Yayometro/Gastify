@@ -80,6 +80,12 @@ function QuestionTooltip({ title }: QuestionTooltipProps): React.JSX.Element {
   );
 }
 
+// Timestamp of a revision, 0 when it is missing or invalid so the sort stays stable (bug 65).
+function revisionTime(value?: Date | string | null): number {
+  const time = +new Date(value as string | number | Date);
+  return Number.isNaN(time) ? 0 : time;
+}
+
 function ProjectionMonthDetailModal({
   monthRow,
   bucketBreakdown,
@@ -266,7 +272,7 @@ function ProjectionMonthDetailModal({
                   <li key={i} className="flex justify-between text-sm bg-gf-accent-soft-bg rounded-xl px-3 py-1">
                     <span>{row.name}</span>
                     <span>
-                      {row.occurrences} × {usdFormatChanger(row.amount)} = {usdFormatChanger(row.occurrences * row.amount)}
+                      {row.occurrences} × {usdFormatChanger(row.amount)} = {usdFormatChanger((Number(row.occurrences) || 0) * (Number(row.amount) || 0))}
                     </span>
                   </li>
                 ))}
@@ -344,11 +350,11 @@ function ProjectionMonthDetailModal({
                 </summary>
                 <ul className="mt-2 flex flex-col gap-1">
                   {[...bufferRevisions]
-                    .sort((a, b) => +new Date(a.updatedAt as string | number | Date) - +new Date(b.updatedAt as string | number | Date))
+                    .sort((a, b) => revisionTime(a.updatedAt) - revisionTime(b.updatedAt))
                     .map((rev, i) => (
                       <li key={i} className="flex justify-between bg-gf-accent-soft-bg/70 rounded-lg px-2 py-1 text-gf-text-muted">
                         <span>
-                          {new Date(rev.updatedAt as string | number | Date).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
+                          {rev.updatedAt && !Number.isNaN(revisionTime(rev.updatedAt)) ? new Date(rev.updatedAt as string | number | Date).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                         </span>
                         <span>
                           gasto: {usdFormatChanger(rev.unexpectedBuffer || 0)} · ingreso: {usdFormatChanger(rev.unexpectedIncomeBuffer || 0)}

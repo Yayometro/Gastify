@@ -33,8 +33,10 @@ function BudgetHistoricalComparativeRow({
   onOpenDetail,
 }: BudgetHistoricalComparativeRowProps): React.JSX.Element {
   const { budget, monthlySeries, monthsTracked, monthsMet, monthsEstimated, complianceRate } = row;
+  // No month tracked yet (complianceRate null) is "no data", not 0% in red.
+  const hasRate = complianceRate !== null && complianceRate !== undefined;
   const pct = Math.round((complianceRate || 0) * 100);
-  const pctColor = pct >= 70 ? "text-green-400" : pct >= 40 ? "text-yellow-400" : "text-red-400";
+  const pctColor = !hasRate ? "text-gf-text-muted" : pct >= 70 ? "text-green-400" : pct >= 40 ? "text-yellow-400" : "text-red-400";
 
   let defaultCate = budget.category as BudgetCategoryLike | null | undefined;
   if (budget.subCategory) defaultCate = budget.subCategory as BudgetCategoryLike | null | undefined;
@@ -77,7 +79,7 @@ function BudgetHistoricalComparativeRow({
             </p>
           </div>
         </div>
-        <p className={`text-sm font-bold ${pctColor}`}>{pct}% compliance</p>
+        <p className={`text-sm font-bold ${pctColor}`}>{hasRate ? `${pct}% compliance` : "No data yet"}</p>
       </div>
       <div className="w-full" style={{ height: 200 }}>
         <ColumnChartAntComparative {...chartProps} />

@@ -19,7 +19,7 @@ export interface ResponsiveBarsChartComponentProps {
   totalValue?: number | string | null;
   propsPlus?: Record<string, unknown>;
   legendBottom?: string;
-  legenedLeft?: string;
+  legendLeft?: string;
   header?: React.ReactNode;
   [key: string]: unknown;
 }
@@ -29,7 +29,7 @@ function ResponsiveBarsChartComponent({
   totalValue,
   propsPlus,
   legendBottom,
-  legenedLeft,
+  legendLeft,
   header,
 }: ResponsiveBarsChartComponentProps): React.JSX.Element {
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
@@ -78,7 +78,7 @@ function ResponsiveBarsChartComponent({
       tickSize: 5,
       tickPadding: 5,
       tickRotation: 0,
-      legend: legenedLeft,
+      legend: legendLeft,
       legendPosition: "middle" as const,
       legendOffset: -50,
       truncateTickAt: 0,
@@ -132,7 +132,7 @@ function ResponsiveBarsChartComponent({
           className="max-w-[250px] gf-glass-chip text-gf-text"
         >
           <h1 className="text-base text-center text-wrap font-bold">
-            {dataa.data.type.toUpperCase()}
+            {String(dataa.data?.type ?? "").toUpperCase()}
           </h1>
           <div className="flex gap-2">
             <div

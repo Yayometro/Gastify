@@ -54,10 +54,10 @@ function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReport
                 onClick={() => onRowClick(row.monthName)}
               >
                 <td className="py-2 px-3">{row.monthName}</td>
-                <td className="py-2 px-3 text-gf-text-muted">{usdFormatChanger(row.projectedIncome)}</td>
-                <td className="py-2 px-3 text-green-400">{usdFormatChanger(row.actualIncome)}</td>
-                <td className="py-2 px-3 text-gf-text-muted">{usdFormatChanger(row.projectedExpense)}</td>
-                <td className="py-2 px-3 text-red-400">{usdFormatChanger(row.actualExpense)}</td>
+                <td className="py-2 px-3 text-gf-text-muted">{usdFormatChanger(row.projectedIncome ?? 0)}</td>
+                <td className="py-2 px-3 text-green-400">{usdFormatChanger(row.actualIncome ?? 0)}</td>
+                <td className="py-2 px-3 text-gf-text-muted">{usdFormatChanger(row.projectedExpense ?? 0)}</td>
+                <td className="py-2 px-3 text-red-400">{usdFormatChanger(row.actualExpense ?? 0)}</td>
                 <td className="py-2 px-3">
                   <div className="flex flex-col leading-tight text-xs items-start mx-auto w-fit">
                     <ProjectionVarianceCell
