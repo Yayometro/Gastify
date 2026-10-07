@@ -62,6 +62,13 @@ function PasskeysPanel(): React.JSX.Element {
         return;
       }
       runNotify("ok", "Passkey removed 🤓");
+      // Gastify can only forget its half: the copy kept by the device or
+      // password manager (iCloud Keychain, Google Password Manager...) stays
+      // until the user removes it there.
+      runNotify(
+        "info",
+        "Removed from Gastify. Your device or password manager may still keep its own copy - delete it there too if you don't want it anymore."
+      );
     } catch (err) {
       runNotify("error", String(err));
     } finally {
