@@ -46,7 +46,7 @@ export const defaultIcons: IconCategory[] = [
       ],
     },
     {
-      name: "EASHTETIC",
+      name: "AESTHETIC",
       icons: [
         "gi/GiHairStrands",
         "fa/FaAirFreshener",
