@@ -54,11 +54,10 @@ export async function POST(
     if (!request) throw new Error("No data in request on GENERAL-DATA POST");
     const dataRequest: UpdateUserRequestBody = await request.json();
     let parsedPhone: number | undefined;
+    // The phone number is personal data: it is deliberately never logged here.
     if (typeof dataRequest.phone === "string") {
-      console.log(dataRequest.phone);
       parsedPhone = Number(dataRequest.phone);
     }
-    console.log(parsedPhone);
     // Security fix: this used to look up (and then update) the user by
     // whatever `mail` the client sent in the body, so ANY authenticated
     // caller could edit ANY OTHER user's fullName/mail/image/phone (an

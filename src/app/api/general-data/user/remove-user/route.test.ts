@@ -1,9 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const deleteMany = vi.fn();
-const collection = vi.fn((name: string) => ({ deleteMany: (filter: unknown) => deleteMany(name, filter) }));
+const collection = vi.fn((name: string) => ({
+  deleteMany: (filter: unknown, options?: unknown) => deleteMany(name, filter, options),
+}));
+const dbSession = { id: "tx-session" };
+const endSession = vi.fn();
+// withTransaction just runs the callback once; `inTransaction` lets the tests
+// see whether a delete ran inside it.
+let inTransaction = false;
+const withTransaction = vi.fn(async (fn: () => Promise<void>) => {
+  inTransaction = true;
+  try {
+    await fn();
+  } finally {
+    inTransaction = false;
+  }
+});
+const startSession = vi.fn(async () => ({ ...dbSession, withTransaction, endSession }));
 
-vi.mock("mongoose", () => ({ default: { connection: { collection: (name: string) => collection(name) } } }));
+vi.mock("mongoose", () => ({
+  default: { connection: { collection: (name: string) => collection(name) }, startSession: () => startSession() },
+}));
 vi.mock("better-auth/api", () => ({
   isAPIError: (e: unknown) => (e as { name?: string })?.name === "APIError",
 }));
@@ -26,8 +44,8 @@ const userDoc = {
     return { _id: "u1", fullName: "Test User", mail: "test@example.com", password: "legacy-hash", apiTokens: this.apiTokens };
   },
 };
-vi.mock("@/model/User", () => ({ default: { findOneAndDelete: vi.fn() } }));
-vi.mock("@/model/Wallet", () => ({ default: { findOneAndDelete: vi.fn() } }));
+vi.mock("@/model/User", () => ({ default: { findOne: vi.fn(), findOneAndDelete: vi.fn() } }));
+vi.mock("@/model/Wallet", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/Account", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/Transaction", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/Category", () => ({ default: { deleteMany: vi.fn() } }));
@@ -62,8 +80,9 @@ const api = auth.api as unknown as {
 };
 const lockMs = getDeleteAccountLockRemainingMs as unknown as ReturnType<typeof vi.fn>;
 const recordFailure = recordDeleteAccountFailure as unknown as ReturnType<typeof vi.fn>;
+const userFind = (User as unknown as { findOne: ReturnType<typeof vi.fn> }).findOne;
 const userDelete = (User as unknown as { findOneAndDelete: ReturnType<typeof vi.fn> }).findOneAndDelete;
-const walletDelete = (Wallet as unknown as { findOneAndDelete: ReturnType<typeof vi.fn> }).findOneAndDelete;
+const walletDelete = (Wallet as unknown as { deleteMany: ReturnType<typeof vi.fn> }).deleteMany;
 const txDelete = (Transaction as unknown as { deleteMany: ReturnType<typeof vi.fn> }).deleteMany;
 
 function req(body: unknown) {
@@ -74,6 +93,8 @@ const apiError = () => Object.assign(new Error("INVALID_CODE"), { name: "APIErro
 
 beforeEach(() => {
   vi.clearAllMocks();
+  deleteMany.mockReset();
+  inTransaction = false;
   api.getSession.mockResolvedValue({
     user: { email: "test@example.com", twoFactorEnabled: true },
     session: { token: "tok1" },
@@ -82,8 +103,9 @@ beforeEach(() => {
   api.verifyBackupCode.mockResolvedValue({ status: true });
   lockMs.mockResolvedValue(0);
   recordFailure.mockResolvedValue({ locked: false, attemptsLeft: 4 });
+  userFind.mockResolvedValue(userDoc);
   userDelete.mockResolvedValue(userDoc);
-  walletDelete.mockResolvedValue({ _id: "w1" });
+  walletDelete.mockResolvedValue({ deletedCount: 1 });
   txDelete.mockResolvedValue({ deletedCount: 3 });
   for (const model of [Account, Category, SubCategory, Tag, Budget, CategoryRule, IncomeSource, ProjectionBaseline, ProjectionSettings]) {
     (model as unknown as { deleteMany: ReturnType<typeof vi.fn> }).deleteMany.mockResolvedValue({ deletedCount: 1 });
@@ -163,11 +185,56 @@ describe("POST /api/general-data/user/remove-user", () => {
     expect(res.status).toBe(200);
     expect(api.verifyTOTP).toHaveBeenCalledWith(expect.objectContaining({ body: { code: "123456" } }));
     expect(api.verifyBackupCode).not.toHaveBeenCalled();
-    expect(userDelete).toHaveBeenCalledWith({ mail: "test@example.com" });
+    expect(userFind).toHaveBeenCalledWith({ mail: "test@example.com" });
+    expect(userDelete).toHaveBeenCalledWith({ _id: "u1" }, { session: expect.objectContaining({ id: "tx-session" }) });
     expect(txDelete).toHaveBeenCalledWith({ user: "u1" });
     const cleaned = deleteMany.mock.calls.map((c) => c[0]);
-    expect(cleaned).toEqual(["account", "session", "passkey", "twoFactor"]);
+    expect(cleaned).toEqual(["passkey", "account", "twoFactor", "session"]);
     deleteMany.mock.calls.forEach((c) => expect(c[1]).toEqual({ userId: "u1" }));
+  });
+
+  // Bug 121: the cascade is not atomic, so nothing that gives access to the
+  // account may be touched until all the plain data is gone.
+  it("deletes credentials, TOTP, sessions and the user document inside ONE transaction, after the data", async () => {
+    const order: string[] = [];
+    txDelete.mockImplementation(async () => {
+      order.push("data:transactions");
+      return { deletedCount: 1 };
+    });
+    deleteMany.mockImplementation(async (name: string) => {
+      order.push(`${inTransaction ? "tx" : "NO-TX"}:${name}`);
+      return { deletedCount: 1 };
+    });
+    userDelete.mockImplementation(async () => {
+      order.push(`${inTransaction ? "tx" : "NO-TX"}:user`);
+      return userDoc;
+    });
+    await POST(req(goodBody));
+    expect(order).toEqual(["data:transactions", "tx:passkey", "tx:account", "tx:twoFactor", "tx:session", "tx:user"]);
+    expect(withTransaction).toHaveBeenCalledTimes(1);
+    expect(endSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("if deleting the plain data fails halfway, the account is left fully usable so the person can retry", async () => {
+    (Tag as unknown as { deleteMany: ReturnType<typeof vi.fn> }).deleteMany.mockRejectedValue(new Error("db hiccup"));
+    await expect(POST(req(goodBody))).rejects.toThrow();
+    expect(startSession).not.toHaveBeenCalled();
+    expect(deleteMany).not.toHaveBeenCalled(); // no passkey / account / twoFactor / session touched
+    expect(userDelete).not.toHaveBeenCalled();
+  });
+
+  it("if the final transaction fails, the session is still closed and the error is not swallowed", async () => {
+    userDelete.mockRejectedValue(new Error("tx aborted"));
+    await expect(POST(req(goodBody))).rejects.toThrow();
+    expect(endSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("an account with no wallet or no data can still be deleted (these used to throw 'Wallet not removed')", async () => {
+    walletDelete.mockResolvedValue({ deletedCount: 0 });
+    txDelete.mockResolvedValue({ deletedCount: 0 });
+    const res = await POST(req(goodBody));
+    expect(res.status).toBe(200);
+    expect(userDelete).toHaveBeenCalled();
   });
 
   it("also deletes budgets, category rules, income sources and projections (they used to be left behind as orphans)", async () => {
@@ -197,7 +264,8 @@ describe("POST /api/general-data/user/remove-user", () => {
 
   it("deletes the SESSION user even if the body tries to name another one", async () => {
     await POST(req({ ...goodBody, mail: "victim@example.com", user: "someone-else" }));
-    expect(userDelete).toHaveBeenCalledWith({ mail: "test@example.com" });
+    expect(userFind).toHaveBeenCalledWith({ mail: "test@example.com" });
+    expect(userFind).not.toHaveBeenCalledWith({ mail: "victim@example.com" });
   });
 
   it("never sends the password hash or the api tokens back", async () => {

@@ -6,6 +6,13 @@ import Transaction from "@/model/Transaction";
 import Wallet from "@/model/Wallet";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
+// Registered for Transaction's .populate(category / subCategory / account / tags)
+// below - without these imports Mongoose throws MissingSchemaError whenever this
+// route is the first thing to load in a server instance (bug 156).
+import "@/model/Category";
+import "@/model/SubCategory";
+import "@/model/Account";
+import "@/model/Tag";
 import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
 import { SUPPORTED_CURRENCIES, majorToMinor, getTransactionNativeMoney } from "@/lib/money/currencies";
 import { buildLegacyMoney } from "@/lib/money/transactionMoney";

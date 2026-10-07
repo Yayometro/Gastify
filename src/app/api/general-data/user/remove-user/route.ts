@@ -124,61 +124,59 @@ export async function POST(
       return fail(401, "Código incorrecto.", { attemptsLeft });
     }
 
-    const removedUser = await User.findOneAndDelete({ mail });
-    if (!removedUser)
-      throw new Error(`User not removed, please verify the email`);
-    const removeWalletAssociated = await Wallet.findOneAndDelete({
-      user: removedUser._id,
-    });
-    if (!removeWalletAssociated)
-      throw new Error(`Wallet not removed, please verify the email`);
-    const removedAccount = await Account.deleteMany({ user: removedUser._id });
-    if (!removedAccount)
-      throw new Error("Accounts not removed, please verify the email");
-    const removeTransactions = await Transaction.deleteMany({
-      user: removedUser._id,
-    });
-    if (!removeTransactions)
-      throw new Error("Transactions not removed, please verify the email");
-    const removeCategories = await Category.deleteMany({
-      user: removedUser._id,
-    });
-    if (!removeCategories)
-      throw new Error("Category not removed, please verify the email");
-    const removeSubCategories = await SubCategory.deleteMany({
-      user: removedUser._id,
-    });
-    if (!removeSubCategories)
-      throw new Error("SubCategories not removed, please verify the email");
-    const removeTags = await Tag.deleteMany({ user: removedUser._id });
-    if (!removeTags)
-      throw new Error("Tags not removed, please verify the email");
+    const userToRemove = await User.findOne({ mail });
+    if (!userToRemove) throw new Error("User not removed, please verify the email");
+    const userId = userToRemove._id;
+
+    // The cascade spans many collections and cannot be one transaction, so the
+    // ORDER does the work (bug 121). Step 1 only deletes plain data, and every
+    // one of those deletes is safe to repeat. Nothing that lets the person get
+    // back in (credentials, TOTP secret, sessions, the user document) is touched
+    // until step 2. If step 1 fails halfway the account still exists, the person
+    // can sign in and confirm again, and the retry simply picks up from there.
+    await Wallet.deleteMany({ user: userId });
+    await Account.deleteMany({ user: userId });
+    await Transaction.deleteMany({ user: userId });
+    await Category.deleteMany({ user: userId });
+    await SubCategory.deleteMany({ user: userId });
+    await Tag.deleteMany({ user: userId });
     // Every other collection that keeps data per user. These used to be left
     // behind (budgets piled up as orphans; the rest would have too the day a
     // real account with rules/income sources/projections was deleted).
     // Any NEW per-user model must be added here (the route test checks each
     // of these is cleaned).
-    await Budget.deleteMany({ user: removedUser._id });
-    await CategoryRule.deleteMany({ user: removedUser._id });
-    await IncomeSource.deleteMany({ user: removedUser._id });
-    await ProjectionBaseline.deleteMany({ user: removedUser._id });
-    await ProjectionSettings.deleteMany({ user: removedUser._id });
-    // Better Auth's own collections (created outside a Mongoose model,
-    // on purpose - see src/lib/auth/betterAuth.js) aren't cleaned up by
-    // deleting the User document itself. `userId` on each of these is a
-    // real Mongo ObjectId (the adapter's default id generator, not a
-    // string - see betterAuth.js's own comment on why no custom
-    // generateId is set), so a direct match against removedUser._id
-    // works without any string conversion.
-    await mongoose.connection.collection("account").deleteMany({ userId: removedUser._id });
-    await mongoose.connection.collection("session").deleteMany({ userId: removedUser._id });
-    await mongoose.connection.collection("passkey").deleteMany({ userId: removedUser._id });
-    // The TOTP secret and the backup codes live in their own collection.
-    await mongoose.connection.collection("twoFactor").deleteMany({ userId: removedUser._id });
-    //
+    await Budget.deleteMany({ user: userId });
+    await CategoryRule.deleteMany({ user: userId });
+    await IncomeSource.deleteMany({ user: userId });
+    await ProjectionBaseline.deleteMany({ user: userId });
+    await ProjectionSettings.deleteMany({ user: userId });
+
+    // Step 2: everything that gives access to the account goes in ONE
+    // transaction - all of it or none of it. Better Auth's own collections
+    // (created outside a Mongoose model, on purpose - see
+    // src/lib/auth/betterAuth.ts) are not cleaned up by deleting the User
+    // document, and their `userId` is a real Mongo ObjectId (the adapter's
+    // default id generator), so it matches `userId` directly.
+    const dbSession = await mongoose.startSession();
+    let removedUser: IUser | null = null as IUser | null;
+    try {
+      await dbSession.withTransaction(async () => {
+        const authCollection = (name: string) => mongoose.connection.collection(name);
+        await authCollection("passkey").deleteMany({ userId }, { session: dbSession });
+        await authCollection("account").deleteMany({ userId }, { session: dbSession });
+        // The TOTP secret and the backup codes live in their own collection.
+        await authCollection("twoFactor").deleteMany({ userId }, { session: dbSession });
+        await authCollection("session").deleteMany({ userId }, { session: dbSession });
+        removedUser = await User.findOneAndDelete({ _id: userId }, { session: dbSession });
+      });
+    } finally {
+      await dbSession.endSession();
+    }
+    if (!removedUser) throw new Error("User not removed, please verify the email");
+    const deletedUser: IUser = removedUser;
     return NextResponse.json<RemoveUserSuccessResponse>({
-      data: toPublicUser(removedUser) as PublicUser<IUser>,
-      message: `${removedUser.fullName || "Your account"} removed successfully 🤓`,
+      data: toPublicUser(deletedUser) as PublicUser<IUser>,
+      message: `${deletedUser.fullName || "Your account"} removed successfully 🤓`,
       status: 201,
       ok: true,
     });
