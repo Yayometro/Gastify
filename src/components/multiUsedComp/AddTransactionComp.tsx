@@ -220,7 +220,8 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
     }
   };
   const handleDefAccount = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    if (event.target.value === "No account") {
+    // The "No account" option has an empty value (a null value made React warn, bug 164).
+    if (event.target.value === "") {
       setTransactionInfo({
         ...transactionInfo,
         account: null,
@@ -460,7 +461,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
             <input
               type="text"
               name="tags"
-              value={(transactionInfo.tags || null) as unknown as string}
+              value={transactionInfo.tags || ""}
               onChange={handleChange}
               placeholder="Tags (separated by comma)"
             />
@@ -469,10 +470,10 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
               <select
                 className=" bg-transparent appearance-none w-full pr-4"
                 name="DateSelector"
-                value={(transactionInfo?.account || null) as unknown as string}
+                value={transactionInfo?.account || ""}
                 onChange={handleDefAccount}
               >
-                <option value={(null as unknown as string)}>No account</option>
+                <option value="">No account</option>
                 {accounts && accounts.length > 0 ? (
                   accounts.map((acc) => (
                     <option value={acc._id} key={`option-acc-${acc._id}`}>

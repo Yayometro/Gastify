@@ -83,7 +83,8 @@ export async function createTransaction({
   if (!user) throw new Error("No User ID found to create a new Transaction");
   if (!wallet)
     throw new Error("No Wallet ID found to create a new Transaction");
-  if (!amount)
+  // Missing is not the same as zero: a 0 amount is a valid movement (bug 88).
+  if (amount === undefined || amount === null || (amount as unknown) === "")
     throw new Error("No Amount found to create a new Transaction");
   if (!isIncome && !isBill) {
     isBill = true;
@@ -92,7 +93,8 @@ export async function createTransaction({
     isBill = true;
     isIncome = false;
   }
-  if (!isReadable) isReadable = true;
+  // Only a MISSING value defaults to readable; an explicit false is kept (bug 89).
+  if (isReadable === undefined || isReadable === null) isReadable = true;
 
   await dbConnection();
 

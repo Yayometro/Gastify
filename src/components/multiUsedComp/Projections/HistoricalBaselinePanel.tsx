@@ -103,6 +103,11 @@ function BaselineTimelineEditor({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!effectiveFrom) return;
+    // An empty amount used to be saved as 0 (bug 69); a typed 0 is still allowed.
+    if (String(amount).trim() === "" || !Number.isFinite(Number(amount))) {
+      runNotify("error", "Escribe un monto");
+      return;
+    }
     try {
       setIsLoading(true);
       // Built from the picker's own local year/month (not a bare
@@ -116,7 +121,7 @@ function BaselineTimelineEditor({
         entryId: editingId || undefined,
         effectiveFrom: new Date(effectiveFrom.year(), effectiveFrom.month(), 1),
         effectiveTo: effectiveTo ? new Date(effectiveTo.year(), effectiveTo.month(), 1) : null,
-        amount: Number(amount || 0),
+        amount: Number(amount),
         currency,
       });
       if (res.ok) {

@@ -65,8 +65,11 @@ export async function POST(
     if (!updateIncomeSource)
       throw new Error(`No Income Source was identified to update 🤕`);
     // VERSION HISTORY if amount/recurrence is actually changing
+    // `amount` was tested for truthiness, so a change TO 0 was read as "not sent"
+    // and neither saved nor recorded in the history (bugs 42 and 43).
+    const amountSent = amount !== undefined && amount !== null;
     const isChanging =
-      (!!amount && amount !== updateIncomeSource.amount) ||
+      (amountSent && amount !== updateIncomeSource.amount) ||
       (!!recurrence && recurrence !== updateIncomeSource.recurrence);
     if (isChanging) {
       const now = new Date();
@@ -74,7 +77,7 @@ export async function POST(
       if (openEntry) openEntry.effectiveTo = now;
       updateIncomeSource.history = updateIncomeSource.history || [];
       updateIncomeSource.history.push({
-        amount: !amount ? updateIncomeSource.amount : amount,
+        amount: amountSent ? amount : updateIncomeSource.amount,
         recurrence: !recurrence ? updateIncomeSource.recurrence : recurrence,
         effectiveFrom: now,
         effectiveTo: null,
@@ -82,7 +85,7 @@ export async function POST(
     }
     //UPDATE:
     updateIncomeSource.name = !name ? updateIncomeSource.name : name;
-    updateIncomeSource.amount = !amount ? updateIncomeSource.amount : amount;
+    updateIncomeSource.amount = amountSent ? amount : updateIncomeSource.amount;
     updateIncomeSource.currency = !currency ? updateIncomeSource.currency : currency;
     updateIncomeSource.recurrence = !recurrence
       ? updateIncomeSource.recurrence

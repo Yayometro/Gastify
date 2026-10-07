@@ -89,6 +89,11 @@ function IncomeSourcesPanel({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // An empty amount used to become 0 silently (Number("") is 0, bug 75).
+    if (String(form.amount).trim() === "" || !Number.isFinite(Number(form.amount))) {
+      runNotify("error", "Enter an amount");
+      return;
+    }
     try {
       setIsLoading(true);
       let res;

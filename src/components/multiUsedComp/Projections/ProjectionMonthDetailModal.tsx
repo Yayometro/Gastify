@@ -150,6 +150,11 @@ function ProjectionMonthDetailModal({
   };
 
   const handleSaveBalance = async () => {
+    // Nothing typed is not a balance of 0 (Number("") is 0, bug 64).
+    if (String(balanceValue).trim() === "" || !Number.isFinite(Number(balanceValue))) {
+      runNotify("error", "Enter a balance first");
+      return;
+    }
     try {
       setIsSavingBalance(true);
       await onSaveMonthBalance(Number(balanceValue));

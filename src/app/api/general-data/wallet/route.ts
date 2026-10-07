@@ -43,7 +43,7 @@ export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<WalletPostResponse>> {
   try {
-    if (!request) throw new Error("No data in request on REMOVE-ACCOUNT POST");
+    if (!request) throw new Error("No data in request on WALLET POST");
     const {
       name,
       cash,
@@ -73,20 +73,16 @@ export async function POST(
     );
     //IF ERROR
     if (!findWallet)
-      throw new Error(`No Account was identified to be removed 🤕`);
+      throw new Error(`No Wallet was identified to update 🤕`);
     //UPDATE WALLET
     findWallet.name = !name ? findWallet.name : name;
-    findWallet.cash = !cash ? findWallet.cash : cash;
-    findWallet.budget.totalBudget = !totalBudget
-      ? findWallet.budget.totalBudget
-      : totalBudget;
-    findWallet.budget.isSurpassed = !isSurpassed
-      ? findWallet.budget.isSurpassed
-      : isSurpassed;
-    findWallet.budget.totalSavings = !totalSavings
-      ? findWallet.budget.totalSavings
-      : totalSavings;
-    findWallet.budget.isSaved = !isSaved ? findWallet.budget.isSaved : isSaved;
+    // `??` (not a truthiness test): 0 and false are real values that must be
+    // savable (bug 124).
+    findWallet.cash = cash ?? findWallet.cash;
+    findWallet.budget.totalBudget = totalBudget ?? findWallet.budget.totalBudget;
+    findWallet.budget.isSurpassed = isSurpassed ?? findWallet.budget.isSurpassed;
+    findWallet.budget.totalSavings = totalSavings ?? findWallet.budget.totalSavings;
+    findWallet.budget.isSaved = isSaved ?? findWallet.budget.isSaved;
 
     // Multi-currency: changes presentation/reporting only, never
     // reinterprets already-stored native Account/Transaction money.

@@ -44,8 +44,10 @@ export async function POST(
     });
     if (!updatedTag) throw new Error("No Tag was found 🤕");
     //UPDATE:
+    // A tag always keeps a name, so an empty/missing name leaves it as it is;
+    // the colour can be cleared with an empty value (bug 123).
     updatedTag.name = !name ? updatedTag.name : name;
-    updatedTag.color = !color ? updatedTag.color : color;
+    updatedTag.color = color === undefined || color === null ? updatedTag.color : color;
     //Saved
     const update = await updatedTag.save();
     if (!update) throw new Error("No new Tag was saved 🤕");
