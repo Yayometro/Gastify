@@ -594,7 +594,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 rpDate={handleRangeDate}
                 rpResponse={""}
               />
-              <Tooltip title="Filter de date by generic filter or selecting a specific range 🤓">
+              <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
                 <div className="text-white w-[10px]">
                   <UniversalCategoIconComp
                     type={`${"fa/FaRegQuestionCircle"}`}

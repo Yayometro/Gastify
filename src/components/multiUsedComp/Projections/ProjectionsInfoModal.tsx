@@ -20,7 +20,7 @@ function ProjectionsInfoModal({ onClose }: ProjectionsInfoModalProps): React.JSX
           >
             <CategoIcon type={"MdClose"} siz={20} />
           </div>
-          <h1 className="text-2xl text-purple-300 mb-4">How Projections works</h1>
+          <h1 className="text-2xl text-purple-300 mb-4">How Projections work</h1>
 
           <div className="w-full flex flex-col gap-4 text-left">
             <div>

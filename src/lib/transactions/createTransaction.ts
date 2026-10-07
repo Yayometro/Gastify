@@ -80,11 +80,11 @@ export async function createTransaction({
   merchantCurrency,
   manualReportingAmount,
 }: CreateTransactionParams): Promise<CreateTransactionResult> {
-  if (!user) throw new Error("No User ID finded to create a new Transaction");
+  if (!user) throw new Error("No User ID found to create a new Transaction");
   if (!wallet)
-    throw new Error("No Wallet ID finded to create a new Transaction");
+    throw new Error("No Wallet ID found to create a new Transaction");
   if (!amount)
-    throw new Error("No Amount finded to create a new Transaction");
+    throw new Error("No Amount found to create a new Transaction");
   if (!isIncome && !isBill) {
     isBill = true;
   }
@@ -125,7 +125,7 @@ export async function createTransaction({
     manualReportingAmount,
   });
 
-  const newTransacction = new Transaction({
+  const newTransaction = new Transaction({
     user,
     wallet,
     name: !name ? "transaction nameless" : name,
@@ -148,8 +148,8 @@ export async function createTransaction({
       "No SUB-CATEGORY found at NEW TRANSACTION",
       "isDefaultSubCatego"
     );
-    newTransacction.category = findSubCategory.fatherCategory;
-    newTransacction.subCategory = findSubCategory._id;
+    newTransaction.category = findSubCategory.fatherCategory;
+    newTransaction.subCategory = findSubCategory._id;
   }
   if (category && !subCategory) {
     const foundCategory = await Category.findById(category).lean();
@@ -160,14 +160,14 @@ export async function createTransaction({
       "Category not found for this user",
       "isDefaultCatego"
     );
-    newTransacction.category = foundCategory._id;
+    newTransaction.category = foundCategory._id;
   }
   if (budget) {
     const linkedBudget = await Budget.findOne({ _id: budget, user, wallet, archived: { $ne: true } });
     if (!linkedBudget || (linkedBudget.budgetType || (linkedBudget.isSaving ? "saving" : "spending")) !== "project") {
       throw new Error("Project budget was not found for this transaction");
     }
-    newTransacction.budget = linkedBudget._id;
+    newTransaction.budget = linkedBudget._id;
   }
   if (tags) {
     if (tags.length > 0) {
@@ -178,19 +178,19 @@ export async function createTransaction({
           const newTag = new Tag({ name: tag, user, wallet });
           if (!newTag)
             throw new Error("No tag created on NEW TRANSACTION POST");
-          newTransacction.tags.push(newTag._id);
+          newTransaction.tags.push(newTag._id);
           await newTag.save();
         }
         if (findTag) {
-          newTransacction.tags.push(findTag._id);
+          newTransaction.tags.push(findTag._id);
         }
       }
     }
   }
-  const savedTransacction = await newTransacction.save();
-  if (!savedTransacction)
+  const savedTransaction = await newTransaction.save();
+  if (!savedTransaction)
     throw new Error("NEW TRANSACTIONS could not be saved on POST");
-  const finalTransaction = await Transaction.findById(savedTransacction._id)
+  const finalTransaction = await Transaction.findById(savedTransaction._id)
     .populate({
       path: "tags",
     })
@@ -216,6 +216,6 @@ export async function createTransaction({
 
   return {
     transaction: transactionWithDisplayMoney,
-    name: savedTransacction.name,
+    name: savedTransaction.name,
   };
 }

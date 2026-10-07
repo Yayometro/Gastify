@@ -518,12 +518,12 @@ export function getTransactionsFromTimeRange<T extends { date?: DateLike | null;
 
 export function sortBasedOnValueProperty<T extends { value: number }>(numberElemenets: number, array: T[]): T[] {
   if (!(array instanceof Array))
-    throw new Error("the element shoudl be a instance of Array");
+    throw new Error("the element should be an instance of Array");
   return array.sort((a, b) => a.value - b.value).slice(0, numberElemenets);
 }
 export function sortByIndex<T extends { index: number }>(arr: T[]): T[] {
   if (!(arr instanceof Array))
-    throw new Error("the element shoudl be a instance of Array");
+    throw new Error("the element should be an instance of Array");
   return arr.sort((a, b) => a.index - b.index);
 }
 
@@ -531,7 +531,7 @@ export function sortByIndex<T extends { index: number }>(arr: T[]): T[] {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function reduceTransCategoriesSliced<T extends TransactionLike>(arr: T[], slice?: number): CategoryValueSliced<T>[] {
   if (!(arr instanceof Array))
-    throw new Error("the element shoudl be a instance of Array");
+    throw new Error("the element should be an instance of Array");
   const reduceObj = arr.reduce((acc: Record<string, CategoryValueSliced<T>>, transaction) => {
     const categoryName = transaction?.category?.name || "No category";
     const value = getPrimaryAmount(transaction);
@@ -563,7 +563,7 @@ export function reduceTransCategories<T extends { type: string; value: number }>
   array: T[]
 ): { array: T[]; totalValue: number } {
   if (!(array instanceof Array))
-    throw new Error("the element shoudl be a instance of Array");
+    throw new Error("the element should be an instance of Array");
   const reducedObject = array.reduce((acc: Record<string, T>, item) => {
     if (acc[item.type]) {
       acc[item.type].value += item.value;

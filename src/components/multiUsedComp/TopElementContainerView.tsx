@@ -34,7 +34,7 @@ function TopElementContainerView({
 }: TopElementContainerViewProps): React.JSX.Element {
   return (
     <div className="gf-glass-card w-full h-full rounded-[32px] p-4">
-      <h1 className="text-center 5xl font-bold">Top {elementsToDisplay} elements by month</h1>
+      <h1 className="text-center font-bold">Top {elementsToDisplay} elements by month</h1>
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs ">
           From:{" "}
@@ -51,7 +51,7 @@ function TopElementContainerView({
           </b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-          <Tooltip title="Filter de date by generic filter or selecting a specific range 🤓">
+          <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
             <div className="text-gf-text w-[10px]">
               <UniversalCategoIcon
                 type={`${"fa/FaRegQuestionCircle"}`}

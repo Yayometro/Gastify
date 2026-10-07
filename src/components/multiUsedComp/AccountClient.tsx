@@ -269,8 +269,8 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                 onChange={handleDurationChange}
               >
                 <option value={2}>Yesterday </option>
-                <option value={7}>Las week</option>
-                <option value={15}>Las 15 days</option>
+                <option value={7}>Last week</option>
+                <option value={15}>Last 15 days</option>
                 <option value={30}>Last 30 days</option>
                 <option value={60}>Last 60 days</option>
                 <option value={90}>Last 90 days</option>
@@ -280,7 +280,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
               </div>
             </div>
             <TimeRange rpDate={handleRangeDate} startDateValue={startDate} endDateValue={endDate} />
-            <Tooltip title="Filter de date by generic filter or selecting a specific range 🤓">
+            <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
               <div className="text-white w-[10px]">
                 <UniversalCategoIcon
                   type={`${"fa/FaRegQuestionCircle"}`}

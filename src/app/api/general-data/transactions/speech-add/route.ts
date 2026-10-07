@@ -169,9 +169,9 @@ export async function POST(
     await dbConnection();
     const findUser = await User.findOne({ mail: sesion.user.email }).lean();
     if (!findUser)
-      throw new Error("No User ID finded to create a new Transaction");
+      throw new Error("No User ID found to create a new Transaction");
     console.log(findUser);
-    const newTransacction = new Transaction({
+    const newTransaction = new Transaction({
       user: findUser._id,
       wallet: findUser.wallet,
       name: !transaction.name ? "transaction nameless" : transaction.name,
@@ -183,7 +183,7 @@ export async function POST(
       account: null,
       category: null,
     });
-    console.log(newTransacction);
+    console.log(newTransaction);
     if (transaction.category) {
       const categoryFound = await Category.findOne({
         name: new RegExp(`^${transaction.category}$`, "i"),
@@ -192,9 +192,9 @@ export async function POST(
       console.log(categoryFound);
       if (!categoryFound) {
         console.log(categoryFound);
-        newTransacction.category = null as unknown as mongoose.Types.ObjectId;
+        newTransaction.category = null as unknown as mongoose.Types.ObjectId;
       } else {
-        newTransacction.category = categoryFound._id as mongoose.Types.ObjectId;
+        newTransaction.category = categoryFound._id as mongoose.Types.ObjectId;
       }
     }
     if (transaction.account) {
@@ -206,9 +206,9 @@ export async function POST(
       console.log(accountFound);
       if (!accountFound) {
         console.log(accountFound);
-        newTransacction.account = null as unknown as mongoose.Types.ObjectId;
+        newTransaction.account = null as unknown as mongoose.Types.ObjectId;
       } else {
-        newTransacction.account = accountFound._id as mongoose.Types.ObjectId;
+        newTransaction.account = accountFound._id as mongoose.Types.ObjectId;
       }
     }
     const parentWallet = (await (
@@ -226,13 +226,13 @@ export async function POST(
     // that predates the multi-currency migration has no primaryCurrency/
     // currency field in its stored BSON at all.
     const walletPrimaryCurrency = parentWallet.primaryCurrency || "MXN";
-    const accountCurrency = newTransacction.account
-      ? (await Account.findById(newTransacction.account).lean())?.currency ||
+    const accountCurrency = newTransaction.account
+      ? (await Account.findById(newTransaction.account).lean())?.currency ||
         walletPrimaryCurrency
       : walletPrimaryCurrency;
-    newTransacction.kind = newTransacction.isIncome ? "income" : "expense";
-    newTransacction.direction = newTransacction.isIncome ? "credit" : "debit";
-    newTransacction.money = await (
+    newTransaction.kind = newTransaction.isIncome ? "income" : "expense";
+    newTransaction.direction = newTransaction.isIncome ? "credit" : "debit";
+    newTransaction.money = await (
       buildTransactionMoney as (params: {
         accountAmount?: number;
         accountCurrency?: string;
@@ -243,13 +243,13 @@ export async function POST(
         manualReportingAmount?: number | string | null;
       }) => Promise<ITransactionMoney>
     )({
-      accountAmount: newTransacction.amount,
+      accountAmount: newTransaction.amount,
       accountCurrency,
       walletPrimaryCurrency,
-      date: newTransacction.date,
+      date: newTransaction.date,
     });
 
-    const savedTransacction = await newTransacction.save();
+    const savedTransacction = await newTransaction.save();
     if (!savedTransacction)
       throw new Error(
         "NEW TRANSACTIONS could not be saved on Speach New Transaction Post"

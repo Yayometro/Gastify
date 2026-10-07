@@ -19,7 +19,7 @@ export function organizedCategoriesAndSubCategories<T extends RawCategoryItem = 
   arr: T[]
 ): (OrganizedCategoryItem<T> | (T & { children: T[] }))[] {
   if (!(arr instanceof Array))
-    throw new Error("the element shoudl be a instance of Array");
+    throw new Error("the element should be an instance of Array");
 
   const categoryMap: Record<string, OrganizedCategoryItem<T> | (T & { children: T[] })> = {};
 

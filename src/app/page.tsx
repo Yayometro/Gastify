@@ -48,7 +48,7 @@ export default function Home() {
                 </div>
                 <div className="text-gf-text-muted text-xl leading-8 self-stretch mt-9 max-md:max-w-full">
                   Register your expenses, import your Bank Statements directly
-                  using Excel or XLM files
+                  using Excel or XML files
                 </div>
                 <div className="self-stretch flex items-stretch justify-between gap-5 mt-9 max-md:max-w-full max-md:flex-wrap">
                   <Link
@@ -172,7 +172,7 @@ export default function Home() {
         </div>
       </div>
       <footer className="w-full h-full bg-gf-surface flex flex-col justify-center items-center text-sm text-center gap-4 pt-16 px-4 pb-[100px] min-[640px]:px-[100px]">
-        <p>© 2014 Gastify</p>
+        <p>© {new Date().getFullYear()} Gastify</p>
         <p>All rights reserved by Gastify</p>
         <p>Gastify is a trademark and intellectual property of Jair Vázquez</p>
         <p>

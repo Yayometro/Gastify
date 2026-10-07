@@ -261,8 +261,8 @@ function CreditCard({
                 onChange={handleDurationChange}
               >
                 <option value={2}>Yesterday </option>
-                <option value={7}>Las week</option>
-                <option value={15}>Las 15 days</option>
+                <option value={7}>Last week</option>
+                <option value={15}>Last 15 days</option>
                 <option value={30}>Last 30 days</option>
                 <option value={60}>Last 60 days</option>
                 <option value={90}>Last 90 days</option>

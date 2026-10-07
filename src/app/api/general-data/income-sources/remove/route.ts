@@ -49,7 +49,7 @@ export async function POST(
 
     // NO ID FILTER
     if (!id)
-      throw new Error(`No ID was provided to removed the income source 🤕`);
+      throw new Error(`No ID was provided to remove the income source 🤕`);
 
     // Security fix (#42): this route previously lacked session verification
     // and performed IncomeSource.findById(id) directly with zero ownership check (IDOR).

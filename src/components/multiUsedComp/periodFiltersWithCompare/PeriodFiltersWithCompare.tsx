@@ -92,7 +92,7 @@ function PeriodFiltersWithCompare({
             <b>{!timePeriod?.[1] ? "No time selected" : getDateInYearMonthDay(timePeriod[1])}</b>
           </span>
           <div className="flex items-center justify-center flex-wrap gap-2">
-            <Tooltip title="Filter de date by generic filter or selecting a specific range 🤓">
+            <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
               <div className="text-gf-text w-[10px]">
                 <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
               </div>

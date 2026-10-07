@@ -36,7 +36,7 @@ export async function POST(
     const { id } = (await request.json()) as RemoveBudgetRequestBody;
     if (!id)
       throw new Error(
-        `No ID was provided to removed the budget 🤕`
+        `No ID was provided to remove the budget 🤕`
       );
     // Security fix: this used to look up the Budget by id alone, with zero
     // ownership check - this endpoint isn't covered by middleware.ts's

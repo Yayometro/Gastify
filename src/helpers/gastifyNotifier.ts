@@ -17,7 +17,7 @@ export default function runNotify(nType?: NotifyType, nMessage?: React.ReactNode
           theme: "light",
           });
     } else if (nType === "error"){
-      return toast.error(` ${nMessage}`, {
+      return toast.error(`${nMessage}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -28,7 +28,7 @@ export default function runNotify(nType?: NotifyType, nMessage?: React.ReactNode
         theme: "light",
         });
       } else if (nType === "info"){
-      return toast.info(` ${nMessage}`, {
+      return toast.info(`${nMessage}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -40,7 +40,7 @@ export default function runNotify(nType?: NotifyType, nMessage?: React.ReactNode
         });
 
     } else if (nType === "warning"){
-      return toast.warn(` ${nMessage}`, {
+      return toast.warn(`${nMessage}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,

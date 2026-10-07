@@ -23,8 +23,8 @@ function SelecterFilter({
 }: SelecterFilterProps): React.JSX.Element {
   const periods: SelecterPeriod[] = periodOverride || [
     { value: 2, name: "Yesterday" },
-    { value: 7, name: "Las week" },
-    { value: 15, name: "Las 15 days" },
+    { value: 7, name: "Last week" },
+    { value: 15, name: "Last 15 days" },
     { value: 30, name: "Last 30 days" },
     { value: 60, name: "Last 60 days" },
     { value: 30, name: "Last 90 days" },
