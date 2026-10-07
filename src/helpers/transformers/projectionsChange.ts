@@ -237,29 +237,62 @@ export function getExpectedOccurrencesInMonth(incomeSource: ExpectedOccurrenceSo
   }
 }
 
-export function matchBillToBudget(bill: BillLike, budget: MatchableBudget): boolean {
+// How specifically a budget claims a bill: 2 = by sub-category, 1 = by category,
+// 0 = doesn't match. A "Groceries" budget claims a groceries bill more
+// specifically than a "Food" one does.
+function getBillBudgetSpecificity(bill: BillLike, budget: MatchableBudget): number {
+  const bySubCategory = (subCategory: unknown): number => {
+    const subCategoryId = (subCategory as IdRef)?._id || subCategory;
+    return String((bill.subCategory as IdRef)?._id) === String(subCategoryId) ? 2 : 0;
+  };
+  const byCategory = (category: unknown): number => {
+    const categoryId = (category as IdRef)?._id || category;
+    return String((bill.category as IdRef)?._id) === String(categoryId) ? 1 : 0;
+  };
   if (budget.categories && Array.isArray(budget.categories) && budget.categories.length > 0) {
-    return budget.categories.some((entry) => {
-      if (entry.subCategory) {
-        const subCategoryId = (entry.subCategory as IdRef)?._id || entry.subCategory;
-        return String((bill.subCategory as IdRef)?._id) === String(subCategoryId);
+    return Math.max(
+      0,
+      ...budget.categories.map((entry) => {
+        if (entry.subCategory) return bySubCategory(entry.subCategory);
+        if (entry.category) return byCategory(entry.category);
+        return 0;
+      })
+    );
+  }
+  if (budget.subCategory) return bySubCategory(budget.subCategory);
+  if (budget.category) return byCategory(budget.category);
+  return 0;
+}
+
+export function matchBillToBudget(bill: BillLike, budget: MatchableBudget): boolean {
+  return getBillBudgetSpecificity(bill, budget) > 0;
+}
+
+// Gives every bill to ONE budget - the one that claims it most specifically,
+// the first in the list on a tie - so a bill that matches several budgets is
+// counted once in a projection instead of once per budget (bug 104).
+// Returns, per budget (same order as `budgets`), the bills assigned to it, plus
+// the bills no budget claims.
+function assignBillsToBudgets(
+  bills: BillLike[],
+  budgets: MatchableBudget[]
+): { perBudget: BillLike[][]; unmatched: BillLike[] } {
+  const perBudget: BillLike[][] = budgets.map(() => []);
+  const unmatched: BillLike[] = [];
+  for (const bill of bills) {
+    let bestIndex = -1;
+    let bestSpecificity = 0;
+    budgets.forEach((budget, index) => {
+      const specificity = getBillBudgetSpecificity(bill, budget);
+      if (specificity > bestSpecificity) {
+        bestSpecificity = specificity;
+        bestIndex = index;
       }
-      if (entry.category) {
-        const categoryId = (entry.category as IdRef)?._id || entry.category;
-        return String((bill.category as IdRef)?._id) === String(categoryId);
-      }
-      return false;
     });
+    if (bestIndex === -1) unmatched.push(bill);
+    else perBudget[bestIndex].push(bill);
   }
-  if (budget.subCategory) {
-    const subCategoryId = (budget.subCategory as IdRef)?._id || budget.subCategory;
-    return String((bill.subCategory as IdRef)?._id) === String(subCategoryId);
-  }
-  if (budget.category) {
-    const categoryId = (budget.category as IdRef)?._id || budget.category;
-    return String((bill.category as IdRef)?._id) === String(categoryId);
-  }
-  return false;
+  return { perBudget, unmatched };
 }
 
 export function getBudgetPeriodRange(
@@ -326,33 +359,23 @@ export function getBudgetActualSpend(
 // Per Budget bucket: MAX(budgeted goal, real spend this month). Bills matching no
 // Budget fall into the "unexpected" bucket, compared the same way against the buffer.
 function sumPerBucketMax(bills: BillLike[], budgets: MatchableBudget[], bufferAmount?: number): number {
-  const matchedBillIds = new Set<string>();
+  const { perBudget, unmatched } = assignBillsToBudgets(bills, budgets);
   let total = 0;
-  budgets.forEach((budget) => {
-    const matched = bills.filter((bill) => matchBillToBudget(bill, budget));
-    matched.forEach((bill) => matchedBillIds.add(String(bill._id)));
-    const actual = sum(matched.map(getPrimaryAmount));
-    total += Math.max(budget.goalAmount || 0, actual);
+  budgets.forEach((budget, index) => {
+    total += Math.max(budget.goalAmount || 0, sum(perBudget[index].map(getPrimaryAmount)));
   });
-  const unmatched = bills.filter((bill) => !matchedBillIds.has(String(bill._id)));
-  const unmatchedActual = sum(unmatched.map(getPrimaryAmount));
-  total += Math.max(bufferAmount || 0, unmatchedActual);
+  total += Math.max(bufferAmount || 0, sum(unmatched.map(getPrimaryAmount)));
   return total;
 }
 
 // Per-bucket breakdown (one row per Budget + one "Unexpected" row) for the detail-modal chart.
 export function getMonthBucketBreakdown(bills: BillLike[], budgets: MatchableBudget[], bufferAmount?: number): MonthBucketBreakdownRow[] {
-  const matchedBillIds = new Set<string>();
-  const rows = budgets.map((budget) => {
-    const matched = bills.filter((bill) => matchBillToBudget(bill, budget));
-    matched.forEach((bill) => matchedBillIds.add(String(bill._id)));
-    return {
-      label: budget.name || (budget.subCategory as IdRef)?.name || (budget.category as IdRef)?.name || "Budget",
-      budgeted: budget.goalAmount || 0,
-      actual: sum(matched.map(getPrimaryAmount)),
-    };
-  });
-  const unmatched = bills.filter((bill) => !matchedBillIds.has(String(bill._id)));
+  const { perBudget, unmatched } = assignBillsToBudgets(bills, budgets);
+  const rows = budgets.map((budget, index) => ({
+    label: budget.name || (budget.subCategory as IdRef)?.name || (budget.category as IdRef)?.name || "Budget",
+    budgeted: budget.goalAmount || 0,
+    actual: sum(perBudget[index].map(getPrimaryAmount)),
+  }));
   rows.push({
     label: "Unexpected/Other",
     budgeted: bufferAmount || 0,

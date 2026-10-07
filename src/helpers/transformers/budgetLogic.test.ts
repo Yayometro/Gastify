@@ -3,7 +3,7 @@ import { getBudgetType } from "./budgetTypes";
 import { buildBudgetHistoricalComparative } from "./budgetHistoricalComparative";
 import { getBudgetCoverage } from "./budgetCoverage";
 import { suggestCategory } from "./categoryRuleMatcher";
-import { getExpectedOccurrencesInMonth } from "./projectionsChange";
+import { getExpectedOccurrencesInMonth, getMonthBucketBreakdown, buildYearProjectionTable } from "./projectionsChange";
 
 describe("getBudgetType (bug 29)", () => {
   it("an explicit budgetType of saving is a saving budget even without isSaving", () => {
@@ -104,5 +104,43 @@ describe("getExpectedOccurrencesInMonth (bug 108)", () => {
     expect(getExpectedOccurrencesInMonth({ recurrence: "weekly", anchorDate: new Date(2026, 7, 3) } as never, ...month(7))).toBe(5);
     expect(getExpectedOccurrencesInMonth({ recurrence: "weekly" } as never, ...month(7))).toBe(4);
     expect(getExpectedOccurrencesInMonth({ recurrence: "monthly" } as never, ...month(7))).toBe(1);
+  });
+});
+
+describe("a bill claimed by several budgets counts once (bug 104)", () => {
+  const food = { name: "Food", goalAmount: 100, category: "c1" };
+  const groceries = { name: "Groceries", goalAmount: 50, category: "c1", subCategory: "s1" };
+  const groceriesBill = { _id: "t1", isBill: true, category: { _id: "c1" }, subCategory: { _id: "s1" }, amount: 80 };
+  const restaurantBill = { _id: "t2", isBill: true, category: { _id: "c1" }, subCategory: { _id: "s2" }, amount: 30 };
+
+  it("goes to the most specific budget, whatever the list order", () => {
+    for (const budgets of [[food, groceries], [groceries, food]]) {
+      const rows = getMonthBucketBreakdown([groceriesBill as never, restaurantBill as never], budgets as never, 0);
+      const byLabel = Object.fromEntries(rows.map((r) => [r.label, r.actual]));
+      expect(byLabel.Groceries).toBe(80);
+      expect(byLabel.Food).toBe(30);
+      expect(byLabel["Unexpected/Other"]).toBe(0);
+    }
+  });
+
+  it("on a tie the first budget in the list keeps it, and the total is not doubled", () => {
+    const foodTwo = { name: "Food 2", goalAmount: 100, category: "c1" };
+    const rows = getMonthBucketBreakdown([restaurantBill as never], [food, foodTwo] as never, 0);
+    expect(rows.map((r) => r.actual)).toEqual([30, 0, 0]);
+  });
+
+  it("the projected expense of a month counts the bill once", () => {
+    const rows = buildYearProjectionTable({
+      transactions: [{ ...groceriesBill, isReadable: true, date: new Date(2026, 5, 10) }] as never,
+      budgets: [food, groceries] as never,
+      incomeSources: [],
+      projectionSettings: { monthlyBuffers: [] },
+      projectionBaseline: null,
+      year: 2026,
+      today: new Date(2026, 5, 15), // June is the month in progress: MAX(goal, real) per budget
+    } as never) as unknown as { monthName: string; projectedExpense: number }[];
+    const june = rows.find((r) => r.monthName === "Jun" || r.monthName === "June") || rows[5];
+    // groceries: max(50, 80) = 80, food: max(100, 0) = 100 (not max(100, 80))
+    expect(june.projectedExpense).toBe(180);
   });
 });
