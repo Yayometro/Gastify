@@ -5,7 +5,7 @@ import {
   months,
 } from "../timeFunctions/timeFunctions";
 import type { PrimaryAmountItem } from "../timeFunctions/timeFunctions";
-import currencyFormatter from "currency-formatter";
+import { formatInPrimaryCurrency } from "@/lib/money/displayCurrency";
 import { minorToMajor } from "@/lib/money/currencies";
 
 type DateLike = Date | string | number;
@@ -134,10 +134,10 @@ export type MonthsChartObject = {
   december?: number;
 };
 
+// Formats an amount in the Wallet's primary currency. The name is historical: it
+// used to be a fixed en-US/USD format (bugs 51, 59, 101).
 export function usdFormatChanger(currency: number | string): string {
-  return currencyFormatter.format(currency, {
-    locale: "en-US",
-  });
+  return formatInPrimaryCurrency(currency);
 }
 
 // The Wallet-primary-currency equivalent of a transaction's money, in major

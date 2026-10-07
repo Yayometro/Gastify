@@ -9,7 +9,7 @@ import "dayjs/locale/es";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
-import { formatMoneyMajor, minorToMajor, SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
+import { formatMoneyMajor, isSupportedCurrency, minorToMajor, SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
 import type { ProjectionBaselineData } from "@/hooks/useProjectionTable";
 
 export interface BaselineTimelineEntry {
@@ -45,6 +45,12 @@ export interface HistoricalBaselinePanelProps {
   mail?: string;
   onChange?: () => void;
   defaultOpen?: boolean;
+}
+
+// A stored entry whose currency is not a supported one used to throw "Unsupported
+// currency" and break the whole panel (bug 68): it is read as 0 of that currency instead.
+function safeMinorToMajor(amountMinor: number, currency: unknown): number {
+  return isSupportedCurrency(currency) ? minorToMajor(amountMinor, currency) : 0;
 }
 
 function formatMonthYear(date?: string | number | Date | null): string {
@@ -96,7 +102,7 @@ function BaselineTimelineEditor({
     setEditingId(entry._id);
     setEffectiveFrom(dayjs(entry.effectiveFrom));
     setEffectiveTo(entry.effectiveTo ? dayjs(entry.effectiveTo) : null);
-    setAmount(minorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || defaultCurrency));
+    setAmount(safeMinorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || defaultCurrency));
     setCurrency(entry[moneyField]?.currency || defaultCurrency);
   };
 
@@ -167,8 +173,8 @@ function BaselineTimelineEditor({
                 {entry.effectiveTo ? ` hasta ${formatMonthYear(entry.effectiveTo)}` : " (en curso)"}
                 <span className="text-xs text-gf-text-muted normal-case ml-2">
                   ~{formatMoneyMajor(
-                    minorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || defaultCurrency),
-                    entry[moneyField]?.currency || defaultCurrency,
+                    safeMinorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || defaultCurrency),
+                    isSupportedCurrency(entry[moneyField]?.currency) ? (entry[moneyField]?.currency as string) : defaultCurrency,
                     { showCode: true }
                   )}
                 </span>

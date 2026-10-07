@@ -4,6 +4,7 @@ import dbConnection from "@/app/api/dbConnection";
 import IncomeSource, { type IIncomeSource } from "@/model/IncomeSource";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import { isSupportedCurrency, majorToMinor } from "@/lib/money/currencies";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -67,6 +68,12 @@ export async function POST(
       throw new Error("User not found on NEW INCOME SOURCE");
 
     const now = new Date();
+    // Multi-currency money (minor units + currency) for the source and its first
+    // history entry, like the rest of the schema (bug 47); only when the currency is a
+    // supported one, otherwise it stays off as before.
+    const money = isSupportedCurrency(currency)
+      ? { amountMinor: majorToMinor(amount || 0, currency), currency }
+      : undefined;
     const newIncomeSource = new IncomeSource({
       name: name || null,
       amount: amount || 0,
@@ -76,9 +83,11 @@ export async function POST(
       user: userFound._id,
       wallet: userFound.wallet,
       active: true,
+      ...(money ? { money } : {}),
       history: [
         {
           amount: amount || 0,
+          ...(money ? { money } : {}),
           recurrence: recurrence || "monthly",
           effectiveFrom: now,
           effectiveTo: null,

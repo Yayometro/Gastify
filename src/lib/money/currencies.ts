@@ -56,16 +56,22 @@ export function assertSupportedCurrency(currency: unknown): SupportedCurrency {
   return currency;
 }
 
-export function getMinorUnits(currency: SupportedCurrency | string | unknown): number {
+// Validates the currency ONCE and hands back its metadata. The helpers below
+// used to call assertSupportedCurrency again at every level of the chain
+// (formatMoneyMinor -> minorToMajor -> getMinorUnits -> formatMoneyMajor, bug 83).
+function metaFor(currency: SupportedCurrency | string | unknown): CurrencyMeta {
   assertSupportedCurrency(currency);
-  return CURRENCY_META[currency as string].minorUnits;
+  return CURRENCY_META[currency as string];
+}
+
+export function getMinorUnits(currency: SupportedCurrency | string | unknown): number {
+  return metaFor(currency).minorUnits;
 }
 
 // Major (e.g. 125.50) -> minor integer units (e.g. 12550). Uses string-based
 // rounding rather than raw float math to avoid classic 0.1 + 0.2 drift.
 export function majorToMinor(value: number | string | unknown, currency: SupportedCurrency | string | unknown): number {
-  assertSupportedCurrency(currency);
-  const minorUnits = getMinorUnits(currency);
+  const { minorUnits } = metaFor(currency);
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) {
     throw new Error(`majorToMinor: value is not a finite number: ${value}`);
@@ -73,16 +79,45 @@ export function majorToMinor(value: number | string | unknown, currency: Support
   const factor = 10 ** minorUnits;
   // Round to the nearest minor unit, half away from zero.
   const rounded = Math.sign(numeric) * Math.round(Math.abs(numeric) * factor);
-  return rounded;
+  // Math.sign(-0) * 0 is -0, which prints as "-0" and fails Object.is(x, 0) (bug 80).
+  return rounded === 0 ? 0 : rounded;
 }
 
-export function minorToMajor(amountMinor: number | unknown, currency: SupportedCurrency | string | unknown): number {
-  assertSupportedCurrency(currency);
-  const minorUnits = getMinorUnits(currency);
+function minorToMajorWithUnits(amountMinor: number | unknown, minorUnits: number): number {
   if (!Number.isFinite(amountMinor as number)) {
     throw new Error(`minorToMajor: amountMinor is not a finite number: ${amountMinor}`);
   }
   return (amountMinor as number) / 10 ** minorUnits;
+}
+
+export function minorToMajor(amountMinor: number | unknown, currency: SupportedCurrency | string | unknown): number {
+  return minorToMajorWithUnits(amountMinor, metaFor(currency).minorUnits);
+}
+
+// One Intl.NumberFormat per locale/currency/decimals instead of a new one on
+// every call (bug 81); building them is the expensive part of formatting.
+const numberFormats = new Map<string, Intl.NumberFormat>();
+function getNumberFormat(locale: string, currency: string, minorUnits: number): Intl.NumberFormat {
+  const key = `${locale}|${currency}|${minorUnits}`;
+  let format = numberFormats.get(key);
+  if (!format) {
+    format = new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: minorUnits,
+      maximumFractionDigits: minorUnits,
+    });
+    numberFormats.set(key, format);
+  }
+  return format;
+}
+
+function formatWithMeta(amount: unknown, meta: CurrencyMeta, options: FormatMoneyOptions): string {
+  const { showCode = true, locale } = options;
+  const numeric = Number(amount ?? 0);
+  // NaN / Infinity read as 0, not "NaN"
+  const formatted = getNumberFormat(locale || meta.locale, meta.code, meta.minorUnits).format(Number.isFinite(numeric) ? numeric : 0);
+  return showCode ? `${meta.code} ${formatted}` : formatted;
 }
 
 export function formatMoneyMinor(
@@ -90,9 +125,8 @@ export function formatMoneyMinor(
   currency: SupportedCurrency | string | unknown,
   options: FormatMoneyOptions = {}
 ): string {
-  assertSupportedCurrency(currency);
-  const major = minorToMajor(amountMinor, currency);
-  return formatMoneyMajor(major, currency, options);
+  const meta = metaFor(currency);
+  return formatWithMeta(minorToMajorWithUnits(amountMinor, meta.minorUnits), meta, options);
 }
 
 // Transitional helper for legacy plain-number amounts (already in major
@@ -103,16 +137,7 @@ export function formatMoneyMajor(
   currency: SupportedCurrency | string | unknown,
   options: FormatMoneyOptions = {}
 ): string {
-  assertSupportedCurrency(currency);
-  const meta = CURRENCY_META[currency as string];
-  const { showCode = true, locale } = options;
-  const formatted = new Intl.NumberFormat(locale || meta.locale, {
-    style: "currency",
-    currency: currency as string,
-    minimumFractionDigits: meta.minorUnits,
-    maximumFractionDigits: meta.minorUnits,
-  }).format(Number.isFinite(Number(amount ?? 0)) ? Number(amount ?? 0) : 0); // NaN / Infinity read as 0, not "NaN"
-  return showCode ? `${currency} ${formatted}` : formatted;
+  return formatWithMeta(amount, metaFor(currency), options);
 }
 
 // Reads the native (account) amount/currency off a normalized Transaction DTO.

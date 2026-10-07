@@ -139,3 +139,31 @@ describe("attachDisplayMoneyToList", () => {
     expect(result[1].displayMoney).toBeDefined();
   });
 });
+
+describe("failures do not take the list down (bug 85)", () => {
+  const usd = (id) => ({
+    _id: id,
+    amount: 10,
+    date: new Date("2026-08-20"),
+    money: { account: { amountMinor: 1000, currency: "USD" }, merchant: null, reporting: null },
+  });
+
+  it("a failing rate lookup leaves that transaction without a primary value instead of throwing", async () => {
+    convert.mockRejectedValue(new Error("ECB is down"));
+    const result = await attachDisplayMoney(usd("t1"), "MXN");
+    expect(result.displayMoney.primary).toBeNull();
+    expect(result.displayMoney.native).toEqual({ amountMinor: 1000, currency: "USD" });
+  });
+
+  it("one broken transaction does not reject the whole list", async () => {
+    convert.mockResolvedValue({ available: true, amountMinor: 17000, rate: "17", source: "ecb_reference", effectiveDate: new Date("2026-08-20"), estimated: false });
+    const broken = { _id: "bad", date: new Date("2026-08-20") };
+    // reading `amount` blows up, but the property is not enumerable so a plain copy still works
+    Object.defineProperty(broken, "amount", { enumerable: false, get() { throw new Error("corrupt document"); } });
+    const list = await attachDisplayMoneyToList([usd("t1"), broken, usd("t2")], "MXN");
+    expect(list).toHaveLength(3);
+    expect(list[0].displayMoney.primary.amountMinor).toBe(17000);
+    expect(list[1].displayMoney.primary).toBeNull();
+    expect(list[2].displayMoney.primary.amountMinor).toBe(17000);
+  });
+});

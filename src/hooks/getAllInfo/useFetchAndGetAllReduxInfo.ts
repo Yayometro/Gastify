@@ -1,18 +1,16 @@
-import { fetchAccounts, setAccounts, type AccountData, type AccountsState } from "@/lib/features/accountsSlice";
-import { fetchBudget, setBudget, type BudgetData, type BudgetsState } from "@/lib/features/budgetSlice";
-import { fetchCategories, setCategories, type CategoryData, type CategoriesState } from "@/lib/features/categoriesSlice";
-import { fetchSubCat, setSubCategories, type SubCategoryData, type SubCategoriesState } from "@/lib/features/subCategorySlice";
+import { fetchAccounts, type AccountData } from "@/lib/features/accountsSlice";
+import { fetchBudget, type BudgetData } from "@/lib/features/budgetSlice";
+import { fetchCategories, type CategoryData } from "@/lib/features/categoriesSlice";
+import { fetchSubCat, type SubCategoryData } from "@/lib/features/subCategorySlice";
 import {
   fetchTrans,
-  setTransacctions,
   type TransactionData,
-  type TransacctionsState,
 } from "@/lib/features/transacctionsSlice";
-import { fetchUser, setUser, type UserData, type UserState } from "@/lib/features/userSlice";
-import { fetchWallet, setWallet, type WalletData, type WalletState } from "@/lib/features/walletSlice";
+import { fetchUser, type UserData } from "@/lib/features/userSlice";
+import { fetchWallet, type WalletData } from "@/lib/features/walletSlice";
 import { useDispatch, useSelector } from "react-redux";
 import useGetUserSession from "../useGetUserSession";
-import { setTags } from "@/lib/features/tagsSlice";
+import { setDisplayCurrency } from "@/lib/money/displayCurrency";
 import { useEffect, useState } from "react";
 import type { AppDispatch, RootState } from "@/lib/store";
 
@@ -79,50 +77,20 @@ export default function useFetchAndGetAllReduxInfo(): ReduxAllInfo {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email]);
 
+  // The wallet's primary currency is the one every amount is formatted in.
+  const primaryCurrency = (ccWallet.data as { primaryCurrency?: string } | undefined)?.primaryCurrency;
   useEffect(() => {
-    // User
-    if (ccUser.status == "succeeded") {
-      setUser(ccUser.data as unknown as UserState);
-    }
-    // Wallet
-    if (ccWallet.status == "succeeded") {
-      setWallet(ccWallet.data as unknown as WalletState);
-    }
-    // Account
-    if (ccAccounts.status == "succeeded") {
-      setAccounts(ccAccounts.data as unknown as AccountsState);
-    }
-    //Categories
-    if (ccCategories.status == "succeeded") {
-      setCategories(ccCategories.data as unknown as CategoriesState);
-    }
-    // //Sub-categories
-    if (ccSubCategories.status == "succeeded") {
-      setSubCategories(ccSubCategories.data as unknown as SubCategoriesState);
-    }
-    //Transactions
+    setDisplayCurrency(primaryCurrency);
+  }, [primaryCurrency]);
+
+  useEffect(() => {
+    // (There used to be eight `setUser(...)`, `setWallet(...)` ... calls here: slice
+    // actions called WITHOUT dispatch, so they did nothing, same as bugs 15/16/27/28/143;
+    // dispatching them would have replaced each slice with data of another shape.)
     if (ccTransacciones.status == "succeeded") {
-      setTransacctions(ccTransacciones.data as unknown as TransacctionsState);
       setLoading(false);
     }
-    //Budgets
-    if (ccBudgets.status == "succeeded") {
-      setBudget(ccBudgets.data as unknown as BudgetsState);
-    }
-    //Tags
-    if (ccTags.status == "succeeded") {
-      setTags(ccTags.data);
-    }
-  }, [
-    ccUser,
-    ccWallet,
-    ccAccounts,
-    ccCategories,
-    ccSubCategories,
-    ccTransacciones,
-    ccBudgets,
-    ccTags,
-  ]);
+  }, [ccTransacciones]);
   const userCats = (ccCategories?.data?.user || ccCategories?.user || []) as CategoryData[];
   const defCats = (ccCategories?.data?.default || ccCategories?.default || []) as CategoryData[];
   const categoriesList = Array.isArray(userCats) && Array.isArray(defCats) ? userCats.concat(defCats) : (Array.isArray(userCats) ? userCats : (Array.isArray(defCats) ? defCats : []));

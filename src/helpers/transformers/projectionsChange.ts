@@ -8,6 +8,7 @@ import {
 import { getValueActiveInMonth } from "./budgetHistory";
 import { isSpendingBudget } from "./budgetTypes";
 import { minorToMajor } from "@/lib/money/currencies";
+import { getDisplayCurrency } from "@/lib/money/displayCurrency";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -304,10 +305,13 @@ export function getBudgetActualSpend(
   const matched = (allTransactions || []).filter((tra) => {
     if (!tra.isBill) return false;
     const tDate = new Date(tra.date || tra.createdAt);
-    if (tDate < startDate || tDate > endDate) return false;
+    // An invalid date passes `< start` / `> end` (both false), so it used to be counted (bug 103).
+    if (Number.isNaN(tDate.getTime()) || tDate < startDate || tDate > endDate) return false;
     return matchBillToBudget(tra, budget);
   });
-  return matched.reduce((acc, bill) => acc + ((bill.amount as number) || 0), 0);
+  // Wallet-currency equivalent, like every other sum in this file; the legacy `amount`
+  // ignores the conversion of movements in other currencies (bug 102).
+  return sum(matched.map(getPrimaryAmount));
 }
 
 
@@ -459,7 +463,7 @@ function sumBaselineEntriesAtDate(
     return from <= monthStart && (!to || to > monthStart);
   });
   if (active.length === 0) return null;
-  return sum(active.map((entry) => minorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || "MXN")));
+  return sum(active.map((entry) => minorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || getDisplayCurrency())));
 }
 
 function getBaselineIncomeAtDate(projectionBaseline: ProjectionBaselineLike | null | undefined, monthStart: Date): number | null {

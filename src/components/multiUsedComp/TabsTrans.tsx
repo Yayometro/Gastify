@@ -36,7 +36,6 @@ export interface TabsTransItem {
 export interface TabsTransProps {
   ttTrans?: TabsTransMovement[] | null;
   ttIsbill?: boolean;
-  ttHorizontal?: boolean;
 }
 
 function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
@@ -217,7 +216,7 @@ function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
                     <p className="font-semibold">
                       {ttIsbill ? "Total spent:" : "Total earned:"}
                     </p>
-                    ${String(visibleTotal).slice(0, 9)}
+                    {formatMoneyMajor(visibleTotal, walletPrimaryCurrency, { showCode: false })}
                   </div>
                   <div className="flex gap-2 underline">
                     <p className="font-semibold">Amount:</p>

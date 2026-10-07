@@ -1,6 +1,6 @@
 import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import currencyFormatter from "currency-formatter";
+import { formatInPrimaryCurrency } from "@/lib/money/displayCurrency";
 import dayjs from "dayjs";
 import { formatMoneyMinor } from "@/lib/money/currencies";
 
@@ -55,7 +55,7 @@ function DeletePreviewRow({ transaction }: DeletePreviewRowProps): React.JSX.Ele
   const native = transaction.displayMoney?.native;
   const amountLabel = native
     ? formatMoneyMinor(native.amountMinor, native.currency)
-    : currencyFormatter.format(transaction.amount ?? 0, { locale: "en-US" });
+    : formatInPrimaryCurrency(transaction.amount ?? 0);
   return (
     <div className="flex flex-row justify-between items-center bg-gf-surface-2/90 rounded-xl py-1.5 px-2.5 my-1 border border-gf-border text-xs shadow-sm">
       <div className="flex gap-2 items-center min-w-0">

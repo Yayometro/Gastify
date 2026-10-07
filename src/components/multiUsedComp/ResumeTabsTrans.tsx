@@ -130,7 +130,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
               />
             </div>
           ) : (
-            <TabsTrans ttTrans={allBills} ttIsbill={true} ttHorizontal={false} />
+            <TabsTrans ttTrans={allBills} ttIsbill={true} />
           )}
         </div>
         <div className={`rtt-sub-cont w-full h-full ${isBillTab ? "hidden" : ""}`}>
@@ -141,7 +141,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
               />
             </div>
           ) : (
-            <TabsTrans ttTrans={allIncomes} ttIsbill={false} ttHorizontal={false} />
+            <TabsTrans ttTrans={allIncomes} ttIsbill={false} />
           )}
         </div>
       </div>

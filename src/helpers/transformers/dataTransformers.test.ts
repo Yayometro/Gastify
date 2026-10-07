@@ -100,3 +100,29 @@ describe("organizedCategoriesAndSubCategories (bugs 117, 118)", () => {
     expect(out[0].children.map((s) => s.name)).toEqual(["Coffee"]);
   });
 });
+
+import { getBudgetActualSpend } from "./projectionsChange";
+
+describe("getBudgetActualSpend (bugs 102, 103)", () => {
+  const budget = { _id: "b1", goalAmount: 100, period: "monthly", category: "c1" } as never;
+  const bill = (overrides: Record<string, unknown>) => ({
+    isBill: true,
+    category: { _id: "c1" },
+    date: "2026-08-10",
+    amount: 10,
+    ...overrides,
+  });
+  const start = new Date(2026, 7, 1);
+  const end = new Date(2026, 7, 31, 23, 59, 59);
+
+  it("sums the wallet-currency amount, not the legacy amount of a foreign-currency movement", () => {
+    const usd = bill({ amount: 10, displayMoney: { primary: { amountMinor: 17000, currency: "MXN" } } });
+    expect(getBudgetActualSpend(budget, [usd] as never, start, end)).toBe(170);
+  });
+
+  it("ignores movements with an invalid date", () => {
+    const good = bill({ amount: 10 });
+    const bad = bill({ amount: 999, date: "not a date" });
+    expect(getBudgetActualSpend(budget, [good, bad] as never, start, end)).toBe(10);
+  });
+});

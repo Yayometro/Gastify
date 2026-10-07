@@ -16,7 +16,7 @@ import EditSingleTransModal from "@/components/multiUsedComp/EditSingleTransModa
 import Tag from "@/components/multiUsedComp/Tag";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import dayjs from "dayjs";
-import currencyFormatter from "currency-formatter";
+import { formatInPrimaryCurrency } from "@/lib/money/displayCurrency";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 import CurrencyBreakdownChips from "@/components/multiUsedComp/CurrencyBreakdownChips";
@@ -519,14 +519,14 @@ function BudgetDetailModal({
                               <div className="text-red-500 flex gap-1 items-center font-bold text-xs">
                                 <CategoIcon type="MdKeyboardDoubleArrowDown" />
                                 <span>
-                                  {currencyFormatter.format(movement.amount || 0, { locale: "en-US" })}
+                                  {formatInPrimaryCurrency(movement.amount || 0)}
                                 </span>
                               </div>
                             ) : (
                               <div className="text-green-500 flex gap-1 items-center font-bold text-xs">
                                 <CategoIcon type="MdKeyboardDoubleArrowUp" />
                                 <span>
-                                  {currencyFormatter.format(movement.amount || 0, { locale: "en-US" })}
+                                  {formatInPrimaryCurrency(movement.amount || 0)}
                                 </span>
                               </div>
                             )}

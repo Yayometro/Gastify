@@ -138,7 +138,13 @@ function TransferExchangeModal(): React.JSX.Element {
     const sourceAmountMinor = majorToMinor(Number(form.sourceAmount) || 0, sourceCurrency);
     const destinationAmountMinor = majorToMinor(Number(form.destinationAmount) || 0, destinationCurrency);
     if (!(sourceAmountMinor > 0) || !(destinationAmountMinor > 0)) {
-      runNotify("error", "Enter both amounts");
+      // An amount smaller than the currency's smallest unit (0.001 USD) rounds to 0:
+      // say that instead of "Enter both amounts" when something WAS typed (bug 40).
+      const typedSomething = Number(form.sourceAmount) > 0 && Number(form.destinationAmount) > 0;
+      runNotify(
+        "error",
+        typedSomething ? "That amount is smaller than the smallest unit of the currency" : "Enter both amounts"
+      );
       return;
     }
 

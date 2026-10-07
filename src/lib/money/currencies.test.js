@@ -81,3 +81,29 @@ describe("formatMoneyMajor with bad numbers (bug 82)", () => {
     expect(formatMoneyMajor(12.5, "USD", { showCode: false })).toBe("$12.50");
   });
 });
+
+describe("money helpers (bugs 80, 81, 83)", () => {
+  it("majorToMinor never returns -0", async () => {
+    const { majorToMinor } = await import("./currencies");
+    expect(Object.is(majorToMinor(-0, "MXN"), 0)).toBe(true);
+    expect(Object.is(majorToMinor(-0.001, "MXN"), 0)).toBe(true);
+    expect(majorToMinor(-1.5, "MXN")).toBe(-150);
+    expect(majorToMinor(2.345, "JPY")).toBe(2);
+  });
+  it("still rejects unsupported currencies and non-finite values", async () => {
+    const { majorToMinor, minorToMajor, formatMoneyMinor, formatMoneyMajor } = await import("./currencies");
+    expect(() => majorToMinor(1, "XXX")).toThrow("Unsupported currency");
+    expect(() => minorToMajor(1, undefined)).toThrow("Unsupported currency");
+    expect(() => formatMoneyMinor(1, "XXX")).toThrow("Unsupported currency");
+    expect(() => formatMoneyMajor(1, "XXX")).toThrow("Unsupported currency");
+    expect(() => majorToMinor(NaN, "MXN")).toThrow("not a finite number");
+    expect(() => minorToMajor(NaN, "MXN")).toThrow("not a finite number");
+  });
+  it("formats the same with the cached formatter on repeated calls", async () => {
+    const { formatMoneyMinor, formatMoneyMajor } = await import("./currencies");
+    expect(formatMoneyMinor(12550, "MXN", { showCode: false })).toBe("$125.50");
+    expect(formatMoneyMinor(12550, "MXN", { showCode: false })).toBe("$125.50");
+    expect(formatMoneyMajor(1234.5, "USD")).toBe("USD $1,234.50");
+    expect(formatMoneyMajor(1000, "JPY", { showCode: false })).toContain("1,000");
+  });
+});

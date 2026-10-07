@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Spin } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -58,6 +58,12 @@ function IncomeSourcesPanel({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<IncomeSourceFormData>(() => getEmptyForm(defaultCurrency));
+  // When the wallet's primary currency changes after the panel mounted, a form that
+  // is not being edited follows it (it used to keep the old one, bug 73).
+  useEffect(() => {
+    setForm((current) => (editingId ? current : { ...current, currency: defaultCurrency }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultCurrency]);
   const toFetch = fetcher();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

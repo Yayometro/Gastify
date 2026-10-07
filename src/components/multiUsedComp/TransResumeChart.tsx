@@ -197,7 +197,7 @@ const resetDrilldown = () => {
             //inheritColorFromParent To have all the childrens with individual color
             inheritColorFromParent={false}
             enableArcLabels={true}
-            arcLabel={(e) => e.id + " ( $" + e.value + ")"}
+            arcLabel={(e) => `${e.id} (${formatMoneyMajor(e.value, walletPrimaryCurrency, { showCode: false })})`}
             arcLabelsRadiusOffset={0.05}
             arcLabelsSkipAngle={12}
             arcLabelsTextColor={{

@@ -109,13 +109,15 @@ export async function attachDisplayMoney<T extends TransactionInput>(
     // recorded (or written before the reporting currency was tracked) -
     // derive a fresh value from the historical ECB snapshot rather than
     // reinterpreting the exact stored pair as something it isn't.
+    // A failing rate lookup must not take the whole transaction (or list) down:
+    // "no rate" is the same honest answer as an unavailable one (bug 85).
     const quote = await convert({
       amountMinor: native.amountMinor,
       fromCurrency: native.currency,
       toCurrency: walletPrimaryCurrency,
       date: transaction.date,
-    });
-    primary = quote.available
+    }).catch(() => null);
+    primary = quote && quote.available
       ? {
           amountMinor: quote.amountMinor,
           currency: walletPrimaryCurrency,
@@ -138,5 +140,23 @@ export async function attachDisplayMoneyToList<T extends TransactionInput>(
   transactions: T[],
   walletPrimaryCurrency: string
 ): Promise<WithDisplayMoney<T>[]> {
-  return Promise.all(transactions.map((t) => attachDisplayMoney(t, walletPrimaryCurrency)));
+  // One bad document must not reject the whole list (bug 85): it comes back with
+  // no primary-currency value, the same shape as an unavailable rate.
+  const results = await Promise.allSettled(transactions.map((t) => attachDisplayMoney(t, walletPrimaryCurrency)));
+  return results.map((result, index) => {
+    if (result.status === "fulfilled") return result.value;
+    const transaction = transactions[index];
+    return {
+      ...transaction,
+      displayMoney: {
+        native: {
+          amountMinor: transaction.money?.account?.amountMinor ?? 0,
+          currency: transaction.money?.account?.currency ?? walletPrimaryCurrency,
+        },
+        merchant: transaction.money?.merchant || null,
+        primary: null,
+        historicalReporting: transaction.money?.reporting || null,
+      },
+    } as WithDisplayMoney<T>;
+  });
 }
