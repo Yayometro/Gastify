@@ -1,9 +1,8 @@
 import {
   getMonthOfTransaction,
-  getYearMonthDateRange,
   mapedMonths,
+  monthObjects,
   months,
-  normalizeDateToUTC,
 } from "../timeFunctions/timeFunctions";
 import type { PrimaryAmountItem } from "../timeFunctions/timeFunctions";
 import currencyFormatter from "currency-formatter";
@@ -160,7 +159,11 @@ export function getPrimaryAmount(item?: PrimaryAmountItem | object | null): numb
 export function orderByHighestValue<T extends { value?: number; amount?: number }>(arr: T[]): T[] {
   if (!(arr instanceof Array))
     throw new Error("arr should be an instance of Array");
-  return arr.sort((a, b) => (b.value || b.amount) - (a.value || a.amount));
+  // Sorts a COPY (the input may be a frozen Redux array, bug 92) and reads
+  // `value` OR `amount` per element with ?? so a value of exactly 0 is not mistaken
+  // for a missing one (bug 93).
+  const keyOf = (item: { value?: number; amount?: number }): number => Number(item.value ?? item.amount) || 0;
+  return [...arr].sort((a, b) => keyOf(b) - keyOf(a));
 }
 
 export function get_total_value_of_all_transactions(arr: PrimaryAmountItem[]): number {
@@ -210,11 +213,14 @@ export function reduceAndTransforToCategories<T extends TransactionLike>(
   const categoriesFathers = array.reduce((acc: Record<string, CategoryFather<T>>, trans) => {
     const category = trans.category;
     const amount = getPrimaryAmount(trans);
-    if (acc[category?.name]) {
-      acc[category?.name].value += amount;
-      acc[category?.name].children = [...acc[category?.name].children, trans];
+    // Grouped by category id (two different categories with the same name are
+    // two rows, bug 94); a movement with no category goes to one "No category" row.
+    const groupKey = category?._id ? `id:${String(category._id)}` : `name:${category?.name ?? "No category"}`;
+    if (acc[groupKey]) {
+      acc[groupKey].value += amount;
+      acc[groupKey].children = [...acc[groupKey].children, trans];
     } else {
-      acc[category?.name] = {
+      acc[groupKey] = {
         name: category?.name || "No category",
         type: category?.name || "No category",
         icon: category?.icon || "md/MdFilterNone",
@@ -361,7 +367,7 @@ export function reduceTransToTransMonths(arr: TransactionLike[]): Record<string,
   if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
   return arr.reduce((acc: Record<string, MonthValueBucket>, transaction) => {
-    const monthName = getMonthOfTransaction(new Date(transaction.date).getMonth());
+    const monthName = getMonthOfTransaction(new Date(transaction.date || transaction.createdAt).getMonth());
     const transactionOfMonth = monthName ? mapedMonths.get(monthName.toLowerCase()) : undefined;
     // An invalid date has no month: skip that movement instead of throwing.
     if (!transactionOfMonth) return acc;
@@ -519,12 +525,12 @@ export function getTransactionsFromTimeRange<T extends { date?: DateLike | null;
 export function sortBasedOnValueProperty<T extends { value: number }>(numberElemenets: number, array: T[]): T[] {
   if (!(array instanceof Array))
     throw new Error("the element should be an instance of Array");
-  return array.sort((a, b) => a.value - b.value).slice(0, numberElemenets);
+  return [...array].sort((a, b) => a.value - b.value).slice(0, numberElemenets);
 }
 export function sortByIndex<T extends { index: number }>(arr: T[]): T[] {
   if (!(arr instanceof Array))
     throw new Error("the element should be an instance of Array");
-  return arr.sort((a, b) => a.index - b.index);
+  return [...arr].sort((a, b) => a.index - b.index);
 }
 
 // `slice` is accepted but never used by the original implementation; kept for signature parity.
@@ -599,189 +605,27 @@ export function transactionsToCategories(arr: TransactionLike[]): CategoryValueE
   });
 }
 
+// One chart object per movement, tagged with its calendar month (month of the
+// year, any year; it used to compare against the CURRENT year's ranges only and
+// returned null for every other year, and ignored the createdAt fallback the
+// rest of this file uses, bug 96). Null only when the movement has no usable date.
 export function transformTransactionsToMonthsChartObject(
   trans: TransactionLike[]
 ): (MonthsChartObject | null)[] {
-  const monthRanges = getYearMonthDateRange(new Date());
-
-  const transactionsChanged = trans.map((tra) => {
-    const transactionDate = normalizeDateToUTC(new Date(tra.date));
+  return trans.map((tra) => {
+    const transactionDate = new Date((tra.date || tra.createdAt) as string | number | Date);
+    if (Number.isNaN(transactionDate.getTime())) return null;
+    const month = monthObjects[transactionDate.getMonth()];
     const amount = getPrimaryAmount(tra);
-    if (
-      transactionDate >= normalizeDateToUTC(monthRanges.get("january").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("january").end)
-    ) {
-      return {
-        ["january"]: amount,
-        type: "january",
-        color: "#FF5733",
-        value: amount,
-        icon: "md/MdOutlineFilter1",
-        index: 1,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >=
-        normalizeDateToUTC(monthRanges.get("february").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("february").end)
-    ) {
-      return {
-        ["february"]: amount,
-        type: "february",
-        color: "#33FF57",
-        value: amount,
-        icon: "md/MdOutlineFilter2",
-        index: 2,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >= normalizeDateToUTC(monthRanges.get("march").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("march").end)
-    ) {
-      return {
-        ["march"]: amount,
-        type: "march",
-        color: "#3357FF",
-        value: amount,
-        icon: "md/MdOutlineFilter3",
-        index: 3,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >= normalizeDateToUTC(monthRanges.get("april").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("april").end)
-    ) {
-      return {
-        ["april"]: amount,
-        type: "april",
-        color: "#FF33A8",
-        value: amount,
-        icon: "md/MdOutlineFilter4",
-        index: 4,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >= normalizeDateToUTC(monthRanges.get("may").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("may").end)
-    ) {
-      return {
-        ["may"]: amount,
-        type: "may",
-        color: "#FFD633",
-        value: amount,
-        icon: "md/MdOutlineFilter5",
-        index: 5,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >= normalizeDateToUTC(monthRanges.get("june").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("june").end)
-    ) {
-      return {
-        ["june"]: amount,
-        type: "june",
-        color: "#33FFF6",
-        value: amount,
-        icon: "md/MdOutlineFilter6",
-        index: 6,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >= normalizeDateToUTC(monthRanges.get("july").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("july").end)
-    ) {
-      return {
-        ["july"]: amount,
-        type: "july",
-        color: "#8D33FF",
-        value: amount,
-        icon: "md/MdOutlineFilter7",
-        index: 7,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >= normalizeDateToUTC(monthRanges.get("august").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("august").end)
-    ) {
-      return {
-        ["august"]: amount,
-        type: "august",
-        color: "#FF8D33",
-        value: amount,
-        icon: "md/MdOutlineFilter8",
-        index: 8,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >=
-        normalizeDateToUTC(monthRanges.get("september").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("september").end)
-    ) {
-      return {
-        ["september"]: amount,
-        type: "september",
-        color: "#33FF8D",
-        value: amount,
-        icon: "md/MdOutlineFilter9",
-        index: 9,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >= normalizeDateToUTC(monthRanges.get("october").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("october").end)
-    ) {
-      return {
-        ["october"]: amount,
-        type: "october",
-        color: "#5733FF",
-        value: amount,
-        icon: "md/Md10Mp",
-        index: 10,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >=
-        normalizeDateToUTC(monthRanges.get("november").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("november").end)
-    ) {
-      return {
-        ["november"]: amount,
-        type: "november",
-        color: "#FF3333",
-        value: amount,
-        icon: "md/Md11Mp",
-        index: 11,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else if (
-      transactionDate >=
-        normalizeDateToUTC(monthRanges.get("december").start) &&
-      transactionDate <= normalizeDateToUTC(monthRanges.get("december").end)
-    ) {
-      return {
-        ["december"]: amount,
-        type: "december",
-        color: "#33D4FF",
-        value: amount,
-        icon: "md/Md12Mp",
-        index: 12,
-        isBill: tra.isBill || null,
-        isIncome: tra.isIncome || null,
-      };
-    } else {
-      return null;
-    }
+    return {
+      [month.name]: amount,
+      type: month.name,
+      color: month.color,
+      value: amount,
+      icon: month.icon,
+      index: month.index,
+      isBill: tra.isBill || null,
+      isIncome: tra.isIncome || null,
+    };
   });
-  return transactionsChanged;
 }

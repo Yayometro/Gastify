@@ -24,10 +24,12 @@ export function organizedCategoriesAndSubCategories<T extends RawCategoryItem = 
   const categoryMap: Record<string, OrganizedCategoryItem<T> | (T & { children: T[] })> = {};
 
   // First pass: register all root categories
-  arr.forEach((item) => {
+  arr.forEach((item, index) => {
     if (!item) return;
     if (!item.fatherCategory) {
-      const key = (item._id || item.name) as string;
+      // A root with neither id nor name used to share the key "undefined" and
+      // overwrite the others (bug 117).
+      const key = String(item._id || item.name || `__root_${index}`);
       if (!categoryMap[key]) {
         categoryMap[key] = { ...item, children: [] };
       }
@@ -58,6 +60,11 @@ export function organizedCategoriesAndSubCategories<T extends RawCategoryItem = 
             ...(item.fatherCategory as object),
             children: [item],
           } as OrganizedCategoryItem<T>;
+        } else if (typeof item.fatherCategory === "string" && fatherId) {
+          // The father is only an id that is not in the list: it used to be
+          // dropped silently (bug 118). It is kept under a placeholder father so
+          // the sub-category stays visible.
+          categoryMap[newKey] = { _id: fatherId, name: "Unknown category", children: [item] } as OrganizedCategoryItem<T>;
         }
       }
     }
