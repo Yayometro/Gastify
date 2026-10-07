@@ -113,9 +113,9 @@ export const accountsSlice = createSlice({
   },
 });
 
-export const getRedxAccounts = (state: { accounts: AccountsState }) => state.accounts.data;
-export const getRedxAccountsEstatus = (state: { accounts: AccountsState }) => state.accounts.status;
-export const getRedxAccountsError = (state: { accounts: AccountsState }) => state.accounts.error;
+export const getRedxAccounts = (state: { accountsReducer: AccountsState }) => state.accountsReducer.data;
+export const getRedxAccountsEstatus = (state: { accountsReducer: AccountsState }) => state.accountsReducer.status;
+export const getRedxAccountsError = (state: { accountsReducer: AccountsState }) => state.accountsReducer.error;
 
 export const { 
   setAccounts,

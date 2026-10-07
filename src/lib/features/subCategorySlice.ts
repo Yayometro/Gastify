@@ -117,9 +117,9 @@ export const subCategoriesSlice = createSlice({
   },
 });
 
-export const getRedxSubCategories = (state: unknown) => state;
-export const getRedxSubCategoriesEstatus = (state: unknown) => state;
-export const getRedxSubCategoriesError = (state: unknown) => state;
+export const getRedxSubCategories = (state: { subCategoryReducer: SubCategoriesState }) => state.subCategoryReducer;
+export const getRedxSubCategoriesEstatus = (state: { subCategoryReducer: SubCategoriesState }) => state.subCategoryReducer.status;
+export const getRedxSubCategoriesError = (state: { subCategoryReducer: SubCategoriesState }) => state.subCategoryReducer.error;
 
 export const {
   setSubCategories,

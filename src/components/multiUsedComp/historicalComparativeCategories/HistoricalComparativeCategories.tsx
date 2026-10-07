@@ -14,10 +14,8 @@ import CategoriesCompareTable from "./CategoriesCompareTable";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import {
   fetchTrans,
-  setTransacctions,
-  type TransacctionsState,
 } from "@/lib/features/transacctionsSlice";
-import { fetchUser, setUser, type UserState } from "@/lib/features/userSlice";
+import { fetchUser } from "@/lib/features/userSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import ResponsiveBarsChartComponent from "../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
 import HistoricalComparativeCategoriesView from "./view/HistoricalComparativeCategoriesView";
@@ -145,12 +143,8 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
       setIsLoading(true);
       dispatch(fetchTrans(email));
     }
-    if (ccUser.status == "succeeded") {
-      setUser(ccUser.data as unknown as UserState);
-    }
     //Transactions
     if (ccTransacciones.status == "succeeded") {
-      setTransacctions(ccTransacciones.data as unknown as TransacctionsState);
       setIsLoading(false);
     }
   }, [ccUser, ccTransacciones, email, dispatch]);

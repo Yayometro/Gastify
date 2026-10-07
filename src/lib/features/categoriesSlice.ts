@@ -117,9 +117,9 @@ export const categoriesSlice = createSlice({
   },
 });
 
-export const getRedxCategories = (state: { categories: CategoriesState }) => state.categories;
-export const getRedxCategoriesEstatus = (state: { ca?: unknown }) => state.ca;
-export const getRedxCategoriesError = (state: { categories: CategoriesState }) => state.categories.error;
+export const getRedxCategories = (state: { categoriesReducer: CategoriesState }) => state.categoriesReducer;
+export const getRedxCategoriesEstatus = (state: { categoriesReducer: CategoriesState }) => state.categoriesReducer.status;
+export const getRedxCategoriesError = (state: { categoriesReducer: CategoriesState }) => state.categoriesReducer.error;
 // export const changeCategoriesRdxState = (state) =>
 
 export const {

@@ -5,8 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/lib/store";
 import {
   fetchTrans,
-  setTransacctions,
-  type TransacctionsState,
 } from "@/lib/features/transacctionsSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
@@ -141,7 +139,6 @@ function TabsTogglerMontlyController({
       dispath(fetchTrans(email));
     }
     if (ccTransacciones.status == "succeeded") {
-      setTransacctions(ccTransacciones.data as unknown as TransacctionsState);
       setLoading(false);
     }
   }, [ccTransacciones, email, dispath]);

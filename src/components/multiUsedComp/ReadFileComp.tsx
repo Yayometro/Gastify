@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { BsFiletypeXml } from "react-icons/bs";
 import { Button, Upload } from "antd";
@@ -18,7 +18,7 @@ import {
 import DedupPreviewModal from "@/components/multiUsedComp/DedupPreviewModal";
 import CategorySuggestionsModal from "@/components/multiUsedComp/CategorySuggestionsModal";
 import { MdFormatAlignLeft, MdOutlineCleaningServices } from "react-icons/md";
-import { fetchUser, type UserData } from "@/lib/features/userSlice";
+import type { UserData } from "@/lib/features/userSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import type { AppDispatch, RootState } from "@/lib/store";
 
@@ -120,13 +120,9 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
   const { email } = useGetUserSession();
   const toFetch = fetcher();
   const reduxDispatch = useDispatch<AppDispatch>();
-  const ccUser = useSelector((state: RootState) => state.userReducer.data as UserData & { status?: string });
-
-  useEffect(() => {
-    if (ccUser.status == "idle") {
-      reduxDispatch(fetchUser(email));
-    }
-  }, [ccUser, email, reduxDispatch]);
+  // `.data` is the plain user, which has no `status`: the old idle check that
+  // fetched the user here never ran (bug 13). AllDataProvider already loads it.
+  const ccUser = useSelector((state: RootState) => state.userReducer.data as UserData);
 
   const handleDownloadTemplate = async (): Promise<void> => {
     const userEmail = ccUser.mail || email;

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUser, setUser, type UserState } from "@/lib/features/userSlice";
+import { fetchUser } from "@/lib/features/userSlice";
 import type { AppDispatch, RootState } from "@/lib/store";
 import DashboardLoadingMessage from "./loaders/DashboardLoadingMessage";
 import TabsTogglerMontlyController from "./TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyController";
@@ -76,7 +76,6 @@ function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
       dispatch(fetchUser(email));
     }
     if (ccUser.status == "succeeded") {
-      setUser(ccUser.data as unknown as UserState);
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

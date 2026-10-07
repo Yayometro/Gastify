@@ -87,9 +87,9 @@ export const walletSlice = createSlice({
   },
 });
 
-export const getRedxWallet = (state: { accounts: WalletState }) => state.accounts.data;
-export const getRedxWalletEstatus = (state: { accounts: WalletState }) => state.accounts.status;
-export const getRedxWalletError = (state: { accounts: WalletState }) => state.accounts.error;
+export const getRedxWallet = (state: { walletReducer: WalletState }) => state.walletReducer.data;
+export const getRedxWalletEstatus = (state: { walletReducer: WalletState }) => state.walletReducer.status;
+export const getRedxWalletError = (state: { walletReducer: WalletState }) => state.walletReducer.error;
 
 export const { setWallet, updateWallet } = walletSlice.actions;
 

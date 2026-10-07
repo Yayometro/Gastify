@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/authClient";
 import type { auth } from "@/lib/auth/betterAuth";
@@ -21,9 +21,9 @@ import { BiSolidCategory } from "react-icons/bi";
 import { MdLightMode, MdDarkMode } from "react-icons/md";
 
 import "@/components/styles/NavbarStyle.css";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "@/lib/store";
-import { fetchUser, type UserData } from "@/lib/features/userSlice";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/lib/store";
+import type { UserData } from "@/lib/features/userSlice";
 import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
 import { FaHistory } from "react-icons/fa";
 import { useThemeMode } from "@/app/ThemeProvider";
@@ -34,7 +34,9 @@ export interface NavbarProps {
   sesion: NavbarSession;
 }
 
-function Navbar({ sesion }: NavbarProps): React.JSX.Element {
+// (`sesion` stays in NavbarProps - the layout still passes it - but nothing here reads it any more.)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function Navbar(_props: NavbarProps): React.JSX.Element {
   const [toggleNav, setToggleNav] = useState<boolean>(false);
   const [isAddTrans, setIsAddTrans] = useState<boolean>(false);
   const { mode, toggleMode } = useThemeMode();
@@ -48,15 +50,10 @@ function Navbar({ sesion }: NavbarProps): React.JSX.Element {
     setToggleNav(!toggleNav);
   };
   // REDUX
-  const reduxDispatch = useDispatch<AppDispatch>();
-  const ccUser = useSelector((state: RootState) => state.userReducer.data as UserData & { status?: string });
-  // 
-  useEffect(() => {
-    // User
-    if (ccUser.status == "idle") {
-      reduxDispatch(fetchUser(sesion.user.email));
-    }
-  }, []);
+  // `.data` is the plain user: it has no `status`, so the old
+  // `if (ccUser.status == "idle") fetchUser(...)` here never ran (bug 41). The user is
+  // loaded by AllDataProvider for every dashboard page, so that dead check was removed.
+  const ccUser = useSelector((state: RootState) => state.userReducer.data as UserData);
 
   const toogleAddTrans = React.useCallback((): void => {
     setIsAddTrans(prev => !prev);

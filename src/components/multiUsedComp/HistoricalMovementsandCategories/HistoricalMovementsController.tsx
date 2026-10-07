@@ -2,11 +2,9 @@
 import React, { useEffect, useState } from "react";
 import HistoricalMovementsView from "./HistoricalMovementsView";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUser, setUser, type UserState } from "@/lib/features/userSlice";
+import { fetchUser } from "@/lib/features/userSlice";
 import {
   fetchTrans,
-  setTransacctions,
-  type TransacctionsState,
 } from "@/lib/features/transacctionsSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import {
@@ -148,12 +146,8 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
       setIsLoading(true);
       dispatch(fetchTrans(email));
     }
-    if (ccUser.status == "succeeded") {
-      setUser(ccUser.data as unknown as UserState);
-    }
     //Transactions
     if (ccTransacciones.status == "succeeded") {
-      setTransacctions(ccTransacciones.data as unknown as TransacctionsState);
       setIsLoading(false);
     }
     if (ccTransacciones.data && ccTransacciones.data.length >= 1) {

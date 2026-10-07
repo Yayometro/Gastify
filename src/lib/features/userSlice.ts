@@ -91,9 +91,9 @@ export const userSlice = createSlice({
   },
 });
 
-export const getRedxUser = (state: { user: UserState }) => state.user;
-export const getRedxUserEstatus = (state: { user: UserState }) => state.user.status;
-export const getRedxUserError = (state: { user: UserState }) => state.user.error;
+export const getRedxUser = (state: { userReducer: UserState }) => state.userReducer;
+export const getRedxUserEstatus = (state: { userReducer: UserState }) => state.userReducer.status;
+export const getRedxUserError = (state: { userReducer: UserState }) => state.userReducer.error;
 
 export const { setUser, updateUser } = userSlice.actions;
 

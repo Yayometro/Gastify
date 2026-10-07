@@ -158,9 +158,9 @@ export const transacctionsSlice = createSlice({
   },
 });
 
-export const getRedxTransactions = (state: { accounts: TransacctionsState }) => state.accounts.data;
-export const getRedxTransactionsEstatus = (state: { accounts: TransacctionsState }) => state.accounts.status;
-export const getRedxTransactionsError = (state: { accounts: TransacctionsState }) => state.accounts.error;
+export const getRedxTransactions = (state: { transacctionsReducer: TransacctionsState }) => state.transacctionsReducer.data;
+export const getRedxTransactionsEstatus = (state: { transacctionsReducer: TransacctionsState }) => state.transacctionsReducer.status;
+export const getRedxTransactionsError = (state: { transacctionsReducer: TransacctionsState }) => state.transacctionsReducer.error;
 
 export const {
   setTransacctions,
