@@ -1,7 +1,7 @@
 import React from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/betterAuth";
+import { auth, countUserPasskeys } from "@/lib/auth/betterAuth";
 import { FACTOR_CHANGE_STEP_UP_TTL_MS, STEP_UP_TTL_MS } from "@/lib/auth/stepUpConfig";
 import { safeNextPath } from "@/lib/auth/factorChangePolicy";
 import Verify2FAClient from "@/components/Verify2FAClient";
@@ -29,9 +29,17 @@ async function Verify2FAPage({ searchParams }: Verify2FAPageProps = {}): Promise
   const freshWindow = reauth ? FACTOR_CHANGE_STEP_UP_TTL_MS : STEP_UP_TTL_MS;
   if (Date.now() - stepUpAt <= freshWindow) redirect(reauth && nextPath ? nextPath : "/dashboard");
 
+  // What the account really has, straight from the server. The client used to
+  // infer it from cached lists, which can still hold ANOTHER account's passkeys
+  // right after switching accounts in the same tab: a brand-new account was then
+  // sent to the "verify" challenge (showing the device's passkeys) instead of
+  // being offered to register its first factor.
+  const hasPasskey = (await countUserPasskeys(sesion.user.id)) > 0;
+  const hasTotp = Boolean(sesion.user.twoFactorEnabled);
+
   return (
     <div className="bg-gf-bg p-4 w-full h-screen flex justify-center items-center bg-origin-border bg-center" style={{ backgroundImage: "url('/infoTwo.jpg')" }}>
-      <Verify2FAClient nextPath={nextPath} reauth={reauth} />
+      <Verify2FAClient nextPath={nextPath} reauth={reauth} hasPasskey={hasPasskey} hasTotp={hasTotp} />
     </div>
   );
 }

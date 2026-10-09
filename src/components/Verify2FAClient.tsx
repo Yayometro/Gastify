@@ -110,9 +110,13 @@ export interface Verify2FAClientProps {
   // True when a factor change (profile) sent the user here: the proof is
   // asked for more often than for the dashboard, and the copy says so.
   reauth?: boolean;
+  // What the account has, as the server sees it. When given they decide the
+  // starting screen; the cached client lists are only a fallback.
+  hasPasskey?: boolean;
+  hasTotp?: boolean;
 }
 
-function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}): React.JSX.Element {
+function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasskey, hasTotp: serverHasTotp }: Verify2FAClientProps = {}): React.JSX.Element {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { data: rawSession, isPending: sessionPending } = authClient.useSession();
@@ -158,14 +162,16 @@ function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}
   // after the first is owned entirely by those handlers now.
   const phaseDetermined = useRef<boolean>(false);
   useEffect(() => {
-    if (loopBroken || sessionPending || passkeysPending || phaseDetermined.current) return;
+    const serverKnows = serverHasPasskey !== undefined && serverHasTotp !== undefined;
+    if (loopBroken || phaseDetermined.current) return;
+    if (!serverKnows && (sessionPending || passkeysPending)) return;
     phaseDetermined.current = true;
-    const hasPasskey = Boolean(passkeys && passkeys.length > 0);
-    const hasTotp = Boolean(session?.user?.twoFactorEnabled);
+    const hasPasskey = serverKnows ? Boolean(serverHasPasskey) : Boolean(passkeys && passkeys.length > 0);
+    const hasTotp = serverKnows ? Boolean(serverHasTotp) : Boolean(session?.user?.twoFactorEnabled);
     // An account with only the authenticator app has no passkey to ask for: the
     // OS passkey dialog used to open anyway and a cancel cost an attempt (bug 159).
     setPhase(hasPasskey ? "challenge" : hasTotp ? "challenge-totp" : "onboard-choose");
-  }, [loopBroken, sessionPending, passkeysPending, passkeys, session]);
+  }, [loopBroken, sessionPending, passkeysPending, passkeys, session, serverHasPasskey, serverHasTotp]);
 
   // Warms up the Wallet's own Redux data while the user is still proving
   // their identity here (typing a code, or - usually - the second or two a
@@ -374,7 +380,7 @@ function Verify2FAClient({ nextPath, reauth = false }: Verify2FAClientProps = {}
     }
   }
 
-  const hasTotp = Boolean(session?.user?.twoFactorEnabled);
+  const hasTotp = serverHasTotp ?? Boolean(session?.user?.twoFactorEnabled);
   const cardClasses = "verify-2fa-cont gf-glass-card flex flex-col w-[95%] sm:w-[550px] relative rounded-[40px] items-center justify-center p-6 sm:p-10 gap-4";
 
   if (loopBroken) {

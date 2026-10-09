@@ -22,6 +22,12 @@ import { getSharedMongoClient } from "@/lib/db/mongoClient";
 const client = getSharedMongoClient() as unknown as MongoClient;
 const db: Db = client.db();
 
+// Passkeys registered for a user, read straight from the database (the ids are
+// stored as ObjectId or string depending on who wrote the row).
+export async function countUserPasskeys(userId: string): Promise<number> {
+  return db.collection("passkey").countDocuments({ userId: { $in: [new ObjectId(userId), userId] } });
+}
+
 async function bcryptHash(password: string): Promise<string> {
   const salt = await bcryptjs.genSalt(10);
   return bcryptjs.hash(password, salt);
@@ -139,9 +145,7 @@ export const auth = betterAuth({
       const current = await getSessionFromCtx(ctx);
       if (!current) return; // the endpoint itself answers 401
       const userId = current.user.id;
-      const passkeys = await db
-        .collection("passkey")
-        .countDocuments({ userId: { $in: [new ObjectId(userId), userId] } });
+      const passkeys = await countUserPasskeys(userId);
       const needsFresh = requiresFreshStepUp({
         path: ctx.path,
         hasSecondFactor: Boolean(current.user.twoFactorEnabled) || passkeys > 0,
