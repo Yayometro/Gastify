@@ -1365,7 +1365,7 @@ Todos con su prueba, sin tocar lo que no era el bug. Entre paréntesis, los núm
 ### Pendiente después de esta fase
 1. Confirmar el despliegue y probar producción con la cuenta real.
 2. Cierre de la migración: con el visto bueno final se borran `AGENTS.md` y `.mds/migration-typescript.md` (este archivo, `POST_MIGRATION_BUGS.md` y `AI_COORDINATION_LOG.md` se quedan).
-3. 26 archivos `.js/.jsx` muertos (decisión: ignorarlos por ahora) y 3 puentes de tipos `TypedModalContentTopMonthItem` (hay un desajuste real de tipos entre `TransactionData` y el modal).
+3. (Resuelto el 2026-10-08, ver la sección de código muerto más abajo: los 26 archivos muertos se borraron y los 3 puentes de tipos se quitaron.)
 4. Ramas viejas en GitHub sin revisar (`develop`, `develop_two`, `develop_4`, `agents-ai`, etc.).
 5. Ideas no pedidas: botón "Clear" en el selector de fecha (#36), presupuestos convertidos con la tasa de cada fecha, Next 16.
 
@@ -1394,4 +1394,4 @@ Decisión del usuario (2026-10-08): borrar los 26 archivos de código muerto que
 | `components/buttons/btnWithModal/BtnWithModal.jsx`, `components/HOCs/withIncomes.js`, `components/HOCs/modalHocRenderTrans/modalWithRenderTrans.js` | Experimentos de componentes de orden superior para abrir modales | Se sustituyeron por el hook `useModalBasic`/`useModal`; ninguno se usó |
 | `components/multiUsedComp/VoiceRecognicionComponent.jsx` (302 l, último cambio 2026-09-11) | Agregar movimientos **por voz** (`webkitSpeechRecognition`), llamando a `general-data/transactions/speech-add` | Ninguna pantalla lo montaba. **Ojo:** la ruta de la API `speech-add` (y sus pruebas) **sigue viva y sin interfaz**; la función de voz no existe hoy para el usuario. Si se quisiera, habría que reescribir el componente en TypeScript y volver a conectarlo |
 
-Pendiente relacionado (decisión del usuario, 2026-10-08): se tiparon `category`/`subCategory` de los movimientos con una forma compartida y se quitaron los 3 puentes `TypedModalContentTopMonthItem` (ver entrada siguiente de este archivo si se completó).
+Relacionado, mismo día: `category` y `subCategory` de `TransactionData` (`transacctionsSlice.ts`) se tiparon con la forma poblada que devuelve la API (`PopulatedCategoryRef` / `PopulatedSubCategoryRef`) en vez de `unknown`, y con eso se **quitaron los 3 puentes `TypedModalContentTopMonthItem`** (el modal `ModalContentTopMonthItem` acepta ahora directamente un movimiento o un grupo de categoría; el dato del clic en las barras de `HistoricalComparativeCategories` se tipó como grupo en vez de `unknown`). `tsc` limpio, `eslint` 0 errores, `vitest` 480/480, `next build` OK.

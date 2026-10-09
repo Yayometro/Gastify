@@ -45,12 +45,6 @@ import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
-interface ModalContentTopMonthItemProps {
-  item: unknown;
-  close: () => void;
-  onBack?: (() => void) | false;
-}
-const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<ModalContentTopMonthItemProps>;
 
 // Typed bridge for unmigrated BudgetPeriodDetailModal
 interface BudgetPeriodDetailModalProps {
@@ -215,7 +209,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
   ) {
     const children = getCategoryTransactions(transactions, item.name, isBill, forRange);
     renderModal(
-      <TypedModalContentTopMonthItem
+      <ModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill, value: item.current ?? item.amount, children }}
         close={handleClose}
       />
@@ -226,7 +220,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
     const children = getSubcategoryTransactions(transactions, item.name, true, forRange);
     const parentCategory = children[0]?.category as PopulatedCategory | undefined;
     renderModal(
-      <TypedModalContentTopMonthItem
+      <ModalContentTopMonthItem
         item={{
           name: item.name,
           icon: parentCategory?.icon || "MdFilterNone",
@@ -244,7 +238,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
   function openTransactionModal(item: { _id?: string; [key: string]: unknown }) {
     const raw = item._id ? transactionsById.get(item._id) : undefined;
     if (!raw) return;
-    renderModal(<TypedModalContentTopMonthItem item={raw} close={handleClose} />);
+    renderModal(<ModalContentTopMonthItem item={raw} close={handleClose} />);
   }
 
   // Routed through the same renderModal()/BasicModal mechanism as the
@@ -319,7 +313,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
         : undefined;
       if (raw) {
         renderModal(
-          <TypedModalContentTopMonthItem
+          <ModalContentTopMonthItem
             item={raw}
             close={handleClose}
             onBack={() => {

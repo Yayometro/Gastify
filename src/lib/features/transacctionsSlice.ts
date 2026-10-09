@@ -3,6 +3,24 @@ import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
 
+// What the API returns for a transaction's category / subCategory: the populated
+// document (get-transactions populates both) or, on a raw document, just the id.
+export interface PopulatedCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
+export interface PopulatedSubCategoryRef {
+  _id?: string;
+  name?: string;
+  color?: string;
+  icon?: string;
+  [key: string]: unknown;
+}
+
 export interface TransactionData {
   _id?: string;
   name?: string;
@@ -15,8 +33,8 @@ export interface TransactionData {
   user?: string | unknown;
   wallet?: string | unknown;
   account?: string | unknown;
-  category?: string | unknown;
-  subCategory?: string | unknown;
+  category?: PopulatedCategoryRef | null;
+  subCategory?: PopulatedSubCategoryRef | null;
   budget?: string | unknown;
   tags?: (string | unknown)[];
   kind?: "expense" | "income" | "transfer" | "exchange" | "refund" | "fee" | string;

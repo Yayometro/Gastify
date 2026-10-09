@@ -67,6 +67,10 @@ export interface ModalSubCategoryRef {
   [key: string]: unknown;
 }
 
+// The modal opens for two kinds of thing: a category group node (name, type,
+// children, amount...) or a single transaction. Both fit this one shape (every
+// field optional), and `TransactionData` is assignable to it because its
+// `category` / `subCategory` use the same populated-ref shape.
 export interface ModalContentTopMonthItemItem {
   _id?: string;
   name?: string;

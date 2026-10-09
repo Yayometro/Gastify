@@ -10,12 +10,6 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerInsightItem } from "./WalletAnalyzerView";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
-interface ModalContentTopMonthItemProps {
-  item: unknown;
-  close: () => void;
-  onBack?: (() => void) | false;
-}
-const TypedModalContentTopMonthItem = ModalContentTopMonthItem as React.ComponentType<ModalContentTopMonthItemProps>;
 
 const TONE_STYLES: Record<string, { bg: string } | undefined> = {
   warning: { bg: "bg-amber-500/15" },
@@ -176,7 +170,7 @@ function WalletAnalyzerInsightsStrip({
   function openCategoryModal(item: CategoryModalItem, range?: { start: Date | string; end: Date | string } | null) {
     const children = getCategoryTransactions(transactions || [], item.name, true, range as { start: Date; end: Date });
     renderModal(
-      <TypedModalContentTopMonthItem
+      <ModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill: true, value: item.amount, children }}
         close={handleClose}
       />
