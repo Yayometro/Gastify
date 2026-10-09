@@ -28,6 +28,7 @@ vi.mock("better-auth/api", () => ({
 vi.mock("@/app/api/dbConnection", () => ({ default: vi.fn() }));
 vi.mock("@/lib/auth/betterAuth", () => ({
   auth: { api: { getSession: vi.fn(), verifyTOTP: vi.fn(), verifyBackupCode: vi.fn() } },
+  countUserPasskeys: vi.fn(),
 }));
 vi.mock("@/lib/auth/deleteAccountGuard", () => ({
   getDeleteAccountLockRemainingMs: vi.fn(),
@@ -58,7 +59,7 @@ vi.mock("@/model/ProjectionBaseline", () => ({ default: { deleteMany: vi.fn() } 
 vi.mock("@/model/ProjectionSettings", () => ({ default: { deleteMany: vi.fn() } }));
 
 import { POST } from "./route";
-import { auth } from "@/lib/auth/betterAuth";
+import { auth, countUserPasskeys } from "@/lib/auth/betterAuth";
 import { getDeleteAccountLockRemainingMs, recordDeleteAccountFailure } from "@/lib/auth/deleteAccountGuard";
 import User from "@/model/User";
 import Wallet from "@/model/Wallet";
@@ -78,6 +79,7 @@ const api = auth.api as unknown as {
   verifyTOTP: ReturnType<typeof vi.fn>;
   verifyBackupCode: ReturnType<typeof vi.fn>;
 };
+const passkeyCount = countUserPasskeys as unknown as ReturnType<typeof vi.fn>;
 const lockMs = getDeleteAccountLockRemainingMs as unknown as ReturnType<typeof vi.fn>;
 const recordFailure = recordDeleteAccountFailure as unknown as ReturnType<typeof vi.fn>;
 const userFind = (User as unknown as { findOne: ReturnType<typeof vi.fn> }).findOne;
@@ -99,6 +101,7 @@ beforeEach(() => {
     user: { email: "test@example.com", twoFactorEnabled: true },
     session: { token: "tok1" },
   });
+  passkeyCount.mockResolvedValue(0);
   api.verifyTOTP.mockResolvedValue({ status: true });
   api.verifyBackupCode.mockResolvedValue({ status: true });
   lockMs.mockResolvedValue(0);
@@ -122,6 +125,50 @@ describe("POST /api/general-data/user/remove-user", () => {
     const res = await POST(req(goodBody));
     expect(res.status).toBe(401);
     expect(userDelete).not.toHaveBeenCalled();
+  });
+
+  describe("account with only passkeys (no TOTP)", () => {
+    const passkeySession = (stepUpVerifiedAt?: Date) => ({
+      user: { id: "u1", email: "test@example.com", twoFactorEnabled: false },
+      session: { token: "tok1", stepUpVerifiedAt },
+    });
+    const emailOnly = { confirmMail: "test@example.com" };
+
+    it("deletes with a fresh passkey verification and the retyped email, without asking for a code", async () => {
+      passkeyCount.mockResolvedValue(1);
+      api.getSession.mockResolvedValue(passkeySession(new Date(Date.now() - 60 * 1000)));
+      const res = await POST(req(emailOnly));
+      expect(res.status).toBe(200);
+      expect(api.verifyTOTP).not.toHaveBeenCalled();
+      expect(userDelete).toHaveBeenCalled();
+    });
+
+    it("asks to verify the passkey again when the proof is stale or missing", async () => {
+      passkeyCount.mockResolvedValue(1);
+      for (const stamp of [undefined, new Date(Date.now() - 60 * 60 * 1000)]) {
+        api.getSession.mockResolvedValue(passkeySession(stamp));
+        const res = await POST(req(emailOnly));
+        expect(res.status).toBe(403);
+        expect((await json(res)).code).toBe("STEP_UP_REQUIRED");
+      }
+      expect(userDelete).not.toHaveBeenCalled();
+    });
+
+    it("still requires the email to match", async () => {
+      passkeyCount.mockResolvedValue(1);
+      api.getSession.mockResolvedValue(passkeySession(new Date()));
+      const res = await POST(req({ confirmMail: "other@example.com" }));
+      expect(res.status).toBe(400);
+      expect(userDelete).not.toHaveBeenCalled();
+    });
+
+    it("refuses an account with no factor at all", async () => {
+      passkeyCount.mockResolvedValue(0);
+      api.getSession.mockResolvedValue(passkeySession(new Date()));
+      const res = await POST(req(emailOnly));
+      expect(res.status).toBe(403);
+      expect(userDelete).not.toHaveBeenCalled();
+    });
   });
 
   it("refuses accounts without an authenticator app (TOTP) enabled", async () => {

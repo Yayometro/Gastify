@@ -1465,3 +1465,8 @@ When taking over this task, Claude should perform the following steps:
 - `npm audit`: los arreglos disponibles incluyen cambios mayores (Next 16, Tailwind 4); no se aplicó nada.
 - Final: tsc limpio, eslint 0 errores (16 avisos de exhaustive-deps), vitest 476/476.
 - Pendiente real: T1 (borrar cuenta con passkey, requiere diseño de seguridad), #96 parcial por diseño, dependencias vulnerables, 26 archivos muertos ignorados.
+
+### Entry #42 - Claude - 2026-10-08 - Rama `post-migration-bugs-resolver`: `/verify-2fa` con datos del servidor y T1 (borrar cuenta con passkey)
+- **Bug** (reportado por el usuario al probar una cuenta nueva): `/verify-2fa` mandó a una cuenta sin factores al reto (cuadro de passkeys del sistema) en vez del registro. Causa probable: decidía con listas en caché del navegador. Ahora `page.tsx` calcula `hasPasskey`/`hasTotp` en el servidor (`countUserPasskeys`) y el cliente los usa.
+- **T1**: `remove-user` acepta cuentas con solo passkey: exige el correo reescrito y un sello de verificación de passkey de <=5 min (`hasFreshStepUp`; si está vencido responde 403 `STEP_UP_REQUIRED` y `DeleteAccountPanel` manda a `/verify-2fa?reauth=1&next=/dashboard/profile`). TOTP sigue igual (código verificado en la petición). Sin ningún factor: 403. Pruebas nuevas (4) en `route.test.ts`.
+- Pendiente de probar con el dispositivo real: borrar una cuenta solo con passkey de punta a punta.

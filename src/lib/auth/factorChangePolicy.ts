@@ -34,6 +34,13 @@ export function requiresFreshStepUp({ path, hasSecondFactor, stepUpVerifiedAt, n
   return !(now - stampedAt <= FACTOR_CHANGE_STEP_UP_TTL_MS);
 }
 
+// True when the session proved a second factor within the factor-change window
+// (the stamp is written by the server only after a passkey / code verified).
+export function hasFreshStepUp(stepUpVerifiedAt: Date | string | number | null | undefined, now: number = Date.now()): boolean {
+  const stampedAt = stepUpVerifiedAt ? new Date(stepUpVerifiedAt).getTime() : 0;
+  return now - stampedAt <= FACTOR_CHANGE_STEP_UP_TTL_MS;
+}
+
 // Only paths inside the dashboard may be used as the post-verification
 // destination (keeps /verify-2fa?next=... from becoming an open redirect).
 export function safeNextPath(next: unknown): string | null {

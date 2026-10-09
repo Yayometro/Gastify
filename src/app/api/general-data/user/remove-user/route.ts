@@ -14,7 +14,8 @@ import CategoryRule from "@/model/CategoryRule";
 import IncomeSource from "@/model/IncomeSource";
 import ProjectionBaseline from "@/model/ProjectionBaseline";
 import ProjectionSettings from "@/model/ProjectionSettings";
-import { auth } from "@/lib/auth/betterAuth";
+import { auth, countUserPasskeys } from "@/lib/auth/betterAuth";
+import { hasFreshStepUp, STEP_UP_REQUIRED_CODE } from "@/lib/auth/factorChangePolicy";
 import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
 import {
   getDeleteAccountLockRemainingMs,
@@ -44,6 +45,8 @@ export interface RemoveUserErrorResponse {
   status: number;
   attemptsLeft?: number;
   retryAfterMinutes?: number;
+  // STEP_UP_REQUIRED: a passkey-only account must verify its passkey again first.
+  code?: string;
 }
 
 export type RemoveUserResponse = RemoveUserSuccessResponse | RemoveUserErrorResponse;
@@ -89,39 +92,51 @@ export async function POST(
     const method = body.method === "backup" ? "backup" : "totp";
     const code = typeof body.code === "string" ? body.code.trim() : "";
 
-    // Deleting an account is irreversible: it needs a FRESH second-factor
-    // proof inside this very request (the server verifies the code itself),
-    // not a stamp left over from an earlier step-up, and the user must retype
-    // the account email as a deliberate confirmation.
-    if (!(sesion.user as { twoFactorEnabled?: boolean }).twoFactorEnabled) {
+    // Deleting an account is irreversible, and the person must retype the
+    // account email as a deliberate confirmation. The second-factor proof
+    // depends on what the account has:
+    // - authenticator app (TOTP): a fresh code (or backup code) inside this very
+    //   request, verified by the server itself;
+    // - passkey only: there is no code to verify here, so the session must carry
+    //   a passkey verification from the last few minutes. The server writes that
+    //   stamp only after Better Auth verified the passkey, so it can't be forged
+    //   from the client; if it is stale the client is sent to /verify-2fa.
+    const hasTotp = Boolean((sesion.user as { twoFactorEnabled?: boolean }).twoFactorEnabled);
+    const passkeyOnly = !hasTotp && (await countUserPasskeys(sesion.user.id)) > 0;
+    if (!hasTotp && !passkeyOnly) {
       return fail(
         403,
-        "Para eliminar tu cuenta primero activa una app autenticadora (TOTP) en tu perfil."
+        "Para eliminar tu cuenta primero activa un passkey o una app autenticadora (TOTP) en tu perfil."
       );
     }
-    if (!code) return fail(400, "Escribe el código de tu app autenticadora (o un código de respaldo).");
+    if (hasTotp && !code) return fail(400, "Escribe el código de tu app autenticadora (o un código de respaldo).");
     if ((body.confirmMail || "").trim().toLowerCase() !== mail.toLowerCase()) {
       return fail(400, "El correo escrito no coincide con el de tu cuenta.");
+    }
+    if (passkeyOnly && !hasFreshStepUp(sesion.session.stepUpVerifiedAt)) {
+      return fail(403, "Confirma tu identidad con tu passkey para eliminar la cuenta.", { code: STEP_UP_REQUIRED_CODE });
     }
 
     await dbConnection();
 
-    const lockedMs = await getDeleteAccountLockRemainingMs(sessionToken);
-    if (lockedMs > 0) {
-      return fail(429, "Demasiados intentos fallidos. Intenta de nuevo más tarde.", {
-        retryAfterMinutes: Math.ceil(lockedMs / 60000),
-      });
-    }
-
-    const verified = await verifySecondFactor(request, method, code);
-    if (!verified) {
-      const { locked, attemptsLeft } = await recordDeleteAccountFailure(sessionToken);
-      if (locked) {
-        return fail(429, "Demasiados intentos fallidos. Intenta de nuevo en unos minutos.", {
-          retryAfterMinutes: 15,
+    if (hasTotp) {
+      const lockedMs = await getDeleteAccountLockRemainingMs(sessionToken);
+      if (lockedMs > 0) {
+        return fail(429, "Demasiados intentos fallidos. Intenta de nuevo más tarde.", {
+          retryAfterMinutes: Math.ceil(lockedMs / 60000),
         });
       }
-      return fail(401, "Código incorrecto.", { attemptsLeft });
+
+      const verified = await verifySecondFactor(request, method, code);
+      if (!verified) {
+        const { locked, attemptsLeft } = await recordDeleteAccountFailure(sessionToken);
+        if (locked) {
+          return fail(429, "Demasiados intentos fallidos. Intenta de nuevo en unos minutos.", {
+            retryAfterMinutes: 15,
+          });
+        }
+        return fail(401, "Código incorrecto.", { attemptsLeft });
+      }
     }
 
     const userToRemove = await User.findOne({ mail });
