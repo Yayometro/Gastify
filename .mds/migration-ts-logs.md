@@ -1368,3 +1368,30 @@ Todos con su prueba, sin tocar lo que no era el bug. Entre paréntesis, los núm
 3. 26 archivos `.js/.jsx` muertos (decisión: ignorarlos por ahora) y 3 puentes de tipos `TypedModalContentTopMonthItem` (hay un desajuste real de tipos entre `TransactionData` y el modal).
 4. Ramas viejas en GitHub sin revisar (`develop`, `develop_two`, `develop_4`, `agents-ai`, etc.).
 5. Ideas no pedidas: botón "Clear" en el selector de fecha (#36), presupuestos convertidos con la tasa de cada fecha, Next 16.
+
+---
+
+## 2026-10-08 — Código muerto ELIMINADO: los 26 archivos `.js`/`.jsx` que no se migraron (rama `deps-next15`)
+
+Decisión del usuario (2026-10-08): borrar los 26 archivos de código muerto que se habían dejado sin migrar ni borrar. **Solo estos 26.**
+
+**Cómo se comprobó que estaban muertos:** grafo de imports resueltos (alias `@/` y rutas relativas) desde todas las páginas, layouts, rutas y el middleware de `src/app`; **0 de 26 eran alcanzables**, ningún archivo vivo ni ningún test los importaba (solo se importaban entre sí: `Top3.jsx` <- `Top3ContComp.jsx` y `TopItemContainer.jsx` <- `TopContainer.jsx`). Tras borrarlos: `tsc` limpio. Con esto **ya no queda ningún `.js`/`.jsx` en `src/` fuera de los tests** (`*.test.js`), `scripts/` y los configs raíz. Para recuperar cualquiera: `git show <commit-anterior>:<ruta>` (siguen en el historial de git).
+
+| Archivo (ruta bajo `src/`) | Para qué servía | Por qué quedó muerto |
+|---|---|---|
+| `app/StoreProvider.js`, `components/multiUsedComp/GastifyModal.jsx`, `hooks/Categories/useHandleCategorySelect.js`, `lib/hooks.js` | Archivos vacíos (0-1 líneas), marcadores de posición | Nunca se llenaron |
+| `app/api/defCategoriesCreator.js.js` (2024) | Creaba las categorías por defecto de un usuario nuevo | Lo reemplazó `lib/auth/provisionNewUserData.ts`; no era una ruta de la API (no se llama `route`) |
+| `lib/services/apiSlice.js`, `lib/services/generalDataApiRedux.js` (2024) | RTK Query para pedir "todos los datos" al endpoint agregado `general-data` | Nunca se conectaron a la tienda; esos endpoints se borraron el 2026-10-01 |
+| `resources/Time/timeSelectorsHistory.js` | Selectores de tiempo del historial (listas de meses/rangos) | Los reemplazó `helpers/timeFunctions` |
+| `components/multiUsedComp/Top3.jsx`, `Top3ContComp.jsx`, `top3/top-container/TopContainer.jsx`, `top3/topMonthContainer/TopItemContainer.jsx` | La primera versión de los "Top 3" (movimientos/categorías) con pestañas Bills/Incomes | Los reemplazaron los componentes de Top actuales del dashboard (`TopElementsContainer` y relacionados) |
+| `components/multiUsedComp/EditTransModal.jsx` (401 l) | Modal para editar un movimiento | Lo reemplazaron los editores actuales (`QuickEditModal`, `EditMultipleTransModal`) |
+| `components/multiUsedComp/GoalGaugeRange.jsx`, `GoalSavingsRange.jsx`, `GoalLiquid.jsx` | Medidores de meta (gauge, rango de ahorro, líquido de `@ant-design/plots`) de la primera versión de presupuestos | Hoy los presupuestos se muestran con `BudgetBarRow` y los modales de `Budgets/` |
+| `components/multiUsedComp/NestCircle.jsx` | Gráfica de círculos anidados con `@ant-design/plots` | La reemplazó `CategoryCirclePacking` (Nivo) |
+| `components/multiUsedComp/RangePicker.jsx`, `components/DatePiker.jsx` | Selector de rango de fechas (propio y de ejemplo de antd) | Los reemplazó `PeriodFiltersWithCompare` / los selectores de período actuales |
+| `components/multiUsedComp/TransTable.jsx` | Tabla de movimientos con `@tanstack/react-table` | Los movimientos se muestran con `Movements.tsx` / `TransactionItemList` |
+| `components/multiUsedComp/Category.jsx` | "Chip" de una categoría | Lo reemplazó `Tag.tsx` y los íconos de categoría actuales |
+| `components/renderTransactionsInModal/RenderTransactionsInModal.jsx` | Lista de movimientos dentro de un modal | Lo reemplazó `ModalContentTopMonthItem` |
+| `components/buttons/btnWithModal/BtnWithModal.jsx`, `components/HOCs/withIncomes.js`, `components/HOCs/modalHocRenderTrans/modalWithRenderTrans.js` | Experimentos de componentes de orden superior para abrir modales | Se sustituyeron por el hook `useModalBasic`/`useModal`; ninguno se usó |
+| `components/multiUsedComp/VoiceRecognicionComponent.jsx` (302 l, último cambio 2026-09-11) | Agregar movimientos **por voz** (`webkitSpeechRecognition`), llamando a `general-data/transactions/speech-add` | Ninguna pantalla lo montaba. **Ojo:** la ruta de la API `speech-add` (y sus pruebas) **sigue viva y sin interfaz**; la función de voz no existe hoy para el usuario. Si se quisiera, habría que reescribir el componente en TypeScript y volver a conectarlo |
+
+Pendiente relacionado (decisión del usuario, 2026-10-08): se tiparon `category`/`subCategory` de los movimientos con una forma compartida y se quitaron los 3 puentes `TypedModalContentTopMonthItem` (ver entrada siguiente de este archivo si se completó).
