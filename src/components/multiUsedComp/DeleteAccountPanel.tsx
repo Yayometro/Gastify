@@ -52,8 +52,29 @@ function DeleteAccountPanel(): React.JSX.Element {
   async function handleDelete(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setErrorMessage("");
+    // A typo in the email must not cost a fingerprint prompt.
+    if (confirmMail.trim().toLowerCase() !== String(session?.user?.email || "").toLowerCase()) {
+      setErrorMessage("El correo escrito no coincide con el de tu cuenta.");
+      return;
+    }
     try {
       setIsLoading(true);
+      if (passkeyOnly) {
+        // The proof is asked for right here, in the same step, instead of
+        // bouncing the user to /verify-2fa and back (the server stamps the
+        // session once the passkey is verified; remove-user checks that stamp).
+        const { error } = await authClient.signIn.passkey();
+        if (error) {
+          const cancelled = (error as { code?: string }).code === "AUTH_CANCELLED" || /cancel/i.test(error.message || "");
+          setErrorMessage(
+            cancelled
+              ? "Cerraste el cuadro del passkey. Vuelve a intentarlo cuando quieras confirmar."
+              : error.message || "No se pudo verificar tu passkey."
+          );
+          setIsLoading(false);
+          return;
+        }
+      }
       const res = await fetcher().post<RemoveUserApiResponse>("general-data/user/remove-user", {
         code,
         method: useBackupCode ? "backup" : "totp",
@@ -153,7 +174,7 @@ function DeleteAccountPanel(): React.JSX.Element {
                 </>
               ) : (
                 <p className="text-xs text-gf-text">
-                  Al confirmar te pediremos tu passkey (huella / Face ID) si no la usaste hace unos minutos.
+                  Al confirmar te pediremos tu passkey (huella / Face ID) para verificar que eres tú.
                 </p>
               )}
               {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
