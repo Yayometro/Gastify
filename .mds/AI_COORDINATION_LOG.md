@@ -1473,3 +1473,10 @@ When taking over this task, Claude should perform the following steps:
 
 ### Entry #43 - Claude - 2026-10-08 - T1: un solo paso al borrar con passkey
 - El usuario probó T1 con dispositivo real: funcionó, pero había que confirmar dos veces (la primera lo mandaba a /verify-2fa). `DeleteAccountPanel` ahora pide el passkey en el mismo paso (`authClient.signIn.passkey()` antes de llamar a `remove-user`) y valida el correo antes de abrir el cuadro de huella. La redirección a /verify-2fa queda solo como respaldo si el servidor igual la pide. Pendiente: que el usuario lo pruebe otra vez.
+
+### Entry #44 - Claude - 2026-10-08 - Actualización de dependencias por seguridad (ramas `deps-security-update` y `deps-next15`)
+- **Paso 1** (`deps-security-update`, `8f5338c`): `npm audit fix` sin saltos mayores (proxy-addr, SDK de MCP 1.30->1.32.1, ip-address, brace-expansion, fast-uri, source-map-js). Handshake MCP en memoria probado. Vulnerabilidades en producción: 10 -> 4.
+- **Paso 2** (`deps-next15`): Next 14.2.35 -> 15.5.27 (los 24 avisos de Next solo se corrigen desde 15.5.24; no hay parche en 14), React 18 -> 19.3, `@mui/x-date-pickers` 6 -> 7.29, Nivo 0.84 -> 0.99, `eslint-config-next` 15.5.27, `@ant-design/v5-patch-for-react-19` (import en `ThemeProvider.tsx`). Cambios de código: `params` como `Promise` en 3 rutas (`transactions/[id]`, `remove-transaction/[id]`, `mcp/[token]`) y `images.domains` -> `remotePatterns`. Un `npm audit fix` final quitó `glob`.
+- **Verificado en el Chrome del usuario** (cuenta desechable, borrada, 0 huérfanos): login con TOTP, dashboard, gráficos Nivo (burbujas y anillos), Historial (barras), selector de fecha v7 (abre, elige, OK), modal de confirmación de antd y aviso, Presupuestos, Proyecciones, Cuentas, Categorías, Perfil. `next build` de producción OK (en copia), tsc limpio, eslint 0 errores, vitest 480/480.
+- **Quedan 2 avisos** (1 moderado, 1 alto): el `postcss` que Next 15 trae empaquetado; solo se corrige con Next 16.
+- Nota: durante la prueba se cerró la sesión real del usuario en `localhost` (autorizado desde el inicio de las pruebas); hay que volver a iniciar sesión.

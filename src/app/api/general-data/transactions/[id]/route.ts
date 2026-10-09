@@ -56,7 +56,7 @@ export type UpdateTransactionResponse = UpdateTransactionSuccessResponse;
 
 export async function POST(
   request: NextRequest | Request,
-  context: { params: Promise<{ id?: string }> | { id?: string } }
+  context: { params: Promise<{ id?: string }> }
 ): Promise<NextResponse<UpdateTransactionResponse>> {
   try {
     if (!request) throw new Error("No data in request on GENERAL-DATA POST");

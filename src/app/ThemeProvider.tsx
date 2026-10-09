@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+// antd 5 needs this patch on React 19 so message / Modal.confirm / notification keep rendering.
+import "@ant-design/v5-patch-for-react-19";
 import { ConfigProvider, theme } from "antd";
 import { ToastContainer } from "react-toastify";
 

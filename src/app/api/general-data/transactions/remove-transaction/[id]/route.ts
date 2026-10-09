@@ -24,7 +24,7 @@ export type RemoveTransactionResponse = RemoveTransactionSuccessResponse;
 
 export async function POST(
   request: NextRequest | Request,
-  context: { params: Promise<{ id?: string }> | { id?: string } }
+  context: { params: Promise<{ id?: string }> }
 ): Promise<NextResponse<RemoveTransactionResponse>> {
   try {
     if (!context || !context.params)

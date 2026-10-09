@@ -14,11 +14,11 @@ import { handleGastifyMcpTransport } from "@/lib/mcp/buildGastifyMcpServer";
 // .mds/AI_AGENT_CONNECTOR_PLAN.md.
 async function handleMcpRequest(
   request: Request | NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ): Promise<Response> {
   let auth: ResolvedApiTokenAuth;
   try {
-    auth = await resolveApiToken(params.token);
+    auth = await resolveApiToken((await params).token);
   } catch (e) {
     return Response.json({ error: e.message || "Unauthorized" }, { status: 401 });
   }
@@ -27,21 +27,21 @@ async function handleMcpRequest(
 
 export async function POST(
   request: Request | NextRequest,
-  context: { params: { token: string } }
+  context: { params: Promise<{ token: string }> }
 ): Promise<Response> {
   return handleMcpRequest(request, context);
 }
 
 export async function GET(
   request: Request | NextRequest,
-  context: { params: { token: string } }
+  context: { params: Promise<{ token: string }> }
 ): Promise<Response> {
   return handleMcpRequest(request, context);
 }
 
 export async function DELETE(
   request: Request | NextRequest,
-  context: { params: { token: string } }
+  context: { params: Promise<{ token: string }> }
 ): Promise<Response> {
   return handleMcpRequest(request, context);
 }
