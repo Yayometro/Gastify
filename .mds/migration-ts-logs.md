@@ -1317,3 +1317,54 @@ Vuelven **con** el fix de sesión pero **sin** limpiar la respuesta: antes de us
 - Los dos primeros puntos de la sección "TO-DOs PENDIENTES" quedan así: **#1 resuelto**, **#2 (2FA en `remove-user`) sigue pendiente**.
 
 3. **NUEVO (2026-10-01) — `auth-extra/mark-step-up` confía en el navegador: el "step-up" de 2FA se puede falsificar.** La ruta `src/app/api/auth-extra/mark-step-up/route.ts` solo comprueba que haya una sesión válida y escribe `stepUpVerifiedAt = ahora` en ella, **sin verificar que se haya probado un passkey, un código TOTP o un código de respaldo**. La verificación real la hace el navegador (`authClient.twoFactor.verifyTotp(...)` en `Verify2FAClient.tsx`) y *después* avisa a esta ruta; el servidor nunca comprueba que eso ocurrió. Consecuencia: una sesión que NO ha pasado el 2FA (por ejemplo, un login con Google) puede llamar a `POST /api/auth-extra/mark-step-up` directamente y desbloquear el dashboard, y cualquier chequeo de "2FA fresco" basado en ese sello (incluido el que se quiera agregar a `remove-user`) es igual de falsificable. Además el chequeo de frescura solo existe en el layout de `/dashboard` (páginas), no en las rutas de API. Arreglo propuesto: que el sello lo escriba el servidor en el momento de verificar (hooks de Better Auth sobre `/two-factor/verify-totp`, `/two-factor/verify-backup-code` y el login con passkey) y que el navegador ya no pueda marcarlo; hay que probarlo en vivo con Google, passkey, TOTP y código de respaldo (el comentario de `betterAuth.ts` advierte que tocar los hooks de login ya rompió producción upstream una vez).
+
+---
+
+## 2026-10-01 → 2026-10-08 — Fase post-migración: seguridad, 168 bugs y actualización de dependencias. **EN PRODUCCIÓN**
+
+Resumen de todo lo hecho después de terminar la migración de `src/` (cierre del 2026-09-30). El detalle fila por fila vive en [`POST_MIGRATION_BUGS.md`](POST_MIGRATION_BUGS.md) y el diario cronológico en `AI_COORDINATION_LOG.md` (entradas #31-#44); este apartado es la foto general.
+
+### Estado y despliegue
+- Rama de trabajo `post-migration-bugs-resolver` (sobre `typescript-migration`) y luego `deps-security-update` + `deps-next15`. **Mezcladas a `main` con avance directo y subidas a GitHub:** primero la migración + bugs (`5466ba0` -> `a6164c6`, 2026-10-08) y después la actualización de dependencias (`a6164c6` -> `68e32a4`, 2026-10-08).
+- Verificación en cada entrega: `tsc` limpio, `eslint` 0 errores (16 avisos de `exhaustive-deps` ya conocidos), `vitest` **480/480**, `next build` de producción OK (corrido en una copia, sin tocar el servidor de desarrollo). Variables de entorno: las mismas que antes, nada nuevo que configurar.
+- **Cómo volver atrás:** el último commit previo a todo esto está guardado en la rama `backup/pre-typescript-migration` (`5466ba0`). Respaldo completo de la base de datos antes de tocar datos reales: `backups/full-db-pre-cleanup-2026-10-07T15-26-40-622Z/` (solo local, ignorado por git).
+- Forma de probar: siempre en el Chrome real del usuario con **cuentas desechables** (creadas y borradas en cada prueba; al final 0 registros huérfanos) y con dispositivo real para passkeys. Lo que solo se probó con pruebas unitarias se indica abajo.
+
+### Seguridad (S1-S5 y relacionados)
+- **S1 / bug 157 / 121 / 162:** `remove-user` ya exige un segundo factor (código TOTP o de respaldo verificado en el servidor, o passkey en cuentas sin TOTP, ver T1) + reescribir el correo, limita intentos (5, bloqueo de 15 min) y borra **todo**: movimientos, cuentas, categorías, etiquetas, presupuestos, reglas, fuentes de ingreso, proyecciones y el secreto TOTP/passkeys/sesiones. Los datos se borran primero (repetible) y lo que deja volver a entrar, al final, en una sola transacción de Mongo. Botón "Eliminar mi cuenta" en Perfil.
+- **S2:** el sello de "verificación fresca" (`stepUpVerifiedAt`) ya lo escribe **el servidor** al validar el passkey o el código; se borró la ruta `mark-step-up` (que el navegador podía falsificar) y se cerró también el hueco de `/update-session`.
+- **S5:** cambiar factores (activar/desactivar TOTP, códigos de respaldo, registrar o borrar passkeys) exige una verificación de **≤ 5 minutos** cuando la cuenta ya tiene un factor; antes una sesión robada de una cuenta sin contraseña (Google/passkey) podía quitar el TOTP y meter el suyo. La pantalla manda a `/verify-2fa?reauth=1` y regresa al Perfil.
+- **S3:** el hash de contraseña legacy (`User.password`) se quitó del modelo y se borró de los 12 usuarios de la base real (con respaldo previo). **S4:** el teléfono ya no se escribe en logs. **161:** 21 documentos huérfanos borrados (mostrados uno por uno antes).
+- **T1:** una cuenta con **solo passkey** ya puede borrarse: la huella se pide en el mismo paso y el servidor exige el sello de passkey (≤ 5 min) + el correo. **T2 / bug 159:** sin passkey registrado el reto abre directo el código TOTP y cancelar el cuadro del sistema ya no cuenta como intento fallido. **T3:** aviso de que el dispositivo puede conservar su copia del passkey. Probados con dispositivo real.
+- **`/verify-2fa` decidía con listas en caché del navegador** (una cuenta nueva podía caer en el reto en vez del registro): ahora el servidor le dice qué factores tiene la cuenta (`countUserPasskeys`).
+- Anteriores a esta fase (ver secciones de arriba): 54 fixes de seguridad de la migración, datos sensibles en respuestas/logs (`toPublicUser`), rutas `general-data` muertas eliminadas.
+
+### Bugs de comportamiento: 168 filas, resueltas por áreas (Olas 1-4)
+Todos con su prueba, sin tocar lo que no era el bug. Entre paréntesis, los números de la tabla.
+- **G6 botones/formularios que no hacían lo que decían (11):** botón de subir imagen que enviaba el perfil, borrar movimiento desde un presupuesto, editor masivo ("Keep current account"/"No account"), transferencias que no re-autocompletaban, etc.
+- **G4 cierres por nulos/NaN (23):** divisiones entre 0, porcentajes, gráficas con NaN; helper `percentOf`.
+- **G1 textos/typos (10), G2 íconos (5):** tamaños, nombres sin prefijo, typos.
+- **G3 fechas y períodos (7):** ya no se congelan al cargar la página; la comparación sigue al período principal; el fin del día (bug 154 del dropdown "Last 3 months") deja de ocultar movimientos recién creados (155).
+- **G7 0/false/vacío (10):** guardar un monto 0, una fuente de ingreso a 0, etc.
+- **G10 transformadores (7):** ordenamientos que mutaban datos, agrupar por id y no por nombre.
+- **G5 Redux (8):** acciones llamadas sin `dispatch` que no hacían nada (se quitaron), selectores con claves reales; la tienda se vacía al cambiar o cerrar sesión (158).
+- **G8 dinero y moneda (17):** formato único (`formatInPrimaryCurrency`), cambio de moneda primaria, conversiones con respaldo, sin NaN; tags legibles en modo oscuro (167, reportado por el usuario).
+- **G9 presupuestos, duplicados y reglas (10):** presupuestos de ahorro, duplicados por día local, cobertura, reglas de categoría.
+- **G11 rutas API (16):** errores como texto (no objetos), estados HTTP correctos, validaciones, tokens, modelos registrados, `Wallet` requerido, etc.
+- **G13 accesibilidad y G14 código muerto (11):** botones de cierre y filas con teclado, `<nav>`, alt de imágenes, `asyncThunk.ts` borrado.
+- **G12 (129-132)** quedaron sin cambio a propósito. **G15 (126-128)** ya no aplicaban (rutas borradas el 30-sep).
+- **Decisiones de diseño resueltas al final:** #105 los presupuestos en otra moneda ya se convierten a la primaria (tasa de hoy) en Proyecciones, Historial, Presupuestos y el analizador; #104 una factura que varios presupuestos reclaman cuenta una sola vez en proyecciones (gana el más específico); #99 `refund`/`fee` se cuentan por `isBill` (hoy nada los crea); #31 un presupuesto sin historial ni fecha de creación marca sus meses como estimados; #91 el segundo año de un rango encadena el saldo final del primero (solo probado con pruebas unitarias); #135 era la etiqueta "EASHTETIC".
+- **Hallazgos nuevos durante las pruebas:** 163 (confirmación de borrar detrás del modal), 164 (aviso `value null`), **165 (regresión mía: el fin del día salía como el día siguiente; corregida)**, 166 (llamadas sin efecto en el hook central), 167 (tags blancos en oscuro), 168 (el detalle del presupuesto sumaba ingresos como gasto).
+- **Por diseño o sin arreglo:** #84 no se puede arreglar, #107/#109 por diseño, #7 obsoleto, #36/#71 son una protección que la interfaz actual no puede disparar (el selector de fecha móvil no tiene "borrar"), **#96 parcial** (los gráficos mensuales agrupan por mes sin año a propósito).
+
+### Actualización de dependencias por seguridad (2026-10-08)
+- `npm audit fix` sin saltos mayores (SDK de MCP 1.32, proxy-addr, ip-address, brace-expansion, fast-uri, source-map-js, glob): vulnerabilidades en producción **10 -> 2**.
+- **Next 14.2.35 -> 15.5.27 + React 18 -> 19**, `@mui/x-date-pickers` 6 -> 7, Nivo 0.84 -> 0.99 (los 24 avisos de Next solo se corrigen desde 15.5.24; la rama 14 no tiene parche). Cambios de código: `params` como `Promise` en 3 rutas, `images.domains` -> `remotePatterns`, parche de antd para React 19. Probado en Chrome: gráficos, selector de fecha, modales y avisos, todas las pantallas.
+- **Quedan 2 avisos** (el `postcss` que Next 15 trae empaquetado): solo se corrigen con Next 16; no son alcanzables desde la app.
+
+### Pendiente después de esta fase
+1. Confirmar el despliegue y probar producción con la cuenta real.
+2. Cierre de la migración: con el visto bueno final se borran `AGENTS.md` y `.mds/migration-typescript.md` (este archivo, `POST_MIGRATION_BUGS.md` y `AI_COORDINATION_LOG.md` se quedan).
+3. 26 archivos `.js/.jsx` muertos (decisión: ignorarlos por ahora) y 3 puentes de tipos `TypedModalContentTopMonthItem` (hay un desajuste real de tipos entre `TransactionData` y el modal).
+4. Ramas viejas en GitHub sin revisar (`develop`, `develop_two`, `develop_4`, `agents-ai`, etc.).
+5. Ideas no pedidas: botón "Clear" en el selector de fecha (#36), presupuestos convertidos con la tasa de cada fecha, Next 16.
