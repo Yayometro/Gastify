@@ -10,6 +10,7 @@ import "@/model/Tag";
 import "@/model/Budget";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { auth } from "@/lib/auth/betterAuth";
+import { createServerTimer } from "@/lib/perf/serverTiming";
 
 export interface GetTransactionsSuccessResponse {
   data: unknown;
@@ -31,13 +32,15 @@ export async function POST(
     // whatever userMail was sent in the request body (IDOR), returning another
     // user's entire transaction history. We now verify auth.api.getSession and
     // resolve the user from the session instead.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const timer = createServerTimer();
+    const totalStart = performance.now();
+    const sesion = await timer.time("session", () => auth.api.getSession({ headers: request.headers }));
     if (!sesion) throw new Error("No session");
 
     //DB
-    await dbConnection();
+    await timer.time("db-connect", () => dbConnection());
     // User find
-    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
+    const userFound = await timer.time("user", () => User.findOne({ mail: sesion.user.email }).lean());
     if (!userFound)
       throw new Error("User not found, review the email provided in GENERAL-DATA POST");
     const userId = userFound._id;
@@ -54,7 +57,7 @@ export async function POST(
       .lean()) as { primaryCurrency?: string } | null;
     //FIND TRANSACTIONS
     // Structural typing with unknown avoids any while resolving TS2349 union incompatibility on unmigrated Transaction.js
-    const movementsFounded = (await (
+    const movementsFounded = (await timer.time("find-populate", () => (
       Transaction as unknown as {
         find: (filter: unknown) => {
           populate: (pop: unknown) => {
@@ -90,21 +93,26 @@ export async function POST(
       .populate({
         path: "budget",
       })
-      .lean()) as unknown[];
+      .lean())) as unknown[];
     if (!movementsFounded)
       throw new Error(
         "No movements found, review the user and wallet id on get-all/transactions in POST"
       );
-    const withDisplayMoney = await attachDisplayMoneyToList(
-      movementsFounded,
-      parentWallet?.primaryCurrency || "MXN"
+    const withDisplayMoney = await timer.time("display-money", () =>
+      attachDisplayMoneyToList(movementsFounded, parentWallet?.primaryCurrency || "MXN")
     );
-    return NextResponse.json({
+    const serializeStart = performance.now();
+    const body = JSON.stringify({
       data: withDisplayMoney,
       message: "Transactions founded",
       status: 201,
       ok: true,
     });
+    timer.add("serialize", performance.now() - serializeStart);
+    timer.add("total", performance.now() - totalStart);
+    return new NextResponse(body, {
+      headers: { "Content-Type": "application/json", "Server-Timing": timer.header() },
+    }) as NextResponse<GetTransactionsResponse>;
   } catch (e) {
     console.log(e);
     throw new Error(e);

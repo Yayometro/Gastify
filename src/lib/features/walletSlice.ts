@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { skipWhileLoading } from "./thunkGuards";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
@@ -56,7 +57,8 @@ export const fetchWallet = createAsyncThunk(
       console.log(e);
       throw new Error(e);
     }
-  }
+  },
+  skipWhileLoading("walletReducer")
 );
 
 export const walletSlice = createSlice({

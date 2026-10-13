@@ -1,4 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { skipWhileLoading } from "./thunkGuards";
+import { perfMark } from "@/lib/perf/perfMark";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
@@ -86,6 +88,7 @@ export const fetchTrans = createAsyncThunk(
         mail
       );
       // console.log(response)
+      perfMark("data:transactions:received");
       if (response.ok) {
         return response.data;
       } else {
@@ -95,7 +98,8 @@ export const fetchTrans = createAsyncThunk(
       console.log(e);
       throw new Error(e);
     }
-  }
+  },
+  skipWhileLoading("transacctionsReducer")
 );
 
 export const transacctionsSlice = createSlice({

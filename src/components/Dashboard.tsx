@@ -37,6 +37,7 @@ import { formatMoneyMajor } from "@/lib/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import DashboardLoadingMessage from "./multiUsedComp/loaders/DashboardLoadingMessage";
+import { perfMark } from "@/lib/perf/perfMark";
 import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
@@ -198,6 +199,16 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
   };
   //LOADER
   const [loading, setLoading] = useState<boolean>(true);
+  useEffect(() => {
+    perfMark("dashboard:mounted");
+  }, []);
+  useEffect(() => {
+    // The loading overlay goes away once the movements arrive; the mark lands on the next frame.
+    if (!loading) {
+      perfMark("dashboard:data-committed");
+      requestAnimationFrame(() => perfMark("dashboard:ready"));
+    }
+  }, [loading]);
   //Loader
   useEffect(() => {
     import("ldrs").then(({ quantum }) => quantum.register());

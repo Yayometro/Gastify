@@ -11,6 +11,7 @@ import { fetchWallet, type WalletData } from "@/lib/features/walletSlice";
 import { useDispatch, useSelector } from "react-redux";
 import useGetUserSession from "../useGetUserSession";
 import { setDisplayCurrency } from "@/lib/money/displayCurrency";
+import { perfMark } from "@/lib/perf/perfMark";
 import { useEffect, useState } from "react";
 import type { AppDispatch, RootState } from "@/lib/store";
 
@@ -44,6 +45,7 @@ export default function useFetchAndGetAllReduxInfo(): ReduxAllInfo {
   //
   useEffect(() => {
     if (email) {
+      perfMark("data:fetch-start");
       setLoading(!loading);
       // User
       if (ccUser.status === "idle") {
@@ -76,6 +78,16 @@ export default function useFetchAndGetAllReduxInfo(): ReduxAllInfo {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email]);
+
+  // Load timeline: when each slice of the initial data arrives (see perfMark).
+  useEffect(() => {
+    const slices: [string, string | undefined][] = [
+      ["user", ccUser.status], ["wallet", ccWallet.status], ["accounts", ccAccounts.status],
+      ["categories", ccCategories.status], ["subcategories", ccSubCategories.status],
+      ["transactions", ccTransacciones.status], ["budgets", ccBudgets.status],
+    ];
+    for (const [name, status] of slices) if (status === "succeeded") perfMark(`data:${name}:ready`);
+  }, [ccUser.status, ccWallet.status, ccAccounts.status, ccCategories.status, ccSubCategories.status, ccTransacciones.status, ccBudgets.status]);
 
   // The wallet's primary currency is the one every amount is formatted in.
   const primaryCurrency = (ccWallet.data as { primaryCurrency?: string } | undefined)?.primaryCurrency;

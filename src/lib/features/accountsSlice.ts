@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { skipWhileLoading } from "./thunkGuards";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
@@ -54,7 +55,8 @@ export const fetchAccounts = createAsyncThunk(
       console.log(e);
       throw new Error(e);
     }
-  }
+  },
+  skipWhileLoading("accountsReducer")
 );
 
 export const accountsSlice = createSlice({
