@@ -20,7 +20,7 @@ import type usePeriodComparison from "@/hooks/usePeriodComparison";
 import type { TabsTogglerComponentItem } from "../TabsToggler";
 import TabsTogglerMontlyView from "./TabsTogglerMontlyView";
 import ResponsiveBarsChartComponent from "../../chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent";
-import ColumnChartAntComparative from "../../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
+import ComparativeColumnChart from "@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart";
 import {
   generatePropForChartColAntTogglerTabs,
   generatePropForChartColAntPeriodCompare,
@@ -295,7 +295,7 @@ function TabsTogglerMontlyController({
         totalAmount,
         walletPrimaryCurrency,
       }),
-      Component: ColumnChartAntComparative,
+      Component: ComparativeColumnChart,
     },
   ];
 
@@ -310,7 +310,7 @@ function TabsTogglerMontlyController({
         labelB: compareChartData.labelB,
         walletPrimaryCurrency,
       }),
-      Component: ColumnChartAntComparative,
+      Component: ComparativeColumnChart,
     });
     tabs.push("Compare periods");
   }

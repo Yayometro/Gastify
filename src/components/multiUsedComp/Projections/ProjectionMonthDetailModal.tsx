@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import dynamic from "next/dynamic";
 import { Spin, Tooltip } from "antd";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
+import ComparativeColumnChart from "@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart";
+import { formatMoneyMajor } from "@/lib/money/currencies";
 import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import Movements from "../Movements";
@@ -15,9 +16,6 @@ import CurrencyBreakdownChips, {
 } from "../CurrencyBreakdownChips";
 import type { ProjectionTableRow } from "@/hooks/useProjectionTable";
 
-const Column = dynamic(() => import("@ant-design/plots").then((m) => m.Column), {
-  ssr: false,
-});
 
 export interface BucketBreakdownItem {
   label: string;
@@ -115,24 +113,11 @@ function ProjectionMonthDetailModal({
   // here instead of building a second transaction list from scratch.
   const monthDateRange = getYearMonthDateRange(new Date(monthRow.year as number, 0, 1)).get(monthRow.monthName);
 
+  // Budgeted vs actual per bucket, side by side.
   const chartData = (bucketBreakdown || []).flatMap((row) => [
-    { label: row.label, type: "Budgeted", value: row.budgeted },
-    { label: row.label, type: "Actual", value: row.actual },
+    { type: String(row.label), transactionType: "Budgeted", value: Number(row.budgeted) || 0, color: "#a78bfa" },
+    { type: String(row.label), transactionType: "Actual", value: Number(row.actual) || 0, color: "#f87171" },
   ]);
-
-  const config = {
-    data: chartData,
-    xField: "label",
-    yField: "value",
-    colorField: "type",
-    group: true,
-    autoFit: true,
-    height: 260,
-    // AntV's default theme assumes a light page - axis numbers and the
-    // legend rendered in dark grey, unreadable against this modal's dark
-    // glass panel. "classicDark" is G2's own built-in dark theme.
-    theme: "classicDark",
-  };
 
   const handleSaveBuffers = async () => {
     try {
@@ -265,7 +250,18 @@ function ProjectionMonthDetailModal({
 
           {bucketBreakdown && bucketBreakdown.length > 0 && (
             <div className="w-full mb-4">
-              <Column {...config} />
+              <ComparativeColumnChart
+                data={chartData}
+                propPlus={{
+                  mode: "grouped",
+                  height: 260,
+                  legend: [
+                    { id: "Budgeted", label: "Budgeted", color: "#a78bfa" },
+                    { id: "Actual", label: "Actual", color: "#f87171" },
+                  ],
+                  valueFormat: (value) => formatMoneyMajor(value, walletPrimaryCurrency),
+                }}
+              />
             </div>
           )}
 
