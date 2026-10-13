@@ -1395,3 +1395,107 @@ Decisión del usuario (2026-10-08): borrar los 26 archivos de código muerto que
 | `components/multiUsedComp/VoiceRecognicionComponent.jsx` (302 l, último cambio 2026-09-11) | Agregar movimientos **por voz** (`webkitSpeechRecognition`), llamando a `general-data/transactions/speech-add` | Ninguna pantalla lo montaba. **Ojo:** la ruta de la API `speech-add` (y sus pruebas) **sigue viva y sin interfaz**; la función de voz no existe hoy para el usuario. Si se quisiera, habría que reescribir el componente en TypeScript y volver a conectarlo |
 
 Relacionado, mismo día: `category` y `subCategory` de `TransactionData` (`transacctionsSlice.ts`) se tiparon con la forma poblada que devuelve la API (`PopulatedCategoryRef` / `PopulatedSubCategoryRef`) en vez de `unknown`, y con eso se **quitaron los 3 puentes `TypedModalContentTopMonthItem`** (el modal `ModalContentTopMonthItem` acepta ahora directamente un movimiento o un grupo de categoría; el dato del clic en las barras de `HistoricalComparativeCategories` se tipó como grupo en vez de `unknown`). `tsc` limpio, `eslint` 0 errores, `vitest` 480/480, `next build` OK.
+
+
+---
+
+## Apéndice A — Reglas y convenciones que se siguieron en la migración (copiadas de `migration-typescript.md`, que se borró el 2026-10-13)
+
+Se conservan aquí porque explican *cómo* se hizo la migración y qué convenciones quedaron en el código.
+
+### Regla de oro
+
+**Nunca cambies comportamiento o lógica al migrar un archivo — solo agrega
+tipos.** Si ves un bug real mientras migras, NO lo arregles tú: anótalo en el
+`summary` de `submit_for_review` para que Claude lo evalúe aparte. La única
+excepción son incompatibilidades que el propio compilador de TypeScript o el
+chequeo de rutas de Next.js exigen para poder compilar (por ejemplo, un
+`return` que no coincide con el tipo de retorno esperado) — esos sí se
+corrigen, preservando el comportamiento en tiempo de ejecución exactamente
+igual.
+
+### Convención de tipos por categoría de archivo
+
+- **Modelos Mongoose** (`src/model/*.js` → `.ts`): define `interface I<Nombre>`
+  junto al schema, en el mismo archivo, reflejando los campos reales del
+  schema (incluyendo campos legacy del multi-currency — quedan como
+  opcionales, nunca se eliminan; ver `.mds/MULTI_CURRENCY_IMPLEMENTATION_PLAN.md`
+  si hace falta contexto).
+- **Rutas API** (`src/app/api/**/route.js` → `.ts`): tipa `request`/response.
+  El proyecto ya usa `zod` como dependencia — prefiere definir el schema de
+  validación de entrada con `zod` y derivar el tipo con `z.infer<>` en vez de
+  escribir la interfaz a mano por separado. Cuidado especial: Next.js valida
+  en build time que cada handler exportado retorne `void | Response` en
+  TODAS sus ramas — revisa que ningún `return` regrese un objeto plano sin
+  envolver en `NextResponse.json(...)`.
+- **Componentes React** (`.jsx` → `.tsx`): tipa props explícitamente (nunca
+  `any` implícito), usa los tipos de evento reales de React para handlers
+  (`React.ChangeEvent<HTMLInputElement>`, etc.).
+- **Slices de Redux** (`src/lib/features/*.js` → `.ts`): tipa el `state`
+  inicial y el payload de cada reducer/acción; exporta el tipo del slice para
+  poder componer `RootState` en `src/lib/store.js`.
+- **Hooks** (`src/hooks/*.js` → `.ts`): tipa parámetros y valor de retorno
+  explícito.
+
+### Dónde viven los tipos compartidos
+
+- `src/types/` para lo que cruza varios archivos (`RootState`, DTOs de API
+  compartidos entre cliente y servidor, tipos de dinero/moneda reutilizados).
+- Un tipo usado por un solo archivo se queda co-localizado ahí — no todo va a
+  `src/types/`.
+
+### Prohibido
+
+- `any` implícito o explícito sin un comentario justificando por qué (caso
+  raro: interoperar con una lib sin tipos).
+- `// @ts-ignore` sin una nota explicando qué falta resolver.
+
+### Checklist antes de `submit_for_review`
+
+1. `npx tsc --noEmit` sobre el archivo (o el proyecto completo) sin errores
+   nuevos atribuibles a este archivo.
+2. Si el archivo tiene un test (`<archivo>.test.js` → confirmar que también
+   se migra o al menos sigue pasando), correr `npx vitest run <archivo>`.
+3. Solo si el archivo está marcado como **UI de alto riesgo** en la historia
+   activa: abrir el navegador interno de Antigravity y confirmar que la
+   pantalla/flujo relacionado sigue renderizando y funcionando igual que
+   antes.
+4. Llamar a `submit_for_review` en el MCP coordinator con un resumen real de
+   qué cambió (no un genérico "migrado a TS").
+
+## Apéndice B — Cuadro final de la migración por historia (copiado de `tools/migration-coordinator/state.json`)
+
+Los 287 archivos de `src/` migrados quedaron en estado **aprobado** (revisados). Entre paréntesis del título, el nombre interno de la historia.
+
+| # | Historia | Archivos |
+|---|----------|----------|
+| 1 | login-auth | 23 |
+| 2 | dashboard | 21 |
+| 3 | profile | 7 |
+| 4 | shared-leaf-components | 10 |
+| 5 | accounts | 9 |
+| 6 | categories | 20 |
+| 7 | budgets | 12 |
+| 8 | movements | 25 |
+| 9 | wallet-analyzer | 20 |
+| 10 | history | 16 |
+| 11 | categories-analytics | 10 |
+| 12 | budgets-analytics | 7 |
+| 13 | navbar-quick-add | 5 |
+| 14 | projections | 16 |
+| 15 | mcp-tools | 9 |
+| 16 | transformers | 6 |
+| 17 | api-routes | 13 |
+| 18 | foundations | 17 |
+| 19 | top3-movements | 16 |
+| 20 | ui-remaining | 21 |
+| 21 | entries | 4 |
+| | **Total** | **287** |
+
+Fuera de `src/` se decidió dejar en JavaScript, a propósito: `scripts/` (10 archivos de migraciones y utilidades de una sola corrida ya ejecutadas) y los configs raíz (`next.config.js`, `tailwind.config.js`, `postcss.config.js`, `vitest.config.mjs`), porque se corren directo con node y migrarlos no valida nada de la app. Los 26 archivos muertos que quedaban se borraron el 2026-10-08 (sección de código muerto de este archivo).
+
+## Apéndice C — Cómo se coordinó el trabajo y qué documentos sobreviven
+
+- La migración se hizo con un **servidor MCP coordinador** (`gastify-ts-migration-coordinator`, código en `tools/migration-coordinator/`, estado en `state.json`): cada archivo se reclamaba (`claim_next_file`), se migraba y se mandaba a revisión (`submit_for_review` / `submit_review`) por un agente distinto. `AGENTS.md` (exclusivo de la rama `typescript-migration`) solo apuntaba a las reglas y a este coordinador; se borró junto con `migration-typescript.md` el 2026-10-13. El coordinador y su `state.json` se dejaron en el repo como evidencia del proceso.
+- Documentos que **se conservan**: este archivo (hitos y bugs de la migración), `POST_MIGRATION_BUGS.md` (tabla de las 168 filas de bugs con su estado), `AI_COORDINATION_LOG.md` (diario cronológico entre agentes; las entradas #32-#45 cubren la fase post-migración, resumidas arriba) y `api-security-audit-checklist.md`.
+- Ramas: toda la migración y la fase post-migración están en `main`. Se borraron las ramas ya fusionadas el 2026-10-13 (`typescript-migration`, `post-migration-bugs-resolver`, `deps-security-update`, `deps-next15`, `develop`, `agents-ai`, `better-auth-login`, `claude/projections-movements-panel`, `codex/budget-out`, `hotfix/budget-categoryless-crash`, y las de 2024 `develop_4` y `develop_two`, que solo tenían cambios de espacios en blanco). Se conserva `backup/pre-typescript-migration` (`5466ba0`), el punto de retorno previo a toda la migración.

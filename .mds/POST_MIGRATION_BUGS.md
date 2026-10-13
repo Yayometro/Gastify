@@ -212,10 +212,11 @@ Mismas filas de la tabla de `migration-ts-logs.md` (a esa fecha), con una column
 | 167 | `Tag.tsx` | Los tags (ninguno de los 112 tiene color) caían a un gris claro `#DADADA` con el texto claro del modo oscuro: blanco sobre blanco. Reportado por el usuario el 2026-10-07. | Reportado por el usuario | Resuelto 2026-10-07 (commit `d786b47`; fondo y texto según el tema y texto legible sobre colores propios) |
 | 168 | `BudgetDetailModal.tsx` | El detalle del presupuesto sumaba ingresos de la misma categoría en 'Spent' (no filtraba `isBill`); la lista no. | Hallado 2026-10-07 | Resuelto 2026-10-07: solo cuentan gastos |
 
-## 4. Decisiones y limpiezas abiertas
+## 4. Decisiones y limpiezas (estado al 2026-10-13: todo cerrado)
 
-- **26 archivos `.js`/`.jsx` de código muerto** en `src/` (lista completa en `.mds/migration-typescript.md`, sección "Código muerto"): el usuario decidió ignorarlos por ahora; ni se migran ni se borran.
-- **4 bridges `TypedModalContentTopMonthItem`** que quedaron en `HistoricalComparativeCategories`, `HistoricalWalletAnalyzer`, `WalletAnalyzerInsightsStrip` y `WalletAnalyzerView`; quitarlos exige ~10 casts y no aporta seguridad (opcional).
-- **La interfaz de las historias 17-21 nunca se probó en el navegador** durante la migración (solo tsc, eslint, vitest y `next build`); el usuario la está probando a mano y ha reportado los 2 bugs de la sección 2.
-- **`next build` y el servidor de desarrollo comparten `.next`**: no correr `next build` en la carpeta del proyecto mientras `next dev` esté activo (regla del `AI_COORDINATION_LOG.md`). Si el dev server se comporta raro tras un build: detenerlo, `rm -rf .next`, reiniciar.
-- **`typescript-migration` todavía no se mergea a `main`** (el usuario decidirá cuándo). `AGENTS.md` y `.mds/migration-typescript.md` se borran cuando el usuario dé el visto bueno final.
+- **26 archivos `.js`/`.jsx` de código muerto:** **borrados el 2026-10-08** (lista, función y motivo en `migration-ts-logs.md`, sección "Código muerto ELIMINADO").
+- **Puentes `TypedModalContentTopMonthItem`:** **quitados el 2026-10-08** tipando `category`/`subCategory` de `TransactionData` con la forma poblada de la API.
+- **La interfaz de las historias 17-21** se probó a mano por el usuario y por Claude en el Chrome real (con cuentas desechables) durante toda la fase post-migración.
+- **`next build` y el servidor de desarrollo comparten `.next`:** no correr `next build` en la carpeta del proyecto mientras `next dev` esté activo (regla del `AI_COORDINATION_LOG.md`); los builds de verificación se hacen en una copia. Si el dev server se comporta raro tras un build: detenerlo, `rm -rf .next`, reiniciar.
+- **Ramas y cierre:** la migración y todos los bugs están en `main` (2026-10-08). El 2026-10-13 se migraron las reglas y el cuadro final a `migration-ts-logs.md` (apéndices A-C), se borraron `AGENTS.md` y `.mds/migration-typescript.md` y se borraron las ramas ya fusionadas (se conserva `backup/pre-typescript-migration`).
+- **Abierto, sin urgencia:** 2 avisos de `postcss` (el que trae Next 15 empaquetado; solo se corrige con Next 16), 16 avisos de eslint por dependencias de efectos, la función de agregar movimientos por voz sin pantalla (la ruta `speech-add` sigue viva), y #96 parcial a propósito.
