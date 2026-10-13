@@ -3,7 +3,13 @@
 import React, { useState } from "react";
 import { Spin, Tooltip } from "antd";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
-import ComparativeColumnChart from "@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart";
+import dynamic from "next/dynamic";
+
+// Only drawn when the month detail is opened, so it is not part of the page's initial JavaScript.
+const ComparativeColumnChart = dynamic(
+  () => import("@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart"),
+  { ssr: false }
+);
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";

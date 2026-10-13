@@ -36,7 +36,7 @@ import { Skeleton, Spin, Tooltip } from "antd";
 import { formatMoneyMajor } from "@/lib/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { fetchBudget } from "@/lib/features/budgetSlice";
-import DashboardLoadingMessage from "./multiUsedComp/loaders/DashboardLoadingMessage";
+import LazyMount from "./multiUsedComp/loaders/LazyMount";
 import { perfMark } from "@/lib/perf/perfMark";
 import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
 import {
@@ -389,10 +389,6 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     setEndDate(eDate);
   };
 
-  const toggleIsLoading = React.useCallback(() => {
-    setLoading((prev) => !prev);
-  }, []);
-
   function getValueFromSelecter(v: string | undefined): void {
     if (!v || !v.includes("*")) return; // Seguridad para evitar errores si el valor no es el esperado
 
@@ -462,7 +458,16 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     </div>
   );
 
-  const summaryPanel = (
+  // The header panels that need the movements show their own skeleton while the
+  // recent months load, instead of a full-page overlay hiding the whole wallet.
+  const panelSkeleton = (label: string) => (
+    <div className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
+      <span className="text-white/70 text-[10px] uppercase tracking-wide">{label}</span>
+      <Skeleton active paragraph={{ rows: 2 }} title={false} className="pt-2" />
+    </div>
+  );
+
+  const summaryPanel = loading ? panelSkeleton("Resumen") : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
       <span className="text-white/70 text-[10px] uppercase tracking-wide">Resumen</span>
       <div className="flex flex-col gap-2 justify-end flex-1">
@@ -516,7 +521,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     </div>
   );
 
-  const comparisonPanel = (
+  const comparisonPanel = loading ? panelSkeleton("Vs. mes anterior") : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
       <span className="text-white/70 text-[10px] uppercase tracking-wide">Vs. mes anterior</span>
       {renderDeltaRow("Ingresos", totalIncome, prevTotalIncome, INCOME_COLOR)}
@@ -527,17 +532,6 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
 
   return (
     <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
-      <div className="loader">
-        {!loading ? (
-          ""
-        ) : (
-          <DashboardLoadingMessage
-            message={`We are building up your dashboard and data`}
-            subMessage={`Please wait a moment 🤓`}
-            setLoading={toggleIsLoading}
-          />
-        )}
-      </div>
       {user && wallet ? (
         <div className="walllet-header ">
           <div className="wallet-header pt-5 pb-2 px-3 flex flex-col gap-4 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
@@ -625,7 +619,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 mail={session}
               />
             </div>
-            <div className="resume-transactions-cont-tabs w-full h-full">
+            <LazyMount className="resume-transactions-cont-tabs w-full h-full">
               {allTransactions.length <= 0 ? (
                 <div className="w-full py-[20px]">
                   <Skeleton active />
@@ -633,14 +627,14 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
               ) : (
                 <ResumeTabsTrans timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
               )}
-            </div>
+            </LazyMount>
             <div className="top-3-general-container w-full">
-              <div className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
+              <LazyMount className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
                 <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]}/>
-              </div>
+              </LazyMount>
             </div>
             <div className="wallet-left-col-container w-full h-full">
-              <div className="TransactionsDetails w-full h-full">
+              <LazyMount className="TransactionsDetails w-full h-full">
                 {allTransactions.length <= 0 ? (
                   <div className="w-full py-[20px]">
                     <Skeleton active />
@@ -650,7 +644,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                     timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
                   />
                 )}
-              </div>
+              </LazyMount>
             </div>
             <div className="wallet-total-col-container flex flex-col items-center justify-center lg:flex-row lg:gap-2 lg:items-start ">
               {/* <div className="wallet-left-col-container w-full lg:max-w-[50%]">
@@ -684,20 +678,19 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 </div>
               </div> */}
               <div className="wallet-right-col-container w-full h-full lg:max-w-[50%]s flex flex-col gap-8 justify-center items-center">
-                <div className="movements w-full h-full lg:max-w-[800px] flex flex-row justify-center items-center">
+                <LazyMount className="movements w-full h-full lg:max-w-[800px] flex flex-row justify-center items-center">
                   <Movements
                     timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
                   />
-                   
-                </div>
-                <div className="budget w-full">
+                </LazyMount>
+                <LazyMount className="budget w-full">
                   <BudgetCont bcSession={session} />
-                </div>
+                </LazyMount>
               </div>
             </div>
-            <div id="wallet-analyzer-full" className="wallet-analyzer-container w-full">
+            <LazyMount id="wallet-analyzer-full" className="wallet-analyzer-container w-full" minHeight={600}>
               <WalletAnalyzer timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} mail={session} />
-            </div>
+            </LazyMount>
           </div>
         </div>
       ) : (

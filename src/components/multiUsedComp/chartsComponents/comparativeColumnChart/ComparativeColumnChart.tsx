@@ -1,6 +1,6 @@
 "use client";
 import React, { useMemo } from "react";
-import { ResponsiveBar } from "@nivo/bar";
+import { ResponsiveBar, type BarCustomLayerProps, type BarDatum } from "@nivo/bar";
 
 // Column chart for "two or more series per category" comparisons (bills vs
 // incomes per month, period A vs period B, a budget's actual vs goal, budgeted
@@ -36,7 +36,7 @@ export interface ComparativeColumnOptions {
   // Bars for which this returns true are drawn faded (e.g. not selected).
   isDimmed?: (datum: ComparativeColumnDatum) => boolean;
   legend?: ComparativeColumnLegendItem[];
-  // Axis tick format (defaults to a compact number).
+  // Format for amounts in the default tooltip (the axis always uses a compact number).
   valueFormat?: (value: number) => string;
   // Chart height in px; by default it fills its parent (min 260px).
   height?: number;
@@ -100,15 +100,19 @@ function ComparativeColumnChart({ data, totalValue, propPlus = {} }: Comparative
           ))}
         </div>
       )}
-      <div className="w-full flex-1" style={height ? { height } : { minHeight: 260 }}>
+      {/* A fixed height must not be flex-1: in a container without its own height
+          flex-basis 0 collapsed the chart to nothing. */}
+      <div className={height ? "w-full shrink-0" : "w-full flex-1"} style={height ? { height } : { minHeight: 260 }}>
         <ResponsiveBar
           data={rows}
           keys={keys}
           indexBy="type"
           groupMode={mode === "overlay" ? "stacked" : "grouped"}
+          // Mirrored bars are negative: the scale must reach below zero for them.
+          valueScale={{ type: "linear", min: mode === "overlay" ? "auto" : 0, max: "auto", nice: true }}
           padding={0.3}
           innerPadding={mode === "grouped" ? 2 : 0}
-          margin={{ top: label ? 24 : 12, right: 12, bottom: manyCategories ? 56 : 36, left: 56 }}
+          margin={{ top: label ? 24 : 12, right: 12, bottom: (manyCategories ? 72 : 36) + (mode === "overlay" && label ? 16 : 0), left: 56 }}
           colors={(bar) => {
             const datum = lookup(bar.indexValue, bar.id);
             const base = datum?.color || FALLBACK_COLOR;
@@ -116,25 +120,59 @@ function ComparativeColumnChart({ data, totalValue, propPlus = {} }: Comparative
             return withOpacity(base, opacity);
           }}
           borderRadius={3}
-          enableLabel={Boolean(label)}
-          label={(bar) => {
-            const datum = lookup(bar.indexValue, bar.id);
-            return datum && label ? label(datum) : "";
-          }}
-          labelPosition="end"
-          labelOffset={8}
-          labelSkipWidth={14}
-          labelTextColor="var(--gf-text)"
+          // No grow-in animation: labels are drawn at the final bar positions, and
+          // an animation paused in a background tab left bars half-drawn.
+          animate={false}
+          // Labels are drawn by the custom layer below: above positive bars and
+          // below negative (mirrored) ones, which Nivo's own labels can't do.
+          enableLabel={false}
+          layers={["grid", "axes", "bars", "markers", "legends", (layerProps: BarCustomLayerProps<BarDatum>) => {
+            if (!label) return null;
+            return (
+              <g>
+                {layerProps.bars.map((bar) => {
+                  const datum = lookup(bar.data.indexValue, bar.data.id);
+                  if (!datum || bar.width < 14 || bar.height <= 0) return null;
+                  const text = label(datum);
+                  if (!text) return null;
+                  const negative = Number(bar.data.value) < 0;
+                  return (
+                    <text
+                      key={bar.key}
+                      x={bar.x + bar.width / 2}
+                      y={negative ? bar.y + bar.height + 12 : bar.y - 6}
+                      textAnchor="middle"
+                      style={{ fill: "var(--gf-text)", fontSize: 11, fontWeight: 600 }}
+                    >
+                      {text}
+                    </text>
+                  );
+                })}
+              </g>
+            );
+          }]}
           enableGridX={false}
           gridYValues={5}
+          markers={mode === "overlay" ? [{ axis: "y", value: 0, lineStyle: { stroke: "var(--gf-text-muted)", strokeWidth: 1 } }] : undefined}
           axisTop={null}
           axisRight={null}
-          axisBottom={{ tickSize: 0, tickPadding: 8, tickRotation: manyCategories ? -35 : 0 }}
+          axisBottom={{
+            tickSize: 0,
+            tickPadding: mode === "overlay" && label ? 22 : 8,
+            tickRotation: manyCategories ? -35 : 0,
+            // Rotated long names ran off the chart; the full name is in the tooltip.
+            format: (v) => {
+              const text = String(v);
+              return manyCategories && text.length > 14 ? `${text.slice(0, 13)}…` : text;
+            },
+          }}
           axisLeft={{
             tickSize: 0,
             tickPadding: 6,
             tickValues: 5,
-            format: (v) => (valueFormat ? valueFormat(Number(v)) : compactNumber.format(Number(v))),
+            // Always compact on the axis (long money strings don't fit); mirrored
+            // bars show their absolute amount.
+            format: (v) => compactNumber.format(mode === "overlay" ? Math.abs(Number(v)) : Number(v)),
           }}
           theme={{
             text: { fill: "var(--gf-text)" },

@@ -80,6 +80,7 @@
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "^15.5.27",
+    "jsdom": "^26.1.0",
     "postcss": "^8.5.18",
     "tailwindcss": "^3.3.0",
     "typescript": "^5.9.3",
