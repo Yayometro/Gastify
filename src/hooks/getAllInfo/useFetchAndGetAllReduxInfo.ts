@@ -4,6 +4,7 @@ import { fetchCategories, type CategoryData } from "@/lib/features/categoriesSli
 import { fetchSubCat, type SubCategoryData } from "@/lib/features/subCategorySlice";
 import {
   fetchTrans,
+  fetchTransHistory,
   type TransactionData,
 } from "@/lib/features/transacctionsSlice";
 import { fetchUser, type UserData } from "@/lib/features/userSlice";
@@ -78,6 +79,14 @@ export default function useFetchAndGetAllReduxInfo(): ReduxAllInfo {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email]);
+
+  // The recent months are in: fetch the rest of the history in the background.
+  useEffect(() => {
+    if (ccTransacciones.status === "succeeded" && ccTransacciones.historyStatus === "idle") {
+      dispatch(fetchTransHistory());
+    }
+    if (ccTransacciones.historyStatus === "complete") perfMark("data:transactions-history:ready");
+  }, [ccTransacciones.status, ccTransacciones.historyStatus, dispatch]);
 
   // Load timeline: when each slice of the initial data arrives (see perfMark).
   useEffect(() => {

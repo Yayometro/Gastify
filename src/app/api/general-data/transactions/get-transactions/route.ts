@@ -11,6 +11,7 @@ import "@/model/Budget";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { auth } from "@/lib/auth/betterAuth";
 import { createServerTimer } from "@/lib/perf/serverTiming";
+import { buildDateWindowFilter } from "@/lib/transactions/historyWindowQuery";
 
 export interface GetTransactionsSuccessResponse {
   data: unknown;
@@ -20,6 +21,15 @@ export interface GetTransactionsSuccessResponse {
 }
 
 export type GetTransactionsResponse = GetTransactionsSuccessResponse;
+
+const POPULATE_FIELDS = {
+  tags: "_id name color",
+  account: "_id name currency accountType",
+  category: "_id name color icon",
+  subCategory: "_id name color icon fatherCategory",
+  budget: "_id name budgetType icon isSaving category subCategory categories",
+};
+
 
 export async function POST(
   request: NextRequest | Request
@@ -36,6 +46,11 @@ export async function POST(
     const totalStart = performance.now();
     const sesion = await timer.time("session", () => auth.api.getSession({ headers: request.headers }));
     if (!sesion) throw new Error("No session");
+
+    // Optional date window, so the client can ask for the recent months first and
+    // the rest of the history afterwards (the body used to be just the email).
+    const body = await request.json().catch(() => null);
+    const windowFilter = buildDateWindowFilter(body);
 
     //DB
     await timer.time("db-connect", () => dbConnection());
@@ -77,22 +92,15 @@ export async function POST(
       .find({
         user: userId,
         wallet: walletId,
+        ...windowFilter,
       })
-      .populate({
-        path: "tags",
-      })
-      .populate({
-        path: "account",
-      })
-      .populate({
-        path: "category",
-      })
-      .populate({
-        path: "subCategory",
-      })
-      .populate({
-        path: "budget",
-      })
+      // Every movement carries its own copy of these documents, so only the fields
+      // the interface reads travel (it was ~half of a 7 MB response).
+      .populate({ path: "tags", select: POPULATE_FIELDS.tags })
+      .populate({ path: "account", select: POPULATE_FIELDS.account })
+      .populate({ path: "category", select: POPULATE_FIELDS.category })
+      .populate({ path: "subCategory", select: POPULATE_FIELDS.subCategory })
+      .populate({ path: "budget", select: POPULATE_FIELDS.budget })
       .lean())) as unknown[];
     if (!movementsFounded)
       throw new Error(
@@ -102,7 +110,7 @@ export async function POST(
       attachDisplayMoneyToList(movementsFounded, parentWallet?.primaryCurrency || "MXN")
     );
     const serializeStart = performance.now();
-    const body = JSON.stringify({
+    const responseBody = JSON.stringify({
       data: withDisplayMoney,
       message: "Transactions founded",
       status: 201,
@@ -110,7 +118,7 @@ export async function POST(
     });
     timer.add("serialize", performance.now() - serializeStart);
     timer.add("total", performance.now() - totalStart);
-    return new NextResponse(body, {
+    return new NextResponse(responseBody, {
       headers: { "Content-Type": "application/json", "Server-Timing": timer.header() },
     }) as NextResponse<GetTransactionsResponse>;
   } catch (e) {

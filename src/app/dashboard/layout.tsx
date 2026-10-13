@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import AllDataProvider from "@/components/Providers/AllDataProvider";
 import ToolsFab from "@/components/multiUsedComp/ToolsFab";
 import IdleStepUpGuard from "@/components/multiUsedComp/IdleStepUpGuard";
+import HistoryLoadingPill from "@/components/multiUsedComp/loaders/HistoryLoadingPill";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -40,6 +41,7 @@ async function DashboardLayout({
   return (
     <AllDataProvider>
     <IdleStepUpGuard />
+    <HistoryLoadingPill />
     <div
       className={`dashboard-layer-container walllet-bg h-full w-full flex flex-col flex-nowrap sm:flex-row m-0 p-0`}
     >
