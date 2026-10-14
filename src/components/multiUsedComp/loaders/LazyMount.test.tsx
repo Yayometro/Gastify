@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createElement, act } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import LazyMount from "./LazyMount";
 
@@ -38,11 +38,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const child = () => createElement("p", { id: "widget" }, "widget content");
+const child = () => <p id="widget">widget content</p>;
 
 describe("LazyMount", () => {
   it("does not mount the widget until it comes near the viewport", () => {
-    act(() => root.render(createElement(LazyMount, { minHeight: 300, id: "box", children: child() })));
+    act(() => root.render(<LazyMount minHeight={300} id="box">{child()}</LazyMount>));
     expect(container.querySelector("#widget")).toBeNull();
     expect((container.querySelector("#box") as HTMLElement).style.minHeight).toBe("300px");
 
@@ -53,14 +53,14 @@ describe("LazyMount", () => {
   });
 
   it("ignores notifications while still far away", () => {
-    act(() => root.render(createElement(LazyMount, { children: child() })));
+    act(() => root.render(<LazyMount>{child()}</LazyMount>));
     act(() => observers[0].cb([{ isIntersecting: false } as IntersectionObserverEntry], observers[0] as unknown as IntersectionObserver));
     expect(container.querySelector("#widget")).toBeNull();
   });
 
   it("mounts right away when IntersectionObserver is not available", () => {
     vi.stubGlobal("IntersectionObserver", undefined);
-    act(() => root.render(createElement(LazyMount, { children: child() })));
+    act(() => root.render(<LazyMount>{child()}</LazyMount>));
     expect(container.querySelector("#widget")).not.toBeNull();
   });
 });

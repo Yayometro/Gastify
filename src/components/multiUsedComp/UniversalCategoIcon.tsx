@@ -1,8 +1,5 @@
 import React from "react";
-import * as md from "react-icons/md";
-import * as fa from "react-icons/fa";
-import * as ai from "react-icons/ai";
-import * as gi from "react-icons/gi";
+import { LEGACY_ICONS } from "@/components/icons/legacyIconRegistry";
 import type { IconType } from "react-icons";
 
 export interface UniversalCategoIconProps {
@@ -11,13 +8,6 @@ export interface UniversalCategoIconProps {
   colore?: string;
   className?: string;
 }
-
-const COLLECTIONS: Record<string, Record<string, IconType>> = {
-  md: md as unknown as Record<string, IconType>,
-  fa: fa as unknown as Record<string, IconType>,
-  ai: ai as unknown as Record<string, IconType>,
-  gi: gi as unknown as Record<string, IconType>,
-};
 
 // An icon is named "collection/IconName" ("md/MdFilterNone"). Several producers
 // (the category/chart transformers' fallbacks) hand over the bare name
@@ -29,7 +19,7 @@ export function resolveIcon(type?: string): IconType | null {
   const hasPrefix = type.includes("/");
   const collectionName = hasPrefix ? type.split("/")[0] : type.substring(0, 2).toLowerCase();
   const iconName = hasPrefix ? type.split("/")[1] : type;
-  return COLLECTIONS[collectionName]?.[iconName] ?? null;
+  return LEGACY_ICONS[`${collectionName}/${iconName}`] ?? null;
 }
 
 function UniversalCategoIcon({ type, siz, colore, className }: UniversalCategoIconProps): React.JSX.Element | null {
