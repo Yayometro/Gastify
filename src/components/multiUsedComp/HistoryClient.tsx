@@ -1,5 +1,6 @@
 "use client";
 
+import HistoryGate from "./loaders/HistoryGate";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "@/lib/features/userSlice";
@@ -99,24 +100,24 @@ function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
           </h1>
         </div>
         <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">
-          <div className="history-client-cont w-full h-fulls flex flex-col justify-center items-center pb-4">
+          <HistoryGate className="history-client-cont w-full h-fulls flex flex-col justify-center items-center pb-4" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <TypedTabsTogglerMontlyController periodState={periodState} />
-          </div>
-          <div className="w-full h-fulls pb-6 historical-wallet-analyzer">
+          </HistoryGate>
+          <HistoryGate className="w-full h-fulls pb-6 historical-wallet-analyzer" starts={[walletAnalyzerPeriodState.timePeriod[0], walletAnalyzerPeriodState.compareEnabled ? walletAnalyzerPeriodState.comparePeriod[0] : null]}>
             <TypedHistoricalWalletAnalyzer periodState={walletAnalyzerPeriodState} />
-          </div>
-          <div className="w-full h-fulls pb-6 historical-projections-table">
+          </HistoryGate>
+          <HistoryGate className="w-full h-fulls pb-6 historical-projections-table" starts={[projectionsPeriodState.timePeriod[0], projectionsPeriodState.compareEnabled ? projectionsPeriodState.comparePeriod[0] : null]}>
             <TypedHistoricalProjectionsTable periodState={projectionsPeriodState} />
-          </div>
-          <div className="w-full h-fulls pb-6 historical-comparative-categories">
+          </HistoryGate>
+          <HistoryGate className="w-full h-fulls pb-6 historical-comparative-categories" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <TypedHistoricalComparativeCategories periodState={periodState} />
-          </div>
-          <div className="w-full h-fulls pb-6 historical-budgets-comparative">
+          </HistoryGate>
+          <HistoryGate className="w-full h-fulls pb-6 historical-budgets-comparative" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <TypedHistoricalBudgetsComparative periodState={periodState} />
-          </div>
-          <div className="w-full h-fulls historical-transactions-container">
+          </HistoryGate>
+          <HistoryGate className="w-full h-fulls historical-transactions-container" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <HistoricalMovementsController periodState={periodState} />
-          </div>
+          </HistoryGate>
         </div>
       </div>
     </div>

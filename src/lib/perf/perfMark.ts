@@ -20,3 +20,15 @@ export function perfMark(name: string, once = true): void {
     // localStorage may be unavailable (private mode).
   }
 }
+
+// Debug aid: `localStorage.gfHistoryDelayMs = "30000"` makes the background history
+// request wait that long first, to see how each screen behaves while only the recent
+// months are loaded. Nothing happens unless the key is set by hand.
+export async function debugDelay(key: string): Promise<void> {
+  try {
+    const ms = Number(localStorage.getItem(key));
+    if (Number.isFinite(ms) && ms > 0) await new Promise((resolve) => setTimeout(resolve, ms));
+  } catch {
+    // localStorage unavailable (private mode, server): no delay.
+  }
+}

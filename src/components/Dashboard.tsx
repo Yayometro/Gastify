@@ -37,6 +37,8 @@ import { formatMoneyMajor } from "@/lib/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import LazyMount from "./multiUsedComp/loaders/LazyMount";
+import HistoryGate from "./multiUsedComp/loaders/HistoryGate";
+import useHistoryReadyFor from "@/hooks/useHistoryReadyFor";
 import { perfMark } from "@/lib/perf/perfMark";
 import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
 import {
@@ -199,6 +201,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
   };
   //LOADER
   const [loading, setLoading] = useState<boolean>(true);
+  // A custom range that starts before the movements loaded so far waits for the rest of the history.
   useEffect(() => {
     perfMark("dashboard:mounted");
   }, []);
@@ -458,6 +461,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     </div>
   );
 
+  const periodReady = useHistoryReadyFor(startDate);
   // The header panels that need the movements show their own skeleton while the
   // recent months load, instead of a full-page overlay hiding the whole wallet.
   const panelSkeleton = (label: string) => (
@@ -467,7 +471,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     </div>
   );
 
-  const summaryPanel = loading ? panelSkeleton("Resumen") : (
+  const summaryPanel = loading || !periodReady ? panelSkeleton("Resumen") : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
       <span className="text-white/70 text-[10px] uppercase tracking-wide">Resumen</span>
       <div className="flex flex-col gap-2 justify-end flex-1">
@@ -521,7 +525,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     </div>
   );
 
-  const comparisonPanel = loading ? panelSkeleton("Vs. mes anterior") : (
+  const comparisonPanel = loading || !periodReady ? panelSkeleton("Vs. mes anterior") : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
       <span className="text-white/70 text-[10px] uppercase tracking-wide">Vs. mes anterior</span>
       {renderDeltaRow("Ingresos", totalIncome, prevTotalIncome, INCOME_COLOR)}
@@ -609,7 +613,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
               </Tooltip>
             </div>
           </div>
-          <div className="content-wallet content-wallet-glass px-2 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px] flex flex-col gap-8">
+          <HistoryGate starts={[startDate]} className="content-wallet content-wallet-glass px-2 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px] flex flex-col gap-8">
             <WalletAnalyzerTeaser timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
             <div className="multi-container lg:flex lg:item">
               <MultiCreditCardComp
@@ -691,7 +695,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
             <LazyMount id="wallet-analyzer-full" className="wallet-analyzer-container w-full" minHeight={600}>
               <WalletAnalyzer timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} mail={session} />
             </LazyMount>
-          </div>
+          </HistoryGate>
         </div>
       ) : (
         <div className="w-full h-[500px]">

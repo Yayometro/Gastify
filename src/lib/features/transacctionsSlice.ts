@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { skipWhileLoading } from "./thunkGuards";
-import { perfMark } from "@/lib/perf/perfMark";
+import { debugDelay, perfMark } from "@/lib/perf/perfMark";
 import { getRecentCutoff, isBeforeCutoff, mergeById } from "@/lib/transactions/historyWindow";
 import fetcher from "@/helpers/fetcher";
 
@@ -117,6 +117,7 @@ export const fetchTransHistory = createAsyncThunk<TransactionsPage, void, { stat
   "transacctions/fetchTransHistory",
   async (_arg, { getState }) => {
     const cutoff = getState().transacctionsReducer.historyCutoff as string;
+    await debugDelay("gfHistoryDelayMs");
     const response = await toFetch.post("general-data/transactions/get-transactions", { before: cutoff });
     perfMark("data:transactions-history:received");
     if (!response.ok) throw new Error(response.message || "Could not load the movement history");
