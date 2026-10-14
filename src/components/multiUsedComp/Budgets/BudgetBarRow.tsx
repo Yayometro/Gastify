@@ -117,7 +117,7 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
         <div className="flex items-center gap-2">
           {isProject ? (
             <div className="rounded-full w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-gf-accent-soft-bg text-purple-300 border-2 border-white shadow-sm shrink-0">
-              <UniversalCategoIcon type={budget.icon || "md/MdFlightTakeoff"} siz={18} />
+              <UniversalCategoIcon type={budget.icon || "fluent/airplane"} siz={18} />
             </div>
           ) : budget.categories && budget.categories.length > 0 ? (
             <div className="flex items-center -space-x-2">

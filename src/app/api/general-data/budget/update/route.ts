@@ -133,7 +133,7 @@ export async function POST(
     //linkedAccounts array
     if (linkedAccounts !== undefined) updateBudget.linkedAccounts = linkedAccounts;
     if (linkedTags !== undefined) updateBudget.linkedTags = linkedTags;
-    if (icon !== undefined) updateBudget.icon = icon || "md/MdFlightTakeoff";
+    if (icon !== undefined) updateBudget.icon = icon || "fluent/airplane";
     if (currency !== undefined) updateBudget.currency = currency;
     if (eventStartDate !== undefined) {
       updateBudget.eventStartDate = eventStartDate ? new Date(eventStartDate) : null;

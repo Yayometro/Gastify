@@ -101,12 +101,12 @@ export async function provisionNewUserData(user: ProvisionUserParam): Promise<Pr
   fisrtAssociateCategory.user = userId;
   fisrtAssociateCategory.wallet = newAssociateWallet._id;
   fisrtAssociateCategory.accounts.push(newAssociateAccount._id);
-  fisrtAssociateCategory.icon = "fa/FaTags";
+  fisrtAssociateCategory.icon = "fluent/label";
 
   fisrtAssociateSubCategory.user = userId;
   fisrtAssociateSubCategory.wallet = newAssociateWallet._id;
   fisrtAssociateSubCategory.fatherCategory = fisrtAssociateCategory._id;
-  fisrtAssociateSubCategory.icon = "fa/FaTag";
+  fisrtAssociateSubCategory.icon = "fluent/label";
 
   fisrtAssociateTag.user = userId;
   fisrtAssociateTag.wallet = newAssociateWallet._id;

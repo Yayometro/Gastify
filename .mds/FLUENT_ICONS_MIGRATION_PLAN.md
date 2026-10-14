@@ -1,6 +1,8 @@
 # Plan: íconos de categorías a Fluent Emoji 3D (Microsoft)
 
-> Rama de trabajo: `improvement-speed`. Fecha del plan: 2026-10-13. Estado: **propuesto, sin implementar**.
+> Rama de trabajo: `improvement-speed`. Fecha del plan: 2026-10-13. **Estado (2026-10-14): fases 0-4 y 6 implementadas y verificadas en Chrome; fase 5 con la opción A (convertir al dibujar, sin escribir en la base); fase 7 (limpieza) hecha en lo que aplica.**
+>
+> Resultado medido: First Load JS del dashboard **4.43 MB -> 734 kB** (JS compilado total 14.4 MB -> 4.2 MB). 1,285 emojis Fluent 3D (3.15 MB en `public/icons/fluent`, 2.5 KB cada uno, caché de un año). Selector nuevo con buscador y 9 grupos + "Suggested". 150 equivalencias viejo -> nuevo (revisables en `/dashboard/icons-preview`, solo desarrollo); 10 logos de marcas y los íconos de interfaz se quedan como vectores. Para regenerar los íconos: `node scripts/build-fluent-icons.mjs`; para el registro de vectores: `node scripts/generate-icon-registry.mjs`.
 > Objetivo: que los íconos se vean igual en todos los dispositivos, con aspecto tipo iPhone (3D), y quitar el peso de `react-icons` del JavaScript de cada pantalla.
 
 ## 1. Punto de partida (medido)

@@ -89,6 +89,11 @@ const license = await getBuffer(`${RAW}/LICENSE`);
 fs.writeFileSync(path.join(OUT, "LICENSE.txt"), license);
 fs.writeFileSync(path.join(OUT, "README.txt"), `Fluent Emoji 3D by Microsoft (MIT licence, see LICENSE.txt).\nSource: https://github.com/microsoft/fluentui-emoji @ ${COMMIT}\nConverted to ${SIZE}px WebP by scripts/build-fluent-icons.mjs - do not edit by hand.\n`);
 
+// Browsers cache the images for a year: keep the version in the URLs in step with this build.
+const version = `${COMMIT.slice(0, 7)}-${SIZE}`;
+const constantsFile = path.join(root, "src/components/icons/fluentIcons.ts");
+fs.writeFileSync(constantsFile, fs.readFileSync(constantsFile, "utf8").replace(/FLUENT_ASSET_VERSION = "[^"]*"/, `FLUENT_ASSET_VERSION = "${version}"`));
+
 const bytes = manifest.reduce((sum, m) => sum + fs.statSync(path.join(OUT, `${m.slug}.webp`)).size, 0);
 const groups = manifest.reduce((acc, m) => ((acc[m.group] = (acc[m.group] || 0) + 1), acc), {});
 console.log(`done: ${manifest.length} icons, ${(bytes / 1024 / 1024).toFixed(2)} MB total, avg ${(bytes / manifest.length / 1024).toFixed(1)} KB`);

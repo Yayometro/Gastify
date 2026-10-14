@@ -171,7 +171,7 @@ export default function ProjectBudgetDetailModal({
               </button>
               <div className="flex items-center gap-3 pr-10">
                 <span className="w-11 h-11 rounded-full bg-gf-surface/15 flex items-center justify-center shrink-0">
-                  <UniversalCategoIcon type={budget.icon || "md/MdFlightTakeoff"} siz={24} />
+                  <UniversalCategoIcon type={budget.icon || "fluent/airplane"} siz={24} />
                 </span>
                 <div>
                   <p className="text-xs text-purple-200 font-bold uppercase tracking-wide">
