@@ -10,6 +10,8 @@ import "@/model/Tag";
 import "@/model/Budget";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { auth } from "@/lib/auth/betterAuth";
+import { createServerTimer } from "@/lib/perf/serverTiming";
+import { buildDateWindowFilter } from "@/lib/transactions/historyWindowQuery";
 
 export interface GetTransactionsSuccessResponse {
   data: unknown;
@@ -19,6 +21,15 @@ export interface GetTransactionsSuccessResponse {
 }
 
 export type GetTransactionsResponse = GetTransactionsSuccessResponse;
+
+const POPULATE_FIELDS = {
+  tags: "_id name color",
+  account: "_id name currency accountType",
+  category: "_id name color icon",
+  subCategory: "_id name color icon fatherCategory",
+  budget: "_id name budgetType icon isSaving category subCategory categories",
+};
+
 
 export async function POST(
   request: NextRequest | Request
@@ -31,13 +42,20 @@ export async function POST(
     // whatever userMail was sent in the request body (IDOR), returning another
     // user's entire transaction history. We now verify auth.api.getSession and
     // resolve the user from the session instead.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const timer = createServerTimer();
+    const totalStart = performance.now();
+    const sesion = await timer.time("session", () => auth.api.getSession({ headers: request.headers }));
     if (!sesion) throw new Error("No session");
 
+    // Optional date window, so the client can ask for the recent months first and
+    // the rest of the history afterwards (the body used to be just the email).
+    const body = await request.json().catch(() => null);
+    const windowFilter = buildDateWindowFilter(body);
+
     //DB
-    await dbConnection();
+    await timer.time("db-connect", () => dbConnection());
     // User find
-    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
+    const userFound = await timer.time("user", () => User.findOne({ mail: sesion.user.email }).lean());
     if (!userFound)
       throw new Error("User not found, review the email provided in GENERAL-DATA POST");
     const userId = userFound._id;
@@ -54,7 +72,7 @@ export async function POST(
       .lean()) as { primaryCurrency?: string } | null;
     //FIND TRANSACTIONS
     // Structural typing with unknown avoids any while resolving TS2349 union incompatibility on unmigrated Transaction.js
-    const movementsFounded = (await (
+    const movementsFounded = (await timer.time("find-populate", () => (
       Transaction as unknown as {
         find: (filter: unknown) => {
           populate: (pop: unknown) => {
@@ -74,37 +92,35 @@ export async function POST(
       .find({
         user: userId,
         wallet: walletId,
+        ...windowFilter,
       })
-      .populate({
-        path: "tags",
-      })
-      .populate({
-        path: "account",
-      })
-      .populate({
-        path: "category",
-      })
-      .populate({
-        path: "subCategory",
-      })
-      .populate({
-        path: "budget",
-      })
-      .lean()) as unknown[];
+      // Every movement carries its own copy of these documents, so only the fields
+      // the interface reads travel (it was ~half of a 7 MB response).
+      .populate({ path: "tags", select: POPULATE_FIELDS.tags })
+      .populate({ path: "account", select: POPULATE_FIELDS.account })
+      .populate({ path: "category", select: POPULATE_FIELDS.category })
+      .populate({ path: "subCategory", select: POPULATE_FIELDS.subCategory })
+      .populate({ path: "budget", select: POPULATE_FIELDS.budget })
+      .lean())) as unknown[];
     if (!movementsFounded)
       throw new Error(
         "No movements found, review the user and wallet id on get-all/transactions in POST"
       );
-    const withDisplayMoney = await attachDisplayMoneyToList(
-      movementsFounded,
-      parentWallet?.primaryCurrency || "MXN"
+    const withDisplayMoney = await timer.time("display-money", () =>
+      attachDisplayMoneyToList(movementsFounded, parentWallet?.primaryCurrency || "MXN")
     );
-    return NextResponse.json({
+    const serializeStart = performance.now();
+    const responseBody = JSON.stringify({
       data: withDisplayMoney,
       message: "Transactions founded",
       status: 201,
       ok: true,
     });
+    timer.add("serialize", performance.now() - serializeStart);
+    timer.add("total", performance.now() - totalStart);
+    return new NextResponse(responseBody, {
+      headers: { "Content-Type": "application/json", "Server-Timing": timer.header() },
+    }) as NextResponse<GetTransactionsResponse>;
   } catch (e) {
     console.log(e);
     throw new Error(e);

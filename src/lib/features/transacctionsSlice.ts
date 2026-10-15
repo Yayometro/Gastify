@@ -1,4 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { skipWhileLoading } from "./thunkGuards";
+import { debugDelay, perfMark } from "@/lib/perf/perfMark";
+import { getRecentCutoff, isBeforeCutoff, mergeById } from "@/lib/transactions/historyWindow";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
@@ -63,10 +66,17 @@ export interface TransactionData {
 
 export type TransacctionsStatus = "idle" | "loading" | "succeeded" | "failed";
 
+export type TransactionsHistoryStatus = "idle" | "loading" | "complete" | "failed";
+
 export interface TransacctionsState {
   data: TransactionData[];
+  // "succeeded" as soon as the recent months are in (see historyWindow.ts).
   status: TransacctionsStatus;
   error: string | null | undefined;
+  // The rest of the history, loaded in the background after the recent part.
+  historyStatus: TransactionsHistoryStatus;
+  // ISO instant splitting "recent" from "rest of the history".
+  historyCutoff: string | null;
   [key: string]: unknown;
 }
 
@@ -74,27 +84,50 @@ const transacctions: TransacctionsState = {
   data: [],
   status: "idle", //'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
+  historyStatus: "idle",
+  historyCutoff: null,
 };
 
-export const fetchTrans = createAsyncThunk(
+interface TransactionsPage {
+  items: TransactionData[];
+  cutoff: string;
+}
+
+// Recent months only: the dashboard can render with these while the rest of the
+// history loads in the background (fetchTransHistory).
+export const fetchTrans = createAsyncThunk<TransactionsPage, unknown>(
   "transacctions/fetchTrans",
-  async (mail?: unknown) => {
-    // console.log(mail);
+  async () => {
+    const cutoff = getRecentCutoff().toISOString();
     try {
-      const response = await toFetch.post(
-        "general-data/transactions/get-transactions",
-        mail
-      );
-      // console.log(response)
-      if (response.ok) {
-        return response.data;
-      } else {
-        console.log("Something went wrong");
-      }
+      const response = await toFetch.post("general-data/transactions/get-transactions", { since: cutoff });
+      perfMark("data:transactions:received");
+      if (!response.ok) throw new Error(response.message || "Could not load the movements");
+      return { items: (response.data || []) as TransactionData[], cutoff };
     } catch (e) {
       console.log(e);
-      throw new Error(e);
+      throw new Error(e instanceof Error ? e.message : String(e));
     }
+  },
+  skipWhileLoading("transacctionsReducer")
+);
+
+// Everything before the cutoff of the recent part.
+export const fetchTransHistory = createAsyncThunk<TransactionsPage, void, { state: { transacctionsReducer: TransacctionsState } }>(
+  "transacctions/fetchTransHistory",
+  async (_arg, { getState }) => {
+    const cutoff = getState().transacctionsReducer.historyCutoff as string;
+    await debugDelay("gfHistoryDelayMs");
+    const response = await toFetch.post("general-data/transactions/get-transactions", { before: cutoff });
+    perfMark("data:transactions-history:received");
+    if (!response.ok) throw new Error(response.message || "Could not load the movement history");
+    return { items: (response.data || []) as TransactionData[], cutoff };
+  },
+  {
+    condition: (_arg, { getState }) => {
+      const { historyCutoff, historyStatus } = getState().transacctionsReducer;
+      return Boolean(historyCutoff) && historyStatus !== "loading" && historyStatus !== "complete";
+    },
   }
 );
 
@@ -166,11 +199,28 @@ export const transacctionsSlice = createSlice({
         state.status = "loading";
       })
       .addCase(fetchTrans.fulfilled, (state, action) => {
+        const { items, cutoff } = action.payload;
         state.status = "succeeded";
-        state.data = action.payload;
+        state.historyCutoff = cutoff;
+        // Replace only the recent part; history already loaded (if any) stays.
+        state.data = mergeById(items, state.data.filter((t) => isBeforeCutoff(t, cutoff)));
       })
       .addCase(fetchTrans.rejected, (state, action) => {
         state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(fetchTransHistory.pending, (state) => {
+        state.historyStatus = "loading";
+      })
+      .addCase(fetchTransHistory.fulfilled, (state, action) => {
+        const { items, cutoff } = action.payload;
+        state.historyStatus = "complete";
+        // Replace only the history part; keeps the recent movements (and anything
+        // added locally meanwhile) untouched.
+        state.data = mergeById(state.data.filter((t) => !isBeforeCutoff(t, cutoff)), items);
+      })
+      .addCase(fetchTransHistory.rejected, (state, action) => {
+        state.historyStatus = "failed";
         state.error = action.error.message;
       });
   },
@@ -178,6 +228,7 @@ export const transacctionsSlice = createSlice({
 
 export const getRedxTransactions = (state: { transacctionsReducer: TransacctionsState }) => state.transacctionsReducer.data;
 export const getRedxTransactionsEstatus = (state: { transacctionsReducer: TransacctionsState }) => state.transacctionsReducer.status;
+export const getRedxTransactionsHistoryStatus = (state: { transacctionsReducer: TransacctionsState }) => state.transacctionsReducer.historyStatus;
 export const getRedxTransactionsError = (state: { transacctionsReducer: TransacctionsState }) => state.transacctionsReducer.error;
 
 export const {

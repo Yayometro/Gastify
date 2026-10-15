@@ -51,8 +51,11 @@ function TabsToggler({
       ? null
       : compontentsArray
           .filter(({ tab }) => tab.toLowerCase() === active)
-          .map(({ Component, props }, i) => (
-            <Component {...props} key={`tabs-togler-key-${tabs}-${i}`} />
+          // The tab name is part of the key: two tabs often render the same
+          // component type (e.g. two charts), and without it React reused the
+          // instance, so the chart morphed from one tab's data into the other's.
+          .map(({ Component, props, tab }, i) => (
+            <Component {...props} key={`tabs-togler-key-${active}-${tab}-${i}`} />
           ));
 
   return (

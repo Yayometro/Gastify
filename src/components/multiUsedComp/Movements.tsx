@@ -1484,9 +1484,9 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
                       className="circle-ico w-[50px] h-[50px] rounded-full flex items-center justify-center hover:brightness-90 transition-[filter]"
                     >
                       {!movement.category || !movement.category.icon ? (
-                        <UniversalCategoIcon type="md/MdFilterNone" />
+                        <UniversalCategoIcon type="md/MdFilterNone" siz={26} />
                       ) : (
-                        <UniversalCategoIcon type={movement.category.icon} />
+                        <UniversalCategoIcon type={movement.category.icon} siz={26} />
                       )}
                     </div>
                   </div>

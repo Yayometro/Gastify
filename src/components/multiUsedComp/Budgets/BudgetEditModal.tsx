@@ -38,12 +38,12 @@ export interface BudgetTypeOption {
 }
 
 const typeOptions: BudgetTypeOption[] = [
-  { value: BUDGET_TYPES.SPENDING, title: "Spending", copy: "A recurring limit for categories", icon: "md/MdAccountBalanceWallet" },
-  { value: BUDGET_TYPES.SAVING, title: "Saving", copy: "Track progress toward a savings goal", icon: "fa/FaPiggyBank" },
-  { value: BUDGET_TYPES.PROJECT, title: "Project", copy: "A one-time plan made of specific movements", icon: "md/MdFlightTakeoff" },
+  { value: BUDGET_TYPES.SPENDING, title: "Spending", copy: "A recurring limit for categories", icon: "fluent/credit-card" },
+  { value: BUDGET_TYPES.SAVING, title: "Saving", copy: "Track progress toward a savings goal", icon: "fluent/money-bag" },
+  { value: BUDGET_TYPES.PROJECT, title: "Project", copy: "A one-time plan made of specific movements", icon: "fluent/airplane" },
 ];
 
-const DEFAULT_PROJECT_ICON = "md/MdFlightTakeoff";
+const DEFAULT_PROJECT_ICON = "fluent/airplane";
 
 const dateInputValue = (value?: string | Date | null): string => {
   if (!value) return "";

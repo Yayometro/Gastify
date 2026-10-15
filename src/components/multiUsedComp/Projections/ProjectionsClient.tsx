@@ -1,5 +1,6 @@
 "use client";
 
+import HistoryGate from "../loaders/HistoryGate";
 import React, { useMemo, useState } from "react";
 import { Skeleton, Tooltip } from "antd";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
@@ -197,21 +198,24 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
           }
         />
 
-        {isLoading ? (
-          <Skeleton active />
-        ) : (
-          <ProjectionsView
-            rows={rowsWithEstimates as unknown as ProjectionRow[]}
-            onRowClick={(row) => setSelectedMonthName(row.monthName)}
-          />
-        )}
+        {/* A year that starts before the movements loaded so far would show zeros until the rest of the history arrives. */}
+        <HistoryGate starts={[new Date(year, 0, 1)]}>
+          {isLoading ? (
+            <Skeleton active />
+          ) : (
+            <ProjectionsView
+              rows={rowsWithEstimates as unknown as ProjectionRow[]}
+              onRowClick={(row) => setSelectedMonthName(row.monthName)}
+            />
+          )}
 
-        {!isLoading && (
-          <ProjectionAccuracyReport
-            rows={accuracyRows}
-            onRowClick={(monthName) => setSelectedMonthName(monthName)}
-          />
-        )}
+          {!isLoading && (
+            <ProjectionAccuracyReport
+              rows={accuracyRows}
+              onRowClick={(monthName) => setSelectedMonthName(monthName)}
+            />
+          )}
+        </HistoryGate>
 
         {selectedRow && (
           <ProjectionMonthDetailModal

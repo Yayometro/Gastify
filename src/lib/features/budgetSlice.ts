@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { skipWhileLoading } from "./thunkGuards";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
@@ -81,7 +82,8 @@ export const fetchBudget = createAsyncThunk(
       console.log(e);
       throw new Error(e);
     }
-  }
+  },
+  skipWhileLoading("budgetReducer")
 );
 
 export const budgetsSlice = createSlice({

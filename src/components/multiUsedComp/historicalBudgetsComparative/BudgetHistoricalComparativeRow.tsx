@@ -2,7 +2,7 @@
 
 import React from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
-import ColumnChartAntComparative from "../chartsComponents/columnChartAntComparative/ColumnChartAntComparative";
+import ComparativeColumnChart from "@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart";
 import { generatePropForBudgetMonthlyChart } from "./propsForBudgetMonthlyChart";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
 
@@ -86,7 +86,7 @@ function BudgetHistoricalComparativeRow({
         <p className={`text-sm font-bold ${pctColor}`}>{hasRate ? `${pct}% compliance` : "No data yet"}</p>
       </div>
       <div className="w-full" style={{ height: 200 }}>
-        <ColumnChartAntComparative {...chartProps} />
+        <ComparativeColumnChart {...chartProps} />
       </div>
     </div>
   );

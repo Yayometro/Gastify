@@ -4,6 +4,7 @@ import TooltipForChart, {
   type TooltipForChartItem,
 } from "@/components/toltips/tooltipsForCharts/TooltipForChart";
 import { formatMoneyMajor } from "@/lib/money/currencies";
+import type { ComparativeColumnOptions } from "@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart";
 
 export interface ClickedItem {
   type?: string | number;
@@ -20,19 +21,6 @@ export interface GeneratePropForChartColAntTogglerTabsOptions {
   setClickedItems: React.Dispatch<React.SetStateAction<ClickedItem[]>>;
   totalAmount: number[];
   walletPrimaryCurrency?: string;
-}
-
-export interface TooltipItemInfo {
-  channel?: TooltipForChartItem;
-  value: number;
-  color?: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
-export interface ChartDatumLegend {
-  id?: string;
-  [key: string]: unknown;
 }
 
 export const generatePropForChartColAntTogglerTabs = ({
@@ -99,85 +87,47 @@ export const generatePropForChartColAntTogglerTabs = ({
       </div>
     ),
     propPlus: {
-      legend: {
-        color: {
-          itemMarkerFill: (datum: ChartDatumLegend) => {
-            return datum.id === "bill" ? "#ff8c8c" : "#88FFE3";
-          },
-        },
-      },
-      state: {
-        unselected: { opacity: 0.5 },
-        selected: { fill: "orange" },
-      },
-      interaction: {
-        elementSelectByX: true,
-        // @ant-design/plots' Column chart defaults to
-        // `elementHighlight: { background: true }` - a separate interaction
-        // from the tooltip's own crosshairs, drawing a shaded rect behind
-        // the whole hovered x-category. Off since the tooltip already
-        // marks what's active.
-        elementHighlight: false,
-        tooltip: {
-          // Column marks also default to a shaded crosshair rect via the
-          // tooltip interaction itself - same backdrop problem, separate
-          // switch.
-          crosshairs: false,
-          render: (_e: unknown, { items, title }: { items: TooltipItemInfo[]; title: string | number }) => {
-            return (
-              <div
-                className="max-w-[250px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
-                key={title}
-              >
-                <h1 className="text-base text-center text-wrap font-bold">
-                  {String(title).toUpperCase()}
-                </h1>
-                {items.map((transMonth) => {
-                  const { channel, value, color, name } = transMonth;
-                  return (
-                    <TooltipForChart
-                      item={channel}
-                      value={value}
-                      color={color}
-                      key={(name as string) + value}
-                      totalValue={
-                        name === "bill" ? totalAmount[1] : totalAmount[0]
-                      }
-                      walletPrimaryCurrency={walletPrimaryCurrency}
-                    />
-                  );
-                })}
-              </div>
-            );
-          },
-        },
-      },
-      label: {
-        text: ({ value, isBill }: { value: number; isBill?: boolean | number }) => {
-          if (isBill) {
-            return ((value / totalAmount[1]) * 100).toFixed(1) + "%";
-          } else {
-            return ((value / totalAmount[0]) * 100).toFixed(1) + "%";
-          }
-        },
-        textBaseline: "bottom",
-      },
-      style: {
-        fill: ({ color }: { color?: string }) => color,
-        inset: 0.2,
-      },
-      onReady: ({ chart }: { chart: { on: (event: string, handler: (evt: { data?: { data?: ClickedItem } }) => void) => void } }) => {
-        chart.on("interval:click", (evt: { data?: { data?: ClickedItem } }) => {
-          const { data } = evt;
-          setClickedItems((prev) => {
-            const isRepeated = new Set(prev.map((i) => JSON.stringify(i)));
-            return isRepeated.has(JSON.stringify(data?.data))
-              ? [...prev]
-              : [...prev, data?.data];
-          });
+      mode: "grouped",
+      legend: [
+        { id: "income", label: "income", color: "#88FFE3" },
+        { id: "bill", label: "bill", color: "#ff8c8c" },
+      ],
+      // A clicked bar is added to the "Selected" list above the chart; while
+      // something is selected the other bars are drawn faded.
+      isDimmed:
+        clickedItems.length > 0
+          ? (datum) => !clickedItems.some((c) => c.type === datum.type && Boolean(c.isBill) === Boolean(datum.isBill))
+          : undefined,
+      onBarClick: (datum) => {
+        const item = datum as unknown as ClickedItem;
+        setClickedItems((prev) => {
+          const isRepeated = new Set(prev.map((i) => JSON.stringify(i)));
+          return isRepeated.has(JSON.stringify(item)) ? [...prev] : [...prev, item];
         });
       },
-    },
+      label: (datum) => {
+        const total = datum.isBill ? totalAmount[1] : totalAmount[0];
+        return total ? ((datum.value / total) * 100).toFixed(1) + "%" : "";
+      },
+      renderTooltip: ({ title, items }) => (
+        <div
+          className="max-w-[250px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
+          key={title}
+        >
+          <h1 className="text-base text-center text-wrap font-bold">{String(title).toUpperCase()}</h1>
+          {items.map((transMonth) => (
+            <TooltipForChart
+              item={transMonth as TooltipForChartItem}
+              value={transMonth.value}
+              color={transMonth.color}
+              key={String(transMonth.transactionType) + transMonth.value}
+              totalValue={transMonth.isBill ? totalAmount[1] : totalAmount[0]}
+              walletPrimaryCurrency={walletPrimaryCurrency}
+            />
+          ))}
+        </div>
+      ),
+    } satisfies ComparativeColumnOptions,
   };
 };
 
@@ -203,13 +153,6 @@ export interface GeneratePropForChartColAntPeriodCompareOptions {
   labelA: string;
   labelB: string;
   walletPrimaryCurrency?: string;
-}
-
-export interface PeriodCompareTooltipItem {
-  value: number;
-  color?: string;
-  name?: string;
-  [key: string]: unknown;
 }
 
 // Props for the "Compare periods" tab: two independent [start,end] ranges,
@@ -268,86 +211,31 @@ export const generatePropForChartColAntPeriodCompare = ({
       </div>
     ),
     propPlus: {
-      // The base ColumnChartAntComparative always sets `group: true`, which
-      // @ant-design/plots maps straight to a `dodgeX` transform - that's
-      // what actually split the two compared bars apart horizontally
-      // (visible even with inset:0, since dodgeX moves the *whole* bar to
-      // its own sub-slot, not just its padding). Disabling it here is what
-      // makes the two bars share the exact same x position - one drawn
-      // from 0 upward for the current period, one from 0 downward for the
-      // compared period (already negated upstream) - instead of two
-      // separate columns that only happen to sit next to each other.
-      group: false,
-      style: {
-        fill: ({ color }: { color?: string }) => color,
-        inset: 0,
-      },
-      // The base ColumnChartAntComparative's default label divides by the
-      // `totalValue` prop, which here is a JSX summary block, not a number
-      // (NaN% otherwise) - a plain formatted amount is also more meaningful
-      // than a percentage for a 4-series comparison anyway (percentage of
-      // which total - this period's income, the grand total across all
-      // four series? - is ambiguous here in a way it isn't for the
-      // 2-series bill-vs-income tab). Period B's values are negated
-      // upstream so its bars render mirrored below the zero line - shows
-      // the absolute amount here so a downward bar doesn't read as
-      // "negative spending."
-      label: showInlineLabels
-        ? {
-            text: ({ value }: { value: number }) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency),
-            // A plain white label sits directly on top of light-colored bars
-            // (e.g. the mint "income" fill) and disappears - G2's own
-            // contrastReverse transform picks white or dark text per label
-            // based on that label's own bar color, so it stays legible on
-            // any fill without a stroke halo or a separate background box
-            // (G2 doesn't support a background chip on Column labels).
-            style: { fill: "#fff" },
-            transform: [{ type: "contrastReverse" }],
-          }
-        : false,
-      interaction: {
-        // @ant-design/plots' Column chart defaults to
-        // `elementHighlight: { background: true }` - a separate interaction
-        // from the tooltip's own crosshairs, drawing a shaded rect behind
-        // the whole hovered x-category. Off since the tooltip already
-        // marks what's active.
-        elementHighlight: false,
-        tooltip: {
-          // Column marks also default to a shaded crosshair rect spanning
-          // the hovered x-category's full plot height - visible here as a
-          // big grey backdrop competing with the tooltip's own glass box.
-          // Explicitly off since the tooltip itself already marks which
-          // bar is active.
-          crosshairs: false,
-          render: (_e: unknown, { items, title }: { items: PeriodCompareTooltipItem[]; title: string | number }) => {
-            return (
-              <div
-                className="max-w-[280px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
-                key={title}
-              >
-                <h1 className="text-base text-center text-wrap font-bold">
-                  {String(title).toUpperCase()}
-                </h1>
-                {items.map((entry) => {
-                  const { value, color, name } = entry;
-                  return (
-                    <div key={name} className="w-full flex items-center justify-between gap-3 text-xs">
-                      <span className="flex items-center gap-1.5">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: color }}
-                        />
-                        {name}:
-                      </span>
-                      <b className="font-semibold">{formatMoneyMajor(Math.abs(value), walletPrimaryCurrency)}</b>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          },
-        },
-      },
-    },
+      // Both periods share each x position: period A drawn from 0 upward, period
+      // B (negated upstream) mirrored below zero, so they read straight across.
+      mode: "overlay",
+      // Past ~6 months (12 buckets) inline amounts no longer fit; the tooltip
+      // (same figures on hover) takes over. Shows the absolute amount so a
+      // downward bar doesn't read as "negative spending".
+      label: showInlineLabels ? (datum) => formatMoneyMajor(Math.abs(datum.value), walletPrimaryCurrency) : false,
+      valueFormat: (value) => formatMoneyMajor(Math.abs(value), walletPrimaryCurrency),
+      renderTooltip: ({ title, items }) => (
+        <div
+          className="max-w-[280px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
+          key={title}
+        >
+          <h1 className="text-base text-center text-wrap font-bold">{String(title).toUpperCase()}</h1>
+          {items.map((entry) => (
+            <div key={String(entry.transactionType)} className="w-full flex items-center justify-between gap-3 text-xs">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+                {entry.transactionType}:
+              </span>
+              <b className="font-semibold">{formatMoneyMajor(Math.abs(entry.value), walletPrimaryCurrency)}</b>
+            </div>
+          ))}
+        </div>
+      ),
+    } satisfies ComparativeColumnOptions,
   };
 };

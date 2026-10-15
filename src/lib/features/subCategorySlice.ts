@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { skipWhileLoading } from "./thunkGuards";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
@@ -60,7 +61,8 @@ export const fetchSubCat = createAsyncThunk(
       console.log(e);
       throw new Error(e);
     }
-  }
+  },
+  skipWhileLoading("subCategoryReducer")
 );
 export const subCategoriesSlice = createSlice({
   name: "subCategoriesState", //name of the state

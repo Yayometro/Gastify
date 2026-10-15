@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { skipWhileLoading } from "./thunkGuards";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();
@@ -55,7 +56,8 @@ export const fetchUser = createAsyncThunk(
       console.log(e);
       throw new Error(e);
     }
-  }
+  },
+  skipWhileLoading("userReducer")
 );
 
 export const userSlice = createSlice({

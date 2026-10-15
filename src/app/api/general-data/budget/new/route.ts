@@ -90,7 +90,7 @@ export async function POST(
       wallet: wallet,
       isSaving: resolvedBudgetType === "saving",
       budgetType: resolvedBudgetType,
-      icon: resolvedBudgetType === "project" ? icon || "md/MdFlightTakeoff" : null,
+      icon: resolvedBudgetType === "project" ? icon || "fluent/airplane" : null,
       savingAmount: savingAmount || 0,
       currency: currency || "MXN",
       period: period || "monthly",
