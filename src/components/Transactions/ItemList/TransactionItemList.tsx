@@ -145,7 +145,7 @@ function TransactionItemList({
         >
           <TypedUniversalCategoIcon
             type={`${movement?.category?.icon || "md/MdFilterNone"}`}
-            siz={10}
+            siz={26}
           />
         </div>
         <div className="center-cont min-w-0 overflow-hidden flex flex-col">
