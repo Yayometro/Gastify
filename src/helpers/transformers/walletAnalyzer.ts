@@ -5,7 +5,7 @@ import {
   orderItemsInRelativeMonth,
 } from "./transactionsChange";
 import { buildBudgetHistoricalComparative } from "./budgetHistoricalComparative";
-import { months } from "../timeFunctions/timeFunctions";
+import { months } from "@gastify/core/time/timeFunctions";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 

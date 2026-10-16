@@ -8,7 +8,7 @@ import {
   reduceTransToTransMonths,
 } from "./transactionsChange";
 import { organizedCategoriesAndSubCategories } from "./categoriesTransformers";
-import { sortItemsByName } from "../orderFunctions/orderFunctions";
+import { sortItemsByName } from "@gastify/core/order/orderFunctions";
 
 describe("sorting does not touch its input (bugs 92, 119)", () => {
   it("works on a frozen array and returns a sorted copy", () => {

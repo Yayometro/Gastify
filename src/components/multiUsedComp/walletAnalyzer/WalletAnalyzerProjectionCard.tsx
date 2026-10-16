@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import ProjectionVarianceCell from "../Projections/ProjectionVarianceCell";
 import type { ProjectionComparisonData } from "./WalletAnalyzerView";
 

@@ -4,9 +4,9 @@ import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
-import { formatMoneyMajor, formatMoneyMinor } from "@/lib/money/currencies";
+import { formatMoneyMajor, formatMoneyMinor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
-import { percentOf } from "@/helpers/percent";
+import { percentOf } from "@gastify/core/format/percent";
 
 export interface TabsTransCategoryRef {
   _id?: string;

@@ -3,7 +3,7 @@ import Account, { type IAccount } from "@/model/Account";
 import Transaction from "@/model/Transaction";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
-import { SUPPORTED_CURRENCIES, majorToMinor } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES, majorToMinor } from "@gastify/core/money/currencies";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface UpdateAccountRequestBody {

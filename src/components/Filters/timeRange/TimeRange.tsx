@@ -6,7 +6,7 @@ import { DatePicker, Space, Tooltip } from "antd";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
-import { months } from "@/helpers/timeFunctions/timeFunctions";
+import { months } from "@gastify/core/time/timeFunctions";
 
 export interface MonthInfo {
   name: string;

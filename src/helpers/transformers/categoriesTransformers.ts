@@ -1,4 +1,4 @@
-import { sortItemsByName } from "../orderFunctions/orderFunctions";
+import { sortItemsByName } from "@gastify/core/order/orderFunctions";
 
 export interface RawCategoryItem {
   _id?: string | unknown;

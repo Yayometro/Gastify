@@ -3,7 +3,7 @@ import AtomicTop from "@/components/multiUsedComp/top3/atomicTop/AtomicTop";
 import TooltipForChart, {
   type TooltipForChartItem,
 } from "@/components/toltips/tooltipsForCharts/TooltipForChart";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { ComparativeColumnOptions } from "@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart";
 
 export interface ClickedItem {

@@ -3,7 +3,7 @@ import { ResponsiveBar, type BarDatum } from "@nivo/bar";
 import React from "react";
 import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 
 export interface ResponsiveBarsChartDatum {

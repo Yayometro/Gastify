@@ -3,7 +3,7 @@ import { ConfigProvider, DatePicker } from "antd";
 import esES from "antd/locale/es_ES";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import { getCategoryTransactions, getSubcategoryTransactions } from "@/helpers/transformers/walletAnalyzer";
 import useModal from "@/hooks/useModalBasic";

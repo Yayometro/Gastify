@@ -35,9 +35,9 @@ import { fetchSubCat } from "@/lib/features/subCategorySlice";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
   getDateInYearMonthDay,
-} from "@/helpers/timeFunctions/timeFunctions";
+} from "@gastify/core/time/timeFunctions";
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
-import { formatMoneyMajor, formatMoneyMinor, majorToMinor, SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { formatMoneyMajor, formatMoneyMinor, majorToMinor, SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import {
   getDuplicates as sharedGetDuplicates,
   getDuplicatesToDelete as sharedGetDuplicatesToDelete,

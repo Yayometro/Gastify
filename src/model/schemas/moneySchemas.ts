@@ -1,5 +1,5 @@
 import { Schema, Types } from "mongoose";
-import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 
 export interface IMoneyAmountSchema {
   amountMinor: number;

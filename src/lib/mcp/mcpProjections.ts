@@ -3,8 +3,8 @@ import ProjectionSettings from "@/model/ProjectionSettings";
 import ProjectionBaseline from "@/model/ProjectionBaseline";
 import Account from "@/model/Account";
 import { convert } from "@/lib/money/server/fxRateService";
-import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
-import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
+import { getYearMonthDateRange } from "@gastify/core/time/timeFunctions";
 import {
   buildYearProjectionTable,
   computeYearRowsWithBalance,

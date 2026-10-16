@@ -2,7 +2,7 @@
 
 import React from "react";
 import TopCategoryRow from "../top3/topMonthContainer/TopCategoryRow";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 
 const TOP_N = 10;
 

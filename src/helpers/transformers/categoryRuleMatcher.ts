@@ -1,4 +1,4 @@
-import { minorToMajor } from "@/lib/money/currencies";
+import { minorToMajor } from "@gastify/core/money/currencies";
 
 export interface NativeMoneyInput {
   amountMinor?: number | null;

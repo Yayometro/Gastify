@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import fetcher from "@/helpers/fetcher";
-import { majorToMinor } from "@/lib/money/currencies";
+import { majorToMinor } from "@gastify/core/money/currencies";
 import {
   convertBudgetsToPrimary,
   getForeignBudgetCurrencies,

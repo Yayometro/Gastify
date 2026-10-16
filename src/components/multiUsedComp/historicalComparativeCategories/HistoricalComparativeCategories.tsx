@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/lib/store";
-import { getPeriodLabel } from "@/helpers/timeFunctions/timeFunctions";
+import { getPeriodLabel } from "@gastify/core/time/timeFunctions";
 import {
   filterBillsOrIncomes,
   getTransactionsFromTimeRange,

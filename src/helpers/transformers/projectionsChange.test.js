@@ -8,7 +8,7 @@ import {
   getMonthBucketBreakdown,
   getMonthCurrencyBreakdown,
 } from "./projectionsChange";
-import { majorToMinor } from "@/lib/money/currencies";
+import { majorToMinor } from "@gastify/core/money/currencies";
 
 // Builds a ProjectionBaseline fixture with independent income/expense
 // timelines from a shorthand list of {effectiveFrom, effectiveTo, income,

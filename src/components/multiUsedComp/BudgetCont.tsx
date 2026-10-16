@@ -12,7 +12,7 @@ import BudgetEditModal, { BudgetModalItem } from "./Budgets/BudgetEditModal";
 import BudgetDetailModal, { BudgetDetailItem, BudgetDetailTransactionItem } from "./Budgets/BudgetDetailModal";
 import ProjectBudgetDetailModal, { ProjectBudgetItem, ProjectBudgetTransactionItem } from "./Budgets/ProjectBudgetDetailModal";
 import { getBudgetActualSpend } from "@/helpers/transformers/projectionsChange";
-import { getLastDayOfMonth, generate_timeperiod_ranges_array_for_dashboard } from "@/helpers/timeFunctions/timeFunctions";
+import { getLastDayOfMonth, generate_timeperiod_ranges_array_for_dashboard } from "@gastify/core/time/timeFunctions";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import { getBudgetCoverage } from "@/helpers/transformers/budgetCoverage";

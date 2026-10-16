@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Modal } from "antd";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { WalletAnalyzerWeekdaySpendingData } from "./WalletAnalyzerView";
 
 export interface WeekdaySpendingDetailModalProps {

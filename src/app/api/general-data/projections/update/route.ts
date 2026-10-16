@@ -8,7 +8,7 @@ import ProjectionSettings, {
 } from "@/model/ProjectionSettings";
 import User from "@/model/User";
 import Wallet from "@/model/Wallet";
-import { majorToMinor } from "@/lib/money/currencies";
+import { majorToMinor } from "@gastify/core/money/currencies";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 const monthBufferSchema = z

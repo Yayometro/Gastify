@@ -9,7 +9,7 @@ import "dayjs/locale/es";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
-import { formatMoneyMajor, isSupportedCurrency, minorToMajor, SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
+import { formatMoneyMajor, isSupportedCurrency, minorToMajor, SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 import type { ProjectionBaselineData } from "@/hooks/useProjectionTable";
 
 export interface BaselineTimelineEntry {

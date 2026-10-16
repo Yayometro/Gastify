@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
 import { createTransaction } from "@/lib/transactions/createTransaction";
-import { formatMoneyMinor } from "@/lib/money/currencies";
+import { formatMoneyMinor } from "@gastify/core/money/currencies";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
@@ -23,7 +23,7 @@ import {
   buildPeriodComparison,
   getPrecedingPeriods,
 } from "@/helpers/transformers/walletAnalyzer";
-import { getLastDayOfQuarter } from "@/helpers/timeFunctions/timeFunctions";
+import { getLastDayOfQuarter } from "@gastify/core/time/timeFunctions";
 import { buildProjectionsForRange } from "@/lib/mcp/mcpProjections";
 import type { IUser } from "@/model/User";
 import type { ApiTokenWallet } from "@/lib/auth/apiTokens";

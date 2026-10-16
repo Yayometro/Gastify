@@ -16,7 +16,7 @@ import { Tooltip } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { formatMoneyMajor, formatMoneyMinor, majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor, formatMoneyMinor, majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import type { RootState } from "@/lib/store";
 

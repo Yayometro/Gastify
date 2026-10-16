@@ -16,8 +16,8 @@ import EditSingleTransModal from "@/components/multiUsedComp/EditSingleTransModa
 import Tag from "@/components/multiUsedComp/Tag";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import dayjs from "dayjs";
-import { formatInPrimaryCurrency } from "@/lib/money/displayCurrency";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 import CurrencyBreakdownChips from "@/components/multiUsedComp/CurrencyBreakdownChips";
 import type { RootState, AppDispatch } from "@/lib/store";

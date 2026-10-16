@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import TransactionItemList, { type TransactionItemMovement } from "@/components/Transactions/ItemList/TransactionItemList";
 import dayjs from "dayjs";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 
 export interface DedupExcelMatch {
   name?: string | null;

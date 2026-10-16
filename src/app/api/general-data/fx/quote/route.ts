@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import dbConnection from "@/app/api/dbConnection";
 import "@/model/FxRateSnapshot";
-import { SUPPORTED_CURRENCIES, assertSupportedCurrency } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES, assertSupportedCurrency } from "@gastify/core/money/currencies";
 import { convert } from "@/lib/money/server/fxRateService";
 
 const fxQuoteRequestSchema = z

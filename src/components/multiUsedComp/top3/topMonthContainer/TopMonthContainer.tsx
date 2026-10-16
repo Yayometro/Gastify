@@ -2,9 +2,9 @@
 
 import React from "react";
 import { useSelector } from "react-redux";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
-import type { PrimaryAmountItem } from "@/helpers/timeFunctions/timeFunctions";
+import type { PrimaryAmountItem } from "@gastify/core/time/timeFunctions";
 import TopMonthItem from "./TopMonthItem";
 import type { RootState } from "@/lib/store";
 

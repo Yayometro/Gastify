@@ -5,7 +5,7 @@ import { Tooltip } from "antd";
 import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import UniversalCategoIcon from "../UniversalCategoIcon";
-import { getDateInYearMonthDay } from "@/helpers/timeFunctions/timeFunctions";
+import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 
 export interface PeriodFiltersWithCompareProps {
   timePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;

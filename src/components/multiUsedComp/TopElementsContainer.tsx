@@ -15,11 +15,11 @@ import {
   sortBasedOnValueProperty,
   type TransactionLike,
 } from "@/helpers/transformers/transactionsChange";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
-} from "@/helpers/timeFunctions/timeFunctions";
+} from "@gastify/core/time/timeFunctions";
 import TopRankColumn, { type RankRowItem } from "./top3/topRankColumn/TopRankColumn";
 import TopElementContainerView from "./TopElementContainerView";
 import type { RootState, AppDispatch } from "@/lib/store";

@@ -1,6 +1,6 @@
 import React from "react";
 import { getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { MonthlyBudgetSeriesItem } from "@/helpers/transformers/budgetHistoricalComparative";
 import type { ComparativeColumnOptions } from "@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart";
 

@@ -1,4 +1,4 @@
-import { months as monthNames } from "../timeFunctions/timeFunctions";
+import { months as monthNames } from "@gastify/core/time/timeFunctions";
 import { getTransactionsFromTimeRange, getPrimaryAmount } from "./transactionsChange";
 import { getValueActiveInMonth } from "./budgetHistory";
 import { matchBillToBudget } from "./projectionsChange";

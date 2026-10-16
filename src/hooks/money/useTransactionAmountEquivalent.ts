@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import fetcher from "@/helpers/fetcher";
-import { majorToMinor } from "@/lib/money/currencies";
+import { majorToMinor } from "@gastify/core/money/currencies";
 import type { AmountEquivalentQuote } from "@/components/multiUsedComp/AmountEquivalentPreview";
 
 export interface UseTransactionAmountEquivalentOptions {

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { buildCategoryHierarchy, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";

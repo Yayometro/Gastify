@@ -24,7 +24,7 @@ import {
   slicedAndReduceNewValuesForMonths,
   type MonthTransactionsBucket,
   type MonthTransactionItem,
-} from "@/helpers/timeFunctions/timeFunctions";
+} from "@gastify/core/time/timeFunctions";
 import TopMonthContainer from "../top3/topMonthContainer/TopMonthContainer";
 import TopElementsCompareTable, { type CompareRow } from "../top3/topMonthContainer/TopElementsCompareTable";
 import type { PeriodComparisonState } from "@/hooks/usePeriodComparison";

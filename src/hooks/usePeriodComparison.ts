@@ -7,7 +7,7 @@ import {
   getPeriodLabel,
   getTimeperiodRangesArray,
   shiftPeriodBackOneYear,
-} from "@/helpers/timeFunctions/timeFunctions";
+} from "@gastify/core/time/timeFunctions";
 
 export interface TimePeriodOption {
   value: string;

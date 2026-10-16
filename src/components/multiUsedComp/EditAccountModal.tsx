@@ -5,7 +5,7 @@ import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
 import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/accountsSlice";
-import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 
 export type EditAccountModalMode = "edition" | "creation" | boolean | string | null | undefined;
 

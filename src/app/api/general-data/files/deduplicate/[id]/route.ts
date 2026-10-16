@@ -14,7 +14,7 @@ import "@/model/SubCategory";
 import "@/model/Account";
 import "@/model/Tag";
 import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
-import { SUPPORTED_CURRENCIES, majorToMinor, getTransactionNativeMoney } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES, majorToMinor, getTransactionNativeMoney } from "@gastify/core/money/currencies";
 import { buildLegacyMoney } from "@/lib/money/transactionMoney";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 

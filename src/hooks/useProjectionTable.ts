@@ -3,14 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import { getYearMonthDateRange, type MonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
+import { getYearMonthDateRange, type MonthDateRange } from "@gastify/core/time/timeFunctions";
 import {
   buildYearProjectionTable,
   buildProjectionAccuracyReport,
   estimateHistoricalBalances,
   computeYearRowsWithBalance,
 } from "@/helpers/transformers/projectionsChange";
-import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurrency";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";

@@ -3,8 +3,8 @@
 // ./server/transactionMoneyService.js.
 
 import type { Types } from "mongoose";
-import { majorToMinor } from "./currencies";
-import { deriveEffectiveRate } from "./conversion";
+import { majorToMinor } from "@gastify/core/money/currencies";
+import { deriveEffectiveRate } from "@gastify/core/money/conversion";
 
 export interface BuildAccountMoneyParams {
   amount?: number | string | null;

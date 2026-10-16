@@ -1,8 +1,8 @@
 import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import { formatInPrimaryCurrency } from "@/lib/money/displayCurrency";
+import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
 import dayjs from "dayjs";
-import { formatMoneyMinor } from "@/lib/money/currencies";
+import { formatMoneyMinor } from "@gastify/core/money/currencies";
 
 export interface DeletePreviewRowCategory {
   color?: string;

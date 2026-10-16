@@ -10,7 +10,7 @@ import SubCategory from "@/model/SubCategory";
 import Category from "@/model/Category";
 import Budget from "@/model/Budget";
 import Wallet from "@/model/Wallet";
-import { minorToMajor } from "@/lib/money/currencies";
+import { minorToMajor } from "@gastify/core/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { buildMerchantMoney } from "@/lib/money/transactionMoney";
 import { convert } from "@/lib/money/server/fxRateService";
