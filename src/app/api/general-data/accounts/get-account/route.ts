@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Account from "@/model/Account";
+import { auth } from "@/lib/auth/betterAuth";
 
 export interface GetAccountSuccessResponse {
   data: unknown;
@@ -17,11 +18,18 @@ export async function POST(
 ): Promise<NextResponse<GetAccountResponse>> {
   try {
     if (!request) throw new Error("No request received from NEW CATEGORY");
-    const userMail = await request.json();
+    // Security fix: this used to trust whatever mail the client sent in the
+    // body and return that user's accounts (names, balances, institutions)
+    // to anyone, signed in or not - an IDOR, same issue already fixed in the
+    // sibling read routes (budget/get, get-transactions, get-wallet...). The
+    // user now comes from the session; any body the client still sends
+    // (accountsSlice.ts's fetchAccounts sends its own mail) is ignored.
+    const sesion = await auth.api.getSession({ headers: request.headers });
+    if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();
     // User find
-    const userFound = await User.findOne({ mail: userMail }).lean();
+    const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
       throw new Error("User not found, review the email provided in GET-ACCOUNT POST");
     const userId = userFound._id;

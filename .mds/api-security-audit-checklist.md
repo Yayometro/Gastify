@@ -151,7 +151,7 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 ### Pendientes de revisión manual real (sin `getSession()` detectado, sin mecanismo alternativo confirmado)
 
 **Accounts (parcial)**
-- [ ] `general-data/accounts/get-account` (GET/POST) - ¿confía en un mail/id del body?
+- [x] `general-data/accounts/get-account` (POST) - arreglada 2026-10-15 en la rama `fix/get-account-session`: confiaba en el correo del body y devolvía las cuentas de cualquiera sin sesión; ahora usa `auth.api.getSession` (+ 2 pruebas).
 
 **Categories / SubCategories / Category Rules** (el CRUD y las 2 rutas
 de lectura ya se arreglaron - ver tabla de arriba; falta lo de reglas,
