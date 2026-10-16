@@ -173,18 +173,16 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
     setPhase(hasPasskey ? "challenge" : hasTotp ? "challenge-totp" : "onboard-choose");
   }, [loopBroken, sessionPending, passkeysPending, passkeys, session, serverHasPasskey, serverHasTotp]);
 
-  // Warms up the Wallet's own Redux data while the user is still proving
-  // their identity here (typing a code, or - usually - the second or two a
-  // passkey ceremony takes) - the exact same thunks
+  // Warms up the Wallet's own Redux data: the exact same thunks
   // useFetchAndGetAllReduxInfo dispatches once actually on /dashboard, just
-  // started earlier. Uses this user's own already-valid session email (not
-  // yet a fully step-up-verified one, but this data isn't gated behind
-  // that - only the Wallet UI itself is), so by the time verification
-  // succeeds and /dashboard mounts, its own `status === "idle"` guards see
-  // these as already in flight or done and skip re-fetching - the page
-  // reads as instant instead of loading a second time. If verification
-  // never completes, this prefetch simply goes unused.
-  useEffect(() => {
+  // started a moment earlier - right when the proof succeeds, before the
+  // client-side navigation. The store survives router.push, so by the time
+  // /dashboard mounts its own `status === "idle"` guards see these as already
+  // in flight or done and skip re-fetching. It used to start while the user was
+  // still typing the code, but the data routes now refuse a session that has
+  // not proven a second factor (getVerifiedSession): those early requests would
+  // fail, and the slices' "failed" status is never retried by the dashboard.
+  function prefetchWalletData(): void {
     const email = session?.user?.email;
     if (!email || prefetchTriggered.current) return;
     prefetchTriggered.current = true;
@@ -195,7 +193,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
     dispatch((fetchSubCat as unknown as ThunkWithEmail)(email));
     dispatch((fetchTrans as unknown as ThunkWithEmail)(email));
     dispatch((fetchBudget as unknown as ThunkWithEmail)(email));
-  }, [session, dispatch]);
+  }
 
   async function finishStepUp(): Promise<void> {
     setRedirecting(true);
@@ -206,6 +204,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
     // there is no separate write to await, and so no race with the
     // /dashboard SSR check (the old client-side write was observed to spiral
     // into "Maximum update depth exceeded" when not awaited).
+    prefetchWalletData();
     router.push(nextPath || "/dashboard");
   }
 

@@ -5,11 +5,12 @@ import type mongoose from "mongoose";
 import Transaction from "@/model/Transaction";
 import Tag from "@/model/Tag";
 import SubCategory from "@/model/SubCategory";
-import "@/model/Category";
+import Category from "@/model/Category";
 import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { assertOwnedOrDefault } from "@/lib/auth/ownership";
 import { minorToMajor } from "@/lib/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoney } from "@/lib/money/server/transactionReadService";
@@ -77,7 +78,7 @@ export async function POST(
     // We now verify the caller's session via auth.api.getSession, find the
     // session user in the database, and scope transaction and account lookups to the
     // user's wallet.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();
@@ -197,11 +198,13 @@ export async function POST(
       // Category / subcategory
       if (shouldUpdate("subCategory") && subCategory) {
         const foundSub = await SubCategory.findById(subCategory);
-        if (!foundSub) throw new Error("SubCategory not found at edit-many");
+        assertOwnedOrDefault(foundSub, userFound._id, userWallet, "SubCategory not found at edit-many", "isDefaultSubCatego");
         transaction.subCategory = foundSub._id as mongoose.Types.ObjectId;
         transaction.category = foundSub.fatherCategory as mongoose.Types.ObjectId;
       } else if (shouldUpdate("category") && category && !subCategory) {
-        transaction.category = category as unknown as mongoose.Types.ObjectId;
+        const foundCategory = await Category.findById(category).lean();
+        assertOwnedOrDefault(foundCategory, userFound._id, userWallet, "Category not found at edit-many", "isDefaultCatego");
+        transaction.category = foundCategory._id as mongoose.Types.ObjectId;
         if (shouldUpdate("subCategory")) transaction.subCategory = undefined;
       }
 

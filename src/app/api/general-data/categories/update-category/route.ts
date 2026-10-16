@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Category, { type ICategory } from "@/model/Category";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
 
 export interface UpdateCategoryRequestBody {
@@ -36,7 +36,7 @@ export async function POST(
     // user's category. Now the lookup is scoped to the caller's own
     // wallet (session-derived), so an id belonging to someone else's
     // category fails the same "not found" check as a bogus id.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();

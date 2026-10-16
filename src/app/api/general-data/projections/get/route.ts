@@ -3,7 +3,7 @@ import { z } from "zod";
 import dbConnection from "@/app/api/dbConnection";
 import ProjectionSettings from "@/model/ProjectionSettings";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 const getProjectionSettingsBodySchema = z
   .object({
@@ -47,7 +47,7 @@ export async function POST(
     // issue already fixed in get-user/get-wallet/get-categories/get-sub-categories/budget/get/income-sources/get.
     // The only real call sites (WalletAnalyzer.tsx and useProjectionTable.js)
     // send { mail, year }. We now verify the session and use sesion.user.email.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     const rawBody = (await request.json()) || {};

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Tag, { type ITag } from "@/model/Tag";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface NewTagRequestBody {
   name?: string | null;
@@ -31,7 +31,7 @@ export async function POST(
     // user/wallet IDs passed in the body (IDOR), allowing any caller to create tags
     // attached to arbitrary users/wallets. We now verify the caller's session via
     // auth.api.getSession and derive user and wallet directly from the authenticated user.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

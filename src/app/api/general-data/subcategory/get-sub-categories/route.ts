@@ -3,7 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import SubCategory from "@/model/SubCategory";
 import "@/model/Category";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface GetSubCategoriesSuccessResponse {
   data: {
@@ -28,7 +28,7 @@ export async function POST(
     // IDOR, same underlying issue already fixed in get-user/get-wallet/
     // get-categories. The only real call site (subCategorySlice.ts's
     // fetchSubCat) always sends its own session's email.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();

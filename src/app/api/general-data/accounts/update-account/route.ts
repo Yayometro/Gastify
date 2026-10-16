@@ -4,7 +4,7 @@ import Transaction from "@/model/Transaction";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { SUPPORTED_CURRENCIES, majorToMinor } from "@/lib/money/currencies";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface UpdateAccountRequestBody {
   accountId?: string;
@@ -41,7 +41,7 @@ export async function POST(
     // account now fails the same "not found" check as a bogus id,
     // instead of silently updating it. The only real call site
     // (EditAccountModal.jsx) always edits the caller's own account.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();

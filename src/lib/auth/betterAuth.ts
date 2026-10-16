@@ -28,6 +28,12 @@ export async function countUserPasskeys(userId: string): Promise<number> {
   return db.collection("passkey").countDocuments({ userId: { $in: [new ObjectId(userId), userId] } });
 }
 
+// Records "the user is active" on a session for the API step-up gate. Written
+// straight to the database, like stepUpVerifiedAt, so no client can forge it.
+export async function recordSessionActivity(sessionToken: string, at: Date = new Date()): Promise<void> {
+  await db.collection("session").updateOne({ token: sessionToken }, { $set: { lastApiActivityAt: at } });
+}
+
 async function bcryptHash(password: string): Promise<string> {
   const salt = await bcryptjs.genSalt(10);
   return bcryptjs.hash(password, salt);
@@ -80,6 +86,9 @@ export const auth = betterAuth({
       // declared additional field from the request body, which let a plain
       // session stamp itself as step-up verified and skip the 2FA gate.
       stepUpVerifiedAt: { type: "date", required: false, input: false },
+      // Last time an API request went through the step-up gate (see
+      // stepUpPolicy.ts). Same `input: false` rule as above.
+      lastApiActivityAt: { type: "date", required: false, input: false },
     },
   },
   // No `advanced.database.generateId` override, deliberately: the Mongo

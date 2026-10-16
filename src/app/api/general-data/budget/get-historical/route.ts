@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Budget from "@/model/Budget";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import "@/model/Category";
 import "@/model/SubCategory";
 
@@ -32,7 +32,7 @@ export async function POST(
     // get-categories/get-sub-categories/budget-get. The real call sites
     // (HistoricalBudgetsComparative.jsx, HistoricalWalletAnalyzer.jsx)
     // always send their own session's email.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
 

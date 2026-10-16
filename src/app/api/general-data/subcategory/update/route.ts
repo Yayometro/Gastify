@@ -4,7 +4,7 @@ import SubCategory, { type ISubCategory } from "@/model/SubCategory";
 import "@/model/Category";
 import Transaction from "@/model/Transaction";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
 
 export interface UpdateSubCategoryRequestBody {
@@ -39,7 +39,7 @@ export async function POST(
     // Transaction.updateMany below and could re-tag someone else's
     // transactions). Now the lookup is scoped to the caller's own wallet
     // (session-derived).
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();

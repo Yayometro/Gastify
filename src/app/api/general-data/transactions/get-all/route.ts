@@ -7,7 +7,7 @@ import User from "@/model/User";
 import Account from "@/model/Account";
 import "@/model/Tag";
 import "@/model/Budget";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { toPublicUser } from "@/lib/auth/publicUser";
 
 export interface TransactionsGetAllData {
@@ -40,7 +40,7 @@ export async function POST(
     // entire transactions, categories, subcategories, accounts, and user profile data.
     // We now verify auth.api.getSession, resolve the session user, and scope all
     // database lookups to that authenticated user and wallet.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     //DB

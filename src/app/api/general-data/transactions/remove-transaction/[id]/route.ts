@@ -3,7 +3,7 @@ import { z } from "zod";
 import dbConnection from "@/app/api/dbConnection";
 import Transaction, { type ITransaction } from "@/model/Transaction";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 const removeTransactionParamsSchema = z.object({
   id: z.string().min(1, "Transaction ID is required"),
@@ -39,7 +39,7 @@ export async function POST(
     // performed Transaction.findByIdAndDelete(params.id) directly with zero ownership check (IDOR).
     // We now verify the caller's session via auth.api.getSession, find the
     // session user in the database, and scope the deletion query to the user's wallet.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

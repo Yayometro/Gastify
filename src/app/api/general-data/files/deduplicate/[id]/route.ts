@@ -16,7 +16,7 @@ import "@/model/Tag";
 import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
 import { SUPPORTED_CURRENCIES, majorToMinor, getTransactionNativeMoney } from "@/lib/money/currencies";
 import { buildLegacyMoney } from "@/lib/money/transactionMoney";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface DedupPreviewResponse {
   ok: true;
@@ -107,7 +107,7 @@ export async function POST(
     // params.id from the URL to identify the target user account (IDOR).
     // We now derive user identity strictly from auth.api.getSession, ignoring params.id,
     // and scope queries and deletions to the session user's wallet.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     const data = await request.formData();

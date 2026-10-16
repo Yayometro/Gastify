@@ -3,7 +3,7 @@ import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface WalletGetResponse {
   mes: string;
@@ -61,7 +61,7 @@ export async function POST(
     // instead of trusted from the body. The only real call site
     // (PrimaryCurrencySelector.jsx) always sends the caller's own wallet id
     // anyway.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();

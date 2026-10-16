@@ -151,7 +151,7 @@ o legítimamente no necesitar ninguno (`/register`, el catch-all de
 ### Pendientes de revisión manual real (sin `getSession()` detectado, sin mecanismo alternativo confirmado)
 
 **Accounts (parcial)**
-- [ ] `general-data/accounts/get-account` (GET/POST) - ¿confía en un mail/id del body?
+- [x] `general-data/accounts/get-account` (POST) - arreglada 2026-10-15 en la rama `fix/get-account-session`: confiaba en el correo del body y devolvía las cuentas de cualquiera sin sesión; ahora usa `auth.api.getSession` (+ 2 pruebas).
 
 **Categories / SubCategories / Category Rules** (el CRUD y las 2 rutas
 de lectura ya se arreglaron - ver tabla de arriba; falta lo de reglas,
@@ -211,3 +211,8 @@ patrón ya usado 8 veces en esta migración: `auth.api.getSession(request.header
 + derivar el recurso del usuario de la sesión, nunca del body/params sin
 verificar. Marcar `[x]` conforme se van revisando/arreglando, y mover
 cualquier hallazgo nuevo a la tabla de "confirmados y corregidos" de arriba.
+
+## Actualización 2026-10-16
+- Barrido de patrones sobre las 61 rutas: todas las de `general-data` verifican sesión y filtran por usuario; solo son públicas a propósito `register` y `fx/quote` (ver P1 en `POST_MIGRATION_BUGS.md`). Las casillas `[ ]` de arriba que siguen sin marcar son del checklist original y ya están arregladas en las fases posteriores (ver `POST_MIGRATION_BUGS.md`).
+- Nuevo: todas las rutas de `general-data` usan `getVerifiedSession` (sesión + 2FA reciente), ver S7.
+- Nuevo: ids de cuenta/categoría/subcategoría que vienen del cliente se validan con `assertOwnedOrDefault` (ver S6).

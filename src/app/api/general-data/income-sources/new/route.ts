@@ -3,7 +3,7 @@ import { z } from "zod";
 import dbConnection from "@/app/api/dbConnection";
 import IncomeSource, { type IIncomeSource } from "@/model/IncomeSource";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { isSupportedCurrency, majorToMinor } from "@/lib/money/currencies";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
@@ -58,7 +58,7 @@ export async function POST(
     // We now verify the caller's session via auth.api.getSession, find the
     // session user in the database, and derive user and wallet directly
     // from the authenticated session.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

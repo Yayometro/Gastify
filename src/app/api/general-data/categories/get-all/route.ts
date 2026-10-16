@@ -3,7 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { toPublicUser } from "@/lib/auth/publicUser";
 
 export interface CategoriesGetAllData {
@@ -34,7 +34,7 @@ export async function POST(
     // (dead code from the frontend's point of view), but it's still
     // reachable directly over HTTP, so it gets the same fix as every other
     // route in this family.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Category from "@/model/Category";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface GetCategoriesSuccessResponse {
   data: {
@@ -27,7 +27,7 @@ export async function POST(
     // same underlying issue already fixed in get-user/get-wallet. The only
     // real call site (categoriesSlice.ts's fetchCategories) always sends
     // its own session's email.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();

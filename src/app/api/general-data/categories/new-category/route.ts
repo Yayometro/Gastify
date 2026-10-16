@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Category, { type ICategory } from "@/model/Category";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
 
 export interface NewCategoryRequestBody {
@@ -35,7 +35,7 @@ export async function POST(
     // user's wallet. Now they're always derived from the caller's own
     // session instead. The only real call site (EditCategoryModal.jsx)
     // already sends the caller's own ids anyway.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();

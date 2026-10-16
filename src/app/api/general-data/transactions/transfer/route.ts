@@ -6,7 +6,7 @@ import Transaction, { type IReportingMoney } from "@/model/Transaction";
 import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { minorToMajor } from "@/lib/money/currencies";
 import { deriveEffectiveRate } from "@/lib/money/conversion";
 import { buildSameCurrencyReportingMoney } from "@/lib/money/transactionMoney";
@@ -118,7 +118,7 @@ export async function POST(
     // with unverified ownership). We now verify the caller's session via
     // auth.api.getSession, find the session user in the database, and derive
     // user and wallet directly from the session.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     if (!sourceAccountId || !destinationAccountId)
