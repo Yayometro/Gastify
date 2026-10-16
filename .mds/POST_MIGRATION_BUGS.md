@@ -212,6 +212,31 @@ Mismas filas de la tabla de `migration-ts-logs.md` (a esa fecha), con una column
 | 167 | `Tag.tsx` | Los tags (ninguno de los 112 tiene color) caían a un gris claro `#DADADA` con el texto claro del modo oscuro: blanco sobre blanco. Reportado por el usuario el 2026-10-07. | Reportado por el usuario | Resuelto 2026-10-07 (commit `d786b47`; fondo y texto según el tema y texto legible sobre colores propios) |
 | 168 | `BudgetDetailModal.tsx` | El detalle del presupuesto sumaba ingresos de la misma categoría en 'Spent' (no filtraba `isBill`); la lista no. | Hallado 2026-10-07 | Resuelto 2026-10-07: solo cuentan gastos |
 
+## 3b. POR HACER (revisión del 2026-10-15/16)
+
+Hallazgos de la revisión de rutas de API que **no se arreglaron todavía**. Los dos más importantes (S6 y S7) ya están resueltos, ver abajo.
+
+| # | Prioridad | Tema | Detalle |
+|---|-----------|------|---------|
+| P1 | Media-baja | `fx/quote` es público y consulta la base sin límite de peticiones | Solo devuelve cotizaciones (no datos de usuarios), pero cualquiera puede hacerle peticiones ilimitadas. Revisar si conviene exigir sesión o limitar peticiones; revisar también el límite de intentos de `/api/register` y del login (Better Auth limita por defecto solo en producción). |
+| P2 | Baja | `speech-add` escribe en el log del servidor el texto dictado (`console.log(transObj)`) | Quitar el log. |
+| P3 | Baja | Logs antiguos de Vercel pueden contener contraseñas en texto plano (de antes del arreglo de septiembre en `update-user`) | Cambiar la contraseña de la cuenta real y revisar la retención de logs. |
+| P4 | Baja | Cuando la API rechaza por 2FA vencido (S7), el cliente solo ve un error de carga | Hoy responde igual que "sin sesión" (500). Hacer que `fetcher` reconozca el caso y mande a `/verify-2fa`. Pasa solo si la pestaña estuvo suspendida más de 15 min sin que el temporizador del cliente alcanzara a redirigir. |
+| P5 | Baja | Tope absoluto para S7 (opcional) | La ventana es por inactividad: una sesión activa sin parar no vuelve a pedir 2FA. Se puede agregar un máximo (por ejemplo 8-12 h desde la última prueba). Decisión de seguridad tuya. |
+| P6 | Baja | Con dispositivo real: registrar un passkey nuevo en el onboarding; añadir/borrar un passkey con el sello vencido | Ya probado por HTTP, falta el dispositivo. |
+| P7 | Baja | T1 (borrar la cuenta con passkey) y T3 (aviso del passkey que queda en el Llavero) | Ver sección 2b. |
+| P8 | Baja | Movimientos, Cuentas y Categorías con un rango de fechas libre anterior a los últimos 12 meses solo muestran la pastilla global de carga del historial | Agregar un `HistoryGate` propio como en Historial y Proyecciones. |
+| P9 | Baja | Aviso de React en la página de categorías: `value` nulo en un `<input>` | Distinto del #164 (ya resuelto en `AddTransactionComp`). |
+| P10 | Baja | 2 avisos de `postcss` (solo se corrigen con Next 16), 16 avisos de eslint por dependencias de efectos, la voz para agregar movimientos no tiene pantalla | Ya listados en la sección 4. |
+| P11 | Baja | Aviso de hidratación en desarrollo por `aria-describedby` de los tooltips de antd | Solo en desarrollo, no afecta producción; visto el 2026-10-16. |
+
+**Resueltos en esta revisión (rama `fix/get-account-session`, 2026-10-16):**
+
+| # | Tema | Estado |
+|---|------|--------|
+| S6 | `accounts/get-account` devolvía las cuentas de cualquier correo sin pedir sesión; `transactions/[id]` y `edit-many` aceptaban cuenta/categoría/subcategoría sin comprobar que fueran del usuario | Resuelto 2026-10-16. `get-account` usa la sesión; nuevo `src/lib/auth/ownership.ts` (`assertOwnedOrDefault`) usado por crear, editar, editar varios y aplicar sugerencias. Pruebas nuevas en cada ruta. |
+| S7 | La verificación 2FA solo se revisaba al cargar páginas, no en la API: una sesión que nunca pasó el 2FA (por ejemplo Google antes de `/verify-2fa`) podía llamar a las rutas de datos directamente | Resuelto 2026-10-16. `src/lib/auth/requireVerifiedSession.ts` (`getVerifiedSession`) reemplaza a `auth.api.getSession` en las 56 rutas de `general-data`: exige haber pasado un segundo factor y no llevar más de 15 min inactiva (la actividad se guarda en el campo de sesión `lastApiActivityAt`, solo escribible por el servidor). Probado de punta a punta contra el servidor (sin 2FA rechaza; con TOTP funciona; 20 min inactiva rechaza; activa con prueba vieja funciona; el cliente no puede falsificar `lastApiActivityAt`) y en Chrome con una cuenta desechable. Las rutas de tokens de API (`/api/mcp`) no cambian. |
+
 ## 4. Decisiones y limpiezas (estado al 2026-10-13: todo cerrado)
 
 - **26 archivos `.js`/`.jsx` de código muerto:** **borrados el 2026-10-08** (lista, función y motivo en `migration-ts-logs.md`, sección "Código muerto ELIMINADO").

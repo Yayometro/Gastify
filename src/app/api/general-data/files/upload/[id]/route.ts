@@ -14,7 +14,7 @@ import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface SkippedRow {
   row: number;
@@ -147,7 +147,7 @@ export async function POST(
     // Security fix: this route previously lacked session authentication and trusted
     // params.id from the URL to identify the target user account (IDOR).
     // We now derive user identity strictly from auth.api.getSession, ignoring params.id.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     const data = await request.formData();

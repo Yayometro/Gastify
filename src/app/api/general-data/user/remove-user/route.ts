@@ -15,6 +15,7 @@ import IncomeSource from "@/model/IncomeSource";
 import ProjectionBaseline from "@/model/ProjectionBaseline";
 import ProjectionSettings from "@/model/ProjectionSettings";
 import { auth, countUserPasskeys } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { hasFreshStepUp, STEP_UP_REQUIRED_CODE } from "@/lib/auth/factorChangePolicy";
 import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
 import {
@@ -83,7 +84,7 @@ export async function POST(
     if (!request) throw new Error("No data in request on REMOVE USER");
 
     // Identity always comes from the session, never from the body (fix #43).
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) return fail(401, "No hay una sesión activa.");
     const mail = sesion.user.email;
     const sessionToken = sesion.session.token;

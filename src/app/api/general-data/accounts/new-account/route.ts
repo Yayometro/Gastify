@@ -4,7 +4,7 @@ import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { SUPPORTED_CURRENCIES, majorToMinor } from "@/lib/money/currencies";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface NewAccountRequestBody {
   name?: string;
@@ -38,7 +38,7 @@ export async function POST(
     // are always derived from the caller's own session instead of
     // trusted from the body. The only real call site
     // (EditAccountModal.jsx) always sends the caller's own ids anyway.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();

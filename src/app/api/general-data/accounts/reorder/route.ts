@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Account from "@/model/Account";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface ReorderAccountsRequestBody {
   orderedIds?: string[];
@@ -33,7 +33,7 @@ export async function POST(
     // authenticated or not. The only real call site (MultiCreditCard.tsx)
     // always sends its own session's email, so deriving it server-side
     // instead closes the hole with no change to any legitimate behavior.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
 

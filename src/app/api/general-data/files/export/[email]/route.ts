@@ -10,7 +10,7 @@ import dbConnection from "@/app/api/dbConnection";
 import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, EXPORT_NOTE_PREFIX } from "@/lib/files/gastifyTemplate";
 import { getTransactionNativeMoney } from "@/lib/money/currencies";
 import { buildLegacyMoney } from "@/lib/money/transactionMoney";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import dayjs from "dayjs";
 
 export interface ExportTransactionsRequestBody {
@@ -35,7 +35,7 @@ export async function POST(
     // params.email from the URL to export transaction records (IDOR).
     // We now verify auth.api.getSession, resolve user identity exclusively from the session,
     // and query transactions scoped to user._id.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

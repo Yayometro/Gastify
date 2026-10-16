@@ -16,7 +16,7 @@ import {
   attachDisplayMoneyToList,
   type WithDisplayMoney,
 } from "@/lib/money/server/transactionReadService";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface SuggestRequestBody {
   mail?: string | null;
@@ -62,7 +62,7 @@ export async function POST(
     // session verification, allowing any caller to query any user's uncategorized
     // transactions and category rules. We now authenticate via auth.api.getSession,
     // ignore client-sent `mail`, and scope all lookups to the session user and wallet.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import IncomeSource from "@/model/IncomeSource";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface GetIncomeSourcesStatusResponse {
   mes: string;
@@ -34,7 +34,7 @@ export async function POST(
     // get-user/get-wallet/get-categories/get-sub-categories/budget/get. The
     // only real call sites (WalletAnalyzer.tsx and useProjectionTable.js)
     // always send the session user's email.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     // User find

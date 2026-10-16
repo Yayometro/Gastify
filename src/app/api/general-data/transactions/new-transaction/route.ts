@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { createTransaction } from "@/lib/transactions/createTransaction";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
@@ -71,7 +71,7 @@ export async function POST(
     // with unverified ownership). We now verify the caller's session via
     // auth.api.getSession, find the session user in the database, and derive
     // user and wallet directly from the session.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

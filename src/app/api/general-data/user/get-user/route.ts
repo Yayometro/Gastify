@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "../../../dbConnection";
 import User, { type IUser } from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
 
 export interface GetUserSuccessResponse {
@@ -26,7 +26,7 @@ export async function POST(
     // deriving it server-side from the authenticated session instead of
     // trusting the request body closes the hole with no change to any
     // legitimate caller's behavior.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     const mail = sesion.user.email;
     //

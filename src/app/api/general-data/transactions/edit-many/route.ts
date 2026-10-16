@@ -9,7 +9,7 @@ import Category from "@/model/Category";
 import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { assertOwnedOrDefault } from "@/lib/auth/ownership";
 import { minorToMajor } from "@/lib/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
@@ -78,7 +78,7 @@ export async function POST(
     // We now verify the caller's session via auth.api.getSession, find the
     // session user in the database, and scope transaction and account lookups to the
     // user's wallet.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

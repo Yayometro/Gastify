@@ -8,7 +8,7 @@ import Wallet from "@/model/Wallet";
 import xlsxPopulate from "xlsx-populate";
 import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
 import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, TEMPLATE_NOTE } from "@/lib/files/gastifyTemplate";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface TemplateErrorResponse {
   error?: string;
@@ -23,7 +23,7 @@ export async function GET(
     // params.email from the URL to fetch user accounts, categories, and wallet config (IDOR).
     // We now verify auth.api.getSession, resolve user identity exclusively from the session,
     // and query categories, subcategories, accounts, and wallet scoped to the session user.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

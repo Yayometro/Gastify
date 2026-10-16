@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "../../../dbConnection";
 import User, { type IUser } from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
 // export async function POST(request){
 //     try{
@@ -71,7 +72,7 @@ export async function POST(
     // honored below as the new email value being requested (changing your
     // own email is a legitimate feature) - only the lookup of WHICH user
     // to update no longer trusts the client.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFounded = await User.findOne({ mail: sesion.user.email }).lean();

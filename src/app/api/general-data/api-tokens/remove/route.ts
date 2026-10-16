@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface RemoveApiTokenRequestBody {
   tokenId?: string;
@@ -31,7 +31,7 @@ export async function POST(
     // (ApiTokensPanel.tsx) always sends its own session's email, so
     // deriving it server-side instead closes the hole with no change to
     // any legitimate caller's behavior.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     const mail = sesion.user.email;
     await dbConnection();

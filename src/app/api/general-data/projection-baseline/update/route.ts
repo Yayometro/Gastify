@@ -9,7 +9,7 @@ import ProjectionBaseline, {
 import User from "@/model/User";
 import Wallet from "@/model/Wallet";
 import { majorToMinor, SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 const updateProjectionBaselineBodySchema = z
   .object({
@@ -61,7 +61,7 @@ export async function POST(
     // get-sub-categories/budget/get/income-sources/get/projections/get/projections/update.
     // We now verify the caller's session via auth.api.getSession and derive the user
     // from sesion.user.email.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     const rawBody = (await request.json()) || {};

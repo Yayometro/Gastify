@@ -9,7 +9,7 @@ import "@/model/Account";
 import "@/model/Tag";
 import "@/model/Budget";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { createServerTimer } from "@/lib/perf/serverTiming";
 import { buildDateWindowFilter } from "@/lib/transactions/historyWindowQuery";
 
@@ -44,7 +44,7 @@ export async function POST(
     // resolve the user from the session instead.
     const timer = createServerTimer();
     const totalStart = performance.now();
-    const sesion = await timer.time("session", () => auth.api.getSession({ headers: request.headers }));
+    const sesion = await timer.time("session", () => getVerifiedSession(request.headers));
     if (!sesion) throw new Error("No session");
 
     // Optional date window, so the client can ask for the recent months first and

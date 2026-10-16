@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import Tag, { type ITag } from "@/model/Tag";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface RemoveTagRequestBody {
   id?: string;
@@ -28,7 +28,7 @@ export async function POST(
     // Tag.findByIdAndDelete(id) directly without checking ownership (IDOR), allowing
     // any caller to delete any user's tags. We now verify the caller's session via
     // auth.api.getSession and scope the deletion to the user's account and wallet.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

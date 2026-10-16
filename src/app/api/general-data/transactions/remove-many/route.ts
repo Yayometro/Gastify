@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import Transaction from "@/model/Transaction";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -51,7 +51,7 @@ export async function POST(
     // performed Transaction.deleteMany({ _id: { $in: manyTrans } }) directly with zero ownership check (IDOR).
     // We now verify the caller's session via auth.api.getSession, find the
     // session user in the database, and scope the deletion query to the user's wallet.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

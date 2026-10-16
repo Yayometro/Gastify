@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import Account, { type IAccount } from "@/model/Account";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export type RemoveAccountRequestBody = string;
 
@@ -29,7 +29,7 @@ export async function POST(
     // Now deletion is scoped to an account that actually belongs to the
     // caller's own session/wallet. The only real call site
     // (EditAccountModal.jsx) always removes the caller's own account.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();

@@ -6,7 +6,7 @@ import SubCategory from "@/model/SubCategory";
 import "@/model/Tag";
 import "@/model/Account";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { assertOwnedOrDefault } from "@/lib/auth/ownership";
 
 export interface CategorySuggestionApplication {
@@ -43,7 +43,7 @@ export async function POST(
     // transactions and assigned category/subCategory without verifying ownership.
     // We now authenticate the caller session, scope transaction lookups to the caller's
     // user and wallet, and verify category/subCategory ownership or default status.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     await dbConnection();

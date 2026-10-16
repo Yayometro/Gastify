@@ -11,7 +11,7 @@ import "@/model/Tag";
 import Wallet from "@/model/Wallet";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -46,7 +46,7 @@ export async function POST(
     // whatever user id was passed in the request body (IDOR), creating transactions
     // in another user's wallet. We now verify the session via auth.api.getSession,
     // find the authenticated user by email, and derive user and wallet directly from the session.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     //Variables

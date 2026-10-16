@@ -7,7 +7,7 @@ import ProjectionBaseline, {
   type IBaselineExpenseHistoryEntry,
 } from "@/model/ProjectionBaseline";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 const deleteProjectionBaselineBodySchema = z
   .object({
@@ -54,7 +54,7 @@ export async function POST(
     // same underlying issue already fixed across the app (fix #39).
     // We now verify the caller's session via auth.api.getSession and derive the user
     // from sesion.user.email.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
 
     const rawBody = (await request.json()) || {};

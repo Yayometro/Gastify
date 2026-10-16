@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Account from "@/model/Account";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface GetAccountSuccessResponse {
   data: unknown;
@@ -24,7 +24,7 @@ export async function POST(
     // sibling read routes (budget/get, get-transactions, get-wallet...). The
     // user now comes from the session; any body the client still sends
     // (accountsSlice.ts's fetchAccounts sends its own mail) is ignored.
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     //DB
     await dbConnection();

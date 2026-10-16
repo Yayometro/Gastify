@@ -3,7 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import Budget, { type IBudget } from "@/model/Budget";
 import Transaction from "@/model/Transaction";
 import User from "@/model/User";
-import { auth } from "@/lib/auth/betterAuth";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
 
 export interface RemoveBudgetGetStatusResponse {
@@ -43,7 +43,7 @@ export async function POST(
     // matcher, so any caller could archive (and unlink the transactions of)
     // any other user's budget. Now the lookup is scoped to the caller's own
     // wallet (session-derived).
-    const sesion = await auth.api.getSession({ headers: request.headers });
+    const sesion = await getVerifiedSession(request.headers);
     if (!sesion) throw new Error("No session");
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
