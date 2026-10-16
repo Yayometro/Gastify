@@ -7,7 +7,7 @@ import Transaction, { type ITransactionMoney } from "@/model/Transaction";
 import Tag from "@/model/Tag";
 import Account from "@/model/Account";
 import SubCategory from "@/model/SubCategory";
-import "@/model/Category";
+import Category from "@/model/Category";
 import Budget from "@/model/Budget";
 import Wallet from "@/model/Wallet";
 import { minorToMajor } from "@/lib/money/currencies";
@@ -16,6 +16,7 @@ import { buildMerchantMoney } from "@/lib/money/transactionMoney";
 import { convert } from "@/lib/money/server/fxRateService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { auth } from "@/lib/auth/betterAuth";
+import { assertOwnedOrDefault } from "@/lib/auth/ownership";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -146,6 +147,10 @@ export async function POST(
       const newAccountDoc = nextAccount
         ? await Account.findById(nextAccount).lean()
         : null;
+      // The new account comes from the client: it must be one of THIS user's.
+      if (nextAccount) {
+        assertOwnedOrDefault(newAccountDoc, findTrans.user, findTrans.wallet, "Account not found for this user");
+      }
       nextAccountCurrency = newAccountDoc?.currency || walletPrimaryCurrency;
 
       if (nextAccountCurrency !== currentAccountCurrency) {
@@ -289,17 +294,28 @@ export async function POST(
       if (String(findTrans.subCategory || "") !== String(subCategory || "")) {
         const findSubCategory = await SubCategory.findById(subCategory).lean();
 
-        if (!findSubCategory)
-          throw new Error("No SUB-CATEGORY found at UPDATE TRANSACTION");
+        assertOwnedOrDefault(
+          findSubCategory,
+          findTrans.user,
+          findTrans.wallet,
+          "No SUB-CATEGORY found at UPDATE TRANSACTION",
+          "isDefaultSubCatego"
+        );
         findTrans.category = findSubCategory.fatherCategory as mongoose.Types.ObjectId;
         findTrans.subCategory = findSubCategory._id as mongoose.Types.ObjectId;
       }
     }
     // CATEGORY UPDATE
     if (category && !subCategory) {
-      findTrans.category = !category
-        ? findTrans.category
-        : (category as unknown as mongoose.Types.ObjectId);
+      const foundCategory = await Category.findById(category).lean();
+      assertOwnedOrDefault(
+        foundCategory,
+        findTrans.user,
+        findTrans.wallet,
+        "Category not found for this user",
+        "isDefaultCatego"
+      );
+      findTrans.category = foundCategory._id as mongoose.Types.ObjectId;
     }
     // TAGS UPDATE
     if (Array.isArray(tags)) {

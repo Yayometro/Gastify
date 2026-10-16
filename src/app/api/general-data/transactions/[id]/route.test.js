@@ -5,7 +5,7 @@ vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/Account", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/SubCategory", () => ({ default: { findById: vi.fn() } }));
-vi.mock("@/model/Category", () => ({ default: {} }));
+vi.mock("@/model/Category", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Budget", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/Tag", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/lib/money/server/transactionMoneyService", () => ({ buildTransactionMoney: vi.fn() }));
@@ -18,6 +18,8 @@ vi.mock("@/model/Transaction", () => ({ default: { findOne: vi.fn(), findById: v
 
 import Transaction from "@/model/Transaction";
 import Account from "@/model/Account";
+import SubCategory from "@/model/SubCategory";
+import Category from "@/model/Category";
 import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
@@ -102,7 +104,7 @@ describe("update-transaction account currency-change strategy", () => {
     const findTrans = makeFindTrans();
     Transaction.findOne.mockResolvedValue(findTrans);
     Transaction.findById.mockReturnValue(chainablePopulate({}));
-    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
+    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD", user: "u1", wallet: "w1" }) });
 
     await expect(
       POST(mockRequest({ account: "acc-usd" }), { params: { id: "t1" } })
@@ -115,7 +117,7 @@ describe("update-transaction account currency-change strategy", () => {
     const findTrans = makeFindTrans();
     Transaction.findOne.mockResolvedValue(findTrans);
     Transaction.findById.mockReturnValue(chainablePopulate({}));
-    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
+    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD", user: "u1", wallet: "w1" }) });
 
     await POST(mockRequest({ account: "acc-usd", currencyStrategy: "reinterpret" }), { params: { id: "t1" } });
 
@@ -129,7 +131,7 @@ describe("update-transaction account currency-change strategy", () => {
     const findTrans = makeFindTrans();
     Transaction.findOne.mockResolvedValue(findTrans);
     Transaction.findById.mockReturnValue(chainablePopulate({}));
-    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
+    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD", user: "u1", wallet: "w1" }) });
     convert.mockResolvedValue({ available: true, amountMinor: 592, currency: "USD", rate: "0.0592" });
 
     await POST(mockRequest({ account: "acc-usd", currencyStrategy: "convert" }), { params: { id: "t1" } });
@@ -146,7 +148,7 @@ describe("update-transaction account currency-change strategy", () => {
     const findTrans = makeFindTrans();
     Transaction.findOne.mockResolvedValue(findTrans);
     Transaction.findById.mockReturnValue(chainablePopulate({}));
-    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
+    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD", user: "u1", wallet: "w1" }) });
 
     await expect(
       POST(mockRequest({ account: "acc-usd", currencyStrategy: "manual" }), { params: { id: "t1" } })
@@ -157,7 +159,7 @@ describe("update-transaction account currency-change strategy", () => {
     const findTrans = makeFindTrans();
     Transaction.findOne.mockResolvedValue(findTrans);
     Transaction.findById.mockReturnValue(chainablePopulate({}));
-    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD" }) });
+    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "USD", user: "u1", wallet: "w1" }) });
     convert.mockResolvedValue({ available: false });
 
     await expect(
@@ -169,7 +171,7 @@ describe("update-transaction account currency-change strategy", () => {
     const findTrans = makeFindTrans();
     Transaction.findOne.mockResolvedValue(findTrans);
     Transaction.findById.mockReturnValue(chainablePopulate({}));
-    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "MXN" }) });
+    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ currency: "MXN", user: "u1", wallet: "w1" }) });
 
     await POST(mockRequest({ account: "acc-mxn-2" }), { params: { id: "t1" } });
 
@@ -263,5 +265,51 @@ describe("update-transaction merchant field (Charged in another currency)", () =
 
     expect(buildTransactionMoney).not.toHaveBeenCalled(); // reporting still preserved
     expect(findTrans.money.merchant).toEqual({ amountMinor: 5000, currency: "USD" });
+  });
+});
+
+describe("update-transaction only accepts the caller's own account, category and sub-category", () => {
+  const stranger = { user: "u2", wallet: "w2", currency: "MXN" };
+
+  it("rejects an account that belongs to someone else", async () => {
+    const findTrans = makeFindTrans();
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Account.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue(stranger) });
+
+    await expect(POST(mockRequest({ account: "foreign-acc" }), { params: { id: "t1" } })).rejects.toThrow(/Account not found for this user/);
+    expect(findTrans.save).not.toHaveBeenCalled();
+  });
+
+  it("rejects a sub-category that belongs to someone else", async () => {
+    const findTrans = makeFindTrans();
+    Transaction.findOne.mockResolvedValue(findTrans);
+    SubCategory.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ ...stranger, fatherCategory: "c9" }) });
+
+    await expect(POST(mockRequest({ subCategory: "foreign-sub" }), { params: { id: "t1" } })).rejects.toThrow(/No SUB-CATEGORY found/);
+    expect(findTrans.save).not.toHaveBeenCalled();
+  });
+
+  it("rejects a category that belongs to someone else", async () => {
+    const findTrans = makeFindTrans();
+    Transaction.findOne.mockResolvedValue(findTrans);
+    Category.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue(stranger) });
+
+    await expect(POST(mockRequest({ category: "foreign-cat" }), { params: { id: "t1" } })).rejects.toThrow(/Category not found for this user/);
+    expect(findTrans.save).not.toHaveBeenCalled();
+  });
+
+  it("accepts the caller's own category and a shared default one", async () => {
+    const own = makeFindTrans();
+    Transaction.findOne.mockResolvedValue(own);
+    Transaction.findById.mockReturnValue(chainablePopulate({}));
+    Category.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ _id: "c1", user: "u1", wallet: "w1" }) });
+    await POST(mockRequest({ category: "c1" }), { params: { id: "t1" } });
+    expect(own.category).toBe("c1");
+
+    const shared = makeFindTrans();
+    Transaction.findOne.mockResolvedValue(shared);
+    Category.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ _id: "c-def", user: "u2", wallet: "w2", isDefaultCatego: true }) });
+    await POST(mockRequest({ category: "c-def" }), { params: { id: "t1" } });
+    expect(shared.category).toBe("c-def");
   });
 });

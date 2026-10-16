@@ -7,6 +7,7 @@ import "@/model/Tag";
 import "@/model/Account";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
+import { assertOwnedOrDefault } from "@/lib/auth/ownership";
 
 export interface CategorySuggestionApplication {
   transactionId?: string | null;
@@ -26,21 +27,6 @@ export interface ApplySuggestionsSuccessResponse {
 }
 
 export type ApplySuggestionsResponse = ApplySuggestionsSuccessResponse;
-
-function assertOwnedOrDefault<T extends { user?: unknown; wallet?: unknown }>(
-  doc: T | null | undefined,
-  user: unknown,
-  wallet: unknown,
-  message: string,
-  defaultFlag?: string
-): T {
-  if (!doc) throw new Error(message);
-  if (defaultFlag && (doc as Record<string, unknown>)[defaultFlag]) return doc;
-  if (String(doc.user) !== String(user) || String(doc.wallet) !== String(wallet)) {
-    throw new Error(message);
-  }
-  return doc;
-}
 
 export async function POST(
   request: NextRequest | Request

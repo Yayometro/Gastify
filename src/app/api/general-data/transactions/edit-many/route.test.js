@@ -4,7 +4,7 @@ vi.mock("@/app/api/dbConnection", () => ({ default: vi.fn() }));
 vi.mock("@/model/User", () => ({ default: { findOne: vi.fn() } }));
 vi.mock("@/model/Tag", () => ({ default: { findOne: vi.fn(), create: vi.fn() } }));
 vi.mock("@/model/SubCategory", () => ({ default: { findById: vi.fn() } }));
-vi.mock("@/model/Category", () => ({ default: {} }));
+vi.mock("@/model/Category", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/model/Account", () => ({ default: { findById: vi.fn(), findOne: vi.fn() } }));
 vi.mock("@/model/Wallet", () => ({ default: { findById: vi.fn() } }));
 vi.mock("@/lib/money/server/transactionMoneyService", () => ({ buildTransactionMoney: vi.fn() }));
@@ -15,6 +15,8 @@ vi.mock("@/lib/auth/betterAuth", () => ({
 
 import Transaction from "@/model/Transaction";
 import Account from "@/model/Account";
+import SubCategory from "@/model/SubCategory";
+import Category from "@/model/Category";
 import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
@@ -118,5 +120,48 @@ describe("bulk account reassignment currency safety", () => {
     const body = await res.json();
 
     expect(body.ok).toBe(true);
+  });
+});
+
+describe("edit-many only accepts the caller's own category and sub-category", () => {
+  const stranger = { user: "u2", wallet: "w2" };
+
+  it("rejects a sub-category that belongs to someone else, saving nothing", async () => {
+    const t1 = makeTrans("t1", "MXN");
+    Transaction.findOne.mockResolvedValue(t1);
+    SubCategory.findById.mockResolvedValue({ ...stranger, fatherCategory: "c9" });
+
+    const res = await POST(mockRequest({ transactions: ["t1"], fields: ["subCategory"], subCategory: "foreign-sub" }));
+    const body = await res.json();
+
+    expect(body.ok).toBe(false);
+    expect(body.message).toMatch(/SubCategory not found/);
+    expect(t1.save).not.toHaveBeenCalled();
+  });
+
+  it("rejects a category that belongs to someone else, saving nothing", async () => {
+    const t1 = makeTrans("t1", "MXN");
+    Transaction.findOne.mockResolvedValue(t1);
+    Category.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue(stranger) });
+
+    const res = await POST(mockRequest({ transactions: ["t1"], fields: ["category"], category: "foreign-cat" }));
+    const body = await res.json();
+
+    expect(body.ok).toBe(false);
+    expect(body.message).toMatch(/Category not found/);
+    expect(t1.save).not.toHaveBeenCalled();
+  });
+
+  it("applies the caller's own sub-category and its parent category", async () => {
+    const t1 = makeTrans("t1", "MXN");
+    Transaction.findOne.mockResolvedValue(t1);
+    SubCategory.findById.mockResolvedValue({ _id: "s1", user: "u1", wallet: "w1", fatherCategory: "c1" });
+
+    const res = await POST(mockRequest({ transactions: ["t1"], fields: ["subCategory"], subCategory: "s1" }));
+    const body = await res.json();
+
+    expect(body.ok).toBe(true);
+    expect(t1.subCategory).toBe("s1");
+    expect(t1.category).toBe("c1");
   });
 });
