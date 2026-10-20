@@ -17,6 +17,9 @@ export const Colors = {
     accent: '#7e22ce',
     accentSoft: 'rgba(147, 51, 234, 0.08)',
     border: 'rgba(27, 16, 61, 0.1)',
+    // Money in and out (the web's green and red for incomes and bills).
+    income: '#059669',
+    expense: '#e11d48',
   },
   dark: {
     text: '#f3f0fb',
@@ -27,6 +30,8 @@ export const Colors = {
     accent: '#d3b8fb',
     accentSoft: 'rgba(147, 51, 234, 0.18)',
     border: 'rgba(255, 255, 255, 0.1)',
+    income: '#34d399',
+    expense: '#fb7185',
   },
 } as const;
 

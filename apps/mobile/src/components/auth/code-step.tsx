@@ -28,6 +28,9 @@ export function CodeStep({ onVerified, onGiveUp }: { onVerified: () => void; onG
         ? await authClient.twoFactor.verifyBackupCode({ code: value })
         : await authClient.twoFactor.verifyTotp({ code: value });
       if (!result.error) {
+        // The session stored by the second factor is not read again on its own in the app: tell the
+        // auth client to re-read it, so the screens waiting for the session move on (as passkey does).
+        authClient.$store.notify('$sessionSignal');
         onVerified();
         return;
       }

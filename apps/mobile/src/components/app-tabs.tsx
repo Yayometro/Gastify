@@ -6,6 +6,7 @@ import { type ColorValue, StyleSheet, useColorScheme, View } from 'react-native'
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
 import { Colors } from '@/constants/theme';
+import { useLoadAppData } from '@/hooks/use-load-app-data';
 
 const ICON_SIZE = 25;
 
@@ -13,6 +14,8 @@ const ICON_SIZE = 25;
 // icons only (same icon families as the web: FaWallet, FaMoneyBillTransfer, MdSavings, IoAdd),
 // a purple gradient "+" in the middle, and a soft purple highlight behind the active icon.
 export default function AppTabs() {
+  // Only rendered for a signed-in, unlocked session (see AuthGate): the data loads start here, once.
+  useLoadAppData();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const colors = Colors[isDark ? 'dark' : 'light'];

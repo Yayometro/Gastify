@@ -10,6 +10,9 @@ import { isSpendingBudget } from "./budgetTypes";
 import { minorToMajor } from "@gastify/core/money/currencies";
 import { getDisplayCurrency } from "@gastify/core/money/displayCurrency";
 
+// Dates from the stored fields, which may be missing (Invalid Date, as before).
+const asDate = (value: unknown): Date => new Date(value as string | number | Date);
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 type DateLike = Date | string | number;
@@ -175,7 +178,7 @@ export type ProjectionMonthComparison = {
 };
 
 function sum(arr: (number | undefined | null)[]): number {
-  return arr.reduce((acc, n) => acc + (n || 0), 0);
+  return arr.reduce((acc: number, n) => acc + (n || 0), 0);
 }
 
 function startOfMonth(date: Date): Date {
@@ -345,7 +348,7 @@ export function getBudgetActualSpend(
   const { startDate, endDate } = getBudgetPeriodRange(budget, refDate, fallbackStartDate, fallbackEndDate);
   const matched = (allTransactions || []).filter((tra) => {
     if (!tra.isBill) return false;
-    const tDate = new Date(tra.date || tra.createdAt);
+    const tDate = asDate(tra.date || tra.createdAt);
     // An invalid date passes `< start` / `> end` (both false), so it used to be counted (bug 103).
     if (Number.isNaN(tDate.getTime()) || tDate < startDate || tDate > endDate) return false;
     return matchBillToBudget(tra, budget);
@@ -414,9 +417,9 @@ export function getMonthCurrencyBreakdown(
     const g = groups[currency];
     g.nativeAmountMinor += native.amountMinor;
     g.primaryAmountMinor += primary.amountMinor;
-    if (!g.effectiveDate || new Date(primary.effectiveDate) > new Date(g.effectiveDate)) {
-      g.rate = primary.rate;
-      g.effectiveDate = primary.effectiveDate;
+    if (!g.effectiveDate || asDate(primary.effectiveDate) > asDate(g.effectiveDate)) {
+      g.rate = primary.rate as typeof g.rate;
+      g.effectiveDate = primary.effectiveDate as typeof g.effectiveDate;
     }
   }
   const breakdown = Object.values(groups);
@@ -457,7 +460,7 @@ function getMonthBufferAtDate(
     // the flat fields are the only signal available, same as pre-feature behavior.
     return { unexpectedBuffer: entry.unexpectedBuffer || 0, unexpectedIncomeBuffer: entry.unexpectedIncomeBuffer || 0 };
   }
-  const candidates = revisions.filter((r) => new Date(r.updatedAt) <= asOfDate);
+  const candidates = revisions.filter((r) => asDate(r.updatedAt) <= asOfDate);
   if (candidates.length === 0) {
     // Every recorded revision happened AFTER this month closed - nothing was
     // actually set by month-end, so there's no historical buffer to report.
@@ -465,7 +468,7 @@ function getMonthBufferAtDate(
     // too-late edit, reintroducing the exact bug this function fixes.)
     return { unexpectedBuffer: 0, unexpectedIncomeBuffer: 0 };
   }
-  const latest = candidates.reduce((a, b) => (new Date(b.updatedAt) > new Date(a.updatedAt) ? b : a));
+  const latest = candidates.reduce((a, b) => (asDate(b.updatedAt) > asDate(a.updatedAt) ? b : a));
   return { unexpectedBuffer: latest.unexpectedBuffer || 0, unexpectedIncomeBuffer: latest.unexpectedIncomeBuffer || 0 };
 }
 
@@ -489,7 +492,7 @@ function sumBaselineEntriesAtDate(
   moneyField: BaselineMoneyField
 ): number | null {
   const active = (entries || []).filter((entry) => {
-    const from = new Date(entry.effectiveFrom);
+    const from = asDate(entry.effectiveFrom);
     const to = entry.effectiveTo ? new Date(entry.effectiveTo) : null;
     return from <= monthStart && (!to || to > monthStart);
   });
@@ -627,12 +630,12 @@ export function buildProjectionAccuracyReport({
     })
     .map(({ row }) => ({
       monthName: row.monthName,
-      projectedIncome: row.historicalIncome,
-      projectedExpense: row.historicalExpense,
-      actualIncome: row.income,
-      actualExpense: row.expense,
-      varianceIncome: row.income - row.historicalIncome,
-      varianceExpense: row.expense - row.historicalExpense,
+      projectedIncome: row.historicalIncome!,
+      projectedExpense: row.historicalExpense!,
+      actualIncome: row.income!,
+      actualExpense: row.expense!,
+      varianceIncome: row.income! - row.historicalIncome!,
+      varianceExpense: row.expense! - row.historicalExpense!,
     }));
 }
 
@@ -661,15 +664,15 @@ export function buildProjectionComparisonForMonth({
     if (!hasProjectionDataForMonth(projectionSettings, projectionBaseline, monthIndex, new Date(year, monthIndex, 1))) return null;
     return {
       type: "closed",
-      projectedIncome: row.historicalIncome, actualIncome: row.income,
-      projectedExpense: row.historicalExpense, actualExpense: row.expense,
+      projectedIncome: row.historicalIncome!, actualIncome: row.income!,
+      projectedExpense: row.historicalExpense!, actualExpense: row.expense!,
     };
   }
   if (row.type === "current") {
     return {
       type: "in-progress",
-      projectedIncome: row.shadowIncome, actualIncome: row.actualIncome,
-      projectedExpense: row.shadowExpense, actualExpense: row.actualExpense,
+      projectedIncome: row.shadowIncome!, actualIncome: row.actualIncome!,
+      projectedExpense: row.shadowExpense!, actualExpense: row.actualExpense!,
     };
   }
   return null; // future month - nothing to compare yet
@@ -719,7 +722,7 @@ export function estimateHistoricalBalances<
   if (firstKnownIndex > 0) {
     let bal = result[firstKnownIndex].balance != null ? result[firstKnownIndex].balance : result[firstKnownIndex].estimatedBalance;
     for (let i = firstKnownIndex; i > 0; i--) {
-      bal -= netOf(i);
+      bal = (bal as number) - netOf(i);
       if (result[i - 1].type === "actual") result[i - 1].estimatedBalance = bal;
     }
   }
@@ -758,15 +761,15 @@ export function computeYearRowsWithBalance(
   let runningBalance = startingBalance;
   let reachedCurrent = false;
   return rows.map((row, index): YearProjectionRowWithBalance => {
-    const net = row.type === "current" ? row.projectedIncome - row.projectedExpense : row.income - row.expense;
+    const net = row.type === "current" ? row.projectedIncome! - row.projectedExpense! : row.income! - row.expense!;
     const isCurrentOrLater = year > today.getFullYear() || row.type !== "actual";
     const manualEntry = (monthlyBalances || []).find((m) => m.month === index);
     if (!isCurrentOrLater) {
-      return { ...row, net, balance: manualEntry ? manualEntry.balance : null, manualBalance: manualEntry?.balance };
+      return { ...row, net, balance: manualEntry ? (manualEntry.balance as number | null) : null, manualBalance: manualEntry?.balance };
     }
     if (row.type === "current") {
       reachedCurrent = true;
-      const remainingNet = (row.projectedIncome - row.actualIncome) - (row.projectedExpense - row.actualExpense);
+      const remainingNet = (row.projectedIncome! - row.actualIncome!) - (row.projectedExpense! - row.actualExpense!);
       runningBalance += remainingNet;
       return { ...row, net, balance: runningBalance };
     }
@@ -774,6 +777,6 @@ export function computeYearRowsWithBalance(
       runningBalance += net;
       return { ...row, net, balance: runningBalance };
     }
-    return { ...row, net, balance: manualEntry ? manualEntry.balance : null, manualBalance: manualEntry?.balance };
+    return { ...row, net, balance: manualEntry ? (manualEntry.balance as number | null) : null, manualBalance: manualEntry?.balance };
   });
 }

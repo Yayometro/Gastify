@@ -1,4 +1,4 @@
-import { matchBillToBudget } from "./projectionsChange";
+import { matchBillToBudget, type BillLike } from "./projectionsChange";
 import {
   getExplicitBudgetId,
   isSpendingBudget,
@@ -174,7 +174,7 @@ export function getBudgetCoverage<
       : null;
     const matchingBudgets = explicitBudget
       ? [explicitBudget]
-      : categoryBudgets.filter((budget) => matchBillToBudget(transaction, budget));
+      : categoryBudgets.filter((budget) => matchBillToBudget(transaction as unknown as BillLike, budget as unknown as Parameters<typeof matchBillToBudget>[1]));
     if (matchingBudgets.length === 0) uncovered.push(transaction);
     else covered.push(transaction);
     if (matchingBudgets.length > 1) conflicts.push({ transaction, budgets: matchingBudgets });

@@ -8,6 +8,9 @@ import type { PrimaryAmountItem } from "@gastify/core/time/timeFunctions";
 import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
 import { minorToMajor } from "@gastify/core/money/currencies";
 
+// Dates from the stored fields, which may be missing (Invalid Date, as before).
+const asDate = (value: unknown): Date => new Date(value as string | number | Date);
+
 type DateLike = Date | string | number;
 
 export interface CategoryLike {
@@ -281,8 +284,8 @@ export function buildCategoryHierarchy<T extends TransactionLike>(
   }));
 
   let cateFaseDos: CategoryHierarchyInput<T>[] = transWithCategory.map((t) => ({
-    fatherId: t.category._id,
-    name: t?.category.name,
+    fatherId: t.category!._id!,
+    name: t.category!.name!,
     loc: getPrimaryAmount(t),
     color: t?.category?.color || "#ABABAB",
     icon: t?.category?.icon || "MdFilterNone",
@@ -291,14 +294,14 @@ export function buildCategoryHierarchy<T extends TransactionLike>(
 
   transWithSubCat.forEach((t) => {
     cateFaseDos.push({
-      fatherId: t.category?._id,
-      name: t.category?.name,
+      fatherId: t.category?._id as string,
+      name: t.category?.name as string,
       color: t.category?.color || "#ABABAB",
       icon: t?.category?.icon || "MdFilterNone",
       children: [
         {
-          childId: t.subCategory._id,
-          name: t.subCategory?.name,
+          childId: t.subCategory!._id!,
+          name: t.subCategory?.name as string,
           loc: getPrimaryAmount(t),
           color: t.subCategory?.color || "#ABABAB",
           icon: t?.subCategory?.icon || "MdFilterNone",
@@ -314,7 +317,7 @@ export function buildCategoryHierarchy<T extends TransactionLike>(
       acc[item.fatherId] = { ...item, loc: 0, children: [] };
     }
     if (!item.children.length) {
-      acc[item.fatherId].loc += item.loc;
+      acc[item.fatherId].loc += item.loc!;
     }
     item.children.forEach((child) => {
       const existingChild = acc[item.fatherId].children.find((c) => c.childId === child.childId);
@@ -334,15 +337,15 @@ export function buildCategoryHierarchy<T extends TransactionLike>(
   // waste the space - can do so without re-deriving this grouping.
   const directTxByCategoryId = new Map<string, T[]>();
   transWithCategory.forEach((t) => {
-    const key = t.category._id;
+    const key = t.category!._id!;
     if (!directTxByCategoryId.has(key)) directTxByCategoryId.set(key, []);
-    directTxByCategoryId.get(key).push(t);
+    directTxByCategoryId.get(key)!.push(t);
   });
   const txBySubCategoryId = new Map<string, T[]>();
   transWithSubCat.forEach((t) => {
-    const key = t.subCategory._id;
+    const key = t.subCategory!._id!;
     if (!txBySubCategoryId.has(key)) txBySubCategoryId.set(key, []);
-    txBySubCategoryId.get(key).push(t);
+    txBySubCategoryId.get(key)!.push(t);
   });
 
   const children = Object.values(result).map((cat) => ({
@@ -372,7 +375,7 @@ export function reduceTransToTransMonths(arr: TransactionLike[]): Record<string,
   if (!(arr instanceof Array))
     throw new Error("arr should be an Array instance");
   return arr.reduce((acc: Record<string, MonthValueBucket>, transaction) => {
-    const monthName = getMonthOfTransaction(new Date(transaction.date || transaction.createdAt).getMonth());
+    const monthName = getMonthOfTransaction(asDate(transaction.date || transaction.createdAt).getMonth());
     const transactionOfMonth = monthName ? mapedMonths.get(monthName.toLowerCase()) : undefined;
     // An invalid date has no month: skip that movement instead of throwing.
     if (!transactionOfMonth) return acc;
@@ -414,7 +417,7 @@ export function reduceTransactionsToMonthSpentObjects<T extends { type: string; 
 export function transactionsToMonths(allTrans: TransactionLike[]): { array: MonthValueBucket[]; totalValue: number } {
   const transformed = reduceTransToTransMonths(allTrans);
   // remove the entry with the name and left only the values
-  const final = Object.values(transformed).sort((a, b) => a.index - b.index);
+  const final = Object.values(transformed).sort((a, b) => a.index! - b.index!);
   const totalValue = final.reduce((acc, item) => acc + item.value, 0);
   return { array: final, totalValue };
 }
@@ -434,7 +437,7 @@ export function transactionsToRelativeMonths(
 ): { array: RelativeMonthBucket[]; totalValue: number } {
   const start = new Date(rangeStart);
   const buckets = trans.reduce((acc: Record<number, RelativeMonthBucket>, transaction) => {
-    const txDate = new Date(transaction.date || transaction.createdAt);
+    const txDate = asDate(transaction.date || transaction.createdAt);
     const monthsSinceStart =
       (txDate.getFullYear() - start.getFullYear()) * 12 +
       (txDate.getMonth() - start.getMonth());
@@ -471,7 +474,7 @@ export function orderItemsInRelativeMonth<T extends TransactionLike>(
     throw new Error("arr param should be an Array instance");
   const start = new Date(rangeStart);
   const buckets = arr.reduce((acc: Record<number, RelativeMonthGroup<T>>, item) => {
-    const txDate = new Date(item.date || item.createdAt);
+    const txDate = asDate(item.date || item.createdAt);
     const index =
       (txDate.getFullYear() - start.getFullYear()) * 12 +
       (txDate.getMonth() - start.getMonth());
@@ -522,7 +525,7 @@ export function getTransactionsFromTimeRange<T extends { date?: DateLike | null;
     throw new Error("Start and end parameters must be valid Date objects.");
   }
   return trans.filter((transaction) => {
-    const transactionDate = new Date(transaction.date || transaction.createdAt);
+    const transactionDate = asDate(transaction.date || transaction.createdAt);
     return transactionDate >= start && transactionDate <= end;
   });
 }
