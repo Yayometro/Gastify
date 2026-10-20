@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
+import { CategoryPicker } from '@/components/category-picker';
 import { ChipPicker, type ChipItem } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
 import { Segmented } from '@/components/segmented';
@@ -15,7 +16,7 @@ import { messageOf } from '@/lib/write';
 import type { RootState } from '@/store';
 import { GfSwitch } from '@/components/ui/switch';
 import { getApi } from '@gastify/core/api/client';
-import { idOf, subCategoriesOf } from '@gastify/core/categories/categoryForm';
+import { idOf } from '@gastify/core/categories/categoryForm';
 import { formatMoneyMajor, majorToMinor, minorToMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { isProjectBudget, isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import {
@@ -124,12 +125,6 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
     label: `${account.name} · ${account.currency || primary}`,
     detail: formatMoneyMajor(account.amount ?? 0, account.currency || primary),
   }));
-  const categoryItems: ChipItem[] = categories.map((category) => ({ id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color }));
-  const subItems = useMemo(() => subCategoriesOf(subCategories, values.categoryId), [subCategories, values.categoryId]);
-  const subcategoryChoices: ChipItem[] = [
-    { id: '', label: 'Ninguna' },
-    ...subItems.map((sub) => ({ id: idOf(sub), label: sub.name || 'Subcategoría', icon: sub.icon, color: sub.color })),
-  ];
   const budgetItems: ChipItem[] = [
     { id: '', label: 'Ninguno' },
     ...budgets.filter((budget) => isSpendingBudget(budget) || isProjectBudget(budget)).map((budget) => ({ id: idOf(budget), label: budget.name || 'Presupuesto', icon: budget.icon })),
@@ -219,17 +214,16 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Categoría</Text>
-        <ChipPicker items={categoryItems} value={values.categoryId} onChange={(id) => setValues((current) => ({ ...current, categoryId: id, subCategoryId: '' }))} title="Categorías" />
+        <Text className="font-inter-medium text-sm text-gf-text-muted">Categoría y subcategoría</Text>
+        <CategoryPicker
+          categories={categories}
+          subCategories={subCategories}
+          allLabel="Sin categoría"
+          value={{ categoryId: values.categoryId, subCategoryId: values.subCategoryId }}
+          onChange={(next) => setValues((current) => ({ ...current, categoryId: next.categoryId, subCategoryId: next.subCategoryId }))}
+        />
         {errorText(errors.categoryId)}
       </View>
-
-      {subItems.length > 0 && (
-        <View className="gap-2">
-          <Text className="font-inter-medium text-sm text-gf-text-muted">Subcategoría</Text>
-          <ChipPicker items={subcategoryChoices} value={values.subCategoryId} onChange={(id) => set('subCategoryId', id)} title="Subcategorías" />
-        </View>
-      )}
 
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">Presupuesto (opcional)</Text>

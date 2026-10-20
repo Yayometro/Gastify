@@ -56,8 +56,8 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | M04 | Más filtros, como en la web (revisar la lista completa de la web). | PENDIENTE | |
 | M05 | Tocar el mes abre calendario y selector de mes. | PENDIENTE | Ver T04. |
 | M06 | Búsqueda por nombre: botón X a la derecha para borrar todo el texto de un toque. | CÓDIGO LISTO | |
-| M07 | Filtro de categoría: buscar también SUBCATEGORÍAS (hoy solo busca categorías). Subcategorías como submenú bajo cada categoría. | PENDIENTE | |
-| M08 | Lista de categorías ordenada alfabéticamente, con un índice A–Z deslizable para ir más rápido. | PENDIENTE | |
+| M07 | Filtro de categoría: buscar también SUBCATEGORÍAS (hoy solo busca categorías). Subcategorías como submenú bajo cada categoría. | CÓDIGO LISTO | |
+| M08 | Lista de categorías ordenada alfabéticamente, con un índice A–Z deslizable para ir más rápido. | CÓDIGO LISTO | |
 | M09 | Filtro de monto exacto: ya funciona, mantener. | HECHO | |
 | M10 | Filtro de cuentas: ya funciona, mantener. | HECHO | |
 | M11 | Duplicados: el switch debe abrir subfiltros como en la web: nombre, fecha, monto, categoría, subcategoría, tolerancia de fecha, tolerancia de monto, "Buscar duplicados" y "Restablecer valores". | CÓDIGO LISTO | |
@@ -71,7 +71,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 |---|---|---|---|
 | C01 | Hub "Crear" con las 8 opciones: el usuario lo felicita, mantener. | HECHO | |
 | C02 | Transferir: fecha con calendario, no texto. | CÓDIGO LISTO | Ver T01. |
-| C03 | Selector de categoría "Ver todas": buscar también subcategorías (submenú bajo cada categoría). | PENDIENTE | Ver M07. |
+| C03 | Selector de categoría "Ver todas": buscar también subcategorías (submenú bajo cada categoría). | CÓDIGO LISTO | Ver M07. |
 | C04 | Presupuesto, ahorro y proyecto: el usuario los aprueba; corregir solo el calendario (T02). | PENDIENTE | |
 | C05 | Ingreso: aprobado, mantener. | HECHO | |
 
@@ -115,8 +115,8 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| K01 | Búsqueda: mostrar categorías y subcategorías como resultados separados (ej. "piccho" → subcategoría Picho y categoría Family por separado). | PENDIENTE | |
-| K02 | Al crear categoría: switch para crear también una subcategoría; elegir a qué categoría se liga; si no hay categoría, no se puede crear la subcategoría. | PENDIENTE | |
+| K01 | Búsqueda: mostrar categorías y subcategorías como resultados separados (ej. "piccho" → subcategoría Picho y categoría Family por separado). | CÓDIGO LISTO | |
+| K02 | Al crear categoría: switch para crear también una subcategoría; elegir a qué categoría se liga; si no hay categoría, no se puede crear la subcategoría. | CÓDIGO LISTO | |
 | K03 | Lo demás de Categorías: aprobado, mantener. | HECHO | |
 
 ## Historial

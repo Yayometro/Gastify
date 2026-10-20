@@ -25,8 +25,8 @@ export default function CategoriesScreen() {
   const { refresh, refreshing } = useRefreshAppData();
   const [query, setQuery] = useState('');
 
-  const ownSubs = subCategories.subCat ?? [];
-  const defaultSubs = subCategories.default ?? [];
+  const ownSubs = useMemo(() => subCategories.subCat ?? [], [subCategories.subCat]);
+  const defaultSubs = useMemo(() => subCategories.default ?? [], [subCategories.default]);
 
   const filter = (list: CategoryData[], subs: SubCategoryData[]) => {
     const needle = normalizeText(query);
@@ -39,6 +39,13 @@ export default function CategoriesScreen() {
   };
   const own = useMemo(() => filter(categories.user ?? [], ownSubs), [categories.user, ownSubs, query]); // eslint-disable-line react-hooks/exhaustive-deps
   const defaults = useMemo(() => filter(categories.default ?? [], [...ownSubs, ...defaultSubs]), [categories.default, ownSubs, defaultSubs, query]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // While searching, the categories and the sub-categories are listed apart: a sub-category opens its category.
+  const searching = normalizeText(query) !== '';
+  const allCategories = useMemo(() => [...(categories.user ?? []), ...(categories.default ?? [])], [categories.user, categories.default]);
+  const needle = normalizeText(query);
+  const matchingSubs = searching ? [...ownSubs, ...defaultSubs].filter((sub) => normalizeText(sub.name ?? '').includes(needle)) : [];
+  const parentName = (sub: SubCategoryData) => allCategories.find((category) => idOf(category) === idOf(sub.fatherCategory))?.name ?? '';
 
   const subtitle = (category: CategoryData, subs: SubCategoryData[]) => {
     const names = subCategoriesOf(subs, idOf(category)).map((sub) => sub.name).filter(Boolean);
@@ -54,6 +61,44 @@ export default function CategoriesScreen() {
         </Text>
       </Pressable>
 
+      {searching && (
+        <>
+          <Card title="Categorías">
+            {own.length + defaults.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Ninguna categoría coincide.</Text>}
+            {[...own, ...defaults].map((category) => (
+              <Pressable
+                key={idOf(category)}
+                accessibilityRole="button"
+                onPress={() => router.push({ pathname: '/more/categories/[id]', params: { id: idOf(category) } })}
+                className="flex-row items-center gap-3 py-1.5">
+                <CategoryBadge icon={category.icon} color={category.color} size={40} />
+                <Text className="flex-1 font-inter-medium text-base text-gf-text">{category.name || 'Categoría'}</Text>
+                <Text className="font-inter text-base text-gf-text-muted">›</Text>
+              </Pressable>
+            ))}
+          </Card>
+          <Card title="Subcategorías">
+            {matchingSubs.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Ninguna subcategoría coincide.</Text>}
+            {matchingSubs.map((sub) => (
+              <Pressable
+                key={idOf(sub)}
+                accessibilityRole="button"
+                onPress={() => router.push({ pathname: '/more/categories/[id]', params: { id: idOf(sub.fatherCategory) } })}
+                className="flex-row items-center gap-3 py-1.5">
+                <CategoryBadge icon={sub.icon} color={sub.color} size={34} />
+                <View className="flex-1">
+                  <Text className="font-inter-medium text-base text-gf-text">{sub.name || 'Subcategoría'}</Text>
+                  <Text className="font-inter text-sm text-gf-text-muted">{parentName(sub)}</Text>
+                </View>
+                <Text className="font-inter text-base text-gf-text-muted">›</Text>
+              </Pressable>
+            ))}
+          </Card>
+        </>
+      )}
+
+      {!searching && (
+      <>
       <Card title="Tus categorías">
         {own.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{query ? 'Ninguna coincide.' : 'Todavía no creaste ninguna.'}</Text>}
         {own.map((category) => {
@@ -87,6 +132,8 @@ export default function CategoriesScreen() {
           </View>
         ))}
       </Card>
+      </>
+      )}
     </Screen>
   );
 }

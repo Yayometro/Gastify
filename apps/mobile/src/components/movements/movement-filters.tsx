@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { ChipPicker, type ChipItem } from '@/components/chip-picker';
+import { CategoryPicker } from '@/components/category-picker';
 import { Card } from '@/components/ui/card';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
@@ -11,7 +12,7 @@ import { GfSwitch } from '@/components/ui/switch';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import type { CategoryData } from '@gastify/core/features/categoriesSlice';
 import type { SubCategoryData } from '@gastify/core/features/subCategorySlice';
-import { idOf, subCategoriesOf } from '@gastify/core/categories/categoryForm';
+import { idOf } from '@gastify/core/categories/categoryForm';
 import { SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { DUPLICATE_CRITERIA_LABELS, toleranceFrom, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
 import { EMPTY_FILTERS, type MovementFilters, type ReadableFilter, type TypeFilter } from '@gastify/core/transactions/movementFilters';
@@ -64,10 +65,7 @@ export function MovementFiltersPanel({
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const set = <K extends keyof MovementFilters>(key: K, value: MovementFilters[K]) => onChange({ ...filters, [key]: value });
 
-  const categoryItems: ChipItem[] = [{ id: '', label: 'Todas' }, ...categories.map((c) => ({ id: idOf(c), label: c.name || 'Categoría', icon: c.icon, color: c.color }))];
-  const subItems: ChipItem[] = [{ id: '', label: 'Todas' }, ...subCategoriesOf(subCategories, filters.categoryId).map((s) => ({ id: idOf(s), label: s.name || 'Subcategoría', icon: s.icon, color: s.color }))];
   const accountItems: ChipItem[] = [{ id: '', label: 'Todas' }, ...accounts.map((a) => ({ id: idOf(a), label: `${a.name} · ${a.currency}` }))];
-  const hasSubs = filters.categoryId !== '' && subItems.length > 1;
 
   return (
     <Card title="Filtros">
@@ -84,16 +82,14 @@ export function MovementFiltersPanel({
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Categoría</Text>
-        <ChipPicker items={categoryItems} value={filters.categoryId} onChange={(id) => onChange({ ...filters, categoryId: id, subCategoryId: '' })} title="Categorías" />
+        <Text className="font-inter-medium text-sm text-gf-text-muted">Categoría y subcategoría</Text>
+        <CategoryPicker
+          categories={categories}
+          subCategories={subCategories}
+          value={{ categoryId: filters.categoryId, subCategoryId: filters.subCategoryId }}
+          onChange={(next) => onChange({ ...filters, categoryId: next.categoryId, subCategoryId: next.subCategoryId })}
+        />
       </View>
-
-      {hasSubs && (
-        <View className="gap-2">
-          <Text className="font-inter-medium text-sm text-gf-text-muted">Subcategoría</Text>
-          <ChipPicker items={subItems} value={filters.subCategoryId} onChange={(id) => set('subCategoryId', id)} title="Subcategorías" />
-        </View>
-      )}
 
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">Cuenta</Text>
