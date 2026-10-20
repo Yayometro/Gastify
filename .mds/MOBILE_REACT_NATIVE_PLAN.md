@@ -1,6 +1,6 @@
 # Plan: Gastify para iPhone y Android con React Native (Expo)
 
-> Fecha: 2026-10-15. Estado (2026-10-16): **fase 0 y arranque de la fase 1 hechos** (ver sección 11, al final); el resto, propuesta.
+> Fecha: 2026-10-15. Estado (2026-10-19): **fases 0, 1 y 2 hechas** (ver sección 11, al final); la fase 3 en adelante, propuesta.
 > Base analizada: `main` en `f42231a` (Next.js 15.5, React 19, TypeScript, Redux Toolkit, Better Auth, MongoDB/Mongoose, Vercel).
 
 ## 1. Resumen
@@ -14,7 +14,7 @@
 
 | Necesidad | Web hoy | Móvil | Por qué |
 |---|---|---|---|
-| Framework | Next.js | **Expo SDK 58** (React Native 0.88, React 19.3; salió el 2026-10-15) | Es lo que la documentación de React Native recomienda. Evita tocar Xcode/Gradle a mano; compila en la nube (EAS) si hace falta |
+| Framework | Next.js | **Expo SDK 57** (React Native 0.86, React 19.2). El SDK 58 salió el 2026-10-15, pero la Expo Go de la App Store aún no lo soporta; se sube cuando salga | Es lo que la documentación de React Native recomienda. Evita tocar Xcode/Gradle a mano; compila en la nube (EAS) si hace falta |
 | Rutas | App Router de Next | **Expo Router** | Rutas por archivos y `_layout` como en Next: la curva más corta para ti |
 | Estilos | Tailwind | **NativeWind** (Tailwind para RN) | Mismas clases (`flex-row`, `gap-2`, `dark:`); se reusa el conocimiento y parte de la paleta |
 | Estado | Redux Toolkit | **Redux Toolkit** (mismo código) | Los slices se comparten |
@@ -157,23 +157,25 @@ Tienes Homebrew, Node 26.5 y npm 11. **No tienes Xcode** (solo las Command Line 
 
 Fuentes: blog de React Native (reactnative.dev/blog), anuncios de la React Foundation (opensourceforu.com, linuxiac.com), comparativas 2026 de terceros (de calidad variable; los porcentajes de adopción son orientativos), notas de Capacitor 8 (Ionic) y guías sobre la regla 4.2 de Apple.
 
-## 11. Estado real (2026-10-16): lo que ya está hecho
+## 11. Estado real (2026-10-19)
 
-**Correcciones de la sección 2:** el SDK vigente es el **58** (React Native 0.88, **React 19.3, igual que la web**); el plan decía 57. El paso de `~/.zshrc`/JDK de la sección 7 cambió: en lugar de Android Studio + `zulu@17` (pide contraseña) se instaló todo por línea de comandos.
+**Versiones:** Expo SDK **57** (React Native 0.86.3, React 19.2.3 en la app; la web sigue en React 19.3). El SDK 58 salió el 2026-10-15, pero la Expo Go de la App Store todavía no lo soporta (Expo dice "en unas semanas"). Cuando salga, se sube con `npx expo install expo@^58` y `npx expo install --fix`.
 
-**Herramientas instaladas en tu Mac** (con Homebrew, sin contraseña):
-- `watchman`, `cocoapods`, `openjdk@17`, `android-commandlinetools`.
-- Android SDK en `/opt/homebrew/share/android-commandlinetools`: platform-tools, emulator, plataforma 36, build-tools 36 y la imagen de sistema Android 16 (arm64).
-- Emulador `gastify_pixel` (Pixel 8). Arrancar: `emulator -avd gastify_pixel`.
-- Variables `JAVA_HOME`, `ANDROID_HOME` y el `PATH` agregadas a `~/.zshrc` (bloque `>>> gastify mobile >>>`).
+**Repositorio:** monorepo con npm workspaces (`apps/mobile`, `packages/core`), ya en `main` (`2f88942`). El trabajo de las fases 1 y 2 está en la rama `mobile-phase-1-2` (**sin fusionar a `main`**).
 
-**Lo que falta de herramientas y solo puedes hacer tú:** instalar **Xcode** desde la App Store y después `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`, `sudo xcodebuild -license accept` y abrirlo una vez para instalar la plataforma de iOS. Sin eso no hay simulador de iPhone; con Expo Go en tu iPhone se puede probar mientras tanto (el iPhone y la Mac en la misma red).
+**Herramientas en tu Mac:** `watchman`, `cocoapods`, `openjdk@17`, Android SDK por línea de comandos y el emulador `gastify_pixel` (variables en `~/.zshrc`). Para probar en el iPhone basta Expo Go (App Store del iPhone) y la misma red Wi-Fi; no hace falta Xcode. Xcode solo sirve para el simulador de iPhone y para compilar en local.
 
-**Código:**
-- `packages/core` (etapa 1, **no es un workspace de npm todavía**): dinero (`money/`), formato (`format/`), periodos y fechas (`time/`), orden (`order/`) y la ventana de historial (`transactions/`), unas 1,000 líneas con sus pruebas, movidas desde `src` sin cambiar comportamiento. Alias `@gastify/core/*` en `tsconfig.json` y `vitest.config.mjs` (web) y en `apps/mobile/tsconfig.json` + `metro.config.js` (móvil). Ver `packages/core/README.md`.
-- `apps/mobile`: app de Expo SDK 58 (Expo Router) con una pantalla de prueba que usa `@gastify/core`. Para web no hay nada (`platforms: ios, android`). La raíz la ignora (`tsconfig` excluye `apps`; no está en `workspaces`), así que Vercel y la web no cambian.
-- Verificado: la web sigue igual (tsc, eslint, vitest 543/543, `next build` en copia); la app móvil compila en modo estricto, exporta el paquete de JS para iOS y Android con Metro (incluye el código compartido) y corre en el emulador de Android.
+**Fase 0 (preparación): hecha.** Herramientas, `get-account` con sesión, 2FA reciente en la API, ids propios al editar movimientos.
 
-**Decisión de workspace:** como ahora la web y Expo usan la misma versión de React, convertirlo en workspace de npm ya es viable y es lo que recomienda Expo. No lo hice porque `npm install` en Vercel instalaría también las dependencias de la app móvil. Se puede decidir en la fase 1 cuando se muevan los slices de Redux.
+**Fase 1 (código compartido): hecha.** `packages/core` tiene: dinero, formato, fechas/periodos, orden, ventana de historial, los slices de Redux y el reductor raíz, los transformadores, los datos de íconos Fluent, el cliente de API (`configureApi`, `lazyApi`) y los ganchos de rendimiento (`configurePerf`). La web los re-exporta desde `src` (sus imports no cambian) y los configura en `src/lib/store.ts`; la app móvil los configura en `apps/mobile/src/store.ts`. El paquete compila en modo estricto.
 
-**Siguiente (fase 1, continuación):** `helpers/transformers`, los slices de Redux y `fetcher` (con URL base y encabezados de autenticación configurables), el manifiesto de íconos Fluent, y el cliente de Better Auth para Expo (fase 3).
+**Fase 2 (esqueleto móvil): hecha, con dos recortes.**
+- Hecho: Expo Router con barra inferior flotante (Inicio, Movimientos, Agregar, Presupuestos, Más), íconos de las mismas familias que usa la web (FaWallet, FaMoneyBillTransfer, MdSavings, IoAdd) vía `@expo/vector-icons`, botón "+" con el degradado morado de la web (`expo-linear-gradient`), paleta de Gastify en claro y oscuro (los tokens `--gf-*`), tienda de Redux y pantallas base. Metro fuerza una sola copia de React (la de la app).
+- Recortado: **NativeWind** (estilos con `StyleSheet` por ahora), tipografías propias, y **íconos Fluent con `expo-image`** (los datos ya están en core; falta dibujarlos en pantalla, se hace con las listas de la fase 4).
+- Verificado en el emulador de Android (claro y oscuro, navegación entre pestañas). **iOS: falta confirmarlo en el iPhone**; el paquete de iPhone se genera sin errores y usa los mismos componentes.
+
+**Cómo probar:** `npm run mobile` en la raíz y escanear el QR con la Cámara del iPhone (Expo Go). Android: `emulator -avd gastify_pixel` y abrir la dirección `exp://IP:8081` que imprime Expo.
+
+**Pendiente menor:** borrar `apps/mobile/src/app/explore.tsx` y los archivos de plantilla que solo usa (`hint-row`, `external-link`, `ui/collapsible`); hoy `explore` está oculto de la barra. En desarrollo sale un aviso rojo de React ("state update on a component that hasn't mounted yet") que viene del núcleo de Expo Router (`ExpoRoot`), no del código de Gastify.
+
+**Siguiente (fase 3, inicio de sesión):** requiere cambios en el servidor (plugin `expo()` de Better Auth y `trustedOrigins`), cliente de Better Auth con SecureStore, pantalla de login con correo y código 2FA, y decidir la ventana de verificación en el teléfono. Es la parte más delicada; conviene hacerla con el modelo más capaz y probarla con cuentas desechables.

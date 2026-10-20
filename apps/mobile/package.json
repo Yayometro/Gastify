@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/ui": "~57.0.25",
+    "@expo/vector-icons": "^15.0.2",
     "@gastify/core": "^0.0.0",
     "@reduxjs/toolkit": "^2.13.0",
     "expo": "~57.0.0",
@@ -12,6 +13,7 @@
     "expo-font": "~57.0.4",
     "expo-glass-effect": "~57.0.4",
     "expo-image": "~57.0.5",
+    "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.13",
     "expo-router": "~57.0.28",
     "expo-splash-screen": "~57.0.10",

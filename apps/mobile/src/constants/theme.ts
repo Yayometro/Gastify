@@ -6,22 +6,27 @@
 
 import { Platform } from 'react-native';
 
+// Gastify palette: the same values as the web app's --gf-* tokens (src/app/globals.css).
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    accent: '#7C3AED',
+    text: '#1e1533',
+    background: '#f4f2fa',
+    backgroundElement: '#ffffff',
+    backgroundSelected: '#f1ecf9',
+    textSecondary: '#6b6280',
+    accent: '#7e22ce',
+    accentSoft: 'rgba(147, 51, 234, 0.08)',
+    border: 'rgba(27, 16, 61, 0.1)',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    accent: '#A78BFA',
+    text: '#f3f0fb',
+    background: '#180f2e',
+    backgroundElement: '#251a45',
+    backgroundSelected: '#302354',
+    textSecondary: '#ada0c9',
+    accent: '#d3b8fb',
+    accentSoft: 'rgba(147, 51, 234, 0.18)',
+    border: 'rgba(255, 255, 255, 0.1)',
   },
 } as const;
 
@@ -62,5 +67,6 @@ export const Spacing = {
   six: 64,
 } as const;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
+// Room a screen leaves at the bottom for the floating tab bar (64 high + 12 gap + safe area).
+export const BottomTabInset = 112;
 export const MaxContentWidth = 800;
