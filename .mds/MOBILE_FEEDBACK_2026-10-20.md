@@ -14,7 +14,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | G05 | Cada widget o sección con su propio filtro de tiempo, independiente del periodo general. | CÓDIGO LISTO | |
 | G06 | Cambiar entre tema claro y oscuro desde el menú. | CÓDIGO LISTO | Hay hooks de tema; falta el interruptor. |
 | G07 | Letras negras sobre fondo oscuro (contraste). Revisar toda la app. | CÓDIGO LISTO | Ningún <Text> sin color; contrastes calculados (WCAG) y el verde de ingresos del modo claro se oscureció (3.8 a 5.5). Falta que lo veas en tu pantalla.  Se ve en "Perspectivas". |
-| G08 | Probar los 8 formularios de Crear (gasto, ingreso, transferencia, cuenta, categoría, presupuesto, ahorro, proyecto). | PENDIENTE | El usuario no los ha probado. |
+| G08 | Probar los 8 formularios de Crear (gasto, ingreso, transferencia, cuenta, categoría, presupuesto, ahorro, proyecto). | HECHO | Probados contra el servidor con los mismos cuerpos que genera la app, en la cuenta QA y con limpieza: gasto/ingreso/transferencia/cambio/cuenta/categoría/subcategoría (qa-crud) y presupuesto/ahorro/proyecto (qa-budgets). |
 | T01 | Toda fecha abre calendario, nunca texto. Auditar todas (transferir, proyecto, etc.). | HECHO | Auditado: no queda ningún campo de fecha de texto; todos usan DateField.  Transferir pide la fecha en texto. |
 | T02 | Calendario: sin franja negra, ocupa todo el ancho, y se cierra tocando afuera (sin tener que dar "Listo"). | CÓDIGO LISTO | iOS: no se puede probar en el emulador Android. |
 | T03 | Icono "?" junto a cada título que abre un modal explicativo, como en la web. En todas las pantallas. | CÓDIGO LISTO | Empezar por Proyecciones. |
@@ -72,7 +72,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | C01 | Hub "Crear" con las 8 opciones: el usuario lo felicita, mantener. | HECHO | |
 | C02 | Transferir: fecha con calendario, no texto. | CÓDIGO LISTO | Ver T01. |
 | C03 | Selector de categoría "Ver todas": buscar también subcategorías (submenú bajo cada categoría). | CÓDIGO LISTO | Ver M07. |
-| C04 | Presupuesto, ahorro y proyecto: el usuario los aprueba; corregir solo el calendario (T02). | PENDIENTE | |
+| C04 | Presupuesto, ahorro y proyecto: el usuario los aprueba; corregir solo el calendario (T02). | HECHO | |
 | C05 | Ingreso: aprobado, mantener. | HECHO | |
 
 ## Presupuestos
