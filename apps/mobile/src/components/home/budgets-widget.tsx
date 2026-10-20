@@ -44,7 +44,7 @@ export function BudgetsWidget() {
   );
 
   return (
-    <Card title="Presupuestos" action={<Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver todos</Text></Pressable>}>
+    <Card title="Presupuestos" info={{ title: 'Presupuestos', text: 'Tus presupuestos de gasto de este mes, del más cerca de su límite al más lejano. Toca uno para ver sus movimientos.' }} action={<Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver todos</Text></Pressable>}>
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes presupuestos de gasto.</Text>}
       <ScrollView nestedScrollEnabled style={{ maxHeight: 330 }} contentContainerStyle={{ gap: 14 }} showsVerticalScrollIndicator>
       {rows.map(({ budget, goal, spent, ratio }) => (

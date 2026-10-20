@@ -12,7 +12,7 @@ export function TotalsCard({ totals, currency, title = 'Este mes' }: { totals: M
   const balanceColor = totals.balance < 0 ? colors.expense : colors.text;
 
   return (
-    <Card title={title}>
+    <Card title={title} info={{ title: 'Totales', text: 'Ingresos, gastos y lo que queda (balance) del periodo. Las transferencias entre tus cuentas no cuentan.' }}>
       <View className="flex-row justify-between">
         <Text className="font-inter text-base text-gf-text-muted">Ingresos</Text>
         <Text className="font-inter-semibold text-base" style={{ color: colors.income }}>

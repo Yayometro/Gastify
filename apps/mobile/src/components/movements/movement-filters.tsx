@@ -68,7 +68,7 @@ export function MovementFiltersPanel({
   const accountItems: ChipItem[] = [{ id: '', label: 'Todas' }, ...accounts.map((a) => ({ id: idOf(a), label: `${a.name} · ${a.currency}` }))];
 
   return (
-    <Card title="Filtros">
+    <Card title="Filtros" info={{ title: 'Filtros', text: 'Acota la lista: por texto, tipo, legibilidad, categoría, cuenta o monto exacto. El buscador de duplicados encuentra movimientos repetidos para borrarlos de una vez.' }}>
       <TextField label="Buscar" value={filters.query} onChangeText={(text) => set('query', text)} onClear={() => set('query', '')} placeholder="Nombre, categoría, etiqueta…" autoCorrect={false} />
 
       <View className="gap-2">

@@ -16,6 +16,7 @@ export function goBackTo(returnTo: string | undefined, fallback: () => void): vo
 // The label of the back button for a `returnTo` path.
 export function returnLabel(returnTo: string | undefined, fallback: string): string {
   if (!returnTo) return fallback;
+  if (returnTo === '/') return 'Inicio';
   if (returnTo.startsWith('/more/history')) return 'Historial';
   if (returnTo.startsWith('/more/analyzer')) return 'Analizador';
   if (returnTo.startsWith('/more/accounts/')) return 'Cuenta';

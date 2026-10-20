@@ -268,13 +268,13 @@ export default function BudgetsScreen() {
       {/* Two tiles, as the web's summary: the total spending and the part no budget covers. Each opens its detail. */}
       <View className="flex-row gap-3">
         <Pressable accessibilityRole="button" onPress={() => setSheet('total')} className="flex-1">
-          <Card title="Gasto total">
+          <Card title="Gasto total" info={{ title: 'Gasto total', text: 'Todo lo que gastaste en el periodo, dentro de presupuestos y fuera de ellos. Toca la tarjeta para ver el desglose por presupuesto.' }}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.totalSpent, currency)}</Text>
             <Text className="font-inter text-xs text-gf-text-muted">Toca para ver el detalle</Text>
           </Card>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => setSheet('unbudgeted')} className="flex-1">
-          <Card title="Sin presupuesto">
+          <Card title="Sin presupuesto" info={{ title: 'Sin presupuesto', text: 'El gasto que ningún presupuesto activo cubre, y qué parte del gasto total representa. Toca la tarjeta para ver de qué categorías viene y crear un presupuesto.' }}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.unbudgetedSpent, currency)}</Text>
             <ProgressBar ratio={Math.min(1, coverage.unbudgetedPercentage / 100)} color={colors.accent} />
             <Text className="font-inter text-xs text-gf-text-muted">{Math.round(coverage.unbudgetedPercentage)}% del gasto</Text>

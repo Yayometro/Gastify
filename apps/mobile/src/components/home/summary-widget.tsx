@@ -63,7 +63,7 @@ export function SummaryWidget({
   useEffect(() => setSelected(null), [kind, movements]);
 
   return (
-    <Card title="Resumen">
+    <Card title="Resumen" info={{ title: 'Resumen', text: 'En qué se va tu dinero (o de dónde viene), por categoría. Elige el tipo de gráfica y toca una sección para ver sus subcategorías. Tiene su propio periodo.' }}>
       <ChipPicker
         items={[{ id: 'dashboard', label: 'Igual que arriba' }, ...HISTORY_PRESETS.filter((p) => p.value !== 'custom').map((p) => ({ id: p.value, label: p.label }))]}
         value={preset}

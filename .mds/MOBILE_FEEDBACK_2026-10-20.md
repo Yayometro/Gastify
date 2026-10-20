@@ -13,11 +13,11 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | G04 | Vista para iPad con menú lateral izquierdo y dashboards como en la web (no ver la app de teléfono estirada). | CÓDIGO LISTO | Recomendado hacerlo pronto (ver nota al final). |
 | G05 | Cada widget o sección con su propio filtro de tiempo, independiente del periodo general. | CÓDIGO LISTO | |
 | G06 | Cambiar entre tema claro y oscuro desde el menú. | CÓDIGO LISTO | Hay hooks de tema; falta el interruptor. |
-| G07 | Letras negras sobre fondo oscuro (contraste). Revisar toda la app. | EN CURSO | Se ve en "Perspectivas". |
+| G07 | Letras negras sobre fondo oscuro (contraste). Revisar toda la app. | CÓDIGO LISTO | Ningún <Text> sin color; contrastes calculados (WCAG) y el verde de ingresos del modo claro se oscureció (3.8 a 5.5). Falta que lo veas en tu pantalla.  Se ve en "Perspectivas". |
 | G08 | Probar los 8 formularios de Crear (gasto, ingreso, transferencia, cuenta, categoría, presupuesto, ahorro, proyecto). | PENDIENTE | El usuario no los ha probado. |
-| T01 | Toda fecha abre calendario, nunca texto. Auditar todas (transferir, proyecto, etc.). | EN CURSO | Transferir pide la fecha en texto. |
+| T01 | Toda fecha abre calendario, nunca texto. Auditar todas (transferir, proyecto, etc.). | HECHO | Auditado: no queda ningún campo de fecha de texto; todos usan DateField.  Transferir pide la fecha en texto. |
 | T02 | Calendario: sin franja negra, ocupa todo el ancho, y se cierra tocando afuera (sin tener que dar "Listo"). | CÓDIGO LISTO | iOS: no se puede probar en el emulador Android. |
-| T03 | Icono "?" junto a cada título que abre un modal explicativo, como en la web. En todas las pantallas. | EN CURSO | Empezar por Proyecciones. |
+| T03 | Icono "?" junto a cada título que abre un modal explicativo, como en la web. En todas las pantallas. | CÓDIGO LISTO | Empezar por Proyecciones. |
 | T04 | Selector de mes (flechas + tocar el mes para elegir mes y año, o calendario anual) igual en todas las pantallas. | CÓDIGO LISTO | |
 
 ## Inicio (dashboard)
@@ -25,7 +25,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
 | I01 | Selector de periodo con las opciones de la web: este mes, mes pasado, primer/segundo semestre, últimos 3 meses, trimestres 1 a 4, año actual, año pasado, y años con datos (2016, 2025...). Relativos a la fecha de hoy. | CÓDIGO LISTO | |
-| I02 | Tocar "Octubre 2026" abre calendario de rango y selector de mes en vista anual. | PENDIENTE | |
+| I02 | Tocar "Octubre 2026" abre calendario de rango y selector de mes en vista anual. | HECHO | Tocar el mes abre el selector de mes y año; "Personalizado" abre dos calendarios (desde y hasta).  |
 | I03 | Carrusel del resumen: primero el resumen; deslizar a la izquierda = Cuentas; a la derecha = comparación vs mes anterior; "Ver más" abre modal con las tres. | HECHO | |
 | I04 | Cuentas con aspecto de tarjetas de crédito, como en la web. | HECHO | Ver también U01. |
 | I05 | Gráfica del resumen: flechita o indicador de que se puede tocar; total centrado (hoy a la izquierda). | HECHO | |
@@ -33,7 +33,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | I07 | Widget Top 6: encabezado claro; cambiar entre 3, 6, 12 y 24; selector de rango de tiempo. | CÓDIGO LISTO | RESUELTO con la web: el switch es 3, 6, 12 y 24 (TopElementContainerView.tsx). |
 | I08 | "Perspectivas": no se sabe de dónde sale; el usuario lo asocia al comparativo vs mes anterior. Aclarar o renombrar, y corregir contraste. | HECHO | Relacionado con G07. |
 | I09 | Widget de Presupuestos: poder hacer scroll interno o hacerlo más alto para ver todos. | CÓDIGO LISTO | |
-| I10 | "Últimos movimientos" → "Ver todos" debe abrir Movimientos completo (con todos sus componentes). | PENDIENTE | Depende de M01–M14. |
+| I10 | "Últimos movimientos" → "Ver todos" debe abrir Movimientos completo (con todos sus componentes). | HECHO | Depende de M01–M14. |
 | I11 | Gráfica del resumen con filtro de tiempo propio. | CÓDIGO LISTO | Ver G05. |
 
 ## Wallet Analyzer (Analizador)

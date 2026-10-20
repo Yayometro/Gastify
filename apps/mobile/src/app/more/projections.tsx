@@ -151,7 +151,7 @@ export default function ProjectionsScreen() {
       {!error && sources === null && <ActivityIndicator color={colors.accent} />}
 
       {sources !== null && (
-        <Card title="Mes a mes">
+        <Card title="Mes a mes" info={{ title: 'Mes a mes', text: 'Cada mes del año con lo que entra (ingresos), lo que sale (gastos), el neto y el saldo. Real: ya ocurrió. Estimado: se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas. Con ≈, el saldo es una estimación hacia atrás.' }}>
           {inputs.missing.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
               {`Todavía no hay tipo de cambio para ${inputs.missing.join(', ')}: esas cifras se muestran sin convertir.`}

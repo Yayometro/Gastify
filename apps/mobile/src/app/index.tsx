@@ -104,7 +104,7 @@ export default function HomeScreen() {
         </View>
       )}
       {accounts.length === 0 && accountsState.status !== 'failed' && (
-        <Card title="Cuentas">
+        <Card title="Cuentas" info={{ title: 'Cuentas', text: 'Tus cuentas con su saldo actual. Las tarjetas muestran, además, lo que entró y salió de cada una en el periodo elegido arriba.' }}>
           <Muted>{accountsState.status === 'loading' ? 'Cargando…' : 'Todavía no tienes cuentas.'}</Muted>
         </Card>
       )}
@@ -114,13 +114,13 @@ export default function HomeScreen() {
       <InsightsWidget insights={insights} currency={currency} />
       <BudgetsWidget />
 
-      <Card title="Últimos movimientos" action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+      <Card title="Últimos movimientos" info={{ title: 'Últimos movimientos', text: 'Los cinco movimientos más recientes de tu cuenta, sin importar el periodo de arriba. Toca uno para verlo o editarlo, o abre la lista completa.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <Muted>Cargando…</Muted>
         ) : latest.length === 0 ? (
           <Muted>Todavía no tienes movimientos.</Muted>
         ) : (
-          latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id) } })} />)
+          latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/' } })} />)
         )}
       </Card>
     </Screen>

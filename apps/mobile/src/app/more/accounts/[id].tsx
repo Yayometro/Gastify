@@ -64,7 +64,7 @@ export default function EditAccountScreen() {
 
   return (
     <Screen title={account.name || 'Cuenta'} subtitle={`Moneda: ${account.currency || 'MXN'}`} backLabel="Cuentas" onBack={back}>
-      <Card title="Actividad de este mes">
+      <Card title="Actividad de este mes" info={{ title: 'Actividad de este mes', text: 'Lo que entró y salió de esta cuenta en el mes, y cuántos movimientos hubo. Las transferencias entre tus cuentas no cuentan como ingreso ni gasto.' }}>
         <View className="flex-row justify-between">
           <Text className="font-inter text-base text-gf-text-muted">Entró</Text>
           <Text className="font-inter-semibold text-base text-gf-text">+{formatMoneyMajor(month.incomes, primary)}</Text>

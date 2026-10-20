@@ -83,7 +83,7 @@ export default function HistoryScreen() {
 
   return (
     <Screen title="Historial" subtitle={labelA} backLabel="Más" onBack={() => router.back()}>
-      <Card title="Periodo">
+      <Card title="Periodo" info={{ title: 'Periodo', text: 'Elige qué tramo de tiempo analizar. Puedes compararlo con otro (el mismo tramo del año anterior, el periodo anterior o uno que elijas) para ver cuánto cambió.' }}>
         <ChipPicker items={HISTORY_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPreset(id as HistoryPreset)} moreAfter={99} />
         {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
         {preset === 'custom' && (
@@ -111,7 +111,7 @@ export default function HistoryScreen() {
         {partial && <Text className="font-inter text-sm text-gf-text-muted">Todavía llegan movimientos antiguos; las cifras de periodos viejos pueden crecer.</Text>}
       </Card>
 
-      <Card title="Resumen">
+      <Card title="Resumen" info={{ title: 'Resumen', text: 'Ingresos, gastos y balance del periodo elegido. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje, cuánto cambió.' }}>
         {[
           { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
           { label: 'Gastos', av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
