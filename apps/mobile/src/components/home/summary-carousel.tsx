@@ -112,18 +112,21 @@ export function SummaryCarousel(props: Props) {
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>
         </Pressable>
       }>
-      <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
-        <ScrollView
-          ref={scroller}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={(event) => width > 0 && setPage(Math.round(event.nativeEvent.contentOffset.x / width))}
-          scrollEventThrottle={16}>
-          <View style={{ width: width || undefined }}><VersusPage totals={props.totals} previous={props.previous} currency={props.currency} /></View>
-          <View style={{ width: width || undefined }}><SummaryPage totals={props.totals} currency={props.currency} /></View>
-          <View style={{ width: width || undefined }}><AccountsPage accounts={props.accounts} accountsTotal={props.accountsTotal} currency={props.currency} /></View>
-        </ScrollView>
+      <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={{ minHeight: 150 }}>
+        {width > 0 && (
+          <ScrollView
+            ref={scroller}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            contentOffset={{ x: width, y: 0 }}
+            onMomentumScrollEnd={(event) => setPage(Math.round(event.nativeEvent.contentOffset.x / width))}
+            scrollEventThrottle={16}>
+            <View style={{ width }}><VersusPage totals={props.totals} previous={props.previous} currency={props.currency} /></View>
+            <View style={{ width }}><SummaryPage totals={props.totals} currency={props.currency} /></View>
+            <View style={{ width }}><AccountsPage accounts={props.accounts} accountsTotal={props.accountsTotal} currency={props.currency} /></View>
+          </ScrollView>
+        )}
       </View>
       <View className="flex-row items-center justify-center gap-2">
         {[0, 1, 2].map((index) => (

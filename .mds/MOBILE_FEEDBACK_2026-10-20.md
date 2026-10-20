@@ -140,12 +140,12 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| F01 | Cambiar correo electrónico. | PENDIENTE | |
-| F02 | Cambiar contraseña. | PENDIENTE | |
-| F03 | Ver y administrar passkeys. | PENDIENTE | |
-| F04 | Ver y administrar verificación en dos pasos (2FA). | PENDIENTE | |
-| F05 | Conector de access tokens (API): crear, ver y revocar, como en la web. | PENDIENTE | |
-| F06 | Eliminar mi cuenta. | BLOQUEADO | Una vez el clasificador de permisos bloqueó la escritura de esta pantalla. Requiere permiso explícito. Nunca probar contra cuentas reales. |
+| F01 | Cambiar correo electrónico. | CÓDIGO LISTO | |
+| F02 | Cambiar contraseña. | CÓDIGO LISTO | |
+| F03 | Ver y administrar passkeys. | HECHO | |
+| F04 | Ver y administrar verificación en dos pasos (2FA). | CÓDIGO LISTO | |
+| F05 | Conector de access tokens (API): crear, ver y revocar, como en la web. | HECHO | |
+| F06 | Eliminar mi cuenta. | CÓDIGO LISTO | El usuario aprobó (2026-10-20) borrar una cuenta de test. Se prueba solo con una cuenta desechable creada para eso, nunca con una real. |
 | F07 | Perfil: nombre y teléfono ya se editan. | HECHO | Revisado en el emulador. |
 
 ## Segunda ronda (feedback tras probar en iPad y iPhone)

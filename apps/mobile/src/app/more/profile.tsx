@@ -9,6 +9,11 @@ import { FormError } from '@/components/auth/auth-layout';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { AppearanceCard } from '@/components/appearance-card';
+import { AccessCard } from '@/components/profile/access-card';
+import { ApiTokensCard } from '@/components/profile/api-tokens-card';
+import { DeleteAccountCard } from '@/components/profile/delete-account-card';
+import { PasskeysCard } from '@/components/profile/passkeys-card';
+import { TwoFactorCard } from '@/components/profile/two-factor-card';
 import { Card } from '@/components/ui/card';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
@@ -115,9 +120,14 @@ export default function ProfileScreen() {
         {created && !Number.isNaN(created.getTime()) && <InfoRow label="Miembro desde" value={longDateEs(created)} />}
       </Card>
 
-      <Text className="font-inter text-sm text-gf-text-muted">
-        La contraseña, la foto y la verificación en dos pasos se cambian desde Gastify en la web.
-      </Text>
+      <AccessCard email={email} />
+      <TwoFactorCard />
+      <PasskeysCard />
+      <ApiTokensCard />
+
+      <Text className="font-inter text-sm text-gf-text-muted">La foto de perfil se cambia desde Gastify en la web.</Text>
+
+      <DeleteAccountCard email={email} twoFactorEnabled={Boolean((session?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled)} />
     </Screen>
   );
 }
