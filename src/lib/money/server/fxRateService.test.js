@@ -90,6 +90,49 @@ describe("getSnapshotOnOrBefore (weekend/holiday fallback)", () => {
     expect(result.snapshot.effectiveDate).toEqual(friday);
     expect(fetchEcbRates).not.toHaveBeenCalled();
   });
+
+  it("refreshes from the ECB when the newest cached snapshot is weeks old (the 'rate frozen in September' bug)", async () => {
+    const old = new Date("2026-09-08");
+    FxRateSnapshot.findOne.mockReturnValue(
+      mockSort({ source: "ecb", baseCurrency: "EUR", effectiveDate: old, rates: SAMPLE_RATES, fetchedAt: old, rawSourceDate: "2026-09-08" })
+    );
+    const fresh = { EUR: "1", USD: "1.1632", MXN: "21.5440", JPY: "181.0" };
+    fetchEcbRates.mockResolvedValue({ rates: fresh, rawSourceDate: "2026-10-19" });
+    FxRateSnapshot.findOneAndUpdate.mockResolvedValue({
+      source: "ecb", baseCurrency: "EUR", effectiveDate: new Date("2026-10-19"), rates: fresh, fetchedAt: new Date(), rawSourceDate: "2026-10-19",
+    });
+
+    const result = await getSnapshotOnOrBefore(new Date("2026-10-20"));
+
+    expect(fetchEcbRates).toHaveBeenCalledTimes(1);
+    expect(result.stale).toBe(false);
+    expect(result.snapshot.rates).toEqual(fresh);
+  });
+
+  it("still answers with the old snapshot, marked stale, when the ECB cannot be reached", async () => {
+    const old = new Date("2026-09-08");
+    FxRateSnapshot.findOne.mockReturnValue(
+      mockSort({ source: "ecb", baseCurrency: "EUR", effectiveDate: old, rates: SAMPLE_RATES, fetchedAt: old, rawSourceDate: "2026-09-08" })
+    );
+    fetchEcbRates.mockRejectedValue(new Error("network down"));
+
+    const result = await getSnapshotOnOrBefore(new Date("2026-10-20"));
+
+    expect(result.stale).toBe(true);
+    expect(result.snapshot.effectiveDate).toEqual(old);
+  });
+
+  it("does not call the ECB when the cached snapshot is within the weekend/holiday gap", async () => {
+    const thursday = new Date("2026-10-15");
+    FxRateSnapshot.findOne.mockReturnValue(
+      mockSort({ source: "ecb", baseCurrency: "EUR", effectiveDate: thursday, rates: SAMPLE_RATES, fetchedAt: thursday, rawSourceDate: "2026-10-15" })
+    );
+
+    const result = await getSnapshotOnOrBefore(new Date("2026-10-20"));
+
+    expect(result.stale).toBe(false);
+    expect(fetchEcbRates).not.toHaveBeenCalled();
+  });
 });
 
 describe("getRate / convert", () => {

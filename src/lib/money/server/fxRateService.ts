@@ -5,6 +5,10 @@ import { crossRate, convertMinor } from "@gastify/core/money/conversion";
 const SOURCE = "ecb";
 const BASE_CURRENCY = "EUR";
 const LOOKBACK_DAYS_ON_FETCH = 10; // covers weekends + a short holiday run
+// A cached snapshot answers a date only when it is at most this many days older than it: enough for a
+// weekend plus a holiday run, but not for a hole in the cache (nobody asked for rates in weeks).
+const MAX_CACHE_GAP_DAYS = 6;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface FxRateSnapshotDTO {
   source: string;
@@ -136,17 +140,23 @@ export async function getLatestSnapshot(): Promise<FxSnapshotResult> {
   }
 }
 
-// Historical snapshot for a specific transaction date. Cache-aside: Mongo
-// first, ECB only when nothing usable is cached yet.
+// Snapshot for a specific date (a transaction's, or "now" for a quote). Cache-aside: Mongo first, but a
+// cached snapshot only counts when it is recent relative to the date asked (weekend/holiday fallback).
+// An older one means the cache has a hole, so the ECB window ending at that date is fetched before
+// answering; if the ECB cannot be reached the older rate is still returned, marked stale.
 export async function getSnapshotOnOrBefore(date: Date | string | number): Promise<FxSnapshotResult> {
   const target = startOfUtcDay(date);
   const cached = await findCachedOnOrBefore(target);
-  if (cached) return { snapshot: cached, stale: false };
+  if (cached) {
+    const gapDays = (target.getTime() - startOfUtcDay(cached.effectiveDate).getTime()) / DAY_MS;
+    if (gapDays <= MAX_CACHE_GAP_DAYS) return { snapshot: cached, stale: false };
+  }
 
   try {
     const fetched = await fetchAndCacheWindow(target);
     return { snapshot: fetched, stale: false };
   } catch (err) {
+    if (cached) return { snapshot: cached, stale: true, fetchError: err.message };
     return { snapshot: null, stale: true, fetchError: err.message };
   }
 }
