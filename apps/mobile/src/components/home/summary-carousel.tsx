@@ -112,7 +112,7 @@ export function SummaryCarousel(props: Props) {
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>
         </Pressable>
       }>
-      <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={{ minHeight: 150 }}>
+      <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={{ minHeight: 120 }}>
         {width > 0 && (
           <ScrollView
             ref={scroller}

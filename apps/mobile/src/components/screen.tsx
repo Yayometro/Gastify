@@ -32,7 +32,7 @@ export function Screen({
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
           contentContainerClassName="w-full gap-4 self-center p-6"
-          contentContainerStyle={{ paddingBottom: BottomTabInset + 24, maxWidth: MaxContentWidth }}
+          contentContainerStyle={{ paddingBottom: BottomTabInset + 84, maxWidth: MaxContentWidth }}
           refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> : undefined}>
           {onBack ? (
             <Pressable

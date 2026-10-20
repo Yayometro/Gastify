@@ -145,7 +145,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | F03 | Ver y administrar passkeys. | HECHO | |
 | F04 | Ver y administrar verificación en dos pasos (2FA). | CÓDIGO LISTO | |
 | F05 | Conector de access tokens (API): crear, ver y revocar, como en la web. | HECHO | |
-| F06 | Eliminar mi cuenta. | CÓDIGO LISTO | El usuario aprobó (2026-10-20) borrar una cuenta de test. Se prueba solo con una cuenta desechable creada para eso, nunca con una real. |
+| F06 | Eliminar mi cuenta. | HECHO | El usuario aprobó (2026-10-20) borrar una cuenta de test. Verificado en el emulador con una cuenta desechable creada para eso (qa.mobile.36fd8e): validación del correo, confirmación, borrado y después el servidor responde 401 al intentar entrar. Nunca con una cuenta real. |
 | F07 | Perfil: nombre y teléfono ya se editan. | HECHO | Revisado en el emulador. |
 
 ## Segunda ronda (feedback tras probar en iPad y iPhone)
