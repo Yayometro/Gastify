@@ -24,9 +24,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
       DateTimePickerAndroid.open({
         value: date,
         mode: 'date',
-        onChange: (event, picked) => {
-          if (event.type === 'set' && picked) onChange(dateText(picked));
-        },
+        onValueChange: (_, picked) => onChange(dateText(picked)),
       });
     } else {
       setDraft(date);
@@ -52,7 +50,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
             <View style={{ backgroundColor: dark ? DARK_BASE : colors.background, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden', paddingBottom: 28 }}>
               <AmbientBackground />
               <View className="gap-3 p-6">
-                <DateTimePicker value={draft} mode="date" display="inline" locale="es-MX" themeVariant={dark ? 'dark' : 'light'} onChange={(_, picked) => picked && setDraft(picked)} />
+                <DateTimePicker value={draft} mode="date" display="inline" locale="es-MX" themeVariant={dark ? 'dark' : 'light'} onValueChange={(_, picked) => setDraft(picked)} />
                 <GradientButton
                   label="Listo"
                   onPress={() => {

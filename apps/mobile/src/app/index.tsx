@@ -26,6 +26,7 @@ import { computeInsights } from '@gastify/core/history/insights';
 import { compareRange, summarizePeriod } from '@gastify/core/history/periodComparison';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
+import { isInRange } from '@gastify/core/transactions/movementFilters';
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -54,6 +55,7 @@ export default function HomeScreen() {
   const period = usePeriod('month');
 
   const summary = useMemo(() => summarizePeriod(transactions.data, period.range), [transactions.data, period.range]);
+  const inPeriod = useMemo(() => transactions.data.filter((movement) => isInRange(movement, period.range)), [transactions.data, period.range]);
   const previous = useMemo(() => summarizePeriod(transactions.data, compareRange('previous', period.range, { from: null, to: null })), [transactions.data, period.range]);
   const insights = useMemo(() => computeInsights(summary, previous, period.now), [summary, previous, period.now]);
   const latest = useMemo(() => sortNewestFirst(transactions.data).slice(0, 5), [transactions.data]);
@@ -98,7 +100,7 @@ export default function HomeScreen() {
         </Card>
       )}
 
-      <SummaryWidget summary={summary} currency={currency} />
+      <SummaryWidget summary={summary} movements={inPeriod} currency={currency} />
       <TopElements movements={transactions.data} range={period.range} currency={currency} />
       <InsightsWidget insights={insights} currency={currency} />
       <BudgetsWidget />
