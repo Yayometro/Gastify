@@ -14,6 +14,9 @@ export interface ApiConfig {
   baseUrl: string;
   // Extra headers for every request (the mobile app adds its session cookie here).
   getHeaders?: () => Record<string, string> | Promise<Record<string, string>>;
+  // Left out on the web (the browser default). The mobile app sets "omit": it sends the session
+  // cookie by hand in the Cookie header and the platform cookie jar must not interfere.
+  credentials?: "omit" | "same-origin" | "include";
 }
 
 let config: ApiConfig = { baseUrl: "" };
@@ -28,7 +31,8 @@ export function getApiBaseUrl(): string {
 }
 
 export function createApiClient(overrides: Partial<ApiConfig> = {}): ApiClient {
-  const { baseUrl, getHeaders } = { ...config, ...overrides };
+  const { baseUrl, getHeaders, credentials } = { ...config, ...overrides };
+  const credentialsInit = credentials ? { credentials } : {};
   const fullPath = baseUrl.concat("/api/");
 
   const headersFor = async (): Promise<Record<string, string>> => ({
@@ -39,7 +43,7 @@ export function createApiClient(overrides: Partial<ApiConfig> = {}): ApiClient {
   return {
     get: async function <T = any>(path: string): Promise<T> {
       try {
-        const res = await fetch(fullPath.concat(path), { method: "GET", headers: await headersFor() });
+        const res = await fetch(fullPath.concat(path), { method: "GET", headers: await headersFor(), ...credentialsInit });
         return (await res.json()) as T;
       } catch (e) {
         throw new Error(e as unknown as string);
@@ -51,6 +55,7 @@ export function createApiClient(overrides: Partial<ApiConfig> = {}): ApiClient {
           method: "POST",
           headers: await headersFor(),
           body: JSON.stringify(content),
+          ...credentialsInit,
         });
         if (!res) throw new Error("No data from response");
         return (await res.json()) as T;

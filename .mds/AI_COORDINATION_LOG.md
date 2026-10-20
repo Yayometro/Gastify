@@ -1528,3 +1528,11 @@ When taking over this task, Claude should perform the following steps:
 - **Verificación:** web tsc, vitest 543/543, `next build` (copia); móvil tsc estricto, `expo export` iOS y Android, y emulador de Android (claro/oscuro, navegación). Sin verificar en iOS real todavía.
 - **Pendiente:** `explore.tsx` y 3 archivos de plantilla (un comando de borrado fue bloqueado por seguridad y no se repitió); fusión a `main` a la espera de visto bueno.
 \n
+
+### Entry #52 - Claude - 2026-10-19 - App móvil: NativeWind, Inter, íconos Fluent e inicio de sesión (ramas `mobile-phase-1-2` y `mobile-phase-3-auth`)
+- **Recortes de la fase 2** (en `mobile-phase-1-2`): NativeWind 4.2.7 con los tokens `gf-*` de la web y modo oscuro por variables CSS; Inter con `@expo-google-fonts`; `CategoryIcon` (Fluent 3D con `expo-image`); barra flotante más abajo.
+- **Fase 3** (en `mobile-phase-3-auth`, **toca autenticación del servidor**): `@better-auth/expo@1.7.4` + `expo()` en `betterAuth.ts`; `trustedOrigins` solo con `gastify://` en producción (prueba unitaria: los `exp://` jamás fuera de development); ruta `GET /api/session-status` (no cuenta como actividad, no devuelve nada sensible; prueba de claves exactas); cliente de API compartido con `credentials` configurable (`"omit"` en móvil, la web no cambia).
+- **Error real encontrado probando:** `better-auth/plugins/two-factor` (lo que importa la web) arrastra código del servidor y rompe Hermes ("Invalid expression"); en el móvil se importa `better-auth/client/plugins`. Y la pantalla de login se desmontaba al re-leer Better Auth la sesión tras el intento de entrada (perdía el paso del código): la pantalla de carga solo sale en el primer arranque.
+- **Verificación:** emulador de Android contra el servidor local (cuenta desechable, borrada, 0 huérfanos): contraseña -> TOTP -> cuentas reales, persistencia al cerrar la app, bloqueo por inactividad y desbloqueo, cerrar sesión. Pruebas, tipos y compilación: ver el commit.
+- **Límite importante:** la cuenta real del usuario es solo-Google (sin contraseña), así que no puede entrar a la app hasta que se defina una contraseña en Perfil o se agregue "Entrar con Google". Producción no tiene el plugin de Expo hasta fusionar y desplegar esta rama.
+

@@ -1,6 +1,6 @@
 # Plan: Gastify para iPhone y Android con React Native (Expo)
 
-> Fecha: 2026-10-15. Estado (2026-10-19): **fases 0, 1 y 2 hechas** (ver sección 11, al final); la fase 3 en adelante, propuesta.
+> Fecha: 2026-10-15. Estado (2026-10-19): **fases 0, 1, 2 y 3 hechas** (ver sección 11, al final); la fase 4 en adelante, propuesta.
 > Base analizada: `main` en `f42231a` (Next.js 15.5, React 19, TypeScript, Redux Toolkit, Better Auth, MongoDB/Mongoose, Vercel).
 
 ## 1. Resumen
@@ -169,13 +169,26 @@ Fuentes: blog de React Native (reactnative.dev/blog), anuncios de la React Found
 
 **Fase 1 (código compartido): hecha.** `packages/core` tiene: dinero, formato, fechas/periodos, orden, ventana de historial, los slices de Redux y el reductor raíz, los transformadores, los datos de íconos Fluent, el cliente de API (`configureApi`, `lazyApi`) y los ganchos de rendimiento (`configurePerf`). La web los re-exporta desde `src` (sus imports no cambian) y los configura en `src/lib/store.ts`; la app móvil los configura en `apps/mobile/src/store.ts`. El paquete compila en modo estricto.
 
-**Fase 2 (esqueleto móvil): hecha, con dos recortes.**
-- Hecho: Expo Router con barra inferior flotante (Inicio, Movimientos, Agregar, Presupuestos, Más), íconos de las mismas familias que usa la web (FaWallet, FaMoneyBillTransfer, MdSavings, IoAdd) vía `@expo/vector-icons`, botón "+" con el degradado morado de la web (`expo-linear-gradient`), paleta de Gastify en claro y oscuro (los tokens `--gf-*`), tienda de Redux y pantallas base. Metro fuerza una sola copia de React (la de la app).
-- Recortado: **NativeWind** (estilos con `StyleSheet` por ahora), tipografías propias, y **íconos Fluent con `expo-image`** (los datos ya están en core; falta dibujarlos en pantalla, se hace con las listas de la fase 4).
-- Verificado en el emulador de Android (claro y oscuro, navegación entre pestañas). **iOS: falta confirmarlo en el iPhone**; el paquete de iPhone se genera sin errores y usa los mismos componentes.
+**Fase 2 (esqueleto móvil): hecha, completa.**
+- Expo Router con barra inferior flotante dibujada a mano (Inicio, Movimientos, Agregar, Presupuestos, Más), justo encima de la barrita de inicio del iPhone; íconos de las mismas familias que usa la web (FaWallet, FaMoneyBillTransfer, MdSavings, IoAdd) con `@expo/vector-icons`; botón "+" con el degradado morado de la web (`expo-linear-gradient`).
+- **NativeWind 4.2.7** (Tailwind 3, el mismo de la web): las clases usan los mismos nombres de color (`bg-gf-bg`, `text-gf-text`, ...), con los valores en `apps/mobile/src/global.css` y modo oscuro automático. La 5.0 RC se descartó (no es para producción y obliga a fijar `lightningcss` en la raíz, lo que tocaría la web).
+- **Inter** (la misma tipografía de la web) con `@expo-google-fonts/inter`: `font-inter`, `font-inter-medium`, `font-inter-semibold`, `font-inter-bold`.
+- **Íconos Fluent 3D** con `expo-image` (`CategoryIcon`): bajan del mismo sitio que la API (caché en disco) y traducen los nombres viejos con el mapa compartido. Los nombres sin equivalente muestran un ícono genérico.
+- Tienda de Redux compartida y paleta Gastify en claro y oscuro. Metro fuerza una sola copia de React (la de la app).
+- Verificado en el emulador de Android (claro y oscuro) y, por ti, en el iPhone.
+
+**Fase 3 (inicio de sesión): hecha, con límites** (rama `mobile-phase-3-auth`, sin fusionar a `main`).
+- Servidor: plugin `expo()` de Better Auth (`@better-auth/expo@1.7.4`, la misma versión que `better-auth`), `trustedOrigins` en `src/lib/auth/trustedOrigins.ts` (en producción solo `gastify://`; los `exp://` de Expo Go solo con `NODE_ENV=development`) y la ruta de solo lectura `GET /api/session-status` (¿hay sesión? ¿el 2FA sigue fresco?).
+- App: correo y contraseña, paso del código TOTP o de respaldo (3 intentos y se cierra la sesión, igual que la web), sesión guardada en el Keychain/Keystore del teléfono, pantalla de bloqueo ("Verifica tu identidad") cuando pasan 15 minutos de inactividad (revisa cada minuto y al volver a la app), y cerrar sesión (que además limpia Redux). La ventana de 15 minutos es la misma de la web; es el valor por defecto mientras no decidas otra.
+- Verificado en el emulador de Android contra el servidor local con una cuenta desechable (ya borrada): contraseña -> 2FA -> cuentas reales; la sesión sobrevive al cerrar la app; se bloquea tras envejecer la sesión y se desbloquea con el código; cerrar sesión. **Sin probar a mano:** código de respaldo, los 3 intentos fallidos, y una cuenta sin 2FA (pantalla "Falta un paso").
+- **Límites que hay que saber:**
+  - **Tu cuenta real entra con Google y no tiene contraseña**, así que todavía no puede entrar a la app móvil. Hay dos caminos: definir una contraseña en Perfil (web), o agregar "Entrar con Google" a la app (necesita IDs de cliente de Google para iOS y Android, y "Iniciar sesión con Apple" para la App Store).
+  - Las cuentas sin verificación en dos pasos ven un aviso: se activa desde la web (Perfil).
+  - Passkeys en el teléfono: pendiente (fase 7).
+  - La app apunta por defecto al sitio de Vercel, que **no tiene el plugin de Expo hasta que esta rama se fusione y se despliegue**. Para probar antes: `apps/mobile/.env.local` con `EXPO_PUBLIC_API_URL=http://<IP de tu Mac>:3000` (ya está ignorado por git) y el servidor local corriendo (`npm run dev`).
 
 **Cómo probar:** `npm run mobile` en la raíz y escanear el QR con la Cámara del iPhone (Expo Go). Android: `emulator -avd gastify_pixel` y abrir la dirección `exp://IP:8081` que imprime Expo.
 
 **Pendiente menor:** borrar `apps/mobile/src/app/explore.tsx` y los archivos de plantilla que solo usa (`hint-row`, `external-link`, `ui/collapsible`); hoy `explore` está oculto de la barra. En desarrollo sale un aviso rojo de React ("state update on a component that hasn't mounted yet") que viene del núcleo de Expo Router (`ExpoRoot`), no del código de Gastify.
 
-**Siguiente (fase 3, inicio de sesión):** requiere cambios en el servidor (plugin `expo()` de Better Auth y `trustedOrigins`), cliente de Better Auth con SecureStore, pantalla de login con correo y código 2FA, y decidir la ventana de verificación en el teléfono. Es la parte más delicada; conviene hacerla con el modelo más capaz y probarla con cuentas desechables.
+**Siguiente (fase 4, solo lectura):** Movimientos con carga por fases como en la web, Cuentas, Presupuestos y el resumen de Inicio, con los mismos slices y transformadores de `packages/core`.

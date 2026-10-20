@@ -8,6 +8,7 @@ import { Provider } from 'react-redux';
 import '@/global.css';
 
 import AppTabs from '@/components/app-tabs';
+import { AuthGate } from '@/components/auth/auth-gate';
 import { Colors } from '@/constants/theme';
 import { store } from '@/store';
 
@@ -35,7 +36,9 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <ThemeProvider value={theme}>
-        <AppTabs />
+        <AuthGate>
+          <AppTabs />
+        </AuthGate>
       </ThemeProvider>
     </Provider>
   );

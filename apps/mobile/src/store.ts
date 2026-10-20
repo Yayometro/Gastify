@@ -2,10 +2,15 @@ import { configureStore } from '@reduxjs/toolkit';
 import { configureApi } from '@gastify/core/api/client';
 import { rootReducer } from '@gastify/core/features/rootReducer';
 
-// The same Redux slices and API client as the web app (packages/core). The API lives on
-// Vercel; EXPO_PUBLIC_API_URL can point somewhere else while developing.
+import { API_URL, authClient } from '@/auth-client';
+
+// The same Redux slices and API client as the web app (packages/core). Every request carries the
+// session cookie that the auth client keeps in secure storage; `credentials: "omit"` stops the
+// platform cookie jar from interfering with it.
 configureApi({
-  baseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://gastify-jair-vazquez-navarretes-projects.vercel.app',
+  baseUrl: API_URL,
+  credentials: 'omit',
+  getHeaders: async () => ({ Cookie: (await authClient.getCookie()) ?? '' }),
 });
 
 export const store = configureStore({ reducer: rootReducer });

@@ -1,5 +1,6 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
+import { authClient } from '@/auth-client';
 import { CategoryIcon } from '@/components/category-icon';
 import { PlaceholderScreen } from '@/components/placeholder-screen';
 
@@ -27,6 +28,13 @@ export default function MoreScreen() {
           </View>
         ))}
       </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Cerrar sesión"
+        onPress={() => authClient.signOut()}
+        className="items-center rounded-3xl bg-gf-surface p-4">
+        <Text className="font-inter-semibold text-base text-red-500">Cerrar sesión</Text>
+      </Pressable>
     </PlaceholderScreen>
   );
 }

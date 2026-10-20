@@ -5,8 +5,10 @@ import { APIError, createAuthMiddleware, getSessionFromCtx, isAPIError } from "b
 import { ObjectId } from "mongodb";
 import { FACTOR_CHANGE_PATHS, requiresFreshStepUp, STEP_UP_REQUIRED_CODE } from "./factorChangePolicy";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { expo } from "@better-auth/expo";
 import { passkey } from "@better-auth/passkey";
 import { twoFactor } from "better-auth/plugins/two-factor";
+import { buildTrustedOrigins } from "./trustedOrigins";
 import { provisionNewUserData } from "./provisionNewUserData";
 import { getSharedMongoClient } from "@/lib/db/mongoClient";
 
@@ -56,6 +58,9 @@ const STEP_UP_PROOF_PATHS = new Set([
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
+  // The mobile app (apps/mobile) signs in from a native URL scheme, not a web origin; see
+  // trustedOrigins.ts for what is trusted in production versus development.
+  trustedOrigins: buildTrustedOrigins(process.env.NODE_ENV),
   secret: process.env.BETTER_AUTH_SECRET,
   database: mongodbAdapter(db, { client }),
   // Reuses the existing `users` collection and its existing field names -
@@ -193,6 +198,9 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    // Lets the mobile app (Expo) use the same sessions: it stores the session cookie in the
+    // phone's secure storage and sends the app's scheme as the request origin.
+    expo(),
     passkey({
       rpName: "Gastify",
       authenticatorSelection: {
