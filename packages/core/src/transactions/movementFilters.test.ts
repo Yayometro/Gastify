@@ -6,14 +6,16 @@ const food = { _id: "c1", name: "Comida" };
 const car = { _id: "c2", name: "Auto" };
 const sub = { _id: "s1", name: "Restaurante" };
 
-const movements: FilterableMovement[] = [
+type Row = FilterableMovement & { _id: string };
+
+const movements: Row[] = [
   { _id: "1", name: "Súper", isBill: true, category: food, account: "a1", displayMoney: { primary: { amountMinor: 25000, currency: "MXN" }, native: { amountMinor: 25000, currency: "MXN" } } },
   { _id: "2", name: "Taco", isBill: true, category: food, subCategory: sub, account: { _id: "a2" }, tags: [{ name: "viaje" }], displayMoney: { primary: { amountMinor: 8000, currency: "MXN" }, native: { amountMinor: 450, currency: "USD" } } },
   { _id: "3", name: "Nómina", isBill: false, category: car, account: "a1", displayMoney: { primary: { amountMinor: 2500000, currency: "MXN" } } },
   { _id: "4", name: "Pago de tarjeta", kind: "transfer", isBill: true, account: "a1" },
 ];
 
-const ids = (list: FilterableMovement[]) => list.map((m) => m._id);
+const ids = (list: Row[]) => list.map((m) => m._id);
 
 describe("applyMovementFilters", () => {
   it("returns everything with no filters", () => {
