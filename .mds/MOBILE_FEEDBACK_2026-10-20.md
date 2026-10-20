@@ -53,7 +53,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | M01 | Importar desde Excel (no existe en móvil). | HECHO | Verificado: descarga la plantilla (se comparte como .xlsx) y la subida multipart crea los movimientos (probado contra el servidor con la cuenta QA y luego borrado). |
 | M02 | Transaction Categorizer (no existe en móvil). Accesible también desde el botón Tools (G02). | CÓDIGO LISTO | Verificado: abre, busca y muestra "sin sugerencias" (la cuenta QA no tiene reglas). Aplicar sugerencias sin probar. Falta atajo dentro de Movimientos. |
 | M03 | Transaction Details: ya funciona, mantener. | HECHO | Revisado en el emulador. |
-| M04 | Más filtros, como en la web (revisar la lista completa de la web). | PENDIENTE | |
+| M04 | Más filtros, como en la web (revisar la lista completa de la web). | HECHO | Revisados contra Movements.tsx: periodo, tipo, legibilidad, monto exacto (principal/nativo/moneda), categoría, subcategoría, cuenta y duplicados; todos están. |
 | M05 | Tocar el mes abre calendario y selector de mes. | CÓDIGO LISTO | Ver T04. |
 | M06 | Búsqueda por nombre: botón X a la derecha para borrar todo el texto de un toque. | CÓDIGO LISTO | |
 | M07 | Filtro de categoría: buscar también SUBCATEGORÍAS (hoy solo busca categorías). Subcategorías como submenú bajo cada categoría. | CÓDIGO LISTO | |
@@ -62,7 +62,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | M10 | Filtro de cuentas: ya funciona, mantener. | HECHO | |
 | M11 | Duplicados: el switch debe abrir subfiltros como en la web: nombre, fecha, monto, categoría, subcategoría, tolerancia de fecha, tolerancia de monto, "Buscar duplicados" y "Restablecer valores". | CÓDIGO LISTO | |
 | M12 | Duplicados: filtro readable / not readable / all. | CÓDIGO LISTO | RESUELTO con la web: Todos / Readable / Not readable (Movements.tsx, selector ReadableSelector). |
-| M13 | Barra de scroll exclusiva a la derecha para saltar entre fechas (los separadores por día ya existen y se mantienen). | PENDIENTE | |
+| M13 | Barra de scroll exclusiva a la derecha para saltar entre fechas (los separadores por día ya existen y se mantienen). | HECHO | |
 | M14 | Movimientos debe tener todos los componentes que tiene la web (importar, categorizar, detalles, etc.). | CÓDIGO LISTO | Agrupa M01, M02, M04. |
 
 ## Crear / Agregar

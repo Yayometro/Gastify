@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, SectionList, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { authClient } from '@/auth-client';
 import { ChipPicker } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
+import { DateRail } from '@/components/date-rail';
 import { ExportSheet } from '@/components/export-sheet';
 import { MonthSwitcher } from '@/components/month-switcher';
 import { MovementFiltersPanel } from '@/components/movements/movement-filters';
@@ -86,6 +87,7 @@ export default function MovementsScreen() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const listRef = useRef<SectionList<TransactionData, DaySection>>(null);
   const [exporting, setExporting] = useState(false);
   const { data: session } = authClient.useSession();
 
@@ -323,6 +325,7 @@ export default function MovementsScreen() {
     <View className="flex-1 bg-gf-bg">
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <SectionList<TransactionData, DaySection>
+          ref={listRef}
           sections={sections}
           keyExtractor={(item, index) => String(item._id ?? index)}
           renderItem={({ item }) => {
@@ -357,6 +360,10 @@ export default function MovementsScreen() {
           showsVerticalScrollIndicator={false}
         />
       </SafeAreaView>
+      <DateRail
+        labels={sections.map((section) => section.title)}
+        onJump={(index) => listRef.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0, animated: false, viewOffset: 0 })}
+      />
       <ExportSheet visible={exportOpen} count={items.length} busy={exporting} onPick={exportPeriod} onClose={() => setExportOpen(false)} />
     </View>
   );
