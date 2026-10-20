@@ -43,15 +43,15 @@ function MenuRow({
   );
 }
 
-// The sections that are not in the bottom bar. Only Cuentas is ready in this phase; the rest arrive
-// in later phases and show as "Próximamente".
+// The sections that are not in the bottom bar: Cuentas and Categorías are ready; the rest arrive in
+// later phases and show as "Próximamente".
 export default function MoreScreen() {
   return (
     <Screen title="Más" subtitle="Tus cuentas, categorías y perfil.">
       <Card>
         <MenuRow label="Cuentas" icon="wallet-outline" onPress={() => router.push('/more/accounts')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Categorías" icon="pricetags-outline" soon />
+        <MenuRow label="Categorías" icon="pricetags-outline" onPress={() => router.push('/more/categories')} />
         <View className="h-px bg-gf-border" />
         <MenuRow label="Historial" icon="time-outline" soon />
         <View className="h-px bg-gf-border" />

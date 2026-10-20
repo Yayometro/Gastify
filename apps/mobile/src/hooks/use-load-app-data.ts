@@ -5,7 +5,7 @@ import { fetchAccounts } from '@gastify/core/features/accountsSlice';
 import { fetchBudget } from '@gastify/core/features/budgetSlice';
 import { fetchCategories } from '@gastify/core/features/categoriesSlice';
 import { fetchSubCat } from '@gastify/core/features/subCategorySlice';
-import { fetchTrans, fetchTransHistory } from '@gastify/core/features/transacctionsSlice';
+import { fetchTrans, fetchTransHistory, resetHistory } from '@gastify/core/features/transacctionsSlice';
 import { fetchUser } from '@gastify/core/features/userSlice';
 import { fetchWallet } from '@gastify/core/features/walletSlice';
 import type { AppDispatch, RootState } from '@/store';
@@ -69,4 +69,18 @@ export function useRefreshAppData(): { refresh: () => void; refreshing: boolean 
   }, [dispatch]);
 
   return { refresh, refreshing };
+}
+
+// After a change is saved: the lists the change can touch are requested again. When the change is to
+// a movement from before the recent cutoff, the older history is requested again too.
+export function reloadAfterWrite(dispatch: AppDispatch, olderTouched = false): Promise<unknown> {
+  if (olderTouched) dispatch(resetHistory());
+  return Promise.allSettled([
+    dispatch(fetchTrans(undefined)),
+    dispatch(fetchAccounts(undefined)),
+    dispatch(fetchBudget(undefined)),
+    dispatch(fetchWallet(undefined)),
+    dispatch(fetchCategories(undefined)),
+    dispatch(fetchSubCat(undefined)),
+  ]);
 }

@@ -1,4 +1,4 @@
-import { Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { CategoryBadge } from '@/components/category-badge';
 import { Colors } from '@/constants/theme';
@@ -16,7 +16,20 @@ function clock(time: number | null): string {
 
 // One movement: its category badge, what it was for, and the amount in the wallet's currency.
 // Incomes are green with a plus, bills red with a minus, transfers neutral (they are not spending).
-export function MovementRow({ movement, currency }: { movement: TransactionData; currency: string }) {
+// Pressing opens it; a long press (or pressing while others are selected) selects it.
+export function MovementRow({
+  movement,
+  currency,
+  selected = false,
+  onPress,
+  onLongPress,
+}: {
+  movement: TransactionData;
+  currency: string;
+  selected?: boolean;
+  onPress?: () => void;
+  onLongPress?: () => void;
+}) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const category = movement.category ?? null;
@@ -27,9 +40,18 @@ export function MovementRow({ movement, currency }: { movement: TransactionData;
   const amountColor = kind === 'income' ? colors.income : kind === 'expense' ? colors.expense : colors.textSecondary;
   const title = movement.name || category?.name || 'Movimiento';
   const detail = kind === 'transfer' ? 'Transferencia' : category?.name || 'Sin categoría';
+  const amount = formatMoneyMajor(Math.abs(getPrimaryAmount(movement)), currency);
 
   return (
-    <View className="flex-row items-center gap-3 py-2.5">
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={350}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}, ${sign}${amount}`}
+      accessibilityState={{ selected }}
+      className="flex-row items-center gap-3 rounded-2xl px-2 py-2.5"
+      style={{ backgroundColor: selected ? colors.accentSoft : 'transparent' }}>
       <CategoryBadge icon={category?.icon} color={category?.color} size={44} />
       <View className="flex-1 gap-0.5">
         <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>
@@ -41,8 +63,8 @@ export function MovementRow({ movement, currency }: { movement: TransactionData;
       </View>
       <Text className="font-inter-semibold text-base" style={{ color: amountColor }}>
         {sign}
-        {formatMoneyMajor(Math.abs(getPrimaryAmount(movement)), currency)}
+        {amount}
       </Text>
-    </View>
+    </Pressable>
   );
 }

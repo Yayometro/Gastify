@@ -182,6 +182,14 @@ export const transacctionsSlice = createSlice({
         state.data[index] = action.payload;
       }
     },
+    // After a change to a movement from before the recent cutoff, the older part is requested again
+    // (the history loader sees "idle" and fetches it). The recent part stays as it is.
+    resetHistory: (state) => {
+      if (state.historyCutoff) {
+        state.data = state.data.filter((t) => !isBeforeCutoff(t, state.historyCutoff as string));
+      }
+      state.historyStatus = "idle";
+    },
     updateManyTransactions: (state, action: PayloadAction<TransactionData[]>) => {
       action.payload.forEach((updatedTransaction) => {
         const index = state.data.findIndex(
@@ -239,6 +247,7 @@ export const {
   removeManyTransactions,
   updateTransaction,
   updateManyTransactions,
+  resetHistory,
 } = transacctionsSlice.actions;
 
 export default transacctionsSlice.reducer; //This is the default value accros the app

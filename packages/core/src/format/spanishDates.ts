@@ -35,3 +35,5 @@ export function dayLabelEs(date: Date, today: Date = new Date()): string {
   const base = `${WEEKDAYS_ES[date.getDay()]} ${date.getDate()} de ${MONTHS_ES[date.getMonth()]}`;
   return date.getFullYear() === today.getFullYear() ? base : `${base} de ${date.getFullYear()}`;
 }
+
+export const MONTHS_ES_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"] as const;

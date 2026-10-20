@@ -22,9 +22,9 @@ let cached: Promise<FluentManifestIcon[]> | null = null;
 
 // The icon list (name, group, keywords) is a 33 KB (gzip) file that only the picker
 // needs, so it is fetched when the picker opens - never part of the page's JavaScript.
-export function loadFluentManifest(): Promise<FluentManifestIcon[]> {
+export function loadFluentManifest(baseUrl = ""): Promise<FluentManifestIcon[]> {
   if (!cached) {
-    cached = fetch(`${FLUENT_BASE_PATH}/manifest.json?v=${FLUENT_ASSET_VERSION}`)
+    cached = fetch(`${baseUrl}${FLUENT_BASE_PATH}/manifest.json?v=${FLUENT_ASSET_VERSION}`)
       .then((res) => {
         if (!res.ok) throw new Error(`manifest ${res.status}`);
         return res.json() as Promise<{ icons: FluentManifestIcon[] }>;
