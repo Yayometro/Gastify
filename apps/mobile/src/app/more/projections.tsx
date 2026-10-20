@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { Screen } from '@/components/screen';
@@ -21,7 +21,6 @@ type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
 
 const TYPE_LABEL: Record<YearProjectionRow['type'], string> = { actual: 'Real', current: 'Este mes', estimate: 'Estimado' };
-const COLUMNS = { month: 96, type: 96, income: 116, expense: 116, net: 116 };
 
 // The year's projection, month by month, read-only: the same table the web builds from the income
 // sources, the year's settings and the baseline. Like the web, anything entered in another currency (income
@@ -114,31 +113,35 @@ export default function ProjectionsScreen() {
               {`Todavía no hay tipo de cambio para ${inputs.missing.join(', ')}: esas cifras se muestran sin convertir.`}
             </Text>
           )}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View>
-              <View className="flex-row border-b border-gf-border pb-2">
-                <Text style={{ width: COLUMNS.month }} className="font-inter-semibold text-xs text-gf-text-muted">Mes</Text>
-                <Text style={{ width: COLUMNS.type }} className="font-inter-semibold text-xs text-gf-text-muted">Tipo</Text>
-                <Text style={{ width: COLUMNS.income, textAlign: 'right' }} className="font-inter-semibold text-xs text-gf-text-muted">Ingresos</Text>
-                <Text style={{ width: COLUMNS.expense, textAlign: 'right' }} className="font-inter-semibold text-xs text-gf-text-muted">Gastos</Text>
-                <Text style={{ width: COLUMNS.net, textAlign: 'right' }} className="font-inter-semibold text-xs text-gf-text-muted">Neto</Text>
-              </View>
-              {rows.map((row, index) => {
-                const income = row.type === 'actual' ? row.income : row.projectedIncome ?? row.income;
-                const expense = row.type === 'actual' ? row.expense : row.projectedExpense ?? row.expense;
-                const net = (income ?? 0) - (expense ?? 0);
-                return (
-                  <View key={`${row.monthName}-${index}`} className="flex-row items-center border-b border-gf-border py-2.5">
-                    <Text style={{ width: COLUMNS.month }} className="font-inter-medium text-sm text-gf-text">{MONTHS_ES[index] ?? row.monthName}</Text>
-                    <Text style={{ width: COLUMNS.type }} className="font-inter text-sm text-gf-text-muted">{TYPE_LABEL[row.type]}</Text>
-                    <Text style={{ width: COLUMNS.income, textAlign: 'right' }} className="font-inter text-sm text-gf-text">{formatMoneyMajor(income ?? 0, currency)}</Text>
-                    <Text style={{ width: COLUMNS.expense, textAlign: 'right' }} className="font-inter text-sm text-gf-text">{formatMoneyMajor(expense ?? 0, currency)}</Text>
-                    <Text style={{ width: COLUMNS.net, textAlign: 'right', color: net < 0 ? colors.expense : colors.income }} className="font-inter-semibold text-sm">{formatMoneyMajor(net, currency)}</Text>
+          <Text className="font-inter text-xs text-gf-text-muted">Montos en {currency}.</Text>
+          {rows.map((row, index) => {
+            const income = row.type === 'actual' ? row.income : row.projectedIncome ?? row.income;
+            const expense = row.type === 'actual' ? row.expense : row.projectedExpense ?? row.expense;
+            const net = (income ?? 0) - (expense ?? 0);
+            const money = (amount: number) => formatMoneyMajor(amount, currency, { showCode: false });
+            return (
+              <View key={`${row.monthName}-${index}`} className="gap-1 border-t border-gf-border pt-3">
+                <View className="flex-row items-center justify-between">
+                  <Text className="font-inter-semibold text-base capitalize text-gf-text">{MONTHS_ES[index] ?? row.monthName}</Text>
+                  <Text className="font-inter-medium text-xs" style={{ color: row.type === 'estimate' ? colors.accent : colors.textSecondary }}>{TYPE_LABEL[row.type]}</Text>
+                </View>
+                <View className="flex-row gap-3">
+                  <View className="flex-1">
+                    <Text className="font-inter text-xs text-gf-text-muted">Ingresos</Text>
+                    <Text className="font-inter-medium text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.income }}>{money(income ?? 0)}</Text>
                   </View>
-                );
-              })}
-            </View>
-          </ScrollView>
+                  <View className="flex-1">
+                    <Text className="font-inter text-xs text-gf-text-muted">Gastos</Text>
+                    <Text className="font-inter-medium text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(expense ?? 0)}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-inter text-xs text-gf-text-muted">Neto</Text>
+                    <Text className="font-inter-semibold text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: net < 0 ? colors.expense : colors.text }}>{money(net)}</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
           <Text className="font-inter text-xs text-gf-text-muted">Los meses reales muestran lo que ya ocurrió; los estimados, lo que se proyecta.</Text>
         </Card>
       )}
