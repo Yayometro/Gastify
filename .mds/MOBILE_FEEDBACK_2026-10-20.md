@@ -29,9 +29,9 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | I03 | Carrusel del resumen: primero el resumen; deslizar a la izquierda = Cuentas; a la derecha = comparación vs mes anterior; "Ver más" abre modal con las tres. | HECHO | |
 | I04 | Cuentas con aspecto de tarjetas de crédito, como en la web. | HECHO | Ver también U01. |
 | I05 | Gráfica del resumen: flechita o indicador de que se puede tocar; total centrado (hoy a la izquierda). | HECHO | |
-| I06 | Al tocar una categoría (ej. House) mostrar su ícono dentro o encima del donut, no solo las subcategorías. | CÓDIGO LISTO | |
+| I06 | Al tocar una categoría (ej. House) mostrar su ícono dentro o encima del donut, no solo las subcategorías. | HECHO | |
 | I07 | Widget Top 6: encabezado claro; cambiar entre 3, 6, 12 y 24; selector de rango de tiempo. | CÓDIGO LISTO | RESUELTO con la web: el switch es 3, 6, 12 y 24 (TopElementContainerView.tsx). |
-| I08 | "Perspectivas": no se sabe de dónde sale; el usuario lo asocia al comparativo vs mes anterior. Aclarar o renombrar, y corregir contraste. | CÓDIGO LISTO | Relacionado con G07. |
+| I08 | "Perspectivas": no se sabe de dónde sale; el usuario lo asocia al comparativo vs mes anterior. Aclarar o renombrar, y corregir contraste. | HECHO | Relacionado con G07. |
 | I09 | Widget de Presupuestos: poder hacer scroll interno o hacerlo más alto para ver todos. | CÓDIGO LISTO | |
 | I10 | "Últimos movimientos" → "Ver todos" debe abrir Movimientos completo (con todos sus componentes). | PENDIENTE | Depende de M01–M14. |
 | I11 | Gráfica del resumen con filtro de tiempo propio. | CÓDIGO LISTO | Ver G05. |
@@ -43,7 +43,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | A01 | Wallet Analyzer completo en móvil (hoy no existe). | PENDIENTE | |
 | A02 | Filtro de tiempo del analizador: flechas, tocar el mes para elegir año y mes, y rango personalizado. | PENDIENTE | |
 | A03 | Tocar cualquier elemento del analizador abre un modal con el detalle. | PENDIENTE | |
-| A04 | Gráfica "Category Details" con selector de tipo: Nested (ya existe), Bubble (falta, circle packing) y TreeMap (falta). | PENDIENTE | El TreeMap de la web está hecho a mano, sin librería: portarlo. |
+| A04 | Gráfica "Category Details" con selector de tipo: Nested (ya existe), Bubble (falta, circle packing) y TreeMap (falta). | HECHO | El TreeMap de la web está hecho a mano, sin librería: portarlo. |
 | A05 | Top 6 categorías del analizador, como en la web. | PENDIENTE | |
 
 ## Movimientos

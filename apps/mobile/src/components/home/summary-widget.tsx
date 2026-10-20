@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
+import { CategoryBubbles } from '@/components/charts/category-bubbles';
 import { CategoryDonut } from '@/components/charts/category-donut';
+import { CategoryTreemap } from '@/components/charts/category-treemap';
 import { ChipPicker } from '@/components/chip-picker';
 import { MonthSwitcher } from '@/components/month-switcher';
 import { MonthlyBars } from '@/components/charts/monthly-bars';
@@ -45,6 +47,8 @@ export function SummaryWidget({
     return { summary: summarizePeriod(allMovements, range), movements: allMovements.filter((movement) => isInRange(movement, range)) };
   }, [preset, month, now, allMovements, dashboardSummary, dashboardMovements]);
   const [selected, setSelected] = useState<string | null>(null);
+  // The chart type, as the web's selector: the nested ring, the bubbles or the treemap.
+  const [chart, setChart] = useState<'ring' | 'bubbles' | 'treemap'>('ring');
   const total = kind === 'spending' ? summary.totals.spending : summary.totals.incomes;
 
   const categories = useMemo(() => groupSmallSlices(categoryBreakdown(movements, kind), MAX_ARCS), [movements, kind]);
@@ -74,6 +78,15 @@ export function SummaryWidget({
         <Text className="font-inter text-sm text-gf-text-muted">Sin {kind === 'spending' ? 'gastos' : 'ingresos'} en este periodo.</Text>
       ) : (
         <>
+          <Segmented options={[{ value: 'ring', label: 'Anillo' }, { value: 'bubbles', label: 'Burbujas' }, { value: 'treemap', label: 'Mapa' }]} value={chart} onChange={setChart} />
+          {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={(key) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)))} total={shownTotal} />}
+          {chart === 'treemap' && <CategoryTreemap slices={shown} selectedKey={zoomed ? null : selected} onSelect={(key) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)))} total={shownTotal} />}
+          {chart !== 'ring' && chosen && (
+            <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="items-center">
+              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{chosen.name}: {formatMoneyMajor(chosen.value, currency)} · quitar selección</Text>
+            </Pressable>
+          )}
+          {chart === 'ring' && (
           <CategoryDonut
             slices={shown}
             selectedKey={zoomed ? null : selected}
@@ -85,6 +98,7 @@ export function SummaryWidget({
             onCenterPress={chosen ? () => setSelected(null) : undefined}
             trackColor={scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(27,16,61,0.06)'}
           />
+          )}
           {shown.map((row) => (
             <Pressable
               key={row.key}
