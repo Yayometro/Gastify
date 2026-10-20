@@ -1,5 +1,6 @@
 import { FLUENT_ASSET_VERSION, FLUENT_BASE_PATH } from "./fluentIcons";
 import { LEGACY_TO_FLUENT } from "./iconLegacyMap";
+import { englishAlternatives } from "./spanishKeywords";
 
 export interface FluentManifestIcon {
   slug: string;
@@ -46,9 +47,12 @@ function normalize(text: string): string {
 export function searchFluentIcons(icons: FluentManifestIcon[], query: string): FluentManifestIcon[] {
   const words = normalize(query).split(/\s+/).filter(Boolean);
   if (words.length === 0) return icons;
+  // Each typed word may be Spanish: it matches itself or the English words it stands for. The
+  // icon's group ("Food & Drink", "Travel & Places") counts too, so "comida" finds the whole group.
+  const alternatives = words.map((word) => englishAlternatives(word));
   return icons.filter((icon) => {
-    const haystack = normalize(`${icon.name} ${icon.keywords.join(" ")} ${icon.glyph}`);
-    return words.every((w) => haystack.includes(w));
+    const haystack = normalize(`${icon.name} ${icon.keywords.join(" ")} ${icon.glyph} ${icon.group}`);
+    return alternatives.every((options) => options.some((option) => haystack.includes(option)));
   });
 }
 

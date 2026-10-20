@@ -1,74 +1,58 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useState, type ComponentProps } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch } from 'react-redux';
 
-import { Screen } from '@/components/screen';
-import { Segmented } from '@/components/segmented';
+import { AccountForm } from '@/components/forms/account-form';
+import { BudgetForm } from '@/components/forms/budget-form';
+import { CategoryForm } from '@/components/forms/category-form';
 import { MovementForm } from '@/components/movement-form';
+import { Screen } from '@/components/screen';
+import { useToast } from '@/components/toast';
 import { TransferForm } from '@/components/transfer-form';
-import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
+import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
+import { emptyBudgetValues } from '@gastify/core/budgets/budgetForm';
 
-type Kind = 'expense' | 'income' | 'transfer';
+type Kind = 'expense' | 'income' | 'transfer' | 'account' | 'category' | 'budget' | 'saving' | 'project';
+type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const KINDS: { value: Kind; label: string }[] = [
-  { value: 'expense', label: 'Gasto' },
-  { value: 'income', label: 'Ingreso' },
-  { value: 'transfer', label: 'Transferir' },
+const KINDS: { value: Kind; label: string; icon: IconName }[] = [
+  { value: 'expense', label: 'Gasto', icon: 'arrow-down-circle-outline' },
+  { value: 'income', label: 'Ingreso', icon: 'arrow-up-circle-outline' },
+  { value: 'transfer', label: 'Transferir', icon: 'swap-horizontal-outline' },
+  { value: 'account', label: 'Cuenta', icon: 'wallet-outline' },
+  { value: 'category', label: 'Categoría', icon: 'pricetag-outline' },
+  { value: 'budget', label: 'Presupuesto', icon: 'pie-chart-outline' },
+  { value: 'saving', label: 'Ahorro', icon: 'cash-outline' },
+  { value: 'project', label: 'Proyecto', icon: 'airplane-outline' },
 ];
 
-// The "+" of the bottom bar: a movement in two or three taps (type, amount, category), or a transfer
-// between two accounts. What is saved goes straight to the same API routes the web uses.
+// The "+" of the bottom bar: a quick way to create anything, not only movements. Pick what to create
+// and its form appears below; what is saved goes to the same API routes the web uses.
 export default function AddScreen() {
   const dispatch = useDispatch<AppDispatch>();
+  const toast = useToast();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const currency = usePrimaryCurrency();
   const [kind, setKind] = useState<Kind>('expense');
-  const [saved, setSaved] = useState<string | null>(null);
   const [round, setRound] = useState(0);
 
-  const finish = (message: string) => {
-    setSaved(message);
+  const done = (message: string) => {
+    toast.show(message);
     setRound((n) => n + 1);
     reloadAfterWrite(dispatch);
   };
 
-  return (
-    <Screen title="Agregar" subtitle="Un gasto, un ingreso o una transferencia entre tus cuentas.">
-      <Segmented
-        options={KINDS}
-        value={kind}
-        onChange={(next) => {
-          setKind(next);
-          setSaved(null);
-        }}
-      />
-
-      {saved && (
-        <Card>
-          <Text className="font-inter-semibold text-base text-gf-text">{saved}</Text>
-          <Pressable accessibilityRole="link" onPress={() => router.navigate('/movements')} hitSlop={8}>
-            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>
-              Ver movimientos
-            </Text>
-          </Pressable>
-        </Card>
-      )}
-
-      <View>
-        {kind === 'transfer' ? (
-          <TransferForm
-            key={`transfer-${round}`}
-            onSubmit={async (body) => {
-              await sendWrite('general-data/transactions/transfer', body);
-              finish('Transferencia guardada.');
-            }}
-          />
-        ) : (
+  const form = () => {
+    switch (kind) {
+      case 'expense':
+      case 'income':
+        return (
           <MovementForm
             key={`${kind}-${round}`}
             hideType
@@ -76,11 +60,83 @@ export default function AddScreen() {
             submitLabel="Guardar movimiento"
             onSubmit={async (body) => {
               await sendWrite('general-data/transactions/new-transaction', body);
-              finish(kind === 'income' ? 'Ingreso guardado.' : 'Gasto guardado.');
+              done(kind === 'income' ? 'Ingreso guardado' : 'Gasto guardado');
             }}
           />
-        )}
+        );
+      case 'transfer':
+        return (
+          <TransferForm
+            key={`transfer-${round}`}
+            onSubmit={async (body) => {
+              await sendWrite('general-data/transactions/transfer', body);
+              done('Transferencia guardada');
+            }}
+          />
+        );
+      case 'account':
+        return (
+          <AccountForm
+            key={`account-${round}`}
+            submitLabel="Crear cuenta"
+            onSubmit={async (values) => {
+              await sendWrite('general-data/accounts/new-account', values);
+              done('Cuenta creada');
+            }}
+          />
+        );
+      case 'category':
+        return (
+          <CategoryForm
+            key={`category-${round}`}
+            submitLabel="Crear categoría"
+            onSubmit={async (values) => {
+              await sendWrite('general-data/categories/new-category', values);
+              done('Categoría creada');
+            }}
+          />
+        );
+      default:
+        return (
+          <BudgetForm
+            key={`${kind}-${round}`}
+            initial={emptyBudgetValues(kind === 'budget' ? 'spending' : kind, currency)}
+            submitLabel="Crear"
+            onSubmit={async (body) => {
+              await sendWrite('general-data/budget/new', body);
+              done(kind === 'saving' ? 'Meta de ahorro creada' : kind === 'project' ? 'Proyecto creado' : 'Presupuesto creado');
+            }}
+          />
+        );
+    }
+  };
+
+  return (
+    <Screen title="Crear" subtitle="Elige qué quieres agregar.">
+      <View className="flex-row flex-wrap gap-2">
+        {KINDS.map((item) => {
+          const selected = item.value === kind;
+          return (
+            <Pressable
+              key={item.value}
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              onPress={() => setKind(item.value)}
+              className="items-center gap-1 rounded-2xl border px-1 py-2.5"
+              style={{
+                width: '23.5%',
+                borderColor: selected ? colors.accent : colors.border,
+                backgroundColor: selected ? colors.accentSoft : colors.backgroundElement,
+              }}>
+              <Ionicons name={item.icon} size={24} color={selected ? colors.accent : colors.text} />
+              <Text className="font-inter-medium text-xs" style={{ color: selected ? colors.accent : colors.text }} numberOfLines={1}>
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
+      <View>{form()}</View>
     </Screen>
   );
 }

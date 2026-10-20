@@ -37,3 +37,9 @@ export function dayLabelEs(date: Date, today: Date = new Date()): string {
 }
 
 export const MONTHS_ES_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"] as const;
+
+// "Lunes 19 de octubre de 2026", for a date field.
+export function longDateEs(date: Date): string {
+  const weekday = WEEKDAYS_ES[date.getDay()];
+  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${date.getDate()} de ${MONTHS_ES[date.getMonth()]} de ${date.getFullYear()}`;
+}

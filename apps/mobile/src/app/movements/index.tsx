@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { ChipPicker } from '@/components/chip-picker';
 import { MonthSwitcher } from '@/components/month-switcher';
+import { useToast } from '@/components/toast';
 import { MovementRow } from '@/components/movements/movement-row';
 import { TotalsCard } from '@/components/totals-card';
 import { Card } from '@/components/ui/card';
@@ -32,6 +33,7 @@ type DaySection = { key: string; title: string; data: TransactionData[] };
 // may still be loading (phased history, as on the web): the notice says so.
 export default function MovementsScreen() {
   const dispatch = useDispatch<AppDispatch>();
+  const toast = useToast();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
   const currency = usePrimaryCurrency();
   const { accounts, categories } = useCatalog();
@@ -93,6 +95,7 @@ export default function MovementsScreen() {
             setActionError(null);
             try {
               await sendWrite('general-data/transactions/remove-many', { manyTrans: selected });
+              toast.show(count === 1 ? 'Movimiento borrado' : `${count} movimientos borrados`);
               finishAction();
             } catch (error) {
               setActionError(messageOf(error));
@@ -116,6 +119,7 @@ export default function MovementsScreen() {
         category: categoryId,
         subCategory: null,
       });
+      toast.show('Categoría cambiada');
       finishAction();
     } catch (error) {
       setActionError(messageOf(error));

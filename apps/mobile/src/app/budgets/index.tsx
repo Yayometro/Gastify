@@ -1,5 +1,6 @@
+import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { CategoryBadge } from '@/components/category-badge';
@@ -38,6 +39,17 @@ type Row = {
   ratio: number;
 };
 
+type Look = { icon?: string | null; color?: string | null };
+
+// Spending and saving budgets look like their first category (the server only stores an icon for
+// projects); a project has its own icon.
+function lookOf(budget: BudgetData, fallbackColor: string): Look {
+  if (isProjectBudget(budget)) return { icon: budget.icon, color: fallbackColor };
+  const first = (budget.categories?.[0]?.category ?? budget.category) as Look | string | undefined;
+  if (first && typeof first === 'object') return { icon: first.icon, color: first.color ?? fallbackColor };
+  return { icon: budget.icon, color: fallbackColor };
+}
+
 function BudgetCard({ row, currency, saving }: { row: Row; currency: string; saving: boolean }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -45,37 +57,61 @@ function BudgetCard({ row, currency, saving }: { row: Row; currency: string; sav
   const diff = spent - goal;
   const exceeded = !saving && goal > 0 && diff > 0;
   const percent = Math.round(ratio * 100);
+  const look = lookOf(budget, colors.accentSoft);
 
   return (
-    <Card>
-      <View className="flex-row items-center gap-3">
-        <CategoryBadge icon={budget.icon} color={colors.accentSoft} size={44} />
-        <View className="flex-1">
-          <Text className="font-inter-semibold text-base text-gf-text" numberOfLines={1}>
-            {budget.name || 'Presupuesto'}
-          </Text>
-          <Text className="font-inter text-sm text-gf-text-muted">
-            {saving ? 'Ahorrado' : 'Gastado'} {formatMoneyMajor(spent, currency)} de {formatMoneyMajor(goal, currency)}
-          </Text>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Abrir ${budget.name || 'presupuesto'}`}
+      onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })}>
+      <Card>
+        <View className="flex-row items-center gap-3">
+          <CategoryBadge icon={look.icon} color={look.color} size={44} />
+          <View className="flex-1">
+            <Text className="font-inter-semibold text-base text-gf-text" numberOfLines={1}>
+              {budget.name || 'Presupuesto'}
+            </Text>
+            <Text className="font-inter text-sm text-gf-text-muted">
+              {saving ? 'Ahorrado' : 'Gastado'} {formatMoneyMajor(spent, currency)} de {formatMoneyMajor(goal, currency)}
+            </Text>
+          </View>
+          {goal > 0 && <Text className="font-inter-bold text-base text-gf-text">{percent}%</Text>}
         </View>
-        {goal > 0 && <Text className="font-inter-bold text-base text-gf-text">{percent}%</Text>}
-      </View>
-      {goal > 0 && <ProgressBar ratio={ratio} color={getBudgetBarColor(ratio, saving)} />}
-      {goal > 0 && (
-        <Text className="font-inter text-sm" style={{ color: exceeded ? colors.expense : colors.textSecondary }}>
-          {exceeded
-            ? `Excedido por ${formatMoneyMajor(diff, currency)}`
-            : saving
-              ? `Faltan ${formatMoneyMajor(Math.max(-diff, 0), currency)} para la meta`
-              : `Quedan ${formatMoneyMajor(Math.max(-diff, 0), currency)}`}
-        </Text>
-      )}
-    </Card>
+        {goal > 0 && <ProgressBar ratio={ratio} color={getBudgetBarColor(ratio, saving)} />}
+        {goal > 0 && (
+          <Text className="font-inter text-sm" style={{ color: exceeded ? colors.expense : colors.textSecondary }}>
+            {exceeded
+              ? `Excedido por ${formatMoneyMajor(diff, currency)}`
+              : saving
+                ? diff < 0
+                  ? `Faltan ${formatMoneyMajor(-diff, currency)} para la meta`
+                  : 'Meta alcanzada'
+                : `Quedan ${formatMoneyMajor(Math.max(-diff, 0), currency)}`}
+          </Text>
+        )}
+      </Card>
+    </Pressable>
+  );
+}
+
+function NewButton({ label, kind }: { label: string; kind: 'spending' | 'saving' | 'project' }) {
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => router.push({ pathname: '/budgets/new', params: { kind } })}
+      className="flex-1 items-center rounded-2xl border border-gf-border bg-gf-surface px-2 py-3">
+      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>
+        + {label}
+      </Text>
+    </Pressable>
   );
 }
 
 // The budgets of the current month, split the way the web splits them: spending (with a bar against
 // the goal), saving (linked accounts or the saved amount) and projects (everything spent on them).
+// Tap one to see its movements and to edit it; the buttons create each kind.
 export default function BudgetsScreen() {
   const budgetsState = useSelector((state: RootState) => state.budgetReducer);
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
@@ -155,7 +191,8 @@ export default function BudgetsScreen() {
         const spent = movements
           .filter((movement) => movement.isBill && !movement.isIncome && getExplicitBudgetId(movement) === id)
           .reduce((total, movement) => total + getPrimaryAmount(movement), 0);
-        return { budget, spent: Math.round(spent * 100) / 100, goal: 0, ratio: 0 };
+        const goal = Number(budget.goalAmount) || 0;
+        return { budget, spent: Math.round(spent * 100) / 100, goal, ratio: goal > 0 ? spent / goal : 0 };
       }),
     [plan, movements]
   );
@@ -167,6 +204,12 @@ export default function BudgetsScreen() {
       {budgetsState.status === 'failed' && (
         <Text className="font-inter text-sm text-red-500">No pudimos cargar tus presupuestos.</Text>
       )}
+
+      <View className="flex-row gap-2">
+        <NewButton label="Presupuesto" kind="spending" />
+        <NewButton label="Ahorro" kind="saving" />
+        <NewButton label="Proyecto" kind="project" />
+      </View>
 
       <Card title="Este mes">
         <View className="flex-row justify-between gap-3">
@@ -206,18 +249,7 @@ export default function BudgetsScreen() {
             <>
               <Text className="font-inter-semibold text-lg text-gf-text">Proyectos</Text>
               {projectRows.map((row) => (
-                <Card key={idOf(row.budget)}>
-                  <View className="flex-row items-center gap-3">
-                    <CategoryBadge icon={row.budget.icon} color={Colors.light.accentSoft} size={44} />
-                    <View className="flex-1">
-                      <Text className="font-inter-semibold text-base text-gf-text" numberOfLines={1}>
-                        {row.budget.name || 'Proyecto'}
-                      </Text>
-                      <Text className="font-inter text-sm text-gf-text-muted">Gastado en total</Text>
-                    </View>
-                    <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.spent, currency)}</Text>
-                  </View>
-                </Card>
+                <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />
               ))}
             </>
           )}

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { MovementForm } from '@/components/movement-form';
 import { Screen } from '@/components/screen';
+import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { messageOf, sendWrite } from '@/lib/write';
@@ -21,6 +22,7 @@ export default function MovementDetailScreen() {
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = String(rawId ?? '');
   const dispatch = useDispatch<AppDispatch>();
+  const toast = useToast();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
   const movement = transactions.data.find((item) => String(item._id) === id);
   const cutoff = transactions.historyCutoff ?? null;
@@ -53,6 +55,7 @@ export default function MovementDetailScreen() {
           try {
             await sendWrite(`general-data/transactions/remove-transaction/${id}`, {});
             dispatch(removeOneTransacction(id));
+            toast.show('Movimiento borrado');
             reloadAfterWrite(dispatch, olderTouched);
             back();
           } catch (e) {
@@ -67,6 +70,7 @@ export default function MovementDetailScreen() {
 
   const save = async (body: Record<string, unknown>) => {
     await sendWrite(`general-data/transactions/${id}`, body);
+    toast.show('Cambios guardados');
     reloadAfterWrite(dispatch, olderTouched);
     back();
   };
@@ -97,6 +101,7 @@ export default function MovementDetailScreen() {
               subCategoryId: idOf(movement.subCategory),
               budgetId: idOf(movement.budget),
               date: dateText(new Date(time ?? Date.now())),
+              tags: Array.isArray(movement.tags) ? movement.tags.filter((tag): tag is string => typeof tag === 'string').join(', ') : '',
             }}
             onSubmit={save}
             onDelete={remove}

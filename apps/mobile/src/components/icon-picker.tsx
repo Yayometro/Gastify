@@ -8,14 +8,16 @@ import { getApiBaseUrl } from '@gastify/core/api/client';
 import { FLUENT_PREFIX } from '@gastify/core/icons/fluentIcons';
 import { loadFluentManifest, searchFluentIcons, type FluentManifestIcon } from '@gastify/core/icons/fluentManifest';
 
-// The Fluent icon library (the same one the web picker uses): a search box and the matching icons.
-// The list is loaded once, when the picker first opens; only the first matches are drawn.
+// The Fluent icon library (the same one the web picker uses): a search box (Spanish or English) and the
+// matching icons, a page at a time with "Mostrar más". The list is loaded once, when the picker opens.
+const PAGE = 60;
 export function IconPicker({ value, onChange }: { value: string; onChange: (icon: string) => void }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [icons, setIcons] = useState<FluentManifestIcon[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [query, setQuery] = useState('');
+  const [limit, setLimit] = useState(PAGE);
 
   useEffect(() => {
     loadFluentManifest(getApiBaseUrl())
@@ -23,11 +25,26 @@ export function IconPicker({ value, onChange }: { value: string; onChange: (icon
       .catch(() => setFailed(true));
   }, []);
 
-  const matches = useMemo(() => (icons ? searchFluentIcons(icons, query).slice(0, 120) : []), [icons, query]);
+  const found = useMemo(() => (icons ? searchFluentIcons(icons, query) : []), [icons, query]);
+  const matches = found.slice(0, limit);
 
   return (
     <View className="gap-3">
-      <TextField label="Buscar ícono" value={query} onChangeText={setQuery} placeholder="pizza, casa, avión" autoCapitalize="none" />
+      <TextField
+        label="Buscar ícono"
+        value={query}
+        onChangeText={(text) => {
+          setQuery(text);
+          setLimit(PAGE);
+        }}
+        placeholder="comida, casa, avión…"
+        autoCapitalize="none"
+      />
+      {icons !== null && !failed && (
+        <Text className="font-inter text-sm text-gf-text-muted">
+          {found.length === 1 ? '1 ícono' : `${found.length} íconos`}
+        </Text>
+      )}
       {failed ? (
         <Text className="font-inter text-sm text-red-500">No pudimos cargar los íconos. Revisa tu conexión.</Text>
       ) : icons === null ? (
@@ -56,6 +73,13 @@ export function IconPicker({ value, onChange }: { value: string; onChange: (icon
             );
           })}
         </View>
+      )}
+      {found.length > limit && (
+        <Pressable accessibilityRole="button" onPress={() => setLimit((current) => current + 120)} className="items-center py-2">
+          <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
+            Mostrar más ({found.length - limit} restantes)
+          </Text>
+        </Pressable>
       )}
     </View>
   );

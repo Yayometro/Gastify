@@ -15,9 +15,24 @@ export interface MovementValues {
   budgetId: string;
   // YYYY-MM-DD, the local day of the movement.
   date: string;
+  // "Charged in another currency": what the merchant charged, kept next to the amount that left the
+  // account (always in the account's own currency), like the web's advanced disclosure.
+  chargedElsewhere: boolean;
+  merchantAmount: string;
+  merchantCurrency: string;
+  // Tags, separated by commas.
+  tags: string;
 }
 
-export type MovementErrors = Partial<Record<"amount" | "accountId" | "categoryId" | "date", string>>;
+export type MovementErrors = Partial<Record<"amount" | "accountId" | "categoryId" | "date" | "merchantAmount", string>>;
+
+// "viaje, trabajo , " -> ["viaje", "trabajo"]
+export function parseTags(text: string): string[] {
+  return text
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
 
 // Money as typed: commas are thousands separators ("1,234.50"), the dot is the decimal point.
 // Returns null when it is not a positive amount with at most two decimals of precision kept.
@@ -58,7 +73,10 @@ export function validateMovement(values: MovementValues): MovementErrors {
   if (parseMoneyText(values.amount) === null) errors.amount = "Escribe un monto mayor a cero.";
   if (!values.accountId) errors.accountId = "Elige una cuenta.";
   if (!values.categoryId) errors.categoryId = "Elige una categoría.";
-  if (parseDateText(values.date) === null) errors.date = "Usa el formato AAAA-MM-DD.";
+  if (parseDateText(values.date) === null) errors.date = "Elige una fecha válida.";
+  if (values.chargedElsewhere && parseMoneyText(values.merchantAmount) === null) {
+    errors.merchantAmount = "Escribe cuánto cobró el comercio.";
+  }
   return errors;
 }
 
@@ -82,6 +100,10 @@ export function buildMovementBody(values: MovementValues, fallbackName: string, 
     category: values.categoryId,
     subCategory: values.subCategoryId || null,
     budget: values.budgetId || null,
+    tags: parseTags(values.tags),
+    ...(values.chargedElsewhere && parseMoneyText(values.merchantAmount) !== null
+      ? { merchantAmount: values.merchantAmount.replace(/,/g, ""), merchantCurrency: values.merchantCurrency }
+      : {}),
   };
 }
 
@@ -109,7 +131,7 @@ export function validateTransfer(values: TransferValues, currencies: Record<stri
   if (crossCurrency && parseMoneyText(values.destinationAmount) === null) {
     errors.destinationAmount = "Escribe cuánto llega a la otra cuenta.";
   }
-  if (parseDateText(values.date) === null) errors.date = "Usa el formato AAAA-MM-DD.";
+  if (parseDateText(values.date) === null) errors.date = "Elige una fecha válida.";
   return errors;
 }
 

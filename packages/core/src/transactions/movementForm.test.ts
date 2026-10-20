@@ -11,7 +11,7 @@ import {
   validateTransfer,
 } from "./movementForm";
 
-const base = { type: "expense" as const, amount: "250", name: "", accountId: "acc1", categoryId: "cat1", subCategoryId: "", budgetId: "", date: "2026-10-15" };
+const base = { type: "expense" as const, amount: "250", name: "", accountId: "acc1", categoryId: "cat1", subCategoryId: "", budgetId: "", date: "2026-10-15", chargedElsewhere: false, merchantAmount: "", merchantCurrency: "USD", tags: "" };
 
 describe("parseMoneyText", () => {
   it("reads what a person types", () => {
@@ -55,6 +55,11 @@ describe("validateMovement", () => {
     const errors = validateMovement({ ...base, amount: "", accountId: "", categoryId: "", date: "mañana" });
     expect(Object.keys(errors).sort()).toEqual(["accountId", "amount", "categoryId", "date"]);
   });
+
+  it("asks for the merchant's amount only when charged in another currency", () => {
+    expect(validateMovement({ ...base, chargedElsewhere: true, merchantAmount: "" }).merchantAmount).toBeDefined();
+    expect(validateMovement({ ...base, chargedElsewhere: false, merchantAmount: "" }).merchantAmount).toBeUndefined();
+  });
 });
 
 describe("buildMovementBody", () => {
@@ -68,6 +73,14 @@ describe("buildMovementBody", () => {
   it("marks an income as not a bill and keeps the typed name", () => {
     const body = buildMovementBody({ ...base, type: "income", name: " Nómina " }, "Ingreso", now);
     expect(body).toMatchObject({ name: "Nómina", isIncome: true, isBill: false });
+  });
+
+  it("sends the merchant amount and currency only when charged in another currency, and the tags as a list", () => {
+    const plain = buildMovementBody({ ...base, tags: "viaje, trabajo , " }, "x", now);
+    expect(plain.tags).toEqual(["viaje", "trabajo"]);
+    expect(plain.merchantAmount).toBeUndefined();
+    const abroad = buildMovementBody({ ...base, chargedElsewhere: true, merchantAmount: "40", merchantCurrency: "USD" }, "x", now);
+    expect(abroad).toMatchObject({ merchantAmount: "40", merchantCurrency: "USD" });
   });
 
   it("uses the current time for today and noon for an earlier day", () => {
