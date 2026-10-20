@@ -1,11 +1,15 @@
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, useColorScheme, View } from 'react-native';
 
 import { authClient } from '@/auth-client';
 import { AuthLayout, FormError } from '@/components/auth/auth-layout';
 import { CodeStep } from '@/components/auth/code-step';
 import { GradientButton } from '@/components/ui/gradient-button';
+import { OutlineButton } from '@/components/ui/outline-button';
 import { TextField } from '@/components/ui/text-field';
+import { Colors } from '@/constants/theme';
+import { passkeyFailureMessage, signInWithDevicePasskey, usePasskeyAvailable } from '@/passkey';
 
 type SignInError = { status?: number; code?: string; message?: string };
 
@@ -18,14 +22,21 @@ function messageFor(error: SignInError): string {
 }
 
 // Email and password first. If the account has a second factor, the code step follows on the same
-// screen; the session only exists once the code is right (same as the web). When it succeeds the
-// session store updates by itself and AuthGate swaps this screen for the app.
+// screen; the session only exists once the code is right (same as the web). Google and passkey are
+// the other ways in. When any of them succeeds the session store updates by itself and AuthGate
+// swaps this screen for the app (or for the second-factor screen, for Google).
 export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void }) {
+  const scheme = useColorScheme();
+  const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
+  const passkeyAvailable = usePasskeyAvailable();
+
   const [step, setStep] = useState<'password' | 'code'>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
 
   const signIn = async () => {
     if (!email.trim() || !password) return;
@@ -47,6 +58,37 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
       setError('No pudimos conectar con el servidor. Revisa tu conexión.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Opens Google in the system browser; the server finishes the sign-in and sends the person back
+  // to the app through its URL scheme (the Better Auth Expo plugin handles the round trip).
+  const signInWithGoogle = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      const { error: googleError } = await authClient.signIn.social({ provider: 'google', callbackURL: '/' });
+      if (googleError) {
+        setError('No pudimos iniciar sesión con Google. Intenta de nuevo.');
+        return;
+      }
+      onSessionChanged();
+    } catch {
+      setError('No pudimos conectar con Google. Revisa tu conexión.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const signInWithPasskey = async () => {
+    setError(null);
+    setPasskeyLoading(true);
+    try {
+      const result = await signInWithDevicePasskey();
+      if (result.ok) onSessionChanged();
+      else setError(passkeyFailureMessage(result.reason));
+    } finally {
+      setPasskeyLoading(false);
     }
   };
 
@@ -75,6 +117,25 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
 
   return (
     <AuthLayout title="Gastify" subtitle="Inicia sesión para ver tus movimientos.">
+      <OutlineButton
+        label="Continuar con Google"
+        icon={<AntDesign name="google" size={20} color={iconColor} />}
+        onPress={signInWithGoogle}
+        loading={googleLoading}
+      />
+      {passkeyAvailable && (
+        <OutlineButton
+          label="Entrar con passkey"
+          icon={<Ionicons name="finger-print" size={22} color={iconColor} />}
+          onPress={signInWithPasskey}
+          loading={passkeyLoading}
+        />
+      )}
+      <View className="flex-row items-center gap-3">
+        <View className="h-px flex-1 bg-gf-border" />
+        <Text className="font-inter text-xs text-gf-text-muted">o con tu correo</Text>
+        <View className="h-px flex-1 bg-gf-border" />
+      </View>
       <TextField
         label="Correo"
         value={email}
@@ -96,9 +157,6 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
       />
       <FormError message={error} />
       <GradientButton label="Entrar" onPress={signIn} loading={loading} disabled={!email.trim() || !password} />
-      <Text className="text-center font-inter text-xs text-gf-text-muted">
-        Entrar con Google llega pronto. Por ahora usa tu correo y contraseña.
-      </Text>
     </AuthLayout>
   );
 }

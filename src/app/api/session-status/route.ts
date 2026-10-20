@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { auth } from "@/lib/auth/betterAuth";
+import { auth, countUserPasskeys } from "@/lib/auth/betterAuth";
 import { evaluateApiStepUp } from "@/lib/auth/stepUpPolicy";
 import type { SessionStatus } from "@gastify/core/auth/sessionStatus";
 
@@ -19,6 +19,7 @@ export async function GET(request: NextRequest | Request): Promise<NextResponse<
     signedIn: true,
     stepUp: "reason" in decision ? decision.reason : "fresh",
     hasTwoFactor: Boolean((session.user as { twoFactorEnabled?: boolean }).twoFactorEnabled),
+    hasPasskey: (await countUserPasskeys(session.user.id)) > 0,
     email: session.user.email,
     name: session.user.name,
   });

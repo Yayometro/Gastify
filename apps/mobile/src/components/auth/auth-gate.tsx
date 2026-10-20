@@ -43,7 +43,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
   if (!status) return <Waiting />;
   // The server no longer knows this session (it expired, or it was closed elsewhere).
   if (!status.signedIn) return <LoginScreen onSessionChanged={refresh} />;
-  if (!status.hasTwoFactor) return <NoTwoFactorScreen email={status.email} onRetry={refresh} />;
-  if (status.stepUp !== 'fresh') return <TwoFactorScreen onVerified={refresh} />;
+  // Either an authenticator app or a passkey counts as the account's second factor.
+  if (!status.hasTwoFactor && !status.hasPasskey) return <NoTwoFactorScreen email={status.email} onRetry={refresh} />;
+  if (status.stepUp !== 'fresh') {
+    return <TwoFactorScreen onVerified={refresh} hasTwoFactor={status.hasTwoFactor} hasPasskey={status.hasPasskey} />;
+  }
   return <>{children}</>;
 }

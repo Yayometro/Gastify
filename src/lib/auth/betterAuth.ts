@@ -9,6 +9,7 @@ import { expo } from "@better-auth/expo";
 import { passkey } from "@better-auth/passkey";
 import { twoFactor } from "better-auth/plugins/two-factor";
 import { buildTrustedOrigins } from "./trustedOrigins";
+import { passkeyOrigins } from "./mobileApp";
 import { provisionNewUserData } from "./provisionNewUserData";
 import { getSharedMongoClient } from "@/lib/db/mongoClient";
 
@@ -203,6 +204,10 @@ export const auth = betterAuth({
     expo(),
     passkey({
       rpName: "Gastify",
+      // Only set when an Android signing fingerprint is configured (ANDROID_CERT_SHA256): then the
+      // Android app's passkeys, which report an apk-key-hash origin, are accepted next to the web
+      // origin. Otherwise undefined = the plugin's default, exactly as before.
+      origin: passkeyOrigins(process.env.BETTER_AUTH_URL, process.env.ANDROID_CERT_SHA256),
       authenticatorSelection: {
         // Face ID / Touch ID / Windows Hello by default - a physical
         // security key still works if the browser offers one, this just

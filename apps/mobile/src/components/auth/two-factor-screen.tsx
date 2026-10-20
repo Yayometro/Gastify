@@ -1,15 +1,66 @@
-import { Pressable, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { Pressable, Text, useColorScheme } from 'react-native';
 
 import { authClient } from '@/auth-client';
-import { AuthLayout } from '@/components/auth/auth-layout';
+import { AuthLayout, FormError } from '@/components/auth/auth-layout';
 import { CodeStep } from '@/components/auth/code-step';
+import { OutlineButton } from '@/components/ui/outline-button';
+import { Colors } from '@/constants/theme';
+import { passkeyFailureMessage, signInWithDevicePasskey, usePasskeyAvailable } from '@/passkey';
 
-// An open session that has been idle too long: ask for the second factor again, like the web's
-// /verify-2fa page does after 15 minutes without activity.
-export function TwoFactorScreen({ onVerified }: { onVerified: () => void }) {
+// An open session that is locked: it was just opened with Google (no second factor yet) or it has
+// been idle too long. Ask for the second factor, like the web's /verify-2fa does: the code of the
+// authenticator app when the account has one, and a passkey when it has one and this build can use it.
+export function TwoFactorScreen({
+  onVerified,
+  hasTwoFactor,
+  hasPasskey,
+}: {
+  onVerified: () => void;
+  hasTwoFactor: boolean;
+  hasPasskey: boolean;
+}) {
+  const scheme = useColorScheme();
+  const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
+  const passkeyAvailable = usePasskeyAvailable();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const showPasskey = hasPasskey && passkeyAvailable;
+  // A passkey-only account opened in a build that cannot use passkeys has no way to unlock here.
+  const stuck = !hasTwoFactor && !showPasskey;
+
+  const unlockWithPasskey = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await signInWithDevicePasskey();
+      if (result.ok) onVerified();
+      else setError(passkeyFailureMessage(result.reason));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthLayout title="Verifica tu identidad" subtitle="Por seguridad, confirma que eres tú para seguir usando Gastify.">
-      <CodeStep onVerified={onVerified} onGiveUp={() => {}} />
+      {showPasskey && (
+        <OutlineButton
+          label="Usar mi passkey"
+          icon={<Ionicons name="finger-print" size={22} color={iconColor} />}
+          onPress={unlockWithPasskey}
+          loading={loading}
+        />
+      )}
+      {hasTwoFactor && <CodeStep onVerified={onVerified} onGiveUp={() => {}} />}
+      {stuck && (
+        <Text className="font-inter text-base text-gf-text">
+          Esta cuenta solo tiene passkey y esta versión de la app todavía no puede usarlo. Activa una app
+          autenticadora desde la web (Perfil) para entrar aquí.
+        </Text>
+      )}
+      <FormError message={error} />
       <Pressable accessibilityRole="button" onPress={() => authClient.signOut()}>
         <Text className="text-center font-inter text-sm text-gf-text-muted">Cerrar sesión</Text>
       </Pressable>

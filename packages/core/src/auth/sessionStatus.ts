@@ -7,7 +7,10 @@ export type SessionStatus =
       signedIn: true;
       // "fresh" = the data routes accept this session right now.
       stepUp: "fresh" | "never-verified" | "idle";
+      // Authenticator-app (TOTP) code set up on the account.
       hasTwoFactor: boolean;
+      // At least one passkey registered. Either one is a valid second factor.
+      hasPasskey: boolean;
       email: string;
       name: string;
     };
