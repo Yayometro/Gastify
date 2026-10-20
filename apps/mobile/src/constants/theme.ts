@@ -24,8 +24,8 @@ export const Colors = {
   dark: {
     text: '#f3f0fb',
     background: '#180f2e',
-    backgroundElement: '#251a45',
-    backgroundSelected: '#302354',
+    backgroundElement: 'rgba(255, 255, 255, 0.08)',
+    backgroundSelected: 'rgba(255, 255, 255, 0.12)',
     textSecondary: '#ada0c9',
     accent: '#d3b8fb',
     accentSoft: 'rgba(147, 51, 234, 0.18)',

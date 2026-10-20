@@ -17,9 +17,10 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --gf-bg: #180f2e;
-    --gf-surface: #251a45;
-    --gf-surface-2: #302354;
+    /* The page background is transparent: the root view draws the web's mesh behind it. */
+    --gf-bg: transparent;
+    --gf-surface: rgba(255, 255, 255, 0.08);
+    --gf-surface-2: rgba(255, 255, 255, 0.12);
     --gf-border: rgba(255, 255, 255, 0.1);
     --gf-text: #f3f0fb;
     --gf-text-muted: #ada0c9;

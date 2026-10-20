@@ -2,13 +2,15 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, us
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { View, useColorScheme } from 'react-native';
 import { Provider } from 'react-redux';
 
 import '@/global.css';
 
+import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
 import AppTabs from '@/components/app-tabs';
 import { AuthGate } from '@/components/auth/auth-gate';
+import { ToastProvider } from '@/components/toast';
 import { Colors } from '@/constants/theme';
 import { store } from '@/store';
 
@@ -22,7 +24,8 @@ export default function RootLayout() {
   const baseTheme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
   const theme = {
     ...baseTheme,
-    colors: { ...baseTheme.colors, background: colors.background, card: colors.backgroundElement, text: colors.text, border: colors.border },
+    // Dark mode: transparent screens, the mesh drawn once by the root view below shows through them.
+    colors: { ...baseTheme.colors, background: colorScheme === 'dark' ? 'transparent' : colors.background, card: colors.backgroundElement, text: colors.text, border: colors.border },
   };
 
   // Inter, the same typeface as the web app. The splash screen stays until it is loaded.
@@ -35,11 +38,16 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-      <ThemeProvider value={theme}>
-        <AuthGate>
-          <AppTabs />
-        </AuthGate>
-      </ThemeProvider>
+      <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? DARK_BASE : colors.background }}>
+        <AmbientBackground />
+        <ThemeProvider value={theme}>
+          <ToastProvider>
+            <AuthGate>
+              <AppTabs />
+            </AuthGate>
+          </ToastProvider>
+        </ThemeProvider>
+      </View>
     </Provider>
   );
 }

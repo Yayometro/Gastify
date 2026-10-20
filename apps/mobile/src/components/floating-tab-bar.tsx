@@ -3,6 +3,7 @@ import type { ComponentProps } from 'react';
 import { Platform, Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
@@ -26,8 +27,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
     <View pointerEvents="box-none" style={[styles.wrap, { bottom }]}>
       <View
         style={[
-          styles.bar,
-          { backgroundColor: colors.backgroundElement, borderColor: colors.border },
+          { borderRadius: BAR_HEIGHT / 2 },
           Platform.select({
             ios: {
               shadowColor: '#000000',
@@ -38,6 +38,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
             default: { elevation: 12 },
           }),
         ]}>
+        <GlassSurface variant="nav" radius={BAR_HEIGHT / 2} style={styles.bar}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           // Screens hidden with `href: null` come through as display: 'none'.
@@ -65,6 +66,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
             </Pressable>
           );
         })}
+        </GlassSurface>
       </View>
     </View>
   );
@@ -82,8 +84,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 8,
-    borderRadius: BAR_HEIGHT / 2,
-    borderWidth: StyleSheet.hairlineWidth,
   },
   item: {
     flex: 1,
