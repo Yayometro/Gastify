@@ -88,7 +88,12 @@ export default function MovementsScreen() {
   );
   const inRange = useMemo(() => transactions.data.filter((movement) => isInRange(movement, range)), [transactions.data, range]);
   const filtered = useMemo(() => applyMovementFilters(inRange as unknown as FilterableMovement[], filters, currency) as unknown as TransactionData[], [inRange, filters, currency]);
-  const duplicates = useMemo(() => getDuplicates(filtered as never, DUPLICATE_CRITERIA) as unknown as TransactionData[], [filtered]);
+  // The two legs of a transfer share name, day and amount by design, so they are not offered as repeats
+  // (deleting one would leave the transfer half done).
+  const duplicates = useMemo(
+    () => getDuplicates(filtered.filter((movement) => movementKind(movement) !== 'transfer') as never, DUPLICATE_CRITERIA) as unknown as TransactionData[],
+    [filtered]
+  );
   const items = useMemo(() => sortNewestFirst(duplicatesOn ? duplicates : filtered), [duplicatesOn, duplicates, filtered]);
   const totals = useMemo(() => monthTotals(items), [items]);
   const sections = useMemo<DaySection[]>(
