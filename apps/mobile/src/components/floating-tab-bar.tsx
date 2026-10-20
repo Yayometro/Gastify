@@ -17,9 +17,13 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
   const isDark = scheme === 'dark';
   const colors = Colors[isDark ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
+  // Just above the iPhone home indicator (its safe-area inset is ~34, the bar sits ~12 below that
+  // edge, so the indicator stays visible below the pill). On Android the system navigation takes
+  // the inset, so the bar goes a little above it.
+  const bottom = Platform.OS === 'ios' ? Math.max(insets.bottom - 12, 12) : insets.bottom + 6;
 
   return (
-    <View pointerEvents="box-none" style={[styles.wrap, { bottom: insets.bottom + 12 }]}>
+    <View pointerEvents="box-none" style={[styles.wrap, { bottom }]}>
       <View
         style={[
           styles.bar,

@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Gastify palette: the web app's --gf-* tokens (src/app/globals.css), light by default and the
+   dark values when the phone is in dark mode. */
+:root {
+  --gf-bg: #f4f2fa;
+  --gf-surface: #ffffff;
+  --gf-surface-2: #f1ecf9;
+  --gf-border: rgba(27, 16, 61, 0.1);
+  --gf-text: #1e1533;
+  --gf-text-muted: #6b6280;
+  --gf-accent-soft-bg: rgba(147, 51, 234, 0.08);
+  --gf-accent-soft-text: #7e22ce;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gf-bg: #180f2e;
+    --gf-surface: #251a45;
+    --gf-surface-2: #302354;
+    --gf-border: rgba(255, 255, 255, 0.1);
+    --gf-text: #f3f0fb;
+    --gf-text-muted: #ada0c9;
+    --gf-accent-soft-bg: rgba(147, 51, 234, 0.18);
+    --gf-accent-soft-text: #d3b8fb;
+  }
+}

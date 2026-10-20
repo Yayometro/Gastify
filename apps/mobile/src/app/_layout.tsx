@@ -1,8 +1,11 @@
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, useFonts } from '@expo-google-fonts/inter';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { Provider } from 'react-redux';
+
+import '@/global.css';
 
 import AppTabs from '@/components/app-tabs';
 import { Colors } from '@/constants/theme';
@@ -21,10 +24,13 @@ export default function RootLayout() {
     colors: { ...baseTheme.colors, background: colors.background, card: colors.backgroundElement, text: colors.text, border: colors.border },
   };
 
-  // The first frame is ready: hide the splash screen.
+  // Inter, the same typeface as the web app. The splash screen stays until it is loaded.
+  const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold });
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
 
   return (
     <Provider store={store}>

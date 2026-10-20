@@ -22,6 +22,11 @@ export function configureApi(next: Partial<ApiConfig>): void {
   config = { ...config, ...next };
 }
 
+// The configured base URL ("" on the web), for assets served by the same site (category icons).
+export function getApiBaseUrl(): string {
+  return config.baseUrl;
+}
+
 export function createApiClient(overrides: Partial<ApiConfig> = {}): ApiClient {
   const { baseUrl, getHeaders } = { ...config, ...overrides };
   const fullPath = baseUrl.concat("/api/");

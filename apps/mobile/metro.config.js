@@ -27,4 +27,8 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return context.resolveRequest(context, moduleName, platform);
 };
 
-module.exports = config;
+// NativeWind v4: className support. `input` is the CSS file with the Tailwind layers and the
+// --gf-* color tokens.
+const { withNativeWind } = require('nativewind/metro');
+
+module.exports = withNativeWind(config, { input: './src/global.css' });

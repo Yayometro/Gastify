@@ -67,6 +67,6 @@ export const Spacing = {
   six: 64,
 } as const;
 
-// Room a screen leaves at the bottom for the floating tab bar (64 high + 12 gap + safe area).
-export const BottomTabInset = 112;
+// Room a screen leaves at the bottom for the floating tab bar (64 high + its offset + a gap).
+export const BottomTabInset = Platform.select({ ios: 104, default: 112 });
 export const MaxContentWidth = 800;
