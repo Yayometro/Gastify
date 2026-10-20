@@ -13,7 +13,13 @@ configureApi({
   getHeaders: async () => ({ Cookie: (await authClient.getCookie()) ?? '' }),
 });
 
-export const store = configureStore({ reducer: rootReducer });
+// The serializable and immutability checks walk the whole state on every action: with a few thousand movements that
+// costs more than the action itself (and fills the dev screen with warnings). The data comes from the
+// JSON API, so it is serializable by construction.
+export const store = configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false, immutableCheck: false }),
+});
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

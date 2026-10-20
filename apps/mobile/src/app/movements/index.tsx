@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, SectionList, Text, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, RefreshControl, SectionList, Share, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -19,8 +19,11 @@ import { idOf } from '@gastify/core/categories/categoryForm';
 import { fetchTransHistory, type TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { monthTitleEs } from '@gastify/core/format/spanishDates';
 import { isHistoryReadyFor } from '@gastify/core/transactions/historyReady';
-import { isBeforeCutoff } from '@gastify/core/transactions/historyWindow';
-import { groupByDay, monthBounds, monthTotals, movementsInMonth } from '@gastify/core/transactions/monthSummary';
+import { isBeforeCutoff, movementTime } from '@gastify/core/transactions/historyWindow';
+import { movementsToCsv, type CsvMovement } from '@gastify/core/exports/movementsCsv';
+import { dateText } from '@gastify/core/transactions/movementForm';
+import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
+import { groupByDay, monthBounds, monthTotals, movementKind, movementsInMonth } from '@gastify/core/transactions/monthSummary';
 
 type DaySection = { key: string; title: string; data: TransactionData[] };
 
@@ -31,7 +34,7 @@ export default function MovementsScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
   const currency = usePrimaryCurrency();
-  const { categories } = useCatalog();
+  const { accounts, categories } = useCatalog();
   const { refresh, refreshing } = useRefreshAppData();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -121,12 +124,40 @@ export default function MovementsScreen() {
     }
   };
 
+  // The month as a CSV text, shared with the system sheet (Mail, Files, Sheets...).
+  const exportMonth = async () => {
+    const rows: CsvMovement[] = items.map((movement) => {
+      const kind = movementKind(movement);
+      const account = accounts.find((item) => idOf(item) === idOf(movement.account));
+      return {
+        date: dateText(new Date(movementTime(movement) ?? 0)),
+        name: movement.name || '',
+        category: movement.category?.name || 'Sin categoría',
+        subCategory: movement.subCategory?.name || '',
+        type: kind === 'income' ? 'Ingreso' : kind === 'expense' ? 'Gasto' : 'Transferencia',
+        amount: Math.abs(getPrimaryAmount(movement)),
+        currency,
+        account: account?.name || '',
+      };
+    });
+    try {
+      await Share.share({ title: `Movimientos ${monthTitleEs(month)}`, message: movementsToCsv(rows) });
+    } catch (e) {
+      setActionError(messageOf(e));
+    }
+  };
+
   const categoryItems = categories.map((category) => ({ id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color }));
 
   const header = (
     <View className="gap-4 pb-4">
       <Text className="font-inter-bold text-4xl text-gf-text">Movimientos</Text>
       <MonthSwitcher value={month} onChange={setMonth} latest={now} />
+      <Pressable accessibilityRole="button" onPress={exportMonth} disabled={items.length === 0} hitSlop={8} className="self-end">
+        <Text className="font-inter-semibold text-sm" style={{ color: items.length ? colors.accent : colors.textSecondary }}>
+          Exportar el mes en CSV
+        </Text>
+      </Pressable>
 
       {selected.length > 0 && (
         <Card title={`${selected.length} ${selected.length === 1 ? 'seleccionado' : 'seleccionados'}`}>
