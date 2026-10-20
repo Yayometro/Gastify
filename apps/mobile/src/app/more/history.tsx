@@ -3,15 +3,16 @@ import { useMemo, useState } from 'react';
 import { Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
-import { MonthlyBars } from '@/components/charts/monthly-bars';
-import { CategoryBadge } from '@/components/category-badge';
 import { ChipPicker } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
+import { BudgetsComparative } from '@/components/history/budgets-comparative';
+import { MonthByMonth } from '@/components/history/month-by-month';
+import { OwnPeriodCategories } from '@/components/history/own-period-categories';
+import { ProjectionsTeaser } from '@/components/history/projections-teaser';
 import { TopRanking } from '@/components/top-ranking';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
-import { ProgressBar } from '@/components/ui/progress-bar';
 import { Colors } from '@/constants/theme';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import type { RootState } from '@/store';
@@ -20,12 +21,10 @@ import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import {
   COMPARE_PRESETS,
   HISTORY_PRESETS,
-  compareCategories,
   compareRange,
   historyRange,
   percentChange,
   summarizePeriod,
-  type CompareRow,
   type ComparePreset,
   type HistoryPreset,
   type PeriodSummary,
@@ -33,7 +32,6 @@ import {
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
-import type { CategoryTotal } from '@gastify/core/transactions/monthSummary';
 
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
@@ -47,36 +45,6 @@ function Delta({ current, previous, invert = false }: { current: number; previou
       {change >= 0 ? '+' : ''}
       {Math.round(change * 100)}%
     </Text>
-  );
-}
-
-function CategoryRows({ rows, compare, currency }: { rows: CompareRow[]; compare: boolean; currency: string }) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
-  const max = Math.max(1, ...rows.map((row) => Math.max(row.a, row.b)));
-  if (rows.length === 0) return <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>;
-  return (
-    <>
-      {rows.slice(0, 12).map((row) => (
-        <View key={row.name} className="gap-1.5">
-          <View className="flex-row items-center gap-3">
-            <CategoryBadge icon={row.icon} color={row.color} size={34} />
-            <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.name}</Text>
-            <View className="items-end">
-              <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.a, currency)}</Text>
-              {compare && (
-                <View className="flex-row items-center gap-1.5">
-                  <Text className="font-inter text-xs text-gf-text-muted">{formatMoneyMajor(row.b, currency)}</Text>
-                  <Delta current={row.a} previous={row.b} invert />
-                </View>
-              )}
-            </View>
-          </View>
-          <ProgressBar ratio={row.a / max} color={row.color || colors.accent} />
-          {compare && <ProgressBar ratio={row.b / max} color={`${row.color || '#888888'}66`} />}
-        </View>
-      ))}
-    </>
   );
 }
 
@@ -107,8 +75,6 @@ export default function HistoryScreen() {
   const a = useMemo<PeriodSummary<TransactionData>>(() => summarizePeriod(transactions, rangeA), [transactions, rangeA]);
   const b = useMemo<PeriodSummary<TransactionData> | null>(() => (compareOn ? summarizePeriod(transactions, rangeB) : null), [compareOn, transactions, rangeB]);
 
-  const spendingRows = useMemo(() => compareCategories(a.spendingByCategory, b?.spendingByCategory ?? []), [a, b]);
-  const incomeRows = useMemo(() => compareCategories(a.incomeByCategory as CategoryTotal[], b?.incomeByCategory as CategoryTotal[] ?? []), [a, b]);
   const partial = historyStatus !== 'complete';
 
   const labelA = rangeLabelEs(rangeA.start, rangeA.end);
@@ -170,20 +136,31 @@ export default function HistoryScreen() {
         ))}
       </Card>
 
-      <Card title="Mes a mes">
-        <MonthlyBars months={a.months} compare={b?.months} />
-        <Text className="font-inter text-xs text-gf-text-muted">
-          Verde: ingresos. Rojo: gastos.{compareOn ? ' Las barras tenues son del periodo comparado, mes contra mes.' : ''}
-        </Text>
-      </Card>
+      <MonthByMonth months={a.months} compare={b?.months} currency={currency} />
 
-      <Card title="Gastos por categoría">
-        <CategoryRows rows={spendingRows} compare={compareOn} currency={currency} />
-      </Card>
+      <OwnPeriodCategories
+        kind="spending"
+        title="Gastos por categoría"
+        info={{ title: 'Gastos por categoría', text: 'En qué categorías se fue tu dinero, de mayor a menor. Tiene su propio periodo: por defecto el de arriba, pero puedes elegir otro sin cambiar el resto de la pantalla.' }}
+        movements={transactions}
+        summary={a}
+        compareSummary={b}
+        currency={currency}
+      />
 
-      <Card title="Ingresos por categoría">
-        <CategoryRows rows={incomeRows} compare={compareOn} currency={currency} />
-      </Card>
+      <OwnPeriodCategories
+        kind="incomes"
+        title="Ingresos por categoría"
+        info={{ title: 'Ingresos por categoría', text: 'De dónde viene tu dinero, de mayor a menor. Tiene su propio periodo, igual que los gastos.' }}
+        movements={transactions}
+        summary={a}
+        compareSummary={b}
+        currency={currency}
+      />
+
+      <BudgetsComparative start={rangeA.start} end={rangeA.end} />
+
+      <ProjectionsTeaser />
 
       <TopRanking movements={transactions} currency={currency} title="Top de movimientos" defaultPreset="last3" returnTo="/more/history" />
     </Screen>

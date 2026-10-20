@@ -11,7 +11,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | G02 | Botón flotante "Tools" (como en la web) que abre un modal. Hoy solo "Transaction Categorizer"; debe quedar preparado para más herramientas. | HECHO | Revisar el botón en la web. |
 | G03 | Notificaciones (avisos) más bonitas en móvil. | CÓDIGO LISTO | |
 | G04 | Vista para iPad con menú lateral izquierdo y dashboards como en la web (no ver la app de teléfono estirada). | CÓDIGO LISTO | Recomendado hacerlo pronto (ver nota al final). |
-| G05 | Cada widget o sección con su propio filtro de tiempo, independiente del periodo general. | EN CURSO | |
+| G05 | Cada widget o sección con su propio filtro de tiempo, independiente del periodo general. | CÓDIGO LISTO | |
 | G06 | Cambiar entre tema claro y oscuro desde el menú. | CÓDIGO LISTO | Hay hooks de tema; falta el interruptor. |
 | G07 | Letras negras sobre fondo oscuro (contraste). Revisar toda la app. | EN CURSO | Se ve en "Perspectivas". |
 | G08 | Probar los 8 formularios de Crear (gasto, ingreso, transferencia, cuenta, categoría, presupuesto, ahorro, proyecto). | PENDIENTE | El usuario no los ha probado. |
@@ -100,7 +100,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | Y05 | Icono "?" junto a Neto y Balance. | CÓDIGO LISTO | Ver T03. |
 | Y06 | Indicador de precisión de las proyecciones, arriba y abajo de la tabla, como en la web. | HECHO | |
 | Y07 | Mostrar la moneda principal arriba. | CÓDIGO LISTO | |
-| Y08 | Proyecciones también dentro de Historial, con filtro de tiempo propio. | PENDIENTE | Ver H11. |
+| Y08 | Proyecciones también dentro de Historial, con filtro de tiempo propio. | HECHO | Ver H11. |
 
 ## Cuentas
 
@@ -123,18 +123,18 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| H01 | Periodos con las mismas opciones que la web (ver I01). | PENDIENTE | |
-| H02 | "Mes a mes": barras claras, ordenadas, con etiquetas, tocables para ver el detalle de cada mes. | PENDIENTE | |
-| H03 | Gastos por categoría: filtro de tiempo propio. | PENDIENTE | |
-| H04 | Ingresos por categoría: filtro de tiempo propio. | PENDIENTE | |
+| H01 | Periodos con las mismas opciones que la web (ver I01). | HECHO | |
+| H02 | "Mes a mes": barras claras, ordenadas, con etiquetas, tocables para ver el detalle de cada mes. | HECHO | |
+| H03 | Gastos por categoría: filtro de tiempo propio. | HECHO | |
+| H04 | Ingresos por categoría: filtro de tiempo propio. | HECHO | |
 | H05 | "Periodo anterior" con años completos: la lógica da "1 de enero con 31 de diciembre de 2025". Corregir. | ACLARAR | ¿Qué debe comparar "periodo anterior" cuando el periodo es un año? |
 | H06 | Gastos más grandes: Top 6 con cambio entre 3, 6, 12 y 24. | CÓDIGO LISTO | Ver I07. |
 | H07 | Comparativo del Top 6 de categorías entre dos periodos. | CÓDIGO LISTO | |
 | H08 | Wallet Analyzer dentro de Historial, con celdas tocables que abren modal. | CÓDIGO LISTO | Ver A01–A03. |
 | H09 | Top 6 elements dedicado con su filtro de tiempo (por defecto últimos 3 meses) y modal por elemento. | CÓDIGO LISTO | |
 | H10 | Navegación inteligente: desde Historial, al abrir un movimiento y volver, regresar a Historial (no a Movimientos). Aplicar en toda la app. | HECHO | Ver U02. |
-| H11 | Sección de Proyecciones dentro de Historial, con sus filtros de tiempo. | PENDIENTE | |
-| H12 | Sección de Presupuestos comparativos dedicada. | PENDIENTE | |
+| H11 | Sección de Proyecciones dentro de Historial, con sus filtros de tiempo. | HECHO | |
+| H12 | Sección de Presupuestos comparativos dedicada. | HECHO | |
 
 ## Perfil
 
