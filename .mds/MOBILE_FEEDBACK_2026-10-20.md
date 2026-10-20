@@ -127,7 +127,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | H02 | "Mes a mes": barras claras, ordenadas, con etiquetas, tocables para ver el detalle de cada mes. | HECHO | |
 | H03 | Gastos por categoría: filtro de tiempo propio. | HECHO | |
 | H04 | Ingresos por categoría: filtro de tiempo propio. | HECHO | |
-| H05 | "Periodo anterior" con años completos: la lógica da "1 de enero con 31 de diciembre de 2025". Corregir. | ACLARAR | ¿Qué debe comparar "periodo anterior" cuando el periodo es un año? |
+| H05 | "Periodo anterior" con años completos: la lógica da "1 de enero con 31 de diciembre de 2025". Corregir. | HECHO | La web no tiene "periodo anterior" (su comparación por defecto es el mismo tramo un año antes, que ya existe). El "periodo anterior" de la app ahora compara tramos de meses completos (año, trimestre, semestre, mes) con el tramo completo de antes (2026 con 2025, T4 con T3); otros tramos, con los mismos días justo antes. Con pruebas. |
 | H06 | Gastos más grandes: Top 6 con cambio entre 3, 6, 12 y 24. | CÓDIGO LISTO | Ver I07. |
 | H07 | Comparativo del Top 6 de categorías entre dos periodos. | CÓDIGO LISTO | |
 | H08 | Wallet Analyzer dentro de Historial, con celdas tocables que abren modal. | CÓDIGO LISTO | Ver A01–A03. |

@@ -80,6 +80,18 @@ export function compareRange(preset: ComparePreset, base: MonthBounds, custom: {
     };
   }
   if (preset === "previous") {
+    const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    const monthsSpan = (base.end.getFullYear() - base.start.getFullYear()) * 12 + (base.end.getMonth() - base.start.getMonth()) + 1;
+    const startsOnFirst = base.start.getDate() === 1;
+    const lastOfMonth = new Date(base.end.getFullYear(), base.end.getMonth() + 1, 0);
+    const endsOnLast = sameDay(base.end, lastOfMonth);
+    // A stretch of whole months (a month, a quarter, a half, a year) is compared with the whole months right
+    // before it: "2026" with "2025", "Q4" with "Q3", "October" with "September".
+    if (startsOnFirst && endsOnLast) {
+      const start = new Date(base.start.getFullYear(), base.start.getMonth() - monthsSpan, 1, 0, 0, 0, 0);
+      return { start, end: new Date(start.getFullYear(), start.getMonth() + monthsSpan, 0, 23, 59, 59, 999) };
+    }
+    // Any other stretch: the same number of days right before it.
     const span = base.end.getTime() - base.start.getTime();
     return { start: new Date(base.start.getTime() - span - 1), end: new Date(base.start.getTime() - 1) };
   }

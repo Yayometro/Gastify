@@ -78,3 +78,30 @@ describe("historyRange: a single month", () => {
     expect(range.start).toEqual(new Date(2026, 9, 1, 0, 0, 0, 0));
   });
 });
+
+describe("compareRange: the period before", () => {
+  const none = { from: null, to: null };
+  const year = { start: new Date(2026, 0, 1, 0, 0, 0, 0), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+
+  it("compares a whole year with the whole year before it", () => {
+    const before = compareRange("previous", year, none);
+    expect(before.start).toEqual(new Date(2025, 0, 1, 0, 0, 0, 0));
+    expect(before.end).toEqual(new Date(2025, 11, 31, 23, 59, 59, 999));
+  });
+  it("compares a quarter with the quarter before and a month with the month before", () => {
+    const q4 = { start: new Date(2026, 9, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
+    const beforeQ4 = compareRange("previous", q4, none);
+    expect(beforeQ4.start).toEqual(new Date(2026, 6, 1, 0, 0, 0, 0));
+    expect(beforeQ4.end).toEqual(new Date(2026, 8, 30, 23, 59, 59, 999));
+    const october = { start: new Date(2026, 9, 1), end: new Date(2026, 9, 31, 23, 59, 59, 999) };
+    const beforeOct = compareRange("previous", october, none);
+    expect(beforeOct.start).toEqual(new Date(2026, 8, 1, 0, 0, 0, 0));
+    expect(beforeOct.end).toEqual(new Date(2026, 8, 30, 23, 59, 59, 999));
+  });
+  it("any other stretch is compared with the same number of days right before it", () => {
+    const odd = { start: new Date(2026, 9, 10, 0, 0, 0, 0), end: new Date(2026, 9, 20, 23, 59, 59, 999) };
+    const before = compareRange("previous", odd, none);
+    expect(before.end.getTime()).toBe(odd.start.getTime() - 1);
+    expect(odd.start.getTime() - before.start.getTime()).toBeGreaterThan(10 * 86400000);
+  });
+});
