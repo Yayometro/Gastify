@@ -177,7 +177,7 @@ export function buildBudgetHistoricalComparative<
   endDate,
   today = new Date(),
 }: BuildBudgetHistoricalComparativeParams<TBudget, TTransaction>): BudgetHistoricalComparativeRowData<TBudget>[] {
-  const spendingBudgets = (budgets || []).filter(isSpendingBudget) as (TBudget & BudgetHistoricalInput)[];
+  const spendingBudgets = ((budgets || []) as BudgetTypeInput[]).filter(isSpendingBudget) as unknown as (TBudget & BudgetHistoricalInput)[];
   const monthsInRange = getMonthsInRange(startDate, endDate).filter((m) => m.monthStart <= today);
 
   const rows: BudgetHistoricalComparativeRowData<TBudget>[] = spendingBudgets
@@ -191,7 +191,7 @@ export function buildBudgetHistoricalComparative<
         const monthlyGoal = goalAmount / divisor;
         const monthTx = getTransactionsFromTimeRange(transactions as TransactionHistoricalInput[], monthStart, monthEnd);
         const actual = monthTx
-          .filter((tra: TransactionHistoricalInput) => tra.isBill && matchBillToBudget(tra, budget))
+          .filter((tra: TransactionHistoricalInput) => tra.isBill && matchBillToBudget(tra as never, budget as never))
           .reduce((acc: number, bill: TransactionHistoricalInput) => acc + (getPrimaryAmount(bill) as number), 0);
         monthlySeries.push({ label, actual, goal: monthlyGoal, met: actual <= monthlyGoal, estimated });
       });

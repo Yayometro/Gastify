@@ -1,13 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   getPrimaryAmount,
-  getTransactionsFromTimeRange,
-  filterBillsOrIncomes,
+  getTransactionsFromTimeRange as getTransactionsFromTimeRangeStrict,
+  filterBillsOrIncomes as filterBillsOrIncomesStrict,
   orderItemsInRelativeMonth,
 } from "./transactionsChange";
 import { buildBudgetHistoricalComparative } from "./budgetHistoricalComparative";
 import { months } from "@gastify/core/time/timeFunctions";
 import type { TransactionData } from "../features/transacctionsSlice";
 import type { BudgetData } from "../features/budgetSlice";
+
+// The analyzer reads movements as loosely typed lists (the web passes whatever the store holds). These two wrappers
+// accept such lists and call the typed helpers: nothing changes at runtime, they only keep the strict compiler (the
+// phone's) from rejecting `unknown[]`.
+type LooseList = (TransactionData | { [key: string]: unknown } | unknown)[];
+type Loose = { [key: string]: any };
+function getTransactionsFromTimeRange(trans: LooseList, start: Date, end: Date): Loose[] {
+  return getTransactionsFromTimeRangeStrict(trans as { date?: never; createdAt?: never }[], start, end) as unknown as Loose[];
+}
+function filterBillsOrIncomes(trans: LooseList): { incomes: Loose[]; bills: Loose[] } {
+  return filterBillsOrIncomesStrict(trans as { kind?: string; isBill?: boolean }[]) as unknown as { incomes: Loose[]; bills: Loose[] };
+}
 
 export interface DateRange {
   start: Date;
@@ -1940,7 +1953,7 @@ export function buildCuratedWalletSummary(snapshot: WalletAnalyzerSnapshotData):
     weekdaySpending: snapshot.weekdaySpending,
     savingsHistoryLabeled: snapshot.savingsHistoryLabeled,
     monthlyAverages: snapshot.monthlyAverages,
-    categoryAnomaly: snapshot.categoryAnomaly,
+    categoryAnomaly: snapshot.categoryAnomaly ?? null,
   };
 }
 
@@ -2258,7 +2271,7 @@ export function buildCuratedPeriodSummary(snapshot: PeriodSnapshotData): Curated
     weekdaySpending: snapshot.weekdaySpending,
     savingsHistoryLabeled: snapshot.savingsHistoryLabeled,
     monthlyAverages: snapshot.monthlyAverages,
-    categoryAnomaly: snapshot.categoryAnomaly,
+    categoryAnomaly: snapshot.categoryAnomaly ?? null,
     monthlyChampions: {
       months: (snapshot.monthlyChampions?.months || []).map((m) => ({
         label: m.label,

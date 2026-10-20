@@ -17,6 +17,7 @@ export function goBackTo(returnTo: string | undefined, fallback: () => void): vo
 export function returnLabel(returnTo: string | undefined, fallback: string): string {
   if (!returnTo) return fallback;
   if (returnTo.startsWith('/more/history')) return 'Historial';
+  if (returnTo.startsWith('/more/analyzer')) return 'Analizador';
   if (returnTo.startsWith('/more/accounts/')) return 'Cuenta';
   if (returnTo.startsWith('/budgets/')) return 'Presupuesto';
   return fallback;

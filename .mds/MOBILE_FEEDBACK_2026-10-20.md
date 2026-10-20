@@ -40,11 +40,11 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| A01 | Wallet Analyzer completo en móvil (hoy no existe). | PENDIENTE | |
-| A02 | Filtro de tiempo del analizador: flechas, tocar el mes para elegir año y mes, y rango personalizado. | PENDIENTE | |
-| A03 | Tocar cualquier elemento del analizador abre un modal con el detalle. | PENDIENTE | |
+| A01 | Wallet Analyzer completo en móvil (hoy no existe). | HECHO | |
+| A02 | Filtro de tiempo del analizador: flechas, tocar el mes para elegir año y mes, y rango personalizado. | CÓDIGO LISTO | |
+| A03 | Tocar cualquier elemento del analizador abre un modal con el detalle. | HECHO | |
 | A04 | Gráfica "Category Details" con selector de tipo: Nested (ya existe), Bubble (falta, circle packing) y TreeMap (falta). | HECHO | El TreeMap de la web está hecho a mano, sin librería: portarlo. |
-| A05 | Top 6 categorías del analizador, como en la web. | PENDIENTE | |
+| A05 | Top 6 categorías del analizador, como en la web. | HECHO | |
 
 ## Movimientos
 
@@ -129,8 +129,8 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | H04 | Ingresos por categoría: filtro de tiempo propio. | PENDIENTE | |
 | H05 | "Periodo anterior" con años completos: la lógica da "1 de enero con 31 de diciembre de 2025". Corregir. | ACLARAR | ¿Qué debe comparar "periodo anterior" cuando el periodo es un año? |
 | H06 | Gastos más grandes: Top 6 con cambio entre 3, 6, 12 y 24. | CÓDIGO LISTO | Ver I07. |
-| H07 | Comparativo del Top 6 de categorías entre dos periodos. | PENDIENTE | |
-| H08 | Wallet Analyzer dentro de Historial, con celdas tocables que abren modal. | PENDIENTE | Ver A01–A03. |
+| H07 | Comparativo del Top 6 de categorías entre dos periodos. | CÓDIGO LISTO | |
+| H08 | Wallet Analyzer dentro de Historial, con celdas tocables que abren modal. | CÓDIGO LISTO | Ver A01–A03. |
 | H09 | Top 6 elements dedicado con su filtro de tiempo (por defecto últimos 3 meses) y modal por elemento. | CÓDIGO LISTO | |
 | H10 | Navegación inteligente: desde Historial, al abrir un movimiento y volver, regresar a Historial (no a Movimientos). Aplicar en toda la app. | HECHO | Ver U02. |
 | H11 | Sección de Proyecciones dentro de Historial, con sus filtros de tiempo. | PENDIENTE | |
