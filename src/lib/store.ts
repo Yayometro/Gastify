@@ -3,6 +3,14 @@ import { createWrapper } from 'next-redux-wrapper';
 import { setupListeners } from '@reduxjs/toolkit/query/react';
 
 import { rootReducer } from './rootReducer';
+import { configureApi } from '@gastify/core/api/client';
+import { configurePerf } from '@gastify/core/perf/hooks';
+import { perfMark, debugDelay } from '@/lib/perf/perfMark';
+
+// The shared slices (packages/core) reach the API and the perf marks through these settings.
+// The web app sets them here, once, before any request can run.
+configureApi({ baseUrl: process.env.NEXT_PUBLIC_API_ROUTE ?? '' });
+configurePerf({ mark: perfMark, delay: debugDelay });
 
 export const store = configureStore({
     reducer: rootReducer,
