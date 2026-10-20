@@ -25,7 +25,7 @@ export function Segmented<T extends string>({
             accessibilityState={{ selected }}
             onPress={() => onChange(option.value)}
             className="flex-1 items-center rounded-full py-2.5"
-            style={{ backgroundColor: selected ? colors.accent : 'transparent' }}>
+            style={{ backgroundColor: selected ? '#7e22ce' : 'transparent' }}>
             <Text className="font-inter-semibold text-sm" style={{ color: selected ? '#ffffff' : colors.text }}>
               {option.label}
             </Text>

@@ -1,0 +1,69 @@
+import { Ionicons } from '@expo/vector-icons';
+import { ActivityIndicator, Modal, Pressable, Text, View, useColorScheme } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { DARK_BASE } from '@/components/ambient-background';
+import { Colors } from '@/constants/theme';
+import { EXPORT_FORMATS, type ExportFormat } from '@/lib/export-file';
+
+// A bottom sheet to choose the file format of an export (the web offers Excel; the phone also CSV and JSON).
+export function ExportSheet({
+  visible,
+  count,
+  busy,
+  onPick,
+  onClose,
+}: {
+  visible: boolean;
+  count: number;
+  busy: boolean;
+  onPick: (format: ExportFormat) => void;
+  onClose: () => void;
+}) {
+  const scheme = useColorScheme();
+  const dark = scheme === 'dark';
+  const colors = Colors[dark ? 'dark' : 'light'];
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={busy ? undefined : onClose}>
+      <Pressable accessibilityLabel="Cerrar" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={busy ? undefined : onClose} />
+      <View style={{ backgroundColor: dark ? DARK_BASE : colors.backgroundElement, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderWidth: dark ? 1 : 0, borderColor: colors.border }}>
+        <SafeAreaView edges={['bottom']}>
+          <View className="gap-1 px-6 pb-6 pt-5">
+            <Text className="font-inter-bold text-xl text-gf-text">Exportar movimientos</Text>
+            <Text className="pb-2 font-inter text-sm text-gf-text-muted">
+              {count === 1 ? '1 movimiento' : `${count} movimientos`} del periodo y los filtros que ves. Elige el formato.
+            </Text>
+            {EXPORT_FORMATS.map((format) => (
+              <Pressable
+                key={format.value}
+                accessibilityRole="button"
+                accessibilityLabel={`Exportar como ${format.label}`}
+                disabled={busy}
+                onPress={() => onPick(format.value)}
+                className="flex-row items-center gap-3 py-3"
+                style={{ opacity: busy ? 0.5 : 1 }}>
+                <Ionicons name={format.value === 'json' ? 'code-slash-outline' : 'document-text-outline'} size={26} color={colors.accent} />
+                <View className="flex-1">
+                  <Text className="font-inter-semibold text-base text-gf-text">{format.label}</Text>
+                  <Text className="font-inter text-sm text-gf-text-muted">{format.hint}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+              </Pressable>
+            ))}
+            {busy ? (
+              <View className="flex-row items-center justify-center gap-2 pt-2">
+                <ActivityIndicator color={colors.accent} />
+                <Text className="font-inter text-sm text-gf-text-muted">Preparando el archivo…</Text>
+              </View>
+            ) : (
+              <Pressable accessibilityRole="button" onPress={onClose} className="items-center pt-3" hitSlop={8}>
+                <Text className="font-inter-semibold text-base" style={{ color: colors.textSecondary }}>Cancelar</Text>
+              </Pressable>
+            )}
+          </View>
+        </SafeAreaView>
+      </View>
+    </Modal>
+  );
+}

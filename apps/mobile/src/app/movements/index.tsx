@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, SectionList, Share, Text, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, RefreshControl, SectionList, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { authClient } from '@/auth-client';
 import { ChipPicker } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
+import { ExportSheet } from '@/components/export-sheet';
 import { MonthSwitcher } from '@/components/month-switcher';
 import { MovementFiltersPanel } from '@/components/movements/movement-filters';
 import { MovementRow } from '@/components/movements/movement-row';
@@ -17,10 +19,12 @@ import { BottomTabInset, Colors, MaxContentWidth } from '@/constants/theme';
 import { useCatalog } from '@/hooks/use-catalog';
 import { reloadAfterWrite, useRefreshAppData } from '@/hooks/use-load-app-data';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
+import { shareExcelExport, shareTextExport, type ExportFormat } from '@/lib/export-file';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch, RootState } from '@/store';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { movementsToCsv, type CsvMovement } from '@gastify/core/exports/movementsCsv';
+import { movementsToJson } from '@gastify/core/exports/movementsJson';
 import { fetchTransHistory, type TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { monthTitleEs } from '@gastify/core/format/spanishDates';
 import { isHistoryReadyFor } from '@gastify/core/transactions/historyReady';
@@ -74,6 +78,9 @@ export default function MovementsScreen() {
   const [categoryId, setCategoryId] = useState('');
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const { data: session } = authClient.useSession();
 
   const range = useMemo(
     () => rangeFor(preset, now, month, { from: parseDateText(customFrom), to: parseDateText(customTo) }),
@@ -148,26 +155,38 @@ export default function MovementsScreen() {
     }
   };
 
-  // The period as a CSV text, shared with the system sheet (Mail, Files, Sheets...).
-  const exportPeriod = async () => {
-    const rows: CsvMovement[] = items.map((movement) => {
-      const kind = movementKind(movement);
-      const account = accounts.find((item) => idOf(item) === idOf(movement.account));
-      return {
-        date: dateText(new Date(movementTime(movement) ?? 0)),
-        name: movement.name || '',
-        category: movement.category?.name || 'Sin categoría',
-        subCategory: movement.subCategory?.name || '',
-        type: kind === 'income' ? 'Ingreso' : kind === 'expense' ? 'Gasto' : 'Transferencia',
-        amount: Math.abs(getPrimaryAmount(movement)),
-        currency,
-        account: account?.name || '',
-      };
-    });
+  // The movements on screen as a file (Excel from the server like the web, or CSV / JSON made here),
+  // handed to the system share sheet (Files, Mail, Drive, Sheets...).
+  const exportPeriod = async (format: ExportFormat) => {
+    setExporting(true);
+    setActionError(null);
     try {
-      await Share.share({ title: `Movimientos ${periodLabel}`, message: movementsToCsv(rows) });
+      const title = `Movimientos ${periodLabel}`;
+      if (format === 'xlsx') {
+        await shareExcelExport(items.map((movement) => String(movement._id)), session?.user.email ?? 'me', title);
+      } else {
+        const rows: CsvMovement[] = items.map((movement) => {
+          const kind = movementKind(movement);
+          const account = accounts.find((item) => idOf(item) === idOf(movement.account));
+          return {
+            date: dateText(new Date(movementTime(movement) ?? 0)),
+            name: movement.name || '',
+            category: movement.category?.name || 'Sin categoría',
+            subCategory: movement.subCategory?.name || '',
+            type: kind === 'income' ? 'Ingreso' : kind === 'expense' ? 'Gasto' : 'Transferencia',
+            amount: Math.abs(getPrimaryAmount(movement)),
+            currency,
+            account: account?.name || '',
+          };
+        });
+        await shareTextExport(format, format === 'csv' ? movementsToCsv(rows) : movementsToJson(rows, new Date()), title);
+      }
+      setExportOpen(false);
     } catch (e) {
+      setExportOpen(false);
       setActionError(messageOf(e));
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -177,8 +196,8 @@ export default function MovementsScreen() {
     <View className="gap-4 pb-4">
       <View className="flex-row items-end justify-between gap-3">
         <Text className="font-inter-bold text-4xl text-gf-text">Movimientos</Text>
-        <Pressable accessibilityRole="button" onPress={exportPeriod} disabled={items.length === 0} hitSlop={8} className="pb-2">
-          <Text className="font-inter-semibold text-sm" style={{ color: items.length ? colors.accent : colors.textSecondary }}>Exportar CSV</Text>
+        <Pressable accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8} className="pb-2">
+          <Text className="font-inter-semibold text-sm" style={{ color: items.length ? colors.accent : colors.textSecondary }}>Exportar</Text>
         </Pressable>
       </View>
 
@@ -302,6 +321,7 @@ export default function MovementsScreen() {
           showsVerticalScrollIndicator={false}
         />
       </SafeAreaView>
+      <ExportSheet visible={exportOpen} count={items.length} busy={exporting} onPick={exportPeriod} onClose={() => setExportOpen(false)} />
     </View>
   );
 }
