@@ -1568,3 +1568,9 @@ When taking over this task, Claude should perform the following steps:
 - **Pruebas en emulador:** solo la cuenta de prueba; los datos que se crearon se borraron o son de la cuenta de prueba. No se escribieron tasas de cambio. Sin probar en iPhone.
 - **Para el usuario:** (1) fusionar `fix/fx-tasa-vieja` y las ramas móviles a `main` (despliega a producción) cuando lo decida; (2) iPhone con Expo Go: probar hub Crear, calendario, exportar, dona y la barra de vidrio; (3) decidir el resto de la fase 7 (estados de cuenta, voz, caché, notificaciones) y borrar cuenta desde la app.
 
+### Entry #57 - Claude - 2026-10-20 - App móvil: segunda ronda de paridad con la web (rama `mobile-phase-9-paridad`)
+- **Trazabilidad:** `.mds/MOBILE_FEEDBACK_2026-10-20.md` lista los 100 puntos del feedback del usuario con estado (HECHO verificado, CÓDIGO LISTO pendiente de ver en iPhone/iPad, aclarado). Es la fuente de verdad para quien siga.
+- **Causas encontradas:** (1) `Appearance.setColorScheme(null)` rompía el tema (Android) y dejaba iOS en claro; (2) el emulador pierde caracteres al teclear: para escribir contraseñas se usa `keys.mjs` (tecla por tecla) y Enter; (3) `walletAnalyzer.ts` no compilaba en estricto; se envolvieron dos helpers sin cambiar su comportamiento (691 pruebas siguen pasando).
+- **Cuentas de prueba:** se creó `qa.mobile.36fd8e@example.com` solo para probar "Eliminar mi cuenta" (con permiso del usuario para una cuenta de test) y quedó borrada (el servidor responde 401). Los movimientos y presupuestos de prueba creados en la cuenta QA se borraron.
+- **Para el usuario:** probar en iPad/iPhone (menú lateral, calendario, tema, A-Z, riel de fechas) y decidir la fusión a `main` y la corrección de tipo de cambio (`fix/fx-tasa-vieja`), que sigue sin desplegar.
+
