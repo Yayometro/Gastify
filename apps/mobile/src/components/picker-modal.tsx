@@ -61,7 +61,7 @@ export function PickerModal({
             </Pressable>
           </View>
           <View className="px-6 pb-2">
-            <TextField label="" value={query} onChangeText={setQuery} placeholder={searchPlaceholder} autoCorrect={false} />
+            <TextField label="" value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder={searchPlaceholder} autoCorrect={false} />
           </View>
           <FlatList
             data={filtered}

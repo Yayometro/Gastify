@@ -2,9 +2,10 @@ import { FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Tabs } from 'expo-router';
 import type { ReactNode } from 'react';
-import { type ColorValue, StyleSheet, useColorScheme, View } from 'react-native';
+import { type ColorValue, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
+import { SideNav } from '@/components/side-nav';
 import { Colors } from '@/constants/theme';
 import { useLoadAppData } from '@/hooks/use-load-app-data';
 
@@ -18,6 +19,8 @@ export default function AppTabs() {
   useLoadAppData();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
+  // Wide screens (iPad, landscape) get the web's left column instead of the floating bar.
+  const wide = useWindowDimensions().width >= 768;
   const colors = Colors[isDark ? 'dark' : 'light'];
 
   // The icon of a regular tab; the active one gets the soft accent background.
@@ -46,8 +49,8 @@ export default function AppTabs() {
     );
   };
 
-  return (
-    <Tabs tabBar={(props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false }}>
+  const tabs = (
+    <Tabs tabBar={wide ? () => null : (props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Tabs.Screen
         name="index"
         options={{
@@ -87,6 +90,14 @@ export default function AppTabs() {
       {/* Template leftover (src/app/explore.tsx): kept out of the bar until the file is removed. */}
       <Tabs.Screen name="explore" options={{ href: null }} />
     </Tabs>
+  );
+
+  if (!wide) return tabs;
+  return (
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+      <SideNav />
+      <View style={{ flex: 1 }}>{tabs}</View>
+    </View>
   );
 }
 

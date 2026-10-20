@@ -12,6 +12,7 @@ import AppTabs from '@/components/app-tabs';
 import { AuthGate } from '@/components/auth/auth-gate';
 import { ToastProvider } from '@/components/toast';
 import { Colors } from '@/constants/theme';
+import { applyThemeMode, loadThemeMode } from '@/lib/theme-mode';
 import { store } from '@/store';
 
 SplashScreen.preventAutoHideAsync();
@@ -33,6 +34,11 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
+
+  // The saved light / dark choice ("system" by default) is applied once at start.
+  useEffect(() => {
+    loadThemeMode().then(applyThemeMode);
+  }, []);
 
   if (!fontsLoaded) return null;
 

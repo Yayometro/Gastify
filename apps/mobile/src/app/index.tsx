@@ -8,7 +8,7 @@ import { AccountsCarousel } from '@/components/home/accounts-carousel';
 import { BudgetsWidget } from '@/components/home/budgets-widget';
 import { InsightsWidget } from '@/components/home/insights-widget';
 import { SummaryWidget } from '@/components/home/summary-widget';
-import { TopElements } from '@/components/home/top-elements';
+import { TopRanking } from '@/components/top-ranking';
 import { MovementRow } from '@/components/movements/movement-row';
 import { PeriodControls } from '@/components/period-controls';
 import { Screen } from '@/components/screen';
@@ -101,7 +101,7 @@ export default function HomeScreen() {
       )}
 
       <SummaryWidget summary={summary} movements={inPeriod} currency={currency} />
-      <TopElements movements={transactions.data} range={period.range} currency={currency} />
+      <TopRanking movements={transactions.data} currency={currency} title="Los más grandes" defaultPreset="thisMonth" />
       <InsightsWidget insights={insights} currency={currency} />
       <BudgetsWidget />
 

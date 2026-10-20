@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { ChipPicker, type ChipItem } from '@/components/chip-picker';
+import { DateField } from '@/components/date-field';
 import { FormError } from '@/components/auth/auth-layout';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
@@ -71,7 +72,7 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
           {errors.destinationAmount && <Text className="font-inter text-sm text-red-500">{errors.destinationAmount}</Text>}
         </View>
       )}
-      <TextField label="Fecha (AAAA-MM-DD)" value={values.date} onChangeText={(text) => set('date', text)} placeholder="2026-10-19" keyboardType="numbers-and-punctuation" />
+      <DateField label="Fecha" value={values.date} onChange={(day) => set('date', day)} />
       {errors.date && <Text className="font-inter text-sm text-red-500">{errors.date}</Text>}
       <TextField label="Nombre (opcional)" value={values.name} onChangeText={(text) => set('name', text)} placeholder="Pago de tarjeta" maxLength={80} />
       <FormError message={formError} />

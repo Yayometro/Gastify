@@ -72,3 +72,13 @@ describe("rangeFor and isInRange", () => {
     expect(custom.end.getDate()).toBe(10);
   });
 });
+
+describe("readable filter", () => {
+  it("keeps readable, unreadable or all movements", () => {
+    const rows = [{ _id: "a", isReadable: true }, { _id: "b", isReadable: false }, { _id: "c" }];
+    const pick = (readable: "all" | "readable" | "unreadable") => applyMovementFilters(rows, { ...EMPTY_FILTERS, readable }, "MXN").map((row) => row._id);
+    expect(pick("all")).toEqual(["a", "b", "c"]);
+    expect(pick("readable")).toEqual(["a"]);
+    expect(pick("unreadable")).toEqual(["b", "c"]);
+  });
+});

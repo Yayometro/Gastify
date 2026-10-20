@@ -10,9 +10,13 @@ import type { TransactionLike } from "../transformers/transactionsChange";
 
 export type TypeFilter = "all" | "income" | "expense" | "transfer";
 
+// Whether the movement was readable when it was imported (the web's "Readable" selector).
+export type ReadableFilter = "all" | "readable" | "unreadable";
+
 export interface MovementFilters {
   query: string;
   type: TypeFilter;
+  readable: ReadableFilter;
   categoryId: string;
   subCategoryId: string;
   accountId: string;
@@ -25,6 +29,7 @@ export interface MovementFilters {
 export const EMPTY_FILTERS: MovementFilters = {
   query: "",
   type: "all",
+  readable: "all",
   categoryId: "",
   subCategoryId: "",
   accountId: "",
@@ -40,6 +45,7 @@ interface Named {
 export interface FilterableMovement extends TransactionLike {
   name?: string;
   amount?: number;
+  isReadable?: boolean | null;
   account?: unknown;
   tags?: unknown[];
   category?: (TransactionLike["category"] & Named) | null;
@@ -59,6 +65,7 @@ export function countActiveFilters(filters: MovementFilters): number {
   return [
     filters.query.trim() !== "",
     filters.type !== "all",
+    filters.readable !== "all",
     filters.categoryId !== "",
     filters.subCategoryId !== "",
     filters.accountId !== "",
@@ -71,6 +78,8 @@ export function applyMovementFilters<T extends FilterableMovement>(items: T[], f
   const exact = filters.exactAmount.trim() === "" ? null : Number(filters.exactAmount.replace(/,/g, ""));
   return items.filter((movement) => {
     if (filters.type !== "all" && movementKind(movement) !== filters.type) return false;
+    if (filters.readable === "readable" && !movement.isReadable) return false;
+    if (filters.readable === "unreadable" && movement.isReadable) return false;
     if (query) {
       const haystack = normalizeText([movement.name, movement.category?.name, movement.subCategory?.name, ...tagNames(movement.tags)].filter(Boolean).join(" "));
       if (!haystack.includes(query)) return false;

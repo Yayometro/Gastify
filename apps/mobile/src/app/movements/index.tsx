@@ -20,6 +20,7 @@ import { useCatalog } from '@/hooks/use-catalog';
 import { reloadAfterWrite, useRefreshAppData } from '@/hooks/use-load-app-data';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { shareExcelExport, shareTextExport, type ExportFormat } from '@/lib/export-file';
+import { goBackTo, returnLabel, returnParam } from '@/lib/return-to';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch, RootState } from '@/store';
 import { idOf } from '@gastify/core/categories/categoryForm';
@@ -45,11 +46,10 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { getDuplicates, getDuplicatesToDelete } from '@gastify/core/transformers/transactionDuplicates';
+import { DUPLICATE_DEFAULTS, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
 
 type DaySection = { key: string; title: string; data: TransactionData[] };
 
-// What counts as "the same movement" for the duplicate finder (the web's defaults).
-const DUPLICATE_CRITERIA = { name: true, date: true, amount: true };
 
 // Every movement of the chosen period, newest first and grouped by day, with the web's filters and
 // duplicate finder. Tapping one opens it; a long press selects several to delete them or to give them the
@@ -68,11 +68,16 @@ export default function MovementsScreen() {
   const [month, setMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
   const [customFrom, setCustomFrom] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
   const [customTo, setCustomTo] = useState(() => dateText(now));
-  const params = useLocalSearchParams<{ accountId?: string }>();
+  const params = useLocalSearchParams<{ accountId?: string; returnTo?: string }>();
+  const returnTo = returnParam(params.returnTo);
   const [filters, setFilters] = useState<MovementFilters>(() => ({ ...EMPTY_FILTERS, accountId: params.accountId ? String(params.accountId) : '' }));
   const [filtersOpen, setFiltersOpen] = useState(Boolean(params.accountId));
   const [preset, setPresetState] = useState<RangePreset>(params.accountId ? 'year' : 'month');
   const [duplicatesOn, setDuplicatesOn] = useState(false);
+  // The form of the duplicate finder (what the person picks) and the settings the last search ran with: like the
+  // web, the list changes when "Buscar duplicados" is pressed, not on every tap.
+  const [dupDraft, setDupDraft] = useState<DuplicateSettings>(DUPLICATE_DEFAULTS);
+  const [dupApplied, setDupApplied] = useState<DuplicateSettings>(DUPLICATE_DEFAULTS);
   const [selected, setSelected] = useState<string[]>([]);
   const [choosing, setChoosing] = useState(false);
   const [categoryId, setCategoryId] = useState('');
@@ -91,8 +96,14 @@ export default function MovementsScreen() {
   // The two legs of a transfer share name, day and amount by design, so they are not offered as repeats
   // (deleting one would leave the transfer half done).
   const duplicates = useMemo(
-    () => getDuplicates(filtered.filter((movement) => movementKind(movement) !== 'transfer') as never, DUPLICATE_CRITERIA) as unknown as TransactionData[],
-    [filtered]
+    () =>
+      getDuplicates(
+        filtered.filter((movement) => movementKind(movement) !== 'transfer') as never,
+        dupApplied.criteria,
+        dupApplied.dateTolerance,
+        dupApplied.amountTolerance
+      ) as unknown as TransactionData[],
+    [filtered, dupApplied]
   );
   const items = useMemo(() => sortNewestFirst(duplicatesOn ? duplicates : filtered), [duplicatesOn, duplicates, filtered]);
   const totals = useMemo(() => monthTotals(items), [items]);
@@ -199,6 +210,12 @@ export default function MovementsScreen() {
 
   const header = (
     <View className="gap-4 pb-4">
+      {returnTo && (
+        <Pressable accessibilityRole="button" onPress={() => goBackTo(returnTo, () => router.back())} hitSlop={8} className="flex-row items-center gap-1">
+          <Ionicons name="chevron-back" size={20} color={colors.accent} />
+          <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>{returnLabel(returnTo, 'Atrás')}</Text>
+        </Pressable>
+      )}
       <View className="flex-row items-end justify-between gap-3">
         <Text className="font-inter-bold text-4xl text-gf-text">Movimientos</Text>
         <Pressable accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8} className="pb-2">
@@ -238,7 +255,14 @@ export default function MovementsScreen() {
           duplicatesOn={duplicatesOn}
           onDuplicatesChange={setDuplicatesOn}
           duplicateCount={duplicates.length}
-          onSelectDuplicates={() => setSelected(getDuplicatesToDelete(filtered as never, DUPLICATE_CRITERIA).map(String))}
+          onSelectDuplicates={() => setSelected(getDuplicatesToDelete(filtered as never, dupApplied.criteria, dupApplied.dateTolerance, dupApplied.amountTolerance).map(String))}
+          dupDraft={dupDraft}
+          onDupDraftChange={setDupDraft}
+          onRunDuplicates={() => setDupApplied(dupDraft)}
+          onResetDuplicates={() => {
+            setDupDraft(DUPLICATE_DEFAULTS);
+            setDupApplied(DUPLICATE_DEFAULTS);
+          }}
         />
       )}
 

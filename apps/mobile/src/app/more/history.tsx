@@ -7,7 +7,7 @@ import { MonthlyBars } from '@/components/charts/monthly-bars';
 import { CategoryBadge } from '@/components/category-badge';
 import { ChipPicker } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
-import { MovementRow } from '@/components/movements/movement-row';
+import { TopRanking } from '@/components/top-ranking';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
@@ -181,12 +181,7 @@ export default function HistoryScreen() {
         <CategoryRows rows={incomeRows} compare={compareOn} currency={currency} />
       </Card>
 
-      <Card title="Gastos más grandes">
-        {a.biggest.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos en este periodo.</Text>}
-        {a.biggest.map((movement) => (
-          <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id) } })} />
-        ))}
-      </Card>
+      <TopRanking movements={transactions} currency={currency} title="Top de movimientos" defaultPreset="last3" returnTo="/more/history" />
     </Screen>
   );
 }

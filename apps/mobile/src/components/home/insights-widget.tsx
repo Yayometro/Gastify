@@ -9,7 +9,7 @@ function Fact({ label, value, detail, tone }: { label: string; value: string; de
   return (
     <View className="gap-0.5">
       <Text className="font-inter text-sm text-gf-text-muted">{label}</Text>
-      <Text className="font-inter-bold text-xl" style={tone ? { color: tone } : undefined}>{value}</Text>
+      <Text className="font-inter-bold text-xl text-gf-text" style={tone ? { color: tone } : undefined}>{value}</Text>
       {detail ? <Text className="font-inter text-xs text-gf-text-muted">{detail}</Text> : null}
     </View>
   );

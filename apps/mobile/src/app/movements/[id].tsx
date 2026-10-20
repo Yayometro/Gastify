@@ -1,4 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
+
+import { goBackTo, returnLabel, returnParam } from '@/lib/return-to';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -19,7 +21,8 @@ import { useState } from 'react';
 // One movement, edited with the same form as Agregar. Transfers cannot be edited field by field
 // (both sides are kept together), so they can only be deleted here.
 export default function MovementDetailScreen() {
-  const { id: rawId } = useLocalSearchParams<{ id: string }>();
+  const { id: rawId, returnTo: rawReturn } = useLocalSearchParams<{ id: string; returnTo?: string }>();
+  const returnTo = returnParam(rawReturn);
   const id = String(rawId ?? '');
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
@@ -30,11 +33,12 @@ export default function MovementDetailScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/movements'));
+  const back = () => goBackTo(returnTo, () => (router.canGoBack() ? router.back() : router.replace('/movements')));
+  const backLabel = returnLabel(returnTo, 'Movimientos');
 
   if (!movement) {
     return (
-      <Screen title="Movimiento" backLabel="Movimientos" onBack={back}>
+      <Screen title="Movimiento" backLabel={backLabel} onBack={back}>
         <Text className="font-inter text-base text-gf-text-muted">No encontramos este movimiento. Puede que ya se haya borrado.</Text>
       </Screen>
     );
@@ -76,7 +80,7 @@ export default function MovementDetailScreen() {
   };
 
   return (
-    <Screen title="Movimiento" subtitle={movement.name || undefined} backLabel="Movimientos" onBack={back}>
+    <Screen title="Movimiento" subtitle={movement.name || undefined} backLabel={backLabel} onBack={back}>
       {kind === 'transfer' ? (
         <Card title="Transferencia">
           <Text className="font-inter text-base text-gf-text-muted">

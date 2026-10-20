@@ -1,7 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { ChipPicker, type ChipItem } from '@/components/chip-picker';
 import { Card } from '@/components/ui/card';
+import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
 import { GfSwitch } from '@/components/ui/switch';
@@ -10,7 +13,14 @@ import type { CategoryData } from '@gastify/core/features/categoriesSlice';
 import type { SubCategoryData } from '@gastify/core/features/subCategorySlice';
 import { idOf, subCategoriesOf } from '@gastify/core/categories/categoryForm';
 import { SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
-import { EMPTY_FILTERS, type MovementFilters, type TypeFilter } from '@gastify/core/transactions/movementFilters';
+import { DUPLICATE_CRITERIA_LABELS, toleranceFrom, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
+import { EMPTY_FILTERS, type MovementFilters, type ReadableFilter, type TypeFilter } from '@gastify/core/transactions/movementFilters';
+
+const READABLE: { id: ReadableFilter; label: string }[] = [
+  { id: 'all', label: 'Todos' },
+  { id: 'readable', label: 'Legibles' },
+  { id: 'unreadable', label: 'No legibles' },
+];
 
 const TYPES: { id: TypeFilter; label: string }[] = [
   { id: 'all', label: 'Todos' },
@@ -31,6 +41,10 @@ export function MovementFiltersPanel({
   onDuplicatesChange,
   duplicateCount,
   onSelectDuplicates,
+  dupDraft,
+  onDupDraftChange,
+  onRunDuplicates,
+  onResetDuplicates,
 }: {
   filters: MovementFilters;
   onChange: (next: MovementFilters) => void;
@@ -41,6 +55,10 @@ export function MovementFiltersPanel({
   onDuplicatesChange: (on: boolean) => void;
   duplicateCount: number;
   onSelectDuplicates: () => void;
+  dupDraft: DuplicateSettings;
+  onDupDraftChange: (next: DuplicateSettings) => void;
+  onRunDuplicates: () => void;
+  onResetDuplicates: () => void;
 }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -53,11 +71,16 @@ export function MovementFiltersPanel({
 
   return (
     <Card title="Filtros">
-      <TextField label="Buscar" value={filters.query} onChangeText={(text) => set('query', text)} placeholder="Nombre, categoría, etiqueta…" autoCorrect={false} />
+      <TextField label="Buscar" value={filters.query} onChangeText={(text) => set('query', text)} onClear={() => set('query', '')} placeholder="Nombre, categoría, etiqueta…" autoCorrect={false} />
 
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">Tipo</Text>
         <ChipPicker items={TYPES} value={filters.type} onChange={(id) => set('type', id as TypeFilter)} moreAfter={99} />
+      </View>
+
+      <View className="gap-2">
+        <Text className="font-inter-medium text-sm text-gf-text-muted">Legibilidad</Text>
+        <ChipPicker items={READABLE} value={filters.readable} onChange={(id) => set('readable', id as ReadableFilter)} moreAfter={99} />
       </View>
 
       <View className="gap-2">
@@ -97,22 +120,21 @@ export function MovementFiltersPanel({
         )}
       </View>
 
-      <View className="gap-2 border-t border-gf-border pt-3">
+      <View className="gap-3 border-t border-gf-border pt-3">
         <View className="flex-row items-center justify-between gap-3">
           <Text className="flex-1 font-inter-medium text-base text-gf-text">Buscar posibles duplicados</Text>
           <GfSwitch value={duplicatesOn} onValueChange={onDuplicatesChange} accessibilityLabel="Buscar duplicados" />
         </View>
         {duplicatesOn && (
-          <>
-            <Text className="font-inter text-sm text-gf-text-muted">
-              Mismo nombre, mismo día y mismo monto. {duplicateCount === 0 ? 'No encontramos repetidos.' : `${duplicateCount} movimientos se repiten.`}
-            </Text>
-            {duplicateCount > 0 && (
-              <Pressable accessibilityRole="button" onPress={onSelectDuplicates}>
-                <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Seleccionar los repetidos (dejando uno de cada grupo)</Text>
-              </Pressable>
-            )}
-          </>
+          <DuplicateSubfilters
+            draft={dupDraft}
+            onChange={onDupDraftChange}
+            onRun={onRunDuplicates}
+            onReset={onResetDuplicates}
+            count={duplicateCount}
+            onSelect={onSelectDuplicates}
+            accent={colors.accent}
+          />
         )}
       </View>
 
@@ -120,5 +142,95 @@ export function MovementFiltersPanel({
         <Text className="font-inter-semibold text-sm text-gf-text-muted">Limpiar filtros</Text>
       </Pressable>
     </Card>
+  );
+}
+
+// The duplicate finder's sub-filters, like the web's: what must match, the tolerances, and the two buttons.
+function DuplicateSubfilters({
+  draft,
+  onChange,
+  onRun,
+  onReset,
+  count,
+  onSelect,
+  accent,
+}: {
+  draft: DuplicateSettings;
+  onChange: (next: DuplicateSettings) => void;
+  onRun: () => void;
+  onReset: () => void;
+  count: number;
+  onSelect: () => void;
+  accent: string;
+}) {
+  // The tolerance boxes keep what is typed ("0." while writing a decimal) and send the number upward.
+  const [dateText, setDateText] = useState(String(draft.dateTolerance));
+  const [amountText, setAmountText] = useState(String(draft.amountTolerance));
+
+  return (
+    <View className="gap-3">
+      <Text className="font-inter text-sm text-gf-text-muted">Coincidencias</Text>
+      <View className="flex-row flex-wrap gap-2">
+        {DUPLICATE_CRITERIA_LABELS.map(({ key, label }) => {
+          const on = draft.criteria[key];
+          return (
+            <Pressable
+              key={key}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: on }}
+              accessibilityLabel={label}
+              onPress={() => onChange({ ...draft, criteria: { ...draft.criteria, [key]: !on } })}
+              className="flex-row items-center gap-2 rounded-full border border-gf-border px-4 py-2"
+              style={{ backgroundColor: on ? 'rgba(147, 51, 234, 0.18)' : undefined }}>
+              <Ionicons name={on ? 'checkbox' : 'square-outline'} size={18} color={on ? accent : '#9ca3af'} />
+              <Text className="font-inter-medium text-sm text-gf-text">{label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <View className="flex-row gap-3">
+        <View className="flex-1">
+          <TextField
+            label="Tolerancia de fecha (días)"
+            value={dateText}
+            onChangeText={(text) => {
+              setDateText(text);
+              onChange({ ...draft, dateTolerance: toleranceFrom(text) });
+            }}
+            keyboardType="decimal-pad"
+          />
+        </View>
+        <View className="flex-1">
+          <TextField
+            label="Tolerancia de monto"
+            value={amountText}
+            onChangeText={(text) => {
+              setAmountText(text);
+              onChange({ ...draft, amountTolerance: toleranceFrom(text) });
+            }}
+            keyboardType="decimal-pad"
+          />
+        </View>
+      </View>
+      <GradientButton label="Buscar duplicados" onPress={onRun} />
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          setDateText('0');
+          setAmountText('0');
+          onReset();
+        }}
+        className="items-center py-1">
+        <Text className="font-inter-semibold text-sm text-gf-text-muted">Restablecer valores</Text>
+      </Pressable>
+      <Text className="font-inter text-sm text-gf-text-muted">
+        {count === 0 ? 'No encontramos repetidos.' : `${count} movimientos se repiten.`}
+      </Text>
+      {count > 0 && (
+        <Pressable accessibilityRole="button" onPress={onSelect}>
+          <Text className="font-inter-semibold text-sm" style={{ color: accent }}>Seleccionar los repetidos (dejando uno de cada grupo)</Text>
+        </Pressable>
+      )}
+    </View>
   );
 }

@@ -74,11 +74,11 @@ export default function EditAccountScreen() {
           <Text className="font-inter-semibold text-base text-gf-text">-{formatMoneyMajor(month.spending, primary)}</Text>
         </View>
         {mine.slice(0, 5).map((movement) => (
-          <MovementRow key={String(movement._id)} movement={movement} currency={primary} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id) } })} />
+          <MovementRow key={String(movement._id)} movement={movement} currency={primary} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: `/more/accounts/${id}` } })} />
         ))}
         {mine.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Esta cuenta todavía no tiene movimientos.</Text>}
         {mine.length > 0 && (
-          <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/movements', params: { accountId: id } })}>
+          <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/movements', params: { accountId: id, returnTo: `/more/accounts/${id}` } })}>
             <Text className="font-inter-semibold text-sm text-gf-text">Ver todos los movimientos de esta cuenta ›</Text>
           </Pressable>
         )}

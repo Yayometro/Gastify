@@ -1,7 +1,7 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, Text, View, useColorScheme } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 
 import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
 import { GradientButton } from '@/components/ui/gradient-button';
@@ -18,6 +18,12 @@ export function DateField({ label, value, onChange }: { label: string; value: st
   const date = parseDateText(value) ?? new Date();
   const [iosOpen, setIosOpen] = useState(false);
   const [draft, setDraft] = useState(date);
+
+  // Closes the calendar keeping what was picked (the draft), used by "Listo" and by a tap outside.
+  const keepAndClose = () => {
+    onChange(dateText(draft));
+    setIosOpen(false);
+  };
 
   const open = () => {
     if (Platform.OS === 'android') {
@@ -45,12 +51,22 @@ export function DateField({ label, value, onChange }: { label: string; value: st
       </Pressable>
 
       {Platform.OS === 'ios' && (
-        <Modal visible={iosOpen} animationType="slide" transparent onRequestClose={() => setIosOpen(false)}>
-          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' }}>
-            <View style={{ backgroundColor: dark ? DARK_BASE : colors.background, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden', paddingBottom: 28 }}>
+        <Modal visible={iosOpen} animationType="slide" transparent onRequestClose={keepAndClose}>
+          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+            {/* Tapping outside the calendar closes it and keeps the day picked so far (no need to press "Listo"). */}
+            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar calendario" onPress={keepAndClose} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} />
+            <View style={{ width: '100%', backgroundColor: dark ? DARK_BASE : colors.background, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden', paddingBottom: 28 }}>
               <AmbientBackground />
-              <View className="gap-3 p-6">
-                <DateTimePicker value={draft} mode="date" display="inline" locale="es-MX" themeVariant={dark ? 'dark' : 'light'} onValueChange={(_, picked) => setDraft(picked)} />
+              <View className="gap-3 p-6" style={{ width: '100%' }}>
+                <DateTimePicker
+                  value={draft}
+                  mode="date"
+                  display="inline"
+                  locale="es-MX"
+                  themeVariant={dark ? 'dark' : 'light'}
+                  onValueChange={(_, picked) => setDraft(picked)}
+                  style={{ width: '100%' }}
+                />
                 <GradientButton
                   label="Listo"
                   onPress={() => {
