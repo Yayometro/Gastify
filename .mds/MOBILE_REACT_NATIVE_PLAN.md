@@ -206,4 +206,18 @@ Fuentes: blog de React Native (reactnative.dev/blog), anuncios de la React Found
 - **Probado en el emulador** con una cuenta desechable nueva (`qa.movil.d6be4e@example.com`, con 127 movimientos sembrados, 3 cuentas, 4 presupuestos y 1 proyecto): los totales de octubre y septiembre coinciden con el cálculo esperado; el gasto por categoría, el presupuesto de comida (43 %) y de casa (96 %), el ahorro de fondo y el proyecto (3,300) también.
 - **Pendiente de esta fase:** la carga de historial antiguo (meses de hace más de 12) no se vio con aviso porque el historial ya había terminado; el saldo de "Dólares" depende del tipo de cambio que devuelve el servidor (no verificado contra una fuente externa); la transferencia de cambio no movió el saldo de la cuenta USD en la base de datos de prueba; y el total de cuentas suma las de crédito igual que el web. Sin probar en iPhone todavía.
 
-**Siguiente (fase 5, escritura):** agregar, editar y borrar movimientos desde la app, y después la fase 6 (Categorías, Historial y Proyecciones). Movimientos con carga por fases como en la web, Cuentas, Presupuestos y el resumen de Inicio, con los mismos slices y transformadores de `packages/core`.
+**Fase 5 (escritura): hecha, probada en el emulador** (rama `mobile-phase-5-escritura`, sobre la 4).
+- Agregar gasto, ingreso o transferencia (misma moneda = transferencia; distinta = cambio) con cuenta, categoría, subcategoría, presupuesto y fecha. Editar y borrar un movimiento; selección múltiple para borrar o cambiar categoría.
+- Más > Categorías (crear, editar nombre/ícono/color, borrar, subcategorías) y Más > Cuentas (crear, editar, borrar, subir y bajar el orden). Las rutas y los cuerpos son los del web; probados contra la cuenta de prueba.
+- Pendiente de la fase: el teclado del emulador pierde letras al escribir de corrido (en el iPhone no pasa); falta revisar la UI de categorías en un teléfono real.
+
+**Fase 6 (análisis): hecha salvo gráficas avanzadas** (rama `mobile-phase-6-analisis`).
+- Más > Historial: 12 meses (ingresos y gastos), mes elegido, desglose por categoría con porcentajes.
+- Más > Proyecciones: tabla mes a mes, solo lectura. Pendiente: convertir fuentes de ingreso en otra moneda (el web lo hace con tipo de cambio en vivo) y el círculo de paquetes / treemap (requiere Skia, que no está en Expo Go).
+- Exportar el mes en CSV desde Movimientos (hoja de compartir del sistema).
+
+**Fase 7 (funciones nativas): parcial.** Hecho: exportación CSV. Ya existía el código de passkeys (sin probar en dispositivo). **No hecho:** subir estado de cuenta (PDF/XLSX), voz a texto (`speech-add`), caché local, notificaciones y widget.
+
+**Fase 8 (publicación): solo preparación** (rama `mobile-phase-8-publicacion`): `apps/mobile/eas.json` y `.mds/PUBLICACION_CHECKLIST.md`. No se compiló ni se envió nada: faltan las cuentas de pago, el identificador definitivo, borrar cuenta desde la app, Sign in with Apple, íconos y splash propios, y el aviso de privacidad.
+
+**Siguiente:** cerrar los pendientes de las fases 6 y 7 (conversión de fuentes de ingreso, carga de estados de cuenta, voz) y la prueba en un iPhone real. Lo de publicación depende de tus cuentas de pago (ver `.mds/PUBLICACION_CHECKLIST.md`). agregar, editar y borrar movimientos desde la app, y después la fase 6 (Categorías, Historial y Proyecciones). Movimientos con carga por fases como en la web, Cuentas, Presupuestos y el resumen de Inicio, con los mismos slices y transformadores de `packages/core`.

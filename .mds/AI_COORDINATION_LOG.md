@@ -1551,3 +1551,12 @@ When taking over this task, Claude should perform the following steps:
 - **Verificación:** emulador de Android contra el servidor local, cuenta desechable nueva (no borrada, por instrucción del usuario: no borrar nada). Totales de octubre y septiembre, categorías, presupuestos y cuentas coinciden con el cálculo esperado. Historial antiguo sin probar con aviso.
 - **Límites:** saldo de dólares depende del tipo de cambio del servidor; la transferencia de cambio no movió el saldo USD de la cuenta de prueba; el total de cuentas no distingue crédito (igual que el web).
 
+### Entry #55 - Claude - 2026-10-20 - App móvil: fases 5, 6, 7 (parcial) y 8 (preparación) (ramas apiladas)
+- **Ramas (sin fusionar a `main`):** `mobile-phase-4-lectura` (cc80a9c) -> `mobile-phase-5-escritura` (00291b2) -> `mobile-phase-6-analisis` (2bb5bdd); `mobile-phase-8-publicacion` (394aabc, sobre la 6, solo EAS y checklist).
+- **Fase 5:** Agregar (gasto/ingreso/transferencia), editar y borrar, selección múltiple (borrar y cambiar categoría), CRUD de categorías y subcategorías (ícono de la biblioteca Fluent, color) y de cuentas (orden subir/bajar). Reglas de formularios en `packages/core` con pruebas.
+- **Fase 6:** Historial (12 meses y desglose por categoría) y Proyecciones (tabla mes a mes, solo lectura). Pendiente: fuentes de ingreso en otra moneda.
+- **Fase 7 parcial:** CSV del mes. Pendiente: estados de cuenta, voz, caché, notificaciones.
+- **Fase 8:** solo `eas.json` y checklist. No se compiló ni se envió.
+- **Verificación:** vitest 611/611; tsc móvil 0 errores; cada pantalla nueva revisada en el emulador con la cuenta de prueba; CRUD de categorías, subcategorías, cuentas, transferencias, cambio de moneda y edición masiva probado contra el servidor con los mismos cuerpos que envía la app, con limpieza de los datos de prueba.
+- **Cambios de tienda:** se apagan los chequeos de serialización e inmutabilidad de Redux (solo desarrollo; eran de 1.5 a 2 s por acción con el historial completo).
+
