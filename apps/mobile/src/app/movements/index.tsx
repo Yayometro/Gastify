@@ -220,9 +220,14 @@ export default function MovementsScreen() {
       )}
       <View className="flex-row items-end justify-between gap-3">
         <Text className="font-inter-bold text-4xl text-gf-text">Movimientos</Text>
-        <Pressable accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8} className="pb-2">
+        <View className="flex-row items-center gap-4 pb-2">
+        <Pressable accessibilityRole="button" onPress={() => router.push('/movements/import')} hitSlop={8}>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Importar</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8}>
           <Text className="font-inter-semibold text-sm" style={{ color: items.length ? colors.accent : colors.textSecondary }}>Exportar</Text>
         </Pressable>
+        </View>
       </View>
 
       <ChipPicker items={presetsWithYears(yearsWithMovements(transactions.data)).map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />

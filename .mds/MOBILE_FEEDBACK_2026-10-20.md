@@ -50,7 +50,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| M01 | Importar desde Excel (no existe en móvil). | PENDIENTE | Revisar la ruta de importación de la web. |
+| M01 | Importar desde Excel (no existe en móvil). | HECHO | Verificado: descarga la plantilla (se comparte como .xlsx) y la subida multipart crea los movimientos (probado contra el servidor con la cuenta QA y luego borrado). |
 | M02 | Transaction Categorizer (no existe en móvil). Accesible también desde el botón Tools (G02). | CÓDIGO LISTO | Verificado: abre, busca y muestra "sin sugerencias" (la cuenta QA no tiene reglas). Aplicar sugerencias sin probar. Falta atajo dentro de Movimientos. |
 | M03 | Transaction Details: ya funciona, mantener. | HECHO | Revisado en el emulador. |
 | M04 | Más filtros, como en la web (revisar la lista completa de la web). | PENDIENTE | |
@@ -63,7 +63,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | M11 | Duplicados: el switch debe abrir subfiltros como en la web: nombre, fecha, monto, categoría, subcategoría, tolerancia de fecha, tolerancia de monto, "Buscar duplicados" y "Restablecer valores". | CÓDIGO LISTO | |
 | M12 | Duplicados: filtro readable / not readable / all. | CÓDIGO LISTO | RESUELTO con la web: Todos / Readable / Not readable (Movements.tsx, selector ReadableSelector). |
 | M13 | Barra de scroll exclusiva a la derecha para saltar entre fechas (los separadores por día ya existen y se mantienen). | PENDIENTE | |
-| M14 | Movimientos debe tener todos los componentes que tiene la web (importar, categorizar, detalles, etc.). | PENDIENTE | Agrupa M01, M02, M04. |
+| M14 | Movimientos debe tener todos los componentes que tiene la web (importar, categorizar, detalles, etc.). | CÓDIGO LISTO | Agrupa M01, M02, M04. |
 
 ## Crear / Agregar
 
