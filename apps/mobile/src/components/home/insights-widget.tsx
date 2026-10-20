@@ -22,7 +22,12 @@ export function InsightsWidget({ insights, currency }: { insights: PeriodInsight
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const pct = (value: number) => `${value >= 0 ? '+' : ''}${Math.round(value * 100)}%`;
   return (
-    <Card title="Perspectivas">
+    <Card
+      title="Análisis del periodo"
+      info={{
+        title: 'Análisis del periodo',
+        text: 'Cuánto gastas por día, cuánto gastarías en todo el periodo si sigues a este ritmo, qué parte de tus ingresos conservas y cómo cambiaron tus gastos e ingresos contra el periodo anterior.',
+      }}>
       <View className="flex-row flex-wrap gap-x-6 gap-y-4">
         <View className="w-[45%]"><Fact label="Gasto por día" value={formatMoneyMajor(insights.dailyAverage, currency)} detail={`en ${insights.daysElapsed} ${insights.daysElapsed === 1 ? 'día' : 'días'}`} /></View>
         {insights.projectedSpending !== null && (

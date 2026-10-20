@@ -2,13 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { CategoryDonut } from '@/components/charts/category-donut';
+import { ChipPicker } from '@/components/chip-picker';
+import { MonthSwitcher } from '@/components/month-switcher';
 import { MonthlyBars } from '@/components/charts/monthly-bars';
 import { CategoryBadge } from '@/components/category-badge';
 import { Segmented } from '@/components/segmented';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { categoryBreakdown, groupSmallSlices, NO_SUBCATEGORY_NAME } from '@gastify/core/history/categoryBreakdown';
-import type { PeriodSummary } from '@gastify/core/history/periodComparison';
+import { HISTORY_PRESETS, historyRange, summarizePeriod, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
+import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionLike } from '@gastify/core/transformers/transactionsChange';
 
@@ -18,10 +21,29 @@ const MAX_ARCS = 7;
 
 // Gastos / Ingresos of the period: the total, a donut of how it splits across categories (tap a slice to
 // see its subcategories, like the web's sunburst), the list, and the months side by side.
-export function SummaryWidget({ summary, movements, currency }: { summary: PeriodSummary; movements: TransactionLike[]; currency: string }) {
+export function SummaryWidget({
+  summary: dashboardSummary,
+  movements: dashboardMovements,
+  allMovements,
+  currency,
+}: {
+  summary: PeriodSummary;
+  movements: TransactionLike[];
+  allMovements: TransactionLike[];
+  currency: string;
+}) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [kind, setKind] = useState<Kind>('spending');
+  // This chart can look at its own period; by default it follows the dashboard's.
+  const [preset, setPreset] = useState<'dashboard' | HistoryPreset>('dashboard');
+  const now = useMemo(() => new Date(), []);
+  const [month, setMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
+  const { summary, movements } = useMemo(() => {
+    if (preset === 'dashboard') return { summary: dashboardSummary, movements: dashboardMovements };
+    const range = historyRange(preset, now, { from: null, to: null }, month);
+    return { summary: summarizePeriod(allMovements, range), movements: allMovements.filter((movement) => isInRange(movement, range)) };
+  }, [preset, month, now, allMovements, dashboardSummary, dashboardMovements]);
   const [selected, setSelected] = useState<string | null>(null);
   const total = kind === 'spending' ? summary.totals.spending : summary.totals.incomes;
 
@@ -38,6 +60,13 @@ export function SummaryWidget({ summary, movements, currency }: { summary: Perio
 
   return (
     <Card title="Resumen">
+      <ChipPicker
+        items={[{ id: 'dashboard', label: 'Igual que arriba' }, ...HISTORY_PRESETS.filter((p) => p.value !== 'custom').map((p) => ({ id: p.value, label: p.label }))]}
+        value={preset}
+        onChange={(id) => setPreset(id as 'dashboard' | HistoryPreset)}
+        moreAfter={99}
+      />
+      {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
       <Segmented options={[{ value: 'spending', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
       <Text className="text-center font-inter-bold text-3xl" style={{ color: kind === 'spending' ? colors.expense : colors.income }}>{formatMoneyMajor(total, currency)}</Text>
 
@@ -51,7 +80,8 @@ export function SummaryWidget({ summary, movements, currency }: { summary: Perio
             onSelect={(key) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)))}
             centerTitle={chosen ? chosen.name : kind === 'spending' ? 'Gastos' : 'Ingresos'}
             centerValue={formatMoneyMajor(shownTotal, currency)}
-            centerHint={zoomed ? 'Toca para volver' : chosen ? undefined : 'Toca una sección'}
+            centerHint={zoomed ? '‹ Toca para volver' : chosen ? undefined : 'Toca una sección ›'}
+            centerIcon={chosen && chosen.icon ? { icon: chosen.icon, color: chosen.color } : null}
             onCenterPress={chosen ? () => setSelected(null) : undefined}
             trackColor={scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(27,16,61,0.06)'}
           />

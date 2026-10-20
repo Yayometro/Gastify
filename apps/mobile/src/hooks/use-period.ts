@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { monthTitleEs } from '@gastify/core/format/spanishDates';
-import { RANGE_PRESETS, rangeFor, type RangePreset } from '@gastify/core/transactions/movementFilters';
+import { rangeFor, rangePresetLabel, type RangePreset } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 
 // The period a screen is looking at: the month of a switcher, a quick range (7/30/90 days, this year)
@@ -17,7 +17,7 @@ export function usePeriod(initial: RangePreset = 'month') {
     () => rangeFor(preset, now, month, { from: parseDateText(customFrom), to: parseDateText(customTo) }),
     [preset, now, month, customFrom, customTo]
   );
-  const label = preset === 'month' ? monthTitleEs(month) : RANGE_PRESETS.find((p) => p.value === preset)?.label ?? 'Periodo';
+  const label = preset === 'month' ? monthTitleEs(month) : rangePresetLabel(preset);
 
   return { now, preset, setPreset, month, setMonth, customFrom, setCustomFrom, customTo, setCustomTo, range, label };
 }

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
+import { AccountCard } from '@/components/account-card';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
@@ -11,17 +12,14 @@ import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { RootState } from '@/store';
+import { accountActivity } from '@gastify/core/accounts/accountActivity';
 import { balancesByCurrency, totalInPrimary } from '@gastify/core/accounts/accountTotals';
-import { ACCOUNT_TYPES } from '@gastify/core/accounts/accountForm';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
-import { isInRange } from '@gastify/core/transactions/movementFilters';
-import { monthBounds, monthTotals } from '@gastify/core/transactions/monthSummary';
+import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { moveInList } from '@gastify/core/accounts/accountForm';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@/store';
-
-const TYPE_LABEL: Record<string, string> = Object.fromEntries(ACCOUNT_TYPES.map((type) => [type.value, type.label]));
 
 // Every account with its balance in its own currency and the total in the primary one. Tap one to
 // edit it; the arrows change the order the accounts are listed in (the web's order, saved on the server).
@@ -38,14 +36,7 @@ export default function AccountsScreen() {
     const now = new Date();
     return monthBounds(now.getFullYear(), now.getMonth());
   }, []);
-  const activity = useMemo(() => {
-    const byAccount: Record<string, ReturnType<typeof monthTotals>> = {};
-    const month = transactions.filter((movement) => isInRange(movement, bounds));
-    for (const account of accountsState.data) {
-      byAccount[idOf(account)] = monthTotals(month.filter((movement) => idOf(movement.account) === idOf(account)));
-    }
-    return byAccount;
-  }, [transactions, accountsState.data, bounds]);
+  const cardActivity = useMemo(() => accountActivity(transactions, bounds), [transactions, bounds]);
 
   const accounts = useMemo(
     () =>
@@ -109,38 +100,26 @@ export default function AccountsScreen() {
       )}
 
       {accounts.map((account, index) => (
-        <Card key={idOf(account) || String(index)}>
-          <View className="flex-row items-center gap-3">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Editar ${account.name || 'cuenta'}`}
+        <View key={idOf(account) || String(index)} className="flex-row items-center gap-3">
+          <View className="flex-1">
+            <AccountCard
+              account={account}
+              primary={currency}
+              activity={cardActivity[idOf(account)]}
+              rate={rates[account.currency ?? '']}
+              width={undefined}
               onPress={() => router.push({ pathname: '/more/accounts/[id]', params: { id: idOf(account) } })}
-              className="flex-1 flex-row items-center justify-between gap-3">
-              <View className="flex-1">
-                <Text className="font-inter-semibold text-base text-gf-text" numberOfLines={1}>
-                  {account.name || 'Cuenta'}
-                </Text>
-                <Text className="font-inter text-sm text-gf-text-muted" numberOfLines={1}>
-                  {[TYPE_LABEL[account.accountType ?? ''] ?? account.accountType, account.institution].filter(Boolean).join(' · ')}
-                </Text>
-                {activity[idOf(account)] && activity[idOf(account)].count > 0 && (
-                  <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>
-                    Este mes: +{formatMoneyMajor(activity[idOf(account)].incomes, currency)} · -{formatMoneyMajor(activity[idOf(account)].spending, currency)} · {activity[idOf(account)].count} mov.
-                  </Text>
-                )}
-              </View>
-              <Text className="font-inter-bold text-lg text-gf-text">{formatMoneyMajor(account.amount ?? 0, account.currency || currency)}</Text>
-            </Pressable>
-            <View className="gap-1">
-              <Pressable accessibilityRole="button" accessibilityLabel="Subir cuenta" disabled={index === 0} onPress={() => move(index, -1)} hitSlop={6}>
-                <Text className="font-inter-bold text-base" style={{ color: index === 0 ? colors.border : colors.accent }}>▲</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button" accessibilityLabel="Bajar cuenta" disabled={index === accounts.length - 1} onPress={() => move(index, 1)} hitSlop={6}>
-                <Text className="font-inter-bold text-base" style={{ color: index === accounts.length - 1 ? colors.border : colors.accent }}>▼</Text>
-              </Pressable>
-            </View>
+            />
           </View>
-        </Card>
+          <View className="gap-1">
+            <Pressable accessibilityRole="button" accessibilityLabel="Subir cuenta" disabled={index === 0} onPress={() => move(index, -1)} hitSlop={6}>
+              <Text className="font-inter-bold text-base" style={{ color: index === 0 ? colors.border : colors.accent }}>▲</Text>
+            </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Bajar cuenta" disabled={index === accounts.length - 1} onPress={() => move(index, 1)} hitSlop={6}>
+              <Text className="font-inter-bold text-base" style={{ color: index === accounts.length - 1 ? colors.border : colors.accent }}>▼</Text>
+            </Pressable>
+          </View>
+        </View>
       ))}
     </Screen>
   );

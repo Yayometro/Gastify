@@ -105,17 +105,66 @@ export function applyMovementFilters<T extends FilterableMovement>(items: T[], f
   });
 }
 
-// The time windows of the list. "month" follows the month switcher; the rest end today.
-export type RangePreset = "month" | "last7" | "last30" | "last90" | "year" | "custom";
+// The time windows of the list, the web's selector: a month (it follows the month switcher), the last days, last
+// month, the last three months, each quarter and half of this year, this and last year, any whole year the
+// person has data for ("year:2025"), or two chosen dates. The rolling ones end today.
+export type RangePreset =
+  | "month"
+  | "last7"
+  | "last30"
+  | "last90"
+  | "lastMonth"
+  | "last3"
+  | "q1"
+  | "q2"
+  | "q3"
+  | "q4"
+  | "h1"
+  | "h2"
+  | "year"
+  | "lastYear"
+  | "custom"
+  | `year:${number}`;
 
 export const RANGE_PRESETS: { value: RangePreset; label: string }[] = [
   { value: "month", label: "Por mes" },
   { value: "last7", label: "7 días" },
   { value: "last30", label: "30 días" },
   { value: "last90", label: "90 días" },
+  { value: "lastMonth", label: "Mes pasado" },
+  { value: "last3", label: "Últimos 3 meses" },
+  { value: "q1", label: "Trimestre 1" },
+  { value: "q2", label: "Trimestre 2" },
+  { value: "q3", label: "Trimestre 3" },
+  { value: "q4", label: "Trimestre 4" },
+  { value: "h1", label: "Primer semestre" },
+  { value: "h2", label: "Segundo semestre" },
   { value: "year", label: "Este año" },
+  { value: "lastYear", label: "Año pasado" },
   { value: "custom", label: "Personalizado" },
 ];
+
+// The presets plus one entry per whole year ("Todo 2025"), newest first, before "Personalizado".
+export function presetsWithYears(years: number[]): { value: RangePreset; label: string }[] {
+  const yearEntries = [...new Set(years)].sort((a, b) => b - a).map((year) => ({ value: `year:${year}` as RangePreset, label: `Todo ${year}` }));
+  const custom = RANGE_PRESETS[RANGE_PRESETS.length - 1];
+  return [...RANGE_PRESETS.slice(0, -1), ...yearEntries, custom];
+}
+
+export function rangePresetLabel(preset: RangePreset): string {
+  if (preset.startsWith("year:")) return `Todo ${preset.slice(5)}`;
+  return RANGE_PRESETS.find((entry) => entry.value === preset)?.label ?? "Periodo";
+}
+
+// The years that have at least one movement, for the whole-year entries (movements without a date are skipped).
+export function yearsWithMovements(movements: { date?: unknown; createdAt?: unknown }[]): number[] {
+  const years = new Set<number>();
+  for (const movement of movements) {
+    const time = movementTime(movement);
+    if (time !== null) years.add(new Date(time).getFullYear());
+  }
+  return [...years];
+}
 
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
@@ -133,15 +182,37 @@ export function rangeFor(preset: RangePreset, now: Date, monthCursor: Date, cust
       return { start: startOfDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)), end: endOfDay(now) };
     case "last90":
       return { start: startOfDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 89)), end: endOfDay(now) };
+    case "lastMonth":
+      return monthBounds(now.getFullYear(), now.getMonth() - 1);
+    case "last3":
+      return { start: new Date(now.getFullYear(), now.getMonth() - 2, 1), end: endOfDay(now) };
+    case "q1":
+    case "q2":
+    case "q3":
+    case "q4": {
+      const first = (Number(preset.slice(1)) - 1) * 3;
+      return { start: new Date(now.getFullYear(), first, 1), end: new Date(now.getFullYear(), first + 3, 0, 23, 59, 59, 999) };
+    }
+    case "h1":
+      return { start: new Date(now.getFullYear(), 0, 1), end: new Date(now.getFullYear(), 6, 0, 23, 59, 59, 999) };
+    case "h2":
+      return { start: new Date(now.getFullYear(), 6, 1), end: new Date(now.getFullYear(), 12, 0, 23, 59, 59, 999) };
     case "year":
       return { start: new Date(now.getFullYear(), 0, 1), end: endOfDay(now) };
+    case "lastYear":
+      return { start: new Date(now.getFullYear() - 1, 0, 1), end: new Date(now.getFullYear() - 1, 12, 0, 23, 59, 59, 999) };
     case "custom": {
       const from = custom.from ?? new Date(now.getFullYear(), now.getMonth(), 1);
       const to = custom.to ?? now;
       return from <= to ? { start: startOfDay(from), end: endOfDay(to) } : { start: startOfDay(to), end: endOfDay(from) };
     }
-    default:
+    default: {
+      if (preset.startsWith("year:")) {
+        const year = Number(preset.slice(5));
+        return { start: new Date(year, 0, 1), end: new Date(year, 12, 0, 23, 59, 59, 999) };
+      }
       return monthBounds(monthCursor.getFullYear(), monthCursor.getMonth());
+    }
   }
 }
 

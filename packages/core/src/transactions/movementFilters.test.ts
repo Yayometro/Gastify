@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { EMPTY_FILTERS, applyMovementFilters, countActiveFilters, isInRange, rangeFor, type FilterableMovement } from "./movementFilters";
+import { EMPTY_FILTERS, applyMovementFilters, countActiveFilters, isInRange, presetsWithYears, rangeFor, rangePresetLabel, yearsWithMovements, type FilterableMovement } from "./movementFilters";
 
 const food = { _id: "c1", name: "Comida" };
 const car = { _id: "c2", name: "Auto" };
@@ -80,5 +80,37 @@ describe("readable filter", () => {
     expect(pick("all")).toEqual(["a", "b", "c"]);
     expect(pick("readable")).toEqual(["a"]);
     expect(pick("unreadable")).toEqual(["b", "c"]);
+  });
+});
+
+describe("the web's period presets", () => {
+  const now = new Date(2026, 9, 20); // 20 oct 2026
+  const none = { from: null, to: null };
+  const month = new Date(2026, 9, 1);
+
+  it("last month, last three months and the quarters are relative to today", () => {
+    expect(rangeFor("lastMonth", now, month, none).start).toEqual(new Date(2026, 8, 1, 0, 0, 0, 0));
+    expect(rangeFor("lastMonth", now, month, none).end).toEqual(new Date(2026, 8, 30, 23, 59, 59, 999));
+    expect(rangeFor("last3", now, month, none).start).toEqual(new Date(2026, 7, 1));
+    expect(rangeFor("q4", now, month, none).start).toEqual(new Date(2026, 9, 1));
+    expect(rangeFor("q4", now, month, none).end).toEqual(new Date(2026, 11, 31, 23, 59, 59, 999));
+    expect(rangeFor("q1", now, month, none).end).toEqual(new Date(2026, 2, 31, 23, 59, 59, 999));
+  });
+
+  it("halves, last year and whole years cover from January to December", () => {
+    expect(rangeFor("h1", now, month, none).end).toEqual(new Date(2026, 5, 30, 23, 59, 59, 999));
+    expect(rangeFor("h2", now, month, none).start).toEqual(new Date(2026, 6, 1));
+    expect(rangeFor("lastYear", now, month, none).start).toEqual(new Date(2025, 0, 1));
+    expect(rangeFor("lastYear", now, month, none).end).toEqual(new Date(2025, 11, 31, 23, 59, 59, 999));
+    expect(rangeFor("year:2016", now, month, none).start).toEqual(new Date(2016, 0, 1));
+    expect(rangeFor("year:2016", now, month, none).end).toEqual(new Date(2016, 11, 31, 23, 59, 59, 999));
+  });
+
+  it("adds an entry per year with data, newest first, and labels them", () => {
+    const list = presetsWithYears([2024, 2026, 2025, 2025]);
+    expect(list.map((entry) => entry.label).slice(-4)).toEqual(["Todo 2026", "Todo 2025", "Todo 2024", "Personalizado"]);
+    expect(rangePresetLabel("year:2025")).toBe("Todo 2025");
+    expect(rangePresetLabel("q2")).toBe("Trimestre 2");
+    expect(yearsWithMovements([{ date: "2025-03-01T12:00:00Z" }, { date: "2026-01-02T12:00:00Z" }, {}]).sort()).toEqual([2025, 2026]);
   });
 });

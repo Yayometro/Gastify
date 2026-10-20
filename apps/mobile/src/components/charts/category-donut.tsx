@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { CategoryBadge } from '@/components/category-badge';
 import { donutArcs, type BreakdownSlice } from '@gastify/core/history/categoryBreakdown';
 
 const SIZE = 230;
@@ -31,6 +32,7 @@ export function CategoryDonut({
   centerValue,
   centerHint,
   onCenterPress,
+  centerIcon,
   trackColor,
 }: {
   slices: BreakdownSlice[];
@@ -40,6 +42,8 @@ export function CategoryDonut({
   centerValue: string;
   centerHint?: string;
   onCenterPress?: () => void;
+  // The icon of the category that is open, shown above its name in the middle of the ring.
+  centerIcon?: { icon?: string; color?: string } | null;
   trackColor: string;
 }) {
   const arcs = donutArcs(slices);
@@ -71,6 +75,7 @@ export function CategoryDonut({
         disabled={!onCenterPress}
         onPress={onCenterPress}
         style={{ position: 'absolute', left: STROKE + 14, right: STROKE + 14, top: STROKE + 14, bottom: STROKE + 14, alignItems: 'center', justifyContent: 'center' }}>
+        {centerIcon?.icon ? <CategoryBadge icon={centerIcon.icon} color={centerIcon.color} size={34} /> : null}
         <Text className="text-center font-inter-medium text-xs text-gf-text-muted" numberOfLines={1}>{centerTitle}</Text>
         <Text className="text-center font-inter-bold text-lg text-gf-text" numberOfLines={1} adjustsFontSizeToFit>{centerValue}</Text>
         {centerHint ? <Text className="text-center font-inter text-xs text-gf-text-muted" numberOfLines={1}>{centerHint}</Text> : null}

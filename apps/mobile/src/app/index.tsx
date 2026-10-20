@@ -12,7 +12,7 @@ import { TopRanking } from '@/components/top-ranking';
 import { MovementRow } from '@/components/movements/movement-row';
 import { PeriodControls } from '@/components/period-controls';
 import { Screen } from '@/components/screen';
-import { TotalsCard } from '@/components/totals-card';
+import { SummaryCarousel } from '@/components/home/summary-carousel';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
@@ -20,13 +20,14 @@ import { usePeriod } from '@/hooks/use-period';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';
+import { accountActivity } from '@gastify/core/accounts/accountActivity';
 import { totalInPrimary } from '@gastify/core/accounts/accountTotals';
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import { computeInsights } from '@gastify/core/history/insights';
 import { compareRange, summarizePeriod } from '@gastify/core/history/periodComparison';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
-import { isInRange } from '@gastify/core/transactions/movementFilters';
+import { isInRange, yearsWithMovements } from '@gastify/core/transactions/movementFilters';
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -61,6 +62,7 @@ export default function HomeScreen() {
   const latest = useMemo(() => sortNewestFirst(transactions.data).slice(0, 5), [transactions.data]);
 
   const accounts = accountsState.data;
+  const activity = useMemo(() => accountActivity(transactions.data, period.range), [transactions.data, period.range]);
   const rates = useRatesToPrimary(accounts.map((account) => account.currency), currency);
   const accountTotal = useMemo(() => totalInPrimary(accounts, currency, rates), [accounts, currency, rates]);
 
@@ -77,9 +79,16 @@ export default function HomeScreen() {
         <Text className="font-inter text-sm text-red-500">No pudimos cargar tus movimientos. Desliza hacia abajo para intentarlo de nuevo.</Text>
       )}
 
-      <PeriodControls period={period} />
+      <PeriodControls period={period} years={yearsWithMovements(transactions.data)} />
 
-      <TotalsCard totals={summary.totals} currency={currency} title={period.preset === 'month' ? 'Este mes' : 'Del periodo'} />
+      <SummaryCarousel
+        title={period.preset === 'month' ? 'Este mes' : 'Del periodo'}
+        totals={summary.totals}
+        previous={previous.totals}
+        currency={currency}
+        accounts={accounts}
+        accountsTotal={accountTotal}
+      />
 
       {accounts.length > 0 && (
         <View className="gap-3">
@@ -91,7 +100,7 @@ export default function HomeScreen() {
             En total {formatMoneyMajor(accountTotal.total, currency)}
             {accountTotal.missingCurrencies.length > 0 ? ` (sin tipo de cambio para ${accountTotal.missingCurrencies.join(', ')})` : ''}
           </Text>
-          <AccountsCarousel accounts={accounts} primary={currency} />
+          <AccountsCarousel accounts={accounts} primary={currency} activity={activity} rates={rates} />
         </View>
       )}
       {accounts.length === 0 && accountsState.status !== 'failed' && (
@@ -100,7 +109,7 @@ export default function HomeScreen() {
         </Card>
       )}
 
-      <SummaryWidget summary={summary} movements={inPeriod} currency={currency} />
+      <SummaryWidget summary={summary} movements={inPeriod} allMovements={transactions.data} currency={currency} />
       <TopRanking movements={transactions.data} currency={currency} title="Los más grandes" defaultPreset="thisMonth" />
       <InsightsWidget insights={insights} currency={currency} />
       <BudgetsWidget />

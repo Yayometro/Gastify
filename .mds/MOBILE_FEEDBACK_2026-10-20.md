@@ -11,30 +11,30 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | G02 | Botón flotante "Tools" (como en la web) que abre un modal. Hoy solo "Transaction Categorizer"; debe quedar preparado para más herramientas. | PENDIENTE | Revisar el botón en la web. |
 | G03 | Notificaciones (avisos) más bonitas en móvil. | CÓDIGO LISTO | |
 | G04 | Vista para iPad con menú lateral izquierdo y dashboards como en la web (no ver la app de teléfono estirada). | CÓDIGO LISTO | Recomendado hacerlo pronto (ver nota al final). |
-| G05 | Cada widget o sección con su propio filtro de tiempo, independiente del periodo general. | PENDIENTE | |
+| G05 | Cada widget o sección con su propio filtro de tiempo, independiente del periodo general. | EN CURSO | |
 | G06 | Cambiar entre tema claro y oscuro desde el menú. | CÓDIGO LISTO | Hay hooks de tema; falta el interruptor. |
 | G07 | Letras negras sobre fondo oscuro (contraste). Revisar toda la app. | EN CURSO | Se ve en "Perspectivas". |
 | G08 | Probar los 8 formularios de Crear (gasto, ingreso, transferencia, cuenta, categoría, presupuesto, ahorro, proyecto). | PENDIENTE | El usuario no los ha probado. |
 | T01 | Toda fecha abre calendario, nunca texto. Auditar todas (transferir, proyecto, etc.). | EN CURSO | Transferir pide la fecha en texto. |
 | T02 | Calendario: sin franja negra, ocupa todo el ancho, y se cierra tocando afuera (sin tener que dar "Listo"). | CÓDIGO LISTO | iOS: no se puede probar en el emulador Android. |
 | T03 | Icono "?" junto a cada título que abre un modal explicativo, como en la web. En todas las pantallas. | EN CURSO | Empezar por Proyecciones. |
-| T04 | Selector de mes (flechas + tocar el mes para elegir mes y año, o calendario anual) igual en todas las pantallas. | PENDIENTE | |
+| T04 | Selector de mes (flechas + tocar el mes para elegir mes y año, o calendario anual) igual en todas las pantallas. | CÓDIGO LISTO | |
 
 ## Inicio (dashboard)
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| I01 | Selector de periodo con las opciones de la web: este mes, mes pasado, primer/segundo semestre, últimos 3 meses, trimestres 1 a 4, año actual, año pasado, y años con datos (2016, 2025...). Relativos a la fecha de hoy. | PENDIENTE | |
+| I01 | Selector de periodo con las opciones de la web: este mes, mes pasado, primer/segundo semestre, últimos 3 meses, trimestres 1 a 4, año actual, año pasado, y años con datos (2016, 2025...). Relativos a la fecha de hoy. | CÓDIGO LISTO | |
 | I02 | Tocar "Octubre 2026" abre calendario de rango y selector de mes en vista anual. | PENDIENTE | |
-| I03 | Carrusel del resumen: primero el resumen; deslizar a la izquierda = Cuentas; a la derecha = comparación vs mes anterior; "Ver más" abre modal con las tres. | PENDIENTE | |
-| I04 | Cuentas con aspecto de tarjetas de crédito, como en la web. | PENDIENTE | Ver también U01. |
-| I05 | Gráfica del resumen: flechita o indicador de que se puede tocar; total centrado (hoy a la izquierda). | CÓDIGO LISTO | |
-| I06 | Al tocar una categoría (ej. House) mostrar su ícono dentro o encima del donut, no solo las subcategorías. | PENDIENTE | |
+| I03 | Carrusel del resumen: primero el resumen; deslizar a la izquierda = Cuentas; a la derecha = comparación vs mes anterior; "Ver más" abre modal con las tres. | HECHO | |
+| I04 | Cuentas con aspecto de tarjetas de crédito, como en la web. | HECHO | Ver también U01. |
+| I05 | Gráfica del resumen: flechita o indicador de que se puede tocar; total centrado (hoy a la izquierda). | HECHO | |
+| I06 | Al tocar una categoría (ej. House) mostrar su ícono dentro o encima del donut, no solo las subcategorías. | CÓDIGO LISTO | |
 | I07 | Widget Top 6: encabezado claro; cambiar entre 3, 6, 12 y 24; selector de rango de tiempo. | CÓDIGO LISTO | RESUELTO con la web: el switch es 3, 6, 12 y 24 (TopElementContainerView.tsx). |
-| I08 | "Perspectivas": no se sabe de dónde sale; el usuario lo asocia al comparativo vs mes anterior. Aclarar o renombrar, y corregir contraste. | PENDIENTE | Relacionado con G07. |
-| I09 | Widget de Presupuestos: poder hacer scroll interno o hacerlo más alto para ver todos. | PENDIENTE | |
+| I08 | "Perspectivas": no se sabe de dónde sale; el usuario lo asocia al comparativo vs mes anterior. Aclarar o renombrar, y corregir contraste. | CÓDIGO LISTO | Relacionado con G07. |
+| I09 | Widget de Presupuestos: poder hacer scroll interno o hacerlo más alto para ver todos. | CÓDIGO LISTO | |
 | I10 | "Últimos movimientos" → "Ver todos" debe abrir Movimientos completo (con todos sus componentes). | PENDIENTE | Depende de M01–M14. |
-| I11 | Gráfica del resumen con filtro de tiempo propio. | PENDIENTE | Ver G05. |
+| I11 | Gráfica del resumen con filtro de tiempo propio. | CÓDIGO LISTO | Ver G05. |
 
 ## Wallet Analyzer (Analizador)
 
@@ -54,7 +54,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | M02 | Transaction Categorizer (no existe en móvil). Accesible también desde el botón Tools (G02). | PENDIENTE | |
 | M03 | Transaction Details: ya funciona, mantener. | HECHO | Revisado en el emulador. |
 | M04 | Más filtros, como en la web (revisar la lista completa de la web). | PENDIENTE | |
-| M05 | Tocar el mes abre calendario y selector de mes. | PENDIENTE | Ver T04. |
+| M05 | Tocar el mes abre calendario y selector de mes. | CÓDIGO LISTO | Ver T04. |
 | M06 | Búsqueda por nombre: botón X a la derecha para borrar todo el texto de un toque. | CÓDIGO LISTO | |
 | M07 | Filtro de categoría: buscar también SUBCATEGORÍAS (hoy solo busca categorías). Subcategorías como submenú bajo cada categoría. | CÓDIGO LISTO | |
 | M08 | Lista de categorías ordenada alfabéticamente, con un índice A–Z deslizable para ir más rápido. | HECHO | |
@@ -106,7 +106,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| U01 | Tarjetas tipo tarjeta de crédito, como la web. | PENDIENTE | Ver I04. |
+| U01 | Tarjetas tipo tarjeta de crédito, como la web. | HECHO | Ver I04. |
 | U02 | Al ver "todos los movimientos" de una cuenta, volver debe regresar a Cuentas, no a Movimientos. | CÓDIGO LISTO | Ver H10. |
 | U03 | Detalle de cuenta: gráficas, resumen detallado de transacciones y dashboards como en la web. | PENDIENTE | |
 | U04 | Lista de cuentas y actividad del mes: aprobado, mantener. | HECHO | |

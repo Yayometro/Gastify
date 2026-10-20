@@ -33,7 +33,9 @@ import { isBeforeCutoff, movementTime } from '@gastify/core/transactions/history
 import { groupByDay, monthTotals, movementKind } from '@gastify/core/transactions/monthSummary';
 import {
   EMPTY_FILTERS,
-  RANGE_PRESETS,
+  presetsWithYears,
+  rangePresetLabel,
+  yearsWithMovements,
   applyMovementFilters,
   countActiveFilters,
   isInRange,
@@ -118,7 +120,7 @@ export default function MovementsScreen() {
   const olderFailed = transactions.historyStatus === 'failed' && cutoffTime !== null && range.start.getTime() < cutoffTime;
   const loading = transactions.status === 'loading' && transactions.data.length === 0;
   const active = countActiveFilters(filters) + (duplicatesOn ? 1 : 0);
-  const periodLabel = preset === 'month' ? monthTitleEs(month) : RANGE_PRESETS.find((p) => p.value === preset)?.label ?? 'el periodo';
+  const periodLabel = preset === 'month' ? monthTitleEs(month) : rangePresetLabel(preset);
 
   const selectedMovements = transactions.data.filter((movement) => selected.includes(String(movement._id)));
   const touchesOlder = cutoff !== null && selectedMovements.some((movement) => isBeforeCutoff(movement, cutoff));
@@ -223,7 +225,7 @@ export default function MovementsScreen() {
         </Pressable>
       </View>
 
-      <ChipPicker items={RANGE_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />
+      <ChipPicker items={presetsWithYears(yearsWithMovements(transactions.data)).map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />
 
       {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
       {preset === 'custom' && (

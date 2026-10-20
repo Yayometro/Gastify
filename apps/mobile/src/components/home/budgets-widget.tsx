@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { Card } from '@/components/ui/card';
@@ -39,14 +39,14 @@ export function BudgetsWidget() {
           const spent = getBudgetActualSpend(budget, transactions, bounds.start, bounds.end);
           return { budget, goal, spent, ratio: goal > 0 ? spent / goal : 0 };
         })
-        .sort((a, b) => b.ratio - a.ratio)
-        .slice(0, 4),
+        .sort((a, b) => b.ratio - a.ratio),
     [budgets, transactions, currency, rates, bounds]
   );
 
   return (
     <Card title="Presupuestos" action={<Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver todos</Text></Pressable>}>
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes presupuestos de gasto.</Text>}
+      <ScrollView nestedScrollEnabled style={{ maxHeight: 330 }} contentContainerStyle={{ gap: 14 }} showsVerticalScrollIndicator>
       {rows.map(({ budget, goal, spent, ratio }) => (
         <Pressable key={idOf(budget)} accessibilityRole="button" onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })} className="gap-1.5">
           <View className="flex-row items-center justify-between gap-3">
@@ -57,6 +57,7 @@ export function BudgetsWidget() {
           <Text className="font-inter text-xs text-gf-text-muted">{formatMoneyMajor(spent, currency)} de {formatMoneyMajor(goal, currency)}</Text>
         </Pressable>
       ))}
+      </ScrollView>
     </Card>
   );
 }
