@@ -1,7 +1,7 @@
 import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import { formatMoneyMajor } from "@/lib/money/currencies";
-import { percentOf } from "@/helpers/percent";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
+import { percentOf } from "@gastify/core/format/percent";
 
 export interface TooltipForChartItem {
   icon?: string;

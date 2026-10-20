@@ -4,10 +4,10 @@ import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import Tag, { TagItem } from "@/components/multiUsedComp/Tag";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
-import { formatInPrimaryCurrency } from "@/lib/money/displayCurrency";
+import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
 import dayjs from "dayjs";
 import { Tooltip } from "antd";
-import { formatMoneyMinor } from "@/lib/money/currencies";
+import { formatMoneyMinor } from "@gastify/core/money/currencies";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;

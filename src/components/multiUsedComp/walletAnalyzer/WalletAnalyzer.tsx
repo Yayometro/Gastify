@@ -6,7 +6,7 @@ import { buildProjectionComparisonForMonth } from "@/helpers/transformers/projec
 import { useAccountsFxExposure } from "@/helpers/hooks/useAccountsFxExposure";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurrency";

@@ -4,10 +4,10 @@ import { IoMdRefresh } from "react-icons/io";
 import { useSelector } from "react-redux";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
-import { percentOf } from "@/helpers/percent";
+import { percentOf } from "@gastify/core/format/percent";
 
 export interface TransCategoryRef {
   _id?: string;

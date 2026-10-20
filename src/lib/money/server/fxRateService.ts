@@ -1,6 +1,6 @@
 import FxRateSnapshot, { type IFxRateSnapshot, type IFxRates } from "@/model/FxRateSnapshot";
 import { fetchEcbRates } from "./ecbClient";
-import { crossRate, convertMinor } from "@/lib/money/conversion";
+import { crossRate, convertMinor } from "@gastify/core/money/conversion";
 
 const SOURCE = "ecb";
 const BASE_CURRENCY = "EUR";

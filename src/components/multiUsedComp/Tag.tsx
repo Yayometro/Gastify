@@ -1,5 +1,5 @@
 import React from "react";
-import { readableTextColor } from "@/helpers/readableTextColor";
+import { readableTextColor } from "@gastify/core/format/readableTextColor";
 
 export interface TagItem {
   _id?: string;

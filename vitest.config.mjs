@@ -7,11 +7,17 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
+      // Code shared with the mobile app (see packages/core/README.md).
+      "@gastify/core": path.resolve(import.meta.dirname, "./packages/core/src"),
     },
   },
   test: {
     environment: "node",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["src/**/*.test.js", "src/**/*.test.ts", "src/**/*.test.tsx"],
+    include: [
+      "src/**/*.test.js", "src/**/*.test.ts", "src/**/*.test.tsx",
+      "packages/**/*.test.js", "packages/**/*.test.ts", "packages/**/*.test.tsx",
+    ],
+    exclude: ["**/node_modules/**"],
   },
 });

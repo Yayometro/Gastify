@@ -6,7 +6,7 @@ import SelecterFilter, { type SelecterPeriod } from "@/components/Filters/select
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import EmptyModule from "../EmptyModule";
-import { getDateInYearMonthDay } from "@/helpers/timeFunctions/timeFunctions";
+import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import BudgetHistoricalComparativeRow from "./BudgetHistoricalComparativeRow";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
 import type { TimePeriodOption } from "@/hooks/usePeriodComparison";

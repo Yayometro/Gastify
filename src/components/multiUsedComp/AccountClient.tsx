@@ -21,7 +21,7 @@ import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
   getDateInYearMonthDay,
-} from "@/helpers/timeFunctions/timeFunctions";
+} from "@gastify/core/time/timeFunctions";
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
 
 import { fetchUser, type UserData } from "@/lib/features/userSlice";

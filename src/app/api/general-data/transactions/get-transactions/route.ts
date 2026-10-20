@@ -11,7 +11,7 @@ import "@/model/Budget";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { createServerTimer } from "@/lib/perf/serverTiming";
-import { buildDateWindowFilter } from "@/lib/transactions/historyWindowQuery";
+import { buildDateWindowFilter } from "@gastify/core/transactions/historyWindowQuery";
 
 export interface GetTransactionsSuccessResponse {
   data: unknown;

@@ -8,7 +8,7 @@ import "@/model/SubCategory";
 import "@/model/Tag";
 import dbConnection from "@/app/api/dbConnection";
 import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, EXPORT_NOTE_PREFIX } from "@/lib/files/gastifyTemplate";
-import { getTransactionNativeMoney } from "@/lib/money/currencies";
+import { getTransactionNativeMoney } from "@gastify/core/money/currencies";
 import { buildLegacyMoney } from "@/lib/money/transactionMoney";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import dayjs from "dayjs";

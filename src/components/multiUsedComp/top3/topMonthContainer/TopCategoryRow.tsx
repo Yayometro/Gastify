@@ -4,9 +4,9 @@ import React from "react";
 import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
 import CategoIcon from "../../CategoIcon";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
-import type { PrimaryAmountItem } from "@/helpers/timeFunctions/timeFunctions";
+import type { PrimaryAmountItem } from "@gastify/core/time/timeFunctions";
 import type { RootState } from "@/lib/store";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{

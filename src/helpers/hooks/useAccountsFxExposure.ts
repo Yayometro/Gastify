@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import fetcher from "@/helpers/fetcher";
-import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 import type { AccountData } from "@/lib/features/accountsSlice";
 
 export interface FxExposureRow {

@@ -9,7 +9,7 @@ import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
-import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { IIncomeSource, IncomeSourceRecurrence } from "@/model/IncomeSource";
 import type { IncomeSourceItem } from "@/hooks/useProjectionTable";
 

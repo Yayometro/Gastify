@@ -25,7 +25,7 @@ import "@/components/multiUsedComp/css/muliUsed.css";
 import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEquivalent";
 import AmountEquivalentPreview from "./AmountEquivalentPreview";
 import ChargedElsewhereSection from "./ChargedElsewhereSection";
-import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 
 const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.ComponentType<{
   onClose?: () => void;

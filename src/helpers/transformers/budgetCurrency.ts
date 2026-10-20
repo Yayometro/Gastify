@@ -5,7 +5,7 @@
 // primary currency so those comparisons are apples-to-apples. Pure math only:
 // rates are fetched elsewhere (see useBudgetsInPrimaryCurrency).
 
-import { getMinorUnits } from "@/lib/money/currencies";
+import { getMinorUnits } from "@gastify/core/money/currencies";
 
 // Currency units of the target per ONE unit of the source (major units), keyed
 // by the source currency: { USD: 18.2 } means 1 USD = 18.2 primary units.

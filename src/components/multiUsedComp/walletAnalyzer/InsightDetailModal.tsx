@@ -2,7 +2,7 @@
 import React from "react";
 import { Modal } from "antd";
 import dayjs from "dayjs";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 
 interface MonthRowProps {
   label: React.ReactNode;

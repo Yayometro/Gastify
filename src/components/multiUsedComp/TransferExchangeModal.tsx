@@ -13,7 +13,7 @@ import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import { addNewTransacctions, type TransactionData } from "@/lib/features/transacctionsSlice";
-import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 import type { AccountData } from "@/lib/features/accountsSlice";
 import type { UserData } from "@/lib/features/userSlice";
 import type { WalletData } from "@/lib/features/walletSlice";

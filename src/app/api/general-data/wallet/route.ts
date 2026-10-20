@@ -2,7 +2,7 @@ import Wallet, { IWallet } from "@/model/Wallet";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { NextResponse, type NextRequest } from "next/server";
-import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface WalletGetResponse {

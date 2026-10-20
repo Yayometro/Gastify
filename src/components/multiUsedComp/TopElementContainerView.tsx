@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { getDateInYearMonthDay } from "@/helpers/timeFunctions/timeFunctions";
+import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import { Skeleton, Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";

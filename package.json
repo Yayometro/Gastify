@@ -2,13 +2,19 @@
   "name": "gastify",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/mobile",
+    "packages/core"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "mobile": "npm --prefix apps/mobile run start",
+    "mobile:android": "npm --prefix apps/mobile run android"
   },
   "overrides": {
     "jose": "^6.2.12"

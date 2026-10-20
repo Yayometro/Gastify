@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getCategoryTransactions } from "@/helpers/transformers/walletAnalyzer";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";

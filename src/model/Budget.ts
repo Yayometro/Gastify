@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { moneyAmountSchema } from "./schemas/moneySchemas";
-import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 
 export interface IBudgetCategoryEntry {
     category?: mongoose.Types.ObjectId | string;

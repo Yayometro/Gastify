@@ -11,7 +11,7 @@ import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { assertOwnedOrDefault } from "@/lib/auth/ownership";
-import { minorToMajor } from "@/lib/money/currencies";
+import { minorToMajor } from "@gastify/core/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoney } from "@/lib/money/server/transactionReadService";
 

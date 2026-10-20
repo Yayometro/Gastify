@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { skipWhileLoading } from "./thunkGuards";
 import { debugDelay, perfMark } from "@/lib/perf/perfMark";
-import { getRecentCutoff, isBeforeCutoff, mergeById } from "@/lib/transactions/historyWindow";
+import { getRecentCutoff, isBeforeCutoff, mergeById } from "@gastify/core/transactions/historyWindow";
 import fetcher from "@/helpers/fetcher";
 
 const toFetch = fetcher();

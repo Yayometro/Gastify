@@ -24,7 +24,7 @@ import { isProjectBudget } from "@/helpers/transformers/budgetTypes";
 import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEquivalent";
 import AmountEquivalentPreview from "./AmountEquivalentPreview";
 import ChargedElsewhereSection from "./ChargedElsewhereSection";
-import { majorToMinor, minorToMajor } from "@/lib/money/currencies";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 
 export interface AddTransactionCompProps {
   initialBudgetId?: string;

@@ -24,7 +24,7 @@ import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { findCoverageConflicts } from "@/helpers/transformers/budgetCoverage";
 import { BUDGET_TYPES, getBudgetType } from "@/helpers/transformers/budgetTypes";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
-import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";

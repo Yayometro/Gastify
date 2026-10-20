@@ -24,7 +24,7 @@ import { getMonthBucketBreakdown, getExpectedOccurrencesInMonth, getMonthCurrenc
 import { getValueActiveInMonth } from "@/helpers/transformers/budgetHistory";
 import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 import PrimaryCurrencySelector, { type PrimaryCurrencySelectorWallet } from "../PrimaryCurrencySelector";
-import type { MonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
+import type { MonthDateRange } from "@gastify/core/time/timeFunctions";
 import type { CurrencyBreakdownData } from "../CurrencyBreakdownChips";
 
 export interface ProjectionsClientProps {

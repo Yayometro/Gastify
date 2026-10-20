@@ -11,7 +11,7 @@ import { fetchUser, type UserData } from "@/lib/features/userSlice";
 import { fetchWallet, type WalletData } from "@/lib/features/walletSlice";
 import { useDispatch, useSelector } from "react-redux";
 import useGetUserSession from "../useGetUserSession";
-import { setDisplayCurrency } from "@/lib/money/displayCurrency";
+import { setDisplayCurrency } from "@gastify/core/money/displayCurrency";
 import { perfMark } from "@/lib/perf/perfMark";
 import { useEffect, useState } from "react";
 import type { AppDispatch, RootState } from "@/lib/store";

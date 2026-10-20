@@ -11,7 +11,7 @@ import {
   type CoverageGroup,
 } from "@/helpers/transformers/budgetCoverage";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
-import { getLastDayOfMonth } from "@/helpers/timeFunctions/timeFunctions";
+import { getLastDayOfMonth } from "@gastify/core/time/timeFunctions";
 import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import EmptyModule from "../EmptyModule";

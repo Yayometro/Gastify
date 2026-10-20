@@ -10,13 +10,13 @@ const ComparativeColumnChart = dynamic(
   () => import("@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart"),
   { ssr: false }
 );
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import Movements from "../Movements";
 import runNotify from "@/helpers/gastifyNotifier";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
-import { getYearMonthDateRange } from "@/helpers/timeFunctions/timeFunctions";
+import { getYearMonthDateRange } from "@gastify/core/time/timeFunctions";
 import CurrencyBreakdownChips, {
   type CurrencyBreakdownData,
 } from "../CurrencyBreakdownChips";

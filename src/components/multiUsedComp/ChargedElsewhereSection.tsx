@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Switch } from "antd";
-import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 
 export interface ChargedElsewhereSectionProps {
   enabled?: boolean;

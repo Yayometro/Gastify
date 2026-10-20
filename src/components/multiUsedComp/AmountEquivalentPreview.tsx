@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Tooltip } from "antd";
-import { formatMoneyMinor } from "@/lib/money/currencies";
+import { formatMoneyMinor } from "@gastify/core/money/currencies";
 
 export interface AmountEquivalentQuote {
   amountMinor?: number;

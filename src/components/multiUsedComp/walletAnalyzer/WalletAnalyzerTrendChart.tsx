@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 
 export interface WalletAnalyzerTrendChartItem {
   label?: string;

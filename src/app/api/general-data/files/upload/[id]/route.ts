@@ -11,7 +11,7 @@ import Wallet from "@/model/Wallet";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
-import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";

@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { Spin, Tooltip } from "antd";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
-import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 import { updateWallet } from "@/lib/features/walletSlice";
 
 export interface PrimaryCurrencySelectorWallet {

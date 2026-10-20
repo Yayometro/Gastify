@@ -4,7 +4,7 @@ import dbConnection from "@/app/api/dbConnection";
 import IncomeSource, { type IIncomeSource } from "@/model/IncomeSource";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
-import { isSupportedCurrency, majorToMinor } from "@/lib/money/currencies";
+import { isSupportedCurrency, majorToMinor } from "@gastify/core/money/currencies";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

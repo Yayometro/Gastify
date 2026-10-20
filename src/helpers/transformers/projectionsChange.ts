@@ -1,4 +1,4 @@
-import { getYearMonthDateRange } from "../timeFunctions/timeFunctions";
+import { getYearMonthDateRange } from "@gastify/core/time/timeFunctions";
 import {
   getTransactionsFromTimeRange,
   filterBillsOrIncomes,
@@ -7,8 +7,8 @@ import {
 } from "./transactionsChange";
 import { getValueActiveInMonth } from "./budgetHistory";
 import { isSpendingBudget } from "./budgetTypes";
-import { minorToMajor } from "@/lib/money/currencies";
-import { getDisplayCurrency } from "@/lib/money/displayCurrency";
+import { minorToMajor } from "@gastify/core/money/currencies";
+import { getDisplayCurrency } from "@gastify/core/money/displayCurrency";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 

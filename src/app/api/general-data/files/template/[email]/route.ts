@@ -6,7 +6,7 @@ import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
 import xlsxPopulate from "xlsx-populate";
-import { SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, TEMPLATE_NOTE } from "@/lib/files/gastifyTemplate";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 

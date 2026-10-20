@@ -8,7 +8,7 @@ import {
 } from "@/lib/features/transacctionsSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
-import { getPeriodLabel } from "@/helpers/timeFunctions/timeFunctions";
+import { getPeriodLabel } from "@gastify/core/time/timeFunctions";
 import {
   filterBillsOrIncomes,
   getTransactionsFromTimeRange,

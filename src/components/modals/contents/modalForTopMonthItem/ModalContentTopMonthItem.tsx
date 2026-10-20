@@ -10,7 +10,7 @@ import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon"
 import TransactionItemList, {
   type TransactionItemMovement,
 } from "@/components/Transactions/ItemList/TransactionItemList";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import EditSingleTransModal, {
   type EditSingleTransItem,

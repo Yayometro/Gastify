@@ -2,7 +2,7 @@
 
 import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
 
 export interface BudgetHistoricalDetailModalProps {

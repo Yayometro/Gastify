@@ -3,10 +3,10 @@ import {
   mapedMonths,
   monthObjects,
   months,
-} from "../timeFunctions/timeFunctions";
-import type { PrimaryAmountItem } from "../timeFunctions/timeFunctions";
-import { formatInPrimaryCurrency } from "@/lib/money/displayCurrency";
-import { minorToMajor } from "@/lib/money/currencies";
+} from "@gastify/core/time/timeFunctions";
+import type { PrimaryAmountItem } from "@gastify/core/time/timeFunctions";
+import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
+import { minorToMajor } from "@gastify/core/money/currencies";
 
 type DateLike = Date | string | number;
 

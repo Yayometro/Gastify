@@ -8,7 +8,7 @@ import ProjectionBaseline, {
 } from "@/model/ProjectionBaseline";
 import User from "@/model/User";
 import Wallet from "@/model/Wallet";
-import { majorToMinor, SUPPORTED_CURRENCIES } from "@/lib/money/currencies";
+import { majorToMinor, SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 const updateProjectionBaselineBodySchema = z

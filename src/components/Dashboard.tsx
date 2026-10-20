@@ -33,7 +33,7 @@ import WalletAnalyzer from "./multiUsedComp/walletAnalyzer/WalletAnalyzer";
 import WalletAnalyzerTeaser from "./multiUsedComp/walletAnalyzer/WalletAnalyzerTeaser";
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
-import { formatMoneyMajor } from "@/lib/money/currencies";
+import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import { fetchBudget } from "@/lib/features/budgetSlice";
 import LazyMount from "./multiUsedComp/loaders/LazyMount";
@@ -44,7 +44,7 @@ import SelecterFilter from "./Filters/selecterFilter/SelecterFilter";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
-} from "@/helpers/timeFunctions/timeFunctions";
+} from "@gastify/core/time/timeFunctions";
 import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
 

@@ -9,7 +9,7 @@ import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
   getDateInYearMonthDay,
-} from "@/helpers/timeFunctions/timeFunctions";
+} from "@gastify/core/time/timeFunctions";
 import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
