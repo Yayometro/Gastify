@@ -169,14 +169,14 @@ Prefijo R. Todo lo que el usuario dijo en ese mensaje, un punto por cosa. HECHO 
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| R01 | Todos los modales y hojas: quitar el borde/franja de otro color en las esquinas redondeadas. | PENDIENTE | No se puede ver en el emulador Android (es de iOS). |
-| R02 | Hojas inferiores: el fondo oscuro debe aparecer con fundido; solo la hoja sube desde abajo. | PENDIENTE | |
-| R03 | Los modales "?" y todas las hojas se cierran también al tocar afuera. | PENDIENTE | |
-| R04 | El "?" va en la esquina superior derecha de la tarjeta (frente al título), no junto al título; y explica más (filtros, anillo/burbujas/mapa, qué hace el widget). | PENDIENTE | |
+| R01 | Todos los modales y hojas: quitar el borde/franja de otro color en las esquinas redondeadas. | EN CURSO | Existe BottomSheet (borde fino uniforme sobre todo); solo lo usa el "?" por ahora. Falta pasar a las demás hojas: DetailSheet, budget-summary-sheet, export-sheet, summary-carousel, top-ranking, tools-fab, month-grid-modal y el calendario de iOS. Falta confirmarlo en iPhone. |
+| R02 | Hojas inferiores: el fondo oscuro debe aparecer con fundido; solo la hoja sube desde abajo. | EN CURSO | BottomSheet: el fondo aparece con fundido y solo la hoja sube. Falta usarlo en las demás hojas. |
+| R03 | Los modales "?" y todas las hojas se cierran también al tocar afuera. | EN CURSO | Los "?" ya cierran al tocar afuera (BottomSheet). Falta en las demás hojas. |
+| R04 | El "?" va en la esquina superior derecha de la tarjeta (frente al título), no junto al título; y explica más (filtros, anillo/burbujas/mapa, qué hace el widget). | EN CURSO | El "?" ya va arriba a la derecha en todas las tarjetas (Card). Falta ampliar los textos (filtros, anillo/burbujas/mapa, qué hace cada widget). |
 | R05 | Tocar el título o el encabezado de una tarjeta del dashboard lleva a su sección (Últimos movimientos, Presupuestos, Cuentas, Análisis). | PENDIENTE | |
 | R06 | BUG: tocar la pestaña Movimientos abre el último movimiento visto desde el dashboard, y volver lleva a Wallet. Debe abrir la lista. (Aplica a todas las pestañas.) | PENDIENTE | |
 | R07 | Carrusel del resumen: agregar flechas izquierda/derecha. | PENDIENTE | |
-| R08 | Íconos verde/rojo de las tarjetas de cuenta: el usuario entendió para qué sirven; sin cambio. | HECHO | |
+| R08 | Íconos verde/rojo de las tarjetas de cuenta: el usuario entendió para qué sirven; sin cambio. | HECHO | El usuario entendió para qué sirven; sin cambio. |
 | R09 | Resumen: orden = pestañas Gastos/Ingresos, luego Anillo/Burbujas/Mapa, luego el total centrado, luego la gráfica. | PENDIENTE | |
 | R10 | Burbujas y mapa de árbol: flecha para regresar (además de "quitar selección"). | PENDIENTE | |
 | R11 | Renombrar "Resumen" a "Resumen de transacciones". | PENDIENTE | |
