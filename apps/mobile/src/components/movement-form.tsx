@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, Switch, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { ChipPicker, type ChipItem } from '@/components/chip-picker';
@@ -13,6 +13,7 @@ import { useCatalog } from '@/hooks/use-catalog';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import { messageOf } from '@/lib/write';
 import type { RootState } from '@/store';
+import { GfSwitch } from '@/components/ui/switch';
 import { getApi } from '@gastify/core/api/client';
 import { idOf, subCategoriesOf } from '@gastify/core/categories/categoryForm';
 import { formatMoneyMajor, majorToMinor, minorToMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
@@ -183,13 +184,13 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
       <View className="gap-3">
         <View className="flex-row items-center justify-between gap-3">
           <Text className="flex-1 font-inter-medium text-base text-gf-text">Cobrado en otra moneda</Text>
-          <Switch
+          <GfSwitch
             value={values.chargedElsewhere}
+            accessibilityLabel="Cobrado en otra moneda"
             onValueChange={(on) => {
               set('chargedElsewhere', on);
               if (!on) setQuoteNote(null);
             }}
-            trackColor={{ true: colors.accent }}
           />
         </View>
         {values.chargedElsewhere && (

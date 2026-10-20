@@ -1,9 +1,10 @@
-import { Pressable, Switch, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { ChipPicker, type ChipItem } from '@/components/chip-picker';
 import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
+import { GfSwitch } from '@/components/ui/switch';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import type { CategoryData } from '@gastify/core/features/categoriesSlice';
 import type { SubCategoryData } from '@gastify/core/features/subCategorySlice';
@@ -99,7 +100,7 @@ export function MovementFiltersPanel({
       <View className="gap-2 border-t border-gf-border pt-3">
         <View className="flex-row items-center justify-between gap-3">
           <Text className="flex-1 font-inter-medium text-base text-gf-text">Buscar posibles duplicados</Text>
-          <Switch value={duplicatesOn} onValueChange={onDuplicatesChange} trackColor={{ true: colors.accent }} />
+          <GfSwitch value={duplicatesOn} onValueChange={onDuplicatesChange} accessibilityLabel="Buscar duplicados" />
         </View>
         {duplicatesOn && (
           <>

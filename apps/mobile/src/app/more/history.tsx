@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Switch, Text, View, useColorScheme } from 'react-native';
+import { Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { MonthlyBars } from '@/components/charts/monthly-bars';
@@ -14,6 +14,7 @@ import { ProgressBar } from '@/components/ui/progress-bar';
 import { Colors } from '@/constants/theme';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import type { RootState } from '@/store';
+import { GfSwitch } from '@/components/ui/switch';
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import {
   COMPARE_PRESETS,
@@ -123,7 +124,7 @@ export default function HistoryScreen() {
         )}
         <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
           <Text className="flex-1 font-inter-medium text-base text-gf-text">Comparar con otro periodo</Text>
-          <Switch value={compareOn} onValueChange={setCompareOn} trackColor={{ true: colors.accent }} />
+          <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel="Comparar con otro periodo" />
         </View>
         {compareOn && (
           <>
@@ -141,25 +142,26 @@ export default function HistoryScreen() {
       </Card>
 
       <Card title="Resumen">
-        <View className="flex-row">
-          <Text className="flex-1 font-inter-semibold text-xs text-gf-text-muted" />
-          <Text className="w-28 text-right font-inter-semibold text-xs text-gf-text-muted">Periodo</Text>
-          {b && <Text className="w-28 text-right font-inter-semibold text-xs text-gf-text-muted">Comparado</Text>}
-        </View>
         {[
           { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
           { label: 'Gastos', av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
           { label: 'Balance', av: a.totals.balance, bv: b?.totals.balance, color: colors.text, invert: false },
         ].map((row) => (
-          <View key={row.label} className="flex-row items-center">
-            <Text className="flex-1 font-inter text-base text-gf-text-muted">{row.label}</Text>
-            <Text className="w-28 text-right font-inter-semibold text-sm" style={{ color: row.color }}>{cell(row.av)}</Text>
-            {b && row.bv !== undefined && (
-              <View className="w-28 items-end">
-                <Text className="font-inter text-sm text-gf-text-muted">{cell(row.bv)}</Text>
-                <Delta current={row.av} previous={row.bv} invert={row.invert} />
+          <View key={row.label} className="gap-1">
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{row.label}</Text>
+            <View className="flex-row gap-3">
+              <View className="flex-1">
+                {b && <Text className="font-inter text-xs text-gf-text-muted">Periodo</Text>}
+                <Text className="font-inter-bold text-lg" numberOfLines={1} adjustsFontSizeToFit style={{ color: row.color }}>{cell(row.av)}</Text>
               </View>
-            )}
+              {b && row.bv !== undefined && (
+                <View className="flex-1">
+                  <Text className="font-inter text-xs text-gf-text-muted">Comparado</Text>
+                  <Text className="font-inter-semibold text-lg text-gf-text-muted" numberOfLines={1} adjustsFontSizeToFit>{cell(row.bv)}</Text>
+                  <Delta current={row.av} previous={row.bv} invert={row.invert} />
+                </View>
+              )}
+            </View>
           </View>
         ))}
       </Card>

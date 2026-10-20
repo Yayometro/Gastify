@@ -213,8 +213,12 @@ export default function BudgetsScreen() {
 
       <Card title="Este mes">
         <View className="flex-row justify-between gap-3">
-          <Text className="font-inter text-base text-gf-text-muted">Gastado en presupuestos</Text>
+          <Text className="font-inter text-base text-gf-text-muted">Gasto del mes</Text>
           <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(coverage.totalSpent, currency)}</Text>
+        </View>
+        <View className="flex-row justify-between gap-3">
+          <Text className="font-inter text-base text-gf-text-muted">Dentro de presupuestos</Text>
+          <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(Math.max(0, coverage.totalSpent - coverage.unbudgetedSpent), currency)}</Text>
         </View>
         <View className="flex-row justify-between gap-3">
           <Text className="font-inter text-base text-gf-text-muted">Sin presupuesto</Text>
