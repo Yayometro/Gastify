@@ -1,13 +1,18 @@
 import { FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router, usePathname } from 'expo-router';
 import { type ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, useColorScheme } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 import { authClient } from '@/auth-client';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { useThemeMode } from '@/hooks/use-theme-mode';
+import type { RootState } from '@/store';
+import type { UserData } from '@gastify/core/features/userSlice';
+import { initialsOf } from '@gastify/core/profile/profileForm';
 
 export const SIDE_NAV_WIDTH = 84;
 
@@ -15,16 +20,19 @@ type Item = { key: string; label: string; href: string; active: (path: string) =
 
 const is = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
 
-// The web's left column on wide screens (iPad, landscape phones): the same icons in the same order, a
-// glass pill with the active section highlighted. "+" opens the create hub, the same as the web's button.
-const ITEMS: Item[] = [
-  { key: 'wallet', label: 'Inicio', href: '/', active: (p) => p === '/' || p === '/index', icon: (c) => <FontAwesome6 name="wallet" size={22} color={c} /> },
-  { key: 'movements', label: 'Movimientos', href: '/movements', active: (p) => is(p, '/movements'), icon: (c) => <FontAwesome6 name="money-bill-transfer" size={22} color={c} /> },
-  { key: 'budgets', label: 'Presupuestos', href: '/budgets', active: (p) => is(p, '/budgets'), icon: (c) => <MaterialIcons name="savings" size={26} color={c} /> },
-  { key: 'projections', label: 'Proyecciones', href: '/more/projections', active: (p) => is(p, '/more/projections'), icon: (c) => <MaterialIcons name="auto-graph" size={26} color={c} /> },
-  { key: 'accounts', label: 'Cuentas', href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => <MaterialIcons name="account-balance" size={24} color={c} /> },
-  { key: 'history', label: 'Historial', href: '/more/history', active: (p) => is(p, '/more/history'), icon: (c) => <FontAwesome6 name="clock-rotate-left" size={21} color={c} /> },
-  { key: 'categories', label: 'Categorías', href: '/more/categories', active: (p) => is(p, '/more/categories'), icon: (c) => <Ionicons name="pricetags-outline" size={24} color={c} /> },
+// The web's left column on wide screens (iPad, landscape phones), in the web's own order: the profile on top,
+// Movimientos, Wallet, Presupuestos, Proyecciones, the "+" in the middle, Cuentas, Historial, Categorías, the
+// light / dark switch and sign out, spread over the whole height (the web's `justify-between`).
+const BEFORE_ADD: Item[] = [
+  { key: 'movements', label: 'Movimientos', href: '/movements', active: (p) => is(p, '/movements'), icon: (c) => <FontAwesome6 name="money-bill-transfer" size={24} color={c} /> },
+  { key: 'wallet', label: 'Wallet', href: '/', active: (p) => p === '/' || p === '/index', icon: (c) => <FontAwesome6 name="wallet" size={22} color={c} /> },
+  { key: 'budgets', label: 'Presupuestos', href: '/budgets', active: (p) => is(p, '/budgets'), icon: (c) => <MaterialIcons name="savings" size={27} color={c} /> },
+  { key: 'projections', label: 'Proyecciones', href: '/more/projections', active: (p) => is(p, '/more/projections'), icon: (c) => <MaterialIcons name="auto-graph" size={27} color={c} /> },
+];
+const AFTER_ADD: Item[] = [
+  { key: 'accounts', label: 'Cuentas', href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => <MaterialIcons name="account-balance" size={26} color={c} /> },
+  { key: 'history', label: 'Historial', href: '/more/history', active: (p) => is(p, '/more/history'), icon: (c) => <FontAwesome6 name="clock-rotate-left" size={22} color={c} /> },
+  { key: 'categories', label: 'Categorías', href: '/more/categories', active: (p) => is(p, '/more/categories'), icon: (c) => <MaterialIcons name="category" size={26} color={c} /> },
 ];
 
 export function SideNav() {
@@ -34,6 +42,7 @@ export function SideNav() {
   const dark = scheme === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];
   const { setMode } = useThemeMode();
+  const user = useSelector((state: RootState) => state.userReducer.data) as UserData | null;
 
   const iconButton = (key: string, label: string, onPress: () => void, icon: ReactNode, active = false) => (
     <Pressable
@@ -47,23 +56,33 @@ export function SideNav() {
       {icon}
     </Pressable>
   );
+  const navItem = (item: Item) => iconButton(item.key, item.label, () => router.navigate(item.href as never), item.icon(item.active(pathname) ? colors.accent : colors.text), item.active(pathname));
+  const profileActive = is(pathname, '/more/profile');
 
   return (
     <View style={[styles.wrap, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
       <GlassSurface variant="nav" radius={32} style={styles.pill}>
-        <View style={styles.inner}>
-          {iconButton('profile', 'Perfil', () => router.navigate('/more/profile'), <Ionicons name="person-circle-outline" size={30} color={colors.text} />, is(pathname, '/more/profile'))}
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.middle}>
-            {ITEMS.map((item) => iconButton(item.key, item.label, () => router.navigate(item.href as never), item.icon(item.active(pathname) ? colors.accent : colors.text), item.active(pathname)))}
-            {iconButton('add', 'Agregar un movimiento', () => router.navigate('/add' as never), (
-              <View style={styles.fab}>
-                <Ionicons name="add" size={26} color="#ffffff" />
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.inner}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Perfil" onPress={() => router.navigate('/more/profile')} style={[styles.profile, profileActive && { backgroundColor: colors.accentSoft }]}>
+            {user?.image ? (
+              <Image source={{ uri: user.image }} alt="Tu foto de perfil" style={styles.avatar} contentFit="cover" />
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: '#7e22ce', alignItems: 'center', justifyContent: 'center' }]}>
+                <Text className="font-inter-bold text-sm" style={{ color: '#ffffff' }}>{initialsOf(user?.fullName)}</Text>
               </View>
-            ))}
-          </ScrollView>
-          {iconButton('theme', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro', () => setMode(dark ? 'light' : 'dark'), <Ionicons name={dark ? 'sunny-outline' : 'moon-outline'} size={24} color={colors.text} />)}
-          {iconButton('signout', 'Cerrar sesión', () => authClient.signOut(), <Ionicons name="log-out-outline" size={24} color={colors.text} />)}
-        </View>
+            )}
+            <Text className="font-inter text-[10px] text-gf-text" numberOfLines={1} style={{ maxWidth: 64 }}>{user?.fullName?.split(' ')[0] ?? 'Perfil'}</Text>
+          </Pressable>
+          {BEFORE_ADD.map(navItem)}
+          {iconButton('add', 'Agregar un movimiento', () => router.navigate('/add' as never), (
+            <View style={styles.fab}>
+              <Ionicons name="add" size={28} color="#ffffff" />
+            </View>
+          ), is(pathname, '/add'))}
+          {AFTER_ADD.map(navItem)}
+          {iconButton('theme', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro', () => setMode(dark ? 'light' : 'dark'), <Ionicons name={dark ? 'sunny-outline' : 'moon-outline'} size={26} color={colors.text} />)}
+          {iconButton('signout', 'Cerrar sesión', () => authClient.signOut(), <Ionicons name="log-out-outline" size={26} color={colors.text} />)}
+        </ScrollView>
       </GlassSurface>
     </View>
   );
@@ -71,9 +90,10 @@ export function SideNav() {
 
 const styles = StyleSheet.create({
   wrap: { width: SIDE_NAV_WIDTH, alignItems: 'center', paddingLeft: 8 },
-  pill: { flex: 1, width: SIDE_NAV_WIDTH - 8, maxHeight: '100%' },
-  inner: { flex: 1, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, gap: 6 },
-  middle: { alignItems: 'center', gap: 10, paddingVertical: 4 },
+  pill: { flex: 1, width: SIDE_NAV_WIDTH - 8 },
+  inner: { flexGrow: 1, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, gap: 8 },
+  profile: { alignItems: 'center', gap: 2, paddingVertical: 4, paddingHorizontal: 6, borderRadius: 20 },
+  avatar: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: '#a855f7' },
   item: { width: 56, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  fab: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: '#9333ea' },
+  fab: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: '#9333ea' },
 });

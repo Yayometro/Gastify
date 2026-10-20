@@ -5,6 +5,7 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { authClient } from '@/auth-client';
 import { Screen } from '@/components/screen';
+import { AppearanceCard } from '@/components/appearance-card';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 
@@ -58,6 +59,7 @@ export default function MoreScreen() {
         <View className="h-px bg-gf-border" />
         <MenuRow label="Perfil" icon="person-circle-outline" onPress={() => router.push('/more/profile')} />
       </Card>
+      <AppearanceCard />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Cerrar sesión"

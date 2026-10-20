@@ -71,7 +71,7 @@ export function MonthGridModal({
                     onClose();
                   }}
                   className="w-[30%] items-center rounded-2xl border border-gf-border py-4"
-                  style={{ backgroundColor: selected ? colors.accentSoft : undefined, borderColor: selected ? colors.accent : undefined, opacity: future ? 0.35 : 1 }}>
+                  style={{ backgroundColor: selected ? colors.accentSoft : undefined, borderColor: selected ? colors.accent : colors.border, opacity: future ? 0.35 : 1 }}>
                   <Text className="font-inter-medium text-base capitalize text-gf-text">{label}</Text>
                 </Pressable>
               );

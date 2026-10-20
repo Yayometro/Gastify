@@ -17,8 +17,8 @@ export async function loadThemeMode(): Promise<ThemeMode> {
 
 // Applies the mode to the whole app: every useColorScheme() reads it from here.
 export function applyThemeMode(mode: ThemeMode): void {
-  // null clears the override (back to the phone's setting); the typings leave it out, so it is cast.
-  Appearance.setColorScheme(mode === 'system' ? (null as never) : mode);
+  // 'unspecified' clears the override (back to the phone's setting). null is not accepted by the native module.
+  Appearance.setColorScheme(mode === 'system' ? 'unspecified' : mode);
 }
 
 export async function saveThemeMode(mode: ThemeMode): Promise<void> {

@@ -7,10 +7,11 @@ import { monthTotals, topSpendingCategories, type CategoryTotal, type MonthBound
 // The History screen's periods and the comparison of two of them ("this vs the same stretch last year"),
 // like the web's History page: totals, month by month, categories and the biggest movements.
 
-export type HistoryPreset = "last3" | "thisMonth" | "lastMonth" | "thisQuarter" | "lastQuarter" | "thisYear" | "lastYear" | "custom";
+export type HistoryPreset = "last3" | "month" | "thisMonth" | "lastMonth" | "thisQuarter" | "lastQuarter" | "thisYear" | "lastYear" | "custom";
 
 export const HISTORY_PRESETS: { value: HistoryPreset; label: string }[] = [
   { value: "last3", label: "Últimos 3 meses" },
+  { value: "month", label: "Un mes" },
   { value: "thisMonth", label: "Este mes" },
   { value: "lastMonth", label: "Mes pasado" },
   { value: "thisQuarter", label: "Este trimestre" },
@@ -28,10 +29,14 @@ function endOfMonth(year: number, month: number): Date {
   return new Date(year, month + 1, 0, 23, 59, 59, 999);
 }
 
-export function historyRange(preset: HistoryPreset, now: Date, custom: { from: Date | null; to: Date | null }): MonthBounds {
+export function historyRange(preset: HistoryPreset, now: Date, custom: { from: Date | null; to: Date | null }, month?: Date): MonthBounds {
   const y = now.getFullYear();
   const m = now.getMonth();
   switch (preset) {
+    case "month": {
+      const picked = month ?? now;
+      return { start: startOfMonth(picked.getFullYear(), picked.getMonth()), end: endOfMonth(picked.getFullYear(), picked.getMonth()) };
+    }
     case "thisMonth":
       return { start: startOfMonth(y, m), end: endOfMonth(y, m) };
     case "lastMonth":

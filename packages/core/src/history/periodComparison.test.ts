@@ -66,3 +66,15 @@ describe("percentChange", () => {
     expect(percentChange(10, 0)).toBeNull();
   });
 });
+
+describe("historyRange: a single month", () => {
+  it("covers the whole picked month, whatever day it is today", () => {
+    const range = historyRange("month", new Date(2026, 9, 20), { from: null, to: null }, new Date(2025, 1, 14));
+    expect(range.start).toEqual(new Date(2025, 1, 1, 0, 0, 0, 0));
+    expect(range.end).toEqual(new Date(2025, 1, 28, 23, 59, 59, 999));
+  });
+  it("falls back to the current month when none is given", () => {
+    const range = historyRange("month", new Date(2026, 9, 20), { from: null, to: null });
+    expect(range.start).toEqual(new Date(2026, 9, 1, 0, 0, 0, 0));
+  });
+});

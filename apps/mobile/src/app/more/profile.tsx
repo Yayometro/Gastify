@@ -8,6 +8,7 @@ import { authClient } from '@/auth-client';
 import { FormError } from '@/components/auth/auth-layout';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
+import { AppearanceCard } from '@/components/appearance-card';
 import { Card } from '@/components/ui/card';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
@@ -105,6 +106,8 @@ export default function ProfileScreen() {
         <FormError message={formError} />
         <GradientButton label="Guardar cambios" onPress={save} loading={saving} disabled={saving || unchanged} />
       </Card>
+
+      <AppearanceCard />
 
       <Card title="Cuenta">
         <InfoRow label="Correo" value={email || '—'} />

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, SectionList, Text, View, useColorScheme } from 'react-native';
+import { FlatList, Modal, PanResponder, Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
@@ -14,10 +14,15 @@ import { normalizeText } from '@gastify/core/search/normalizeText';
 
 export type CategoryChoice = { categoryId: string; subCategoryId: string };
 
-type Entry = { key: string; kind: 'cat' | 'sub'; id: string; label: string; icon?: string; color?: string; parentId: string; parentLabel: string };
-type Section = { title: string; data: Entry[] };
+type Entry = { kind: 'cat' | 'sub'; id: string; label: string; icon?: string; color?: string; parentId: string; parentLabel: string };
+type Row = { key: string; type: 'header' | 'cat' | 'sub'; title?: string; entry?: Entry };
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+// Fixed row heights: they let the list jump to any letter without having to measure the rows first.
+const HEADER_HEIGHT = 40;
+const CAT_HEIGHT = 60;
+const SUB_HEIGHT = 52;
+const heightOf = (row: Row) => (row.type === 'header' ? HEADER_HEIGHT : row.type === 'cat' ? CAT_HEIGHT : SUB_HEIGHT);
 
 // The first letter of a name, without accents; anything that is not a letter goes under "#".
 function letterOf(text: string): string {
@@ -29,7 +34,8 @@ const byName = (a: string, b: string) => a.localeCompare(b, 'es', { sensitivity:
 
 // The categories and their sub-categories, the same as the web's picker: the chosen one shows as a chip,
 // "Ver todas" opens the full list. In the list the categories are alphabetical, each with its sub-categories
-// under it; a letter on the right jumps there. Searching splits the results into categories and sub-categories.
+// under it, and the letters on the right can be dragged with a finger (like the contacts list). Searching splits
+// the results into categories and sub-categories.
 export function CategoryPicker({
   categories,
   subCategories,
@@ -48,12 +54,13 @@ export function CategoryPicker({
   const colors = Colors[dark ? 'dark' : 'light'];
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const listRef = useRef<SectionList<Entry, Section>>(null);
+  const [dragLetter, setDragLetter] = useState<string | null>(null);
+  const listRef = useRef<FlatList<Row>>(null);
 
   const catEntries = useMemo<Entry[]>(
     () =>
       categories
-        .map((category) => ({ key: `cat-${idOf(category)}`, kind: 'cat' as const, id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color, parentId: '', parentLabel: '' }))
+        .map((category) => ({ kind: 'cat' as const, id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color, parentId: '', parentLabel: '' }))
         .sort((a, b) => byName(a.label, b.label)),
     [categories]
   );
@@ -63,42 +70,85 @@ export function CategoryPicker({
         .map((sub) => {
           const parentId = idOf(sub.fatherCategory);
           const parent = categories.find((category) => idOf(category) === parentId);
-          return { key: `sub-${idOf(sub)}`, kind: 'sub' as const, id: idOf(sub), label: sub.name || 'Subcategoría', icon: sub.icon, color: sub.color, parentId, parentLabel: parent?.name || '' };
+          return { kind: 'sub' as const, id: idOf(sub), label: sub.name || 'Subcategoría', icon: sub.icon, color: sub.color, parentId, parentLabel: parent?.name || '' };
         })
         .filter((entry) => entry.parentId),
     [subCategories, categories]
   );
 
-  // Sections for the list: one per letter, each category followed by its sub-categories.
-  const sections = useMemo<Section[]>(() => {
+  const searching = normalizeText(query) !== '';
+
+  // The flat list: letter headers with each category followed by its sub-categories (or, when searching, the
+  // two result groups), and where each letter starts.
+  const { rows, offsets, letterOffset } = useMemo(() => {
+    const flat: Row[] = [];
+    const starts = new Map<string, number>();
     const needle = normalizeText(query);
     if (needle) {
       const cats = catEntries.filter((entry) => normalizeText(entry.label).includes(needle));
       const subs = subEntries.filter((entry) => normalizeText(`${entry.label} ${entry.parentLabel}`).includes(needle)).sort((a, b) => byName(a.label, b.label));
-      return [
-        ...(cats.length ? [{ title: 'Categorías', data: cats }] : []),
-        ...(subs.length ? [{ title: 'Subcategorías', data: subs }] : []),
-      ];
+      if (cats.length) flat.push({ key: 'h-cats', type: 'header', title: 'Categorías' }, ...cats.map((entry) => ({ key: `cat-${entry.id}`, type: 'cat' as const, entry })));
+      if (subs.length) flat.push({ key: 'h-subs', type: 'header', title: 'Subcategorías' }, ...subs.map((entry) => ({ key: `sub-${entry.id}`, type: 'sub' as const, entry })));
+    } else {
+      for (const category of catEntries) {
+        const letter = letterOf(category.label);
+        if (!starts.has(letter)) {
+          starts.set(letter, -1);
+          flat.push({ key: `h-${letter}`, type: 'header', title: letter });
+        }
+        flat.push({ key: `cat-${category.id}`, type: 'cat', entry: category });
+        for (const sub of subEntries.filter((entry) => entry.parentId === category.id).sort((a, b) => byName(a.label, b.label))) {
+          flat.push({ key: `sub-${sub.id}`, type: 'sub', entry: sub });
+        }
+      }
     }
-    const grouped = new Map<string, Entry[]>();
-    for (const category of catEntries) {
-      const letter = letterOf(category.label);
-      const list = grouped.get(letter) ?? [];
-      list.push(category, ...subEntries.filter((sub) => sub.parentId === category.id).sort((a, b) => byName(a.label, b.label)));
-      grouped.set(letter, list);
+    const offs: number[] = [];
+    let at = 0;
+    const letterAt = new Map<string, number>();
+    for (const row of flat) {
+      offs.push(at);
+      if (row.type === 'header' && row.title && row.title.length === 1) letterAt.set(row.title, at);
+      at += heightOf(row);
     }
-    return [...grouped.entries()].sort(([a], [b]) => (a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b))).map(([title, data]) => ({ title, data }));
+    return { rows: flat, offsets: offs, letterOffset: letterAt };
   }, [catEntries, subEntries, query]);
 
-  const searching = normalizeText(query) !== '';
-  const letterIndex = (letter: string) => sections.findIndex((section) => section.title === letter);
+  // Dragging on the rail: the letter under the finger (or the nearest one that has categories) is shown and the
+  // list jumps to it.
+  const railHeight = useRef(0);
+  const jumpTo = (y: number) => {
+    if (railHeight.current <= 0) return;
+    const index = Math.max(0, Math.min(LETTERS.length - 1, Math.floor((y / railHeight.current) * LETTERS.length)));
+    let letter = LETTERS[index];
+    if (!letterOffset.has(letter)) {
+      const after = LETTERS.slice(index).find((l) => letterOffset.has(l));
+      const before = [...LETTERS.slice(0, index)].reverse().find((l) => letterOffset.has(l));
+      letter = after ?? before ?? letter;
+    }
+    const offset = letterOffset.get(letter);
+    if (offset === undefined) return;
+    setDragLetter(letter);
+    listRef.current?.scrollToOffset({ offset, animated: false });
+  };
+  // PanResponder keeps the callbacks it was created with: this keeps them pointing at the latest list.
+  const latestJump = useRef(jumpTo);
+  latestJump.current = jumpTo;
+  const railHandlers = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (event) => latestJump.current(event.nativeEvent.locationY),
+        onPanResponderMove: (event) => latestJump.current(event.nativeEvent.locationY),
+        onPanResponderRelease: () => setDragLetter(null),
+        onPanResponderTerminate: () => setDragLetter(null),
+      }).panHandlers,
+    []
+  );
 
-  const chosenLabel = (() => {
-    if (value.subCategoryId) return subEntries.find((entry) => entry.id === value.subCategoryId)?.label ?? 'Subcategoría';
-    if (value.categoryId) return catEntries.find((entry) => entry.id === value.categoryId)?.label ?? 'Categoría';
-    return null;
-  })();
   const chosenEntry = value.subCategoryId ? subEntries.find((entry) => entry.id === value.subCategoryId) : catEntries.find((entry) => entry.id === value.categoryId);
+  const chosenLabel = chosenEntry?.label ?? null;
 
   const pick = (entry: Entry) => {
     onChange(entry.kind === 'sub' ? { categoryId: entry.parentId, subCategoryId: entry.id } : { categoryId: entry.id, subCategoryId: '' });
@@ -135,29 +185,35 @@ export function CategoryPicker({
               <TextField label="" value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder="Buscar categoría o subcategoría" autoCorrect={false} />
             </View>
             <View style={{ flex: 1, flexDirection: 'row' }}>
-              <SectionList<Entry, Section>
+              <FlatList<Row>
                 ref={listRef}
-                sections={sections}
-                keyExtractor={(item) => item.key}
+                data={rows}
+                keyExtractor={(row) => row.key}
                 keyboardShouldPersistTaps="handled"
-                contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32, paddingRight: searching ? 24 : 8 }}
-                renderSectionHeader={({ section }) => (
-                  <Text className="pb-1 pt-4 font-inter-semibold text-sm text-gf-text-muted">{section.title}</Text>
-                )}
+                getItemLayout={(_, index) => ({ length: heightOf(rows[index]), offset: offsets[index], index })}
+                contentContainerStyle={{ paddingLeft: 24, paddingRight: searching ? 24 : 8, paddingBottom: 32 }}
                 ListEmptyComponent={<Text className="pt-6 font-inter text-base text-gf-text-muted">Nada coincide con «{query}».</Text>}
                 renderItem={({ item }) => {
-                  const selected = item.kind === 'sub' ? value.subCategoryId === item.id : value.categoryId === item.id && !value.subCategoryId;
+                  if (item.type === 'header') {
+                    return (
+                      <View style={{ height: HEADER_HEIGHT, justifyContent: 'flex-end', paddingBottom: 4 }}>
+                        <Text className="font-inter-semibold text-sm text-gf-text-muted">{item.title}</Text>
+                      </View>
+                    );
+                  }
+                  const entry = item.entry as Entry;
+                  const selected = entry.kind === 'sub' ? value.subCategoryId === entry.id : value.categoryId === entry.id && !value.subCategoryId;
                   return (
                     <Pressable
                       accessibilityRole="button"
                       accessibilityState={{ selected }}
-                      onPress={() => pick(item)}
-                      className="flex-row items-center gap-3 py-2.5"
-                      style={{ paddingLeft: item.kind === 'sub' ? 28 : 0 }}>
-                      <CategoryBadge icon={item.icon} color={item.color} size={item.kind === 'sub' ? 32 : 40} />
+                      onPress={() => pick(entry)}
+                      className="flex-row items-center gap-3"
+                      style={{ height: heightOf(item), paddingLeft: entry.kind === 'sub' ? 28 : 0 }}>
+                      <CategoryBadge icon={entry.icon} color={entry.color} size={entry.kind === 'sub' ? 32 : 40} />
                       <View className="flex-1">
-                        <Text className="font-inter-medium text-base text-gf-text">{item.label}</Text>
-                        {item.kind === 'sub' && <Text className="font-inter text-sm text-gf-text-muted">{item.parentLabel}</Text>}
+                        <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{entry.label}</Text>
+                        {entry.kind === 'sub' && <Text className="font-inter text-sm text-gf-text-muted" numberOfLines={1}>{entry.parentLabel}</Text>}
                       </View>
                       {selected && <Ionicons name="checkmark-circle" size={24} color={colors.accent} />}
                     </Pressable>
@@ -165,24 +221,27 @@ export function CategoryPicker({
                 }}
               />
               {!searching && (
-                <View className="items-center justify-center pr-1">
-                  {LETTERS.map((letter) => {
-                    const at = letterIndex(letter);
-                    return (
-                      <Pressable
-                        key={letter}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Ir a ${letter}`}
-                        disabled={at < 0}
-                        onPress={() => listRef.current?.scrollToLocation({ sectionIndex: at, itemIndex: 0, animated: false, viewOffset: 0 })}
-                        hitSlop={4}
-                        style={{ paddingVertical: 1 }}>
-                        <Text className="font-inter-semibold text-[11px]" style={{ color: at < 0 ? colors.textSecondary : colors.accent, opacity: at < 0 ? 0.35 : 1 }}>
-                          {letter}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
+                <View
+                  {...railHandlers}
+                  onLayout={(event) => {
+                    railHeight.current = event.nativeEvent.layout.height;
+                  }}
+                  accessibilityLabel="Índice de letras"
+                  style={{ width: 34, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}>
+                  {LETTERS.map((letter) => (
+                    <View key={letter} pointerEvents="none" style={{ alignItems: 'center' }}>
+                      <Text
+                        className="font-inter-semibold text-[11px]"
+                        style={{ color: letterOffset.has(letter) ? colors.accent : colors.textSecondary, opacity: letterOffset.has(letter) ? 1 : 0.35 }}>
+                        {letter}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              {dragLetter && (
+                <View pointerEvents="none" style={{ position: 'absolute', right: 56, top: '40%', width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text className="font-inter-bold text-3xl" style={{ color: dark ? '#1e1533' : '#ffffff' }}>{dragLetter}</Text>
                 </View>
               )}
             </View>
@@ -202,7 +261,7 @@ function Chip({ label, selected = false, icon, color, onPress }: { label: string
       accessibilityState={{ selected }}
       onPress={onPress}
       className="flex-row items-center gap-2 rounded-full border border-gf-border px-4 py-2"
-      style={{ backgroundColor: selected ? colors.accentSoft : undefined, borderColor: selected ? colors.accent : undefined }}>
+      style={{ backgroundColor: selected ? colors.accentSoft : undefined, borderColor: selected ? colors.accent : colors.border }}>
       {icon === 'search' ? <Ionicons name="search" size={16} color={colors.accent} /> : icon ? <CategoryBadge icon={icon} color={color} size={22} /> : null}
       <Text className="font-inter-medium text-sm text-gf-text" numberOfLines={1}>{label}</Text>
     </Pressable>

@@ -57,7 +57,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | M05 | Tocar el mes abre calendario y selector de mes. | PENDIENTE | Ver T04. |
 | M06 | Búsqueda por nombre: botón X a la derecha para borrar todo el texto de un toque. | CÓDIGO LISTO | |
 | M07 | Filtro de categoría: buscar también SUBCATEGORÍAS (hoy solo busca categorías). Subcategorías como submenú bajo cada categoría. | CÓDIGO LISTO | |
-| M08 | Lista de categorías ordenada alfabéticamente, con un índice A–Z deslizable para ir más rápido. | CÓDIGO LISTO | |
+| M08 | Lista de categorías ordenada alfabéticamente, con un índice A–Z deslizable para ir más rápido. | HECHO | |
 | M09 | Filtro de monto exacto: ya funciona, mantener. | HECHO | |
 | M10 | Filtro de cuentas: ya funciona, mantener. | HECHO | |
 | M11 | Duplicados: el switch debe abrir subfiltros como en la web: nombre, fecha, monto, categoría, subcategoría, tolerancia de fecha, tolerancia de monto, "Buscar duplicados" y "Restablecer valores". | CÓDIGO LISTO | |
@@ -96,9 +96,9 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | Y01 | Sección "Income sources": lista de fuentes y crear una nueva. | CÓDIGO LISTO | |
 | Y02 | Sección "Referencias históricas": ver cada una y agregar de ingreso y de gasto. | CÓDIGO LISTO | |
 | Y03 | Columna Neto con color verde o rojo. | CÓDIGO LISTO | |
-| Y04 | Columna Balance (hoy no aparece). | CÓDIGO LISTO | Saldo proyectado: dinero de hoy en cuentas más el neto proyectado de los meses que faltan. Ajustar si la web usa otra regla. |
+| Y04 | Columna Balance (hoy no aparece). | HECHO | Saldo proyectado: dinero de hoy en cuentas más el neto proyectado de los meses que faltan. Ajustar si la web usa otra regla. |
 | Y05 | Icono "?" junto a Neto y Balance. | CÓDIGO LISTO | Ver T03. |
-| Y06 | Indicador de precisión de las proyecciones, arriba y abajo de la tabla, como en la web. | PENDIENTE | |
+| Y06 | Indicador de precisión de las proyecciones, arriba y abajo de la tabla, como en la web. | HECHO | |
 | Y07 | Mostrar la moneda principal arriba. | CÓDIGO LISTO | |
 | Y08 | Proyecciones también dentro de Historial, con filtro de tiempo propio. | PENDIENTE | Ver H11. |
 
@@ -132,7 +132,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | H07 | Comparativo del Top 6 de categorías entre dos periodos. | PENDIENTE | |
 | H08 | Wallet Analyzer dentro de Historial, con celdas tocables que abren modal. | PENDIENTE | Ver A01–A03. |
 | H09 | Top 6 elements dedicado con su filtro de tiempo (por defecto últimos 3 meses) y modal por elemento. | CÓDIGO LISTO | |
-| H10 | Navegación inteligente: desde Historial, al abrir un movimiento y volver, regresar a Historial (no a Movimientos). Aplicar en toda la app. | CÓDIGO LISTO | Ver U02. |
+| H10 | Navegación inteligente: desde Historial, al abrir un movimiento y volver, regresar a Historial (no a Movimientos). Aplicar en toda la app. | HECHO | Ver U02. |
 | H11 | Sección de Proyecciones dentro de Historial, con sus filtros de tiempo. | PENDIENTE | |
 | H12 | Sección de Presupuestos comparativos dedicada. | PENDIENTE | |
 
@@ -147,6 +147,21 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | F05 | Conector de access tokens (API): crear, ver y revocar, como en la web. | PENDIENTE | |
 | F06 | Eliminar mi cuenta. | BLOQUEADO | Una vez el clasificador de permisos bloqueó la escritura de esta pantalla. Requiere permiso explícito. Nunca probar contra cuentas reales. |
 | F07 | Perfil: nombre y teléfono ya se editan. | HECHO | Revisado en el emulador. |
+
+## Segunda ronda (feedback tras probar en iPad y iPhone)
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| N01 | En el teléfono no hay botón para cambiar a modo oscuro (solo existía en el iPad). Agregarlo en el menú Más y en Perfil. | CÓDIGO LISTO | Causa del modo claro forzado: `setColorScheme(null)`; ya corregido a `unspecified`. Falta confirmar en el teléfono del usuario. |
+| N02 | El menú lateral del iPad debe tener el mismo orden y distribución que la web: perfil (con nombre), Movimientos, Wallet, Presupuestos, Proyecciones, "+" al centro, Cuentas, Historial, Categorías, tema, salir. | CÓDIGO LISTO | |
+| N03 | La barra A–Z de categorías debe poder arrastrarse con el dedo (iPad y iPhone); hoy no responde. | HECHO | |
+| N04 | Tocar el mes para elegir mes y año en TODOS los filtros de tiempo de la app, sin excepción (hoy solo en Presupuestos). | CÓDIGO LISTO | Inicio, Movimientos, Historial, Top, Analizador, etc. |
+| N05 | Proyecciones: mostrar el balance también de los meses ya ocurridos (la web lo muestra). | HECHO | |
+| N06 | Proyecciones: falta la tabla de abajo que sí tiene la web (precisión de las proyecciones). | HECHO | Igual a Y06. |
+| N07 | Calendario de iOS: se ve mal y no funciona bien en iPad (franja oscura, solo ocupa la izquierda) y en iPhone. | CÓDIGO LISTO | Se prueba en iPad/iPhone; el emulador es Android. |
+| N08 | Modo claro: hay textos muy claros que deberían ser más oscuros. Revisar contraste. | CÓDIGO LISTO | |
+| N09 | Usar una cuenta de prueba propia en el emulador para no depender del usuario. | HECHO | `qa-type.mjs` con la cuenta QA que creé; sin pedir códigos al usuario. |
+| N10 | Historial: tocar una categoría (ej. House) en el Top no muestra sus movimientos. Debe abrir un modal o la lista. | CÓDIGO LISTO | |
 
 ## Notas
 

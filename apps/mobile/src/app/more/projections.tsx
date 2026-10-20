@@ -19,7 +19,15 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { totalInPrimary } from '@gastify/core/accounts/accountTotals';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { convertBaselineToPrimary, convertSourcesToPrimary, foreignCurrenciesOf } from '@gastify/core/transformers/projectionInputs';
-import { buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
+import {
+  buildProjectionAccuracyReport,
+  buildYearProjectionTable,
+  computeYearRowsWithBalance,
+  estimateHistoricalBalances,
+  type YearProjectionRow,
+} from '@gastify/core/transformers/projectionsChange';
+import { getYearMonthDateRange } from '@gastify/core/time/timeFunctions';
+import { AccuracyCard } from '@/components/projections/accuracy-card';
 import type { RootState } from '@/store';
 
 type AnyRecord = Record<string, unknown>;
@@ -76,7 +84,8 @@ export default function ProjectionsScreen() {
     currency
   );
   // Money today: every account in the main currency. The balance column starts from it.
-  const startingBalance = useMemo(() => totalInPrimary(accounts, currency, rates).total, [accounts, currency, rates]);
+  // (credit cards are left out, like the web's "Total money today").
+  const startingBalance = useMemo(() => totalInPrimary(accounts.filter((account) => account.accountType !== 'credit'), currency, rates).total, [accounts, currency, rates]);
 
   const inputs = useMemo(() => {
     const convertedSources = convertSourcesToPrimary((sources ?? []) as { amount?: number; currency?: string }[], currency, rates);
@@ -102,18 +111,28 @@ export default function ProjectionsScreen() {
     });
   }, [transactions, inputs, sources, settings, year, today]);
 
-  // The balance after each month: today's money plus what the months from now on are projected to net. Past
-  // months are real and have no projected balance.
-  const balances = useMemo(() => {
-    let running = startingBalance;
-    return rows.map((row) => {
-      if (row.type === 'actual') return null;
-      const income = (row.projectedIncome ?? row.income) ?? 0;
-      const expense = (row.projectedExpense ?? row.expense) ?? 0;
-      running += income - expense;
-      return running;
-    });
-  }, [rows, startingBalance]);
+  // The balance after each month, the web's way: from today's money forward for this month and the next ones; for
+  // closed months, the balance the person saved or, failing that, an estimate worked out backwards.
+  const balanceRows = useMemo(() => {
+    if (rows.length === 0) return [];
+    const monthlyBalances = ((settings?.monthlyBalances as { month: number; balance: number | null }[] | undefined) ?? []);
+    const withBalance = computeYearRowsWithBalance(rows, monthlyBalances as never, startingBalance, year, today);
+    const monthStarts = [...getYearMonthDateRange(new Date(year, 0, 1)).values()].map((range) => range.start);
+    return estimateHistoricalBalances(withBalance, monthStarts, inputs.baseline as never) as { balance?: number | null; estimatedBalance?: number | null }[];
+  }, [rows, settings, startingBalance, year, today, inputs.baseline]);
+
+  const accuracyRows = useMemo(() => {
+    if (!sources) return [];
+    return buildProjectionAccuracyReport({
+      transactions: transactions as never,
+      budgets: inputs.budgets as never,
+      incomeSources: inputs.sources as never,
+      projectionSettings: { monthlyBuffers: (settings?.monthlyBuffers as never) ?? [] } as never,
+      projectionBaseline: inputs.baseline as never,
+      year,
+      today,
+    }) as never[];
+  }, [transactions, inputs, settings, sources, year, today]);
 
   const reload = () => setReloadKey((key) => key + 1);
 
@@ -144,6 +163,8 @@ export default function ProjectionsScreen() {
             const expense = row.type === 'actual' ? row.expense : row.projectedExpense ?? row.expense;
             const net = (income ?? 0) - (expense ?? 0);
             const money = (amount: number) => formatMoneyMajor(amount, currency, { showCode: false });
+            const balanceText = (entry: { balance?: number | null; estimatedBalance?: number | null } | undefined) =>
+              typeof entry?.balance === 'number' ? money(entry.balance) : typeof entry?.estimatedBalance === 'number' ? `≈ ${money(entry.estimatedBalance)}` : '—';
             return (
               <View key={`${row.monthName}-${index}`} className="gap-1 border-t border-gf-border pt-3">
                 <View className="flex-row items-center justify-between">
@@ -152,24 +173,24 @@ export default function ProjectionsScreen() {
                 </View>
                 <View className="flex-row gap-3">
                   <View className="flex-1">
-                    <Text className="font-inter text-xs text-gf-text-muted">Ingresos</Text>
+                    <Text className="font-inter text-xs text-gf-text-muted" style={{ minHeight: 22 }}>Ingresos</Text>
                     <Text className="font-inter-medium text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.income }}>{money(income ?? 0)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="font-inter text-xs text-gf-text-muted">Gastos</Text>
+                    <Text className="font-inter text-xs text-gf-text-muted" style={{ minHeight: 22 }}>Gastos</Text>
                     <Text className="font-inter-medium text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(expense ?? 0)}</Text>
                   </View>
                   <View className="flex-1">
-                    <View className="flex-row items-center gap-1">
+                    <View className="flex-row items-center gap-1" style={{ minHeight: 22 }}>
                       <Text className="font-inter text-xs text-gf-text-muted">Neto</Text>
                       <InfoTip info={{ title: 'Neto', text: 'Lo que entra menos lo que sale en el mes: ingresos menos gastos. Verde si sobra dinero, rojo si falta.' }} />
                     </View>
                     <Text className="font-inter-semibold text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: net < 0 ? colors.expense : colors.income }}>{money(net)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="font-inter text-xs text-gf-text-muted">Balance</Text>
+                    <Text className="font-inter text-xs text-gf-text-muted" style={{ minHeight: 22 }}>Balance</Text>
                     <Text className="font-inter-semibold text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.text }}>
-                      {balances[index] === null || balances[index] === undefined ? '—' : money(balances[index] as number)}
+                      {balanceText(balanceRows[index])}
                     </Text>
                   </View>
                 </View>
@@ -179,6 +200,8 @@ export default function ProjectionsScreen() {
           <Text className="font-inter text-xs text-gf-text-muted">Los meses reales muestran lo que ya ocurrió; los estimados, lo que se proyecta.</Text>
         </Card>
       )}
+
+      {sources !== null && <AccuracyCard rows={accuracyRows as never} currency={currency} />}
 
       {sources !== null && (
         <IncomeSourcesCard sources={sources} currency={currency} onChanged={reload} />

@@ -7,6 +7,7 @@ import { MonthlyBars } from '@/components/charts/monthly-bars';
 import { CategoryBadge } from '@/components/category-badge';
 import { ChipPicker } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
+import { MonthSwitcher } from '@/components/month-switcher';
 import { TopRanking } from '@/components/top-ranking';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
@@ -91,6 +92,8 @@ export default function HistoryScreen() {
 
   const now = useMemo(() => new Date(), []);
   const [preset, setPreset] = useState<HistoryPreset>('last3');
+  // The month of the "Un mes" period (arrows, or tap it to pick any month).
+  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [from, setFrom] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
   const [to, setTo] = useState(() => dateText(now));
   const [compareOn, setCompareOn] = useState(false);
@@ -98,7 +101,7 @@ export default function HistoryScreen() {
   const [compareFrom, setCompareFrom] = useState(() => dateText(new Date(now.getFullYear() - 1, now.getMonth(), 1)));
   const [compareTo, setCompareTo] = useState(() => dateText(new Date(now.getFullYear() - 1, now.getMonth(), 28)));
 
-  const rangeA = useMemo(() => historyRange(preset, now, { from: parseDateText(from), to: parseDateText(to) }), [preset, now, from, to]);
+  const rangeA = useMemo(() => historyRange(preset, now, { from: parseDateText(from), to: parseDateText(to) }, month), [preset, now, from, to, month]);
   const rangeB = useMemo(() => compareRange(comparePreset, rangeA, { from: parseDateText(compareFrom), to: parseDateText(compareTo) }), [comparePreset, rangeA, compareFrom, compareTo]);
 
   const a = useMemo<PeriodSummary<TransactionData>>(() => summarizePeriod(transactions, rangeA), [transactions, rangeA]);
@@ -116,6 +119,7 @@ export default function HistoryScreen() {
     <Screen title="Historial" subtitle={labelA} backLabel="Más" onBack={() => router.back()}>
       <Card title="Periodo">
         <ChipPicker items={HISTORY_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPreset(id as HistoryPreset)} moreAfter={99} />
+        {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
         {preset === 'custom' && (
           <View className="gap-3">
             <DateField label="Desde" value={from} onChange={setFrom} />

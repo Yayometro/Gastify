@@ -1,9 +1,8 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
-import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { Colors } from '@/constants/theme';
 import { longDateEs } from '@gastify/core/format/spanishDates';
@@ -14,6 +13,7 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 export function DateField({ label, value, onChange }: { label: string; value: string; onChange: (day: string) => void }) {
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
+  const wide = useWindowDimensions().width >= 768;
   const colors = Colors[dark ? 'dark' : 'light'];
   const date = parseDateText(value) ?? new Date();
   const [iosOpen, setIosOpen] = useState(false);
@@ -51,30 +51,43 @@ export function DateField({ label, value, onChange }: { label: string; value: st
       </Pressable>
 
       {Platform.OS === 'ios' && (
-        <Modal visible={iosOpen} animationType="slide" transparent onRequestClose={keepAndClose}>
-          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <Modal visible={iosOpen} animationType={wide ? 'fade' : 'slide'} transparent onRequestClose={keepAndClose}>
+          <View style={{ flex: 1, justifyContent: wide ? 'center' : 'flex-end', alignItems: 'center' }}>
             {/* Tapping outside the calendar closes it and keeps the day picked so far (no need to press "Listo"). */}
-            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar calendario" onPress={keepAndClose} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} />
-            <View style={{ width: '100%', backgroundColor: dark ? DARK_BASE : colors.background, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden', paddingBottom: 28 }}>
-              <AmbientBackground />
-              <View className="gap-3 p-6" style={{ width: '100%' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar calendario" onPress={keepAndClose} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.45)' }]} />
+            {/* One solid color all the way down, so the calendar has no band of another color behind it. On an iPad it is
+                a centered card; on a phone, a sheet from the bottom. */}
+            <View
+              style={{
+                width: wide ? 440 : '100%',
+                backgroundColor: dark ? '#1b1033' : '#ffffff',
+                borderRadius: wide ? 28 : 0,
+                borderTopLeftRadius: 28,
+                borderTopRightRadius: 28,
+                paddingHorizontal: 20,
+                paddingTop: 16,
+                paddingBottom: wide ? 20 : 34,
+                gap: 12,
+              }}>
+              <View style={{ alignItems: 'center' }}>
                 <DateTimePicker
                   value={draft}
                   mode="date"
                   display="inline"
                   locale="es-MX"
                   themeVariant={dark ? 'dark' : 'light'}
+                  accentColor="#9333ea"
                   onValueChange={(_, picked) => setDraft(picked)}
-                  style={{ width: '100%' }}
-                />
-                <GradientButton
-                  label="Listo"
-                  onPress={() => {
-                    onChange(dateText(draft));
-                    setIosOpen(false);
-                  }}
+                  style={{ width: wide ? 400 : '100%' }}
                 />
               </View>
+              <GradientButton
+                label="Listo"
+                onPress={() => {
+                  onChange(dateText(draft));
+                  setIosOpen(false);
+                }}
+              />
             </View>
           </View>
         </Modal>

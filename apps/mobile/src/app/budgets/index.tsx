@@ -26,7 +26,6 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import { BudgetSummarySheet, type BudgetLine, type GroupLine } from '@/components/budget-summary-sheet';
 import { DateField } from '@/components/date-field';
-import { MonthGridModal } from '@/components/month-grid-modal';
 import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
@@ -131,7 +130,6 @@ export default function BudgetsScreen() {
   const [custom, setCustom] = useState(false);
   const [fromText, setFromText] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
   const [toText, setToText] = useState(() => dateText(now));
-  const [monthOpen, setMonthOpen] = useState(false);
   const [sheet, setSheet] = useState<'total' | 'unbudgeted' | null>(null);
   const bounds = useMemo(() => {
     if (!custom) return monthBounds(month.getFullYear(), month.getMonth());
@@ -254,7 +252,7 @@ export default function BudgetsScreen() {
 
       {/* The period: arrows move by month, tapping the month picks any month; "Personalizado" takes a range. */}
       <View className="gap-3">
-        {!custom && <MonthSwitcher value={month} onChange={setMonth} latest={now} onPressTitle={() => setMonthOpen(true)} />}
+        {!custom && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
         <View className="flex-row gap-2">
           <PeriodChip label="Mes" selected={!custom} onPress={() => setCustom(false)} />
           <PeriodChip label="Personalizado" selected={custom} onPress={() => setCustom(true)} />
@@ -284,7 +282,6 @@ export default function BudgetsScreen() {
         </Pressable>
       </View>
 
-      <MonthGridModal visible={monthOpen} value={month} latest={now} onPick={setMonth} onClose={() => setMonthOpen(false)} />
       <BudgetSummarySheet
         kind={sheet}
         onClose={() => setSheet(null)}
@@ -343,7 +340,7 @@ function PeriodChip({ label, selected, onPress }: { label: string; selected: boo
       accessibilityState={{ selected }}
       onPress={onPress}
       className="rounded-full border border-gf-border px-4 py-2"
-      style={{ backgroundColor: selected ? colors.accentSoft : undefined, borderColor: selected ? colors.accent : undefined }}>
+      style={{ backgroundColor: selected ? colors.accentSoft : undefined, borderColor: selected ? colors.accent : colors.border }}>
       <Text className="font-inter-medium text-sm text-gf-text">{label}</Text>
     </Pressable>
   );
