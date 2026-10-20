@@ -55,7 +55,7 @@ export default function MoreScreen() {
         <View className="h-px bg-gf-border" />
         <MenuRow label="Historial" icon="time-outline" onPress={() => router.push('/more/history')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Proyecciones" icon="trending-up-outline" soon />
+        <MenuRow label="Proyecciones" icon="trending-up-outline" onPress={() => router.push('/more/projections')} />
         <View className="h-px bg-gf-border" />
         <MenuRow label="Perfil" icon="person-circle-outline" soon />
       </Card>
