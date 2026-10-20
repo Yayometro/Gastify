@@ -1,9 +1,15 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { AccountCard } from '@/components/account-card';
 import { AccountForm } from '@/components/forms/account-form';
+import { SummaryWidget } from '@/components/home/summary-widget';
+import { PeriodControls } from '@/components/period-controls';
+import { usePeriod } from '@/hooks/use-period';
+import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import { MovementRow } from '@/components/movements/movement-row';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
@@ -15,7 +21,10 @@ import type { AppDispatch, RootState } from '@/store';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
-import { monthBounds, monthTotals, sortNewestFirst } from '@gastify/core/transactions/monthSummary';
+import { accountActivity } from '@gastify/core/accounts/accountActivity';
+import { summarizePeriod } from '@gastify/core/history/periodComparison';
+import { Colors } from '@/constants/theme';
+import { monthTotals, sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 
 // Edits one account: name, kind and balance. The currency stays as it was created.
 export default function EditAccountScreen() {
@@ -28,11 +37,16 @@ export default function EditAccountScreen() {
   const primary = usePrimaryCurrency();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const mine = useMemo(() => sortNewestFirst(transactions.filter((movement) => idOf(movement.account) === id)), [transactions, id]);
-  const month = useMemo(() => {
-    const now = new Date();
-    const bounds = monthBounds(now.getFullYear(), now.getMonth());
-    return monthTotals(mine.filter((movement) => isInRange(movement, bounds)));
-  }, [mine]);
+  // The period of this account's dashboard (the web filters it like the rest): by default, this month.
+  const period = usePeriod('month');
+  const inPeriod = useMemo(() => mine.filter((movement) => isInRange(movement, period.range)), [mine, period.range]);
+  const totals = useMemo(() => monthTotals(inPeriod), [inPeriod]);
+  const summary = useMemo(() => summarizePeriod(mine, period.range), [mine, period.range]);
+  const rates = useRatesToPrimary([account?.currency], primary);
+  const activity = useMemo(() => accountActivity(mine, period.range), [mine, period.range]);
+  const [editOpen, setEditOpen] = useState(false);
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
   if (!account) {
     return (
@@ -64,25 +78,40 @@ export default function EditAccountScreen() {
 
   return (
     <Screen title={account.name || 'Cuenta'} subtitle={`Moneda: ${account.currency || 'MXN'}`} backLabel="Cuentas" onBack={back}>
-      <Card title="Actividad de este mes" info={{ title: 'Actividad de este mes', text: 'Lo que entró y salió de esta cuenta en el mes, y cuántos movimientos hubo. Las transferencias entre tus cuentas no cuentan como ingreso ni gasto.' }}>
+      <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} />
+
+      <PeriodControls period={period} />
+
+      <Card title={`Movimientos de ${period.label}`} info={{ title: 'Movimientos de la cuenta', text: 'Lo que entró y salió de esta cuenta en el periodo elegido, y sus movimientos más recientes. Las transferencias entre tus cuentas no cuentan como ingreso ni gasto.' }}>
         <View className="flex-row justify-between">
           <Text className="font-inter text-base text-gf-text-muted">Entró</Text>
-          <Text className="font-inter-semibold text-base text-gf-text">+{formatMoneyMajor(month.incomes, primary)}</Text>
+          <Text className="font-inter-semibold text-base" style={{ color: colors.income }}>+{formatMoneyMajor(totals.incomes, primary)}</Text>
         </View>
         <View className="flex-row justify-between">
           <Text className="font-inter text-base text-gf-text-muted">Salió</Text>
-          <Text className="font-inter-semibold text-base text-gf-text">-{formatMoneyMajor(month.spending, primary)}</Text>
+          <Text className="font-inter-semibold text-base" style={{ color: colors.expense }}>-{formatMoneyMajor(totals.spending, primary)}</Text>
         </View>
-        {mine.slice(0, 5).map((movement) => (
+        {inPeriod.slice(0, 5).map((movement) => (
           <MovementRow key={String(movement._id)} movement={movement} currency={primary} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: `/more/accounts/${id}` } })} />
         ))}
-        {mine.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Esta cuenta todavía no tiene movimientos.</Text>}
+        {inPeriod.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
         {mine.length > 0 && (
           <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/movements', params: { accountId: id, returnTo: `/more/accounts/${id}` } })}>
             <Text className="font-inter-semibold text-sm text-gf-text">Ver todos los movimientos de esta cuenta ›</Text>
           </Pressable>
         )}
       </Card>
+
+      <SummaryWidget summary={summary} movements={inPeriod} allMovements={mine} currency={primary} />
+
+      <Card
+        title="Editar cuenta"
+        action={
+          <Pressable accessibilityRole="button" accessibilityState={{ expanded: editOpen }} accessibilityLabel={editOpen ? 'Ocultar edición' : 'Mostrar edición'} onPress={() => setEditOpen((open) => !open)} hitSlop={10}>
+            <Ionicons name={editOpen ? 'chevron-up' : 'chevron-down'} size={22} color={colors.text} />
+          </Pressable>
+        }>
+        {editOpen && (
       <AccountForm
         key={id}
         currencyLocked
@@ -95,6 +124,8 @@ export default function EditAccountScreen() {
           back();
         }}
       />
+        )}
+      </Card>
       <Pressable accessibilityRole="button" onPress={remove} className="items-center py-2">
         <Text className="font-inter-semibold text-base text-red-500">Borrar cuenta</Text>
       </Pressable>

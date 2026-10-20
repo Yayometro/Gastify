@@ -108,7 +108,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 |---|---|---|---|
 | U01 | Tarjetas tipo tarjeta de crédito, como la web. | HECHO | Ver I04. |
 | U02 | Al ver "todos los movimientos" de una cuenta, volver debe regresar a Cuentas, no a Movimientos. | CÓDIGO LISTO | Ver H10. |
-| U03 | Detalle de cuenta: gráficas, resumen detallado de transacciones y dashboards como en la web. | PENDIENTE | |
+| U03 | Detalle de cuenta: gráficas, resumen detallado de transacciones y dashboards como en la web. | HECHO | |
 | U04 | Lista de cuentas y actividad del mes: aprobado, mantener. | HECHO | |
 
 ## Categorías
