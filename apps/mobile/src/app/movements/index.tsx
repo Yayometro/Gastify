@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, SectionList, Share, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -62,11 +62,12 @@ export default function MovementsScreen() {
 
   const now = useMemo(() => new Date(), []);
   const [month, setMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
-  const [preset, setPreset] = useState<RangePreset>('month');
   const [customFrom, setCustomFrom] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
   const [customTo, setCustomTo] = useState(() => dateText(now));
-  const [filters, setFilters] = useState<MovementFilters>(EMPTY_FILTERS);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const params = useLocalSearchParams<{ accountId?: string }>();
+  const [filters, setFilters] = useState<MovementFilters>(() => ({ ...EMPTY_FILTERS, accountId: params.accountId ? String(params.accountId) : '' }));
+  const [filtersOpen, setFiltersOpen] = useState(Boolean(params.accountId));
+  const [preset, setPresetState] = useState<RangePreset>(params.accountId ? 'year' : 'month');
   const [duplicatesOn, setDuplicatesOn] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [choosing, setChoosing] = useState(false);
@@ -181,7 +182,7 @@ export default function MovementsScreen() {
         </Pressable>
       </View>
 
-      <ChipPicker items={RANGE_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPreset(id as RangePreset)} moreAfter={99} />
+      <ChipPicker items={RANGE_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />
 
       {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
       {preset === 'custom' && (

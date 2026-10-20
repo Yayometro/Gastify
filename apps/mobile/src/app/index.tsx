@@ -4,26 +4,28 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { authClient } from '@/auth-client';
-import { CategoryBadge } from '@/components/category-badge';
+import { AccountsCarousel } from '@/components/home/accounts-carousel';
+import { BudgetsWidget } from '@/components/home/budgets-widget';
+import { InsightsWidget } from '@/components/home/insights-widget';
+import { SummaryWidget } from '@/components/home/summary-widget';
+import { TopElements } from '@/components/home/top-elements';
 import { MovementRow } from '@/components/movements/movement-row';
+import { PeriodControls } from '@/components/period-controls';
 import { Screen } from '@/components/screen';
 import { TotalsCard } from '@/components/totals-card';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
+import { usePeriod } from '@/hooks/use-period';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';
 import { totalInPrimary } from '@gastify/core/accounts/accountTotals';
-import { monthTitleEs } from '@gastify/core/format/spanishDates';
+import { rangeLabelEs } from '@gastify/core/format/spanishDates';
+import { computeInsights } from '@gastify/core/history/insights';
+import { compareRange, summarizePeriod } from '@gastify/core/history/periodComparison';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
-import {
-  monthBounds,
-  monthTotals,
-  movementsInMonth,
-  sortNewestFirst,
-  topSpendingCategories,
-} from '@gastify/core/transactions/monthSummary';
+import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -41,27 +43,23 @@ function LinkText({ label, onPress }: { label: string; onPress: () => void }) {
   );
 }
 
-// The summary of the current month, the same numbers as the web's dashboard: totals, the
-// categories where the money goes, the last movements and the accounts.
+// The phone's dashboard ("Wallet" on the web): the period, the accounts as cards, the totals, the summary
+// with its tabs, the biggest elements, the insights, the budgets and the latest movements.
 export default function HomeScreen() {
   const { data: session } = authClient.useSession();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
   const accountsState = useSelector((state: RootState) => state.accountsReducer);
   const currency = usePrimaryCurrency();
   const { refresh, refreshing } = useRefreshAppData();
+  const period = usePeriod('month');
 
-  const now = useMemo(() => new Date(), []);
-  const bounds = useMemo(() => monthBounds(now.getFullYear(), now.getMonth()), [now]);
-  const monthItems = useMemo(() => movementsInMonth(transactions.data, bounds), [transactions.data, bounds]);
-  const totals = useMemo(() => monthTotals(monthItems), [monthItems]);
-  const topCategories = useMemo(() => topSpendingCategories(monthItems, 3), [monthItems]);
+  const summary = useMemo(() => summarizePeriod(transactions.data, period.range), [transactions.data, period.range]);
+  const previous = useMemo(() => summarizePeriod(transactions.data, compareRange('previous', period.range, { from: null, to: null })), [transactions.data, period.range]);
+  const insights = useMemo(() => computeInsights(summary, previous, period.now), [summary, previous, period.now]);
   const latest = useMemo(() => sortNewestFirst(transactions.data).slice(0, 5), [transactions.data]);
 
   const accounts = accountsState.data;
-  const rates = useRatesToPrimary(
-    accounts.map((account) => account.currency),
-    currency
-  );
+  const rates = useRatesToPrimary(accounts.map((account) => account.currency), currency);
   const accountTotal = useMemo(() => totalInPrimary(accounts, currency, rates), [accounts, currency, rates]);
 
   const firstName = session?.user.name?.split(' ')[0];
@@ -70,74 +68,49 @@ export default function HomeScreen() {
   return (
     <Screen
       title={firstName ? `Hola, ${firstName}` : 'Inicio'}
-      subtitle={monthTitleEs(now)}
+      subtitle={period.preset === 'month' ? period.label : rangeLabelEs(period.range.start, period.range.end)}
       refreshing={refreshing}
       onRefresh={refresh}>
       {transactions.status === 'failed' && (
-        <Text className="font-inter text-sm text-red-500">
-          No pudimos cargar tus movimientos. Desliza hacia abajo para intentarlo de nuevo.
-        </Text>
+        <Text className="font-inter text-sm text-red-500">No pudimos cargar tus movimientos. Desliza hacia abajo para intentarlo de nuevo.</Text>
       )}
 
-      <TotalsCard totals={totals} currency={currency} />
+      <PeriodControls period={period} />
 
-      <Card title="Mayores gastos">
-        {loadingMovements ? (
-          <Muted>Cargando…</Muted>
-        ) : topCategories.length === 0 ? (
-          <Muted>Sin gastos este mes.</Muted>
-        ) : (
-          topCategories.map((row) => (
-            <View key={row.name} className="flex-row items-center gap-3">
-              <CategoryBadge icon={row.icon} color={row.color} size={40} />
-              <View className="flex-1">
-                <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>
-                  {row.name}
-                </Text>
-                <Text className="font-inter text-sm text-gf-text-muted">
-                  {row.count === 1 ? '1 movimiento' : `${row.count} movimientos`}
-                </Text>
-              </View>
-              <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
-            </View>
-          ))
-        )}
-      </Card>
+      <TotalsCard totals={summary.totals} currency={currency} title={period.preset === 'month' ? 'Este mes' : 'Del periodo'} />
 
-      <Card title="Últimos movimientos" action={<LinkText label="Ver todos" onPress={() => router.push('/movements')} />}>
+      {accounts.length > 0 && (
+        <View className="gap-3">
+          <View className="flex-row items-baseline justify-between">
+            <Text className="font-inter-semibold text-lg text-gf-text">Cuentas</Text>
+            <LinkText label="Ver todas" onPress={() => router.push('/more/accounts')} />
+          </View>
+          <Text className="font-inter text-sm text-gf-text-muted">
+            En total {formatMoneyMajor(accountTotal.total, currency)}
+            {accountTotal.missingCurrencies.length > 0 ? ` (sin tipo de cambio para ${accountTotal.missingCurrencies.join(', ')})` : ''}
+          </Text>
+          <AccountsCarousel accounts={accounts} primary={currency} />
+        </View>
+      )}
+      {accounts.length === 0 && accountsState.status !== 'failed' && (
+        <Card title="Cuentas">
+          <Muted>{accountsState.status === 'loading' ? 'Cargando…' : 'Todavía no tienes cuentas.'}</Muted>
+        </Card>
+      )}
+
+      <SummaryWidget summary={summary} currency={currency} />
+      <TopElements movements={transactions.data} range={period.range} currency={currency} />
+      <InsightsWidget insights={insights} currency={currency} />
+      <BudgetsWidget />
+
+      <Card title="Últimos movimientos" action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <Muted>Cargando…</Muted>
         ) : latest.length === 0 ? (
           <Muted>Todavía no tienes movimientos.</Muted>
         ) : (
-          latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} />)
+          latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id) } })} />)
         )}
-      </Card>
-
-      <Card title="Cuentas" action={<LinkText label="Ver todas" onPress={() => router.push('/more/accounts')} />}>
-        {accountsState.status === 'failed' && <Text className="font-inter text-sm text-red-500">No pudimos cargar tus cuentas.</Text>}
-        {accountsState.status !== 'failed' && accounts.length === 0 && (
-          <Muted>{accountsState.status === 'loading' ? 'Cargando…' : 'Todavía no tienes cuentas.'}</Muted>
-        )}
-        {accounts.length > 0 && (
-          <View className="flex-row items-baseline justify-between">
-            <Text className="font-inter-semibold text-base text-gf-text">Total</Text>
-            <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(accountTotal.total, currency)}</Text>
-          </View>
-        )}
-        {accountTotal.missingCurrencies.length > 0 && (
-          <Muted>{`Sin tipo de cambio para ${accountTotal.missingCurrencies.join(', ')}: esas cuentas no suman aquí.`}</Muted>
-        )}
-        {accounts.slice(0, 3).map((account) => (
-          <View key={String(account._id ?? account.name)} className="flex-row items-center justify-between gap-3">
-            <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>
-              {account.name}
-            </Text>
-            <Text className="font-inter-semibold text-base text-gf-text">
-              {formatMoneyMajor(account.amount ?? 0, account.currency ?? currency)}
-            </Text>
-          </View>
-        ))}
       </Card>
     </Screen>
   );

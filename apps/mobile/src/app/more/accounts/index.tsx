@@ -15,6 +15,8 @@ import { balancesByCurrency, totalInPrimary } from '@gastify/core/accounts/accou
 import { ACCOUNT_TYPES } from '@gastify/core/accounts/accountForm';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { isInRange } from '@gastify/core/transactions/movementFilters';
+import { monthBounds, monthTotals } from '@gastify/core/transactions/monthSummary';
 import { moveInList } from '@gastify/core/accounts/accountForm';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@/store';
@@ -31,6 +33,19 @@ export default function AccountsScreen() {
   const currency = usePrimaryCurrency();
   const { refresh, refreshing } = useRefreshAppData();
   const [error, setError] = useState<string | null>(null);
+  const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
+  const bounds = useMemo(() => {
+    const now = new Date();
+    return monthBounds(now.getFullYear(), now.getMonth());
+  }, []);
+  const activity = useMemo(() => {
+    const byAccount: Record<string, ReturnType<typeof monthTotals>> = {};
+    const month = transactions.filter((movement) => isInRange(movement, bounds));
+    for (const account of accountsState.data) {
+      byAccount[idOf(account)] = monthTotals(month.filter((movement) => idOf(movement.account) === idOf(account)));
+    }
+    return byAccount;
+  }, [transactions, accountsState.data, bounds]);
 
   const accounts = useMemo(
     () =>
@@ -108,6 +123,11 @@ export default function AccountsScreen() {
                 <Text className="font-inter text-sm text-gf-text-muted" numberOfLines={1}>
                   {[TYPE_LABEL[account.accountType ?? ''] ?? account.accountType, account.institution].filter(Boolean).join(' · ')}
                 </Text>
+                {activity[idOf(account)] && activity[idOf(account)].count > 0 && (
+                  <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>
+                    Este mes: +{formatMoneyMajor(activity[idOf(account)].incomes, currency)} · -{formatMoneyMajor(activity[idOf(account)].spending, currency)} · {activity[idOf(account)].count} mov.
+                  </Text>
+                )}
               </View>
               <Text className="font-inter-bold text-lg text-gf-text">{formatMoneyMajor(account.amount ?? 0, account.currency || currency)}</Text>
             </Pressable>

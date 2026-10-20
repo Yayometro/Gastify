@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Switch, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
+import { MonthlyBars } from '@/components/charts/monthly-bars';
 import { CategoryBadge } from '@/components/category-badge';
 import { ChipPicker } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
@@ -31,8 +32,6 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import type { CategoryTotal } from '@gastify/core/transactions/monthSummary';
-
-const BAR_HEIGHT = 110;
 
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
@@ -106,8 +105,6 @@ export default function HistoryScreen() {
 
   const spendingRows = useMemo(() => compareCategories(a.spendingByCategory, b?.spendingByCategory ?? []), [a, b]);
   const incomeRows = useMemo(() => compareCategories(a.incomeByCategory as CategoryTotal[], b?.incomeByCategory as CategoryTotal[] ?? []), [a, b]);
-  const monthCount = Math.max(a.months.length, b?.months.length ?? 0);
-  const maxValue = Math.max(1, ...a.months.flatMap((m) => [m.incomes, m.spending]), ...(b?.months.flatMap((m) => [m.incomes, m.spending]) ?? []));
   const partial = historyStatus !== 'complete';
 
   const labelA = rangeLabelEs(rangeA.start, rangeA.end);
@@ -168,27 +165,7 @@ export default function HistoryScreen() {
       </Card>
 
       <Card title="Mes a mes">
-        <View className="flex-row items-end justify-between gap-1" style={{ height: BAR_HEIGHT + 24 }}>
-          {Array.from({ length: monthCount }).map((_, i) => {
-            const ma = a.months[i];
-            const mb = b?.months[i];
-            return (
-              <View key={i} className="flex-1 items-center gap-1">
-                <View className="flex-row items-end gap-0.5" style={{ height: BAR_HEIGHT }}>
-                  <View style={{ width: 5, height: Math.max(2, ((ma?.incomes ?? 0) / maxValue) * BAR_HEIGHT), borderRadius: 3, backgroundColor: colors.income }} />
-                  <View style={{ width: 5, height: Math.max(2, ((ma?.spending ?? 0) / maxValue) * BAR_HEIGHT), borderRadius: 3, backgroundColor: colors.expense }} />
-                  {mb && (
-                    <>
-                      <View style={{ width: 5, height: Math.max(2, (mb.incomes / maxValue) * BAR_HEIGHT), borderRadius: 3, backgroundColor: colors.income, opacity: 0.4 }} />
-                      <View style={{ width: 5, height: Math.max(2, (mb.spending / maxValue) * BAR_HEIGHT), borderRadius: 3, backgroundColor: colors.expense, opacity: 0.4 }} />
-                    </>
-                  )}
-                </View>
-                <Text className="font-inter text-xs text-gf-text-muted">{ma?.label ?? mb?.label}</Text>
-              </View>
-            );
-          })}
-        </View>
+        <MonthlyBars months={a.months} compare={b?.months} />
         <Text className="font-inter text-xs text-gf-text-muted">
           Verde: ingresos. Rojo: gastos.{compareOn ? ' Las barras tenues son del periodo comparado, mes contra mes.' : ''}
         </Text>
