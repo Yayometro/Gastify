@@ -79,15 +79,15 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| P01 | Filtros de tiempo arriba: flechas, tocar el mes para elegir año y mes, y rango personalizado (fecha inicial y final). | PENDIENTE | |
-| P02 | Dividir "Este mes" en tarjetas pequeñas (gasto total, sin presupuesto, etc.), cada una con barras y tocable para abrir modal. | PENDIENTE | |
-| P03 | Modal "Total spending": igual que el Spending Summary de la web. | PENDIENTE | |
-| P04 | Modal "Unbudgeted": Outside Budgets, Share of Spending, el texto "These movements are not covered by any active spending budget", lista desplegable, botón para agregar presupuesto desde ahí y "Other categories without a budget". | PENDIENTE | |
-| P05 | Tarjeta de presupuesto: la edición va contraída, con un botón de flecha para desplegarla. | PENDIENTE | |
-| P06 | Ahorro: mostrar pesos y dólares; indicador de meta alcanzada con ícono de celebración. | PENDIENTE | |
-| P07 | Mostrar "Detailed movements" y "Linked accounts" (por ejemplo Santander débito y Revolut). | PENDIENTE | |
-| P08 | Proyecto: movimientos vinculados con editar, desvincular, vincular existente, agregar existente y crear movimiento desde ahí. | PENDIENTE | |
-| P09 | Mostrar Spend, Limit y Available en cada presupuesto. | PENDIENTE | |
+| P01 | Filtros de tiempo arriba: flechas, tocar el mes para elegir año y mes, y rango personalizado (fecha inicial y final). | CÓDIGO LISTO | |
+| P02 | Dividir "Este mes" en tarjetas pequeñas (gasto total, sin presupuesto, etc.), cada una con barras y tocable para abrir modal. | CÓDIGO LISTO | |
+| P03 | Modal "Total spending": igual que el Spending Summary de la web. | CÓDIGO LISTO | |
+| P04 | Modal "Unbudgeted": Outside Budgets, Share of Spending, el texto "These movements are not covered by any active spending budget", lista desplegable, botón para agregar presupuesto desde ahí y "Other categories without a budget". | CÓDIGO LISTO | |
+| P05 | Tarjeta de presupuesto: la edición va contraída, con un botón de flecha para desplegarla. | CÓDIGO LISTO | |
+| P06 | Ahorro: mostrar pesos y dólares; indicador de meta alcanzada con ícono de celebración. | CÓDIGO LISTO | |
+| P07 | Mostrar "Detailed movements" y "Linked accounts" (por ejemplo Santander débito y Revolut). | CÓDIGO LISTO | |
+| P08 | Proyecto: movimientos vinculados con editar, desvincular, vincular existente, agregar existente y crear movimiento desde ahí. | CÓDIGO LISTO | |
+| P09 | Mostrar Spend, Limit y Available en cada presupuesto. | CÓDIGO LISTO | |
 
 ## Proyecciones
 

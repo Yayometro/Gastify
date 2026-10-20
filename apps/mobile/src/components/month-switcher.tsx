@@ -9,10 +9,13 @@ export function MonthSwitcher({
   value,
   onChange,
   latest,
+  onPressTitle,
 }: {
   value: Date;
   onChange: (month: Date) => void;
   latest: Date;
+  // Tapping the month's name (the web lets you pick any month from a calendar).
+  onPressTitle?: () => void;
 }) {
   const scheme = useColorScheme();
   const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
@@ -30,7 +33,13 @@ export function MonthSwitcher({
         className="h-11 w-11 items-center justify-center rounded-full">
         <Ionicons name="chevron-back" size={22} color={iconColor} />
       </Pressable>
-      <Text className="font-inter-semibold text-base text-gf-text">{monthTitleEs(value)}</Text>
+      {onPressTitle ? (
+        <Pressable accessibilityRole="button" accessibilityLabel="Elegir mes" onPress={onPressTitle} hitSlop={8}>
+          <Text className="font-inter-semibold text-base text-gf-text">{monthTitleEs(value)}</Text>
+        </Pressable>
+      ) : (
+        <Text className="font-inter-semibold text-base text-gf-text">{monthTitleEs(value)}</Text>
+      )}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Mes siguiente"

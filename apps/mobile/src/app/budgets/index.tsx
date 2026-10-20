@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
@@ -22,6 +22,12 @@ import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget 
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { monthBounds } from '@gastify/core/transactions/monthSummary';
+import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
+import { rangeLabelEs } from '@gastify/core/format/spanishDates';
+import { BudgetSummarySheet, type BudgetLine, type GroupLine } from '@/components/budget-summary-sheet';
+import { DateField } from '@/components/date-field';
+import { MonthGridModal } from '@/components/month-grid-modal';
+import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 
@@ -120,7 +126,21 @@ export default function BudgetsScreen() {
   const { refresh, refreshing } = useRefreshAppData();
 
   const now = useMemo(() => new Date(), []);
-  const bounds = useMemo(() => monthBounds(now.getFullYear(), now.getMonth()), [now]);
+  // The period the budgets are read in: a month (arrows, or tap the month to pick one) or a custom range.
+  const [month, setMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
+  const [custom, setCustom] = useState(false);
+  const [fromText, setFromText] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
+  const [toText, setToText] = useState(() => dateText(now));
+  const [monthOpen, setMonthOpen] = useState(false);
+  const [sheet, setSheet] = useState<'total' | 'unbudgeted' | null>(null);
+  const bounds = useMemo(() => {
+    if (!custom) return monthBounds(month.getFullYear(), month.getMonth());
+    const from = parseDateText(fromText) ?? new Date(now.getFullYear(), now.getMonth(), 1);
+    const to = parseDateText(toText) ?? now;
+    const [a, b] = from <= to ? [from, to] : [to, from];
+    return { start: new Date(a.getFullYear(), a.getMonth(), a.getDate(), 0, 0, 0, 0), end: new Date(b.getFullYear(), b.getMonth(), b.getDate(), 23, 59, 59, 999) };
+  }, [custom, month, fromText, toText, now]);
+  const periodLabel = custom ? rangeLabelEs(bounds.start, bounds.end) : monthTitleEs(month);
   const accounts = accountsState.data;
   const rates = useRatesToPrimary(
     [...budgetsState.data.map((budget) => budget.currency), ...accounts.map((account) => account.currency)],
@@ -197,10 +217,31 @@ export default function BudgetsScreen() {
     [plan, movements]
   );
 
+  // The uncovered spending grouped by category, biggest first (the web's "Other categories without a budget").
+  const uncoveredGroups = useMemo<GroupLine[]>(() => {
+    const map = new Map<string, GroupLine>();
+    for (const tx of coverage.uncovered) {
+      const category = (tx as unknown as { category?: { _id?: unknown; name?: string; icon?: string; color?: string } | null }).category;
+      const key = category?._id ? String(category._id) : category?.name || 'none';
+      const row = map.get(key) ?? { key, name: category?.name || 'Sin categoría', icon: category?.icon, color: category?.color, amount: 0, count: 0 };
+      row.amount += getPrimaryAmount(tx);
+      row.count += 1;
+      map.set(key, row);
+    }
+    return [...map.values()].map((row) => ({ ...row, amount: Math.round(row.amount * 100) / 100 })).sort((a, b) => b.amount - a.amount);
+  }, [coverage]);
+
+  const budgetLines = useMemo<BudgetLine[]>(
+    () => spendingRows.map((row) => ({ key: idOf(row.budget), name: row.budget.name || 'Presupuesto', icon: row.budget.icon ?? undefined, color: typeof row.budget.color === 'string' ? row.budget.color : undefined, spent: row.spent, goal: row.goal })),
+    [spendingRows]
+  );
+
   const loading = budgetsState.status === 'loading' && budgetsState.data.length === 0;
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
   return (
-    <Screen title="Presupuestos" subtitle={monthTitleEs(now)} refreshing={refreshing} onRefresh={refresh}>
+    <Screen title="Presupuestos" subtitle={periodLabel} refreshing={refreshing} onRefresh={refresh}>
       {budgetsState.status === 'failed' && (
         <Text className="font-inter text-sm text-red-500">No pudimos cargar tus presupuestos.</Text>
       )}
@@ -211,23 +252,53 @@ export default function BudgetsScreen() {
         <NewButton label="Proyecto" kind="project" />
       </View>
 
-      <Card title="Este mes">
-        <View className="flex-row justify-between gap-3">
-          <Text className="font-inter text-base text-gf-text-muted">Gasto del mes</Text>
-          <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(coverage.totalSpent, currency)}</Text>
+      {/* The period: arrows move by month, tapping the month picks any month; "Personalizado" takes a range. */}
+      <View className="gap-3">
+        {!custom && <MonthSwitcher value={month} onChange={setMonth} latest={now} onPressTitle={() => setMonthOpen(true)} />}
+        <View className="flex-row gap-2">
+          <PeriodChip label="Mes" selected={!custom} onPress={() => setCustom(false)} />
+          <PeriodChip label="Personalizado" selected={custom} onPress={() => setCustom(true)} />
         </View>
-        <View className="flex-row justify-between gap-3">
-          <Text className="font-inter text-base text-gf-text-muted">Dentro de presupuestos</Text>
-          <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(Math.max(0, coverage.totalSpent - coverage.unbudgetedSpent), currency)}</Text>
-        </View>
-        <View className="flex-row justify-between gap-3">
-          <Text className="font-inter text-base text-gf-text-muted">Sin presupuesto</Text>
-          <Text className="font-inter-semibold text-base text-gf-text">
-            {formatMoneyMajor(coverage.unbudgetedSpent, currency)}
-            {coverage.unbudgetedPercentage ? ` (${Math.round(coverage.unbudgetedPercentage)}%)` : ''}
-          </Text>
-        </View>
-      </Card>
+        {custom && (
+          <View className="gap-3">
+            <DateField label="Fecha inicial" value={fromText} onChange={setFromText} />
+            <DateField label="Fecha final" value={toText} onChange={setToText} />
+          </View>
+        )}
+      </View>
+
+      {/* Two tiles, as the web's summary: the total spending and the part no budget covers. Each opens its detail. */}
+      <View className="flex-row gap-3">
+        <Pressable accessibilityRole="button" onPress={() => setSheet('total')} className="flex-1">
+          <Card title="Gasto total">
+            <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.totalSpent, currency)}</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">Toca para ver el detalle</Text>
+          </Card>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => setSheet('unbudgeted')} className="flex-1">
+          <Card title="Sin presupuesto">
+            <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.unbudgetedSpent, currency)}</Text>
+            <ProgressBar ratio={Math.min(1, coverage.unbudgetedPercentage / 100)} color={colors.accent} />
+            <Text className="font-inter text-xs text-gf-text-muted">{Math.round(coverage.unbudgetedPercentage)}% del gasto</Text>
+          </Card>
+        </Pressable>
+      </View>
+
+      <MonthGridModal visible={monthOpen} value={month} latest={now} onPick={setMonth} onClose={() => setMonthOpen(false)} />
+      <BudgetSummarySheet
+        kind={sheet}
+        onClose={() => setSheet(null)}
+        currency={currency}
+        total={coverage.totalSpent}
+        unbudgeted={coverage.unbudgetedSpent}
+        percentage={coverage.unbudgetedPercentage}
+        budgets={budgetLines}
+        groups={uncoveredGroups}
+        onAddBudget={() => {
+          setSheet(null);
+          router.push('/budgets/new');
+        }}
+      />
 
       {loading ? (
         <Muted>Cargando…</Muted>
@@ -260,5 +331,20 @@ export default function BudgetsScreen() {
         </>
       )}
     </Screen>
+  );
+}
+
+function PeriodChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      className="rounded-full border border-gf-border px-4 py-2"
+      style={{ backgroundColor: selected ? colors.accentSoft : undefined, borderColor: selected ? colors.accent : undefined }}>
+      <Text className="font-inter-medium text-sm text-gf-text">{label}</Text>
+    </Pressable>
   );
 }

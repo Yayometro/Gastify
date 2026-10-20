@@ -1,13 +1,16 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useMemo, useState } from 'react';
+import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { BudgetForm } from '@/components/forms/budget-form';
+import { PickerModal } from '@/components/picker-modal';
 import { MovementRow } from '@/components/movements/movement-row';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
+import { Colors } from '@/constants/theme';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
@@ -41,6 +44,11 @@ export default function BudgetDetailScreen() {
   const now = useMemo(() => new Date(), []);
   const bounds = useMemo(() => monthBounds(now.getFullYear(), now.getMonth()), [now]);
   const back = () => (router.canGoBack() ? router.back() : router.replace('/budgets'));
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  // The editor is folded away until it is opened (the web's collapsed edit panel).
+  const [editOpen, setEditOpen] = useState(false);
+  const [linkOpen, setLinkOpen] = useState(false);
 
   const view = useMemo(() => {
     if (!stored) return null;
@@ -63,7 +71,21 @@ export default function BudgetDetailScreen() {
         return tx.isBill && when >= bounds.start.getTime() && when <= bounds.end.getTime() && matchBillToBudget(tx as never, budget as never);
       });
     }
-    return { budget, goal, spent: Math.round(spent * 100) / 100, related: sortNewestFirst(related) };
+    // Saving: what is in each currency across the linked accounts (pesos and dólares, as the web shows).
+    const linkedAccounts = accounts.filter((account) => (budget.linkedAccounts || []).map(idOf).includes(idOf(account)));
+    const byCurrency = new Map<string, number>();
+    for (const account of linkedAccounts) {
+      const code = account.currency || currency;
+      byCurrency.set(code, (byCurrency.get(code) ?? 0) + (Number(account.amount) || 0));
+    }
+    return {
+      budget,
+      goal,
+      spent: Math.round(spent * 100) / 100,
+      related: sortNewestFirst(related),
+      linkedAccounts,
+      byCurrency: [...byCurrency.entries()].map(([code, amount]) => ({ code, amount })),
+    };
   }, [stored, currency, rates, transactions, accounts, bounds, id]);
 
   if (!stored || !view) {
@@ -74,11 +96,24 @@ export default function BudgetDetailScreen() {
     );
   }
 
-  const { budget, goal, spent, related } = view;
+  const { budget, goal, spent, related, linkedAccounts, byCurrency } = view;
   const saving = isSavingBudget(budget);
   const project = isProjectBudget(budget);
   const ratio = goal > 0 ? spent / goal : 0;
   const diff = goal - spent;
+  const reached = saving && goal > 0 && spent >= goal;
+  // Project movements that can still be linked: bills not tied to any budget yet, or tied to another one.
+  const linkable = transactions.filter((tx) => tx.isBill && !tx.isIncome && getExplicitBudgetId(tx) !== id);
+
+  const linkMovement = async (transactionId: string, budgetId: string | null) => {
+    try {
+      await sendWrite('general-data/transactions/link-budget', { transactionId, budgetId });
+      toast.show(budgetId ? 'Movimiento vinculado' : 'Movimiento desvinculado');
+      reloadAfterWrite(dispatch);
+    } catch (e) {
+      toast.show(messageOf(e), 'error');
+    }
+  };
 
   const remove = () => {
     Alert.alert('Borrar este presupuesto', 'Los movimientos ligados se conservan, sin presupuesto. No se puede deshacer.', [
@@ -107,28 +142,91 @@ export default function BudgetDetailScreen() {
         {goal > 0 && (
           <>
             <ProgressBar ratio={ratio} color={getBudgetBarColor(ratio, saving)} />
-            <View className="flex-row justify-between">
-              <Text className="font-inter text-sm text-gf-text-muted">Meta {formatMoneyMajor(goal, currency)}</Text>
-              <Text className="font-inter-semibold text-sm text-gf-text">{Math.round(ratio * 100)}%</Text>
+            <View className="gap-1">
+              <View className="flex-row justify-between">
+                <Text className="font-inter text-sm text-gf-text-muted">{saving ? 'Meta' : 'Límite'}</Text>
+                <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(goal, currency)}</Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="font-inter text-sm text-gf-text-muted">{saving ? 'Faltante' : 'Disponible'}</Text>
+                <Text className="font-inter-semibold text-sm" style={{ color: diff >= 0 ? colors.text : colors.expense }}>
+                  {formatMoneyMajor(Math.abs(diff), currency)}
+                  {diff < 0 && !saving ? ' (excedido)' : ''}
+                </Text>
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="font-inter text-sm text-gf-text-muted">Avance</Text>
+                <Text className="font-inter-semibold text-sm text-gf-text">{Math.round(ratio * 100)}%</Text>
+              </View>
             </View>
-            <Text className="font-inter text-sm text-gf-text-muted">
-              {diff >= 0 ? (saving ? `Faltan ${formatMoneyMajor(diff, currency)} para la meta` : `Quedan ${formatMoneyMajor(diff, currency)}`) : saving ? 'Meta alcanzada' : `Excedido por ${formatMoneyMajor(-diff, currency)}`}
-            </Text>
           </>
+        )}
+        {reached && (
+          <View className="flex-row items-center gap-2 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.accentSoft }}>
+            <Ionicons name="trophy" size={22} color="#f59e0b" />
+            <Text className="flex-1 font-inter-semibold text-base text-gf-text">¡Meta alcanzada! Felicidades.</Text>
+          </View>
+        )}
+        {saving && byCurrency.length > 0 && (
+          <View className="gap-1 pt-1">
+            <Text className="font-inter-medium text-sm text-gf-text-muted">En tus cuentas ligadas</Text>
+            {byCurrency.map((row) => (
+              <View key={row.code} className="flex-row justify-between">
+                <Text className="font-inter text-sm text-gf-text-muted">{row.code}</Text>
+                <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.amount, row.code)}</Text>
+              </View>
+            ))}
+          </View>
         )}
       </Card>
 
+      {saving && (
+        <Card title="Cuentas ligadas">
+          {linkedAccounts.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Esta meta no tiene cuentas ligadas.</Text>}
+          {linkedAccounts.map((account) => (
+            <View key={idOf(account)} className="flex-row items-center justify-between gap-3">
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{account.name || 'Cuenta'}</Text>
+              <Text className="font-inter text-sm text-gf-text-muted">{formatMoneyMajor(account.amount ?? 0, account.currency || currency)}</Text>
+            </View>
+          ))}
+        </Card>
+      )}
+
       {!saving && (
         <Card title={project ? 'Movimientos del proyecto' : 'Movimientos que cuentan'}>
+          {project && (
+            <View className="flex-row gap-2">
+              <Pressable accessibilityRole="button" onPress={() => setLinkOpen(true)} className="flex-1 items-center rounded-full border border-gf-border py-2.5">
+                <Text className="font-inter-semibold text-sm text-gf-text">Vincular existente</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" onPress={() => router.push('/add')} className="flex-1 items-center rounded-full border border-gf-border py-2.5">
+                <Text className="font-inter-semibold text-sm text-gf-text">Crear movimiento</Text>
+              </Pressable>
+            </View>
+          )}
           {related.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no hay movimientos.</Text>}
           {related.slice(0, 25).map((movement) => (
-            <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id) } })} />
+            <View key={String(movement._id)} className="gap-1">
+              <MovementRow movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: `/budgets/${id}` } })} />
+              {project && (
+                <Pressable accessibilityRole="button" onPress={() => linkMovement(String(movement._id), null)} className="self-end px-2 pb-1">
+                  <Text className="font-inter-medium text-xs" style={{ color: colors.expense }}>Desvincular</Text>
+                </Pressable>
+              )}
+            </View>
           ))}
           {related.length > 25 && <Text className="font-inter text-sm text-gf-text-muted">Y {related.length - 25} más en Movimientos.</Text>}
         </Card>
       )}
 
-      <Card title="Editar">
+      <Card
+        title="Editar"
+        action={
+          <Pressable accessibilityRole="button" accessibilityState={{ expanded: editOpen }} accessibilityLabel={editOpen ? 'Ocultar edición' : 'Mostrar edición'} onPress={() => setEditOpen((open) => !open)} hitSlop={10}>
+            <Ionicons name={editOpen ? 'chevron-up' : 'chevron-down'} size={22} color={colors.text} />
+          </Pressable>
+        }>
+        {editOpen && (
         <BudgetForm
           key={id}
           id={id}
@@ -142,7 +240,23 @@ export default function BudgetDetailScreen() {
           }}
           onDelete={remove}
         />
+        )}
       </Card>
+
+      {project && (
+        <PickerModal
+          visible={linkOpen}
+          title="Vincular un movimiento"
+          searchPlaceholder="Buscar movimiento"
+          items={linkable.map((tx) => ({ id: String(tx._id), label: tx.name || 'Movimiento', detail: `${formatMoneyMajor(getPrimaryAmount(tx), currency)} · ${new Date((tx.date ?? tx.createdAt) as string).toLocaleDateString('es-MX')}` }))}
+          isSelected={() => false}
+          onSelect={(transactionId) => {
+            setLinkOpen(false);
+            linkMovement(transactionId, id);
+          }}
+          onClose={() => setLinkOpen(false)}
+        />
+      )}
     </Screen>
   );
 }

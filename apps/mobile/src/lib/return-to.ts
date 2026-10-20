@@ -18,5 +18,6 @@ export function returnLabel(returnTo: string | undefined, fallback: string): str
   if (!returnTo) return fallback;
   if (returnTo.startsWith('/more/history')) return 'Historial';
   if (returnTo.startsWith('/more/accounts/')) return 'Cuenta';
+  if (returnTo.startsWith('/budgets/')) return 'Presupuesto';
   return fallback;
 }
