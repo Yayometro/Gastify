@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
+import { IncomeSourcesCard } from '@/components/projections/income-sources-card';
+import { HistoricalReferencesCard } from '@/components/projections/historical-references-card';
+import { InfoTip } from '@/components/info-tip';
+
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
@@ -12,6 +16,7 @@ import { messageOf } from '@/lib/write';
 import { getApi } from '@gastify/core/api/client';
 import { MONTHS_ES } from '@gastify/core/format/spanishDates';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { totalInPrimary } from '@gastify/core/accounts/accountTotals';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { convertBaselineToPrimary, convertSourcesToPrimary, foreignCurrenciesOf } from '@gastify/core/transformers/projectionInputs';
 import { buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
@@ -32,6 +37,9 @@ export default function ProjectionsScreen() {
   const budgets = useSelector((state: RootState) => state.budgetReducer.data);
   const currency = usePrimaryCurrency();
   const [year, setYear] = useState(() => new Date().getFullYear());
+  // Bumped after a source or reference is saved or removed: the data is read again.
+  const [reloadKey, setReloadKey] = useState(0);
+  const accounts = useSelector((state: RootState) => state.accountsReducer.data);
   const [sources, setSources] = useState<AnyRecord[] | null>(null);
   const [settings, setSettings] = useState<AnyRecord | null>(null);
   const [baseline, setBaseline] = useState<AnyRecord | null>(null);
@@ -61,12 +69,14 @@ export default function ProjectionsScreen() {
     return () => {
       alive = false;
     };
-  }, [year]);
+  }, [year, reloadKey]);
 
   const rates = useRatesToPrimary(
-    [...foreignCurrenciesOf(sources as never, baseline as never, currency), ...budgets.map((budget) => budget.currency)],
+    [...foreignCurrenciesOf(sources as never, baseline as never, currency), ...budgets.map((budget) => budget.currency), ...accounts.map((account) => account.currency)],
     currency
   );
+  // Money today: every account in the main currency. The balance column starts from it.
+  const startingBalance = useMemo(() => totalInPrimary(accounts, currency, rates).total, [accounts, currency, rates]);
 
   const inputs = useMemo(() => {
     const convertedSources = convertSourcesToPrimary((sources ?? []) as { amount?: number; currency?: string }[], currency, rates);
@@ -92,8 +102,23 @@ export default function ProjectionsScreen() {
     });
   }, [transactions, inputs, sources, settings, year, today]);
 
+  // The balance after each month: today's money plus what the months from now on are projected to net. Past
+  // months are real and have no projected balance.
+  const balances = useMemo(() => {
+    let running = startingBalance;
+    return rows.map((row) => {
+      if (row.type === 'actual') return null;
+      const income = (row.projectedIncome ?? row.income) ?? 0;
+      const expense = (row.projectedExpense ?? row.expense) ?? 0;
+      running += income - expense;
+      return running;
+    });
+  }, [rows, startingBalance]);
+
+  const reload = () => setReloadKey((key) => key + 1);
+
   return (
-    <Screen title="Proyecciones" subtitle={`Año ${year}`} backLabel="Más" onBack={() => router.back()}>
+    <Screen title="Proyecciones" subtitle={`Moneda principal: ${currency} · Año ${year}`} backLabel="Más" onBack={() => router.back()}>
       <View className="flex-row justify-between">
         <Pressable accessibilityRole="button" onPress={() => setYear((y) => y - 1)} hitSlop={8}>
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>‹ Año anterior</Text>
@@ -135,8 +160,17 @@ export default function ProjectionsScreen() {
                     <Text className="font-inter-medium text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(expense ?? 0)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="font-inter text-xs text-gf-text-muted">Neto</Text>
-                    <Text className="font-inter-semibold text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: net < 0 ? colors.expense : colors.text }}>{money(net)}</Text>
+                    <View className="flex-row items-center gap-1">
+                      <Text className="font-inter text-xs text-gf-text-muted">Neto</Text>
+                      <InfoTip info={{ title: 'Neto', text: 'Lo que entra menos lo que sale en el mes: ingresos menos gastos. Verde si sobra dinero, rojo si falta.' }} />
+                    </View>
+                    <Text className="font-inter-semibold text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: net < 0 ? colors.expense : colors.income }}>{money(net)}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-inter text-xs text-gf-text-muted">Balance</Text>
+                    <Text className="font-inter-semibold text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.text }}>
+                      {balances[index] === null || balances[index] === undefined ? '—' : money(balances[index] as number)}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -144,6 +178,13 @@ export default function ProjectionsScreen() {
           })}
           <Text className="font-inter text-xs text-gf-text-muted">Los meses reales muestran lo que ya ocurrió; los estimados, lo que se proyecta.</Text>
         </Card>
+      )}
+
+      {sources !== null && (
+        <IncomeSourcesCard sources={sources} currency={currency} onChanged={reload} />
+      )}
+      {sources !== null && (
+        <HistoricalReferencesCard baseline={baseline} currency={currency} onChanged={reload} />
       )}
     </Screen>
   );

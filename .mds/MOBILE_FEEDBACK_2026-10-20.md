@@ -93,13 +93,13 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| Y01 | Sección "Income sources": lista de fuentes y crear una nueva. | PENDIENTE | |
-| Y02 | Sección "Referencias históricas": ver cada una y agregar de ingreso y de gasto. | PENDIENTE | |
-| Y03 | Columna Neto con color verde o rojo. | PENDIENTE | |
-| Y04 | Columna Balance (hoy no aparece). | PENDIENTE | |
-| Y05 | Icono "?" junto a Neto y Balance. | PENDIENTE | Ver T03. |
+| Y01 | Sección "Income sources": lista de fuentes y crear una nueva. | CÓDIGO LISTO | |
+| Y02 | Sección "Referencias históricas": ver cada una y agregar de ingreso y de gasto. | CÓDIGO LISTO | |
+| Y03 | Columna Neto con color verde o rojo. | CÓDIGO LISTO | |
+| Y04 | Columna Balance (hoy no aparece). | CÓDIGO LISTO | Saldo proyectado: dinero de hoy en cuentas más el neto proyectado de los meses que faltan. Ajustar si la web usa otra regla. |
+| Y05 | Icono "?" junto a Neto y Balance. | CÓDIGO LISTO | Ver T03. |
 | Y06 | Indicador de precisión de las proyecciones, arriba y abajo de la tabla, como en la web. | PENDIENTE | |
-| Y07 | Mostrar la moneda principal arriba. | PENDIENTE | |
+| Y07 | Mostrar la moneda principal arriba. | CÓDIGO LISTO | |
 | Y08 | Proyecciones también dentro de Historial, con filtro de tiempo propio. | PENDIENTE | Ver H11. |
 
 ## Cuentas
