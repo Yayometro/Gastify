@@ -7,10 +7,13 @@ import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
+import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import { messageOf } from '@/lib/write';
 import { getApi } from '@gastify/core/api/client';
 import { MONTHS_ES } from '@gastify/core/format/spanishDates';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
+import { convertBaselineToPrimary, convertSourcesToPrimary, foreignCurrenciesOf } from '@gastify/core/transformers/projectionInputs';
 import { buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
 import type { RootState } from '@/store';
 
@@ -21,8 +24,8 @@ const TYPE_LABEL: Record<YearProjectionRow['type'], string> = { actual: 'Real', 
 const COLUMNS = { month: 96, type: 96, income: 116, expense: 116, net: 116 };
 
 // The year's projection, month by month, read-only: the same table the web builds from the income
-// sources, the year's settings and the baseline. Income sources in another currency are not converted
-// here yet (the web converts them with a live quote), and the screen says so.
+// sources, the year's settings and the baseline. Like the web, anything entered in another currency (income
+// sources, the baseline, budgets) is converted to the main currency before the math.
 export default function ProjectionsScreen() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -61,20 +64,34 @@ export default function ProjectionsScreen() {
     };
   }, [year]);
 
+  const rates = useRatesToPrimary(
+    [...foreignCurrenciesOf(sources as never, baseline as never, currency), ...budgets.map((budget) => budget.currency)],
+    currency
+  );
+
+  const inputs = useMemo(() => {
+    const convertedSources = convertSourcesToPrimary((sources ?? []) as { amount?: number; currency?: string }[], currency, rates);
+    const convertedBaseline = convertBaselineToPrimary(baseline as never, currency, rates);
+    return {
+      sources: convertedSources.sources,
+      baseline: convertedBaseline.baseline,
+      budgets: convertBudgetsToPrimary(budgets.filter((budget) => !budget.archived), currency, rates),
+      missing: [...new Set([...convertedSources.missing, ...convertedBaseline.missing])],
+    };
+  }, [sources, baseline, budgets, currency, rates]);
+
   const rows = useMemo<YearProjectionRow[]>(() => {
     if (!sources) return [];
     return buildYearProjectionTable({
       transactions: transactions as never,
-      budgets: budgets as never,
-      incomeSources: sources as never,
+      budgets: inputs.budgets as never,
+      incomeSources: inputs.sources as never,
       projectionSettings: settings as never,
-      projectionBaseline: baseline as never,
+      projectionBaseline: inputs.baseline as never,
       year,
       today,
     });
-  }, [transactions, budgets, sources, settings, baseline, year, today]);
-
-  const foreignSources = (sources ?? []).some((source) => typeof source.currency === 'string' && source.currency !== currency);
+  }, [transactions, inputs, sources, settings, year, today]);
 
   return (
     <Screen title="Proyecciones" subtitle={`Año ${year}`} backLabel="Más" onBack={() => router.back()}>
@@ -92,9 +109,9 @@ export default function ProjectionsScreen() {
 
       {sources !== null && (
         <Card title="Mes a mes">
-          {foreignSources && (
+          {inputs.missing.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
-              Hay fuentes de ingreso en otra moneda: aquí se suman tal cual, sin convertir. El web sí las convierte.
+              {`Todavía no hay tipo de cambio para ${inputs.missing.join(', ')}: esas cifras se muestran sin convertir.`}
             </Text>
           )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>

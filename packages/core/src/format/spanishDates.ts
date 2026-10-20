@@ -43,3 +43,9 @@ export function longDateEs(date: Date): string {
   const weekday = WEEKDAYS_ES[date.getDay()];
   return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${date.getDate()} de ${MONTHS_ES[date.getMonth()]} de ${date.getFullYear()}`;
 }
+
+// "1 ago 2026 – 31 oct 2026"
+export function rangeLabelEs(start: Date, end: Date): string {
+  const short = (date: Date) => `${date.getDate()} ${MONTHS_ES_SHORT[date.getMonth()]} ${date.getFullYear()}`;
+  return `${short(start)} – ${short(end)}`;
+}
