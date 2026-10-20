@@ -8,7 +8,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
 | G01 | Lista de to-dos de TODO lo pedido, un punto por cosa, para trazabilidad (este archivo). | HECHO | |
-| G02 | Botón flotante "Tools" (como en la web) que abre un modal. Hoy solo "Transaction Categorizer"; debe quedar preparado para más herramientas. | PENDIENTE | Revisar el botón en la web. |
+| G02 | Botón flotante "Tools" (como en la web) que abre un modal. Hoy solo "Transaction Categorizer"; debe quedar preparado para más herramientas. | HECHO | Revisar el botón en la web. |
 | G03 | Notificaciones (avisos) más bonitas en móvil. | CÓDIGO LISTO | |
 | G04 | Vista para iPad con menú lateral izquierdo y dashboards como en la web (no ver la app de teléfono estirada). | CÓDIGO LISTO | Recomendado hacerlo pronto (ver nota al final). |
 | G05 | Cada widget o sección con su propio filtro de tiempo, independiente del periodo general. | EN CURSO | |
@@ -51,7 +51,7 @@ Regla: un punto pasa a HECHO solo cuando está implementado **y verificado** (em
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
 | M01 | Importar desde Excel (no existe en móvil). | PENDIENTE | Revisar la ruta de importación de la web. |
-| M02 | Transaction Categorizer (no existe en móvil). Accesible también desde el botón Tools (G02). | PENDIENTE | |
+| M02 | Transaction Categorizer (no existe en móvil). Accesible también desde el botón Tools (G02). | CÓDIGO LISTO | Verificado: abre, busca y muestra "sin sugerencias" (la cuenta QA no tiene reglas). Aplicar sugerencias sin probar. Falta atajo dentro de Movimientos. |
 | M03 | Transaction Details: ya funciona, mantener. | HECHO | Revisado en el emulador. |
 | M04 | Más filtros, como en la web (revisar la lista completa de la web). | PENDIENTE | |
 | M05 | Tocar el mes abre calendario y selector de mes. | CÓDIGO LISTO | Ver T04. |

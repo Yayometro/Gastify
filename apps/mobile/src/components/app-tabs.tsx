@@ -6,6 +6,7 @@ import { type ColorValue, StyleSheet, useColorScheme, useWindowDimensions, View 
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
 import { SideNav } from '@/components/side-nav';
+import { ToolsFab } from '@/components/tools/tools-fab';
 import { Colors } from '@/constants/theme';
 import { useLoadAppData } from '@/hooks/use-load-app-data';
 
@@ -92,11 +93,19 @@ export default function AppTabs() {
     </Tabs>
   );
 
-  if (!wide) return tabs;
+  if (!wide) {
+    return (
+      <View style={{ flex: 1 }}>
+        {tabs}
+        <ToolsFab />
+      </View>
+    );
+  }
   return (
     <View style={{ flex: 1, flexDirection: 'row' }}>
       <SideNav />
       <View style={{ flex: 1 }}>{tabs}</View>
+      <ToolsFab />
     </View>
   );
 }
