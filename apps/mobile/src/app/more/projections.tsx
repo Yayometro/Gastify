@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
+import { useRefreshAppData } from '@/hooks/use-load-app-data';
 import { messageOf } from '@/lib/write';
 import { getApi } from '@gastify/core/api/client';
 import { MONTHS_ES } from '@gastify/core/format/spanishDates';
@@ -26,6 +27,7 @@ import {
   type YearProjectionRow,
 } from '@gastify/core/transformers/projectionsChange';
 import { getYearMonthDateRange } from '@gastify/core/time/timeFunctions';
+import { zebra } from '@/components/ui/zebra';
 import { AccuracyCard } from '@/components/projections/accuracy-card';
 import { ProjectionMonthSheet } from '@/components/projections/month-sheet';
 import type { RootState } from '@/store';
@@ -40,6 +42,7 @@ const TYPE_LABEL: Record<YearProjectionRow['type'], string> = { actual: 'Real', 
 // sources, the baseline, budgets) is converted to the main currency before the math.
 export default function ProjectionsScreen() {
   const scheme = useColorScheme();
+  const dark = scheme === 'dark';
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const budgets = useSelector((state: RootState) => state.budgetReducer.data);
@@ -136,9 +139,10 @@ export default function ProjectionsScreen() {
   }, [transactions, inputs, settings, sources, year, today]);
 
   const reload = () => setReloadKey((key) => key + 1);
+  const appRefresh = useRefreshAppData();
 
   return (
-    <Screen title="Proyecciones" subtitle={`Moneda principal: ${currency} · Año ${year}`} backLabel="Más" onBack={() => router.back()}>
+    <Screen title="Proyecciones" subtitle={`Moneda principal: ${currency} · Año ${year}`} backLabel="Más" onBack={() => router.back()} refreshing={appRefresh.refreshing} onRefresh={() => { appRefresh.refresh(); reload(); }}>
       <View className="flex-row justify-between">
         <Pressable accessibilityRole="button" onPress={() => setYear((y) => y - 1)} hitSlop={8}>
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>‹ Año anterior</Text>
@@ -152,7 +156,7 @@ export default function ProjectionsScreen() {
       {!error && sources === null && <ActivityIndicator color={colors.accent} />}
 
       {sources !== null && (
-        <Card title="Mes a mes" info={{ title: 'Mes a mes', text: 'Cada mes del año en una tarjeta. Ingresos: lo que entra. Gastos: lo que sale. Neto: ingresos menos gastos (verde si sobra, rojo si falta). Saldo: el dinero que tendrías al cierre del mes en tu moneda principal. «Real» es un mes que ya ocurrió, con tus movimientos; «Estimado» se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas; «Este mes» arranca como estimado y se llena con lo real. Con ≈, el saldo es una estimación hecha hacia atrás cuando no guardaste el saldo real. Todas las cifras están en tu moneda principal. Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.' }}>
+        <Card style={{ backgroundColor: dark ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title="Mes a mes" info={{ title: 'Mes a mes', text: 'Cada mes del año en una tarjeta. Ingresos: lo que entra. Gastos: lo que sale. Neto: ingresos menos gastos (verde si sobra, rojo si falta). Saldo: el dinero que tendrías al cierre del mes en tu moneda principal. «Real» es un mes que ya ocurrió, con tus movimientos; «Estimado» se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas; «Este mes» arranca como estimado y se llena con lo real. Con ≈, el saldo es una estimación hecha hacia atrás cuando no guardaste el saldo real. Todas las cifras están en tu moneda principal. Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.' }}>
           {inputs.missing.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
               {`Todavía no hay tipo de cambio para ${inputs.missing.join(', ')}: esas cifras se muestran sin convertir.`}
@@ -167,7 +171,7 @@ export default function ProjectionsScreen() {
             const balanceText = (entry: { balance?: number | null; estimatedBalance?: number | null } | undefined) =>
               typeof entry?.balance === 'number' ? money(entry.balance) : typeof entry?.estimatedBalance === 'number' ? `≈ ${money(entry.estimatedBalance)}` : '—';
             return (
-              <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={`Abrir ${row.monthName}`} onPress={() => setOpenMonth(index)} className="gap-1 border-t border-gf-border pt-3">
+              <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={`Abrir ${row.monthName}`} onPress={() => setOpenMonth(index)} className="gap-1 rounded-xl px-3 py-3" style={zebra(index, dark)}>
                 <View className="flex-row items-center justify-between">
                   <Text className="font-inter-semibold text-base capitalize text-gf-text">{MONTHS_ES[index] ?? row.monthName}</Text>
                   <Text className="font-inter-medium text-xs" style={{ color: row.type === 'estimate' ? colors.accent : colors.textSecondary }}>{TYPE_LABEL[row.type]}</Text>

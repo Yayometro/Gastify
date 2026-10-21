@@ -52,6 +52,18 @@ function Delta({ current, previous, invert = false }: { current: number; previou
   );
 }
 
+// The readings of «Datos del periodo»; with a comparison the same readings are made for the other period, in the same order.
+function periodFacts(x: PeriodSummary<TransactionData>, cell: (value: number) => string): { label: string; value: string; detail: string }[] {
+  const top = x.spendingByCategory[0];
+  return [
+    { label: 'Movimientos', value: String(x.totals.count), detail: 'en el periodo' },
+    { label: 'Lo que conservaste', value: x.totals.incomes > 0 ? `${Math.round(((x.totals.incomes - x.totals.spending) / x.totals.incomes) * 100)}%` : '—', detail: 'de tus ingresos' },
+    { label: 'Gasto promedio por mes', value: cell(x.months.length ? x.totals.spending / x.months.length : 0), detail: `${x.months.length} ${x.months.length === 1 ? 'mes' : 'meses'}` },
+    { label: 'Lo que más pesa', value: top?.name ?? '—', detail: top ? cell(top.value) : 'sin gastos' },
+    { label: 'Gasto más grande', value: x.biggest[0] ? cell(Math.abs(getPrimaryAmount(x.biggest[0]))) : '—', detail: x.biggest[0]?.name ?? 'sin gastos' },
+  ];
+}
+
 // History by period, like the web's History page: choose the period (the last 3 months by default),
 // optionally compare it with another (the same stretch a year earlier by default), and see the totals, the
 // months side by side, the categories and the biggest expenses of each.
@@ -154,7 +166,7 @@ export default function HistoryScreen() {
               {b && row.bv !== undefined && (
                 <View className="flex-1">
                   <Text className="font-inter text-xs text-gf-text-muted">Comparado</Text>
-                  <Text className="font-inter-semibold text-lg text-gf-text-muted" numberOfLines={1} adjustsFontSizeToFit>{cell(row.bv)}</Text>
+                  <Text className={`font-inter-bold ${tablet ? 'text-4xl' : 'text-lg'}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: row.color, opacity: 0.5 }}>{cell(row.bv)}</Text>
                   <Delta current={row.av} previous={row.bv} invert={row.invert} />
                 </View>
               )}
@@ -166,17 +178,12 @@ export default function HistoryScreen() {
           <PairedColumn>
       <Card title="Datos del periodo" info={{ title: 'Datos del periodo', text: 'Lecturas rápidas del mismo periodo: cuántos movimientos tuvo, qué parte de tus ingresos conservaste ((ingresos − gastos) ÷ ingresos), cuánto gastaste en promedio por mes, qué categoría pesó más y cuál fue tu gasto más grande. Se calculan con los mismos movimientos que el resumen.' }}>
         <View className="flex-row flex-wrap gap-3">
-          {[
-            { label: 'Movimientos', value: String(a.totals.count), detail: 'en el periodo' },
-            { label: 'Lo que conservaste', value: a.totals.incomes > 0 ? `${Math.round(((a.totals.incomes - a.totals.spending) / a.totals.incomes) * 100)}%` : '—', detail: 'de tus ingresos' },
-            { label: 'Gasto promedio por mes', value: cell(a.months.length ? a.totals.spending / a.months.length : 0), detail: `${a.months.length} ${a.months.length === 1 ? 'mes' : 'meses'}` },
-            { label: 'Lo que más pesa', value: a.spendingByCategory[0]?.name ?? '—', detail: a.spendingByCategory[0] ? cell(a.spendingByCategory[0].value) : 'sin gastos' },
-            { label: 'Gasto más grande', value: a.biggest[0] ? cell(Math.abs(getPrimaryAmount(a.biggest[0]))) : '—', detail: a.biggest[0]?.name ?? 'sin gastos' },
-          ].map((tile) => (
+          {periodFacts(a, cell).map((fact, index) => ({ ...fact, versus: b ? periodFacts(b, cell)[index].value : null })).map((tile) => (
             <View key={tile.label} className="gap-1 rounded-2xl p-4" style={{ flexBasis: '47%', flexGrow: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
               <Text className="font-inter text-sm text-gf-text-muted">{tile.label}</Text>
               <Text className="font-inter-bold text-xl text-gf-text" numberOfLines={1} adjustsFontSizeToFit>{tile.value}</Text>
               <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>{tile.detail}</Text>
+              {tile.versus !== null && <Text className="font-inter-semibold text-sm text-gf-text-muted" numberOfLines={1}>vs {tile.versus} (comparado)</Text>}
             </View>
           ))}
         </View>
@@ -200,7 +207,7 @@ export default function HistoryScreen() {
               {b && row.bv !== undefined && (
                 <View className="flex-1">
                   <Text className="font-inter text-xs text-gf-text-muted">Comparado</Text>
-                  <Text className="font-inter-semibold text-lg text-gf-text-muted" numberOfLines={1} adjustsFontSizeToFit>{cell(row.bv)}</Text>
+                  <Text className={`font-inter-bold ${tablet ? 'text-4xl' : 'text-lg'}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: row.color, opacity: 0.5 }}>{cell(row.bv)}</Text>
                   <Delta current={row.av} previous={row.bv} invert={row.invert} />
                 </View>
               )}
@@ -261,7 +268,7 @@ export default function HistoryScreen() {
         </>
       )}
 
-      <HistoryExtraInsights movements={transactions} currency={currency} end={rangeA.end} />
+      <HistoryExtraInsights movements={transactions} currency={currency} end={rangeA.end} compareEnd={b ? rangeB.end : undefined} />
 
       <BudgetsComparative start={rangeA.start} end={rangeA.end} compareStart={compareOn ? rangeB.start : undefined} compareEnd={compareOn ? rangeB.end : undefined} />
 

@@ -16,7 +16,7 @@ export function GlassSurface({
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
   radius?: number;
-  variant?: 'card' | 'nav';
+  variant?: 'card' | 'nav' | 'side';
 }) {
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
@@ -27,7 +27,9 @@ export function GlassSurface({
   // it gets the same dark wash, translucent enough to read as glass.
   const smoked = dark && variant === 'nav' && Platform.OS !== 'ios';
   const washColors: [string, string] = dark
-    ? variant === 'nav'
+    ? variant === 'side'
+      ? ['rgba(255,255,255,0.22)', 'rgba(168,120,255,0.10)']
+    : variant === 'nav'
       ? smoked
         ? ['rgba(78,52,140,0.46)', 'rgba(40,24,84,0.54)']
         : ['rgba(255,255,255,0.14)', 'rgba(70,40,130,0.20)']
@@ -39,13 +41,13 @@ export function GlassSurface({
   return (
     <View style={[{ borderRadius: radius, overflow: 'hidden' }, style]}>
       {dark && Platform.OS === 'ios' && (
-        <BlurView intensity={variant === 'nav' ? 70 : 30} tint="dark" style={StyleSheet.absoluteFill} />
+        <BlurView intensity={variant === 'side' ? 90 : variant === 'nav' ? 70 : 30} tint="dark" style={StyleSheet.absoluteFill} />
       )}
       <LinearGradient colors={washColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
       {dark && (
         <>
           <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }]} />
-          <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: radius * 0.6, right: radius * 0.6, height: 1, backgroundColor: 'rgba(255,255,255,0.25)' }} />
+          <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: radius * 0.6, right: radius * 0.6, height: 1, backgroundColor: variant === 'side' ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)' }} />
         </>
       )}
       {children}

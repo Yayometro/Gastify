@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
-import { PickerModal } from '@/components/picker-modal';
+import { OptionSheet } from '@/components/option-sheet';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
@@ -35,14 +35,7 @@ export function PeriodBar({ preset, range, onPreset, onShift, canGoForward }: { 
           </Pressable>
         </View>
       </GlassSurface>
-      <PickerModal
-        visible={open}
-        title="Periodo"
-        items={HISTORY_PRESETS_EXTENDED.map((item) => ({ id: item.value, label: item.label }))}
-        isSelected={(id) => id === preset}
-        onSelect={(id) => onPreset(id as HistoryPreset)}
-        onClose={() => setOpen(false)}
-      />
+      <OptionSheet visible={open} title="Periodo" options={HISTORY_PRESETS_EXTENDED.map((item) => ({ id: item.value, label: item.label }))} isSelected={(id) => id === preset} onSelect={(id) => onPreset(id as HistoryPreset)} onClose={() => setOpen(false)} />
     </>
   );
 }

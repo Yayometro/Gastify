@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabInset, Colors, MaxContentWidth, TabletContentWidth } from '@/constants/theme';
 import { useIsTablet } from '@/hooks/use-device-class';
+import { useRefreshAppData } from '@/hooks/use-load-app-data';
 
 // Layout shared by the phase 4 screens: a title, a line under it, and a scroll area that leaves room
 // for the floating bar. Pulling down refreshes the data when onRefresh is given.
@@ -30,6 +31,8 @@ export function Screen({
   children?: ReactNode;
 }) {
   const tablet = useIsTablet();
+  // Every screen can be pulled down to reload the data; a screen with its own reload passes `onRefresh`.
+  const appRefresh = useRefreshAppData();
   const scheme = useColorScheme();
   const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
   return (
@@ -38,7 +41,7 @@ export function Screen({
         <ScrollView
           contentContainerClassName="w-full gap-4 self-center p-6"
           contentContainerStyle={{ paddingBottom: BottomTabInset + 84, maxWidth: tablet ? TabletContentWidth : MaxContentWidth }}
-          refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> : undefined}>
+          refreshControl={<RefreshControl refreshing={onRefresh ? refreshing : appRefresh.refreshing} onRefresh={onRefresh ?? appRefresh.refresh} />}>
           {onBack ? (
             <Pressable
               accessibilityRole="button"

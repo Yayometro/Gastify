@@ -296,24 +296,24 @@ Prefijo Y. El usuario revisó barra, tablas y Historial; aprobó el Top en tabla
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| Y01 | Proyecciones, tabla «Mes a mes»: el encabezado un poco más rosa/violeta, como la barra y la web (solo un poco). | PENDIENTE | |
-| Y02 | Proyecciones, tabla: filas alternadas, una un poco más oscura y la siguiente más clara en toda la fila (enero oscuro, febrero claro, marzo oscuro…), para distinguir una fila de otra. | PENDIENTE | |
-| Y03 | La misma lógica de filas alternadas en «Precisión de tus proyecciones». | PENDIENTE | |
-| Y04 | iPad, menú lateral: el Analizador debe ir justo debajo de Proyecciones y arriba del botón «+» (hoy está debajo del «+»). | PENDIENTE | |
-| Y05 | iPad, menú lateral: el ícono del Analizador y el de Proyecciones se parecen; cambiar uno para que se distingan. | PENDIENTE | |
-| Y06 | iPad, menú lateral: el botón «+» debe ser más grande y tener el efecto 3D que sí tiene en la web y en la barra del móvil. | PENDIENTE | |
-| Y07 | iPad, menú lateral: el efecto glass casi no se aprecia (en el iPhone sí); debe verse glass, con desenfoque, volumen y una sombra hacia afuera. | PENDIENTE | |
-| Y08 | Historial, selector de periodo: el modal solo se cierra con la X; debe cerrar también al tocar fuera. Además se siente lento al abrir. | PENDIENTE | |
-| Y09 | Arrastrar hacia abajo para actualizar (pull to refresh) no funciona en Analizador de cartera, Historial, Proyecciones y Perfil; sí en Dashboard, Movimientos, Presupuestos, Cuentas y Categorías. Error grave. | PENDIENTE | |
-| Y10 | Historial: se sospechó que no usaba los últimos 3 meses por defecto; el usuario lo retiró (era un problema de actualización). | PENDIENTE | |
-| Y11 | Historial con comparación: en «Resumen», el valor del periodo comparado debe verse igual de grande que el actual, solo más tenue. | PENDIENTE | |
-| Y12 | Historial con comparación: en «Datos del periodo» cada cuadrito debe mostrar el versus del periodo comparado (movimientos, lo que conservaste, etc.). | PENDIENTE | |
-| Y13 | Historial, Mes a mes: el modal de un mes (por ejemplo agosto 2026) no se entiende; debe mostrar a la izquierda un periodo y a la derecha el otro (ingreso contra ingreso, gasto contra gasto, categoría líder de cada uno) y decir claramente qué se compara (agosto 2026 contra agosto 2025). | PENDIENTE | |
-| Y14 | Historial, Gastos e Ingresos por categoría (lo más importante): al comparar con otro periodo y tocar una categoría, el modal solo muestra los movimientos del periodo actual; debe mostrar también los del comparado, uno a cada lado, explicando a qué periodo corresponde cada lado. | PENDIENTE | |
-| Y15 | Historial, Grandes gastos: con comparación, mostrar también el versus. | PENDIENTE | |
-| Y16 | Historial, Suscripciones recurrentes: no necesita versus (el usuario lo retiró). | PENDIENTE | |
-| Y17 | Historial, Proyecciones: no necesita versus (funcionan distinto; el usuario lo retiró). | PENDIENTE | |
-| Y18 | Todos los Top: cada fila (categoría o movimiento) con su propio fondo glass, como ya lo tienen las transacciones. | PENDIENTE | |
+| Y01 | Proyecciones, tabla «Mes a mes»: el encabezado un poco más rosa/violeta, como la barra y la web (solo un poco). | HECHO | Verificado: la tarjeta «Mes a mes» (y «Precisión») con tinte rosa-violeta suave. |
+| Y02 | Proyecciones, tabla: filas alternadas, una un poco más oscura y la siguiente más clara en toda la fila (enero oscuro, febrero claro, marzo oscuro…), para distinguir una fila de otra. | HECHO | Verificado: filas alternadas oscura/clara a lo ancho (enero oscuro, febrero claro…). |
+| Y03 | La misma lógica de filas alternadas en «Precisión de tus proyecciones». | CÓDIGO LISTO | Mismas filas alternadas y tinte en «Precisión de tus proyecciones»; falta verlo con datos de meses cerrados con historial. |
+| Y04 | iPad, menú lateral: el Analizador debe ir justo debajo de Proyecciones y arriba del botón «+» (hoy está debajo del «+»). | HECHO | Verificado: Analizador justo debajo de Proyecciones y arriba del «+». |
+| Y05 | iPad, menú lateral: el ícono del Analizador y el de Proyecciones se parecen; cambiar uno para que se distingan. | HECHO | Verificado: ícono de pastel para el Analizador, distinto del de gráfica de Proyecciones. |
+| Y06 | iPad, menú lateral: el botón «+» debe ser más grande y tener el efecto 3D que sí tiene en la web y en la barra del móvil. | HECHO | Verificado: «+» más grande (64) con degradado violeta y sombra de volumen. |
+| Y07 | iPad, menú lateral: el efecto glass casi no se aprecia (en el iPhone sí); debe verse glass, con desenfoque, volumen y una sombra hacia afuera. | CÓDIGO LISTO | Menú lateral con vidrio más claro, borde brillante, desenfoque 90 y sombra hacia afuera; se ve más en Android. Falta confirmar el desenfoque real en el iPad. |
+| Y08 | Historial, selector de periodo: el modal solo se cierra con la X; debe cerrar también al tocar fuera. Además se siente lento al abrir. | CÓDIGO LISTO | Selectores de periodo en una hoja propia (OptionSheet): se cierra tocando fuera y abre rápido. Falta confirmarlo en el iPad. |
+| Y09 | Arrastrar hacia abajo para actualizar (pull to refresh) no funciona en Analizador de cartera, Historial, Proyecciones y Perfil; sí en Dashboard, Movimientos, Presupuestos, Cuentas y Categorías. Error grave. | CÓDIGO LISTO | Todas las pantallas con `Screen` ya se actualizan al jalar hacia abajo (Analizador, Historial, Proyecciones —que además recarga sus datos— y Perfil). Falta probar el gesto en el iPad. |
+| Y10 | Historial: se sospechó que no usaba los últimos 3 meses por defecto; el usuario lo retiró (era un problema de actualización). | HECHO | El usuario lo retiró; el Historial usa los últimos 3 meses por defecto. |
+| Y11 | Historial con comparación: en «Resumen», el valor del periodo comparado debe verse igual de grande que el actual, solo más tenue. | HECHO | Verificado: el valor comparado es igual de grande, más tenue. |
+| Y12 | Historial con comparación: en «Datos del periodo» cada cuadrito debe mostrar el versus del periodo comparado (movimientos, lo que conservaste, etc.). | HECHO | Verificado: cada cuadrito muestra «vs … (comparado)». |
+| Y13 | Historial, Mes a mes: el modal de un mes (por ejemplo agosto 2026) no se entiende; debe mostrar a la izquierda un periodo y a la derecha el otro (ingreso contra ingreso, gasto contra gasto, categoría líder de cada uno) y decir claramente qué se compara (agosto 2026 contra agosto 2025). | CÓDIGO LISTO | Modal del mes con dos columnas (mes elegido a la izquierda, mes comparado a la derecha) y renglones Ingresos, Gastos, Balance y Categoría líder de cada uno. Falta verlo en pantalla. |
+| Y14 | Historial, Gastos e Ingresos por categoría (lo más importante): al comparar con otro periodo y tocar una categoría, el modal solo muestra los movimientos del periodo actual; debe mostrar también los del comparado, uno a cada lado, explicando a qué periodo corresponde cada lado. | CÓDIGO LISTO | Modal de categoría con comparación: movimientos del periodo (izquierda) y del comparado (derecha) con su rango y total; en teléfono van apilados. Falta verlo en pantalla. |
+| Y15 | Historial, Grandes gastos: con comparación, mostrar también el versus. | CÓDIGO LISTO | Grandes gastos con «vs …» del periodo comparado (transacción, categoría y subcategoría líderes). Falta verlo en pantalla. |
+| Y16 | Historial, Suscripciones recurrentes: no necesita versus (el usuario lo retiró). | HECHO | El usuario lo retiró: suscripciones sin versus. |
+| Y17 | Historial, Proyecciones: no necesita versus (funcionan distinto; el usuario lo retiró). | HECHO | El usuario lo retiró: proyecciones sin versus. |
+| Y18 | Todos los Top: cada fila (categoría o movimiento) con su propio fondo glass, como ya lo tienen las transacciones. | HECHO | Verificado: cada fila de Top con su fondo glass (también en las columnas por mes). |
 
 ## Notas
 

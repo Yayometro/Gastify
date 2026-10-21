@@ -1,6 +1,7 @@
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { Card } from '@/components/ui/card';
+import { zebra } from '@/components/ui/zebra';
 import { Colors } from '@/constants/theme';
 import { esMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
@@ -56,8 +57,8 @@ export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyR
   return (
     <>
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no hay referencias guardadas para comparar meses cerrados de este año.</Text>}
-      {rows.map((row) => (
-        <Pressable key={row.monthName} accessibilityRole="button" onPress={() => onMonthPress?.(row.monthName)} className="border-t border-gf-border pt-3">
+      {rows.map((row, rowIndex) => (
+        <Pressable key={row.monthName} accessibilityRole="button" onPress={() => onMonthPress?.(row.monthName)} className="rounded-xl px-3 py-3" style={zebra(rowIndex, scheme === 'dark')}>
           <Text className="font-inter-semibold text-base text-gf-text">{esMonthLabel(row.monthName)}</Text>
           <View className="flex-row items-center gap-2 pt-1">
             <Text className="w-14" />
@@ -75,9 +76,10 @@ export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyR
 }
 
 export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
+  const scheme = useColorScheme();
   if (rows.length === 0) return null;
   return (
-    <Card title="Precisión de tus proyecciones" info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP }}>
+    <Card style={{ backgroundColor: scheme === 'dark' ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title="Precisión de tus proyecciones" info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP }}>
       <AccuracyBody rows={rows} currency={currency} onMonthPress={onMonthPress} />
     </Card>
   );

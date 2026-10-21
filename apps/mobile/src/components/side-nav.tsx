@@ -1,8 +1,9 @@
 import { FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, usePathname } from 'expo-router';
 import { type ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
@@ -28,10 +29,10 @@ const BEFORE_ADD: Item[] = [
   { key: 'wallet', label: 'Wallet', href: '/', active: (p) => p === '/' || p === '/index', icon: (c) => <FontAwesome6 name="wallet" size={22} color={c} /> },
   { key: 'budgets', label: 'Presupuestos', href: '/budgets', active: (p) => is(p, '/budgets'), icon: (c) => <MaterialIcons name="savings" size={27} color={c} /> },
   { key: 'projections', label: 'Proyecciones', href: '/more/projections', active: (p) => is(p, '/more/projections'), icon: (c) => <MaterialIcons name="auto-graph" size={27} color={c} /> },
+  { key: 'analyzer', label: 'Analizador de cartera', href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => <FontAwesome6 name="chart-pie" size={22} color={c} /> },
 ];
 const AFTER_ADD: Item[] = [
   { key: 'accounts', label: 'Cuentas', href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => <MaterialIcons name="account-balance" size={26} color={c} /> },
-  { key: 'analyzer', label: 'Analizador de cartera', href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => <Ionicons name="analytics-outline" size={26} color={c} /> },
   { key: 'history', label: 'Historial', href: '/more/history', active: (p) => is(p, '/more/history'), icon: (c) => <FontAwesome6 name="clock-rotate-left" size={22} color={c} /> },
   { key: 'categories', label: 'Categorías', href: '/more/categories', active: (p) => is(p, '/more/categories'), icon: (c) => <MaterialIcons name="category" size={26} color={c} /> },
 ];
@@ -62,7 +63,9 @@ export function SideNav() {
 
   return (
     <View style={[styles.wrap, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
-      <GlassSurface variant="nav" radius={32} style={styles.pill}>
+      {/* The pill floats: a soft shadow cast outward, as the web's side bar has. */}
+      <View style={[styles.pill, styles.shadow]}>
+      <GlassSurface variant="side" radius={32} style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.inner}>
           <Pressable accessibilityRole="button" accessibilityLabel="Perfil" onPress={() => router.navigate('/more/profile')} style={[styles.profile, profileActive && { backgroundColor: colors.accentSoft }]}>
             {user?.image ? (
@@ -76,8 +79,10 @@ export function SideNav() {
           </Pressable>
           {BEFORE_ADD.map(navItem)}
           {iconButton('add', 'Agregar un movimiento', () => router.navigate('/add' as never), (
-            <View style={styles.fab}>
-              <Ionicons name="add" size={28} color="#ffffff" />
+            <View style={styles.fabShadow}>
+              <LinearGradient colors={dark ? ['#e879f9', '#a855f7', '#7e22ce'] : ['#e879f9', '#9333ea']} start={{ x: 0.2, y: 0 }} end={{ x: 0.6, y: 1 }} style={styles.fab}>
+                <Ionicons name="add" size={36} color="#ffffff" />
+              </LinearGradient>
             </View>
           ), is(pathname, '/add'))}
           {AFTER_ADD.map(navItem)}
@@ -85,6 +90,7 @@ export function SideNav() {
           {iconButton('signout', 'Cerrar sesión', () => authClient.signOut(), <Ionicons name="log-out-outline" size={26} color={colors.text} />)}
         </ScrollView>
       </GlassSurface>
+      </View>
     </View>
   );
 }
@@ -95,6 +101,9 @@ const styles = StyleSheet.create({
   inner: { flexGrow: 1, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, gap: 8 },
   profile: { alignItems: 'center', gap: 2, paddingVertical: 4, paddingHorizontal: 6, borderRadius: 20 },
   avatar: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: '#a855f7' },
-  item: { width: 56, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  fab: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: '#9333ea' },
+  item: { width: 66, height: 70, borderRadius: 33, alignItems: 'center', justifyContent: 'center' },
+  fab: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  // The raised, three-dimensional look of the web's "+" and the phone bar's: a violet glow under the gradient.
+  fabShadow: Platform.select({ ios: { shadowColor: '#7e22ce', shadowOpacity: 0.6, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }, default: { elevation: 10 } }) as object,
+  shadow: Platform.select({ ios: { shadowColor: '#000000', shadowOpacity: 0.55, shadowRadius: 22, shadowOffset: { width: 6, height: 8 } }, default: { elevation: 16 } }) as object,
 });

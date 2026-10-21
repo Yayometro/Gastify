@@ -11,10 +11,13 @@ import type { TransactionData } from '@gastify/core/features/transacctionsSlice'
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { computeMonthlyChampions, detectSubscriptions, findBiggestSpendPatterns } from '@gastify/core/transformers/walletAnalyzer';
 
-export function HistoryExtraInsights({ movements, currency, end }: { movements: TransactionData[]; currency: string; end: Date }) {
+export function HistoryExtraInsights({ movements, currency, end, compareEnd }: { movements: TransactionData[]; currency: string; end: Date; compareEnd?: Date }) {
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const anchor = useMemo(() => end < new Date() ? end : new Date(), [end]);
   const patterns = useMemo(() => findBiggestSpendPatterns(movements, anchor, 12), [movements, anchor]);
+  // With a comparison, the same 12-month reading is made ending at the compared period, to put beside the first.
+  const compareAnchor = useMemo(() => (compareEnd ? (compareEnd < new Date() ? compareEnd : new Date()) : null), [compareEnd]);
+  const comparePatterns = useMemo(() => (compareAnchor ? findBiggestSpendPatterns(movements, compareAnchor, 12) : null), [movements, compareAnchor]);
   const champions = useMemo(() => computeMonthlyChampions(movements, anchor, 12), [movements, anchor]);
   const subscriptions = useMemo(() => detectSubscriptions(movements, anchor, 3, 6), [movements, anchor]);
   const [kind, setKind] = useState<ChampionKind | null>(null);
@@ -33,10 +36,11 @@ export function HistoryExtraInsights({ movements, currency, end }: { movements: 
             <Text className="font-inter text-xs text-gf-text-muted">Mayor transacción · toca para ver cada mes</Text>
             <Text className="font-inter-semibold text-base text-gf-text">{patterns.biggestTransaction.name}</Text>
             <Text className="font-inter-bold text-xl text-gf-text">{money(patterns.biggestTransaction.amount)}</Text>
+            {compareEnd ? <Text className="font-inter-semibold text-sm text-gf-text-muted">vs {comparePatterns ? `${comparePatterns.biggestTransaction.name} · ${money(comparePatterns.biggestTransaction.amount)}` : '—'} (comparado)</Text> : null}
           </Pressable>
           <View className="flex-row gap-2">
-            <Pressable accessibilityRole="button" onPress={() => setKind('category')} className="flex-1 rounded-2xl p-3" style={tile}><Text className="font-inter text-xs text-gf-text-muted">Categoría líder ›</Text><Text className="font-inter-semibold text-sm text-gf-text">{patterns.biggestCategory.name}</Text><Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestCategory.total)}</Text></Pressable>
-            {patterns.biggestSubcategory && <Pressable accessibilityRole="button" onPress={() => setKind('subCategory')} className="flex-1 rounded-2xl p-3" style={tile}><Text className="font-inter text-xs text-gf-text-muted">Subcategoría líder ›</Text><Text className="font-inter-semibold text-sm text-gf-text">{patterns.biggestSubcategory.name}</Text><Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestSubcategory.total)}</Text></Pressable>}
+            <Pressable accessibilityRole="button" onPress={() => setKind('category')} className="flex-1 rounded-2xl p-3" style={tile}><Text className="font-inter text-xs text-gf-text-muted">Categoría líder ›</Text><Text className="font-inter-semibold text-sm text-gf-text">{patterns.biggestCategory.name}</Text><Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestCategory.total)}</Text>{compareEnd ? <Text className="font-inter-semibold text-xs text-gf-text-muted">vs {comparePatterns ? `${comparePatterns.biggestCategory.name} · ${money(comparePatterns.biggestCategory.total)}` : '—'}</Text> : null}</Pressable>
+            {patterns.biggestSubcategory && <Pressable accessibilityRole="button" onPress={() => setKind('subCategory')} className="flex-1 rounded-2xl p-3" style={tile}><Text className="font-inter text-xs text-gf-text-muted">Subcategoría líder ›</Text><Text className="font-inter-semibold text-sm text-gf-text">{patterns.biggestSubcategory.name}</Text><Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestSubcategory.total)}</Text>{compareEnd ? <Text className="font-inter-semibold text-xs text-gf-text-muted">vs {comparePatterns?.biggestSubcategory ? `${comparePatterns.biggestSubcategory.name} · ${money(comparePatterns.biggestSubcategory.total)}` : '—'}</Text> : null}</Pressable>}
           </View>
           <View className="flex-row gap-2">
             <Pressable accessibilityRole="button" onPress={() => setKind('category')} className="flex-1 items-center rounded-full border border-gf-border py-2.5"><Text className="font-inter-semibold text-sm text-gf-text">Ver líderes mes por mes</Text></Pressable>

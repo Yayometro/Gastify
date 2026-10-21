@@ -5,7 +5,7 @@ import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'reac
 import { ChipPicker } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
-import { PickerModal } from '@/components/picker-modal';
+import { OptionSheet } from '@/components/option-sheet';
 import { GlassSurface } from '@/components/ui/glass';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { Colors } from '@/constants/theme';
@@ -87,7 +87,7 @@ export function CompactTimeFilter({
           </View>
         )}
         {expanded && extra}
-        <PickerModal visible={pickerOpen} title="Periodo" items={selectOptions} isSelected={(id) => id === preset} onSelect={(id) => onPreset(id as Preset)} onClose={() => setPickerOpen(false)} />
+        <OptionSheet visible={pickerOpen} title="Periodo" options={selectOptions} isSelected={(id) => id === preset} onSelect={(id) => onPreset(id as Preset)} onClose={() => setPickerOpen(false)} />
       </View>
     );
   }

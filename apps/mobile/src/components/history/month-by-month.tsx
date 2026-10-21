@@ -55,6 +55,13 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
     return topSpendingCategories(movements.filter((tx) => isInRange(tx, { start: monthStart, end: monthEnd })), 1)[0] ?? null;
   }, [open, start, movements]);
 
+  const leaderPrev = useMemo(() => {
+    if (open === null || !compareStart || !previous) return null;
+    const monthStart = new Date(compareStart.getFullYear(), compareStart.getMonth() + open, 1);
+    const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59, 999);
+    return topSpendingCategories(movements.filter((tx) => isInRange(tx, { start: monthStart, end: monthEnd })), 1)[0] ?? null;
+  }, [open, compareStart, previous, movements]);
+
   return (
     <Card title="Mes a mes" info={{ title: 'Mes a mes', text: 'Ingresos (verde) y gastos (rojo) de cada mes del periodo, con la cifra sobre cada barra. Toca un mes para ver su detalle y su categoría líder. Si comparas, las barras tenues corresponden al mes y año indicados abajo.' }}>
       <CompactTimeFilter preset={own} onPreset={setOwn} month={ownMonth} onMonth={setOwnMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard periodSelect />
@@ -92,22 +99,36 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
         {compare && <Text className="font-inter text-xs text-gf-text-muted">○ Tenue: {compareStart ? labelAt(compareStart, 0, compare[0]?.label ?? '') : 'periodo comparado'}</Text>}
       </View>
 
-      <DetailSheet visible={current !== null} onClose={() => setOpen(null)} title={currentLabel}>
-        {current && (
-          <>
-            <Text className="font-inter text-base" style={{ color: colors.income }}>Ingresos: {money(current.incomes)}</Text>
-            <Text className="font-inter text-base" style={{ color: colors.expense }}>Gastos: {money(current.spending)}</Text>
-            <Text className="font-inter-semibold text-base text-gf-text">Balance: {money(current.incomes - current.spending)}</Text>
-            {leader && <View className="gap-1 border-t border-gf-border pt-3"><Text className="font-inter-semibold text-sm text-gf-text">Categoría líder: {leader.name}</Text><Text className="font-inter text-sm text-gf-text-muted">{money(leader.value)} del gasto de {currentLabel}</Text></View>}
-            {previous && (
-              <View className="gap-1 border-t border-gf-border pt-3">
-                <Text className="font-inter-medium text-sm text-gf-text-muted">Comparado con {previousLabel}</Text>
-                <Text className="font-inter text-sm text-gf-text-muted">Ingresos: {money(previous.incomes)}</Text>
-                <Text className="font-inter text-sm text-gf-text-muted">Gastos: {money(previous.spending)}</Text>
+      <DetailSheet
+        visible={current !== null}
+        onClose={() => setOpen(null)}
+        title={currentLabel}
+        subtitle={previous ? `Comparado con ${previousLabel}` : undefined}
+        info={{ title: 'Detalle del mes', text: previous ? 'A la izquierda, el mes elegido del periodo; a la derecha, el mes que le corresponde en el periodo con el que comparas. Cada renglón compara lo mismo: ingresos contra ingresos, gastos contra gastos, balance contra balance y la categoría que más pesó en cada mes.' : 'Ingresos y gastos del mes, su balance (ingresos − gastos) y la categoría que más gasto tuvo ese mes.' }}>
+        {current && (() => {
+          const rowsData = [
+            { label: 'Ingresos', a: money(current.incomes), b: previous ? money(previous.incomes) : null, tone: colors.income },
+            { label: 'Gastos', a: money(current.spending), b: previous ? money(previous.spending) : null, tone: colors.expense },
+            { label: 'Balance', a: money(current.incomes - current.spending), b: previous ? money(previous.incomes - previous.spending) : null, tone: colors.text },
+            { label: 'Categoría líder', a: leader ? `${leader.name}\n${money(leader.value)}` : '—', b: previous ? (leaderPrev ? `${leaderPrev.name}\n${money(leaderPrev.value)}` : '—') : null, tone: colors.text },
+          ];
+          return (
+            <View>
+              <View className="flex-row items-center gap-3 pb-2">
+                <Text className="w-28 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
+                <Text className="flex-1 font-inter-semibold text-sm text-gf-text">{currentLabel}</Text>
+                {previous && <Text className="flex-1 font-inter-semibold text-sm text-gf-text-muted">{previousLabel}</Text>}
               </View>
-            )}
-          </>
-        )}
+              {rowsData.map((row) => (
+                <View key={row.label} className="flex-row items-start gap-3 border-t border-gf-border py-3">
+                  <Text className="w-28 font-inter-medium text-sm text-gf-text-muted">{row.label}</Text>
+                  <Text className="flex-1 font-inter-semibold text-base" style={{ color: row.tone }}>{row.a}</Text>
+                  {row.b !== null && <Text className="flex-1 font-inter-semibold text-base" style={{ color: row.tone, opacity: 0.6 }}>{row.b}</Text>}
+                </View>
+              ))}
+            </View>
+          );
+        })()}
       </DetailSheet>
     </Card>
   );

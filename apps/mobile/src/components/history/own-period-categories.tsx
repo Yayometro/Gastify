@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { CategoryBadge } from '@/components/category-badge';
@@ -9,6 +9,8 @@ import { MovementRow } from '@/components/movements/movement-row';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Colors } from '@/constants/theme';
+import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
+import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import { compareCategories, historyRange, summarizePeriod, type CompareRow, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { CategoryTotal } from '@gastify/core/transactions/monthSummary';
@@ -58,11 +60,29 @@ export function OwnPeriodCategories({
 
   const max = Math.max(1, ...rows.map((row) => Math.max(row.a, row.b)));
   const selectedRow = rows.find((row) => row.name === selectedCategory);
+  const comparing = compare && compareSummary !== null && own === 'dashboard';
+  const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const selectedMovements = useMemo(() => {
     if (!selectedCategory) return [];
     return movements.filter((tx) => isInRange(tx, ownRange) && (kind === 'spending' ? tx.isBill && !tx.isIncome : tx.isIncome) && (tx.category?.name || 'Sin categoría') === selectedCategory)
       .sort((a, b) => order === 'desc' ? getPrimaryAmount(b) - getPrimaryAmount(a) : getPrimaryAmount(a) - getPrimaryAmount(b));
   }, [movements, ownRange, kind, selectedCategory, order]);
+
+  const comparedMovements = useMemo(() => {
+    if (!selectedCategory || !comparing || !compareSummary) return [];
+    return movements.filter((tx) => isInRange(tx, compareSummary.range) && (kind === 'spending' ? tx.isBill && !tx.isIncome : tx.isIncome) && (tx.category?.name || 'Sin categoría') === selectedCategory)
+      .sort((x, y) => order === 'desc' ? getPrimaryAmount(y) - getPrimaryAmount(x) : getPrimaryAmount(x) - getPrimaryAmount(y));
+  }, [movements, compareSummary, comparing, kind, selectedCategory, order]);
+  const open = (tx: TransactionData) => { setSelectedCategory(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/history' } }); };
+  const column = (label: string, total: number, list: TransactionData[]) => (
+    <View className="flex-1 gap-1" key={label}>
+      <Text className="font-inter-semibold text-sm text-gf-text">{label}</Text>
+      <Text className="font-inter-bold text-lg text-gf-text">{formatMoneyMajor(total, currency)}</Text>
+      <Text className="pb-1 font-inter text-xs text-gf-text-muted">{list.length} {list.length === 1 ? 'movimiento' : 'movimientos'}</Text>
+      {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
+      {list.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => open(tx)} />)}
+    </View>
+  );
 
   return (
     <Card title={title} info={info}>
@@ -87,7 +107,15 @@ export function OwnPeriodCategories({
           <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'desc' }} onPress={() => setOrder('desc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'desc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Mayor primero</Text></Pressable>
           <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'asc' }} onPress={() => setOrder('asc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'asc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Menor primero</Text></Pressable>
         </View>
-        {selectedMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setSelectedCategory(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/history' } }); }} />)}
+        {comparing && compareSummary ? (
+          <>
+            <Text className="font-inter text-sm text-gf-text-muted">Izquierda: el periodo elegido. Derecha: el periodo con el que lo comparas.</Text>
+            <View className={tablet ? 'flex-row items-start gap-4' : 'gap-5'}>
+              {column(`Periodo · ${rangeLabelEs(summary.range.start, summary.range.end)}`, selectedRow?.a ?? 0, selectedMovements)}
+              {column(`Comparado · ${rangeLabelEs(compareSummary.range.start, compareSummary.range.end)}`, selectedRow?.b ?? 0, comparedMovements)}
+            </View>
+          </>
+        ) : selectedMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => open(tx)} />)}
       </DetailSheet>
     </Card>
   );
