@@ -14,7 +14,8 @@ const BLOBS = [
 
 export const DARK_BASE = '#140b26';
 
-export function AmbientBackground() {
+// `baseOpacity` < 1 lets whatever is behind show through the dark base (the sheets' light see-through glass).
+export function AmbientBackground({ baseOpacity = 1 }: { baseOpacity?: number } = {}) {
   const scheme = useColorScheme();
   if (scheme !== 'dark') return null;
   return (
@@ -28,7 +29,7 @@ export function AmbientBackground() {
             </RadialGradient>
           ))}
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill={DARK_BASE} />
+        <Rect x="0" y="0" width="100%" height="100%" fill={DARK_BASE} fillOpacity={baseOpacity} />
         {BLOBS.map((blob) => (
           <Rect key={blob.id} x="0" y="0" width="100%" height="100%" fill={`url(#${blob.id})`} />
         ))}

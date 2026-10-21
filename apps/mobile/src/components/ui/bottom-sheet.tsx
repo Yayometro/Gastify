@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Easing, Keyboard, Modal, Platform, Pressable, StyleSheet, View, useColorScheme, type DimensionValue, useWindowDimensions } from 'react-native';
 
-import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
+import { BlurView } from 'expo-blur';
+
+import { AmbientBackground } from '@/components/ambient-background';
 import { Colors } from '@/constants/theme';
 
 // The one sheet every pop-up uses: the dark backdrop only fades in (it does not travel), the sheet alone slides up
@@ -60,8 +62,12 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
           <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" disabled={!dismissible} onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
         </Animated.View>
         <Animated.View style={{ width: wide ? wideWidth : '100%', maxHeight, transform: [{ translateY: slide }] }}>
-          <View style={[radii, { overflow: 'hidden', maxHeight: maxPx, backgroundColor: dark ? DARK_BASE : colors.background }]}>
-            {ambient && <AmbientBackground />}
+          <View style={[radii, { overflow: 'hidden', maxHeight: maxPx, backgroundColor: dark ? 'transparent' : colors.background }]}>
+            {/* Dark mode: the web's violet glass, a very light see-through: a blur of what is behind (iPhone) and a base that is
+                a touch transparent (Android has no blur here). Light mode stays solid, as the web's light modals do. */}
+            {dark && Platform.OS === 'ios' && <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />}
+            {ambient && <AmbientBackground baseOpacity={dark ? 0.84 : 1} />}
+            {!ambient && dark && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(20,11,38,0.84)' }]} />}
             <View style={{ flexShrink: 1 }}>{children}</View>
             <View pointerEvents="none" style={[StyleSheet.absoluteFill, radii, { borderWidth: 1, borderColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(27,16,61,0.08)' }]} />
           </View>
