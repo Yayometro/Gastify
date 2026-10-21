@@ -5,6 +5,9 @@ import { useWindowDimensions } from 'react-native';
 // also covers an iPad in a split window, Stage Manager, or a big phone turned sideways.
 export const TABLET_MIN_WIDTH = 768;
 
+// From here (an iPad turned sideways, or a big one) there is room for two columns of cards, as the web has at this width.
+export const WIDE_MIN_WIDTH = 1000;
+
 export type DeviceClass = 'phone' | 'tablet';
 
 export function useDeviceClass(): DeviceClass {

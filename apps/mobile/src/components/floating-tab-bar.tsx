@@ -67,7 +67,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
               style={styles.item}>
               {options.tabBarIcon?.({
                 focused,
-                color: focused ? colors.accent : colors.textSecondary,
+                color: isDark ? (focused ? '#ffffff' : 'rgba(255,255,255,0.88)') : focused ? colors.accent : colors.textSecondary,
                 size: 24,
               })}
             </Pressable>

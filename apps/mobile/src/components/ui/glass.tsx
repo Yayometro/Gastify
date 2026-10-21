@@ -23,12 +23,14 @@ export function GlassSurface({
 
   // Android has no real blur here, so the floating bar uses the web's "smoked glass" (near-opaque
   // purple-black) instead of a see-through wash that would let the list text show through the icons.
+  // The bar is see-through on both: the iPhone blurs what is behind and adds a dark wash; Android has no blur here, so
+  // it gets the same dark wash, translucent enough to read as glass.
   const smoked = dark && variant === 'nav' && Platform.OS !== 'ios';
   const washColors: [string, string] = dark
     ? variant === 'nav'
       ? smoked
-        ? ['rgba(52,32,98,0.95)', 'rgba(30,18,60,0.97)']
-        : ['rgba(255,255,255,0.09)', 'rgba(255,255,255,0.05)']
+        ? ['rgba(46,28,90,0.72)', 'rgba(22,12,46,0.78)']
+        : ['rgba(36,20,72,0.50)', 'rgba(14,7,32,0.58)']
       : ['rgba(255,255,255,0.14)', 'rgba(255,255,255,0.06)']
     : variant === 'nav'
       ? ['#ffffff', '#f1ecf9']

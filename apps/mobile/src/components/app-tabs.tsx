@@ -42,7 +42,7 @@ export default function AppTabs() {
         <View style={styles.glyph}>
           {/* Always mounted, only its opacity changes: Android drops the rounded corners of a
               background that is switched on after the first render. */}
-          <View style={[styles.highlight, { backgroundColor: colors.accentSoft, opacity: focused ? 1 : 0 }]} />
+          <View style={[styles.highlight, isDark ? styles.highlightDark : { backgroundColor: colors.accentSoft }, { opacity: focused ? 1 : 0 }]} />
           {render(color)}
         </View>
       );
@@ -139,6 +139,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     borderRadius: 22,
+  },
+  // The selected tab: a clear violet pill with a light edge, so it stands out on the dark bar.
+  highlightDark: {
+    backgroundColor: 'rgba(168,85,247,0.55)',
+    borderWidth: 1,
+    borderColor: 'rgba(233,213,255,0.55)',
   },
   fab: {
     width: 52,

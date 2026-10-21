@@ -254,6 +254,21 @@ Prefijo V (la U ya se usó en una ronda anterior). El usuario confirmó que la c
 | V04 | Historial, Top: al comparar, dejar elegir contra qué periodo (hoy compara solo hacia atrás sin decir cuál). | CÓDIGO LISTO | Periodo anterior / mismo tramo del año pasado / personalizado, con la leyenda del tramo comparado. |
 | V05 | "Continúa con las siguientes fases": seguir con lo que sigue en el plan. | EN CURSO | Ver .mds/MOBILE_REACT_NATIVE_PLAN.md. |
 
+## Sexta ronda (2026-10-21, primera prueba del iPad)
+
+Prefijo W. El usuario probó el diseño de iPad en vertical y lo aprobó; estos son los ajustes.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| W01 | iPad: al girar de vertical a horizontal, el fondo y los colores se cortan. | CÓDIGO LISTO | No se reproduce en Android (el degradado cubre todo). Causa probable en iOS: el SVG del fondo conservaba el tamaño de su primer layout. Ahora `AmbientBackground` mide su contenedor en cada layout y se redibuja con ese tamaño. Falta confirmar en el iPad. |
+| W02 | Al cambiar de página y hacer scroll, los colores se cortan. | CÓDIGO LISTO | Misma causa y misma corrección que W01. Falta confirmar en el iPad. |
+| W03 | iPad en horizontal: adaptarlo también, hacer las cosas más grandes y aprovechar el máximo de margen sin tragarse la barra. | EN CURSO | Inicio en horizontal (≥ 1000 px): Resumen y Top lado a lado, Presupuestos y Últimos movimientos lado a lado, y el Análisis en 3 columnas; verificado en el emulador con tamaño de tablet. Falta el resto de las pantallas (Movimientos, Presupuestos, Historial, Proyecciones, Cuentas, Categorías, Perfil). |
+| W04 | iPad: algunos modales muestran el fondo cortado abajo. | CÓDIGO LISTO | Misma corrección de W01 (la hoja crece cuando llega su contenido). En tablet horizontal la hoja sale como tarjeta centrada, completa y translúcida (verificado en el emulador). Falta confirmar en el iPad. |
+| W05 | Android: la barra de navegación no es translúcida como la del iPhone. | HECHO | Verificado en el emulador: velo oscuro con ~28 % de transparencia. Sin desenfoque real (necesitaría reestructurar la barra con `BlurTargetView`); se alcanza a ver tenue el texto que pasa debajo. |
+| W06 | iPhone: la barra un poco más oscura, conservando la translucidez. | CÓDIGO LISTO | Velo violeta oscuro sobre el desenfoque. Falta verlo en el iPhone. |
+| W07 | Íconos de la barra mucho más blancos. | HECHO | En modo oscuro, blanco (seleccionado) y blanco al 88 % (resto). Verificado en Android. |
+| W08 | iPhone: el ícono seleccionado debe destacar más. | CÓDIGO LISTO | Píldora violeta más intensa con borde claro y el ícono en blanco puro (verificado en Android; falta el iPhone). |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.
