@@ -21,12 +21,15 @@ export function MovementRow({
   movement,
   currency,
   selected = false,
+  divider = false,
   onPress,
   onLongPress,
 }: {
   movement: TransactionData;
   currency: string;
   selected?: boolean;
+  // A thin line under the row, for lists inside pop-ups.
+  divider?: boolean;
   onPress?: () => void;
   onLongPress?: () => void;
 }) {
@@ -51,7 +54,7 @@ export function MovementRow({
       accessibilityLabel={`${title}, ${sign}${amount}`}
       accessibilityState={{ selected }}
       className="flex-row items-center gap-3 rounded-2xl px-2 py-2.5"
-      style={{ backgroundColor: selected ? colors.accentSoft : 'transparent' }}>
+      style={{ backgroundColor: selected ? colors.accentSoft : 'transparent', ...(divider ? { borderRadius: 0, borderBottomWidth: 1, borderBottomColor: colors.border } : {}) }}>
       <CategoryBadge icon={category?.icon} color={category?.color} size={44} />
       <View className="flex-1 gap-0.5">
         <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>

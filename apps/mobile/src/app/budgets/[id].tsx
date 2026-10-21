@@ -5,7 +5,8 @@ import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { BudgetForm } from '@/components/forms/budget-form';
-import { BudgetProgress } from '@/components/budget-progress';
+import { BudgetMood, BudgetProgress } from '@/components/budget-progress';
+import { lookOf, periodSuffix } from '@/lib/budget-look';
 import { CategoryBadge } from '@/components/category-badge';
 import { PickerModal } from '@/components/picker-modal';
 import { MovementRow } from '@/components/movements/movement-row';
@@ -158,29 +159,19 @@ export default function BudgetDetailScreen() {
   return (
     <Screen title={stored.name || 'Presupuesto'} subtitle={project ? 'Proyecto' : saving ? 'Meta de ahorro' : monthTitleEs(now)} backLabel="Presupuestos" onBack={back}>
       <Card title={project ? 'Gastado en total' : saving ? 'Ahorrado' : 'Gastado este mes'}>
-        <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(spent, currency)}</Text>
         {goal > 0 && (
           <>
-            <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} />
-            <View className="gap-1">
-              <View className="flex-row justify-between">
-                <Text className="font-inter text-sm text-gf-text-muted">{saving ? 'Meta' : 'Límite'}</Text>
-                <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(goal, currency)}</Text>
-              </View>
-              <View className="flex-row justify-between">
-                <Text className="font-inter text-sm text-gf-text-muted">{saving ? 'Faltante' : 'Disponible'}</Text>
-                <Text className="font-inter-semibold text-sm" style={{ color: diff >= 0 ? colors.text : colors.expense }}>
-                  {formatMoneyMajor(Math.abs(diff), currency)}
-                  {diff < 0 && !saving ? ' (excedido)' : ''}
-                </Text>
-              </View>
-              <View className="flex-row justify-between">
-                <Text className="font-inter text-sm text-gf-text-muted">Avance</Text>
-                <Text className="font-inter-semibold text-sm text-gf-text">{Math.round(ratio * 100)}%</Text>
-              </View>
+            <View className="flex-row items-center gap-3">
+              <BudgetMood ratio={ratio} saving={saving} size={48} />
+              <CategoryBadge icon={lookOf(budget, colors.accentSoft).icon} color={lookOf(budget, colors.accentSoft).color} size={44} />
+              <Text className="flex-1 font-inter-semibold text-base" style={{ color: diff >= 0 ? colors.text : colors.expense }}>
+                {saving ? (diff >= 0 ? `Faltan ${formatMoneyMajor(diff, currency)}` : 'Meta alcanzada') : diff >= 0 ? `Quedan ${formatMoneyMajor(diff, currency)}` : `Excedido por ${formatMoneyMajor(-diff, currency)}`}
+              </Text>
             </View>
+            <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} spent={spent} goal={goal} currency={currency} suffix={periodSuffix(budget)} />
           </>
         )}
+        {goal <= 0 && <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(spent, currency)}</Text>}
         {reached && (
           <View className="flex-row items-center gap-2 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.accentSoft }}>
             <Ionicons name="trophy" size={22} color="#f59e0b" />

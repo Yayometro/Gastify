@@ -1,29 +1,74 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, useColorScheme } from 'react-native';
 
-import { ProgressBar } from '@/components/ui/progress-bar';
+import { Colors } from '@/constants/theme';
+import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { getBudgetMoodEmoji } from '@gastify/core/transformers/budgetHistory';
 
-const moodOf = (ratio: number) => {
-  if (ratio >= 1) return { face: '🔥', label: 'Límite alcanzado o superado' };
-  if (ratio >= 0.9) return { face: '😰', label: 'Muy cerca del límite' };
-  if (ratio >= 0.75) return { face: '😟', label: 'Acercándose al límite' };
-  return { face: '🙂', label: 'Dentro del presupuesto' };
-};
+// The big face of a budget (the web shows it large): delighted when barely spent, panicked when over (and, for a saving
+// goal, the other way round).
+export function BudgetMood({ ratio, saving = false, size = 40 }: { ratio: number; saving?: boolean; size?: number }) {
+  return <Text style={{ fontSize: size, lineHeight: size + 6 }} accessibilityLabel="Cómo va este presupuesto">{getBudgetMoodEmoji(ratio, saving)}</Text>;
+}
 
-// The percentage follows the head of the bar while remaining fully visible at either end.
-export function BudgetProgress({ ratio, color, saving = false }: { ratio: number; color: string; saving?: boolean }) {
+// The web's bar: a rounded track with a gradient fill and, at the tip of the fill, a circle with the percentage
+// (its border is the bar's color; the circle stays inside the track at both ends). Under it: what is spent or saved
+// in large type on the left and the limit with its period on the right.
+export function BudgetProgress({
+  ratio,
+  color,
+  saving = false,
+  spent,
+  goal,
+  currency,
+  suffix = '',
+}: {
+  ratio: number;
+  color: string;
+  saving?: boolean;
+  spent: number;
+  goal: number;
+  currency: string;
+  suffix?: string;
+}) {
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [width, setWidth] = useState(0);
-  const percent = Math.round(ratio * 100);
-  const mood = moodOf(ratio);
-  const markerWidth = 72;
-  const position = Math.max(0, Math.min(width - markerWidth, Math.min(1, Math.max(0, ratio)) * width - markerWidth / 2));
+  const safe = Number.isFinite(ratio) ? ratio : 0;
+  const percent = Math.round(safe * 100);
+  const fill = Math.min(1, Math.max(0, safe));
+  const exceeded = safe > 1;
+  const TIP = 40;
+  const left = Math.max(0, Math.min(width - TIP, fill * width - TIP / 2));
 
   return (
-    <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={{ height: 43, justifyContent: 'flex-end' }} accessibilityLabel={`${saving ? 'Meta' : mood.label}: ${percent}%`}>
-      <View style={{ position: 'absolute', top: 0, left: position, width: markerWidth, alignItems: 'center' }}>
-        <Text className="font-inter-bold text-sm text-gf-text">{saving ? '🎯' : mood.face} {percent}%</Text>
+    <View className="gap-1.5">
+      <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={{ height: TIP, justifyContent: 'center' }} accessibilityLabel={`${percent}% ${saving ? 'de la meta' : 'del límite'}`}>
+        <View style={{ height: 20, borderRadius: 10, overflow: 'hidden', backgroundColor: colors.border }}>
+          <LinearGradient colors={[`${color}88`, color]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: '100%', width: `${fill * 100}%`, borderRadius: 10 }} />
+        </View>
+        <View
+          style={{
+            position: 'absolute',
+            left,
+            top: 0,
+            width: TIP,
+            height: TIP,
+            borderRadius: TIP / 2,
+            borderWidth: 3,
+            borderColor: color,
+            backgroundColor: scheme === 'dark' ? '#1b1033' : '#ffffff',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Text className="font-inter-bold" style={{ fontSize: percent >= 1000 ? 10 : 12, color: exceeded ? (saving ? '#93c5fd' : colors.expense) : colors.text }}>{percent}%</Text>
+        </View>
       </View>
-      <ProgressBar ratio={ratio} color={color} />
+      <View className="flex-row items-end justify-between gap-3">
+        <Text className="font-inter-bold text-xl text-gf-text" numberOfLines={1} adjustsFontSizeToFit>{formatMoneyMajor(spent, currency)}</Text>
+        <Text className="font-inter text-xs text-gf-text-muted">de {formatMoneyMajor(goal, currency)} {suffix}</Text>
+      </View>
     </View>
   );
 }

@@ -13,6 +13,8 @@ import { fluentIconUrl, fluentSlugFor } from '@gastify/core/icons/fluentIcons';
 export function CategoryIcon({ name, size = 28 }: { name?: string | null; size?: number }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  // Fluent has no piggy bank: savings goals use the same Material icon the web does.
+  if (name === 'md/MdSavings') return <MaterialIcons name="savings" size={Math.round(size * 0.9)} color="#ffffff" />;
   const slug = fluentSlugFor(name);
 
   if (!slug) {

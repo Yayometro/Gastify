@@ -34,7 +34,8 @@ export function CompactTimeFilter({
   onCustomTo: (value: string) => void;
   includeDashboard?: boolean;
 }) {
-  const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [expanded, setExpanded] = useState(false);
   const options = includeDashboard
     ? [{ id: 'dashboard', label: 'Igual que arriba' }, { id: 'custom', label: 'Personalizado' }, ...HISTORY_PRESETS.filter((item) => item.value !== 'custom').map((item) => ({ id: item.value, label: item.label }))]
@@ -47,7 +48,13 @@ export function CompactTimeFilter({
         <View className="min-w-0 flex-1">
           <MonthSwitcher value={month} latest={latest} onChange={(next) => { onMonth(next); onPreset('month'); }} />
         </View>
-        <Pressable accessibilityRole="button" accessibilityState={{ expanded }} onPress={() => setExpanded((value) => !value)} className="rounded-full border border-gf-border px-3 py-3">
+        {/* Same height as the month rail beside it (its arrows are 44 high plus 4 of padding each side) and a pink glass fill. */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded }}
+          onPress={() => setExpanded((value) => !value)}
+          className="items-center justify-center rounded-full px-4"
+          style={{ height: 52, backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: scheme === 'dark' ? 'rgba(211,184,251,0.35)' : 'rgba(126,34,206,0.25)' }}>
           <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? 'Menos filtros' : 'Más filtros'}</Text>
         </Pressable>
       </View>

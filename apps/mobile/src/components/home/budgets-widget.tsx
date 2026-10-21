@@ -4,13 +4,13 @@ import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native'
 import { useSelector } from 'react-redux';
 
 import { Card } from '@/components/ui/card';
-import { BudgetProgress } from '@/components/budget-progress';
+import { BudgetMood, BudgetProgress } from '@/components/budget-progress';
+import { periodSuffix } from '@/lib/budget-look';
 import { Colors } from '@/constants/theme';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';
 import { idOf } from '@gastify/core/categories/categoryForm';
-import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
@@ -49,12 +49,11 @@ export function BudgetsWidget() {
       <ScrollView nestedScrollEnabled style={{ maxHeight: 330 }} contentContainerStyle={{ gap: 14 }} showsVerticalScrollIndicator>
       {rows.map(({ budget, goal, spent, ratio }) => (
         <Pressable key={idOf(budget)} accessibilityRole="button" onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })} className="gap-1.5">
-          <View className="flex-row items-center justify-between gap-3">
+          <View className="flex-row items-center gap-3">
+            <BudgetMood ratio={ratio} size={30} />
             <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{budget.name}</Text>
-            <Text className="font-inter text-xs text-gf-text-muted">Límite</Text>
           </View>
-          <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, false)} />
-          <Text className="font-inter text-xs text-gf-text-muted">{formatMoneyMajor(spent, currency)} de {formatMoneyMajor(goal, currency)}</Text>
+          <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, false)} spent={spent} goal={goal} currency={currency} suffix={periodSuffix(budget)} />
         </Pressable>
       ))}
       </ScrollView>

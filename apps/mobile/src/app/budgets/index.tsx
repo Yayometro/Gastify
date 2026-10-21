@@ -25,7 +25,8 @@ import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import { BudgetSummarySheet, type BudgetLine, type GroupLine } from '@/components/budget-summary-sheet';
-import { BudgetProgress } from '@/components/budget-progress';
+import { BudgetMood, BudgetProgress } from '@/components/budget-progress';
+import { lookOf, periodSuffix } from '@/lib/budget-look';
 import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
@@ -45,17 +46,6 @@ type Row = {
   ratio: number;
 };
 
-type Look = { icon?: string | null; color?: string | null };
-
-// Spending and saving budgets look like their first category (the server only stores an icon for
-// projects); a project has its own icon.
-function lookOf(budget: BudgetData, fallbackColor: string): Look {
-  if (isProjectBudget(budget)) return { icon: budget.icon, color: fallbackColor };
-  const first = (budget.categories?.[0]?.category ?? budget.category) as Look | string | undefined;
-  if (first && typeof first === 'object') return { icon: first.icon, color: first.color ?? fallbackColor };
-  return { icon: budget.icon, color: fallbackColor };
-}
-
 function BudgetCard({ row, currency, saving }: { row: Row; currency: string; saving: boolean }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -63,6 +53,15 @@ function BudgetCard({ row, currency, saving }: { row: Row; currency: string; sav
   const diff = spent - goal;
   const exceeded = !saving && goal > 0 && diff > 0;
   const look = lookOf(budget, colors.accentSoft);
+  const kind = isProjectBudget(budget) ? 'Proyecto' : saving ? 'Meta de ahorro' : 'Presupuesto de gasto';
+  const status = exceeded
+    ? `Excedido por ${formatMoneyMajor(diff, currency)}`
+    : saving
+      ? diff < 0
+        ? `Faltan ${formatMoneyMajor(-diff, currency)}`
+        : 'Meta alcanzada 🎉'
+      : `Quedan ${formatMoneyMajor(Math.max(-diff, 0), currency)}`;
+  const statusColor = exceeded ? colors.expense : saving ? (diff >= 0 ? '#60a5fa' : colors.textSecondary) : colors.income;
 
   return (
     <Pressable
@@ -71,29 +70,17 @@ function BudgetCard({ row, currency, saving }: { row: Row; currency: string; sav
       onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })}>
       <Card>
         <View className="flex-row items-center gap-3">
-          <CategoryBadge icon={look.icon} color={look.color} size={44} />
+          {goal > 0 && <BudgetMood ratio={ratio} saving={saving} size={40} />}
+          <CategoryBadge icon={look.icon} color={look.color} size={40} />
           <View className="flex-1">
             <Text className="font-inter-semibold text-base text-gf-text" numberOfLines={1}>
               {budget.name || 'Presupuesto'}
             </Text>
-            <Text className="font-inter text-sm text-gf-text-muted">
-              {saving ? 'Ahorrado' : 'Gastado'} {formatMoneyMajor(spent, currency)} de {formatMoneyMajor(goal, currency)}
-            </Text>
+            <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>{kind} · {periodSuffix(budget).replace('/', '')}</Text>
           </View>
-          {goal > 0 && <Text className="font-inter text-sm text-gf-text-muted">{saving ? 'Meta' : 'Límite'}</Text>}
         </View>
-        {goal > 0 && <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} />}
-        {goal > 0 && (
-          <Text className="font-inter text-sm" style={{ color: exceeded ? colors.expense : colors.textSecondary }}>
-            {exceeded
-              ? `Excedido por ${formatMoneyMajor(diff, currency)}`
-              : saving
-                ? diff < 0
-                  ? `Faltan ${formatMoneyMajor(-diff, currency)} para la meta`
-                  : 'Meta alcanzada'
-                : `Quedan ${formatMoneyMajor(Math.max(-diff, 0), currency)}`}
-          </Text>
-        )}
+        {goal > 0 && <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} spent={spent} goal={goal} currency={currency} suffix={periodSuffix(budget)} />}
+        {goal > 0 && <Text className="font-inter-semibold text-sm" style={{ color: statusColor }}>{status}</Text>}
       </Card>
     </Pressable>
   );

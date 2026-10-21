@@ -87,7 +87,7 @@ export function OwnPeriodCategories({
           <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'desc' }} onPress={() => setOrder('desc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'desc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Mayor primero</Text></Pressable>
           <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'asc' }} onPress={() => setOrder('asc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'asc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Menor primero</Text></Pressable>
         </View>
-        {selectedMovements.map((tx) => <MovementRow key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setSelectedCategory(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/history' } }); }} />)}
+        {selectedMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setSelectedCategory(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/history' } }); }} />)}
       </DetailSheet>
     </Card>
   );

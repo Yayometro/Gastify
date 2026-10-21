@@ -54,7 +54,7 @@ export function HistoryExtraInsights({ movements, currency, end }: { movements: 
 
       <DetailSheet visible={openBiggest} title="Mayores gastos · 12 meses" subtitle={`${windowMovements.length} movimientos en el periodo`} onClose={() => setOpenBiggest(false)}>
         <Text className="font-inter-semibold text-base text-gf-text">Movimientos más grandes</Text>
-        {topMovements.map((tx) => <MovementRow key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setOpenBiggest(false); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/history' } }); }} />)}
+        {topMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setOpenBiggest(false); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/history' } }); }} />)}
         <Text className="pt-3 font-inter-semibold text-base text-gf-text">Categorías con más gasto</Text>
         {topCategories.map((category) => <View key={category.name} className="flex-row items-center gap-3 border-t border-gf-border py-2"><CategoryBadge icon={category.icon} color={category.color} size={30} /><Text className="flex-1 font-inter-medium text-sm text-gf-text">{category.name}</Text><Text className="font-inter-semibold text-sm text-gf-text">{money(category.value)}</Text></View>)}
       </DetailSheet>

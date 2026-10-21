@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { AnalyzerBiggest, AnalyzerBudgets, AnalyzerFxExposure, AnalyzerHighlights, AnalyzerProjection, AnalyzerWeekday } from '@/components/analyzer/supplement';
 import { CategoryBadge } from '@/components/category-badge';
+import { RankedRow } from '@/components/ui/ranked-row';
 import { ChipPicker } from '@/components/chip-picker';
 import { MonthSwitcher } from '@/components/month-switcher';
 import { MovementRow } from '@/components/movements/movement-row';
@@ -144,16 +145,19 @@ export default function AnalyzerScreen() {
         <ChipPicker items={TOP_SIZES.map((n) => ({ id: n, label: `Top ${n}` }))} value={topN} onChange={(id) => setTopN(id as (typeof TOP_SIZES)[number])} moreAfter={99} />
         <Text className="font-inter-semibold text-sm text-gf-text-muted">Categorías · mes anterior</Text>
         {topCategoriesBillsPrevious.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos el mes anterior.</Text>}
-        {topCategoriesBillsPrevious.map((category) => (
+        {topCategoriesBillsPrevious.map((category, index, list) => (
+          <RankedRow key={`${index}-${String(category.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={`previous-${category.name}`} accessibilityRole="button" onPress={() => setDetail({ kind: 'category', name: category.name, icon: category.icon, color: category.color, current: category.amount, previous: 0, changePct: null, period: 'previous' })} className="flex-row items-center gap-3">
             <CategoryBadge icon={category.icon} color={category.color} size={34} />
             <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{category.name}</Text>
             <Text className="font-inter-semibold text-sm text-gf-text">{money(category.amount)}</Text>
           </Pressable>
+          </RankedRow>
         ))}
         <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">Categorías · mes elegido</Text>
         {topCategoriesBills.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos en este mes.</Text>}
-        {topCategoriesBills.map((category) => (
+        {topCategoriesBills.map((category, index, list) => (
+          <RankedRow key={`${index}-${String(category.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable
             key={category.name}
             accessibilityRole="button"
@@ -168,19 +172,23 @@ export default function AnalyzerScreen() {
               </Text>
             </View>
           </Pressable>
+          </RankedRow>
         ))}
         <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">Movimientos · mes anterior</Text>
         {topTransactionsBills.previous.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos el mes anterior.</Text>}
-        {topTransactionsBills.previous.map((tx) => (
+        {topTransactionsBills.previous.map((tx, index, list) => (
+          <RankedRow key={`${index}-${String(tx.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={`previous-${String(tx._id ?? tx.name)}`} accessibilityRole="button" onPress={() => tx._id && router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } })} className="flex-row items-center gap-3">
             <CategoryBadge icon={tx.icon} color={tx.color} size={34} />
             <View className="flex-1"><Text className="font-inter-medium text-sm text-gf-text" numberOfLines={1}>{tx.name}</Text><Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>{tx.categoryName}</Text></View>
             <Text className="font-inter-semibold text-sm text-gf-text">{money(tx.amount)}</Text>
           </Pressable>
+          </RankedRow>
         ))}
         <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">Movimientos · mes elegido</Text>
         {topTransactionsBills.current.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos en este mes.</Text>}
-        {topTransactionsBills.current.map((tx) => (
+        {topTransactionsBills.current.map((tx, index, list) => (
+          <RankedRow key={`${index}-${String(tx.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={String(tx._id ?? tx.name)} accessibilityRole="button" onPress={() => tx._id && router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } })} className="flex-row items-center gap-3">
             <CategoryBadge icon={tx.icon} color={tx.color} size={34} />
             <View className="flex-1">
@@ -189,6 +197,7 @@ export default function AnalyzerScreen() {
             </View>
             <Text className="font-inter-semibold text-sm text-gf-text">{money(tx.amount)}</Text>
           </Pressable>
+          </RankedRow>
         ))}
       </Card>
 
@@ -249,7 +258,7 @@ export default function AnalyzerScreen() {
               <Pressable accessibilityRole="button" accessibilityState={{ selected: categoryOrder === 'desc' }} onPress={() => setCategoryOrder('desc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: categoryOrder === 'desc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Mayor primero</Text></Pressable>
               <Pressable accessibilityRole="button" accessibilityState={{ selected: categoryOrder === 'asc' }} onPress={() => setCategoryOrder('asc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: categoryOrder === 'asc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Menor primero</Text></Pressable>
             </View>
-            {categoryMovements.map((tx) => <MovementRow key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setDetail(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } }); }} />)}
+            {categoryMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setDetail(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } }); }} />)}
           </>
         )}
         {detail?.kind === 'averages' && (

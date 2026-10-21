@@ -88,7 +88,7 @@ export function BudgetSummarySheet({
                   <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(group.amount, currency)}</Text>
                   <Text className="font-inter text-sm text-gf-text-muted">{groupMovements.length} {groupMovements.length === 1 ? 'movimiento sin presupuesto' : 'movimientos sin presupuesto'} en esta categoría.</Text>
                   {group.categoryId && <Pressable accessibilityRole="button" onPress={() => { close(); onAddBudget(group.categoryId); }} className="items-center rounded-full border border-gf-border py-3"><Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>Agregar presupuesto para {group.name}</Text></Pressable>}
-                  {groupMovements.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => { close(); router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/budgets' } }); }} />)}
+                  {groupMovements.map((movement) => <MovementRow divider key={String(movement._id)} movement={movement} currency={currency} onPress={() => { close(); router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/budgets' } }); }} />)}
                 </>
               )}
               {kind === 'unbudgeted' && !group && (

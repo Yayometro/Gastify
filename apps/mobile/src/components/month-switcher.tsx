@@ -26,7 +26,7 @@ export function MonthSwitcher({
   const shift = (delta: number) => onChange(new Date(value.getFullYear(), value.getMonth() + delta, 1));
 
   return (
-    <View className="flex-row items-center justify-between rounded-full bg-gf-surface px-2 py-1">
+    <View className="flex-row items-center justify-between rounded-full bg-gf-surface px-2 py-1" style={{ minHeight: 52 }}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Mes anterior"

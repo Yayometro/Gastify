@@ -8,6 +8,7 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { CompactTimeFilter } from '@/components/compact-time-filter';
 import { CategoryBadge } from '@/components/category-badge';
 import { MovementRow } from '@/components/movements/movement-row';
+import { RankedRow } from '@/components/ui/ranked-row';
 import { Segmented } from '@/components/segmented';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
@@ -77,21 +78,24 @@ export function TopRanking({
       <Segmented options={[{ value: 'categories', label: 'Por categoría' }, { value: 'movements', label: 'Movimientos' }]} value={by} onChange={setBy} />
       {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
       {by === 'categories'
-        ? categories.map((row) => (
-            <Pressable key={row.type} accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
+        ? categories.map((row, index) => (
+            <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
+            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3 py-1">
               <CategoryBadge icon={row.icon} color={row.color} size={36} />
               <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
               <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
             </Pressable>
+            </RankedRow>
           ))
-        : biggest.map((movement) => (
+        : biggest.map((movement, index) => (
+            <RankedRow key={String(movement._id)} rank={index + 1} last={index === biggest.length - 1}>
             <MovementRow
-              key={String(movement._id)}
               movement={movement}
               currency={currency}
               onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })}
             />
+            </RankedRow>
           ))}
       {showComparison && (
         <View className="gap-2 border-t border-gf-border pt-3">
@@ -123,6 +127,7 @@ export function TopRanking({
               <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 28 }}>
                 {categoryMovements.map((movement) => (
                   <MovementRow
+                    divider
                     key={String(movement._id)}
                     movement={movement}
                     currency={currency}
