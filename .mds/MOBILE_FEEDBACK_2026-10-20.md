@@ -269,6 +269,27 @@ Prefijo W. El usuario probó el diseño de iPad en vertical y lo aprobó; estos 
 | W07 | Íconos de la barra mucho más blancos. | HECHO | En modo oscuro, blanco (seleccionado) y blanco al 88 % (resto). Verificado en Android. |
 | W08 | iPhone: el ícono seleccionado debe destacar más. | CÓDIGO LISTO | Píldora violeta más intensa con borde claro y el ícono en blanco puro (verificado en Android; falta el iPhone). |
 
+## Séptima ronda (2026-10-21, segunda prueba del iPad)
+
+Prefijo X. El usuario probó el iPad en horizontal (con capturas marcadas en azul) y dijo que en el iPhone todo está perfecto; los cambios de distribución son solo para iPad.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| X01 | Barra de navegación (iPhone): se pasó de oscura; hacerla un poco más clara y con más efecto glass. | PENDIENTE | |
+| X02 | iPad horizontal (y en general): hay franjas laterales vacías; debe ocupar todo el espacio disponible como la web (sin tragarse la barra lateral). | PENDIENTE | |
+| X03 | iPad: ampliar las cosas que el usuario encerró en azul (paneles del encabezado, Pagos recurrentes / Exposición / Ritmo, Lo más destacado, Proyección del mes): todo se tiene que ver más grande. | PENDIENTE | |
+| X04 | Efecto glass en todos los componentes planos: el selector de mes (Octubre 2026 con flechas), selectores de periodo, botón Filtros de Movimientos, etc. | PENDIENTE | |
+| X05 | Cada transacción (en Movimientos y en los resúmenes) con su propio fondo glass, en vez de mezclarse con el fondo. | PENDIENTE | |
+| X06 | iPad: evitar asimetrías entre widgets lado a lado (Resumen de transacciones y Top 6 del mismo alto; Presupuestos y Últimos movimientos del mismo alto). La web también tiene esta asimetría y hay que arreglarla. | PENDIENTE | |
+| X07 | iPad, dashboard: condensar el Análisis del periodo y mostrar más información, presentada como cuadritos con subtexto (como Lo más destacado de la web). | PENDIENTE | |
+| X08 | iPad, Analizador: Lo más destacado en cuadritos; VS mes anterior en la mitad izquierda y Promedio mensual en la derecha; Proyección del mes aprovechando el ancho; Top de categorías y de transacciones del mes anterior (izquierda) y del mes actual (derecha) uno al lado del otro; Exposición multimoneda y Ritmo de gasto compartiendo fila. | PENDIENTE | |
+| X09 | iPad: falta el Analizador de cartera en el menú lateral (hoy solo se llega por Ver más desde el dashboard); agregarlo. | PENDIENTE | |
+| X10 | iPad, Historial: el Resumen (ingresos, gastos, balance) en un bloque vertical como en la web, y a su lado otro cuadro con más información relevante (solo iPad). | PENDIENTE | |
+| X11 | iPad, Historial: quitar la barra grande de Octubre 2026; en su lugar un selector de periodo con 'Últimos 3 meses' por defecto y las opciones (últimos 3 meses, un mes, este mes, mes pasado, este trimestre, trimestre pasado, este año, año pasado, Q1–Q4, primera y segunda mitad del año), o un selector con flechas izquierda/derecha y fecha de inicio y fin dentro de la misma barra (como la web). | PENDIENTE | |
+| X12 | iPad, Historial: las barras de Mes a mes (ingresos y gastos) más anchas, como las del Analizador de la web. | PENDIENTE | |
+| X13 | Historial: los periodos y filtros pensados para comparar meses, con 3 meses por defecto (Top 6 incluido, en iPhone y en iPad). | PENDIENTE | |
+| X14 | iPad, Historial, Top 6: con 'últimos 3 meses' mostrar bloques en columnas por mes (agosto, septiembre, octubre) para compararlos, tanto por categoría como por movimiento. El iPhone se queda como está. | PENDIENTE | |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.
