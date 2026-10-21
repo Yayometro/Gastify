@@ -14,7 +14,7 @@ export function DetailSheet({ visible, title, subtitle, info, onClose, children 
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   return (
     <BottomSheet visible={visible} onClose={onClose} maxHeight="86%">
-          <SafeAreaView edges={['bottom']}>
+          <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
             <View className="flex-row items-start justify-between px-6 pb-2 pt-5">
               <View className="flex-1 pr-3">
                 <Text className="font-inter-bold text-xl text-gf-text">{title}</Text>

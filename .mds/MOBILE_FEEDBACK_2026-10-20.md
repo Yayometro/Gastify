@@ -242,6 +242,18 @@ Prefijo S. Un punto por cosa que dijo el usuario. La tercera ronda (R) la implem
 | S28 | Proceso: apuntar cada punto y no olvidar los anteriores; el usuario ya repitió cosas pedidas. | CÓDIGO LISTO | Todo apuntado en esta tabla por punto. |
 | S29 | Dashboard: el "Más filtros" del Resumen y de cualquier widget con la misma altura y estilo que el selector de mes (duplica S01; se cierra junto). | CÓDIGO LISTO | |
 
+## Quinta ronda (2026-10-20, tras revisar la cuarta)
+
+Prefijo U. El usuario confirmó que la cuarta ronda está muy bien (tooltips, tablas, modales, Top, Historial, Proyecciones). Solo pidió estos cambios.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| U01 | Tools / Transaction Categorizer: el fondo del modal se ve negro en la parte de abajo; debe ser el mismo fondo de arriba, ampliado. | CÓDIGO LISTO | La hoja no tenía tope en píxeles: el degradado se estiraba sobre todo el contenido. Ahora la hoja se limita al 90 % de la pantalla y la lista hace scroll dentro (afecta a todas las hojas). |
+| U02 | Presupuestos: la carita no va junto al ícono de la categoría; va en la esquina superior derecha del mismo renglón (ícono a la izquierda, carita pegada a la derecha). | CÓDIGO LISTO | Lista de presupuestos y detalle de un presupuesto. |
+| U03 | Historial, Proyecciones: "Ver proyectado contra real" no debe expandir el widget; debe abrir un modal ordenado con su "?". | CÓDIGO LISTO | Reusa la tabla de precisión (AccuracyBody) con el texto de la web. |
+| U04 | Historial, Top: al comparar, dejar elegir contra qué periodo (hoy compara solo hacia atrás sin decir cuál). | CÓDIGO LISTO | Periodo anterior / mismo tramo del año pasado / personalizado, con la leyenda del tramo comparado. |
+| U05 | "Continúa con las siguientes fases": seguir con lo que sigue en el plan. | EN CURSO | Ver .mds/MOBILE_REACT_NATIVE_PLAN.md. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

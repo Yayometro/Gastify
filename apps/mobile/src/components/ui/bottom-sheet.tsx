@@ -40,6 +40,8 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
     }
   }, [visible, height, fade, slide]);
 
+  // The cap in pixels, so the sheet itself (and its ambient glow) is never taller than the screen allows and a long list scrolls inside it.
+  const maxPx = typeof maxHeight === 'string' && maxHeight.endsWith('%') ? (height * parseFloat(maxHeight)) / 100 : typeof maxHeight === 'number' ? maxHeight : undefined;
   const bottomRadius = wide ? 28 : 0;
   const radii = { borderTopLeftRadius: 28, borderTopRightRadius: 28, borderBottomLeftRadius: bottomRadius, borderBottomRightRadius: bottomRadius };
 
@@ -50,9 +52,9 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
           <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" disabled={!dismissible} onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
         </Animated.View>
         <Animated.View style={{ width: wide ? wideWidth : '100%', maxHeight, transform: [{ translateY: slide }] }}>
-          <View style={[radii, { overflow: 'hidden', backgroundColor: dark ? DARK_BASE : colors.background }]}>
+          <View style={[radii, { overflow: 'hidden', maxHeight: maxPx, backgroundColor: dark ? DARK_BASE : colors.background }]}>
             {ambient && <AmbientBackground />}
-            {children}
+            <View style={{ flexShrink: 1 }}>{children}</View>
             <View pointerEvents="none" style={[StyleSheet.absoluteFill, radii, { borderWidth: 1, borderColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(27,16,61,0.08)' }]} />
           </View>
         </Animated.View>

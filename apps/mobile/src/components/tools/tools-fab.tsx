@@ -57,7 +57,7 @@ export function ToolsSheet({ visible, onClose }: { visible: boolean; onClose: ()
   const current = TOOLS.find((tool) => tool.id === active) ?? TOOLS[0];
   return (
       <BottomSheet visible={visible} onClose={onClose} maxHeight="90%">
-            <SafeAreaView edges={['bottom']}>
+            <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
               <View className="items-center px-6 pb-2 pt-5">
                 <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10} style={{ position: 'absolute', right: 20, top: 18 }}>
                   <Ionicons name="close" size={26} color={colors.text} />

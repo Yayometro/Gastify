@@ -162,11 +162,11 @@ export default function BudgetDetailScreen() {
         {goal > 0 && (
           <>
             <View className="flex-row items-center gap-3">
-              <BudgetMood ratio={ratio} saving={saving} size={48} />
               <CategoryBadge icon={lookOf(budget, colors.accentSoft).icon} color={lookOf(budget, colors.accentSoft).color} size={44} />
               <Text className="flex-1 font-inter-semibold text-base" style={{ color: diff >= 0 ? colors.text : colors.expense }}>
                 {saving ? (diff >= 0 ? `Faltan ${formatMoneyMajor(diff, currency)}` : 'Meta alcanzada') : diff >= 0 ? `Quedan ${formatMoneyMajor(diff, currency)}` : `Excedido por ${formatMoneyMajor(-diff, currency)}`}
               </Text>
+              <BudgetMood ratio={ratio} saving={saving} size={48} />
             </View>
             <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} spent={spent} goal={goal} currency={currency} suffix={periodSuffix(budget)} />
           </>

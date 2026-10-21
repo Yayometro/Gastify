@@ -33,7 +33,7 @@ export function MonthGridModal({
 
   return (
     <BottomSheet visible={visible} onClose={onClose} maxHeight="82%">
-        <SafeAreaView edges={['bottom']}>
+        <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
           <View className="flex-row items-center justify-between px-6 pb-4 pt-4">
             <Text className="font-inter-bold text-2xl text-gf-text">Elegir mes</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>

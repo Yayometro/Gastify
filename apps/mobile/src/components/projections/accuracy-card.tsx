@@ -15,7 +15,7 @@ export type AccuracyRow = {
   varianceExpense?: number;
 };
 
-const ACCURACY_HELP = [
+export const ACCURACY_HELP = [
   'PROYECTADO VS. REAL',
   '«Proyectado» es lo que esperabas para ese mes según lo que tenías configurado en ese momento (tope, o tu referencia histórica); no se recalcula después, así que editar hoy un mes ya cerrado no cambia lo que ese mes «proyectaba». «Real» es lo que tus movimientos dicen que pasó de verdad.',
   'DESAJUSTE: DOS NÚMEROS, UNO POR RENGLÓN',
@@ -30,10 +30,9 @@ const ACCURACY_HELP = [
 // "Precisión de tus proyecciones": for each closed month, what was projected against what really happened and the
 // difference, laid out as a small table (rows: income and spending; columns: projected, real, difference). A positive
 // income difference is good news and a positive expense difference is bad news, so the colors are mirrored.
-export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
+export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
-  if (rows.length === 0) return null;
   const money = (value: number | undefined) => formatMoneyMajor(value ?? 0, currency, { showCode: false });
 
   const line = (label: string, projected: number | undefined, real: number | undefined, diff: number | undefined, betterWhenPositive: boolean, tone: string) => {
@@ -55,7 +54,8 @@ export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyR
   };
 
   return (
-    <Card title="Precisión de tus proyecciones" info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP }}>
+    <>
+      {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no hay referencias guardadas para comparar meses cerrados de este año.</Text>}
       {rows.map((row) => (
         <Pressable key={row.monthName} accessibilityRole="button" onPress={() => onMonthPress?.(row.monthName)} className="border-t border-gf-border pt-3">
           <Text className="font-inter-semibold text-base text-gf-text">{esMonthLabel(row.monthName)}</Text>
@@ -70,6 +70,15 @@ export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyR
         </Pressable>
       ))}
       <Text className="font-inter text-xs text-gf-text-muted">Solo se muestran meses cerrados con un historial de proyección registrado.</Text>
+    </>
+  );
+}
+
+export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
+  if (rows.length === 0) return null;
+  return (
+    <Card title="Precisión de tus proyecciones" info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP }}>
+      <AccuracyBody rows={rows} currency={currency} onMonthPress={onMonthPress} />
     </Card>
   );
 }

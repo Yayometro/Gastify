@@ -147,7 +147,7 @@ export function SummaryCarousel(props: Props) {
       </View>
 
       <BottomSheet visible={more} onClose={() => setMore(false)} maxHeight="86%">
-            <SafeAreaView edges={['bottom']}>
+            <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
               <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
                 <Text className="font-inter-bold text-xl text-gf-text">{props.title}</Text>
                 <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setMore(false)} hitSlop={10}>

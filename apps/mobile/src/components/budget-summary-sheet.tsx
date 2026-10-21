@@ -54,7 +54,7 @@ export function BudgetSummarySheet({
 
   return (
     <BottomSheet visible={kind !== null} onClose={close} maxHeight="86%">
-          <SafeAreaView edges={['bottom']}>
+          <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
             <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
               {group && <Pressable accessibilityRole="button" accessibilityLabel="Volver a categorías sin presupuesto" onPress={() => setSelectedGroup(null)} hitSlop={10}><Ionicons name="arrow-back" size={24} color={colors.text} /></Pressable>}
               <Text className="flex-1 font-inter-bold text-2xl text-gf-text">{group ? group.name : kind === 'unbudgeted' ? 'Sin presupuesto' : 'Gasto total'}</Text>

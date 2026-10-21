@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
+import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { ChipPicker } from '@/components/chip-picker';
+import { ACCURACY_HELP, AccuracyBody } from '@/components/projections/accuracy-card';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
@@ -117,20 +119,12 @@ export function ProjectionsTeaser() {
           <Pressable accessibilityRole="button" onPress={() => router.push('/more/projections')} hitSlop={8}>
             <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver el detalle ›</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" accessibilityState={{ expanded: showDetail }} onPress={() => setShowDetail((value) => !value)} className="items-center rounded-full border border-gf-border py-2">
-            <Text className="font-inter-semibold text-sm text-gf-text">{showDetail ? 'Ocultar proyectado contra real' : 'Ver proyectado contra real'}</Text>
+          <Pressable accessibilityRole="button" onPress={() => setShowDetail(true)} className="items-center rounded-full border border-gf-border py-2.5">
+            <Text className="font-inter-semibold text-sm text-gf-text">Ver proyectado contra real</Text>
           </Pressable>
-          {showDetail && (
-            <View className="gap-3">
-              {accuracy.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no hay referencias guardadas para comparar meses cerrados de este año.</Text>}
-              {accuracy.map((row) => <View key={row.monthName} className="gap-1 border-t border-gf-border pt-2">
-                <Text className="font-inter-semibold text-sm text-gf-text">{row.monthName}</Text>
-                <Text className="font-inter text-xs text-gf-text-muted">Ingresos: previsto {formatMoneyMajor(row.projectedIncome, currency)} · real {formatMoneyMajor(row.actualIncome, currency)}</Text>
-                <Text className="font-inter text-xs text-gf-text-muted">Gastos: previsto {formatMoneyMajor(row.projectedExpense, currency)} · real {formatMoneyMajor(row.actualExpense, currency)}</Text>
-                <Text className="font-inter-semibold text-xs" style={{ color: row.varianceExpense > 0 ? colors.expense : colors.income }}>Diferencia de gastos: {formatMoneyMajor(row.varianceExpense, currency)}</Text>
-              </View>)}
-            </View>
-          )}
+          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title="Proyectado contra real" subtitle={`Meses cerrados de ${year}`} info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP }}>
+            <AccuracyBody rows={accuracy as never[]} currency={currency} />
+          </DetailSheet>
         </>
       )}
     </Card>

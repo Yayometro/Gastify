@@ -70,7 +70,6 @@ function BudgetCard({ row, currency, saving }: { row: Row; currency: string; sav
       onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })}>
       <Card>
         <View className="flex-row items-center gap-3">
-          {goal > 0 && <BudgetMood ratio={ratio} saving={saving} size={40} />}
           <CategoryBadge icon={look.icon} color={look.color} size={40} />
           <View className="flex-1">
             <Text className="font-inter-semibold text-base text-gf-text" numberOfLines={1}>
@@ -78,6 +77,7 @@ function BudgetCard({ row, currency, saving }: { row: Row; currency: string; sav
             </Text>
             <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>{kind} · {periodSuffix(budget).replace('/', '')}</Text>
           </View>
+          {goal > 0 && <BudgetMood ratio={ratio} saving={saving} size={40} />}
         </View>
         {goal > 0 && <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} spent={spent} goal={goal} currency={currency} suffix={periodSuffix(budget)} />}
         {goal > 0 && <Text className="font-inter-semibold text-sm" style={{ color: statusColor }}>{status}</Text>}

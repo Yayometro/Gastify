@@ -15,9 +15,11 @@ import { Colors } from '@/constants/theme';
 import type { InfoText } from '@/components/info-tip';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { DateField } from '@/components/date-field';
+import { ChipPicker } from '@/components/chip-picker';
 import { GfSwitch } from '@/components/ui/switch';
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
-import { compareRange, historyRange, type HistoryPreset } from '@gastify/core/history/periodComparison';
+import { COMPARE_PRESETS, compareRange, historyRange, type ComparePreset, type HistoryPreset } from '@gastify/core/history/periodComparison';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { filterBillsOrIncomes, getPrimaryAmount, orderByHighestValue, reduceTransCategoriesSliced } from '@gastify/core/transformers/transactionsChange';
@@ -48,6 +50,7 @@ export function TopRanking({
   const [kind, setKind] = useState<'bills' | 'incomes'>('bills');
   const [by, setBy] = useState<'categories' | 'movements'>('categories');
   const [compareOn, setCompareOn] = useState(false);
+  const [comparePreset, setComparePreset] = useState<ComparePreset>('previous');
   // The category whose movements are open in the sheet (tap a category row).
   const [openCategory, setOpenCategory] = useState<{ name: string; previous: boolean } | null>(null);
   const scheme = useColorScheme();
@@ -60,7 +63,9 @@ export function TopRanking({
   const range = useMemo(() => historyRange(preset, now, { from: parseDateText(customFrom), to: parseDateText(customTo) }, month), [preset, now, month, customFrom, customTo]);
   const { bills, incomes } = useMemo(() => filterBillsOrIncomes(movements.filter((movement) => isInRange(movement, range))), [movements, range]);
   const list = kind === 'bills' ? bills : incomes;
-  const previousRange = useMemo(() => compareRange('previous', range, { from: null, to: null }), [range]);
+  const [compareFrom, setCompareFrom] = useState(() => dateText(new Date(now.getFullYear() - 1, now.getMonth(), 1)));
+  const [compareTo, setCompareTo] = useState(() => dateText(new Date(now.getFullYear() - 1, now.getMonth(), 28)));
+  const previousRange = useMemo(() => compareRange(comparePreset, range, { from: parseDateText(compareFrom), to: parseDateText(compareTo) }), [comparePreset, range, compareFrom, compareTo]);
   const previousSets = useMemo(() => filterBillsOrIncomes(movements.filter((movement) => isInRange(movement, previousRange))), [movements, previousRange]);
   const previousList = kind === 'bills' ? previousSets.bills : previousSets.incomes;
   const categories = useMemo(() => orderByHighestValue(reduceTransCategoriesSliced(list)).slice(0, size), [list, size]);
@@ -76,13 +81,27 @@ export function TopRanking({
   return (
     <Card title={`Top ${size}`} info={info ?? { title: `Top ${size}`, text: 'Las categorías o transacciones con mayor gasto o ingreso del periodo. Cambia el número de elementos, el tipo y la agrupación; las flechas eligen otro mes y Más filtros abre los demás periodos. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo.' }}>
       <CompactTimeFilter preset={preset} onPreset={(value) => { if (value !== 'dashboard') setPreset(value); }} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} extra={showComparison ? (
+        <>
         <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
           <View className="flex-1">
-            <Text className="font-inter-medium text-base text-gf-text">Comparar con el periodo anterior</Text>
-            <Text className="font-inter text-xs text-gf-text-muted">Muestra debajo el Top del tramo inmediato anterior, de la misma duración.</Text>
+            <Text className="font-inter-medium text-base text-gf-text">Comparar con otro periodo</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">Elige abajo contra qué tramo comparar; su Top aparece debajo del actual.</Text>
           </View>
-          <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel="Comparar con el periodo anterior" />
+          <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel="Comparar con otro periodo" />
         </View>
+        {compareOn && (
+          <View className="gap-3">
+            <ChipPicker items={COMPARE_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={comparePreset} onChange={(id) => setComparePreset(id as ComparePreset)} moreAfter={99} />
+            {comparePreset === 'custom' && (
+              <View className="gap-3">
+                <DateField label="Comparar desde" value={compareFrom} onChange={setCompareFrom} />
+                <DateField label="Comparar hasta" value={compareTo} onChange={setCompareTo} />
+              </View>
+            )}
+            <Text className="font-inter text-xs text-gf-text-muted">Se compara con {rangeLabelEs(previousRange.start, previousRange.end)}.</Text>
+          </View>
+        )}
+        </>
       ) : undefined} />
       <Segmented options={sizeOptions} value={String(size) as `${TopSize}`} onChange={(next) => setSize(Number(next) as TopSize)} />
       <Segmented options={[{ value: 'bills', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
@@ -129,7 +148,7 @@ export function TopRanking({
       )}
 
       <BottomSheet visible={openCategory !== null} onClose={() => setOpenCategory(null)} maxHeight="82%">
-            <SafeAreaView edges={['bottom']}>
+            <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
               <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
                 <View className="flex-1 pr-3">
                   <Text className="font-inter-bold text-xl text-gf-text" numberOfLines={1}>{openCategory?.name === 'No category' ? 'Sin categoría' : openCategory?.name}</Text>
