@@ -290,6 +290,31 @@ Prefijo X. El usuario probó el iPad en horizontal (con capturas marcadas en azu
 | X13 | Historial: los periodos y filtros pensados para comparar meses, con 3 meses por defecto (Top 6 incluido, en iPhone y en iPad). | HECHO | Historial arranca en los últimos 3 meses; los selectores internos listan periodos largos. |
 | X14 | iPad, Historial, Top 6: con 'últimos 3 meses' mostrar bloques en columnas por mes (agosto, septiembre, octubre) para compararlos, tanto por categoría como por movimiento. El iPhone se queda como está. | CÓDIGO LISTO | Top 6 del Historial con bloques por mes en columnas cuando el periodo abarca 2–4 meses (por categoría o por movimiento). Falta verlo en pantalla. |
 
+## Octava ronda (2026-10-21, tercera prueba del iPad)
+
+Prefijo Y. El usuario revisó barra, tablas y Historial; aprobó el Top en tablas de 3 columnas (vertical y horizontal).
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| Y01 | Proyecciones, tabla «Mes a mes»: el encabezado un poco más rosa/violeta, como la barra y la web (solo un poco). | PENDIENTE | |
+| Y02 | Proyecciones, tabla: filas alternadas, una un poco más oscura y la siguiente más clara en toda la fila (enero oscuro, febrero claro, marzo oscuro…), para distinguir una fila de otra. | PENDIENTE | |
+| Y03 | La misma lógica de filas alternadas en «Precisión de tus proyecciones». | PENDIENTE | |
+| Y04 | iPad, menú lateral: el Analizador debe ir justo debajo de Proyecciones y arriba del botón «+» (hoy está debajo del «+»). | PENDIENTE | |
+| Y05 | iPad, menú lateral: el ícono del Analizador y el de Proyecciones se parecen; cambiar uno para que se distingan. | PENDIENTE | |
+| Y06 | iPad, menú lateral: el botón «+» debe ser más grande y tener el efecto 3D que sí tiene en la web y en la barra del móvil. | PENDIENTE | |
+| Y07 | iPad, menú lateral: el efecto glass casi no se aprecia (en el iPhone sí); debe verse glass, con desenfoque, volumen y una sombra hacia afuera. | PENDIENTE | |
+| Y08 | Historial, selector de periodo: el modal solo se cierra con la X; debe cerrar también al tocar fuera. Además se siente lento al abrir. | PENDIENTE | |
+| Y09 | Arrastrar hacia abajo para actualizar (pull to refresh) no funciona en Analizador de cartera, Historial, Proyecciones y Perfil; sí en Dashboard, Movimientos, Presupuestos, Cuentas y Categorías. Error grave. | PENDIENTE | |
+| Y10 | Historial: se sospechó que no usaba los últimos 3 meses por defecto; el usuario lo retiró (era un problema de actualización). | PENDIENTE | |
+| Y11 | Historial con comparación: en «Resumen», el valor del periodo comparado debe verse igual de grande que el actual, solo más tenue. | PENDIENTE | |
+| Y12 | Historial con comparación: en «Datos del periodo» cada cuadrito debe mostrar el versus del periodo comparado (movimientos, lo que conservaste, etc.). | PENDIENTE | |
+| Y13 | Historial, Mes a mes: el modal de un mes (por ejemplo agosto 2026) no se entiende; debe mostrar a la izquierda un periodo y a la derecha el otro (ingreso contra ingreso, gasto contra gasto, categoría líder de cada uno) y decir claramente qué se compara (agosto 2026 contra agosto 2025). | PENDIENTE | |
+| Y14 | Historial, Gastos e Ingresos por categoría (lo más importante): al comparar con otro periodo y tocar una categoría, el modal solo muestra los movimientos del periodo actual; debe mostrar también los del comparado, uno a cada lado, explicando a qué periodo corresponde cada lado. | PENDIENTE | |
+| Y15 | Historial, Grandes gastos: con comparación, mostrar también el versus. | PENDIENTE | |
+| Y16 | Historial, Suscripciones recurrentes: no necesita versus (el usuario lo retiró). | PENDIENTE | |
+| Y17 | Historial, Proyecciones: no necesita versus (funcionan distinto; el usuario lo retiró). | PENDIENTE | |
+| Y18 | Todos los Top: cada fila (categoría o movimiento) con su propio fondo glass, como ya lo tienen las transacciones. | PENDIENTE | |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.
