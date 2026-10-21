@@ -1599,8 +1599,8 @@ When taking over this task, Claude should perform the following steps:
 
 
 ### Entry #61 - Claude - 2026-10-20 - Rondas 4 y 5 de feedback móvil (rama `mobile-phase-9-paridad`)
-- **Trazabilidad:** `.mds/MOBILE_FEEDBACK_2026-10-20.md` tiene la cuarta ronda (S01–S29) y la quinta (U01–U05). S06, S07, S08, S11, S12, S13, S23 y S05 verificados en el emulador; el resto CÓDIGO LISTO (falta iPhone/iPad). El usuario confirmó que la cuarta ronda se ve bien.
+- **Trazabilidad:** `.mds/MOBILE_FEEDBACK_2026-10-20.md` tiene la cuarta ronda (S01–S29) y la quinta (V01–V05). S06, S07, S08, S11, S12, S13, S23 y S05 verificados en el emulador; el resto CÓDIGO LISTO (falta iPhone/iPad). El usuario confirmó que la cuarta ronda se ve bien.
 - **Núcleo:** `computeInsights` devuelve balance, movimientos, gasto más grande y gasto promedio; `buildSpendPatternAnalysis` (copia del web) con pruebas; las ocurrencias de pagos recurrentes traen `_id` para abrir el movimiento. 412 pruebas de core pasan.
 - **App:** hojas compartidas del analizador (`components/analyzer/sheets.tsx`: destacados, presupuesto de 12 meses, líderes por mes, análisis, día de la semana), modal del mes en Proyecciones (`components/projections/month-sheet.tsx`, escribe en `general-data/projections/update`; guardado aún sin probar), tabla de precisión con la ayuda de la web, Acceso/contraseña visible en Perfil, Top con comparación elegible, etiquetas de mes en español (`lib/month-label.ts`).
-- **Hallazgo (U01):** `BottomSheet` no tenía tope en píxeles; una lista larga estiraba el degradado (fondo negro abajo). Ahora la hoja se limita a su alto máximo y la lista hace scroll dentro; verificado en modo oscuro con una hoja larga.
+- **Hallazgo (V01):** `BottomSheet` no tenía tope en píxeles; una lista larga estiraba el degradado (fondo negro abajo). Ahora la hoja se limita a su alto máximo y la lista hace scroll dentro; verificado en modo oscuro con una hoja larga.
 - **Pendiente:** revisar en iPhone/iPad; decidir la fusión a `main` y `fix/fx-tasa-vieja`; siguientes fases del plan (fase 7: estados de cuenta, voz, caché; fase 8: publicación).

@@ -244,15 +244,15 @@ Prefijo S. Un punto por cosa que dijo el usuario. La tercera ronda (R) la implem
 
 ## Quinta ronda (2026-10-20, tras revisar la cuarta)
 
-Prefijo U. El usuario confirmó que la cuarta ronda está muy bien (tooltips, tablas, modales, Top, Historial, Proyecciones). Solo pidió estos cambios.
+Prefijo V (la U ya se usó en una ronda anterior). El usuario confirmó que la cuarta ronda está muy bien (tooltips, tablas, modales, Top, Historial, Proyecciones). Solo pidió estos cambios.
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| U01 | Tools / Transaction Categorizer: el fondo del modal se ve negro en la parte de abajo; debe ser el mismo fondo de arriba, ampliado. | CÓDIGO LISTO | La hoja no tenía tope en píxeles: el degradado se estiraba sobre todo el contenido. Ahora la hoja se limita al 90 % de la pantalla y la lista hace scroll dentro (afecta a todas las hojas). Verificado en modo oscuro con una hoja larga (mes de Proyecciones); la lista larga de Tools no se pudo reproducir porque la cuenta QA no tiene movimientos sin categoría. También se levanta sobre el teclado. |
-| U02 | Presupuestos: la carita no va junto al ícono de la categoría; va en la esquina superior derecha del mismo renglón (ícono a la izquierda, carita pegada a la derecha). | CÓDIGO LISTO | Lista de presupuestos y detalle de un presupuesto. |
-| U03 | Historial, Proyecciones: "Ver proyectado contra real" no debe expandir el widget; debe abrir un modal ordenado con su "?". | CÓDIGO LISTO | Reusa la tabla de precisión (AccuracyBody) con el texto de la web. |
-| U04 | Historial, Top: al comparar, dejar elegir contra qué periodo (hoy compara solo hacia atrás sin decir cuál). | CÓDIGO LISTO | Periodo anterior / mismo tramo del año pasado / personalizado, con la leyenda del tramo comparado. |
-| U05 | "Continúa con las siguientes fases": seguir con lo que sigue en el plan. | EN CURSO | Ver .mds/MOBILE_REACT_NATIVE_PLAN.md. |
+| V01 | Tools / Transaction Categorizer: el fondo del modal se ve negro en la parte de abajo; debe ser el mismo fondo de arriba, ampliado. | CÓDIGO LISTO | La hoja no tenía tope en píxeles: el degradado se estiraba sobre todo el contenido. Ahora la hoja se limita al 90 % de la pantalla y la lista hace scroll dentro (afecta a todas las hojas). Verificado en modo oscuro con una hoja larga (mes de Proyecciones); la lista larga de Tools no se pudo reproducir porque la cuenta QA no tiene movimientos sin categoría. También se levanta sobre el teclado. |
+| V02 | Presupuestos: la carita no va junto al ícono de la categoría; va en la esquina superior derecha del mismo renglón (ícono a la izquierda, carita pegada a la derecha). | CÓDIGO LISTO | Lista de presupuestos y detalle de un presupuesto. |
+| V03 | Historial, Proyecciones: "Ver proyectado contra real" no debe expandir el widget; debe abrir un modal ordenado con su "?". | CÓDIGO LISTO | Reusa la tabla de precisión (AccuracyBody) con el texto de la web. |
+| V04 | Historial, Top: al comparar, dejar elegir contra qué periodo (hoy compara solo hacia atrás sin decir cuál). | CÓDIGO LISTO | Periodo anterior / mismo tramo del año pasado / personalizado, con la leyenda del tramo comparado. |
+| V05 | "Continúa con las siguientes fases": seguir con lo que sigue en el plan. | EN CURSO | Ver .mds/MOBILE_REACT_NATIVE_PLAN.md. |
 
 ## Notas
 
