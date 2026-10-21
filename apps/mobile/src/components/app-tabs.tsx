@@ -65,6 +65,8 @@ export default function AppTabs() {
         options={{
           title: 'Movimientos',
           tabBarAccessibilityLabel: 'Movimientos',
+          // A tab is an entry point to its list, not to the last detail opened from Inicio.
+          popToTopOnBlur: true,
           tabBarIcon: glyph((color) => <FontAwesome6 name="money-bill-transfer" size={ICON_SIZE - 2} color={color} />),
         }}
       />
@@ -77,6 +79,7 @@ export default function AppTabs() {
         options={{
           title: 'Presupuestos',
           tabBarAccessibilityLabel: 'Presupuestos',
+          popToTopOnBlur: true,
           tabBarIcon: glyph((color) => <MaterialIcons name="savings" size={ICON_SIZE + 3} color={color} />),
         }}
       />
@@ -85,6 +88,7 @@ export default function AppTabs() {
         options={{
           title: 'Más',
           tabBarAccessibilityLabel: 'Más',
+          popToTopOnBlur: true,
           tabBarIcon: glyph((color) => <Ionicons name="ellipsis-horizontal" size={ICON_SIZE + 2} color={color} />),
         }}
       />

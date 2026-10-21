@@ -47,7 +47,14 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
           const focused = state.index === index;
           const onPress = () => {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+            if (event.defaultPrevented) return;
+            // A tab always opens its landing page, even when a detail in that tab was opened
+            // from another section. Merely navigating to the tab preserves its nested stack.
+            if (route.name === 'movements' || route.name === 'budgets' || route.name === 'more') {
+              navigation.navigate(route.name, { screen: 'index' });
+              return;
+            }
+            if (!focused) navigation.navigate(route.name, route.params);
           };
 
           return (

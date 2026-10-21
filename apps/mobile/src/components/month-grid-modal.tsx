@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Modal, Pressable, Text, View, useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
 import { MONTHS_ES } from '@gastify/core/format/spanishDates';
 
@@ -23,17 +23,17 @@ export function MonthGridModal({
   onClose: () => void;
 }) {
   const scheme = useColorScheme();
-  const dark = scheme === 'dark';
-  const colors = Colors[dark ? 'dark' : 'light'];
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [year, setYear] = useState(value.getFullYear());
+  useEffect(() => {
+    if (visible) setYear(value.getFullYear());
+  }, [visible, value]);
   const index = (y: number, m: number) => y * 12 + m;
   const latestIndex = index(latest.getFullYear(), latest.getMonth());
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: dark ? DARK_BASE : colors.background }}>
-        <AmbientBackground />
-        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+    <BottomSheet visible={visible} onClose={onClose} maxHeight="82%">
+        <SafeAreaView edges={['bottom']}>
           <View className="flex-row items-center justify-between px-6 pb-4 pt-4">
             <Text className="font-inter-bold text-2xl text-gf-text">Elegir mes</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>
@@ -78,7 +78,6 @@ export function MonthGridModal({
             })}
           </View>
         </SafeAreaView>
-      </View>
-    </Modal>
+    </BottomSheet>
   );
 }

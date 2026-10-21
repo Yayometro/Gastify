@@ -7,6 +7,7 @@ import { ChipPicker } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
 import { BudgetsComparative } from '@/components/history/budgets-comparative';
+import { HistoryExtraInsights } from '@/components/history/extra-insights';
 import { MonthByMonth } from '@/components/history/month-by-month';
 import { OwnPeriodCategories } from '@/components/history/own-period-categories';
 import { ProjectionsTeaser } from '@/components/history/projections-teaser';
@@ -136,7 +137,7 @@ export default function HistoryScreen() {
         ))}
       </Card>
 
-      <MonthByMonth months={a.months} compare={b?.months} currency={currency} />
+      <MonthByMonth months={a.months} compare={b?.months} currency={currency} start={rangeA.start} compareStart={b ? rangeB.start : undefined} movements={transactions} />
 
       <OwnPeriodCategories
         kind="spending"
@@ -158,11 +159,13 @@ export default function HistoryScreen() {
         currency={currency}
       />
 
-      <BudgetsComparative start={rangeA.start} end={rangeA.end} />
+      <HistoryExtraInsights movements={transactions} currency={currency} end={rangeA.end} />
+
+      <BudgetsComparative start={rangeA.start} end={rangeA.end} compareStart={compareOn ? rangeB.start : undefined} compareEnd={compareOn ? rangeB.end : undefined} />
 
       <ProjectionsTeaser />
 
-      <TopRanking movements={transactions} currency={currency} title="Top de movimientos" defaultPreset="last3" returnTo="/more/history" />
+      <TopRanking movements={transactions} currency={currency} defaultPreset="last3" returnTo="/more/history" showComparison />
     </Screen>
   );
 }

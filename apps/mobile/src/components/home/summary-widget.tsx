@@ -1,19 +1,20 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { CategoryBubbles } from '@/components/charts/category-bubbles';
 import { CategoryDonut } from '@/components/charts/category-donut';
 import { CategoryTreemap } from '@/components/charts/category-treemap';
-import { ChipPicker } from '@/components/chip-picker';
-import { MonthSwitcher } from '@/components/month-switcher';
+import { CompactTimeFilter } from '@/components/compact-time-filter';
 import { MonthlyBars } from '@/components/charts/monthly-bars';
 import { CategoryBadge } from '@/components/category-badge';
 import { Segmented } from '@/components/segmented';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { categoryBreakdown, groupSmallSlices, NO_SUBCATEGORY_NAME } from '@gastify/core/history/categoryBreakdown';
-import { HISTORY_PRESETS, historyRange, summarizePeriod, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
+import { historyRange, summarizePeriod, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
+import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionLike } from '@gastify/core/transformers/transactionsChange';
 
@@ -41,11 +42,13 @@ export function SummaryWidget({
   const [preset, setPreset] = useState<'dashboard' | HistoryPreset>('dashboard');
   const now = useMemo(() => new Date(), []);
   const [month, setMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
+  const [customFrom, setCustomFrom] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
+  const [customTo, setCustomTo] = useState(() => dateText(now));
   const { summary, movements } = useMemo(() => {
     if (preset === 'dashboard') return { summary: dashboardSummary, movements: dashboardMovements };
-    const range = historyRange(preset, now, { from: null, to: null }, month);
+    const range = historyRange(preset, now, { from: parseDateText(customFrom), to: parseDateText(customTo) }, month);
     return { summary: summarizePeriod(allMovements, range), movements: allMovements.filter((movement) => isInRange(movement, range)) };
-  }, [preset, month, now, allMovements, dashboardSummary, dashboardMovements]);
+  }, [preset, month, now, customFrom, customTo, allMovements, dashboardSummary, dashboardMovements]);
   const [selected, setSelected] = useState<string | null>(null);
   // The chart type, as the web's selector: the nested ring, the bubbles or the treemap.
   const [chart, setChart] = useState<'ring' | 'bubbles' | 'treemap'>('ring');
@@ -63,22 +66,22 @@ export function SummaryWidget({
   useEffect(() => setSelected(null), [kind, movements]);
 
   return (
-    <Card title="Resumen" info={{ title: 'Resumen', text: 'En qué se va tu dinero (o de dónde viene), por categoría. Elige el tipo de gráfica y toca una sección para ver sus subcategorías. Tiene su propio periodo.' }}>
-      <ChipPicker
-        items={[{ id: 'dashboard', label: 'Igual que arriba' }, ...HISTORY_PRESETS.filter((p) => p.value !== 'custom').map((p) => ({ id: p.value, label: p.label }))]}
-        value={preset}
-        onChange={(id) => setPreset(id as 'dashboard' | HistoryPreset)}
-        moreAfter={99}
-      />
-      {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
+    <Card title="Resumen de transacciones" info={{ title: 'Resumen de transacciones', text: 'Compara gastos o ingresos del periodo elegido. Anillo, burbujas y mapa muestran la misma distribución por categoría: toca una para ver sus subcategorías y usa la flecha para regresar. El filtro de esta tarjeta puede ser distinto al de Inicio; abre Más filtros para cambiarlo.' }}>
+      <CompactTimeFilter preset={preset} onPreset={setPreset} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
       <Segmented options={[{ value: 'spending', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
+      {categories.length > 0 && <Segmented options={[{ value: 'ring', label: 'Anillo' }, { value: 'bubbles', label: 'Burbujas' }, { value: 'treemap', label: 'Mapa' }]} value={chart} onChange={setChart} />}
       <Text className="text-center font-inter-bold text-3xl" style={{ color: kind === 'spending' ? colors.expense : colors.income }}>{formatMoneyMajor(total, currency)}</Text>
 
       {categories.length === 0 ? (
         <Text className="font-inter text-sm text-gf-text-muted">Sin {kind === 'spending' ? 'gastos' : 'ingresos'} en este periodo.</Text>
       ) : (
         <>
-          <Segmented options={[{ value: 'ring', label: 'Anillo' }, { value: 'bubbles', label: 'Burbujas' }, { value: 'treemap', label: 'Mapa' }]} value={chart} onChange={setChart} />
+          {chart !== 'ring' && chosen && (
+            <Pressable accessibilityRole="button" accessibilityLabel="Regresar a todas las categorías" onPress={() => setSelected(null)} className="self-start flex-row items-center gap-1 py-1">
+              <Ionicons name="arrow-back" size={18} color={colors.accent} />
+              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todas las categorías</Text>
+            </Pressable>
+          )}
           {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={(key) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)))} total={shownTotal} />}
           {chart === 'treemap' && <CategoryTreemap slices={shown} selectedKey={zoomed ? null : selected} onSelect={(key) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)))} total={shownTotal} />}
           {chart !== 'ring' && chosen && (

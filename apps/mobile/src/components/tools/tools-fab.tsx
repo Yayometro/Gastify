@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
 import { Categorizer } from '@/components/tools/categorizer';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { BottomTabInset, Colors } from '@/constants/theme';
 
 type Tool = { id: string; label: string; title: string; about: string; render: () => React.JSX.Element };
@@ -25,8 +25,7 @@ const TOOLS: Tool[] = [
 // right on the phone (above the tab bar) and on the iPad.
 export function ToolsFab() {
   const scheme = useColorScheme();
-  const dark = scheme === 'dark';
-  const colors = Colors[dark ? 'dark' : 'light'];
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
   const wide = useWindowDimensions().width >= 768;
   const [open, setOpen] = useState(false);
@@ -48,20 +47,7 @@ export function ToolsFab() {
         </LinearGradient>
       </Pressable>
 
-      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <View style={{ flex: 1, justifyContent: wide ? 'center' : 'flex-end', alignItems: 'center' }}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setOpen(false)} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.55)' }} />
-          <View
-            style={{
-              width: wide ? 640 : '100%',
-              maxHeight: '90%',
-              borderRadius: wide ? 28 : 0,
-              borderTopLeftRadius: 28,
-              borderTopRightRadius: 28,
-              overflow: 'hidden',
-              backgroundColor: dark ? DARK_BASE : colors.background,
-            }}>
-            <AmbientBackground />
+      <BottomSheet visible={open} onClose={() => setOpen(false)} maxHeight="90%">
             <SafeAreaView edges={['bottom']}>
               <View className="items-center px-6 pb-2 pt-5">
                 <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setOpen(false)} hitSlop={10} style={{ position: 'absolute', right: 20, top: 18 }}>
@@ -90,9 +76,7 @@ export function ToolsFab() {
                 {open && current.render()}
               </ScrollView>
             </SafeAreaView>
-          </View>
-        </View>
-      </Modal>
+      </BottomSheet>
     </>
   );
 }

@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Modal, Pressable, Text, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DARK_BASE } from '@/components/ambient-background';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
 import { EXPORT_FORMATS, type ExportFormat } from '@/lib/export-file';
 
@@ -21,13 +21,10 @@ export function ExportSheet({
   onClose: () => void;
 }) {
   const scheme = useColorScheme();
-  const dark = scheme === 'dark';
-  const colors = Colors[dark ? 'dark' : 'light'];
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={busy ? undefined : onClose}>
-      <Pressable accessibilityLabel="Cerrar" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={busy ? undefined : onClose} />
-      <View style={{ backgroundColor: dark ? DARK_BASE : colors.backgroundElement, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderWidth: dark ? 1 : 0, borderColor: colors.border }}>
+    <BottomSheet visible={visible} onClose={onClose} dismissible={!busy}>
         <SafeAreaView edges={['bottom']}>
           <View className="gap-1 px-6 pb-6 pt-5">
             <Text className="font-inter-bold text-xl text-gf-text">Exportar movimientos</Text>
@@ -63,7 +60,6 @@ export function ExportSheet({
             )}
           </View>
         </SafeAreaView>
-      </View>
-    </Modal>
+    </BottomSheet>
   );
 }

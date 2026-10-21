@@ -1,8 +1,9 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { Colors } from '@/constants/theme';
 import { longDateEs } from '@gastify/core/format/spanishDates';
@@ -51,19 +52,11 @@ export function DateField({ label, value, onChange }: { label: string; value: st
       </Pressable>
 
       {Platform.OS === 'ios' && (
-        <Modal visible={iosOpen} animationType={wide ? 'fade' : 'slide'} transparent onRequestClose={keepAndClose}>
-          <View style={{ flex: 1, justifyContent: wide ? 'center' : 'flex-end', alignItems: 'center' }}>
-            {/* Tapping outside the calendar closes it and keeps the day picked so far (no need to press "Listo"). */}
-            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar calendario" onPress={keepAndClose} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.45)' }]} />
+        <BottomSheet visible={iosOpen} onClose={keepAndClose} wideWidth={440} ambient={false}>
             {/* One solid color all the way down, so the calendar has no band of another color behind it. On an iPad it is
                 a centered card; on a phone, a sheet from the bottom. */}
             <View
               style={{
-                width: wide ? 440 : '100%',
-                backgroundColor: dark ? '#1b1033' : '#ffffff',
-                borderRadius: wide ? 28 : 0,
-                borderTopLeftRadius: 28,
-                borderTopRightRadius: 28,
                 paddingHorizontal: 20,
                 paddingTop: 16,
                 paddingBottom: wide ? 20 : 34,
@@ -89,8 +82,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
                 }}
               />
             </View>
-          </View>
-        </Modal>
+        </BottomSheet>
       )}
     </View>
   );

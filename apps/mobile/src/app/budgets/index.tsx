@@ -25,6 +25,7 @@ import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import { BudgetSummarySheet, type BudgetLine, type GroupLine } from '@/components/budget-summary-sheet';
+import { BudgetProgress } from '@/components/budget-progress';
 import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
@@ -61,7 +62,6 @@ function BudgetCard({ row, currency, saving }: { row: Row; currency: string; sav
   const { budget, spent, goal, ratio } = row;
   const diff = spent - goal;
   const exceeded = !saving && goal > 0 && diff > 0;
-  const percent = Math.round(ratio * 100);
   const look = lookOf(budget, colors.accentSoft);
 
   return (
@@ -80,9 +80,9 @@ function BudgetCard({ row, currency, saving }: { row: Row; currency: string; sav
               {saving ? 'Ahorrado' : 'Gastado'} {formatMoneyMajor(spent, currency)} de {formatMoneyMajor(goal, currency)}
             </Text>
           </View>
-          {goal > 0 && <Text className="font-inter-bold text-base text-gf-text">{percent}%</Text>}
+          {goal > 0 && <Text className="font-inter text-sm text-gf-text-muted">{saving ? 'Meta' : 'Límite'}</Text>}
         </View>
-        {goal > 0 && <ProgressBar ratio={ratio} color={getBudgetBarColor(ratio, saving)} />}
+        {goal > 0 && <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} />}
         {goal > 0 && (
           <Text className="font-inter text-sm" style={{ color: exceeded ? colors.expense : colors.textSecondary }}>
             {exceeded
@@ -221,7 +221,7 @@ export default function BudgetsScreen() {
     for (const tx of coverage.uncovered) {
       const category = (tx as unknown as { category?: { _id?: unknown; name?: string; icon?: string; color?: string } | null }).category;
       const key = category?._id ? String(category._id) : category?.name || 'none';
-      const row = map.get(key) ?? { key, name: category?.name || 'Sin categoría', icon: category?.icon, color: category?.color, amount: 0, count: 0 };
+      const row = map.get(key) ?? { key, categoryId: category?._id ? String(category._id) : undefined, name: category?.name || 'Sin categoría', icon: category?.icon, color: category?.color, amount: 0, count: 0 };
       row.amount += getPrimaryAmount(tx);
       row.count += 1;
       map.set(key, row);
@@ -230,7 +230,10 @@ export default function BudgetsScreen() {
   }, [coverage]);
 
   const budgetLines = useMemo<BudgetLine[]>(
-    () => spendingRows.map((row) => ({ key: idOf(row.budget), name: row.budget.name || 'Presupuesto', icon: row.budget.icon ?? undefined, color: typeof row.budget.color === 'string' ? row.budget.color : undefined, spent: row.spent, goal: row.goal })),
+    () => spendingRows.map((row) => {
+      const look = lookOf(row.budget, '#9333ea');
+      return { key: idOf(row.budget), name: row.budget.name || 'Presupuesto', icon: look.icon ?? undefined, color: look.color ?? undefined, spent: row.spent, goal: row.goal };
+    }),
     [spendingRows]
   );
 
@@ -268,13 +271,13 @@ export default function BudgetsScreen() {
       {/* Two tiles, as the web's summary: the total spending and the part no budget covers. Each opens its detail. */}
       <View className="flex-row gap-3">
         <Pressable accessibilityRole="button" onPress={() => setSheet('total')} className="flex-1">
-          <Card title="Gasto total" info={{ title: 'Gasto total', text: 'Todo lo que gastaste en el periodo, dentro de presupuestos y fuera de ellos. Toca la tarjeta para ver el desglose por presupuesto.' }}>
+          <Card title="Gasto total" style={{ minHeight: 160, flex: 1 }} info={{ title: 'Gasto total', text: 'Todo lo que gastaste en el periodo, dentro de presupuestos y fuera de ellos. Toca la tarjeta para ver el desglose por presupuesto.' }}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.totalSpent, currency)}</Text>
             <Text className="font-inter text-xs text-gf-text-muted">Toca para ver el detalle</Text>
           </Card>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => setSheet('unbudgeted')} className="flex-1">
-          <Card title="Sin presupuesto" info={{ title: 'Sin presupuesto', text: 'El gasto que ningún presupuesto activo cubre, y qué parte del gasto total representa. Toca la tarjeta para ver de qué categorías viene y crear un presupuesto.' }}>
+          <Card title="Sin presupuesto" style={{ minHeight: 160, flex: 1 }} info={{ title: 'Sin presupuesto', text: 'El gasto que ningún presupuesto activo cubre, y qué parte del gasto total representa. Toca la tarjeta para ver de qué categorías viene y crear un presupuesto.' }}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.unbudgetedSpent, currency)}</Text>
             <ProgressBar ratio={Math.min(1, coverage.unbudgetedPercentage / 100)} color={colors.accent} />
             <Text className="font-inter text-xs text-gf-text-muted">{Math.round(coverage.unbudgetedPercentage)}% del gasto</Text>
@@ -291,9 +294,10 @@ export default function BudgetsScreen() {
         percentage={coverage.unbudgetedPercentage}
         budgets={budgetLines}
         groups={uncoveredGroups}
-        onAddBudget={() => {
+        uncoveredMovements={coverage.uncovered}
+        onAddBudget={(categoryId) => {
           setSheet(null);
-          router.push('/budgets/new');
+          router.push({ pathname: '/budgets/new', params: categoryId ? { kind: 'spending', categoryId } : { kind: 'spending' } });
         }}
       />
 

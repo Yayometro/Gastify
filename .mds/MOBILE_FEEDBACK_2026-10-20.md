@@ -169,42 +169,42 @@ Prefijo R. Todo lo que el usuario dijo en ese mensaje, un punto por cosa. HECHO 
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| R01 | Todos los modales y hojas: quitar el borde/franja de otro color en las esquinas redondeadas. | EN CURSO | Existe BottomSheet (borde fino uniforme sobre todo); solo lo usa el "?" por ahora. Falta pasar a las demás hojas: DetailSheet, budget-summary-sheet, export-sheet, summary-carousel, top-ranking, tools-fab, month-grid-modal y el calendario de iOS. Falta confirmarlo en iPhone. |
-| R02 | Hojas inferiores: el fondo oscuro debe aparecer con fundido; solo la hoja sube desde abajo. | EN CURSO | BottomSheet: el fondo aparece con fundido y solo la hoja sube. Falta usarlo en las demás hojas. |
-| R03 | Los modales "?" y todas las hojas se cierran también al tocar afuera. | EN CURSO | Los "?" ya cierran al tocar afuera (BottomSheet). Falta en las demás hojas. |
+| R01 | Todos los modales y hojas: quitar el borde/franja de otro color en las esquinas redondeadas. | CÓDIGO LISTO | Migradas las hojas de detalle, presupuestos, exportar, carrusel, Top, Tools, selector de mes y calendario iOS a BottomSheet. Falta comprobar borde en iPhone/iPad. |
+| R02 | Hojas inferiores: el fondo oscuro debe aparecer con fundido; solo la hoja sube desde abajo. | CÓDIGO LISTO | BottomSheet compartido; falta comprobación visual en iOS. |
+| R03 | Los modales "?" y todas las hojas se cierran también al tocar afuera. | CÓDIGO LISTO | BottomSheet compartido; exportar no se cierra mientras procesa. Falta prueba táctil. |
 | R04 | El "?" va en la esquina superior derecha de la tarjeta (frente al título), no junto al título; y explica más (filtros, anillo/burbujas/mapa, qué hace el widget). | EN CURSO | El "?" ya va arriba a la derecha en todas las tarjetas (Card). Falta ampliar los textos (filtros, anillo/burbujas/mapa, qué hace cada widget). |
-| R05 | Tocar el título o el encabezado de una tarjeta del dashboard lleva a su sección (Últimos movimientos, Presupuestos, Cuentas, Análisis). | PENDIENTE | |
-| R06 | BUG: tocar la pestaña Movimientos abre el último movimiento visto desde el dashboard, y volver lleva a Wallet. Debe abrir la lista. (Aplica a todas las pestañas.) | PENDIENTE | |
-| R07 | Carrusel del resumen: agregar flechas izquierda/derecha. | PENDIENTE | |
+| R05 | Tocar el título o el encabezado de una tarjeta del dashboard lleva a su sección (Últimos movimientos, Presupuestos, Cuentas, Análisis). | CÓDIGO LISTO | Card admite título tocable; enlaces en Inicio. |
+| R06 | BUG: tocar la pestaña Movimientos abre el último movimiento visto desde el dashboard, y volver lleva a Wallet. Debe abrir la lista. (Aplica a todas las pestañas.) | CÓDIGO LISTO | La barra navega explícitamente al index de la pestaña; las pilas anidadas se restablecen al dejar la pestaña. Falta reproducir y verificar en Expo Go. |
+| R07 | Carrusel del resumen: agregar flechas izquierda/derecha. | CÓDIGO LISTO | También se pueden tocar los indicadores de página. |
 | R08 | Íconos verde/rojo de las tarjetas de cuenta: el usuario entendió para qué sirven; sin cambio. | HECHO | El usuario entendió para qué sirven; sin cambio. |
-| R09 | Resumen: orden = pestañas Gastos/Ingresos, luego Anillo/Burbujas/Mapa, luego el total centrado, luego la gráfica. | PENDIENTE | |
-| R10 | Burbujas y mapa de árbol: flecha para regresar (además de "quitar selección"). | PENDIENTE | |
-| R11 | Renombrar "Resumen" a "Resumen de transacciones". | PENDIENTE | |
-| R12 | Resumen: filtro de tiempo compacto (flechas + mes; tocar elige mes) y "Más filtros" que despliega el resto; "Personalizado" junto a "Igual que arriba". | PENDIENTE | |
-| R13 | "Los más grandes" → "Top N" (N = 3, 6, 12 o 24 según lo elegido), con "?" y filtro de tiempo compacto. | PENDIENTE | |
-| R14 | "Análisis del periodo": botón "Ver análisis completo" arriba a la derecha que abre el Analizador de ese mes; y moverlo al final del dashboard (como en la web). | PENDIENTE | |
-| R15 | Orden del dashboard: el análisis va hasta abajo. | PENDIENTE | Junto con R14. |
-| R16 | Presupuestos: las tarjetas "Gasto total" y "Sin presupuesto" deben tener la misma altura. | PENDIENTE | |
-| R17 | "Sin presupuesto": al tocar una categoría, mostrar sus movimientos y dejar agregar un presupuesto para ella (como la web). | PENDIENTE | |
-| R18 | Íconos de categoría en el modal "Gasto total" y en todos lados donde hoy sale uno genérico gris. | PENDIENTE | |
-| R19 | Presupuestos: sistema de caritas (feliz, preocupada, estresada, fuego) como la web, y el % en la cabeza de la barra. | PENDIENTE | El usuario ya lo había pedido antes. |
-| R20 | Al tocar un presupuesto: "Spending distribution by category", barra separada por categoría/subcategoría con su %. | PENDIENTE | |
-| R21 | Analizador: "Los más grandes" → "Top N". | PENDIENTE | |
-| R22 | Analizador: tocar una categoría del Top abre el modal de la web: total, contra el mes anterior, TODOS sus movimientos con scroll, y orden Mayor/Menor primero. | PENDIENTE | |
-| R23 | Analizador: tocar un movimiento del Top abre directo el movimiento (sin modal). | PENDIENTE | |
-| R24 | "Ritmo de gasto": botón "Ver más" visible. | PENDIENTE | |
-| R25 | "Pagos recurrentes": más información y botón "Ver más". | PENDIENTE | |
-| R26 | Analizador: agregar lo que falta de la web: patrón por día de la semana, ritmo de gasto completo, exposición multimoneda, suscripciones recurrentes, grandes gastos (12 meses), lo más destacado del mes, tendencia bien desplegada, promedios mensuales (ingresos, gastos, movimientos), presupuestos, proyección, anomalías. | PENDIENTE | El más grande. Se porta del WalletAnalyzerView de la web. |
-| R27 | Analizador: mismo orden de secciones que la web. | PENDIENTE | |
-| R28 | Historial, mes a mes comparativo: mostrar claro el mes comparado (enero 2026 contra enero 2025), lado a lado; hoy sale una "N" confusa. | PENDIENTE | |
-| R29 | Historial: tocar una categoría (gastos o ingresos) abre un modal con todos sus movimientos. | PENDIENTE | |
-| R30 | Historial: "Grandes gastos" (últimos 12 meses): la mayor transacción, la categoría y subcategoría con más gasto y su análisis; tocar la mayor muestra las mayores del periodo y las categorías. | PENDIENTE | |
-| R31 | Historial: suscripciones recurrentes. | PENDIENTE | |
-| R32 | Historial: "categoría líder por mes" en el modal del mes. | PENDIENTE | |
-| R33 | Historial: proyecciones completas (proyectado contra real). | PENDIENTE | |
-| R34 | Historial: comparativo de presupuestos para análisis histórico, con detalle. | PENDIENTE | Ya existe la versión básica; completar. |
-| R35 | Historial: Top de elementos/movimientos con comparativo y filtros colapsables. | PENDIENTE | |
-| R36 | Todos los filtros de tiempo de los widgets (Resumen, Top, categorías, Top de movimientos) colapsados: solo se ve el selector de mes con flechas; el resto bajo "Más filtros". | PENDIENTE | Es lo mismo que R12 aplicado en todos. |
+| R09 | Resumen: orden = pestañas Gastos/Ingresos, luego Anillo/Burbujas/Mapa, luego el total centrado, luego la gráfica. | CÓDIGO LISTO | |
+| R10 | Burbujas y mapa de árbol: flecha para regresar (además de "quitar selección"). | CÓDIGO LISTO | |
+| R11 | Renombrar "Resumen" a "Resumen de transacciones". | CÓDIGO LISTO | |
+| R12 | Resumen: filtro de tiempo compacto (flechas + mes; tocar elige mes) y "Más filtros" que despliega el resto; "Personalizado" junto a "Igual que arriba". | CÓDIGO LISTO | CompactTimeFilter compartido. |
+| R13 | "Los más grandes" → "Top N" (N = 3, 6, 12 o 24 según lo elegido), con "?" y filtro de tiempo compacto. | CÓDIGO LISTO | |
+| R14 | "Análisis del periodo": botón "Ver análisis completo" arriba a la derecha que abre el Analizador de ese mes; y moverlo al final del dashboard (como en la web). | CÓDIGO LISTO | |
+| R15 | Orden del dashboard: el análisis va hasta abajo. | CÓDIGO LISTO | Junto con R14. |
+| R16 | Presupuestos: las tarjetas "Gasto total" y "Sin presupuesto" deben tener la misma altura. | EN CURSO | Ambas tienen la misma altura mínima; falta validar con textos que envuelvan líneas. |
+| R17 | "Sin presupuesto": al tocar una categoría, mostrar sus movimientos y dejar agregar un presupuesto para ella (como la web). | CÓDIGO LISTO | Crear presupuesto recibe categoría preseleccionada. |
+| R18 | Íconos de categoría en el modal "Gasto total" y en todos lados donde hoy sale uno genérico gris. | EN CURSO | Íconos de categorías en resumen y detalle; falta auditoría de todos los lugares. |
+| R19 | Presupuestos: sistema de caritas (feliz, preocupada, estresada, fuego) como la web, y el % en la cabeza de la barra. | CÓDIGO LISTO | BudgetProgress compartido entre detalle, tarjeta y dashboard. |
+| R20 | Al tocar un presupuesto: "Spending distribution by category", barra separada por categoría/subcategoría con su %. | CÓDIGO LISTO | |
+| R21 | Analizador: "Los más grandes" → "Top N". | CÓDIGO LISTO | |
+| R22 | Analizador: tocar una categoría del Top abre el modal de la web: total, contra el mes anterior, TODOS sus movimientos con scroll, y orden Mayor/Menor primero. | CÓDIGO LISTO | También admite las categorías del mes anterior. |
+| R23 | Analizador: tocar un movimiento del Top abre directo el movimiento (sin modal). | CÓDIGO LISTO | |
+| R24 | "Ritmo de gasto": botón "Ver más" visible. | CÓDIGO LISTO | |
+| R25 | "Pagos recurrentes": más información y botón "Ver más". | CÓDIGO LISTO | Falta verificar que el detalle cubra todos los datos de la web. |
+| R26 | Analizador: agregar lo que falta de la web: patrón por día de la semana, ritmo de gasto completo, exposición multimoneda, suscripciones recurrentes, grandes gastos (12 meses), lo más destacado del mes, tendencia bien desplegada, promedios mensuales (ingresos, gastos, movimientos), presupuestos, proyección, anomalías. | EN CURSO | Se añadieron tarjetas de patrón, FX, grandes gastos, destacados, presupuestos y proyección y se amplió el Top. Falta comparar detalle/acciones con la web y probar cotizaciones reales. |
+| R27 | Analizador: mismo orden de secciones que la web. | EN CURSO | Orden principal portado; falta cotejo visual final con la web. |
+| R28 | Historial, mes a mes comparativo: mostrar claro el mes comparado (enero 2026 contra enero 2025), lado a lado; hoy sale una "N" confusa. | CÓDIGO LISTO | Etiquetas del mes/año de ambos periodos. |
+| R29 | Historial: tocar una categoría (gastos o ingresos) abre un modal con todos sus movimientos. | CÓDIGO LISTO | Orden mayor/menor y enlace al movimiento. |
+| R30 | Historial: "Grandes gastos" (últimos 12 meses): la mayor transacción, la categoría y subcategoría con más gasto y su análisis; tocar la mayor muestra las mayores del periodo y las categorías. | CÓDIGO LISTO | Falta validar cifras con la web. |
+| R31 | Historial: suscripciones recurrentes. | CÓDIGO LISTO | |
+| R32 | Historial: "categoría líder por mes" en el modal del mes. | CÓDIGO LISTO | |
+| R33 | Historial: proyecciones completas (proyectado contra real). | EN CURSO | Comparación proyectado/real y referencias añadidas; falta cotejar el alcance de “completas” con la web. |
+| R34 | Historial: comparativo de presupuestos para análisis histórico, con detalle. | CÓDIGO LISTO | Periodo A/B, totales y desglose mensual. |
+| R35 | Historial: Top de elementos/movimientos con comparativo y filtros colapsables. | CÓDIGO LISTO | |
+| R36 | Todos los filtros de tiempo de los widgets (Resumen, Top, categorías, Top de movimientos) colapsados: solo se ve el selector de mes con flechas; el resto bajo "Más filtros". | CÓDIGO LISTO | CompactTimeFilter en Inicio e Historial. |
 
 ## Notas
 

@@ -93,7 +93,7 @@ export default function HomeScreen() {
       {accounts.length > 0 && (
         <View className="gap-3">
           <View className="flex-row items-baseline justify-between">
-            <Text className="font-inter-semibold text-lg text-gf-text">Cuentas</Text>
+            <Pressable accessibilityRole="link" onPress={() => router.push('/more/accounts')} hitSlop={8}><Text className="font-inter-semibold text-lg text-gf-text">Cuentas</Text></Pressable>
             <LinkText label="Ver todas" onPress={() => router.push('/more/accounts')} />
           </View>
           <Text className="font-inter text-sm text-gf-text-muted">
@@ -104,17 +104,16 @@ export default function HomeScreen() {
         </View>
       )}
       {accounts.length === 0 && accountsState.status !== 'failed' && (
-        <Card title="Cuentas" info={{ title: 'Cuentas', text: 'Tus cuentas con su saldo actual. Las tarjetas muestran, además, lo que entró y salió de cada una en el periodo elegido arriba.' }}>
+        <Card title="Cuentas" onTitlePress={() => router.push('/more/accounts')} info={{ title: 'Cuentas', text: 'Tus cuentas con su saldo actual. Las tarjetas muestran, además, lo que entró y salió de cada una en el periodo elegido arriba.' }}>
           <Muted>{accountsState.status === 'loading' ? 'Cargando…' : 'Todavía no tienes cuentas.'}</Muted>
         </Card>
       )}
 
       <SummaryWidget summary={summary} movements={inPeriod} allMovements={transactions.data} currency={currency} />
-      <TopRanking movements={transactions.data} currency={currency} title="Los más grandes" defaultPreset="thisMonth" />
-      <InsightsWidget insights={insights} currency={currency} />
+      <TopRanking movements={transactions.data} currency={currency} defaultPreset="thisMonth" />
       <BudgetsWidget />
 
-      <Card title="Últimos movimientos" info={{ title: 'Últimos movimientos', text: 'Los cinco movimientos más recientes de tu cuenta, sin importar el periodo de arriba. Toca uno para verlo o editarlo, o abre la lista completa.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los cinco movimientos más recientes de tu cuenta, sin importar el periodo de arriba. Toca uno para verlo o editarlo, o abre la lista completa.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <Muted>Cargando…</Muted>
         ) : latest.length === 0 ? (
@@ -123,6 +122,7 @@ export default function HomeScreen() {
           latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/' } })} />)
         )}
       </Card>
+      <InsightsWidget insights={insights} currency={currency} onOpenAnalyzer={() => router.push({ pathname: '/more/analyzer', params: { month: `${(period.preset === 'month' ? period.month : period.now).getFullYear()}-${String((period.preset === 'month' ? period.month : period.now).getMonth() + 1).padStart(2, '0')}` } })} />
     </Screen>
   );
 }

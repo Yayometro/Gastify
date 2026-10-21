@@ -1,4 +1,4 @@
-import { Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
@@ -17,13 +17,15 @@ function Fact({ label, value, detail, tone }: { label: string; value: string; de
 
 // Perspectivas: the pace of spending, where it is heading, how much is kept and how it moved, as the
 // web's analyzer strip does.
-export function InsightsWidget({ insights, currency }: { insights: PeriodInsights; currency: string }) {
+export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insights: PeriodInsights; currency: string; onOpenAnalyzer: () => void }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const pct = (value: number) => `${value >= 0 ? '+' : ''}${Math.round(value * 100)}%`;
   return (
     <Card
       title="Análisis del periodo"
+      onTitlePress={onOpenAnalyzer}
+      action={<Pressable accessibilityRole="link" onPress={onOpenAnalyzer} hitSlop={8}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver análisis completo</Text></Pressable>}
       info={{
         title: 'Análisis del periodo',
         text: 'Cuánto gastas por día, cuánto gastarías en todo el periodo si sigues a este ritmo, qué parte de tus ingresos conservas y cómo cambiaron tus gastos e ingresos contra el periodo anterior.',

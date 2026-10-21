@@ -5,13 +5,14 @@ import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { BudgetForm } from '@/components/forms/budget-form';
+import { BudgetProgress } from '@/components/budget-progress';
+import { CategoryBadge } from '@/components/category-badge';
 import { PickerModal } from '@/components/picker-modal';
 import { MovementRow } from '@/components/movements/movement-row';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
-import { ProgressBar } from '@/components/ui/progress-bar';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
@@ -71,6 +72,23 @@ export default function BudgetDetailScreen() {
         return tx.isBill && when >= bounds.start.getTime() && when <= bounds.end.getTime() && matchBillToBudget(tx as never, budget as never);
       });
     }
+    const distributionMap = new Map<string, { key: string; name: string; icon?: string; color: string; amount: number }>();
+    for (const tx of related) {
+      const category = tx.category;
+      const subcategory = tx.subCategory;
+      const key = `${category?._id ?? category?.name ?? 'none'}:${subcategory?._id ?? subcategory?.name ?? 'none'}`;
+      const row = distributionMap.get(key) ?? {
+        key,
+        name: `${category?.name || 'Sin categoría'}${subcategory?.name ? ` · ${subcategory.name}` : ''}`,
+        icon: subcategory?.icon || category?.icon,
+        color: subcategory?.color || category?.color || colors.accent,
+        amount: 0,
+      };
+      row.amount += Math.max(0, getPrimaryAmount(tx));
+      distributionMap.set(key, row);
+    }
+    const distribution = [...distributionMap.values()].filter((row) => row.amount > 0).sort((a, b) => b.amount - a.amount);
+    const distributionTotal = distribution.reduce((sum, row) => sum + row.amount, 0);
     // Saving: what is in each currency across the linked accounts (pesos and dólares, as the web shows).
     const linkedAccounts = accounts.filter((account) => (budget.linkedAccounts || []).map(idOf).includes(idOf(account)));
     const byCurrency = new Map<string, number>();
@@ -83,10 +101,12 @@ export default function BudgetDetailScreen() {
       goal,
       spent: Math.round(spent * 100) / 100,
       related: sortNewestFirst(related),
+      distribution,
+      distributionTotal,
       linkedAccounts,
       byCurrency: [...byCurrency.entries()].map(([code, amount]) => ({ code, amount })),
     };
-  }, [stored, currency, rates, transactions, accounts, bounds, id]);
+  }, [stored, currency, rates, transactions, accounts, bounds, id, colors.accent]);
 
   if (!stored || !view) {
     return (
@@ -96,7 +116,7 @@ export default function BudgetDetailScreen() {
     );
   }
 
-  const { budget, goal, spent, related, linkedAccounts, byCurrency } = view;
+  const { budget, goal, spent, related, distribution, distributionTotal, linkedAccounts, byCurrency } = view;
   const saving = isSavingBudget(budget);
   const project = isProjectBudget(budget);
   const ratio = goal > 0 ? spent / goal : 0;
@@ -141,7 +161,7 @@ export default function BudgetDetailScreen() {
         <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(spent, currency)}</Text>
         {goal > 0 && (
           <>
-            <ProgressBar ratio={ratio} color={getBudgetBarColor(ratio, saving)} />
+            <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} />
             <View className="gap-1">
               <View className="flex-row justify-between">
                 <Text className="font-inter text-sm text-gf-text-muted">{saving ? 'Meta' : 'Límite'}</Text>
@@ -179,6 +199,22 @@ export default function BudgetDetailScreen() {
           </View>
         )}
       </Card>
+
+      {!saving && distribution.length > 0 && (
+        <Card title="Distribución del gasto por categoría" info={{ title: 'Distribución del gasto', text: 'Cada tramo muestra qué parte de los movimientos que cuentan para este presupuesto corresponde a una categoría o subcategoría. El porcentaje se calcula sobre esos movimientos.' }}>
+          <View className="flex-row overflow-hidden rounded-full" style={{ height: 14 }} accessibilityLabel="Distribución del gasto por categoría">
+            {distribution.map((row) => <View key={row.key} style={{ flex: row.amount, backgroundColor: row.color }} />)}
+          </View>
+          {distribution.map((row) => (
+            <View key={row.key} className="flex-row items-center gap-3">
+              <CategoryBadge icon={row.icon} color={row.color} size={30} />
+              <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.name}</Text>
+              <Text className="font-inter-semibold text-sm text-gf-text">{distributionTotal > 0 ? Math.round((row.amount / distributionTotal) * 100) : 0}%</Text>
+              <Text className="font-inter text-xs text-gf-text-muted">{formatMoneyMajor(row.amount, currency)}</Text>
+            </View>
+          ))}
+        </Card>
+      )}
 
       {saving && (
         <Card title="Cuentas ligadas">

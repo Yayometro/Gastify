@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
+import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
 import { Card } from '@/components/ui/card';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { percentChange } from '@gastify/core/history/periodComparison';
@@ -90,8 +90,7 @@ function VersusPage({ totals, previous, currency }: Pick<Props, 'totals' | 'prev
 // the three of them together.
 export function SummaryCarousel(props: Props) {
   const scheme = useColorScheme();
-  const dark = scheme === 'dark';
-  const colors = Colors[dark ? 'dark' : 'light'];
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(1);
   const [more, setMore] = useState(false);
@@ -103,6 +102,11 @@ export function SummaryCarousel(props: Props) {
   }, [width]);
 
   const names = ['Contra el periodo anterior', props.title, 'Cuentas'];
+  const goToPage = (next: number) => {
+    const target = Math.max(0, Math.min(2, next));
+    setPage(target);
+    scroller.current?.scrollTo({ x: target * width, animated: true });
+  };
 
   return (
     <Card
@@ -128,17 +132,21 @@ export function SummaryCarousel(props: Props) {
           </ScrollView>
         )}
       </View>
-      <View className="flex-row items-center justify-center gap-2">
-        {[0, 1, 2].map((index) => (
-          <View key={index} style={{ width: page === index ? 18 : 6, height: 6, borderRadius: 3, backgroundColor: page === index ? colors.accent : colors.border }} />
-        ))}
+      <View className="flex-row items-center justify-center gap-5">
+        <Pressable accessibilityRole="button" accessibilityLabel="Tarjeta anterior" accessibilityState={{ disabled: page === 0 }} disabled={page === 0} onPress={() => goToPage(page - 1)} hitSlop={10} style={{ opacity: page === 0 ? 0.35 : 1 }}>
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
+        </Pressable>
+        <View className="flex-row items-center gap-2">
+          {[0, 1, 2].map((index) => (
+            <Pressable key={index} accessibilityRole="button" accessibilityLabel={`Ver ${names[index]}`} accessibilityState={{ selected: page === index }} onPress={() => goToPage(index)} hitSlop={8} style={{ width: page === index ? 18 : 8, height: 8, borderRadius: 4, backgroundColor: page === index ? colors.accent : colors.border }} />
+          ))}
+        </View>
+        <Pressable accessibilityRole="button" accessibilityLabel="Tarjeta siguiente" accessibilityState={{ disabled: page === 2 }} disabled={page === 2} onPress={() => goToPage(page + 1)} hitSlop={10} style={{ opacity: page === 2 ? 0.35 : 1 }}>
+          <Ionicons name="chevron-forward" size={24} color={colors.text} />
+        </Pressable>
       </View>
 
-      <Modal visible={more} transparent animationType="slide" onRequestClose={() => setMore(false)}>
-        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setMore(false)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }} />
-          <View style={{ maxHeight: '86%', borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden', backgroundColor: dark ? DARK_BASE : colors.background }}>
-            <AmbientBackground />
+      <BottomSheet visible={more} onClose={() => setMore(false)} maxHeight="86%">
             <SafeAreaView edges={['bottom']}>
               <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
                 <Text className="font-inter-bold text-xl text-gf-text">{props.title}</Text>
@@ -161,9 +169,7 @@ export function SummaryCarousel(props: Props) {
                 </View>
               </ScrollView>
             </SafeAreaView>
-          </View>
-        </View>
-      </Modal>
+      </BottomSheet>
     </Card>
   );
 }

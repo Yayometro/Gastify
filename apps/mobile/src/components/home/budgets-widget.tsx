@@ -4,7 +4,7 @@ import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native'
 import { useSelector } from 'react-redux';
 
 import { Card } from '@/components/ui/card';
-import { ProgressBar } from '@/components/ui/progress-bar';
+import { BudgetProgress } from '@/components/budget-progress';
 import { Colors } from '@/constants/theme';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
@@ -44,16 +44,16 @@ export function BudgetsWidget() {
   );
 
   return (
-    <Card title="Presupuestos" info={{ title: 'Presupuestos', text: 'Tus presupuestos de gasto de este mes, del más cerca de su límite al más lejano. Toca uno para ver sus movimientos.' }} action={<Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver todos</Text></Pressable>}>
+    <Card title="Presupuestos" onTitlePress={() => router.navigate('/budgets')} info={{ title: 'Presupuestos', text: 'Tus presupuestos de gasto de este mes, del más cerca de su límite al más lejano. Toca uno para ver sus movimientos.' }} action={<Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver todos</Text></Pressable>}>
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes presupuestos de gasto.</Text>}
       <ScrollView nestedScrollEnabled style={{ maxHeight: 330 }} contentContainerStyle={{ gap: 14 }} showsVerticalScrollIndicator>
       {rows.map(({ budget, goal, spent, ratio }) => (
         <Pressable key={idOf(budget)} accessibilityRole="button" onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })} className="gap-1.5">
           <View className="flex-row items-center justify-between gap-3">
             <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{budget.name}</Text>
-            <Text className="font-inter-semibold text-sm text-gf-text">{Math.round(ratio * 100)}%</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">Límite</Text>
           </View>
-          <ProgressBar ratio={ratio} color={getBudgetBarColor(ratio, false)} />
+          <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, false)} />
           <Text className="font-inter text-xs text-gf-text-muted">{formatMoneyMajor(spent, currency)} de {formatMoneyMajor(goal, currency)}</Text>
         </Pressable>
       ))}

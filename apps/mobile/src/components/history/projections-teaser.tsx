@@ -14,7 +14,7 @@ import { MONTHS_ES_SHORT } from '@gastify/core/format/spanishDates';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { convertBaselineToPrimary, convertSourcesToPrimary, foreignCurrenciesOf } from '@gastify/core/transformers/projectionInputs';
-import { buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
+import { buildProjectionAccuracyReport, buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -29,6 +29,7 @@ export function ProjectionsTeaser() {
   const budgets = useSelector((state: RootState) => state.budgetReducer.data);
   const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState(today.getFullYear());
+  const [showDetail, setShowDetail] = useState(false);
   const [sources, setSources] = useState<AnyRecord[] | null>(null);
   const [settings, setSettings] = useState<AnyRecord | null>(null);
   const [baseline, setBaseline] = useState<AnyRecord | null>(null);
@@ -72,6 +73,20 @@ export function ProjectionsTeaser() {
       today,
     });
   }, [sources, baseline, settings, transactions, budgets, currency, rates, year, today]);
+  const accuracy = useMemo(() => {
+    if (!sources) return [];
+    const convertedSources = convertSourcesToPrimary(sources as { amount?: number; currency?: string }[], currency, rates);
+    const convertedBaseline = convertBaselineToPrimary(baseline as never, currency, rates);
+    return buildProjectionAccuracyReport({
+      transactions: transactions as never,
+      budgets: convertBudgetsToPrimary(budgets.filter((budget) => !budget.archived), currency, rates) as never,
+      incomeSources: convertedSources.sources as never,
+      projectionSettings: settings as never,
+      projectionBaseline: convertedBaseline.baseline as never,
+      year,
+      today,
+    });
+  }, [sources, baseline, settings, transactions, budgets, currency, rates, year, today]);
 
   const nets = rows.map((row) => {
     const income = row.type === 'actual' ? row.income : row.projectedIncome ?? row.income;
@@ -102,6 +117,20 @@ export function ProjectionsTeaser() {
           <Pressable accessibilityRole="button" onPress={() => router.push('/more/projections')} hitSlop={8}>
             <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver el detalle ›</Text>
           </Pressable>
+          <Pressable accessibilityRole="button" accessibilityState={{ expanded: showDetail }} onPress={() => setShowDetail((value) => !value)} className="items-center rounded-full border border-gf-border py-2">
+            <Text className="font-inter-semibold text-sm text-gf-text">{showDetail ? 'Ocultar proyectado contra real' : 'Ver proyectado contra real'}</Text>
+          </Pressable>
+          {showDetail && (
+            <View className="gap-3">
+              {accuracy.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no hay referencias guardadas para comparar meses cerrados de este año.</Text>}
+              {accuracy.map((row) => <View key={row.monthName} className="gap-1 border-t border-gf-border pt-2">
+                <Text className="font-inter-semibold text-sm text-gf-text">{row.monthName}</Text>
+                <Text className="font-inter text-xs text-gf-text-muted">Ingresos: previsto {formatMoneyMajor(row.projectedIncome, currency)} · real {formatMoneyMajor(row.actualIncome, currency)}</Text>
+                <Text className="font-inter text-xs text-gf-text-muted">Gastos: previsto {formatMoneyMajor(row.projectedExpense, currency)} · real {formatMoneyMajor(row.actualExpense, currency)}</Text>
+                <Text className="font-inter-semibold text-xs" style={{ color: row.varianceExpense > 0 ? colors.expense : colors.income }}>Diferencia de gastos: {formatMoneyMajor(row.varianceExpense, currency)}</Text>
+              </View>)}
+            </View>
+          )}
         </>
       )}
     </Card>
