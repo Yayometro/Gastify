@@ -315,6 +315,19 @@ Prefijo Y. El usuario revisó barra, tablas y Historial; aprobó el Top en tabla
 | Y17 | Historial, Proyecciones: no necesita versus (funcionan distinto; el usuario lo retiró). | HECHO | El usuario lo retiró: proyecciones sin versus. |
 | Y18 | Todos los Top: cada fila (categoría o movimiento) con su propio fondo glass, como ya lo tienen las transacciones. | HECHO | Verificado: cada fila de Top con su fondo glass (también en las columnas por mes). |
 
+## Novena ronda (2026-10-21, cuarta prueba del iPad)
+
+Prefijo Z.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| Z01 | iPad, barra lateral: el elemento activo debe verse como el de la barra del iPhone (píldora violeta con el borde rosita claro). | PENDIENTE | |
+| Z02 | iPad, barra lateral: el efecto glass no es igual al de la barra del iPhone (diferencia sutil pero importante); debe ser el mismo. | PENDIENTE | |
+| Z03 | Todos los tooltips (los «?») de la app: hoy son texto plano amontonado; deben tener separación, orden, tablas donde corresponda, diagramas, y ser mucho más explicativos y legibles. | PENDIENTE | |
+| Z04 | iPad: la navegación entre páginas es lenta y la animación se siente lenta (en el iPhone es instantánea); averiguar la causa y arreglarla. | PENDIENTE | |
+| Z05 | El usuario va a confirmar: que todas las páginas refrescan, los selectores por periodo y el modal de Mes a mes (sin acción por mi parte). | PENDIENTE | |
+| Z06 | Al terminar, subir todos los commits a la rama (los pendientes y los nuevos). | PENDIENTE | |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.
