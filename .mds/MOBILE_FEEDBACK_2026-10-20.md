@@ -206,6 +206,42 @@ Prefijo R. Todo lo que el usuario dijo en ese mensaje, un punto por cosa. HECHO 
 | R35 | Historial: Top de elementos/movimientos con comparativo y filtros colapsables. | CÓDIGO LISTO | |
 | R36 | Todos los filtros de tiempo de los widgets (Resumen, Top, categorías, Top de movimientos) colapsados: solo se ve el selector de mes con flechas; el resto bajo "Más filtros". | CÓDIGO LISTO | CompactTimeFilter en Inicio e Historial. |
 
+## Cuarta ronda (feedback tras la versión de la tercera ronda, 2026-10-20)
+
+Prefijo S. Un punto por cosa que dijo el usuario. La tercera ronda (R) la implementó Codex y quedó commiteada (3d84a52); sus puntos con "CÓDIGO LISTO" siguen por verse en el dispositivo.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| S01 | Botón "Más filtros" (en todos los widgets): misma altura que el selector de mes (Octubre 2026 con flechas) y fondo parecido (rosado, un poco más glass) para que haya simetría. | PENDIENTE | |
+| S02 | Todos los Top (dashboard, Analizador, Historial): numeración 1, 2, 3… a la izquierda del ícono y una línea separadora fina arriba y abajo de cada fila, como en la web. | PENDIENTE | |
+| S03 | Presupuestos, caritas: no es lo que pide la web. Debe ir la cara GRANDE a la izquierda y el % en un círculo oscuro con letras grandes (o el círculo con el % en la punta de la barra, mezclado con su color, como en la web). Sin repetir "Límite" en cada renglón. Debajo de la barra: lo que queda, el total (límite) y lo gastado en grande a la izquierda. Basarse en la UI de la web (Chrome, cuenta de prueba). | PENDIENTE | |
+| S04 | Renombrar "Analizador" a "Analizador de cartera" en español ("Wallet Analyzer" en inglés). Tocar cualquier parte del widget "Análisis del periodo" abre el análisis completo. | PENDIENTE | |
+| S05 | "Análisis del periodo" del dashboard: más insights (lo más destacado del mes y más información relevante). | PENDIENTE | |
+| S06 | Orden del dashboard: Cuentas, Análisis del periodo, Resumen de transacciones, Top 6, Presupuestos, Últimos movimientos. | PENDIENTE | |
+| S07 | Movimientos: deben verse el Importar desde Excel y el Transaction Categorizer (el usuario no los ve): botones visibles en la pantalla. | PENDIENTE | |
+| S08 | Movimientos: el riel de fechas debe empezar donde empiezan las transacciones (el contenedor), no cubrir el encabezado y los filtros. | PENDIENTE | |
+| S09 | Presupuestos de ahorro y proyectos: mostrar su ícono (avión en Viajar a Japón, alcancía en ahorros) como la web; si no existe, permitir elegir ícono al editar. | PENDIENTE | |
+| S10 | Barra de pestañas, "Más": animación de la pantalla (de derecha a izquierda) consistente y más vistosa; hoy no siempre se ve. | PENDIENTE | |
+| S11 | Analizador, "Lo más destacado del mes": cada elemento es interactivo y abre un modal (ej. Health -95% contra tu promedio: promedio de los últimos 6 meses sin contar el actual, monto, aviso de que se necesitan 3 meses de historial, lista de meses). | PENDIENTE | |
+| S12 | Analizador: "Contra el mes anterior" → "VS el mes anterior", organizado como tabla (septiembre, octubre, cambio con flechas arriba/abajo/plano) y con explicación abajo. | PENDIENTE | |
+| S13 | Analizador, tendencia de 6 meses: el modal de un mes con texto más grande, en tabla, texto blanco, y a la derecha un indicador verde/rojo/naranja con flecha (arriba, abajo, plano) para ingresos, gastos y balance, y explicación abajo. | PENDIENTE | |
+| S14 | Analizador, promedio mensual: confirmar que es el mismo cálculo de la web (en la web va dentro de la tendencia de 6 meses) y que el "?" explique de cuántos meses y cómo se calcula. | PENDIENTE | |
+| S15 | Analizador, presupuestos (cumplimiento y racha): tocar uno abre un modal con los últimos 12 meses (noviembre 2025: 12,391 / 3,000 ✗ …) con su propio "?" en un modal encima; opcional un botón a Presupuestos. No debe navegar a Presupuestos; y la navegación de regreso debe funcionar. | PENDIENTE | |
+| S16 | Analizador, grandes gastos: "Ver mes por mes" abre un modal (no se despliega); tocar la transacción más grande muestra la mayor de cada mes del último año; la categoría y la subcategoría con más gasto hacen lo mismo con su líder por mes; agregar más glass a las baldosas; y un botón "Ver análisis" con todos los insights. | PENDIENTE | |
+| S17 | Analizador, pagos recurrentes: el "toca para ver todos" más visible (negritas, subrayado o botón) y tocar un pago lleva a su movimiento. | PENDIENTE | |
+| S18 | TODOS los "?" (tooltips) deben explicar de verdad: cómo se calcula cada cosa, cómo funciona, los filtros, el propósito, qué indica. | PENDIENTE | |
+| S19 | Analizador, patrón por día de la semana: "Ver detalle" abre un modal como la web (semana con más gasto, número de transacciones, qué día destaca, detalle día por día, cómo se calcula), no se despliega. | PENDIENTE | |
+| S20 | Historial, mes a mes: debe tener los mismos filtros de tiempo que gastos por categoría (basados por defecto en el periodo del encabezado). | PENDIENTE | |
+| S21 | En todo modal que muestre transacciones: una línea separadora entre una transacción y otra. | PENDIENTE | |
+| S22 | Historial, grandes gastos: tocar "mayor transacción" abre un modal con la mayor de cada mes de los últimos 12 meses (con el mes); "categoría líder" y "subcategoría líder" abren un modal con el líder de cada mes; "ver líderes mes por mes" como modal; botón para ver el análisis con insights. | PENDIENTE | |
+| S23 | Proyecciones (Historial y pantalla): quitar el "?" de Neto que se repite en cada línea; en el "Mes a mes" un solo "?" que explique ingresos, gastos, neto, balance, real, moneda, cómo funcionan las proyecciones y cómo leer la tabla. | PENDIENTE | |
+| S24 | Historial, Top de movimientos: numeración y separadores (S02) y opción de comparar (en "Más filtros", como switch). | PENDIENTE | |
+| S25 | Proyecciones: tocar un mes abre un modal como la web (título con "?", ver transacciones del mes, ingreso real contra esperado, gasto real contra presupuestado, gráfica presupuestado contra real, fijar saldo real del mes, y buffers esperados de gasto e ingreso con su "?" y guardar). | PENDIENTE | |
+| S26 | Proyecciones, "Precisión de tus proyecciones": usar el texto completo de la web en su "?" (proyectado contra real, desajuste, por qué los colores cambian de signo entre ingreso y gasto) y rediseñar la tabla para que se entienda mejor. | PENDIENTE | |
+| S27 | Perfil: no aparece la opción de editar la contraseña; agregarla visible. | PENDIENTE | |
+| S28 | Proceso: apuntar cada punto y no olvidar los anteriores; el usuario ya repitió cosas pedidas. | PENDIENTE | |
+| S29 | Dashboard: el "Más filtros" del Resumen y de cualquier widget con la misma altura y estilo que el selector de mes (duplica S01; se cierra junto). | PENDIENTE | |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.
