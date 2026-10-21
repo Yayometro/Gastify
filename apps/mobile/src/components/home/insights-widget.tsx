@@ -28,9 +28,9 @@ export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insight
       action={<Pressable accessibilityRole="link" onPress={onOpenAnalyzer} hitSlop={8}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver análisis completo</Text></Pressable>}
       info={{
         title: 'Análisis del periodo',
-        text: 'Cuánto gastas por día, cuánto gastarías en todo el periodo si sigues a este ritmo, qué parte de tus ingresos conservas y cómo cambiaron tus gastos e ingresos contra el periodo anterior.',
+        text: 'Gasto por día = gasto del periodo ÷ días transcurridos. Al ritmo actual = ese promedio × los días del periodo (solo mientras sigue en curso). Lo que conservas = (ingresos − gastos) ÷ ingresos. Los cambios comparan contra el periodo inmediato anterior de la misma duración. El gasto promedio es el gasto total ÷ el número de gastos. Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.',
       }}>
-      <View className="flex-row flex-wrap gap-x-6 gap-y-4">
+      <Pressable accessibilityRole="button" accessibilityLabel="Abrir el Analizador de cartera" onPress={onOpenAnalyzer} className="flex-row flex-wrap gap-x-6 gap-y-4">
         <View className="w-[45%]"><Fact label="Gasto por día" value={formatMoneyMajor(insights.dailyAverage, currency)} detail={`en ${insights.daysElapsed} ${insights.daysElapsed === 1 ? 'día' : 'días'}`} /></View>
         {insights.projectedSpending !== null && (
           <View className="w-[45%]"><Fact label="Al ritmo actual" value={formatMoneyMajor(insights.projectedSpending, currency)} detail={`gastarías en ${insights.days} días`} /></View>
@@ -47,7 +47,14 @@ export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insight
         {insights.topCategory && (
           <View className="w-[45%]"><Fact label="Lo que más pesa" value={insights.topCategory.name} detail={`${Math.round(insights.topCategory.share * 100)}% de los gastos`} /></View>
         )}
-      </View>
+        {insights.biggestExpense && (
+          <View className="w-[45%]"><Fact label="Gasto más grande" value={formatMoneyMajor(insights.biggestExpense.amount, currency)} detail={`${insights.biggestExpense.name} · ${Math.round(insights.biggestExpense.share * 100)}% del gasto`} /></View>
+        )}
+        {insights.averageExpense !== null && (
+          <View className="w-[45%]"><Fact label="Gasto promedio" value={formatMoneyMajor(insights.averageExpense, currency)} detail="por cada gasto" /></View>
+        )}
+        <View className="w-[45%]"><Fact label="Balance del periodo" value={formatMoneyMajor(insights.balance, currency)} detail={`${insights.movementCount} ${insights.movementCount === 1 ? 'movimiento' : 'movimientos'}`} tone={insights.balance < 0 ? colors.expense : colors.income} /></View>
+      </Pressable>
     </Card>
   );
 }

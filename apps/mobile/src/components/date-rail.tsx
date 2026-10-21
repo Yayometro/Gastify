@@ -1,12 +1,13 @@
 import { useMemo, useRef, useState } from 'react';
-import { PanResponder, Text, View, useColorScheme } from 'react-native';
+import { Animated, PanResponder, Text, View, useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 
 // A thin rail on the right edge of a long list: drag a finger along it to jump between its sections (the days of
 // the movements list). A bubble shows the section under the finger. The rail has one tick per section, thinned out
 // when there are too many to touch one by one.
-export function DateRail({ labels, onJump, topInset = 0 }: { labels: string[]; onJump: (index: number) => void; topInset?: number }) {
+// `top` can be an animated value so the rail starts where the list starts and follows it up as the header scrolls away.
+export function DateRail({ labels, onJump, top = 90 }: { labels: string[]; onJump: (index: number) => void; top?: number | Animated.AnimatedInterpolation<number> }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [active, setActive] = useState<number | null>(null);
@@ -38,17 +39,17 @@ export function DateRail({ labels, onJump, topInset = 0 }: { labels: string[]; o
 
   return (
     <>
-      <View
+      <Animated.View
         {...handlers}
         accessibilityLabel="Saltar entre fechas"
         onLayout={(event) => {
           height.current = event.nativeEvent.layout.height;
         }}
-        style={{ position: 'absolute', right: 2, top: topInset + 90, bottom: 120, width: 26, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4, backgroundColor: 'rgba(147,51,234,0.08)', borderRadius: 13 }}>
+        style={{ position: 'absolute', right: 2, top, bottom: 120, width: 26, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4, backgroundColor: 'rgba(147,51,234,0.08)', borderRadius: 13 }}>
         {labels.map((label, index) => (
           <View key={`${label}-${index}`} pointerEvents="none" style={{ width: index % step === 0 ? 10 : 4, height: 3, borderRadius: 2, backgroundColor: active === index ? colors.accent : colors.textSecondary, opacity: active === index ? 1 : 0.55 }} />
         ))}
-      </View>
+      </Animated.View>
       {active !== null && (
         <View pointerEvents="none" style={{ position: 'absolute', right: 40, top: '38%', maxWidth: 230, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 18, backgroundColor: colors.accent }}>
           <Text className="font-inter-semibold text-sm" numberOfLines={2} style={{ color: scheme === 'dark' ? '#1e1533' : '#ffffff' }}>{labels[active]}</Text>

@@ -24,13 +24,9 @@ const TOOLS: Tool[] = [
 // The web's floating "Tools" button (the sparkles) and the sheet it opens. It floats above every screen: bottom
 // right on the phone (above the tab bar) and on the iPad.
 export function ToolsFab() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
   const wide = useWindowDimensions().width >= 768;
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(TOOLS[0].id);
-  const current = TOOLS.find((tool) => tool.id === active) ?? TOOLS[0];
 
   return (
     <>
@@ -47,10 +43,23 @@ export function ToolsFab() {
         </LinearGradient>
       </Pressable>
 
-      <BottomSheet visible={open} onClose={() => setOpen(false)} maxHeight="90%">
+      <ToolsSheet visible={open} onClose={() => setOpen(false)} />
+    </>
+  );
+}
+
+// The Tools sheet itself (the Transaction Categorizer and whatever tools come next). The floating button opens it, and so
+// does the visible "Categorizar" button of the Movements screen.
+export function ToolsSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const [active, setActive] = useState(TOOLS[0].id);
+  const current = TOOLS.find((tool) => tool.id === active) ?? TOOLS[0];
+  return (
+      <BottomSheet visible={visible} onClose={onClose} maxHeight="90%">
             <SafeAreaView edges={['bottom']}>
               <View className="items-center px-6 pb-2 pt-5">
-                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setOpen(false)} hitSlop={10} style={{ position: 'absolute', right: 20, top: 18 }}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10} style={{ position: 'absolute', right: 20, top: 18 }}>
                   <Ionicons name="close" size={26} color={colors.text} />
                 </Pressable>
                 <Text className="font-inter-bold text-2xl text-gf-text">Tools</Text>
@@ -73,10 +82,9 @@ export function ToolsFab() {
                 </View>
               )}
               <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 28 }} keyboardShouldPersistTaps="handled">
-                {open && current.render()}
+                {visible && current.render()}
               </ScrollView>
             </SafeAreaView>
       </BottomSheet>
-    </>
   );
 }

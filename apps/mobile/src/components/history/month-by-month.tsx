@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
+import { CompactTimeFilter } from '@/components/compact-time-filter';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
-import type { MonthBar } from '@gastify/core/history/periodComparison';
+import { historyRange, summarizePeriod, type HistoryPreset, type MonthBar, type PeriodSummary } from '@gastify/core/history/periodComparison';
+import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { topSpendingCategories } from '@gastify/core/transactions/monthSummary';
@@ -15,9 +17,23 @@ const BAR_AREA = 150;
 // Month by month, as bars you can read: each month has its income (green) and spending (red) bar with the
 // figure written above it, the month's name below, and a tap opens that month in full. When another period is
 // compared, its months appear next to each one in a fainter tone.
-export function MonthByMonth({ months, compare, currency, start, compareStart, movements }: { months: MonthBar[]; compare?: MonthBar[] | null; currency: string; start: Date; compareStart?: Date; movements: TransactionData[] }) {
+export function MonthByMonth({ summary, compareSummary, currency, movements }: { summary: PeriodSummary; compareSummary: PeriodSummary | null; currency: string; movements: TransactionData[] }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  // Its own time filter, like the category widgets: it follows the screen's period (and comparison) until another one is chosen.
+  const now = useMemo(() => new Date(), []);
+  const [own, setOwn] = useState<'dashboard' | HistoryPreset>('dashboard');
+  const [ownMonth, setOwnMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
+  const [customFrom, setCustomFrom] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
+  const [customTo, setCustomTo] = useState(() => dateText(now));
+  const ownSummary = useMemo(
+    () => (own === 'dashboard' ? summary : summarizePeriod(movements, historyRange(own, now, { from: parseDateText(customFrom), to: parseDateText(customTo) }, ownMonth))),
+    [own, summary, movements, now, customFrom, customTo, ownMonth]
+  );
+  const months: MonthBar[] = ownSummary.months;
+  const start = ownSummary.range.start;
+  const compare: MonthBar[] | null = own === 'dashboard' && compareSummary ? compareSummary.months : null;
+  const compareStart = own === 'dashboard' && compareSummary ? compareSummary.range.start : undefined;
   const [open, setOpen] = useState<number | null>(null);
   const max = Math.max(1, ...months.flatMap((m) => [m.incomes, m.spending]), ...(compare ?? []).flatMap((m) => [m.incomes, m.spending]));
   const short = (value: number) => (value >= 1000 ? `${Math.round(value / 100) / 10}k` : String(Math.round(value)));
@@ -37,6 +53,7 @@ export function MonthByMonth({ months, compare, currency, start, compareStart, m
 
   return (
     <Card title="Mes a mes" info={{ title: 'Mes a mes', text: 'Ingresos (verde) y gastos (rojo) de cada mes del periodo, con la cifra sobre cada barra. Toca un mes para ver su detalle y su categoría líder. Si comparas, las barras tenues corresponden al mes y año indicados abajo.' }}>
+      <CompactTimeFilter preset={own} onPreset={setOwn} month={ownMonth} onMonth={setOwnMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
       {compare && compareStart && <Text className="font-inter-semibold text-xs text-gf-text-muted">Actual: {labelAt(start, 0, months[0]?.label ?? '')} · Comparado: {labelAt(compareStart, 0, compare[0]?.label ?? '')}</Text>}
       <View className="flex-row items-end gap-1.5" style={{ height: BAR_AREA + 48 }}>
         {months.map((month, index) => {

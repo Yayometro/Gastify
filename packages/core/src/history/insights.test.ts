@@ -28,6 +28,11 @@ describe("computeInsights", () => {
     expect(insights.savingsRate).toBeCloseTo(0.7);
     expect(insights.topCategory).toMatchObject({ name: "Comida", value: 200 });
     expect(insights.spendingChange).toBeNull();
+    expect(insights.balance).toBe(700);
+    expect(insights.movementCount).toBe(3);
+    expect(insights.biggestExpense).toMatchObject({ amount: 200 });
+    expect(insights.biggestExpense?.share).toBeCloseTo(2 / 3);
+    expect(insights.averageExpense).toBe(150);
   });
 
   it("compares with the previous period and has no projection once the period is over", () => {

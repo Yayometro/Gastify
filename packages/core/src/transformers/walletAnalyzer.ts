@@ -1088,7 +1088,7 @@ export function detectSubscriptions(
     const latest = [...recentTx].sort((a, b) => new Date((b.date || b.createdAt) as string | number | Date).getTime() - new Date((a.date || a.createdAt) as string | number | Date).getTime())[0];
     const occurrences: SubscriptionOccurrence[] = [...recentTx]
       .sort((a, b) => new Date((a.date || a.createdAt) as string | number | Date).getTime() - new Date((b.date || b.createdAt) as string | number | Date).getTime())
-      .map((t) => ({ date: (t.date || t.createdAt) as string | Date, amount: getPrimaryAmount(t) }));
+      .map((t) => ({ _id: (t as { _id?: unknown })._id, date: (t.date || t.createdAt) as string | Date, amount: getPrimaryAmount(t) }));
 
     // A real recurring subscription fires once per billing cycle - two
     // occurrences less than 48h apart, in the current month, are far more

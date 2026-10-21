@@ -29,7 +29,18 @@ function Row({ label, right, met, bold = false }: { label: string; right: string
   );
 }
 
-const Explain = ({ children }: { children: ReactNode }) => <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
+// ▲ / ▼ / ▬ with the web's meaning of color: green when the change is good, red when it is bad, orange when it is flat.
+// `invert` is for expenses, where going up is the bad direction.
+export function Indicator({ delta, invert = false, size = 15 }: { delta: number | null; invert?: boolean; size?: number }) {
+  const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  const flat = delta === null || Math.abs(delta) < 0.5;
+  const up = (delta ?? 0) > 0;
+  const good = invert ? !up : up;
+  const color = flat ? '#f59e0b' : good ? colors.income : colors.expense;
+  return <Text style={{ color, fontSize: size, fontWeight: '700', minWidth: 18, textAlign: 'center' }}>{flat ? '▬' : up ? '▲' : '▼'}</Text>;
+}
+
+export const Explain = ({ children }: { children: ReactNode }) => <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
 
 type D = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 

@@ -4,6 +4,7 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
+import { Explain, Indicator } from '@/components/analyzer/sheets';
 import { AnalyzerBiggest, AnalyzerBudgets, AnalyzerFxExposure, AnalyzerHighlights, AnalyzerProjection, AnalyzerWeekday } from '@/components/analyzer/supplement';
 import { CategoryBadge } from '@/components/category-badge';
 import { RankedRow } from '@/components/ui/ranked-row';
@@ -23,7 +24,7 @@ import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange'
 import { buildWalletAnalyzerSnapshot, type WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
 
 type Detail =
-  | { kind: 'month'; label: string; income: number; expense: number; count: number }
+  | { kind: 'month'; label: string; income: number; expense: number; count: number; previous: { label: string; income: number; expense: number; count: number } | null }
   | { kind: 'category'; name: string; icon?: string; color?: string; current: number; previous: number; changePct: number | null; period?: 'current' | 'previous' }
   | { kind: 'averages' }
   | { kind: 'pace' }
@@ -79,37 +80,40 @@ export default function AnalyzerScreen() {
   }, [transactions, detail, snapshot.currentRange, snapshot.previousRange, categoryOrder]);
 
   return (
-    <Screen title="Analizador" subtitle="Tus números del mes, a fondo" backLabel={monthParam ? 'Inicio' : 'Más'} onBack={() => router.back()}>
+    <Screen title="Analizador de cartera" subtitle="Tus números del mes, a fondo" backLabel={monthParam ? 'Inicio' : 'Más'} onBack={() => router.back()}>
       <MonthSwitcher value={month} onChange={setMonth} latest={now} />
       <AnalyzerHighlights snapshot={snapshot} currency={currency} />
       <AnalyzerProjection comparison={projection.comparison} loading={projection.loading} error={projection.error} missing={projection.missing} currency={currency} />
 
-      <Card title="Contra el mes anterior" info={{ title: 'Contra el mes anterior', text: 'Cómo va el mes elegido frente al mes de antes: ingresos, gastos, balance, qué parte de tus ingresos conservas y cuántos movimientos hubo.' }}>
-        {rows.map((row) => {
-          const good = row.delta === null ? null : row.invert ? row.delta <= 0 : row.delta >= 0;
-          return (
-            <View key={row.label} className="flex-row items-center justify-between gap-3">
-              <View className="flex-1">
-                <Text className="font-inter text-base text-gf-text-muted">{row.label}</Text>
-                <Text className="font-inter text-xs text-gf-text-muted">antes {row.previous}</Text>
-              </View>
-              <View className="items-end">
-                <Text className="font-inter-semibold text-base text-gf-text">{row.current}</Text>
-                <Text className="font-inter-semibold text-xs" style={{ color: good === null ? colors.textSecondary : good ? colors.income : colors.expense }}>{pct(row.delta)}</Text>
-              </View>
+      <Card title="VS el mes anterior" info={{ title: 'VS el mes anterior', text: 'Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.' }}>
+        <View className="flex-row items-center gap-2 pb-1">
+          <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
+          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Antes</Text>
+          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Ahora</Text>
+          <Text className="w-20 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Cambio</Text>
+        </View>
+        {rows.map((row) => (
+          <View key={row.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
+            <Text className="flex-1 font-inter-medium text-sm text-gf-text">{row.label}</Text>
+            <Text className="w-24 text-right font-inter text-xs text-gf-text-muted" numberOfLines={1} adjustsFontSizeToFit>{row.previous}</Text>
+            <Text className="w-24 text-right font-inter-semibold text-sm text-gf-text" numberOfLines={1} adjustsFontSizeToFit>{row.current}</Text>
+            <View className="w-20 flex-row items-center justify-end gap-1">
+              <Indicator delta={row.delta} invert={row.invert} />
+              <Text className="font-inter-semibold text-xs text-gf-text">{pct(row.delta)}</Text>
             </View>
-          );
-        })}
+          </View>
+        ))}
+        <Explain>Compara el mes elegido con el mes de antes: lo verde mejoró, lo rojo empeoró y lo naranja se mantuvo.</Explain>
       </Card>
 
-      <Card title="Tendencia de 6 meses" info={{ title: 'Tendencia', text: 'Ingresos (verde) y gastos (rojo) de los últimos seis meses hasta el mes elegido. Toca un mes para ver su detalle.' }}>
+      <Card title="Tendencia de 6 meses" info={{ title: 'Tendencia', text: 'Ingresos (verde) y gastos (rojo) de cada uno de los últimos seis meses, terminando en el mes elegido. Toca un mes para ver su tabla: ingresos, gastos y balance contra el mes anterior, con flechas que dicen si subieron o bajaron.' }}>
         <View className="flex-row items-end justify-between gap-2" style={{ height: 150 }}>
           {trend.map((item) => (
             <Pressable
               key={item.label}
               accessibilityRole="button"
               accessibilityLabel={`${item.label}: ingresos ${money(item.income)}, gastos ${money(item.expense)}`}
-              onPress={() => setDetail({ kind: 'month', label: item.label, income: item.income, expense: item.expense, count: item.transactionCount })}
+              onPress={() => { const before_ = trend[trend.indexOf(item) - 1]; setDetail({ kind: 'month', label: item.label, income: item.income, expense: item.expense, count: item.transactionCount, previous: before_ ? { label: before_.label, income: before_.income, expense: before_.expense, count: before_.transactionCount } : null }); }}
               className="flex-1 items-center justify-end gap-1"
               style={{ height: 150 }}>
               <View className="flex-row items-end gap-0.5" style={{ height: 120 }}>
@@ -123,7 +127,7 @@ export default function AnalyzerScreen() {
       </Card>
 
       <Pressable accessibilityRole="button" onPress={() => setDetail({ kind: 'averages' })}>
-        <Card title="Promedio mensual" info={{ title: 'Promedio mensual', text: 'Cuánto entra, cuánto sale y cuántos movimientos hay en promedio cada mes, con base en el historial reciente.' }}>
+        <Card title="Promedio mensual" info={{ title: 'Promedio mensual', text: `Es el promedio de los ${monthlyAverages.monthsCount} meses de la tendencia (el mes elegido y los ${Math.max(0, monthlyAverages.monthsCount - 1)} anteriores): se suman los ingresos, los gastos y los movimientos de esos meses y se divide entre ${monthlyAverages.monthsCount}. Es el mismo cálculo de la web. Toca para ver mes por mes.` }}>
           <View className="flex-row justify-between gap-3">
             <View className="flex-1">
               <Text className="font-inter text-xs text-gf-text-muted">Ingresos</Text>
@@ -206,7 +210,7 @@ export default function AnalyzerScreen() {
 
       {subscriptions.length > 0 && (
         <Pressable accessibilityRole="button" onPress={() => setDetail({ kind: 'subscriptions' })}>
-          <Card title="Pagos recurrentes" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Pagos recurrentes', text: 'Gastos que se repiten cada mes (suscripciones, servicios). Abre Ver más para ver la cuenta, categoría, historial de cargos y alertas de nuevos o posibles duplicados.' }}>
+          <Card title="Pagos recurrentes" info={{ title: 'Pagos recurrentes', text: 'Gastos con el mismo nombre que se repiten en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. Toca la tarjeta para ver todos, con su cuenta, categoría y cargos; toca un cargo para abrir el movimiento. Se marca «nuevo» si no existía antes y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.' }}>
             {subscriptions.slice(0, 4).map((sub) => (
               <View key={sub.name} className="flex-row items-center gap-3">
                 <CategoryBadge icon={sub.icon} color={sub.color} size={30} />
@@ -214,7 +218,7 @@ export default function AnalyzerScreen() {
                 <Text className="font-inter-semibold text-sm text-gf-text">{money(sub.amount)}</Text>
               </View>
             ))}
-            {subscriptions.length > 4 && <Text className="font-inter text-xs text-gf-text-muted">y {subscriptions.length - 4} más · toca para ver todos</Text>}
+            <View className="items-center rounded-full py-2.5" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{subscriptions.length > 4 ? `Ver los ${subscriptions.length} pagos recurrentes` : 'Ver detalle de los pagos'}</Text></View>
           </Card>
         </Pressable>
       )}
@@ -241,14 +245,41 @@ export default function AnalyzerScreen() {
           : detail?.kind === 'pace' ? 'Ritmo de gasto'
           : 'Pagos recurrentes'
         }>
-        {detail?.kind === 'month' && (
-          <>
-            <Text className="font-inter text-base" style={{ color: colors.income }}>Ingresos: {money(detail.income)}</Text>
-            <Text className="font-inter text-base" style={{ color: colors.expense }}>Gastos: {money(detail.expense)}</Text>
-            <Text className="font-inter-semibold text-base text-gf-text">Balance: {money(detail.income - detail.expense)}</Text>
-            <Text className="font-inter text-sm text-gf-text-muted">{detail.count} movimientos</Text>
-          </>
-        )}
+        {detail?.kind === 'month' && (() => {
+          const prev = detail.previous;
+          const balance = detail.income - detail.expense;
+          const prevBalance = prev ? prev.income - prev.expense : null;
+          const change_ = (current: number, before_: number | null) => (before_ === null || before_ === 0 ? null : ((current - before_) / Math.abs(before_)) * 100);
+          const lines = [
+            { label: 'Ingresos', value: detail.income, before: prev?.income ?? null, invert: false, tone: colors.income },
+            { label: 'Gastos', value: detail.expense, before: prev?.expense ?? null, invert: true, tone: colors.expense },
+            { label: 'Balance', value: balance, before: prevBalance, invert: false, tone: balance >= 0 ? colors.income : colors.expense },
+          ];
+          return (
+            <>
+              <Text className="font-inter-medium text-sm text-gf-text-muted">{detail.count} movimientos en el mes{prev ? ` · contra ${prev.label}` : ''}</Text>
+              <View>
+                {lines.map((line) => {
+                  const delta = change_(line.value, line.before);
+                  return (
+                    <View key={line.label} className="flex-row items-center gap-3 border-t border-gf-border py-4">
+                      <View className="flex-1">
+                        <Text className="font-inter-medium text-base text-gf-text">{line.label}</Text>
+                        {line.before !== null && <Text className="font-inter text-sm text-gf-text-muted">antes {money(line.before)}</Text>}
+                      </View>
+                      <Text className="font-inter-bold text-xl" style={{ color: line.tone }}>{money(line.value)}</Text>
+                      <View className="w-16 flex-row items-center justify-end gap-1">
+                        <Indicator delta={delta} invert={line.invert} size={20} />
+                        <Text className="font-inter-semibold text-sm text-gf-text">{pct(delta)}</Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+              <Explain>Balance = ingresos − gastos del mes. La flecha compara cada cifra con el mes anterior: ▲ subió, ▼ bajó, ▬ casi no cambió. Verde es buena noticia (más ingresos o balance, menos gastos), rojo mala y naranja sin cambio.</Explain>
+            </>
+          );
+        })()}
         {detail?.kind === 'category' && (
           <>
             <Text className="font-inter-bold text-2xl text-gf-text">{money(detail.current)}</Text>
@@ -263,10 +294,22 @@ export default function AnalyzerScreen() {
         )}
         {detail?.kind === 'averages' && (
           <>
-            <Text className="font-inter text-base" style={{ color: colors.income }}>Ingresos: {money(monthlyAverages.avgIncome)} al mes</Text>
-            <Text className="font-inter text-base" style={{ color: colors.expense }}>Gastos: {money(monthlyAverages.avgExpense)} al mes</Text>
-            <Text className="font-inter text-base text-gf-text">Movimientos: {Math.round(monthlyAverages.avgTransactionCount)} al mes</Text>
-            <Text className="font-inter text-sm text-gf-text-muted">Calculado con {monthlyAverages.monthsCount} meses de historial.</Text>
+            <View className="gap-1">
+              <Text className="font-inter text-base" style={{ color: colors.income }}>Ingresos: {money(monthlyAverages.avgIncome)} al mes</Text>
+              <Text className="font-inter text-base" style={{ color: colors.expense }}>Gastos: {money(monthlyAverages.avgExpense)} al mes</Text>
+              <Text className="font-inter text-base text-gf-text">Movimientos: {Math.round(monthlyAverages.avgTransactionCount)} al mes</Text>
+            </View>
+            <Explain>Promedio de {monthlyAverages.monthsCount} meses (los de la tendencia, contando el mes elegido): la suma de cada columna ÷ {monthlyAverages.monthsCount}.</Explain>
+            <View>
+              {trend.map((item) => (
+                <View key={item.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
+                  <Text className="w-20 font-inter-medium text-sm text-gf-text">{item.label}</Text>
+                  <Text className="flex-1 text-right font-inter-semibold text-xs" style={{ color: colors.income }} numberOfLines={1} adjustsFontSizeToFit>{money(item.income)}</Text>
+                  <Text className="flex-1 text-right font-inter-semibold text-xs" style={{ color: colors.expense }} numberOfLines={1} adjustsFontSizeToFit>{money(item.expense)}</Text>
+                  <Text className="w-10 text-right font-inter text-xs text-gf-text-muted">{item.transactionCount}</Text>
+                </View>
+              ))}
+            </View>
           </>
         )}
         {detail?.kind === 'pace' && (
@@ -283,7 +326,7 @@ export default function AnalyzerScreen() {
         )}
         {detail?.kind === 'subscriptions' &&
           subscriptions.map((sub) => (
-            <View key={sub.name} className="gap-0.5">
+            <View key={sub.name} className="gap-0.5 border-t border-gf-border pt-3">
               <View className="flex-row items-center gap-3">
                 <CategoryBadge icon={sub.icon} color={sub.color} size={34} />
                 <View className="flex-1">
@@ -294,7 +337,12 @@ export default function AnalyzerScreen() {
               </View>
               {sub.isNew && <Text className="pl-12 font-inter text-xs" style={{ color: colors.accent }}>Nuevo este mes</Text>}
               {sub.possibleDuplicateInMonth && <Text className="pl-12 font-inter text-xs" style={{ color: colors.expense }}>Posible duplicado en el mes</Text>}
-              <Text className="pl-12 font-inter text-xs text-gf-text-muted">{sub.occurrences.length} cargos registrados</Text>
+              {[...sub.occurrences].reverse().map((occurrence, index) => (
+                <Pressable key={index} accessibilityRole="button" disabled={!occurrence._id} onPress={() => { setDetail(null); router.push({ pathname: '/movements/[id]', params: { id: String(occurrence._id), returnTo: '/more/analyzer' } }); }} className="flex-row justify-between py-1.5 pl-12">
+                  <Text className="font-inter text-sm text-gf-text-muted">{new Date(occurrence.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</Text>
+                  <Text className="font-inter-semibold text-sm text-gf-text">{money(occurrence.amount)} ›</Text>
+                </Pressable>
+              ))}
             </View>
           ))}
       </DetailSheet>

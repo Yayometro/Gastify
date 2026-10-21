@@ -109,6 +109,8 @@ export default function HomeScreen() {
         </Card>
       )}
 
+
+      <InsightsWidget insights={insights} currency={currency} onOpenAnalyzer={() => router.push({ pathname: '/more/analyzer', params: { month: `${(period.preset === 'month' ? period.month : period.now).getFullYear()}-${String((period.preset === 'month' ? period.month : period.now).getMonth() + 1).padStart(2, '0')}` } })} />
       <SummaryWidget summary={summary} movements={inPeriod} allMovements={transactions.data} currency={currency} />
       <TopRanking movements={transactions.data} currency={currency} defaultPreset="thisMonth" />
       <BudgetsWidget />
@@ -122,7 +124,6 @@ export default function HomeScreen() {
           latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/' } })} />)
         )}
       </Card>
-      <InsightsWidget insights={insights} currency={currency} onOpenAnalyzer={() => router.push({ pathname: '/more/analyzer', params: { month: `${(period.preset === 'month' ? period.month : period.now).getFullYear()}-${String((period.preset === 'month' ? period.month : period.now).getMonth() + 1).padStart(2, '0')}` } })} />
     </Screen>
   );
 }

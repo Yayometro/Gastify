@@ -53,7 +53,7 @@ export default function MoreScreen() {
         <View className="h-px bg-gf-border" />
         <MenuRow label="Categorías" icon="pricetags-outline" onPress={() => router.push('/more/categories')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Analizador" icon="analytics-outline" onPress={() => router.push('/more/analyzer')} />
+        <MenuRow label="Analizador de cartera" icon="analytics-outline" onPress={() => router.push('/more/analyzer')} />
         <View className="h-px bg-gf-border" />
         <MenuRow label="Historial" icon="time-outline" onPress={() => router.push('/more/history')} />
         <View className="h-px bg-gf-border" />

@@ -137,7 +137,7 @@ export default function HistoryScreen() {
         ))}
       </Card>
 
-      <MonthByMonth months={a.months} compare={b?.months} currency={currency} start={rangeA.start} compareStart={b ? rangeB.start : undefined} movements={transactions} />
+      <MonthByMonth summary={a} compareSummary={b} currency={currency} movements={transactions} />
 
       <OwnPeriodCategories
         kind="spending"

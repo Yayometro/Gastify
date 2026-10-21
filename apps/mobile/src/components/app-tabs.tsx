@@ -2,7 +2,7 @@ import { FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Tabs } from 'expo-router';
 import type { ReactNode } from 'react';
-import { type ColorValue, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
+import { Animated, type ColorValue, Easing, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
 import { SideNav } from '@/components/side-nav';
@@ -11,6 +11,17 @@ import { Colors } from '@/constants/theme';
 import { useLoadAppData } from '@/hooks/use-load-app-data';
 
 const ICON_SIZE = 25;
+
+// Every tab switch slides and fades the same way: the screen of a tab further right enters from the right and the
+// one it replaces leaves to the left (and the other way around going back). One interpolator for all of them keeps
+// "Más" from animating differently from the rest.
+const SLIDE_PX = 72;
+const slideBetweenTabs = ({ current }: { current: { progress: Animated.Value } }) => ({
+  sceneStyle: {
+    opacity: current.progress.interpolate({ inputRange: [-1, 0, 1], outputRange: [0, 1, 0] }),
+    transform: [{ translateX: current.progress.interpolate({ inputRange: [-1, 0, 1], outputRange: [-SLIDE_PX, 0, SLIDE_PX] }) }],
+  },
+});
 
 // Gastify's bottom bar, drawn like the web app's mobile navbar: a floating rounded bar with
 // icons only (same icon families as the web: FaWallet, FaMoneyBillTransfer, MdSavings, IoAdd),
@@ -51,7 +62,7 @@ export default function AppTabs() {
   };
 
   const tabs = (
-    <Tabs tabBar={wide ? () => null : (props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false }}>
+    <Tabs tabBar={wide ? () => null : (props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false, animation: 'shift', sceneStyleInterpolator: slideBetweenTabs, transitionSpec: { animation: 'timing', config: { duration: 280, easing: Easing.out(Easing.cubic) } } }}>
       <Tabs.Screen
         name="index"
         options={{

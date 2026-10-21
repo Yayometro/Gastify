@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, SectionList, Text, View, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Alert, Animated, Pressable, RefreshControl, SectionList, Text, View, useColorScheme } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { authClient } from '@/auth-client';
@@ -14,6 +14,7 @@ import { MonthSwitcher } from '@/components/month-switcher';
 import { MovementFiltersPanel } from '@/components/movements/movement-filters';
 import { MovementRow } from '@/components/movements/movement-row';
 import { useToast } from '@/components/toast';
+import { ToolsSheet } from '@/components/tools/tools-fab';
 import { TotalsCard } from '@/components/totals-card';
 import { Card } from '@/components/ui/card';
 import { BottomTabInset, Colors, MaxContentWidth } from '@/constants/theme';
@@ -87,6 +88,12 @@ export default function MovementsScreen() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const insets = useSafeAreaInsets();
+  // The date rail starts where the list of days starts: below the header, and it rises with it as the header scrolls away.
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const railTop = scrollY.interpolate({ inputRange: [0, Math.max(1, headerHeight)], outputRange: [insets.top + 16 + headerHeight, insets.top + 16], extrapolate: 'clamp' });
   const listRef = useRef<SectionList<TransactionData, DaySection>>(null);
   const [exporting, setExporting] = useState(false);
   const { data: session } = authClient.useSession();
@@ -213,7 +220,7 @@ export default function MovementsScreen() {
   const categoryItems = categories.map((category) => ({ id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color }));
 
   const header = (
-    <View className="gap-4 pb-4">
+    <View className="gap-4 pb-4" onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}>
       {returnTo && (
         <Pressable accessibilityRole="button" onPress={() => goBackTo(returnTo, () => router.back())} hitSlop={8} className="flex-row items-center gap-1">
           <Ionicons name="chevron-back" size={20} color={colors.accent} />
@@ -222,14 +229,20 @@ export default function MovementsScreen() {
       )}
       <View className="flex-row items-end justify-between gap-3">
         <Text className="font-inter-bold text-4xl text-gf-text">Movimientos</Text>
-        <View className="flex-row items-center gap-4 pb-2">
-        <Pressable accessibilityRole="button" onPress={() => router.push('/movements/import')} hitSlop={8}>
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Importar</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8}>
+        <Pressable accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8} className="pb-2">
           <Text className="font-inter-semibold text-sm" style={{ color: items.length ? colors.accent : colors.textSecondary }}>Exportar</Text>
         </Pressable>
-        </View>
+      </View>
+
+      <View className="flex-row gap-3">
+        <Pressable accessibilityRole="button" onPress={() => router.push('/movements/import')} className="flex-1 flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
+          <Ionicons name="document-attach-outline" size={18} color={colors.accent} />
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Importar de Excel</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => setToolsOpen(true)} className="flex-1 flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
+          <Ionicons name="sparkles" size={18} color={colors.accent} />
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Categorizar</Text>
+        </Pressable>
       </View>
 
       <ChipPicker items={presetsWithYears(yearsWithMovements(transactions.data)).map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />
@@ -358,12 +371,16 @@ export default function MovementsScreen() {
           contentContainerStyle={{ width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: BottomTabInset + 24 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
           showsVerticalScrollIndicator={false}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+          scrollEventThrottle={16}
         />
       </SafeAreaView>
       <DateRail
+        top={railTop}
         labels={sections.map((section) => section.title)}
         onJump={(index) => listRef.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0, animated: false, viewOffset: 0 })}
       />
+      <ToolsSheet visible={toolsOpen} onClose={() => setToolsOpen(false)} />
       <ExportSheet visible={exportOpen} count={items.length} busy={exporting} onPick={exportPeriod} onClose={() => setExportOpen(false)} />
     </View>
   );
