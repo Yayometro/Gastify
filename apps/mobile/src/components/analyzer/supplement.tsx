@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
+import { BudgetSeriesSheet, ChampionsSheet, InsightSheet, SpendAnalysisSheet, WeekdaySheet, type ChampionKind } from '@/components/analyzer/sheets';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Colors } from '@/constants/theme';
@@ -9,20 +10,23 @@ import type { FxExposureRow } from '@/hooks/use-accounts-fx-exposure';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
 import type { ProjectionMonthComparison } from '@gastify/core/transformers/projectionsChange';
-import type { WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
+import type { WalletAnalyzerBudgetRow, WalletAnalyzerInsightItem, WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
 
-export function AnalyzerHighlights({ snapshot }: { snapshot: WalletAnalyzerSnapshotData }) {
+export function AnalyzerHighlights({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  const [open, setOpen] = useState<WalletAnalyzerInsightItem | null>(null);
   return (
-    <Card title="Lo más destacado del mes" info={{ title: 'Lo más destacado', text: 'Señales calculadas con tus movimientos: límites superados, categorías fuera de lo habitual, suscripciones nuevas y rachas. No son movimientos adicionales.' }}>
+    <Card title="Lo más destacado del mes" info={{ title: 'Lo más destacado', text: 'Señales calculadas con tus movimientos del mes: límites superados, categorías fuera de lo habitual (contra el promedio de los 6 meses anteriores, sin contar el actual, y con al menos 3 meses de historial), suscripciones detectadas, rachas y ritmo de gasto. Toca una para ver los meses y el cálculo detrás. No son movimientos adicionales.' }}>
       {snapshot.insights.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin alertas destacadas este mes.</Text>}
       {snapshot.insights.map((item, index) => (
-        <View key={`${item.type}-${index}`} className="flex-row items-center gap-3 border-t border-gf-border py-2">
+        <Pressable key={`${item.type}-${index}`} accessibilityRole="button" onPress={() => setOpen(item)} className="flex-row items-center gap-3 border-t border-gf-border py-2.5">
           <Text className="text-xl">{item.icon}</Text>
           <Text className="flex-1 font-inter-medium text-sm text-gf-text">{item.title}</Text>
           <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: item.tone === 'warning' ? colors.expense : item.tone === 'positive' ? colors.income : colors.accent }} />
-        </View>
+          <Text className="font-inter text-lg text-gf-text-muted">›</Text>
+        </Pressable>
       ))}
+      <InsightSheet insight={open} currency={currency} onClose={() => setOpen(null)} />
     </Card>
   );
 }
@@ -47,13 +51,14 @@ export function AnalyzerProjection({ comparison, loading, error, missing, curren
 }
 
 export function AnalyzerBudgets({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
+  const [open, setOpen] = useState<WalletAnalyzerBudgetRow | null>(null);
   return (
-    <Card title="Presupuestos · cumplimiento y rachas" info={{ title: 'Presupuestos del analizador', text: 'Compara el gasto de cada presupuesto con su límite y muestra cuántos meses seguidos se cumplió. Toca una fila para abrir ese presupuesto.' }}>
+    <Card title="Presupuestos · cumplimiento y rachas" info={{ title: 'Presupuestos del analizador', text: 'Compara el gasto de cada presupuesto con su límite en el periodo y muestra cuántos meses seguidos se cumplió (la racha). Toca uno para ver sus últimos 12 meses: lo gastado, el límite de cada mes y si se cumplió.' }}>
       {snapshot.budgetRows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No tienes presupuestos de gasto configurados.</Text>}
       {snapshot.budgetRows.map((row) => {
         const ratio = row.limit > 0 ? row.spent / row.limit : 0;
         return (
-          <Pressable key={row.budgetId} accessibilityRole="button" onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: row.budgetId } })} className="gap-1.5 border-t border-gf-border py-2">
+          <Pressable key={row.budgetId} accessibilityRole="button" onPress={() => setOpen(row)} className="gap-1.5 border-t border-gf-border py-2">
             <View className="flex-row justify-between gap-3">
               <Text className="flex-1 font-inter-semibold text-sm text-gf-text" numberOfLines={1}>{row.category}</Text>
               <Text className="font-inter text-xs text-gf-text-muted">{row.streakMonths >= 2 ? `${row.streakMonths} meses ✓` : `${Math.round(row.pct)}%`}</Text>
@@ -63,46 +68,50 @@ export function AnalyzerBudgets({ snapshot, currency }: { snapshot: WalletAnalyz
           </Pressable>
         );
       })}
+      <BudgetSeriesSheet row={open} currency={currency} onClose={() => setOpen(null)} />
     </Card>
   );
 }
 
 export function AnalyzerBiggest({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
-  const [showMonths, setShowMonths] = useState(false);
+  const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  const [kind, setKind] = useState<ChampionKind | null>(null);
+  const [analysis, setAnalysis] = useState(false);
   const patterns = snapshot.biggestSpendPatterns;
   const money = (value: number) => formatMoneyMajor(value, currency);
   if (!patterns) return null;
+  const tile = { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border } as const;
   return (
-    <Card title={`Grandes gastos · últimos ${patterns.monthsBack ?? 12} meses`} info={{ title: 'Grandes gastos', text: 'Identifica la transacción, categoría y subcategoría de mayor gasto en los últimos doce meses; abajo puedes desplegar el líder de cada mes.' }}>
-      <View className="gap-1 rounded-2xl border border-gf-border p-3">
-        <Text className="font-inter text-xs text-gf-text-muted">Transacción más grande</Text>
+    <Card title={`Grandes gastos · últimos ${patterns.monthsBack ?? 12} meses`} info={{ title: 'Grandes gastos', text: 'Muestra la transacción, la categoría y la subcategoría con más gasto en los últimos doce meses. Toca cada una para ver quién lideró cada mes, o abre «Ver mes por mes» para el resumen completo y «Ver análisis» para una lectura en palabras.' }}>
+      <Pressable accessibilityRole="button" onPress={() => setKind('transaction')} className="gap-1 rounded-2xl p-3" style={tile}>
+        <Text className="font-inter text-xs text-gf-text-muted">Transacción más grande · toca para ver cada mes</Text>
         <Text className="font-inter-semibold text-base text-gf-text">{patterns.biggestTransaction.name}</Text>
         <Text className="font-inter-bold text-xl text-gf-text">{money(patterns.biggestTransaction.amount)}</Text>
         <Text className="font-inter text-xs text-gf-text-muted">{patterns.biggestTransaction.categoryName}</Text>
-      </View>
+      </Pressable>
       <View className="flex-row gap-2">
-        <View className="flex-1 gap-1 rounded-2xl border border-gf-border p-3">
-          <Text className="font-inter text-xs text-gf-text-muted">Categoría líder</Text>
+        <Pressable accessibilityRole="button" onPress={() => setKind('category')} className="flex-1 gap-1 rounded-2xl p-3" style={tile}>
+          <Text className="font-inter text-xs text-gf-text-muted">Categoría líder ›</Text>
           <Text className="font-inter-semibold text-sm text-gf-text" numberOfLines={2}>{patterns.biggestCategory.name}</Text>
           <Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestCategory.total)}</Text>
-        </View>
-        {patterns.biggestSubcategory && <View className="flex-1 gap-1 rounded-2xl border border-gf-border p-3">
-          <Text className="font-inter text-xs text-gf-text-muted">Subcategoría líder</Text>
+        </Pressable>
+        {patterns.biggestSubcategory && <Pressable accessibilityRole="button" onPress={() => setKind('subCategory')} className="flex-1 gap-1 rounded-2xl p-3" style={tile}>
+          <Text className="font-inter text-xs text-gf-text-muted">Subcategoría líder ›</Text>
           <Text className="font-inter-semibold text-sm text-gf-text" numberOfLines={2}>{patterns.biggestSubcategory.name}</Text>
           <Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestSubcategory.total)}</Text>
-        </View>}
+        </Pressable>}
       </View>
       <Text className="font-inter text-xs text-gf-text-muted">La categoría líder representa {Math.round(patterns.analysis.categoryShareOfTotal)}% del gasto de este periodo.</Text>
-      <Pressable accessibilityRole="button" accessibilityState={{ expanded: showMonths }} onPress={() => setShowMonths((value) => !value)} className="items-center rounded-full border border-gf-border py-2">
-        <Text className="font-inter-semibold text-sm text-gf-text">{showMonths ? 'Ocultar meses' : 'Ver mes por mes'}</Text>
-      </Pressable>
-      {showMonths && snapshot.monthlyChampions?.months.map((entry) => (
-        <View key={entry.label} className="gap-1 border-t border-gf-border py-2">
-          <Text className="font-inter-semibold text-sm text-gf-text">{entry.label} · {money(entry.total)}</Text>
-          {entry.biggestTransaction && <Text className="font-inter text-xs text-gf-text-muted">Mayor movimiento: {entry.biggestTransaction.name} ({money(entry.biggestTransaction.amount)})</Text>}
-          {entry.biggestCategory && <Text className="font-inter text-xs text-gf-text-muted">Categoría: {entry.biggestCategory.name} ({money(entry.biggestCategory.total)})</Text>}
-        </View>
-      ))}
+      <View className="flex-row gap-2">
+        <Pressable accessibilityRole="button" onPress={() => setKind('category')} className="flex-1 items-center rounded-full border border-gf-border py-2.5">
+          <Text className="font-inter-semibold text-sm text-gf-text">Ver mes por mes</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => setAnalysis(true)} className="flex-1 items-center rounded-full py-2.5" style={{ backgroundColor: colors.accentSoft }}>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver análisis</Text>
+        </Pressable>
+      </View>
+      <ChampionsSheet kind={kind} months={snapshot.monthlyChampions?.months ?? []} currency={currency} onClose={() => setKind(null)} />
+      <SpendAnalysisSheet patterns={patterns} visible={analysis} onClose={() => setAnalysis(false)} />
     </Card>
   );
 }
@@ -134,17 +143,14 @@ export function AnalyzerWeekday({ snapshot, currency }: { snapshot: WalletAnalyz
   const data = snapshot.weekdaySpending;
   const max = Math.max(1, ...data.days.map((day) => day.avgPerOccurrence));
   return (
-    <Card title="Patrón por día de la semana" info={{ title: 'Patrón semanal', text: 'Promedio gastado en cada día de la semana durante el mes elegido. Ver detalle muestra semanas y días individuales.' }} action={<Pressable accessibilityRole="button" onPress={() => setExpanded((value) => !value)}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? 'Ver menos' : 'Ver detalle'}</Text></Pressable>}>
+    <Card title="Patrón por día de la semana" info={{ title: 'Patrón semanal', text: 'Se suma el gasto de cada día de la semana en el mes elegido y se divide entre cuántas veces cayó ese día (un mes tiene 4 o 5 de cada uno), para que la comparación sea justa. «Ver detalle» muestra la semana con más gasto y cada día.' }} action={<Pressable accessibilityRole="button" onPress={() => setExpanded(true)}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver detalle</Text></Pressable>}>
       {data.days.map((day) => <View key={day.dayIndex} className="flex-row items-center gap-2">
         <Text className="w-20 font-inter-medium text-xs text-gf-text">{day.dayName}</Text>
         <View className="h-2 flex-1 overflow-hidden rounded-full bg-gf-surface"><View style={{ width: `${Math.max(0, Math.min(100, (day.avgPerOccurrence / max) * 100))}%`, height: '100%', backgroundColor: colors.accent }} /></View>
         <Text className="w-24 text-right font-inter-semibold text-xs text-gf-text">{formatMoneyMajor(day.avgPerOccurrence, currency)}</Text>
       </View>)}
       <Text className="font-inter text-xs text-gf-text-muted">{data.insight}</Text>
-      {expanded && <View className="gap-2 border-t border-gf-border pt-3">
-        <Text className="font-inter-semibold text-sm text-gf-text">Entre semana: {formatMoneyMajor(data.weekdayAvg, currency)} · Fin de semana: {formatMoneyMajor(data.weekendAvg, currency)}</Text>
-        {data.weeks.map((week) => <Text key={week.label} className="font-inter text-xs text-gf-text-muted">{week.label}: {formatMoneyMajor(week.total, currency)} en {week.count} movimientos</Text>)}
-      </View>}
+      <WeekdaySheet data={data} visible={expanded} currency={currency} onClose={() => setExpanded(false)} />
     </Card>
   );
 }

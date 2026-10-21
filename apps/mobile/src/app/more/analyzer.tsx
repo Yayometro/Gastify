@@ -81,7 +81,7 @@ export default function AnalyzerScreen() {
   return (
     <Screen title="Analizador" subtitle="Tus números del mes, a fondo" backLabel={monthParam ? 'Inicio' : 'Más'} onBack={() => router.back()}>
       <MonthSwitcher value={month} onChange={setMonth} latest={now} />
-      <AnalyzerHighlights snapshot={snapshot} />
+      <AnalyzerHighlights snapshot={snapshot} currency={currency} />
       <AnalyzerProjection comparison={projection.comparison} loading={projection.loading} error={projection.error} missing={projection.missing} currency={currency} />
 
       <Card title="Contra el mes anterior" info={{ title: 'Contra el mes anterior', text: 'Cómo va el mes elegido frente al mes de antes: ingresos, gastos, balance, qué parte de tus ingresos conservas y cuántos movimientos hubo.' }}>

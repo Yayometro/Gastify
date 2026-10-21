@@ -1,17 +1,13 @@
-import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
+import { ChampionsSheet, SpendAnalysisSheet, type ChampionKind } from '@/components/analyzer/sheets';
 import { CategoryBadge } from '@/components/category-badge';
-import { MovementRow } from '@/components/movements/movement-row';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
-import { isInRange } from '@gastify/core/transactions/movementFilters';
-import { topSpendingCategories } from '@gastify/core/transactions/monthSummary';
-import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { computeMonthlyChampions, detectSubscriptions, findBiggestSpendPatterns } from '@gastify/core/transformers/walletAnalyzer';
 
 export function HistoryExtraInsights({ movements, currency, end }: { movements: TransactionData[]; currency: string; end: Date }) {
@@ -20,44 +16,35 @@ export function HistoryExtraInsights({ movements, currency, end }: { movements: 
   const patterns = useMemo(() => findBiggestSpendPatterns(movements, anchor, 12), [movements, anchor]);
   const champions = useMemo(() => computeMonthlyChampions(movements, anchor, 12), [movements, anchor]);
   const subscriptions = useMemo(() => detectSubscriptions(movements, anchor, 3, 6), [movements, anchor]);
-  const [showMonths, setShowMonths] = useState(false);
-  const [openBiggest, setOpenBiggest] = useState(false);
+  const [kind, setKind] = useState<ChampionKind | null>(null);
+  const [analysis, setAnalysis] = useState(false);
   const [openSubscription, setOpenSubscription] = useState<string | null>(null);
   const money = (value: number) => formatMoneyMajor(value, currency);
   const selected = subscriptions.find((item) => item.name === openSubscription);
-  const windowMovements = useMemo(() => patterns ? movements.filter((tx) => tx.isBill && !tx.isIncome && isInRange(tx, patterns.lookbackRange)) : [], [patterns, movements]);
-  const topMovements = useMemo(() => [...windowMovements].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, 12), [windowMovements]);
-  const topCategories = useMemo(() => topSpendingCategories(windowMovements, 12), [windowMovements]);
+  const tile = { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border } as const;
 
   return (
     <>
-      <Card title="Grandes gastos · últimos 12 meses" info={{ title: 'Grandes gastos', text: 'La mayor transacción, categoría y subcategoría del año móvil que termina en el periodo elegido. Despliega los meses para ver sus líderes.' }}>
+      <Card title="Grandes gastos · últimos 12 meses" info={{ title: 'Grandes gastos', text: 'La mayor transacción, categoría y subcategoría del año móvil que termina en el periodo elegido. Toca cada una para ver quién lideró cada mes (con su mes), «Ver líderes mes por mes» para el resumen y «Ver análisis» para una lectura en palabras.' }}>
         {!patterns && <Text className="font-inter text-sm text-gf-text-muted">No hay gastos registrados en estos doce meses.</Text>}
         {patterns && <>
-          <Pressable accessibilityRole="button" accessibilityLabel="Ver mayores gastos y categorías del periodo" onPress={() => setOpenBiggest(true)} className="gap-1 rounded-2xl border border-gf-border p-3">
-            <Text className="font-inter text-xs text-gf-text-muted">Mayor transacción</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Ver la transacción más grande de cada mes" onPress={() => setKind('transaction')} className="gap-1 rounded-2xl p-3" style={tile}>
+            <Text className="font-inter text-xs text-gf-text-muted">Mayor transacción · toca para ver cada mes</Text>
             <Text className="font-inter-semibold text-base text-gf-text">{patterns.biggestTransaction.name}</Text>
             <Text className="font-inter-bold text-xl text-gf-text">{money(patterns.biggestTransaction.amount)}</Text>
           </Pressable>
           <View className="flex-row gap-2">
-            <View className="flex-1 rounded-2xl border border-gf-border p-3"><Text className="font-inter text-xs text-gf-text-muted">Categoría líder</Text><Text className="font-inter-semibold text-sm text-gf-text">{patterns.biggestCategory.name}</Text><Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestCategory.total)}</Text></View>
-            {patterns.biggestSubcategory && <View className="flex-1 rounded-2xl border border-gf-border p-3"><Text className="font-inter text-xs text-gf-text-muted">Subcategoría líder</Text><Text className="font-inter-semibold text-sm text-gf-text">{patterns.biggestSubcategory.name}</Text><Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestSubcategory.total)}</Text></View>}
+            <Pressable accessibilityRole="button" onPress={() => setKind('category')} className="flex-1 rounded-2xl p-3" style={tile}><Text className="font-inter text-xs text-gf-text-muted">Categoría líder ›</Text><Text className="font-inter-semibold text-sm text-gf-text">{patterns.biggestCategory.name}</Text><Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestCategory.total)}</Text></Pressable>
+            {patterns.biggestSubcategory && <Pressable accessibilityRole="button" onPress={() => setKind('subCategory')} className="flex-1 rounded-2xl p-3" style={tile}><Text className="font-inter text-xs text-gf-text-muted">Subcategoría líder ›</Text><Text className="font-inter-semibold text-sm text-gf-text">{patterns.biggestSubcategory.name}</Text><Text className="font-inter-bold text-sm text-gf-text">{money(patterns.biggestSubcategory.total)}</Text></Pressable>}
           </View>
-          <Pressable accessibilityRole="button" accessibilityState={{ expanded: showMonths }} onPress={() => setShowMonths((value) => !value)} className="items-center rounded-full border border-gf-border py-2"><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{showMonths ? 'Ocultar meses' : 'Ver líderes mes por mes'}</Text></Pressable>
-          {showMonths && champions.months.map((item) => <View key={item.label} className="gap-1 border-t border-gf-border py-2">
-            <Text className="font-inter-semibold text-sm text-gf-text">{item.label} · {money(item.total)}</Text>
-            {item.biggestTransaction && <Text className="font-inter text-xs text-gf-text-muted">Mayor: {item.biggestTransaction.name} · {money(item.biggestTransaction.amount)}</Text>}
-            {item.biggestCategory && <Text className="font-inter text-xs text-gf-text-muted">Categoría: {item.biggestCategory.name} · {money(item.biggestCategory.total)}</Text>}
-          </View>)}
+          <View className="flex-row gap-2">
+            <Pressable accessibilityRole="button" onPress={() => setKind('category')} className="flex-1 items-center rounded-full border border-gf-border py-2.5"><Text className="font-inter-semibold text-sm text-gf-text">Ver líderes mes por mes</Text></Pressable>
+            <Pressable accessibilityRole="button" onPress={() => setAnalysis(true)} className="flex-1 items-center rounded-full py-2.5" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver análisis</Text></Pressable>
+          </View>
         </>}
       </Card>
-
-      <DetailSheet visible={openBiggest} title="Mayores gastos · 12 meses" subtitle={`${windowMovements.length} movimientos en el periodo`} onClose={() => setOpenBiggest(false)}>
-        <Text className="font-inter-semibold text-base text-gf-text">Movimientos más grandes</Text>
-        {topMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setOpenBiggest(false); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/history' } }); }} />)}
-        <Text className="pt-3 font-inter-semibold text-base text-gf-text">Categorías con más gasto</Text>
-        {topCategories.map((category) => <View key={category.name} className="flex-row items-center gap-3 border-t border-gf-border py-2"><CategoryBadge icon={category.icon} color={category.color} size={30} /><Text className="flex-1 font-inter-medium text-sm text-gf-text">{category.name}</Text><Text className="font-inter-semibold text-sm text-gf-text">{money(category.value)}</Text></View>)}
-      </DetailSheet>
+      <ChampionsSheet kind={kind} months={champions.months} currency={currency} onClose={() => setKind(null)} />
+      <SpendAnalysisSheet patterns={patterns} visible={analysis} onClose={() => setAnalysis(false)} />
 
       <Card title="Suscripciones recurrentes" info={{ title: 'Suscripciones recurrentes', text: 'Cargos que se repiten con frecuencia mensual. Toca uno para revisar sus fechas, importes y posibles duplicados.' }}>
         {subscriptions.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No se detectaron pagos recurrentes en este periodo.</Text>}
