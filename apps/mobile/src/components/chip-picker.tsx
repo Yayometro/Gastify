@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, useColorScheme } from 'react-native';
 
 import { CategoryBadge } from '@/components/category-badge';
 import { PickerModal } from '@/components/picker-modal';
+import { glassFill } from '@/components/ui/glass-fill';
 import { Colors } from '@/constants/theme';
 
 export type ChipItem = { id: string; label: string; icon?: string | null; color?: string | null; detail?: string };
@@ -58,10 +59,7 @@ function ChipsRow({
               accessibilityState={{ selected }}
               onPress={() => onPress(item.id)}
               className="flex-row items-center gap-2 rounded-full border px-3 py-2"
-              style={{
-                borderColor: selected ? colors.accent : colors.border,
-                backgroundColor: selected ? colors.accentSoft : colors.backgroundElement,
-              }}>
+              style={selected ? { borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.accentSoft } : { borderWidth: 1, borderColor: colors.border, ...glassFill(scheme === 'dark', colors.backgroundElement) }}>
               {item.icon ? <CategoryBadge icon={item.icon} color={item.color} size={24} /> : null}
               <Text className="font-inter-medium text-sm" style={{ color: selected ? colors.accent : colors.text }}>
                 {item.label}

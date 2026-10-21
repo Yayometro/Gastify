@@ -29,8 +29,8 @@ export function GlassSurface({
   const washColors: [string, string] = dark
     ? variant === 'nav'
       ? smoked
-        ? ['rgba(46,28,90,0.72)', 'rgba(22,12,46,0.78)']
-        : ['rgba(36,20,72,0.50)', 'rgba(14,7,32,0.58)']
+        ? ['rgba(78,52,140,0.46)', 'rgba(40,24,84,0.54)']
+        : ['rgba(255,255,255,0.14)', 'rgba(70,40,130,0.20)']
       : ['rgba(255,255,255,0.14)', 'rgba(255,255,255,0.06)']
     : variant === 'nav'
       ? ['#ffffff', '#f1ecf9']
@@ -39,7 +39,7 @@ export function GlassSurface({
   return (
     <View style={[{ borderRadius: radius, overflow: 'hidden' }, style]}>
       {dark && Platform.OS === 'ios' && (
-        <BlurView intensity={variant === 'nav' ? 45 : 30} tint="dark" style={StyleSheet.absoluteFill} />
+        <BlurView intensity={variant === 'nav' ? 70 : 30} tint="dark" style={StyleSheet.absoluteFill} />
       )}
       <LinearGradient colors={washColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
       {dark && (

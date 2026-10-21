@@ -1,14 +1,28 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { Pressable, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { InfoTip, type InfoText } from '@/components/info-tip';
 import { GlassSurface } from '@/components/ui/glass';
 
+// Inside a `PairedColumn` a card stretches to the height of its row, so two cards side by side end at the same line.
+const FillHeightContext = createContext(false);
+
+// One half of a row of two cards (iPad): both halves are as tall as the taller one.
+export function PairedColumn({ children }: { children: ReactNode }) {
+  return (
+    <FillHeightContext.Provider value>
+      <View style={{ flex: 1 }}>{children}</View>
+    </FillHeightContext.Provider>
+  );
+}
+
 // A rounded surface, the same as the web's cards. The optional title sits on the left; on the right, the optional
 // action (a link, a button) and, when `info` is given, the "?" in the top right corner.
 export function Card({ title, info, action, onTitlePress, style, children }: { title?: string; info?: InfoText; action?: ReactNode; onTitlePress?: () => void; style?: StyleProp<ViewStyle>; children?: ReactNode }) {
+  const fill = useContext(FillHeightContext);
   return (
-    <GlassSurface style={[{ padding: 16, gap: 12 }, style]}>
+    <GlassSurface style={[{ padding: 16, gap: 12 }, fill ? { flexGrow: 1 } : null, style]}>
+      <FillHeightContext.Provider value={false}>
       {title || action || info ? (
         <View className="flex-row items-center justify-between gap-3">
           {title ? onTitlePress ? (
@@ -23,6 +37,7 @@ export function Card({ title, info, action, onTitlePress, style, children }: { t
         </View>
       ) : null}
       {children}
+      </FillHeightContext.Provider>
     </GlassSurface>
   );
 }

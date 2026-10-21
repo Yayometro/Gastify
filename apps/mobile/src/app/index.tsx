@@ -15,7 +15,7 @@ import { MovementRow } from '@/components/movements/movement-row';
 import { PeriodControls } from '@/components/period-controls';
 import { Screen } from '@/components/screen';
 import { SummaryCarousel } from '@/components/home/summary-carousel';
-import { Card } from '@/components/ui/card';
+import { Card, PairedColumn } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
 import { usePeriod } from '@/hooks/use-period';
@@ -121,19 +121,19 @@ export default function HomeScreen() {
       <InsightsWidget insights={insights} currency={currency} onOpenAnalyzer={() => router.push({ pathname: '/more/analyzer', params: { month: `${(period.preset === 'month' ? period.month : period.now).getFullYear()}-${String((period.preset === 'month' ? period.month : period.now).getMonth() + 1).padStart(2, '0')}` } })} />
       {wide ? (
         <>
-          <View className="flex-row items-start gap-4">
-            <View className="flex-1">
+          <View className="flex-row items-stretch gap-4">
+            <PairedColumn>
       <SummaryWidget summary={summary} movements={inPeriod} allMovements={transactions.data} currency={currency} />
-            </View>
-            <View className="flex-1">
+            </PairedColumn>
+            <PairedColumn>
       <TopRanking movements={transactions.data} currency={currency} defaultPreset="thisMonth" />
-            </View>
+            </PairedColumn>
           </View>
-          <View className="flex-row items-start gap-4">
-            <View className="flex-1">
+          <View className="flex-row items-stretch gap-4">
+            <PairedColumn>
       <BudgetsWidget />
-            </View>
-            <View className="flex-1">
+            </PairedColumn>
+            <PairedColumn>
       <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los cinco movimientos con la fecha más reciente de toda tu cuenta, sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <Muted>Cargando…</Muted>
@@ -143,7 +143,7 @@ export default function HomeScreen() {
           latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/' } })} />)
         )}
       </Card>
-            </View>
+            </PairedColumn>
           </View>
         </>
       ) : (

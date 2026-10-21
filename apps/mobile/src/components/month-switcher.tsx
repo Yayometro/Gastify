@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { MonthGridModal } from '@/components/month-grid-modal';
+import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { monthTitleEs } from '@gastify/core/format/spanishDates';
 
@@ -26,7 +27,8 @@ export function MonthSwitcher({
   const shift = (delta: number) => onChange(new Date(value.getFullYear(), value.getMonth() + delta, 1));
 
   return (
-    <View className="flex-row items-center justify-between rounded-full bg-gf-surface px-2 py-1" style={{ minHeight: 52 }}>
+    <GlassSurface radius={26} style={{ minHeight: 52 }}>
+    <View className="flex-row items-center justify-between px-2 py-1" style={{ minHeight: 52 }}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Mes anterior"
@@ -52,5 +54,6 @@ export function MonthSwitcher({
       </Pressable>
       <MonthGridModal visible={pickerOpen} value={value} latest={latest} onPick={(month) => onChange(month)} onClose={() => setPickerOpen(false)} />
     </View>
+    </GlassSurface>
   );
 }

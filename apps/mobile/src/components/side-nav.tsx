@@ -31,6 +31,7 @@ const BEFORE_ADD: Item[] = [
 ];
 const AFTER_ADD: Item[] = [
   { key: 'accounts', label: 'Cuentas', href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => <MaterialIcons name="account-balance" size={26} color={c} /> },
+  { key: 'analyzer', label: 'Analizador de cartera', href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => <Ionicons name="analytics-outline" size={26} color={c} /> },
   { key: 'history', label: 'Historial', href: '/more/history', active: (p) => is(p, '/more/history'), icon: (c) => <FontAwesome6 name="clock-rotate-left" size={22} color={c} /> },
   { key: 'categories', label: 'Categorías', href: '/more/categories', active: (p) => is(p, '/more/categories'), icon: (c) => <MaterialIcons name="category" size={26} color={c} /> },
 ];

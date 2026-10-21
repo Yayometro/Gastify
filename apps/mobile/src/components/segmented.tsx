@@ -1,5 +1,6 @@
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
+import { glassFill } from '@/components/ui/glass-fill';
 import { Colors } from '@/constants/theme';
 
 // Two or three exclusive options side by side (Gasto / Ingreso / Transferencia).
@@ -15,7 +16,7 @@ export function Segmented<T extends string>({
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   return (
-    <View className="flex-row rounded-full bg-gf-surface p-1">
+    <View className="flex-row rounded-full p-1" style={glassFill(scheme === 'dark', colors.backgroundElement)}>
       {options.map((option) => {
         const selected = option.value === value;
         return (

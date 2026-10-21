@@ -53,8 +53,13 @@ export function MovementRow({
       accessibilityRole="button"
       accessibilityLabel={`${title}, ${sign}${amount}`}
       accessibilityState={{ selected }}
-      className="flex-row items-center gap-3 rounded-2xl px-2 py-2.5"
-      style={{ backgroundColor: selected ? colors.accentSoft : 'transparent', ...(divider ? { borderRadius: 0, borderBottomWidth: 1, borderBottomColor: colors.border } : {}) }}>
+      className="flex-row items-center gap-3 rounded-2xl px-2.5 py-2.5"
+      style={[
+        // Dark mode: each movement is its own frosted-glass tile instead of blending into the background.
+        { backgroundColor: selected ? colors.accentSoft : scheme === 'dark' && !divider ? 'rgba(255,255,255,0.08)' : 'transparent' },
+        scheme === 'dark' && !divider && !selected ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', marginVertical: 3 } : null,
+        divider ? { borderRadius: 0, borderBottomWidth: 1, borderBottomColor: colors.border } : null,
+      ]}>
       <CategoryBadge icon={category?.icon} color={category?.color} size={44} />
       <View className="flex-1 gap-0.5">
         <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>

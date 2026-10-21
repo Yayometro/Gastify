@@ -17,7 +17,9 @@ import { useToast } from '@/components/toast';
 import { ToolsSheet } from '@/components/tools/tools-fab';
 import { TotalsCard } from '@/components/totals-card';
 import { Card } from '@/components/ui/card';
-import { BottomTabInset, Colors, MaxContentWidth } from '@/constants/theme';
+import { glassFill } from '@/components/ui/glass-fill';
+import { BottomTabInset, Colors, MaxContentWidth, TabletContentWidth } from '@/constants/theme';
+import { useIsTablet } from '@/hooks/use-device-class';
 import { useCatalog } from '@/hooks/use-catalog';
 import { reloadAfterWrite, useRefreshAppData } from '@/hooks/use-load-app-data';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
@@ -65,6 +67,7 @@ export default function MovementsScreen() {
   const currency = usePrimaryCurrency();
   const { accounts, categories, subCategories } = useCatalog();
   const { refresh, refreshing } = useRefreshAppData();
+  const tablet = useIsTablet();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
@@ -259,7 +262,8 @@ export default function MovementsScreen() {
         accessibilityRole="button"
         accessibilityState={{ expanded: filtersOpen }}
         onPress={() => setFiltersOpen((open) => !open)}
-        className="flex-row items-center justify-between rounded-full border border-gf-border bg-gf-surface px-5 py-3">
+        className="flex-row items-center justify-between rounded-full border border-gf-border px-5 py-3"
+        style={glassFill(scheme === 'dark', colors.backgroundElement)}>
         <View className="flex-row items-center gap-2">
           <Ionicons name="options-outline" size={20} color={colors.accent} />
           <Text className="font-inter-semibold text-base text-gf-text">Filtros{active > 0 ? ` (${active})` : ''}</Text>
@@ -357,7 +361,7 @@ export default function MovementsScreen() {
             );
           }}
           renderSectionHeader={({ section }) => <Text className="pb-1 pt-4 font-inter-semibold text-sm text-gf-text-muted">{section.title}</Text>}
-          ItemSeparatorComponent={() => <View className="h-px bg-gf-border" />}
+          ItemSeparatorComponent={() => <View style={{ height: scheme === 'dark' ? 0 : 1, backgroundColor: colors.border }} />}
           ListHeaderComponent={header}
           ListEmptyComponent={
             loading ? (
@@ -368,7 +372,7 @@ export default function MovementsScreen() {
           }
           stickySectionHeadersEnabled={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: BottomTabInset + 24 }}
+          contentContainerStyle={{ width: '100%', maxWidth: tablet ? TabletContentWidth : MaxContentWidth, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: BottomTabInset + 24 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
           showsVerticalScrollIndicator={false}
           onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
