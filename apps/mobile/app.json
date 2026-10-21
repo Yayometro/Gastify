@@ -12,7 +12,16 @@
       "bundleIdentifier": "com.yayometro.gastify",
       "associatedDomains": [
         "webcredentials:gastify-jair-vazquez-navarretes-projects.vercel.app"
-      ]
+      ],
+      "supportsTablet": true,
+      "infoPlist": {
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {

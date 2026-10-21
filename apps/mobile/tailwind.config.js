@@ -7,6 +7,7 @@ module.exports = {
       // Inter, loaded in src/app/_layout.tsx. React Native picks a font per weight, so each weight
       // is its own family: font-inter, font-inter-medium, font-inter-semibold, font-inter-bold.
       fontFamily: {
+        'inter-thin': ['Inter_200ExtraLight'],
         inter: ['Inter_400Regular'],
         'inter-medium': ['Inter_500Medium'],
         'inter-semibold': ['Inter_600SemiBold'],

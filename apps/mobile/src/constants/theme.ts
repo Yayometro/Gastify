@@ -75,3 +75,5 @@ export const Spacing = {
 // Room a screen leaves at the bottom for the floating tab bar (64 high + its offset + a gap).
 export const BottomTabInset = Platform.select({ ios: 104, default: 112 });
 export const MaxContentWidth = 800;
+// The content column on wide screens (iPad): the web's desktop layout is wide, so it is not held to the phone's width.
+export const TabletContentWidth = 1280;

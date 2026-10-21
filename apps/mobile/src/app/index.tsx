@@ -8,6 +8,8 @@ import { AccountsCarousel } from '@/components/home/accounts-carousel';
 import { BudgetsWidget } from '@/components/home/budgets-widget';
 import { InsightsWidget } from '@/components/home/insights-widget';
 import { SummaryWidget } from '@/components/home/summary-widget';
+import { TabletWalletHeader } from '@/components/home/tablet-wallet-header';
+import { useIsTablet } from '@/hooks/use-device-class';
 import { TopRanking } from '@/components/top-ranking';
 import { MovementRow } from '@/components/movements/movement-row';
 import { PeriodControls } from '@/components/period-controls';
@@ -66,6 +68,7 @@ export default function HomeScreen() {
   const rates = useRatesToPrimary(accounts.map((account) => account.currency), currency);
   const accountTotal = useMemo(() => totalInPrimary(accounts, currency, rates), [accounts, currency, rates]);
 
+  const tablet = useIsTablet();
   const firstName = session?.user.name?.split(' ')[0];
   const loadingMovements = transactions.status === 'loading' && transactions.data.length === 0;
 
@@ -74,21 +77,24 @@ export default function HomeScreen() {
       title={firstName ? `Hola, ${firstName}` : 'Inicio'}
       subtitle={period.preset === 'month' ? period.label : rangeLabelEs(period.range.start, period.range.end)}
       refreshing={refreshing}
-      onRefresh={refresh}>
+      onRefresh={refresh}
+      hero={<TabletWalletHeader name={session?.user.name ?? undefined} accounts={accounts} totals={summary.totals} previous={previous.totals} currency={currency} rangeText={`Del ${period.range.start.toLocaleDateString('es-MX')} al ${period.range.end.toLocaleDateString('es-MX')}.`} />}>
       {transactions.status === 'failed' && (
         <Text className="font-inter text-sm text-red-500">No pudimos cargar tus movimientos. Desliza hacia abajo para intentarlo de nuevo.</Text>
       )}
 
       <PeriodControls period={period} years={yearsWithMovements(transactions.data)} />
 
-      <SummaryCarousel
-        title={period.preset === 'month' ? 'Este mes' : 'Del periodo'}
-        totals={summary.totals}
-        previous={previous.totals}
-        currency={currency}
-        accounts={accounts}
-        accountsTotal={accountTotal}
-      />
+      {!tablet && (
+        <SummaryCarousel
+          title={period.preset === 'month' ? 'Este mes' : 'Del periodo'}
+          totals={summary.totals}
+          previous={previous.totals}
+          currency={currency}
+          accounts={accounts}
+          accountsTotal={accountTotal}
+        />
+      )}
 
       {accounts.length > 0 && (
         <View className="gap-3">
