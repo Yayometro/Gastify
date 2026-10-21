@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 
 import { IncomeSourcesCard } from '@/components/projections/income-sources-card';
 import { HistoricalReferencesCard } from '@/components/projections/historical-references-card';
-import { InfoTip } from '@/components/info-tip';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
@@ -28,6 +27,7 @@ import {
 } from '@gastify/core/transformers/projectionsChange';
 import { getYearMonthDateRange } from '@gastify/core/time/timeFunctions';
 import { AccuracyCard } from '@/components/projections/accuracy-card';
+import { ProjectionMonthSheet } from '@/components/projections/month-sheet';
 import type { RootState } from '@/store';
 
 type AnyRecord = Record<string, unknown>;
@@ -52,6 +52,7 @@ export default function ProjectionsScreen() {
   const [settings, setSettings] = useState<AnyRecord | null>(null);
   const [baseline, setBaseline] = useState<AnyRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [openMonth, setOpenMonth] = useState<number | null>(null);
   const today = useMemo(() => new Date(), []);
 
   useEffect(() => {
@@ -151,7 +152,7 @@ export default function ProjectionsScreen() {
       {!error && sources === null && <ActivityIndicator color={colors.accent} />}
 
       {sources !== null && (
-        <Card title="Mes a mes" info={{ title: 'Mes a mes', text: 'Cada mes del año con lo que entra (ingresos), lo que sale (gastos), el neto y el saldo. Real: ya ocurrió. Estimado: se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas. Con ≈, el saldo es una estimación hacia atrás.' }}>
+        <Card title="Mes a mes" info={{ title: 'Mes a mes', text: 'Cada mes del año en una tarjeta. Ingresos: lo que entra. Gastos: lo que sale. Neto: ingresos menos gastos (verde si sobra, rojo si falta). Saldo: el dinero que tendrías al cierre del mes en tu moneda principal. «Real» es un mes que ya ocurrió, con tus movimientos; «Estimado» se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas; «Este mes» arranca como estimado y se llena con lo real. Con ≈, el saldo es una estimación hecha hacia atrás cuando no guardaste el saldo real. Todas las cifras están en tu moneda principal. Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.' }}>
           {inputs.missing.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
               {`Todavía no hay tipo de cambio para ${inputs.missing.join(', ')}: esas cifras se muestran sin convertir.`}
@@ -166,7 +167,7 @@ export default function ProjectionsScreen() {
             const balanceText = (entry: { balance?: number | null; estimatedBalance?: number | null } | undefined) =>
               typeof entry?.balance === 'number' ? money(entry.balance) : typeof entry?.estimatedBalance === 'number' ? `≈ ${money(entry.estimatedBalance)}` : '—';
             return (
-              <View key={`${row.monthName}-${index}`} className="gap-1 border-t border-gf-border pt-3">
+              <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={`Abrir ${row.monthName}`} onPress={() => setOpenMonth(index)} className="gap-1 border-t border-gf-border pt-3">
                 <View className="flex-row items-center justify-between">
                   <Text className="font-inter-semibold text-base capitalize text-gf-text">{MONTHS_ES[index] ?? row.monthName}</Text>
                   <Text className="font-inter-medium text-xs" style={{ color: row.type === 'estimate' ? colors.accent : colors.textSecondary }}>{TYPE_LABEL[row.type]}</Text>
@@ -181,10 +182,7 @@ export default function ProjectionsScreen() {
                     <Text className="font-inter-medium text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(expense ?? 0)}</Text>
                   </View>
                   <View className="flex-1">
-                    <View className="flex-row items-center gap-1" style={{ minHeight: 22 }}>
-                      <Text className="font-inter text-xs text-gf-text-muted">Neto</Text>
-                      <InfoTip info={{ title: 'Neto', text: 'Lo que entra menos lo que sale en el mes: ingresos menos gastos. Verde si sobra dinero, rojo si falta.' }} />
-                    </View>
+                    <Text className="font-inter text-xs text-gf-text-muted" style={{ minHeight: 22 }}>Neto</Text>
                     <Text className="font-inter-semibold text-sm" numberOfLines={1} adjustsFontSizeToFit style={{ color: net < 0 ? colors.expense : colors.income }}>{money(net)}</Text>
                   </View>
                   <View className="flex-1">
@@ -194,14 +192,14 @@ export default function ProjectionsScreen() {
                     </Text>
                   </View>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
-          <Text className="font-inter text-xs text-gf-text-muted">Los meses reales muestran lo que ya ocurrió; los estimados, lo que se proyecta.</Text>
+          <Text className="font-inter text-xs text-gf-text-muted">Los meses reales muestran lo que ya ocurrió; los estimados, lo que se proyecta. Toca un mes para abrirlo.</Text>
         </Card>
       )}
 
-      {sources !== null && <AccuracyCard rows={accuracyRows as never} currency={currency} />}
+      {sources !== null && <AccuracyCard rows={accuracyRows as never} currency={currency} onMonthPress={(name) => { const found = rows.findIndex((r) => r.monthName === name); if (found >= 0) setOpenMonth(found); }} />}
 
       {sources !== null && (
         <IncomeSourcesCard sources={sources} currency={currency} onChanged={reload} />
@@ -209,6 +207,18 @@ export default function ProjectionsScreen() {
       {sources !== null && (
         <HistoricalReferencesCard baseline={baseline} currency={currency} onChanged={reload} />
       )}
+      <ProjectionMonthSheet
+        row={openMonth !== null ? rows[openMonth] ?? null : null}
+        monthIndex={openMonth ?? 0}
+        year={year}
+        currency={currency}
+        transactions={transactions}
+        budgets={inputs.budgets as never[]}
+        incomeSources={inputs.sources as never[]}
+        settings={settings}
+        onSaved={(next) => setSettings(next)}
+        onClose={() => setOpenMonth(null)}
+      />
     </Screen>
   );
 }

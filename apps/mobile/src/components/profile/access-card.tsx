@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch } from 'react-redux';
 
 import { authClient } from '@/auth-client';
@@ -8,6 +8,7 @@ import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
+import { Colors } from '@/constants/theme';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { updateUser, type UserData } from '@gastify/core/features/userSlice';
@@ -18,6 +19,7 @@ import { validateEmailAddress, validateNewPassword } from '@gastify/core/profile
 export function AccessCard({ email }: { email: string }) {
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
+  const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [newEmail, setNewEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [emailBusy, setEmailBusy] = useState(false);
@@ -77,7 +79,7 @@ export function AccessCard({ email }: { email: string }) {
           <Text className="font-inter-semibold text-base text-gf-text">Cambiar correo</Text>
           <Text className="font-inter text-sm text-gf-text-muted" numberOfLines={1}>{email}</Text>
         </View>
-        <Text className="font-inter text-lg text-gf-text-muted">{openForm === 'email' ? '⌃' : '⌄'}</Text>
+        <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{openForm === 'email' ? 'Cerrar' : 'Editar'}</Text></View>
       </Pressable>
       {openForm === 'email' && (
         <View className="gap-3">
@@ -94,7 +96,7 @@ export function AccessCard({ email }: { email: string }) {
           <Text className="font-inter-semibold text-base text-gf-text">Cambiar contraseña</Text>
           <Text className="font-inter text-sm text-gf-text-muted">Mínimo 8 caracteres, una mayúscula y un carácter especial.</Text>
         </View>
-        <Text className="font-inter text-lg text-gf-text-muted">{openForm === 'password' ? '⌃' : '⌄'}</Text>
+        <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{openForm === 'password' ? 'Cerrar' : 'Editar'}</Text></View>
       </Pressable>
       {openForm === 'password' && (
         <View className="gap-3">

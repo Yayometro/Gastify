@@ -1,4 +1,4 @@
-import { Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
@@ -14,57 +14,59 @@ export type AccuracyRow = {
   varianceExpense?: number;
 };
 
-// "Precisión de tus proyecciones": for each closed month, what was projected against what really happened, and the
-// difference. A positive income difference is good news and a positive expense difference is bad news, so the
-// colors are mirrored between the two lines, as on the web.
-export function AccuracyCard({ rows, currency }: { rows: AccuracyRow[]; currency: string }) {
+const ACCURACY_HELP = [
+  'PROYECTADO VS. REAL',
+  '«Proyectado» es lo que esperabas para ese mes según lo que tenías configurado en ese momento (tope, o tu referencia histórica); no se recalcula después, así que editar hoy un mes ya cerrado no cambia lo que ese mes «proyectaba». «Real» es lo que tus movimientos dicen que pasó de verdad.',
+  'DESAJUSTE: DOS NÚMEROS, UNO POR RENGLÓN',
+  'El de ingreso es Ingreso real menos Ingreso proyectado. El de gasto es Gasto real menos Gasto proyectado. No están relacionados entre sí: cada uno compara su propia columna.',
+  'POR QUÉ EL COLOR NO SIGUE EL SIGNO IGUAL EN LOS DOS',
+  'El color siempre significa lo mismo (verde: te fue mejor de lo esperado; rojo: te fue peor), pero «mejor» se ve distinto en cada uno. En ingreso, más dinero del proyectado es bueno: un número positivo es verde y uno negativo es rojo. En gasto, gastar menos de lo proyectado es bueno: un número negativo es verde y uno positivo es rojo. Por eso un mismo mes puede mostrar un renglón en rojo y el otro en verde: son dos comparaciones independientes, no un total combinado.',
+  'EJEMPLO',
+  'Proyectabas $50,000 de gasto y gastaste $47,000: desajuste de gasto de -$3,000, verde (gastaste menos). Proyectabas $80,000 de ingreso y ganaste $60,000: desajuste de ingreso de -$20,000, rojo (ganaste menos).',
+  'Solo se muestran meses cerrados con un historial de proyección registrado. Toca un mes para ver su detalle.',
+].join('\n\n');
+
+// "Precisión de tus proyecciones": for each closed month, what was projected against what really happened and the
+// difference, laid out as a small table (rows: income and spending; columns: projected, real, difference). A positive
+// income difference is good news and a positive expense difference is bad news, so the colors are mirrored.
+export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   if (rows.length === 0) return null;
   const money = (value: number | undefined) => formatMoneyMajor(value ?? 0, currency, { showCode: false });
 
-  const variance = (label: string, value: number | undefined, betterWhenPositive: boolean) => {
-    const amount = value ?? 0;
+  const line = (label: string, projected: number | undefined, real: number | undefined, diff: number | undefined, betterWhenPositive: boolean, tone: string) => {
+    const amount = diff ?? 0;
     const neutral = amount === 0;
     const better = betterWhenPositive ? amount > 0 : amount < 0;
     const color = neutral ? colors.text : better ? colors.income : colors.expense;
     return (
-      <Text className="font-inter text-sm text-gf-text-muted">
-        {label}: <Text className="font-inter-semibold" style={{ color }}>{amount > 0 ? '+' : ''}{money(amount)}</Text>
-      </Text>
+      <View className="flex-row items-center gap-2 py-1.5">
+        <Text className="w-14 font-inter-medium text-xs text-gf-text-muted">{label}</Text>
+        <Text className="flex-1 text-right font-inter text-xs text-gf-text-muted" numberOfLines={1} adjustsFontSizeToFit>{money(projected)}</Text>
+        <Text className="flex-1 text-right font-inter-semibold text-xs" style={{ color: tone }} numberOfLines={1} adjustsFontSizeToFit>{money(real)}</Text>
+        <View className="flex-[1.2] flex-row items-center justify-end gap-1">
+          <Text style={{ color: neutral ? '#f59e0b' : color, fontWeight: '700', fontSize: 12 }}>{neutral ? '▬' : amount > 0 ? '▲' : '▼'}</Text>
+          <Text className="font-inter-semibold text-xs" style={{ color }} numberOfLines={1} adjustsFontSizeToFit>{amount > 0 ? '+' : ''}{money(amount)}</Text>
+        </View>
+      </View>
     );
   };
 
   return (
-    <Card
-      title="Precisión de tus proyecciones"
-      info={{
-        title: 'Precisión de tus proyecciones',
-        text: 'Compara, mes cerrado por mes cerrado, lo que proyectaste con lo que pasó de verdad. En ingresos, más de lo proyectado es mejor (verde); en gastos, menos de lo proyectado es mejor (verde).',
-      }}>
+    <Card title="Precisión de tus proyecciones" info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP }}>
       {rows.map((row) => (
-        <View key={row.monthName} className="gap-1 border-t border-gf-border pt-3">
+        <Pressable key={row.monthName} accessibilityRole="button" onPress={() => onMonthPress?.(row.monthName)} className="border-t border-gf-border pt-3">
           <Text className="font-inter-semibold text-base capitalize text-gf-text">{row.monthName}</Text>
-          <View className="flex-row gap-3">
-            <View className="flex-1 gap-0.5">
-              <Text className="font-inter text-xs text-gf-text-muted">Ingreso proyectado</Text>
-              <Text className="font-inter-medium text-sm text-gf-text-muted">{money(row.projectedIncome)}</Text>
-              <Text className="font-inter text-xs text-gf-text-muted">Ingreso real</Text>
-              <Text className="font-inter-semibold text-sm" style={{ color: colors.income }}>{money(row.actualIncome)}</Text>
-            </View>
-            <View className="flex-1 gap-0.5">
-              <Text className="font-inter text-xs text-gf-text-muted">Gasto proyectado</Text>
-              <Text className="font-inter-medium text-sm text-gf-text-muted">{money(row.projectedExpense)}</Text>
-              <Text className="font-inter text-xs text-gf-text-muted">Gasto real</Text>
-              <Text className="font-inter-semibold text-sm" style={{ color: colors.expense }}>{money(row.actualExpense)}</Text>
-            </View>
+          <View className="flex-row items-center gap-2 pt-1">
+            <Text className="w-14" />
+            <Text className="flex-1 text-right font-inter-medium text-[10px] uppercase text-gf-text-muted">Proyectado</Text>
+            <Text className="flex-1 text-right font-inter-medium text-[10px] uppercase text-gf-text-muted">Real</Text>
+            <Text className="flex-[1.2] text-right font-inter-medium text-[10px] uppercase text-gf-text-muted">Desajuste</Text>
           </View>
-          <View className="gap-0.5 pt-1">
-            <Text className="font-inter-medium text-xs text-gf-text-muted">Desajuste</Text>
-            {variance('Ingreso', row.varianceIncome, true)}
-            {variance('Gasto', row.varianceExpense, false)}
-          </View>
-        </View>
+          {line('Ingreso', row.projectedIncome, row.actualIncome, row.varianceIncome, true, colors.income)}
+          {line('Gasto', row.projectedExpense, row.actualExpense, row.varianceExpense, false, colors.expense)}
+        </Pressable>
       ))}
       <Text className="font-inter text-xs text-gf-text-muted">Solo se muestran meses cerrados con un historial de proyección registrado.</Text>
     </Card>

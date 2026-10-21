@@ -37,7 +37,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 // The account: photo or initials, the data the web's profile shows and the two fields the phone can change
-// (name and phone). The password, the photo and the two-step verification are managed on the web.
+// (name and phone), then how the person signs in (e-mail and password) right under it.
 export default function ProfileScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
@@ -112,6 +112,8 @@ export default function ProfileScreen() {
         <GradientButton label="Guardar cambios" onPress={save} loading={saving} disabled={saving || unchanged} />
       </Card>
 
+      <AccessCard email={email} />
+
       <AppearanceCard />
 
       <Card title="Cuenta">
@@ -120,7 +122,6 @@ export default function ProfileScreen() {
         {created && !Number.isNaN(created.getTime()) && <InfoRow label="Miembro desde" value={longDateEs(created)} />}
       </Card>
 
-      <AccessCard email={email} />
       <TwoFactorCard />
       <PasskeysCard />
       <ApiTokensCard />
