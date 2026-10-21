@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Animated, Easing, Modal, Pressable, StyleSheet, View, useColorScheme, type DimensionValue, useWindowDimensions } from 'react-native';
+import { Animated, Easing, Keyboard, Modal, Platform, Pressable, StyleSheet, View, useColorScheme, type DimensionValue, useWindowDimensions } from 'react-native';
 
 import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
 import { Colors } from '@/constants/theme';
@@ -13,6 +13,13 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
   const { width, height } = useWindowDimensions();
   const wide = width >= 768;
   const [mounted, setMounted] = useState(visible);
+  // The keyboard rises over the sheet: lift it by the keyboard's height so the field being typed in stays visible.
+  const [keyboard, setKeyboard] = useState(0);
+  useEffect(() => {
+    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', (event) => setKeyboard(event.endCoordinates.height));
+    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboard(0));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
   const fade = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(height)).current;
 
@@ -41,13 +48,14 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
   }, [visible, height, fade, slide]);
 
   // The cap in pixels, so the sheet itself (and its ambient glow) is never taller than the screen allows and a long list scrolls inside it.
-  const maxPx = typeof maxHeight === 'string' && maxHeight.endsWith('%') ? (height * parseFloat(maxHeight)) / 100 : typeof maxHeight === 'number' ? maxHeight : undefined;
+  const available = Math.max(200, height - keyboard);
+  const maxPx = typeof maxHeight === 'string' && maxHeight.endsWith('%') ? Math.min((height * parseFloat(maxHeight)) / 100, available - 24) : typeof maxHeight === 'number' ? Math.min(maxHeight, available - 24) : undefined;
   const bottomRadius = wide ? 28 : 0;
   const radii = { borderTopLeftRadius: 28, borderTopRightRadius: 28, borderBottomLeftRadius: bottomRadius, borderBottomRightRadius: bottomRadius };
 
   return (
     <Modal visible={mounted} transparent animationType="none" onRequestClose={dismissible ? onClose : undefined} statusBarTranslucent>
-      <View style={{ flex: 1, justifyContent: wide ? 'center' : 'flex-end', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: wide ? 'center' : 'flex-end', alignItems: 'center', paddingBottom: keyboard }}>
         <Animated.View style={[StyleSheet.absoluteFill, { opacity: fade }]}>
           <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" disabled={!dismissible} onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
         </Animated.View>
