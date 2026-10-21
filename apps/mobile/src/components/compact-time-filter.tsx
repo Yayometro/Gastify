@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { ChipPicker } from '@/components/chip-picker';
@@ -22,6 +22,7 @@ export function CompactTimeFilter({
   customTo,
   onCustomTo,
   includeDashboard = false,
+  extra,
 }: {
   preset: Preset;
   onPreset: (value: Preset) => void;
@@ -33,6 +34,8 @@ export function CompactTimeFilter({
   customTo: string;
   onCustomTo: (value: string) => void;
   includeDashboard?: boolean;
+  // More controls that belong with the period (a comparison switch, for instance), shown inside "Más filtros".
+  extra?: ReactNode;
 }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -68,6 +71,7 @@ export function CompactTimeFilter({
               <DateField label="Hasta" value={customTo} onChange={onCustomTo} />
             </View>
           )}
+          {extra}
         </View>
       )}
     </View>

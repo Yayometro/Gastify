@@ -15,6 +15,8 @@ import { Colors } from '@/constants/theme';
 import type { InfoText } from '@/components/info-tip';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { GfSwitch } from '@/components/ui/switch';
+import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import { compareRange, historyRange, type HistoryPreset } from '@gastify/core/history/periodComparison';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
@@ -45,6 +47,7 @@ export function TopRanking({
   const [size, setSize] = useState<TopSize>(6);
   const [kind, setKind] = useState<'bills' | 'incomes'>('bills');
   const [by, setBy] = useState<'categories' | 'movements'>('categories');
+  const [compareOn, setCompareOn] = useState(false);
   // The category whose movements are open in the sheet (tap a category row).
   const [openCategory, setOpenCategory] = useState<{ name: string; previous: boolean } | null>(null);
   const scheme = useColorScheme();
@@ -72,7 +75,15 @@ export function TopRanking({
 
   return (
     <Card title={`Top ${size}`} info={info ?? { title: `Top ${size}`, text: 'Las categorías o transacciones con mayor gasto o ingreso del periodo. Cambia el número de elementos, el tipo y la agrupación; las flechas eligen otro mes y Más filtros abre los demás periodos. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo.' }}>
-      <CompactTimeFilter preset={preset} onPreset={(value) => { if (value !== 'dashboard') setPreset(value); }} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} />
+      <CompactTimeFilter preset={preset} onPreset={(value) => { if (value !== 'dashboard') setPreset(value); }} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} extra={showComparison ? (
+        <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
+          <View className="flex-1">
+            <Text className="font-inter-medium text-base text-gf-text">Comparar con el periodo anterior</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">Muestra debajo el Top del tramo inmediato anterior, de la misma duración.</Text>
+          </View>
+          <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel="Comparar con el periodo anterior" />
+        </View>
+      ) : undefined} />
       <Segmented options={sizeOptions} value={String(size) as `${TopSize}`} onChange={(next) => setSize(Number(next) as TopSize)} />
       <Segmented options={[{ value: 'bills', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
       <Segmented options={[{ value: 'categories', label: 'Por categoría' }, { value: 'movements', label: 'Movimientos' }]} value={by} onChange={setBy} />
@@ -97,18 +108,22 @@ export function TopRanking({
             />
             </RankedRow>
           ))}
-      {showComparison && (
+      {showComparison && compareOn && (
         <View className="gap-2 border-t border-gf-border pt-3">
-          <Text className="font-inter-semibold text-sm text-gf-text">Periodo anterior</Text>
+          <Text className="font-inter-semibold text-sm text-gf-text">Periodo anterior · {rangeLabelEs(previousRange.start, previousRange.end)}</Text>
           {previousList.length === 0 && <Text className="font-inter text-xs text-gf-text-muted">Sin movimientos para comparar.</Text>}
-          {by === 'categories' ? previousCategories.map((row) => (
-            <Pressable key={row.type} accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: true })} className="flex-row items-center gap-3">
+          {by === 'categories' ? previousCategories.map((row, index) => (
+            <RankedRow key={row.type} rank={index + 1} last={index === previousCategories.length - 1}>
+            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: true })} className="flex-row items-center gap-3 py-1">
               <CategoryBadge icon={row.icon} color={row.color} size={32} />
               <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
               <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
             </Pressable>
-          )) : previousBiggest.map((movement) => (
-            <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })} />
+            </RankedRow>
+          )) : previousBiggest.map((movement, index) => (
+            <RankedRow key={String(movement._id)} rank={index + 1} last={index === previousBiggest.length - 1}>
+            <MovementRow movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })} />
+            </RankedRow>
           ))}
         </View>
       )}

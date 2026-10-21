@@ -98,7 +98,7 @@ export function ProjectionsTeaser() {
   const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
 
   return (
-    <Card title="Proyecciones" info={{ title: 'Proyecciones', text: 'Cuánto te sobraría o te faltaría cada mes del año (ingresos menos gastos), mezclando lo que ya pasó con lo proyectado. Verde: sobra. Rojo: falta. Toca "Ver el detalle" para la tabla completa.' }}>
+    <Card title="Proyecciones" info={{ title: 'Proyecciones', text: 'Cada barra es el neto del mes (ingresos − gastos). Los meses cerrados usan tus movimientos reales; los futuros se estiman con tus fuentes de ingreso, tus presupuestos y tus referencias históricas; el mes en curso mezcla ambos. Verde: sobra. Rojo: falta. Toca «Ver el detalle» para la tabla completa y el detalle de cada mes.' }}>
       <ChipPicker items={years.map((y) => ({ id: String(y), label: String(y) }))} value={String(year)} onChange={(id) => setYear(Number(id))} moreAfter={99} />
       {sources === null ? (
         <Text className="font-inter text-sm text-gf-text-muted">Calculando…</Text>

@@ -5,6 +5,7 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { CategoryBadge } from '@/components/category-badge';
 import { Colors } from '@/constants/theme';
+import { esMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { buildSpendPatternAnalysis } from '@gastify/core/transformers/spendPatternAnalysis';
 import type {
@@ -22,7 +23,7 @@ function Row({ label, right, met, bold = false }: { label: string; right: string
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
     <View className="flex-row items-center justify-between gap-3 border-t border-gf-border py-2.5">
-      <Text className={`flex-1 text-base text-gf-text ${bold ? 'font-inter-semibold' : 'font-inter'}`}>{label}</Text>
+      <Text className={`flex-1 text-base text-gf-text ${bold ? 'font-inter-semibold' : 'font-inter'}`}>{esMonthLabel(label)}</Text>
       <Text className="font-inter-semibold text-base text-gf-text">{right}</Text>
       {met !== undefined && <Text className="w-6 text-center font-inter-bold text-base" style={{ color: met ? colors.income : colors.expense }}>{met ? '✓' : '✗'}</Text>}
     </View>
@@ -159,7 +160,7 @@ export function ChampionsSheet({ kind, months, currency, onClose }: { kind: Cham
           className="flex-row items-center gap-3 border-t border-gf-border py-2.5">
           <CategoryBadge icon={champion.icon ?? champion.categoryIcon} color={champion.color ?? champion.categoryColor} size={38} />
           <View className="flex-1">
-            <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{entry.label}</Text>
+            <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{esMonthLabel(entry.label)}</Text>
             <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{champion.name}</Text>
             {kind !== 'transaction' && champion.pctOfWindowTotal !== undefined && <Text className="font-inter text-xs text-gf-text-muted">{Math.round(champion.pctOfWindowTotal)}% del total de los 12 meses</Text>}
           </View>
@@ -200,7 +201,7 @@ export function WeekdaySheet({ data, visible, currency, onClose }: { data: Walle
       {best && (
         <View className="gap-0.5 rounded-2xl p-3" style={{ backgroundColor: colors.accentSoft }}>
           <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">Semana con más gasto</Text>
-          <Text className="font-inter-bold text-lg text-gf-text">{best.label} — {money(best.total)}</Text>
+          <Text className="font-inter-bold text-lg text-gf-text">{esMonthLabel(best.label)} — {money(best.total)}</Text>
           <Text className="font-inter text-xs text-gf-text-muted">{best.count} transacciones</Text>
         </View>
       )}

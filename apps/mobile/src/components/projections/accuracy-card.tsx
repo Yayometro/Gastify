@@ -2,6 +2,7 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
+import { esMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 
 export type AccuracyRow = {
@@ -57,7 +58,7 @@ export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyR
     <Card title="Precisión de tus proyecciones" info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP }}>
       {rows.map((row) => (
         <Pressable key={row.monthName} accessibilityRole="button" onPress={() => onMonthPress?.(row.monthName)} className="border-t border-gf-border pt-3">
-          <Text className="font-inter-semibold text-base capitalize text-gf-text">{row.monthName}</Text>
+          <Text className="font-inter-semibold text-base text-gf-text">{esMonthLabel(row.monthName)}</Text>
           <View className="flex-row items-center gap-2 pt-1">
             <Text className="w-14" />
             <Text className="flex-1 text-right font-inter-medium text-[10px] uppercase text-gf-text-muted">Proyectado</Text>

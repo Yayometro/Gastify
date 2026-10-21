@@ -49,7 +49,7 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
   const chosenPrevious = open ? comparedById.get(open) : undefined;
 
   return (
-    <Card title="Presupuestos del periodo" info={{ title: 'Presupuestos del periodo', text: 'Para cada presupuesto, muestra meses dentro del límite y gasto contra meta. Si activas la comparación arriba, verás también los resultados del otro periodo. Toca una fila para revisar cada mes; ≈ indica una meta estimada.' }}>
+    <Card title="Presupuestos del periodo" info={{ title: 'Presupuestos del periodo', text: 'Para cada presupuesto se cuenta, mes por mes del periodo, cuántos meses lo gastado no superó la meta (por ejemplo 4 de 6) y se compara el gasto total contra la meta total del periodo. Si activas la comparación arriba, verás también los resultados del otro periodo. Toca una fila para revisar cada mes; ≈ indica una meta estimada (el presupuesto es más nuevo que ese mes).' }}>
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No hay presupuestos de gasto en este periodo.</Text>}
       {rows.map((row) => {
         const id = idOf(row.budget as never);

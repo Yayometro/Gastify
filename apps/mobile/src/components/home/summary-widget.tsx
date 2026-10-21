@@ -66,7 +66,7 @@ export function SummaryWidget({
   useEffect(() => setSelected(null), [kind, movements]);
 
   return (
-    <Card title="Resumen de transacciones" info={{ title: 'Resumen de transacciones', text: 'Compara gastos o ingresos del periodo elegido. Anillo, burbujas y mapa muestran la misma distribución por categoría: toca una para ver sus subcategorías y usa la flecha para regresar. El filtro de esta tarjeta puede ser distinto al de Inicio; abre Más filtros para cambiarlo.' }}>
+    <Card title="Resumen de transacciones" info={{ title: 'Resumen de transacciones', text: 'Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución; toca una categoría para ver sus subcategorías y usa la flecha para regresar. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.' }}>
       <CompactTimeFilter preset={preset} onPreset={setPreset} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
       <Segmented options={[{ value: 'spending', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
       {categories.length > 0 && <Segmented options={[{ value: 'ring', label: 'Anillo' }, { value: 'bubbles', label: 'Burbujas' }, { value: 'treemap', label: 'Mapa' }]} value={chart} onChange={setChart} />}

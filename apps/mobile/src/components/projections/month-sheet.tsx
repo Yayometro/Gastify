@@ -8,6 +8,7 @@ import { MovementRow } from '@/components/movements/movement-row';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
+import { esMonthLabel } from '@/lib/month-label';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
@@ -135,7 +136,7 @@ export function ProjectionMonthSheet({
     <DetailSheet
       visible={row !== null}
       onClose={onClose}
-      title={row ? `${row.monthName} ${year}` : ''}
+      title={row ? `${esMonthLabel(row.monthName)} ${year}` : ''}
       subtitle={row ? (row.type === 'actual' ? 'Mes cerrado: con tus movimientos reales.' : row.type === 'estimate' ? 'Mes futuro: estimado con tus presupuestos y fuentes de ingreso.' : 'Mes en curso: arranca como estimado y se llena con lo real conforme pasa el mes.') : undefined}
       info={{ title: 'Cómo leer este mes', text: 'Los meses cerrados muestran tus movimientos reales. Los futuros son un estimado puro hecho con tus presupuestos activos (gastos) y tus fuentes de ingreso (ingresos). El mes en curso mezcla ambos: empieza como estimado y se llena con lo real. Con «Ver movimientos» ves los movimientos detrás de estas cifras, y los topes de abajo sirven para sumar dinero que no está ligado a ningún presupuesto ni fuente de ingreso.' }}>
       {range && (
@@ -184,7 +185,7 @@ export function ProjectionMonthSheet({
           {chart.map((item) => (
             <View key={item.label} className="gap-1 border-t border-gf-border pt-2">
               <View className="flex-row justify-between gap-3">
-                <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{item.label}</Text>
+                <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{item.label === 'Unexpected/Other' ? 'Otros / inesperado' : item.label}</Text>
                 <Text className="font-inter text-xs text-gf-text-muted">{money(item.actual)} de {money(item.budgeted)}</Text>
               </View>
               <View className="h-2 overflow-hidden rounded-full bg-gf-surface"><View style={{ width: `${(item.budgeted / maxBar) * 100}%`, height: '100%', backgroundColor: '#a78bfa' }} /></View>

@@ -81,7 +81,7 @@ export default function AccountsScreen() {
       )}
 
       {accounts.length > 0 && (
-        <Card title="Total" info={{ title: 'Total', text: 'La suma de todas tus cuentas convertida a tu moneda principal con el tipo de cambio más reciente. Si una moneda no tiene tipo de cambio, esa cuenta no suma.' }}>
+        <Card title="Total" info={{ title: 'Total', text: 'Suma del saldo de todas tus cuentas, cada una convertida a tu moneda principal con el tipo de cambio más reciente (saldo × tasa). Si una moneda no tiene tipo de cambio, esa cuenta no suma y se avisa. Sirve para saber cuánto dinero tienes en total hoy.' }}>
           <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(total.total, currency)}</Text>
           {Object.entries(byCurrency)
             .filter(([code]) => code !== currency)

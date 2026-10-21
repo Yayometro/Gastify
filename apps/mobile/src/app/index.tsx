@@ -104,7 +104,7 @@ export default function HomeScreen() {
         </View>
       )}
       {accounts.length === 0 && accountsState.status !== 'failed' && (
-        <Card title="Cuentas" onTitlePress={() => router.push('/more/accounts')} info={{ title: 'Cuentas', text: 'Tus cuentas con su saldo actual. Las tarjetas muestran, además, lo que entró y salió de cada una en el periodo elegido arriba.' }}>
+        <Card title="Cuentas" onTitlePress={() => router.push('/more/accounts')} info={{ title: 'Cuentas', text: 'Cada tarjeta es una cuenta con su saldo actual. «Entró» y «salió» son la suma de los ingresos y gastos de esa cuenta en el periodo elegido arriba. El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente (las tarjetas de crédito no se suman a tu dinero disponible).' }}>
           <Muted>{accountsState.status === 'loading' ? 'Cargando…' : 'Todavía no tienes cuentas.'}</Muted>
         </Card>
       )}
@@ -115,7 +115,7 @@ export default function HomeScreen() {
       <TopRanking movements={transactions.data} currency={currency} defaultPreset="thisMonth" />
       <BudgetsWidget />
 
-      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los cinco movimientos más recientes de tu cuenta, sin importar el periodo de arriba. Toca uno para verlo o editarlo, o abre la lista completa.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los cinco movimientos con la fecha más reciente de toda tu cuenta, sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <Muted>Cargando…</Muted>
         ) : latest.length === 0 ? (

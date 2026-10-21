@@ -84,7 +84,7 @@ export default function HistoryScreen() {
 
   return (
     <Screen title="Historial" subtitle={labelA} backLabel="Más" onBack={() => router.back()}>
-      <Card title="Periodo" info={{ title: 'Periodo', text: 'Elige qué tramo de tiempo analizar. Puedes compararlo con otro (el mismo tramo del año anterior, el periodo anterior o uno que elijas) para ver cuánto cambió.' }}>
+      <Card title="Periodo" info={{ title: 'Periodo', text: 'Elige qué tramo de tiempo analizar; todas las tarjetas de abajo que dicen «Igual que arriba» lo siguen. Al comparar con otro periodo (el mismo tramo del año anterior, el periodo inmediato anterior de la misma duración o uno que elijas) cada cifra muestra cuánto cambió. Por defecto se analizan los últimos 3 meses.' }}>
         <ChipPicker items={HISTORY_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPreset(id as HistoryPreset)} moreAfter={99} />
         {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
         {preset === 'custom' && (
@@ -112,7 +112,7 @@ export default function HistoryScreen() {
         {partial && <Text className="font-inter text-sm text-gf-text-muted">Todavía llegan movimientos antiguos; las cifras de periodos viejos pueden crecer.</Text>}
       </Card>
 
-      <Card title="Resumen" info={{ title: 'Resumen', text: 'Ingresos, gastos y balance del periodo elegido. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje, cuánto cambió.' }}>
+      <Card title="Resumen" info={{ title: 'Resumen', text: 'Ingresos = suma de lo que entró en el periodo; gastos = suma de lo que salió; balance = ingresos − gastos. Las transferencias entre tus cuentas no cuentan. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje es (periodo − comparado) ÷ comparado; en gastos, que suba es malo (rojo) y que baje es bueno (verde).' }}>
         {[
           { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
           { label: 'Gastos', av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
@@ -142,7 +142,7 @@ export default function HistoryScreen() {
       <OwnPeriodCategories
         kind="spending"
         title="Gastos por categoría"
-        info={{ title: 'Gastos por categoría', text: 'En qué categorías se fue tu dinero, de mayor a menor. Tiene su propio periodo: por defecto el de arriba, pero puedes elegir otro sin cambiar el resto de la pantalla.' }}
+        info={{ title: 'Gastos por categoría', text: 'Suma de los gastos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo (por defecto «Igual que arriba», con su comparación si la activaste), pero puedes elegir otro sin cambiar el resto de la pantalla. Sirve para ver en qué se fue tu dinero. Toca una categoría para ver sus movimientos.' }}
         movements={transactions}
         summary={a}
         compareSummary={b}
@@ -152,7 +152,7 @@ export default function HistoryScreen() {
       <OwnPeriodCategories
         kind="incomes"
         title="Ingresos por categoría"
-        info={{ title: 'Ingresos por categoría', text: 'De dónde viene tu dinero, de mayor a menor. Tiene su propio periodo, igual que los gastos.' }}
+        info={{ title: 'Ingresos por categoría', text: 'Suma de los ingresos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo, igual que los gastos. Sirve para ver de dónde viene tu dinero. Toca una categoría para ver sus movimientos.' }}
         movements={transactions}
         summary={a}
         compareSummary={b}

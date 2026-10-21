@@ -4,6 +4,7 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
+import { esMonthLabel } from '@/lib/month-label';
 import { Explain, Indicator } from '@/components/analyzer/sheets';
 import { AnalyzerBiggest, AnalyzerBudgets, AnalyzerFxExposure, AnalyzerHighlights, AnalyzerProjection, AnalyzerWeekday } from '@/components/analyzer/supplement';
 import { CategoryBadge } from '@/components/category-badge';
@@ -64,11 +65,11 @@ export default function AnalyzerScreen() {
   const maxTrend = Math.max(1, ...trend.flatMap((item) => [item.income, item.expense]));
   const change = (current: number, previous: number) => (previous > 0 ? ((current - previous) / previous) * 100 : null);
 
-  const rows: { label: string; current: string; previous: string; delta: number | null; invert?: boolean }[] = [
+  const rows: { label: string; current: string; previous: string; delta: number | null; invert?: boolean; points?: boolean }[] = [
     { label: 'Ingresos', current: money(now_.income), previous: money(before.income), delta: change(now_.income, before.income) },
     { label: 'Gastos', current: money(now_.expense), previous: money(before.expense), delta: change(now_.expense, before.expense), invert: true },
     { label: 'Balance', current: money(now_.balance), previous: money(before.balance), delta: change(now_.balance, before.balance) },
-    { label: 'Ahorro', current: `${Math.round(now_.savingsRate * 100)}%`, previous: `${Math.round(before.savingsRate * 100)}%`, delta: null },
+    { label: 'Ahorro', current: `${Math.round(now_.savingsRate * 100)}%`, previous: `${Math.round(before.savingsRate * 100)}%`, delta: (now_.savingsRate - before.savingsRate) * 100, points: true },
     { label: 'Movimientos', current: String(now_.transactionCount), previous: String(before.transactionCount), delta: change(now_.transactionCount, before.transactionCount) },
   ];
 
@@ -99,7 +100,7 @@ export default function AnalyzerScreen() {
             <Text className="w-24 text-right font-inter-semibold text-sm text-gf-text" numberOfLines={1} adjustsFontSizeToFit>{row.current}</Text>
             <View className="w-20 flex-row items-center justify-end gap-1">
               <Indicator delta={row.delta} invert={row.invert} />
-              <Text className="font-inter-semibold text-xs text-gf-text">{pct(row.delta)}</Text>
+              <Text className="font-inter-semibold text-xs text-gf-text">{row.points && row.delta !== null ? `${row.delta >= 0 ? '+' : ''}${Math.round(row.delta)} pts` : pct(row.delta)}</Text>
             </View>
           </View>
         ))}
@@ -120,7 +121,7 @@ export default function AnalyzerScreen() {
                 <View style={{ width: 9, height: Math.max(3, (item.income / maxTrend) * 118), borderRadius: 4, backgroundColor: colors.income }} />
                 <View style={{ width: 9, height: Math.max(3, (item.expense / maxTrend) * 118), borderRadius: 4, backgroundColor: colors.expense }} />
               </View>
-              <Text className="font-inter text-[11px] text-gf-text-muted">{item.shortLabel ?? item.label.slice(0, 3)}</Text>
+              <Text className="font-inter text-[11px] text-gf-text-muted">{esMonthLabel(item.shortLabel ?? item.label.slice(0, 3)).replace(/^Mayo$/, 'May')}</Text>
             </Pressable>
           ))}
         </View>
@@ -225,7 +226,7 @@ export default function AnalyzerScreen() {
 
       <AnalyzerFxExposure rows={fxExposure.rows} loading={fxExposure.loading} missing={fxExposure.missing} currency={currency} />
       <Pressable accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Ritmo de gasto', text: 'Compara lo que llevas gastado este mes, hasta el mismo día, con lo que solías llevar en meses anteriores. Abre Ver más para revisar cada mes.' }}>
+        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Ritmo de gasto', text: 'Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.' }}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
             Al día {pace.dayOfMonth}; lo normal a esta altura es {money(pace.avgPaceForSameDay)}
@@ -238,8 +239,9 @@ export default function AnalyzerScreen() {
       <DetailSheet
         visible={detail !== null}
         onClose={() => setDetail(null)}
+        info={detail?.kind === 'month' ? { title: 'Detalle del mes', text: 'Ingresos y gastos son la suma de los movimientos del mes; balance = ingresos − gastos. El % es el cambio contra el mes anterior de la tendencia: (mes − anterior) ÷ anterior. ▲ subió, ▼ bajó y ▬ casi no cambió (menos de 0.5%). Verde = buena noticia (más ingresos o balance, menos gastos), rojo = mala, naranja = sin cambio.' } : detail?.kind === 'averages' ? { title: 'Promedio mensual', text: `Promedio de ${monthlyAverages.monthsCount} meses: la suma de ingresos, de gastos y de movimientos de los meses de la tabla ÷ ${monthlyAverages.monthsCount}. Es el mismo cálculo de la web.` } : undefined}
         title={
-          detail?.kind === 'month' ? detail.label
+          detail?.kind === 'month' ? esMonthLabel(detail.label)
           : detail?.kind === 'category' ? detail.name
           : detail?.kind === 'averages' ? 'Promedio mensual'
           : detail?.kind === 'pace' ? 'Ritmo de gasto'
@@ -257,7 +259,7 @@ export default function AnalyzerScreen() {
           ];
           return (
             <>
-              <Text className="font-inter-medium text-sm text-gf-text-muted">{detail.count} movimientos en el mes{prev ? ` · contra ${prev.label}` : ''}</Text>
+              <Text className="font-inter-medium text-sm text-gf-text-muted">{detail.count} movimientos en el mes{prev ? ` · contra ${esMonthLabel(prev.label)}` : ''}</Text>
               <View>
                 {lines.map((line) => {
                   const delta = change_(line.value, line.before);
@@ -303,7 +305,7 @@ export default function AnalyzerScreen() {
             <View>
               {trend.map((item) => (
                 <View key={item.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
-                  <Text className="w-20 font-inter-medium text-sm text-gf-text">{item.label}</Text>
+                  <Text className="w-24 font-inter-medium text-sm text-gf-text">{esMonthLabel(item.label)}</Text>
                   <Text className="flex-1 text-right font-inter-semibold text-xs" style={{ color: colors.income }} numberOfLines={1} adjustsFontSizeToFit>{money(item.income)}</Text>
                   <Text className="flex-1 text-right font-inter-semibold text-xs" style={{ color: colors.expense }} numberOfLines={1} adjustsFontSizeToFit>{money(item.expense)}</Text>
                   <Text className="w-10 text-right font-inter text-xs text-gf-text-muted">{item.transactionCount}</Text>
@@ -318,7 +320,7 @@ export default function AnalyzerScreen() {
             <Text className="font-inter text-base text-gf-text-muted">Al día {pace.dayOfMonth} sueles llevar {money(pace.avgPaceForSameDay)} ({pct(pace.deltaPct)}).</Text>
             {pace.monthlyDetail.map((item) => (
               <View key={item.label} className="flex-row justify-between">
-                <Text className="font-inter text-sm text-gf-text-muted">{item.label} · hasta el día {item.throughDay}</Text>
+                <Text className="font-inter text-sm text-gf-text-muted">{esMonthLabel(item.label)} · hasta el día {item.throughDay}</Text>
                 <Text className="font-inter-semibold text-sm text-gf-text">{money(item.amount)}</Text>
               </View>
             ))}

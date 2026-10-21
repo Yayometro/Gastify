@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
@@ -46,7 +47,7 @@ export function HistoryExtraInsights({ movements, currency, end }: { movements: 
       <ChampionsSheet kind={kind} months={champions.months} currency={currency} onClose={() => setKind(null)} />
       <SpendAnalysisSheet patterns={patterns} visible={analysis} onClose={() => setAnalysis(false)} />
 
-      <Card title="Suscripciones recurrentes" info={{ title: 'Suscripciones recurrentes', text: 'Cargos que se repiten con frecuencia mensual. Toca uno para revisar sus fechas, importes y posibles duplicados.' }}>
+      <Card title="Suscripciones recurrentes" info={{ title: 'Suscripciones recurrentes', text: 'Se detectan gastos con el mismo nombre que aparecen en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. El monto mostrado es el cargo más reciente. Toca uno para revisar sus fechas e importes (y abrir cada movimiento); se marca «nuevo» si antes no existía y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.' }}>
         {subscriptions.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No se detectaron pagos recurrentes en este periodo.</Text>}
         {subscriptions.map((item) => <Pressable key={item.name} accessibilityRole="button" onPress={() => setOpenSubscription(item.name)} className="flex-row items-center gap-3 border-t border-gf-border py-2">
           <CategoryBadge icon={item.icon} color={item.color} size={32} />
@@ -57,7 +58,7 @@ export function HistoryExtraInsights({ movements, currency, end }: { movements: 
       <DetailSheet visible={Boolean(selected)} title={selected?.name ?? ''} subtitle={selected ? `${selected.occurrences.length} cargos encontrados` : undefined} onClose={() => setOpenSubscription(null)}>
         {selected?.isNew && <Text className="font-inter text-sm" style={{ color: colors.accent }}>Nuevo en este periodo</Text>}
         {selected?.possibleDuplicateInMonth && <Text className="font-inter text-sm" style={{ color: colors.expense }}>Hay un posible cargo duplicado en el mes.</Text>}
-        {selected?.occurrences.map((occurrence, index) => <View key={`${String(occurrence.date)}-${index}`} className="flex-row justify-between border-t border-gf-border py-2"><Text className="font-inter text-sm text-gf-text-muted">{new Date(occurrence.date).toLocaleDateString('es-MX')}</Text><Text className="font-inter-semibold text-sm text-gf-text">{money(occurrence.amount)}</Text></View>)}
+        {selected?.occurrences.map((occurrence, index) => <Pressable key={`${String(occurrence.date)}-${index}`} accessibilityRole="button" disabled={!occurrence._id} onPress={() => { setOpenSubscription(null); router.push({ pathname: '/movements/[id]', params: { id: String(occurrence._id), returnTo: '/more/history' } }); }} className="flex-row justify-between border-t border-gf-border py-2.5"><Text className="font-inter text-sm text-gf-text-muted">{new Date(occurrence.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</Text><Text className="font-inter-semibold text-sm text-gf-text">{money(occurrence.amount)} ›</Text></Pressable>)}
       </DetailSheet>
     </>
   );

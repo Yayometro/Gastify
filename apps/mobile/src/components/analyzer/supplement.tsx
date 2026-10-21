@@ -34,7 +34,7 @@ export function AnalyzerHighlights({ snapshot, currency }: { snapshot: WalletAna
 export function AnalyzerProjection({ comparison, loading, error, missing, currency }: { comparison: ProjectionMonthComparison | null; loading: boolean; error: boolean; missing: string[]; currency: string }) {
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
-    <Card title="Proyección del mes" info={{ title: 'Proyección del mes', text: 'Contrasta los ingresos y gastos previstos con los movimientos reales del mes elegido. Para un mes cerrado solo aparece la comparación si había referencias o ajustes registrados; en el mes actual muestra el avance.' }} action={<Pressable accessibilityRole="link" onPress={() => router.push('/more/projections')}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver proyecciones</Text></Pressable>}>
+    <Card title="Proyección del mes" info={{ title: 'Proyección del mes', text: 'Contrasta lo previsto con lo real del mes elegido. Previsto = tus fuentes de ingreso (ingresos) y tus presupuestos activos más los topes que hayas puesto (gastos); Real = la suma de tus movimientos del mes. Para un mes cerrado solo aparece la comparación si había referencias o ajustes registrados; en el mes en curso muestra el avance contra lo previsto. Sirve para ver si tu plan se está cumpliendo.' }} action={<Pressable accessibilityRole="link" onPress={() => router.push('/more/projections')}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver proyecciones</Text></Pressable>}>
       {loading && <Text className="font-inter text-sm text-gf-text-muted">Calculando proyección…</Text>}
       {error && <Text className="font-inter text-sm text-red-500">No se pudo cargar la proyección.</Text>}
       {!loading && !error && !comparison && <Text className="font-inter text-sm text-gf-text-muted">No hay una referencia guardada para comparar este mes cerrado, o el mes todavía no ha comenzado.</Text>}
@@ -119,7 +119,7 @@ export function AnalyzerBiggest({ snapshot, currency }: { snapshot: WalletAnalyz
 export function AnalyzerFxExposure({ rows, loading, missing, currency }: { rows: FxExposureRow[]; loading: boolean; missing: string[]; currency: string }) {
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
-    <Card title="Exposición multimoneda" info={{ title: 'Exposición multimoneda', text: 'Tus saldos actuales en otras monedas convertidos a la moneda principal. El cambio compara el tipo de cambio actual con el cierre del mes anterior usando el mismo saldo nativo; no es rendimiento de la cuenta.' }}>
+    <Card title="Exposición multimoneda" info={{ title: 'Exposición multimoneda', text: 'Tus saldos en monedas distintas a la principal, convertidos con el tipo de cambio actual (saldo nativo × tasa). El porcentaje compara ese valor con el que tendría el MISMO saldo nativo al cierre del mes anterior; mide cuánto te ayudó o perjudicó el tipo de cambio, no es rendimiento de la cuenta. Sirve para saber qué tan expuesto estás a variaciones de otras monedas.' }}>
       {loading && <Text className="font-inter text-sm text-gf-text-muted">Consultando tipos de cambio…</Text>}
       {!loading && rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No hay saldos en otra moneda con una cotización disponible.</Text>}
       {rows.map((row) => <View key={row.currency} className="flex-row items-center justify-between gap-2 border-t border-gf-border py-2">
