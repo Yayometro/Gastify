@@ -1,24 +1,59 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
 import { BudgetSeriesSheet, ChampionsSheet, InsightSheet, SpendAnalysisSheet, WeekdaySheet, type ChampionKind } from '@/components/analyzer/sheets';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Colors } from '@/constants/theme';
+import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
 import type { FxExposureRow } from '@/hooks/use-accounts-fx-exposure';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
 import type { ProjectionMonthComparison } from '@gastify/core/transformers/projectionsChange';
 import type { WalletAnalyzerBudgetRow, WalletAnalyzerInsightItem, WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
 
+// The second line of a highlight tile on a tablet: a bit of context so the tile says more than the phone's single line.
+function highlightSubtext(item: WalletAnalyzerInsightItem, currency: string): string {
+  const d = (item.data ?? {}) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const money = (value: unknown) => formatMoneyMajor(Number(value) || 0, currency);
+  switch (item.type) {
+    case 'budget': return `Límite ${money(d.limit)} · racha de ${d.streakMonths ?? 0} ${d.streakMonths === 1 ? 'mes' : 'meses'}`;
+    case 'category_anomaly': return `Tu promedio es ${money(d.average)} · este mes ${money(d.current)}`;
+    case 'subscription': return `${d.categoryName ?? 'Pago recurrente'} · toca para ver los cargos`;
+    case 'savings_rate': return 'Parte de tus ingresos que conservas';
+    default: return 'Toca para ver el detalle y cómo se calcula';
+  }
+}
+
 export function AnalyzerHighlights({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
+  const width = useWindowDimensions().width;
+  const tablet = width >= TABLET_MIN_WIDTH;
+  const wide = width >= WIDE_MIN_WIDTH;
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [open, setOpen] = useState<WalletAnalyzerInsightItem | null>(null);
   return (
     <Card title="Lo más destacado del mes" info={{ title: 'Lo más destacado', text: 'Señales calculadas con tus movimientos del mes: límites superados, categorías fuera de lo habitual (contra el promedio de los 6 meses anteriores, sin contar el actual, y con al menos 3 meses de historial), suscripciones detectadas, rachas y ritmo de gasto. Toca una para ver los meses y el cálculo detrás. No son movimientos adicionales.' }}>
       {snapshot.insights.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin alertas destacadas este mes.</Text>}
-      {snapshot.insights.map((item, index) => (
+      {tablet ? (
+        <View className="flex-row flex-wrap gap-3">
+          {snapshot.insights.map((item, index) => (
+            <Pressable
+              key={`${item.type}-${index}`}
+              accessibilityRole="button"
+              onPress={() => setOpen(item)}
+              className="gap-2 rounded-2xl p-4"
+              style={{ flexBasis: wide ? '23.5%' : '48%', flexGrow: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-3xl">{item.icon}</Text>
+                <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: item.tone === 'warning' ? colors.expense : item.tone === 'positive' ? colors.income : colors.accent }} />
+              </View>
+              <Text className="font-inter-semibold text-lg text-gf-text">{item.title}</Text>
+              <Text className="font-inter text-sm text-gf-text-muted">{highlightSubtext(item, currency)}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : snapshot.insights.map((item, index) => (
         <Pressable key={`${item.type}-${index}`} accessibilityRole="button" onPress={() => setOpen(item)} className="flex-row items-center gap-3 border-t border-gf-border py-2.5">
           <Text className="text-xl">{item.icon}</Text>
           <Text className="flex-1 font-inter-medium text-sm text-gf-text">{item.title}</Text>
@@ -32,6 +67,7 @@ export function AnalyzerHighlights({ snapshot, currency }: { snapshot: WalletAna
 }
 
 export function AnalyzerProjection({ comparison, loading, error, missing, currency }: { comparison: ProjectionMonthComparison | null; loading: boolean; error: boolean; missing: string[]; currency: string }) {
+  const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
     <Card title="Proyección del mes" info={{ title: 'Proyección del mes', text: 'Contrasta lo previsto con lo real del mes elegido. Previsto = tus fuentes de ingreso (ingresos) y tus presupuestos activos más los topes que hayas puesto (gastos); Real = la suma de tus movimientos del mes. Para un mes cerrado solo aparece la comparación si había referencias o ajustes registrados; en el mes en curso muestra el avance contra lo previsto. Sirve para ver si tu plan se está cumpliendo.' }} action={<Pressable accessibilityRole="link" onPress={() => router.push('/more/projections')}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver proyecciones</Text></Pressable>}>
@@ -41,8 +77,16 @@ export function AnalyzerProjection({ comparison, loading, error, missing, curren
       {comparison && <>
         <Text className="font-inter text-xs text-gf-text-muted">{comparison.type === 'closed' ? 'Mes cerrado · previsto contra real' : 'Mes en curso · avance contra previsto'}</Text>
         <View className="flex-row gap-3">
-          <View className="flex-1 gap-1"><Text className="font-inter-semibold text-sm text-gf-text">Ingresos</Text><Text className="font-inter text-xs text-gf-text-muted">Previsto {formatMoneyMajor(comparison.projectedIncome, currency)}</Text><Text className="font-inter-semibold text-sm" style={{ color: colors.income }}>Real {formatMoneyMajor(comparison.actualIncome, currency)}</Text></View>
-          <View className="flex-1 gap-1"><Text className="font-inter-semibold text-sm text-gf-text">Gastos</Text><Text className="font-inter text-xs text-gf-text-muted">Previsto {formatMoneyMajor(comparison.projectedExpense, currency)}</Text><Text className="font-inter-semibold text-sm" style={{ color: colors.expense }}>Real {formatMoneyMajor(comparison.actualExpense, currency)}</Text></View>
+          {[
+            { label: 'Ingresos', projected: comparison.projectedIncome, actual: comparison.actualIncome, tone: colors.income },
+            { label: 'Gastos', projected: comparison.projectedExpense, actual: comparison.actualExpense, tone: colors.expense },
+          ].map((side) => (
+            <View key={side.label} className={tablet ? 'flex-1 gap-1.5 rounded-2xl p-4' : 'flex-1 gap-1'} style={tablet ? { backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' } : undefined}>
+              <Text className={`font-inter-semibold text-gf-text ${tablet ? 'text-lg' : 'text-sm'}`}>{side.label}</Text>
+              <Text className={`font-inter text-gf-text-muted ${tablet ? 'text-base' : 'text-xs'}`}>Previsto {formatMoneyMajor(side.projected, currency)}</Text>
+              <Text className={`font-inter-semibold ${tablet ? 'text-2xl' : 'text-sm'}`} style={{ color: side.tone }}>Real {formatMoneyMajor(side.actual, currency)}</Text>
+            </View>
+          ))}
         </View>
       </>}
       {missing.length > 0 && <Text className="font-inter text-xs text-gf-text-muted">Sin tipo de cambio para {missing.join(', ')}; revisa los importes en Proyecciones.</Text>}

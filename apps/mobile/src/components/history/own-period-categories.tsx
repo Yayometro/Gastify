@@ -66,7 +66,7 @@ export function OwnPeriodCategories({
 
   return (
     <Card title={title} info={info}>
-      <CompactTimeFilter preset={own} onPreset={setOwn} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
+      <CompactTimeFilter preset={own} onPreset={setOwn} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard periodSelect />
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
       {rows.slice(0, 12).map((row: CompareRow) => (
         <Pressable key={row.name} accessibilityRole="button" accessibilityLabel={`Ver movimientos de ${row.name}`} onPress={() => setSelectedCategory(row.name)} className="gap-1.5">

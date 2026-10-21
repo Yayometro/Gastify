@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Text, View, useColorScheme } from 'react-native';
+import { Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { ChipPicker } from '@/components/chip-picker';
@@ -11,10 +11,12 @@ import { HistoryExtraInsights } from '@/components/history/extra-insights';
 import { MonthByMonth } from '@/components/history/month-by-month';
 import { OwnPeriodCategories } from '@/components/history/own-period-categories';
 import { ProjectionsTeaser } from '@/components/history/projections-teaser';
+import { PeriodBar, shiftRange } from '@/components/history/period-bar';
 import { TopRanking } from '@/components/top-ranking';
 import { Screen } from '@/components/screen';
-import { Card } from '@/components/ui/card';
+import { Card, PairedColumn } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
+import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import type { RootState } from '@/store';
 import { GfSwitch } from '@/components/ui/switch';
@@ -33,6 +35,7 @@ import {
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
+import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
@@ -59,6 +62,9 @@ export default function HistoryScreen() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
+  const width = useWindowDimensions().width;
+  const tablet = width >= TABLET_MIN_WIDTH;
+  const wide = width >= WIDE_MIN_WIDTH;
   const now = useMemo(() => new Date(), []);
   const [preset, setPreset] = useState<HistoryPreset>('last3');
   // The month of the "Un mes" period (arrows, or tap it to pick any month).
@@ -85,13 +91,30 @@ export default function HistoryScreen() {
   return (
     <Screen title="Historial" subtitle={labelA} backLabel="Más" onBack={() => router.back()}>
       <Card title="Periodo" info={{ title: 'Periodo', text: 'Elige qué tramo de tiempo analizar; todas las tarjetas de abajo que dicen «Igual que arriba» lo siguen. Al comparar con otro periodo (el mismo tramo del año anterior, el periodo inmediato anterior de la misma duración o uno que elijas) cada cifra muestra cuánto cambió. Por defecto se analizan los últimos 3 meses.' }}>
-        <ChipPicker items={HISTORY_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPreset(id as HistoryPreset)} moreAfter={99} />
-        {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
-        {preset === 'custom' && (
-          <View className="gap-3">
-            <DateField label="Desde" value={from} onChange={setFrom} />
-            <DateField label="Hasta" value={to} onChange={setTo} />
-          </View>
+        {tablet ? (
+          <PeriodBar
+            preset={preset}
+            range={rangeA}
+            onPreset={setPreset}
+            canGoForward={rangeA.end.getTime() < now.getTime()}
+            onShift={(direction) => {
+              const next = shiftRange(rangeA, direction);
+              setFrom(dateText(next.from));
+              setTo(dateText(next.to));
+              setPreset('custom');
+            }}
+          />
+        ) : (
+          <>
+          <ChipPicker items={HISTORY_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPreset(id as HistoryPreset)} moreAfter={99} />
+          {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
+          {preset === 'custom' && (
+            <View className="gap-3">
+              <DateField label="Desde" value={from} onChange={setFrom} />
+              <DateField label="Hasta" value={to} onChange={setTo} />
+            </View>
+          )}
+          </>
         )}
         <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
           <Text className="flex-1 font-inter-medium text-base text-gf-text">Comparar con otro periodo</Text>
@@ -112,6 +135,55 @@ export default function HistoryScreen() {
         {partial && <Text className="font-inter text-sm text-gf-text-muted">Todavía llegan movimientos antiguos; las cifras de periodos viejos pueden crecer.</Text>}
       </Card>
 
+      {tablet ? (
+        <View className="flex-row items-stretch gap-4">
+          <PairedColumn>
+      <Card title="Resumen" info={{ title: 'Resumen', text: 'Ingresos = suma de lo que entró en el periodo; gastos = suma de lo que salió; balance = ingresos − gastos. Las transferencias entre tus cuentas no cuentan. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje es (periodo − comparado) ÷ comparado; en gastos, que suba es malo (rojo) y que baje es bueno (verde).' }}>
+        {[
+          { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
+          { label: 'Gastos', av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
+          { label: 'Balance', av: a.totals.balance, bv: b?.totals.balance, color: colors.text, invert: false },
+        ].map((row) => (
+          <View key={row.label} className={tablet ? 'gap-2 py-2' : 'gap-1'}>
+            <Text className={`font-inter-medium text-gf-text-muted ${tablet ? 'text-lg' : 'text-sm'}`}>{row.label}</Text>
+            <View className="flex-row gap-3">
+              <View className="flex-1">
+                {b && <Text className="font-inter text-xs text-gf-text-muted">Periodo</Text>}
+                <Text className={`font-inter-bold ${tablet ? 'text-4xl' : 'text-lg'}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: row.color }}>{cell(row.av)}</Text>
+              </View>
+              {b && row.bv !== undefined && (
+                <View className="flex-1">
+                  <Text className="font-inter text-xs text-gf-text-muted">Comparado</Text>
+                  <Text className="font-inter-semibold text-lg text-gf-text-muted" numberOfLines={1} adjustsFontSizeToFit>{cell(row.bv)}</Text>
+                  <Delta current={row.av} previous={row.bv} invert={row.invert} />
+                </View>
+              )}
+            </View>
+          </View>
+        ))}
+      </Card>
+          </PairedColumn>
+          <PairedColumn>
+      <Card title="Datos del periodo" info={{ title: 'Datos del periodo', text: 'Lecturas rápidas del mismo periodo: cuántos movimientos tuvo, qué parte de tus ingresos conservaste ((ingresos − gastos) ÷ ingresos), cuánto gastaste en promedio por mes, qué categoría pesó más y cuál fue tu gasto más grande. Se calculan con los mismos movimientos que el resumen.' }}>
+        <View className="flex-row flex-wrap gap-3">
+          {[
+            { label: 'Movimientos', value: String(a.totals.count), detail: 'en el periodo' },
+            { label: 'Lo que conservaste', value: a.totals.incomes > 0 ? `${Math.round(((a.totals.incomes - a.totals.spending) / a.totals.incomes) * 100)}%` : '—', detail: 'de tus ingresos' },
+            { label: 'Gasto promedio por mes', value: cell(a.months.length ? a.totals.spending / a.months.length : 0), detail: `${a.months.length} ${a.months.length === 1 ? 'mes' : 'meses'}` },
+            { label: 'Lo que más pesa', value: a.spendingByCategory[0]?.name ?? '—', detail: a.spendingByCategory[0] ? cell(a.spendingByCategory[0].value) : 'sin gastos' },
+            { label: 'Gasto más grande', value: a.biggest[0] ? cell(Math.abs(getPrimaryAmount(a.biggest[0]))) : '—', detail: a.biggest[0]?.name ?? 'sin gastos' },
+          ].map((tile) => (
+            <View key={tile.label} className="gap-1 rounded-2xl p-4" style={{ flexBasis: '47%', flexGrow: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
+              <Text className="font-inter text-sm text-gf-text-muted">{tile.label}</Text>
+              <Text className="font-inter-bold text-xl text-gf-text" numberOfLines={1} adjustsFontSizeToFit>{tile.value}</Text>
+              <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>{tile.detail}</Text>
+            </View>
+          ))}
+        </View>
+      </Card>
+          </PairedColumn>
+        </View>
+      ) : (
       <Card title="Resumen" info={{ title: 'Resumen', text: 'Ingresos = suma de lo que entró en el periodo; gastos = suma de lo que salió; balance = ingresos − gastos. Las transferencias entre tus cuentas no cuentan. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje es (periodo − comparado) ÷ comparado; en gastos, que suba es malo (rojo) y que baje es bueno (verde).' }}>
         {[
           { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
@@ -136,9 +208,37 @@ export default function HistoryScreen() {
           </View>
         ))}
       </Card>
+      )}
 
       <MonthByMonth summary={a} compareSummary={b} currency={currency} movements={transactions} />
 
+      {wide ? (
+        <View className="flex-row items-stretch gap-4">
+          <PairedColumn>
+      <OwnPeriodCategories
+        kind="spending"
+        title="Gastos por categoría"
+        info={{ title: 'Gastos por categoría', text: 'Suma de los gastos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo (por defecto «Igual que arriba», con su comparación si la activaste), pero puedes elegir otro sin cambiar el resto de la pantalla. Sirve para ver en qué se fue tu dinero. Toca una categoría para ver sus movimientos.' }}
+        movements={transactions}
+        summary={a}
+        compareSummary={b}
+        currency={currency}
+      />
+          </PairedColumn>
+          <PairedColumn>
+      <OwnPeriodCategories
+        kind="incomes"
+        title="Ingresos por categoría"
+        info={{ title: 'Ingresos por categoría', text: 'Suma de los ingresos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo, igual que los gastos. Sirve para ver de dónde viene tu dinero. Toca una categoría para ver sus movimientos.' }}
+        movements={transactions}
+        summary={a}
+        compareSummary={b}
+        currency={currency}
+      />
+          </PairedColumn>
+        </View>
+      ) : (
+        <>
       <OwnPeriodCategories
         kind="spending"
         title="Gastos por categoría"
@@ -158,6 +258,8 @@ export default function HistoryScreen() {
         compareSummary={b}
         currency={currency}
       />
+        </>
+      )}
 
       <HistoryExtraInsights movements={transactions} currency={currency} end={rangeA.end} />
 

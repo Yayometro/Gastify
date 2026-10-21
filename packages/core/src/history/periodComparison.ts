@@ -7,7 +7,7 @@ import { monthTotals, topSpendingCategories, type CategoryTotal, type MonthBound
 // The History screen's periods and the comparison of two of them ("this vs the same stretch last year"),
 // like the web's History page: totals, month by month, categories and the biggest movements.
 
-export type HistoryPreset = "last3" | "month" | "thisMonth" | "lastMonth" | "thisQuarter" | "lastQuarter" | "thisYear" | "lastYear" | "custom";
+export type HistoryPreset = "last3" | "month" | "thisMonth" | "lastMonth" | "thisQuarter" | "lastQuarter" | "thisYear" | "lastYear" | "q1" | "q2" | "q3" | "q4" | "h1" | "h2" | "custom";
 
 export const HISTORY_PRESETS: { value: HistoryPreset; label: string }[] = [
   { value: "last3", label: "Últimos 3 meses" },
@@ -16,6 +16,25 @@ export const HISTORY_PRESETS: { value: HistoryPreset; label: string }[] = [
   { value: "lastMonth", label: "Mes pasado" },
   { value: "thisQuarter", label: "Este trimestre" },
   { value: "lastQuarter", label: "Trimestre pasado" },
+  { value: "thisYear", label: "Este año" },
+  { value: "lastYear", label: "Año pasado" },
+  { value: "custom", label: "Personalizado" },
+];
+
+// The longer list of the wide screens (the web's): the same as above plus each quarter and each half of the current year.
+export const HISTORY_PRESETS_EXTENDED: { value: HistoryPreset; label: string }[] = [
+  { value: "last3", label: "Últimos 3 meses" },
+  { value: "month", label: "Un mes" },
+  { value: "thisMonth", label: "Este mes" },
+  { value: "lastMonth", label: "Mes pasado" },
+  { value: "thisQuarter", label: "Este trimestre" },
+  { value: "lastQuarter", label: "Trimestre pasado" },
+  { value: "q1", label: "Trimestre 1" },
+  { value: "q2", label: "Trimestre 2" },
+  { value: "q3", label: "Trimestre 3" },
+  { value: "q4", label: "Trimestre 4" },
+  { value: "h1", label: "Primer semestre" },
+  { value: "h2", label: "Segundo semestre" },
   { value: "thisYear", label: "Este año" },
   { value: "lastYear", label: "Año pasado" },
   { value: "custom", label: "Personalizado" },
@@ -49,6 +68,17 @@ export function historyRange(preset: HistoryPreset, now: Date, custom: { from: D
       const q = Math.floor(m / 3) * 3 - 3;
       return { start: startOfMonth(y, q), end: endOfMonth(y, q + 2) };
     }
+    case "q1":
+    case "q2":
+    case "q3":
+    case "q4": {
+      const first = (Number(preset[1]) - 1) * 3;
+      return { start: startOfMonth(y, first), end: endOfMonth(y, first + 2) };
+    }
+    case "h1":
+      return { start: startOfMonth(y, 0), end: endOfMonth(y, 5) };
+    case "h2":
+      return { start: startOfMonth(y, 6), end: endOfMonth(y, 11) };
     case "thisYear":
       return { start: startOfMonth(y, 0), end: endOfMonth(y, 11) };
     case "lastYear":

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { CompactTimeFilter } from '@/components/compact-time-filter';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
+import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { historyRange, summarizePeriod, type HistoryPreset, type MonthBar, type PeriodSummary } from '@gastify/core/history/periodComparison';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
@@ -13,6 +14,7 @@ import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { topSpendingCategories } from '@gastify/core/transactions/monthSummary';
 
 const BAR_AREA = 150;
+const TABLET_BAR_AREA = 230;
 
 // Month by month, as bars you can read: each month has its income (green) and spending (red) bar with the
 // figure written above it, the month's name below, and a tap opens that month in full. When another period is
@@ -37,7 +39,9 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
   const [open, setOpen] = useState<number | null>(null);
   const max = Math.max(1, ...months.flatMap((m) => [m.incomes, m.spending]), ...(compare ?? []).flatMap((m) => [m.incomes, m.spending]));
   const short = (value: number) => (value >= 1000 ? `${Math.round(value / 100) / 10}k` : String(Math.round(value)));
-  const many = months.length > 6;
+  const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
+  const barArea = tablet ? TABLET_BAR_AREA : BAR_AREA;
+  const many = months.length > 6 && !tablet;
   const money = (value: number) => formatMoneyMajor(value, currency);
   const current = open !== null ? months[open] : null;
   const previous = open !== null ? compare?.[open] : undefined;
@@ -53,15 +57,15 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
 
   return (
     <Card title="Mes a mes" info={{ title: 'Mes a mes', text: 'Ingresos (verde) y gastos (rojo) de cada mes del periodo, con la cifra sobre cada barra. Toca un mes para ver su detalle y su categoría líder. Si comparas, las barras tenues corresponden al mes y año indicados abajo.' }}>
-      <CompactTimeFilter preset={own} onPreset={setOwn} month={ownMonth} onMonth={setOwnMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
+      <CompactTimeFilter preset={own} onPreset={setOwn} month={ownMonth} onMonth={setOwnMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard periodSelect />
       {compare && compareStart && <Text className="font-inter-semibold text-xs text-gf-text-muted">Actual: {labelAt(start, 0, months[0]?.label ?? '')} · Comparado: {labelAt(compareStart, 0, compare[0]?.label ?? '')}</Text>}
-      <View className="flex-row items-end gap-1.5" style={{ height: BAR_AREA + 48 }}>
+      <View className="flex-row items-end gap-1.5" style={{ height: barArea + 48 }}>
         {months.map((month, index) => {
           const other = compare?.[index];
           const bar = (value: number, color: string, faint = false) => (
-            <View className="items-center justify-end" style={{ height: BAR_AREA + 18 }}>
+            <View className="items-center justify-end" style={{ height: barArea + 18 }}>
               {!many && <Text className="font-inter text-[9px] text-gf-text-muted">{short(value)}</Text>}
-              <View style={{ width: many ? 7 : 11, height: Math.max(3, (value / max) * BAR_AREA), borderRadius: 4, backgroundColor: color, opacity: faint ? 0.38 : 1 }} />
+              <View style={{ width: tablet ? (months.length > 6 ? 22 : 34) : many ? 7 : 11, height: Math.max(3, (value / max) * barArea), borderRadius: 4, backgroundColor: color, opacity: faint ? 0.38 : 1 }} />
             </View>
           );
           return (

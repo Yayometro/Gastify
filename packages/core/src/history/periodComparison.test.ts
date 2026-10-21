@@ -104,4 +104,11 @@ describe("compareRange: the period before", () => {
     expect(before.end.getTime()).toBe(odd.start.getTime() - 1);
     expect(odd.start.getTime() - before.start.getTime()).toBeGreaterThan(10 * 86400000);
   });
+
+  it("gives each quarter and each half of the year", () => {
+    const now = new Date(2026, 9, 21);
+    const none = { from: null, to: null };
+    expect(historyRange("q2", now, none)).toMatchObject({ start: new Date(2026, 3, 1), end: new Date(2026, 5, 30, 23, 59, 59, 999) });
+    expect(historyRange("h2", now, none)).toMatchObject({ start: new Date(2026, 6, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) });
+  });
 });
