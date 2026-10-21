@@ -54,20 +54,20 @@ export function SideNav() {
       accessibilityState={{ selected: active }}
       onPress={onPress}
       hitSlop={6}
-      style={[styles.item, active && { backgroundColor: colors.accentSoft }]}>
+      style={[styles.item, active && (dark ? styles.activeDark : { backgroundColor: colors.accentSoft })]}>
       {icon}
     </Pressable>
   );
-  const navItem = (item: Item) => iconButton(item.key, item.label, () => router.navigate(item.href as never), item.icon(item.active(pathname) ? colors.accent : colors.text), item.active(pathname));
+  const navItem = (item: Item) => iconButton(item.key, item.label, () => router.navigate(item.href as never), item.icon(item.active(pathname) ? (dark ? '#ffffff' : colors.accent) : dark ? 'rgba(255,255,255,0.88)' : colors.text), item.active(pathname));
   const profileActive = is(pathname, '/more/profile');
 
   return (
     <View style={[styles.wrap, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
       {/* The pill floats: a soft shadow cast outward, as the web's side bar has. */}
       <View style={[styles.pill, styles.shadow]}>
-      <GlassSurface variant="side" radius={32} style={{ flex: 1 }}>
+      <GlassSurface variant="nav" radius={32} style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.inner}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Perfil" onPress={() => router.navigate('/more/profile')} style={[styles.profile, profileActive && { backgroundColor: colors.accentSoft }]}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Perfil" onPress={() => router.navigate('/more/profile')} style={[styles.profile, profileActive && (dark ? styles.activeDark : { backgroundColor: colors.accentSoft })]}>
             {user?.image ? (
               <Image source={{ uri: user.image }} alt="Tu foto de perfil" style={styles.avatar} contentFit="cover" />
             ) : (
@@ -102,8 +102,11 @@ const styles = StyleSheet.create({
   profile: { alignItems: 'center', gap: 2, paddingVertical: 4, paddingHorizontal: 6, borderRadius: 20 },
   avatar: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: '#a855f7' },
   item: { width: 66, height: 70, borderRadius: 33, alignItems: 'center', justifyContent: 'center' },
+  // The selected item: the same violet pill with a light edge as the phone's bar.
+  activeDark: { backgroundColor: 'rgba(168,85,247,0.55)', borderWidth: 1, borderColor: 'rgba(233,213,255,0.55)' },
   fab: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
   // The raised, three-dimensional look of the web's "+" and the phone bar's: a violet glow under the gradient.
   fabShadow: Platform.select({ ios: { shadowColor: '#7e22ce', shadowOpacity: 0.6, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }, default: { elevation: 10 } }) as object,
-  shadow: Platform.select({ ios: { shadowColor: '#000000', shadowOpacity: 0.55, shadowRadius: 22, shadowOffset: { width: 6, height: 8 } }, default: { elevation: 16 } }) as object,
+  // The same shadow as the phone bar's.
+  shadow: Platform.select({ ios: { shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 16, shadowOffset: { width: 4, height: 6 } }, default: { elevation: 12 } }) as object,
 });

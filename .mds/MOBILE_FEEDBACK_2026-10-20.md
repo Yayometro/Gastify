@@ -321,12 +321,12 @@ Prefijo Z.
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| Z01 | iPad, barra lateral: el elemento activo debe verse como el de la barra del iPhone (píldora violeta con el borde rosita claro). | PENDIENTE | |
-| Z02 | iPad, barra lateral: el efecto glass no es igual al de la barra del iPhone (diferencia sutil pero importante); debe ser el mismo. | PENDIENTE | |
-| Z03 | Todos los tooltips (los «?») de la app: hoy son texto plano amontonado; deben tener separación, orden, tablas donde corresponda, diagramas, y ser mucho más explicativos y legibles. | PENDIENTE | |
-| Z04 | iPad: la navegación entre páginas es lenta y la animación se siente lenta (en el iPhone es instantánea); averiguar la causa y arreglarla. | PENDIENTE | |
-| Z05 | El usuario va a confirmar: que todas las páginas refrescan, los selectores por periodo y el modal de Mes a mes (sin acción por mi parte). | PENDIENTE | |
-| Z06 | Al terminar, subir todos los commits a la rama (los pendientes y los nuevos). | PENDIENTE | |
+| Z01 | iPad, barra lateral: el elemento activo debe verse como el de la barra del iPhone (píldora violeta con el borde rosita claro). | CÓDIGO LISTO | El elemento activo del menú lateral usa la misma píldora violeta con borde claro que la barra del iPhone, con el ícono en blanco. Falta verlo en el iPad. |
+| Z02 | iPad, barra lateral: el efecto glass no es igual al de la barra del iPhone (diferencia sutil pero importante); debe ser el mismo. | CÓDIGO LISTO | El menú lateral usa ahora exactamente el mismo vidrio (variante «nav») y la misma sombra que la barra del iPhone. Falta compararlo en el iPad. |
+| Z03 | Todos los tooltips (los «?») de la app: hoy son texto plano amontonado; deben tener separación, orden, tablas donde corresponda, diagramas, y ser mucho más explicativos y legibles. | HECHO | Todos los tooltips se ordenan solos en secciones (Qué muestra, Cómo se calcula con ecuaciones en cajitas, Cómo leerlo con colores y flechas resaltados, Cómo usarlo) y los más importantes llevan tablas hechas a mano (Precisión, VS mes anterior, Análisis del periodo, Presupuestos y sus caritas, Mes a mes de Proyecciones, Ritmo de gasto). Verificado en el emulador con dos de ellos. |
+| Z04 | iPad: la navegación entre páginas es lenta y la animación se siente lenta (en el iPhone es instantánea); averiguar la causa y arreglarla. | CÓDIGO LISTO | Causas probables en el iPad: (1) cada tarjeta tenía un BlurView aunque solo desenfocaba el degradado del fondo; (2) el cambio de pestaña animaba el opacity de pantallas llenas de BlurViews. Ahora las tarjetas no usan BlurView (solo la barra y el menú), y en tablet las pestañas y la pila de «Más» cambian al instante, como la web. Falta confirmar la fluidez en el iPad. |
+| Z05 | El usuario va a confirmar: que todas las páginas refrescan, los selectores por periodo y el modal de Mes a mes (sin acción por mi parte). | HECHO | Sin acción: lo confirma el usuario. |
+| Z06 | Al terminar, subir todos los commits a la rama (los pendientes y los nuevos). | HECHO | Todos los commits subidos a la rama mobile-phase-9-paridad (no a main). |
 
 ## Notas
 

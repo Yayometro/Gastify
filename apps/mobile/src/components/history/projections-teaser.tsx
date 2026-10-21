@@ -8,6 +8,7 @@ import { ChipPicker } from '@/components/chip-picker';
 import { ACCURACY_HELP, AccuracyBody } from '@/components/projections/accuracy-card';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
+import { ACCURACY_SECTIONS } from '@/lib/info-sections';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';
@@ -122,7 +123,7 @@ export function ProjectionsTeaser() {
           <Pressable accessibilityRole="button" onPress={() => setShowDetail(true)} className="items-center rounded-full border border-gf-border py-2.5">
             <Text className="font-inter-semibold text-sm text-gf-text">Ver proyectado contra real</Text>
           </Pressable>
-          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title="Proyectado contra real" subtitle={`Meses cerrados de ${year}`} info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP }}>
+          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title="Proyectado contra real" subtitle={`Meses cerrados de ${year}`} info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP, sections: ACCURACY_SECTIONS }}>
             <AccuracyBody rows={accuracy as never[]} currency={currency} />
           </DetailSheet>
         </>

@@ -1,5 +1,6 @@
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
+import { INSIGHTS_SECTIONS } from '@/lib/info-sections';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
@@ -36,8 +37,7 @@ export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insight
       action={<Pressable accessibilityRole="link" onPress={onOpenAnalyzer} hitSlop={8}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver análisis completo</Text></Pressable>}
       info={{
         title: 'Análisis del periodo',
-        text: 'Gasto por día = gasto del periodo ÷ días transcurridos. Al ritmo actual = ese promedio × los días del periodo (solo mientras sigue en curso). Lo que conservas = (ingresos − gastos) ÷ ingresos. Los cambios comparan contra el periodo inmediato anterior de la misma duración. El gasto promedio es el gasto total ÷ el número de gastos. Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.',
-      }}>
+        text: 'Gasto por día = gasto del periodo ÷ días transcurridos. Al ritmo actual = ese promedio × los días del periodo (solo mientras sigue en curso). Lo que conservas = (ingresos − gastos) ÷ ingresos. Los cambios comparan contra el periodo inmediato anterior de la misma duración. El gasto promedio es el gasto total ÷ el número de gastos. Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.', sections: INSIGHTS_SECTIONS }}>
       <Pressable accessibilityRole="button" accessibilityLabel="Abrir el Analizador de cartera" onPress={onOpenAnalyzer} className={tablet ? 'flex-row flex-wrap gap-3' : 'flex-row flex-wrap gap-x-6 gap-y-4'}>
         <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile={tablet} label="Gasto por día" value={formatMoneyMajor(insights.dailyAverage, currency)} detail={`en ${insights.daysElapsed} ${insights.daysElapsed === 1 ? 'día' : 'días'}`} /></View>
         {insights.projectedSpending !== null && (

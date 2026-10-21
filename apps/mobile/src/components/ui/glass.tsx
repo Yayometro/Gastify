@@ -40,7 +40,7 @@ export function GlassSurface({
 
   return (
     <View style={[{ borderRadius: radius, overflow: 'hidden' }, style]}>
-      {dark && Platform.OS === 'ios' && (
+      {dark && Platform.OS === 'ios' && variant !== 'card' && (
         <BlurView intensity={variant === 'side' ? 90 : variant === 'nav' ? 70 : 30} tint="dark" style={StyleSheet.absoluteFill} />
       )}
       <LinearGradient colors={washColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} pointerEvents="none" />

@@ -1,0 +1,157 @@
+import type { InfoSection } from '@/components/info-content';
+
+// Hand-made layouts (tables, equations, legends) for the tooltips that explain the most.
+
+export const ACCURACY_SECTIONS: InfoSection[] = [
+  {
+    label: 'Proyectado contra real',
+    blocks: [
+      { kind: 'table', head: ['Columna', 'Qué es'], rows: [
+        ['Proyectado', 'Lo que esperabas para ese mes con lo que tenías configurado entonces (tope o referencia histórica). No se recalcula después: editar hoy un mes cerrado no cambia lo que ese mes «proyectaba».'],
+        ['Real', 'Lo que tus movimientos dicen que pasó de verdad.'],
+        ['Desajuste', 'Real − proyectado, uno por renglón: el de ingreso compara solo ingresos y el de gasto solo gastos.'],
+      ] },
+      { kind: 'equation', left: 'Desajuste', right: 'Real − Proyectado' },
+    ],
+  },
+  {
+    label: 'Cómo leer los colores',
+    blocks: [
+      { kind: 'p', text: 'El color siempre significa lo mismo (verde: te fue mejor de lo esperado; rojo: te fue peor), pero «mejor» es distinto en cada renglón:' },
+      { kind: 'table', head: ['Renglón', 'Número positivo', 'Número negativo'], rows: [
+        ['Ingreso', 'verde ▲ ganaste más de lo proyectado', 'rojo ▼ ganaste menos'],
+        ['Gasto', 'rojo ▲ gastaste más de lo proyectado', 'verde ▼ gastaste menos'],
+      ] },
+      { kind: 'p', text: 'Por eso un mismo mes puede mostrar un renglón en rojo y otro en verde: son dos comparaciones independientes, no un total combinado.' },
+    ],
+  },
+  {
+    label: 'Ejemplo',
+    blocks: [
+      { kind: 'example', text: 'Proyectabas $50,000 de gasto y gastaste $47,000: desajuste de −$3,000, verde (gastaste menos). Proyectabas $80,000 de ingreso y ganaste $60,000: desajuste de −$20,000, rojo (ganaste menos).' },
+      { kind: 'p', text: 'Solo se muestran meses cerrados con un historial de proyección registrado. Toca un mes para ver su detalle.' },
+    ],
+  },
+];
+
+export const VS_SECTIONS: InfoSection[] = [
+  {
+    label: 'Qué muestra',
+    blocks: [{ kind: 'p', text: 'El mes elegido contra el mes inmediato anterior, renglón por renglón.' }],
+  },
+  {
+    label: 'Cómo se calcula',
+    blocks: [
+      { kind: 'equation', left: 'Cambio', right: '(Actual − Anterior) ÷ Anterior' },
+      { kind: 'equation', left: 'Ahorro', right: '(Ingresos − Gastos) ÷ Ingresos' },
+      { kind: 'p', text: 'En «Ahorro» el cambio se da en puntos porcentuales (pts), no en %.' },
+    ],
+  },
+  {
+    label: 'Cómo leerlo',
+    blocks: [
+      { kind: 'table', head: ['Señal', 'Significa'], rows: [
+        ['▲', 'Subió (más de 0.5%)'],
+        ['▼', 'Bajó (más de 0.5%)'],
+        ['▬', 'Casi no cambió (menos de 0.5%)'],
+      ] },
+      { kind: 'legend', items: [
+        { color: '#34d399', label: 'Verde', text: 'Buena noticia: más ingresos, balance o ahorro, o menos gastos.' },
+        { color: '#fb7185', label: 'Rojo', text: 'Mala noticia: menos ingresos, balance o ahorro, o más gastos.' },
+        { color: '#f59e0b', label: 'Naranja', text: 'Sin cambio.' },
+      ] },
+    ],
+  },
+];
+
+export const INSIGHTS_SECTIONS: InfoSection[] = [
+  {
+    label: 'Cómo se calcula cada cuadrito',
+    blocks: [
+      { kind: 'table', head: ['Cuadrito', 'Cálculo'], rows: [
+        ['Gasto por día', 'Gasto del periodo ÷ días transcurridos'],
+        ['Al ritmo actual', 'Gasto por día × días del periodo (solo mientras sigue en curso)'],
+        ['Lo que conservas', '(Ingresos − Gastos) ÷ Ingresos'],
+        ['Gastos vs anterior', '(Gastos − Gastos del periodo anterior) ÷ Gastos del periodo anterior'],
+        ['Ingresos vs anterior', 'Lo mismo con los ingresos'],
+        ['Lo que más pesa', 'La categoría con más gasto y su parte del gasto total'],
+        ['Gasto más grande', 'El movimiento de gasto más alto del periodo'],
+        ['Gasto promedio', 'Gasto total ÷ número de gastos'],
+        ['Balance', 'Ingresos − Gastos, y cuántos movimientos tuvo el periodo'],
+      ] },
+      { kind: 'p', text: 'Los cambios comparan contra el periodo inmediato anterior de la misma duración.' },
+    ],
+  },
+  {
+    label: 'Cómo usarlo',
+    blocks: [{ kind: 'bullets', items: ['Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.'] }],
+  },
+];
+
+export const BUDGET_FACES_SECTIONS: InfoSection[] = [
+  {
+    label: 'Qué muestra',
+    blocks: [{ kind: 'p', text: 'Tus presupuestos del periodo, del que está más cerca de su límite al más lejano. Cada barra es lo gastado ÷ el límite, y el círculo marca el porcentaje.' }],
+  },
+  {
+    label: 'La carita',
+    blocks: [
+      { kind: 'table', head: ['Carita', 'Gastado ÷ límite', 'Significa'], rows: [
+        ['🤩', 'menos de 30%', 'Vas muy holgado'],
+        ['🙂', '30% a 60%', 'Todo en orden'],
+        ['😐', '60% a 85%', 'Ojo, ya llevas buena parte'],
+        ['😰', '85% a 100%', 'Muy cerca del límite'],
+        ['🔥', 'más de 100%', 'Excediste el límite'],
+      ] },
+      { kind: 'p', text: 'En los presupuestos de ahorro la lectura se invierte: 🤩 a partir de 85% de la meta, 🙂 de 35% a 85% y 😟 por debajo de 35%.' },
+    ],
+  },
+  { label: 'Cómo usarlo', blocks: [{ kind: 'bullets', items: ['Toca un presupuesto para ver sus movimientos.'] }] },
+];
+
+export const PROJECTION_MONTHS_SECTIONS: InfoSection[] = [
+  {
+    label: 'Qué muestra',
+    blocks: [
+      { kind: 'p', text: 'Cada mes del año en una tarjeta, en tu moneda principal.' },
+      { kind: 'table', head: ['Etiqueta', 'De dónde salen las cifras'], rows: [
+        ['Real', 'Un mes que ya ocurrió: tus movimientos.'],
+        ['Estimado', 'Un mes futuro: tus fuentes de ingreso, tus presupuestos y tus referencias históricas.'],
+        ['Este mes', 'Arranca como estimado y se llena con lo real conforme pasa el mes.'],
+      ] },
+    ],
+  },
+  {
+    label: 'Cómo se calcula',
+    blocks: [
+      { kind: 'equation', left: 'Neto', right: 'Ingresos − Gastos' },
+      { kind: 'p', text: 'Saldo = el dinero que tendrías al cierre del mes. Con ≈ es una estimación hecha hacia atrás, porque no guardaste el saldo real de ese mes.' },
+    ],
+  },
+  {
+    label: 'Cómo usarlo',
+    blocks: [{ kind: 'bullets', items: ['Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.'] }],
+  },
+];
+
+export const PACE_SECTIONS: InfoSection[] = [
+  {
+    label: 'Qué muestra',
+    blocks: [{ kind: 'p', text: 'Si este mes vas gastando más rápido o más lento de lo habitual, comparando el mismo día del mes.' }],
+  },
+  {
+    label: 'Cómo se calcula',
+    blocks: [
+      { kind: 'equation', left: 'Lo normal', right: 'Promedio de lo gastado al mismo día en los 6 meses anteriores' },
+      { kind: 'equation', left: '%', right: '(Este mes − Lo normal) ÷ Lo normal' },
+    ],
+  },
+  {
+    label: 'Cómo leerlo',
+    blocks: [{ kind: 'legend', items: [
+      { color: '#fb7185', label: 'Rojo', text: 'Vas gastando más rápido de lo normal.' },
+      { color: '#34d399', label: 'Verde', text: 'Vas gastando más lento de lo normal.' },
+    ] }],
+  },
+  { label: 'Cómo usarlo', blocks: [{ kind: 'bullets', items: ['Abre «Ver más» para revisar cada mes.'] }] },
+];

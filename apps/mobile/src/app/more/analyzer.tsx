@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { VS_SECTIONS, PACE_SECTIONS } from '@/lib/info-sections';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -93,7 +94,7 @@ export default function AnalyzerScreen() {
         <>
           <View className="flex-row items-stretch gap-4">
             <PairedColumn>
-      <Card title="VS el mes anterior" info={{ title: 'VS el mes anterior', text: 'Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.' }}>
+      <Card title="VS el mes anterior" info={{ title: 'VS el mes anterior', text: 'Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.', sections: VS_SECTIONS }}>
         <View className="flex-row items-center gap-2 pb-1">
           <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
           <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Antes</Text>
@@ -170,7 +171,7 @@ export default function AnalyzerScreen() {
         </>
       ) : (
         <>
-      <Card title="VS el mes anterior" info={{ title: 'VS el mes anterior', text: 'Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.' }}>
+      <Card title="VS el mes anterior" info={{ title: 'VS el mes anterior', text: 'Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.', sections: VS_SECTIONS }}>
         <View className="flex-row items-center gap-2 pb-1">
           <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
           <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Antes</Text>
@@ -392,7 +393,7 @@ export default function AnalyzerScreen() {
           </PairedColumn>
           <PairedColumn>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Ritmo de gasto', text: 'Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.' }}>
+        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Ritmo de gasto', text: 'Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.', sections: PACE_SECTIONS }}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
             Al día {pace.dayOfMonth}; lo normal a esta altura es {money(pace.avgPaceForSameDay)}
@@ -406,7 +407,7 @@ export default function AnalyzerScreen() {
         <>
       <AnalyzerFxExposure rows={fxExposure.rows} loading={fxExposure.loading} missing={fxExposure.missing} currency={currency} />
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Ritmo de gasto', text: 'Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.' }}>
+        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Ritmo de gasto', text: 'Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.', sections: PACE_SECTIONS }}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
             Al día {pace.dayOfMonth}; lo normal a esta altura es {money(pace.avgPaceForSameDay)}

@@ -62,7 +62,7 @@ export default function AppTabs() {
   };
 
   const tabs = (
-    <Tabs tabBar={wide ? () => null : (props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false, animation: 'shift', sceneStyleInterpolator: slideBetweenTabs, transitionSpec: { animation: 'timing', config: { duration: 280, easing: Easing.out(Easing.cubic) } } }}>
+    <Tabs tabBar={wide ? () => null : (props) => <FloatingTabBar {...props} />} screenOptions={wide ? { headerShown: false, animation: 'none' } : { headerShown: false, animation: 'shift', sceneStyleInterpolator: slideBetweenTabs, transitionSpec: { animation: 'timing', config: { duration: 280, easing: Easing.out(Easing.cubic) } } }}>
       <Tabs.Screen
         name="index"
         options={{
