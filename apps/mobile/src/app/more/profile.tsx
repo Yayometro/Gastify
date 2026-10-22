@@ -10,6 +10,7 @@ import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { AppearanceCard } from '@/components/appearance-card';
 import { AccessCard } from '@/components/profile/access-card';
+import { CurrencyCard } from '@/components/profile/currency-card';
 import { ApiTokensCard } from '@/components/profile/api-tokens-card';
 import { DeleteAccountCard } from '@/components/profile/delete-account-card';
 import { PasskeysCard } from '@/components/profile/passkeys-card';
@@ -113,6 +114,8 @@ export default function ProfileScreen() {
       </Card>
 
       <AccessCard email={email} />
+
+      <CurrencyCard />
 
       <AppearanceCard />
 

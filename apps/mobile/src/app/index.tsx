@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { authClient } from '@/auth-client';
 import { AccountsCarousel } from '@/components/home/accounts-carousel';
-import { BudgetsWidget } from '@/components/home/budgets-widget';
+import { BudgetsWidget, MAX_DASHBOARD_BUDGETS, useDashboardBudgetRows } from '@/components/home/budgets-widget';
 import { InsightsWidget } from '@/components/home/insights-widget';
 import { SummaryWidget } from '@/components/home/summary-widget';
 import { TabletWalletHeader } from '@/components/home/tablet-wallet-header';
@@ -61,7 +61,11 @@ export default function HomeScreen() {
   const inPeriod = useMemo(() => transactions.data.filter((movement) => isInRange(movement, period.range)), [transactions.data, period.range]);
   const previous = useMemo(() => summarizePeriod(transactions.data, compareRange('previous', period.range, { from: null, to: null })), [transactions.data, period.range]);
   const insights = useMemo(() => computeInsights(summary, previous, period.now), [summary, previous, period.now]);
-  const latest = useMemo(() => sortNewestFirst(transactions.data).slice(0, 5), [transactions.data]);
+  // Side by side on a wide screen, the latest movements are as tall as the budgets beside them: about three rows per budget card.
+  const { rows: budgetRows } = useDashboardBudgetRows();
+  const wideFlag = useWindowDimensions().width >= WIDE_MIN_WIDTH;
+  const latestCount = wideFlag ? Math.min(40, Math.max(5, Math.min(budgetRows.length, MAX_DASHBOARD_BUDGETS) * 3)) : 5;
+  const latest = useMemo(() => sortNewestFirst(transactions.data).slice(0, latestCount), [transactions.data, latestCount]);
 
   const accounts = accountsState.data;
   const activity = useMemo(() => accountActivity(transactions.data, period.range), [transactions.data, period.range]);
@@ -134,7 +138,7 @@ export default function HomeScreen() {
       <BudgetsWidget />
             </PairedColumn>
             <PairedColumn>
-      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los cinco movimientos con la fecha más reciente de toda tu cuenta, sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los movimientos con la fecha más reciente de toda tu cuenta (cinco en el teléfono; en la tablet los que quepan junto a tus presupuestos), sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <Muted>Cargando…</Muted>
         ) : latest.length === 0 ? (

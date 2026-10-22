@@ -127,10 +127,40 @@ export function TopRanking({
       ) : undefined} />
       <Segmented options={sizeOptions} value={String(size) as `${TopSize}`} onChange={(next) => setSize(Number(next) as TopSize)} />
       <Segmented options={[{ value: 'bills', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
-      <Segmented options={[{ value: 'categories', label: 'Por categoría' }, { value: 'movements', label: 'Movimientos' }]} value={by} onChange={setBy} />
+      {(!tablet || byMonth) && <Segmented options={[{ value: 'categories', label: 'Por categoría' }, { value: 'movements', label: 'Movimientos' }]} value={by} onChange={setBy} />}
       {!byMonth && (
         <>
       {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
+      {tablet ? (
+        <View className="flex-row items-start gap-6">
+          <View className="flex-1 gap-1">
+            <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">Categorías</Text>
+      {categories.map((row, index) => (
+            <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
+            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3 py-1">
+              <CategoryBadge icon={row.icon} color={row.color} size={36} />
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
+              <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            </Pressable>
+            </RankedRow>
+          ))}
+          </View>
+          <View className="flex-1 gap-1">
+            <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">Movimientos</Text>
+      {biggest.map((movement, index) => (
+            <RankedRow key={String(movement._id)} rank={index + 1} last={index === biggest.length - 1}>
+            <MovementRow
+              movement={movement}
+              currency={currency}
+              onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })}
+            />
+            </RankedRow>
+          ))}
+          </View>
+        </View>
+      ) : (
+        <>
       {by === 'categories'
         ? categories.map((row, index) => (
             <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
@@ -151,6 +181,8 @@ export function TopRanking({
             />
             </RankedRow>
           ))}
+        </>
+      )}
         </>
       )}
       {byMonth && (

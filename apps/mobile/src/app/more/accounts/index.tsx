@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { AccountCard } from '@/components/account-card';
 import { Screen } from '@/components/screen';
+import { useIsTablet } from '@/hooks/use-device-class';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { reloadAfterWrite, useRefreshAppData } from '@/hooks/use-load-app-data';
@@ -24,6 +25,7 @@ import type { AppDispatch } from '@/store';
 // Every account with its balance in its own currency and the total in the primary one. Tap one to
 // edit it; the arrows change the order the accounts are listed in (the web's order, saved on the server).
 export default function AccountsScreen() {
+  const tablet = useIsTablet();
   const dispatch = useDispatch<AppDispatch>();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -86,7 +88,7 @@ export default function AccountsScreen() {
           {Object.entries(byCurrency)
             .filter(([code]) => code !== currency)
             .map(([code, amount]) => (
-              <View key={code} className="flex-row justify-between">
+              <View key={code} className={tablet ? 'flex-row items-center gap-4' : 'flex-row justify-between'}>
                 <Text className="font-inter text-sm text-gf-text-muted">Saldo en {code}</Text>
                 <Text className="font-inter-medium text-sm text-gf-text">{formatMoneyMajor(amount, code)}</Text>
               </View>
@@ -99,8 +101,9 @@ export default function AccountsScreen() {
         </Card>
       )}
 
+      <View className="flex-row flex-wrap gap-4">
       {accounts.map((account, index) => (
-        <View key={idOf(account) || String(index)} className="flex-row items-center gap-3">
+        <View key={idOf(account) || String(index)} className="flex-row items-center gap-3" style={tablet ? { flexBasis: '47%', flexGrow: 1 } : { width: '100%' }}>
           <View className="flex-1">
             <AccountCard
               account={account}
@@ -121,6 +124,7 @@ export default function AccountsScreen() {
           </View>
         </View>
       ))}
+      </View>
     </Screen>
   );
 }

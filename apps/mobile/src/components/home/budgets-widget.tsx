@@ -1,12 +1,12 @@
 import { router } from 'expo-router';
 import { BUDGET_FACES_SECTIONS } from '@/lib/info-sections';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { Card } from '@/components/ui/card';
-import { BudgetMood, BudgetProgress } from '@/components/budget-progress';
-import { periodSuffix } from '@/lib/budget-look';
+import { BudgetCard } from '@/components/budgets/budget-card';
+import { InfoTip } from '@/components/info-tip';
 import { Colors } from '@/constants/theme';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
@@ -14,14 +14,14 @@ import type { RootState } from '@/store';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
-import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
 import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
 
-// The spending budgets that are closest to their limit this month, with a link to all of them.
-export function BudgetsWidget() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+// The most budgets the dashboard shows; the rest are one tap away on «Ver todos».
+export const MAX_DASHBOARD_BUDGETS = 10;
+
+// The spending budgets of this month, the closest to their limit first, as the same cards of the Budgets screen.
+export function useDashboardBudgetRows() {
   const budgets = useSelector((state: RootState) => state.budgetReducer.data);
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const currency = usePrimaryCurrency();
@@ -44,20 +44,26 @@ export function BudgetsWidget() {
     [budgets, transactions, currency, rates, bounds]
   );
 
+  return { rows, currency };
+}
+
+export function BudgetsWidget() {
+  const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  const { rows, currency } = useDashboardBudgetRows();
+  const shown = rows.slice(0, MAX_DASHBOARD_BUDGETS);
   return (
-    <Card title="Presupuestos" onTitlePress={() => router.navigate('/budgets')} info={{ title: 'Presupuestos', text: 'Cada barra es lo gastado en el periodo del presupuesto ÷ su límite; el círculo marca el porcentaje y la carita cambia de ánimo según qué tan cerca estés del límite (verde tranquilo, naranja cerca, rojo excedido). En los de ahorro la lectura se invierte: más avance es mejor. Se ordenan del más cerca de su límite al más lejano. Toca uno para ver sus movimientos.', sections: BUDGET_FACES_SECTIONS }} action={<Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver todos</Text></Pressable>}>
-      {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes presupuestos de gasto.</Text>}
-      <ScrollView nestedScrollEnabled style={{ maxHeight: 330 }} contentContainerStyle={{ gap: 14 }} showsVerticalScrollIndicator>
-      {rows.map(({ budget, goal, spent, ratio }) => (
-        <Pressable key={idOf(budget)} accessibilityRole="button" onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })} className="gap-1.5">
-          <View className="flex-row items-center gap-3">
-            <BudgetMood ratio={ratio} size={30} />
-            <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{budget.name}</Text>
-          </View>
-          <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, false)} spent={spent} goal={goal} currency={currency} suffix={periodSuffix(budget)} />
+    <View className="gap-3">
+      <View className="flex-row items-center justify-between gap-3 px-1">
+        <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8} className="flex-1">
+          <Text className="font-inter-semibold text-lg text-gf-text">Presupuestos</Text>
         </Pressable>
-      ))}
-      </ScrollView>
-    </Card>
+        <View className="flex-row items-center gap-3">
+          <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{rows.length > shown.length ? `Ver todos (${rows.length})` : 'Ver todos'}</Text></Pressable>
+          <InfoTip info={{ title: 'Presupuestos', text: 'Cada barra es lo gastado en el periodo del presupuesto ÷ su límite; el círculo marca el porcentaje y la carita cambia de ánimo según qué tan cerca estés del límite (verde tranquilo, naranja cerca, rojo excedido). Se ordenan del más cerca de su límite al más lejano y aquí se ven hasta 10; «Ver todos» abre todos. Toca uno para ver sus movimientos.', sections: BUDGET_FACES_SECTIONS }} />
+        </View>
+      </View>
+      {rows.length === 0 && <Card><Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes presupuestos de gasto.</Text></Card>}
+      {shown.map((row) => <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)}
+    </View>
   );
 }

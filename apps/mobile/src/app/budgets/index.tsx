@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
-import { CategoryBadge } from '@/components/category-badge';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
@@ -17,7 +16,6 @@ import { monthTitleEs } from '@gastify/core/format/spanishDates';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getBudgetCoverage } from '@gastify/core/transformers/budgetCoverage';
 import { convertBudgetsToPrimary, type ConvertedBudget } from '@gastify/core/transformers/budgetCurrency';
-import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
 import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
@@ -25,8 +23,8 @@ import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import { BudgetSummarySheet, type BudgetLine, type GroupLine } from '@/components/budget-summary-sheet';
-import { BudgetMood, BudgetProgress } from '@/components/budget-progress';
-import { lookOf, periodSuffix } from '@/lib/budget-look';
+import { BudgetCard } from '@/components/budgets/budget-card';
+import { lookOf } from '@/lib/budget-look';
 import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
@@ -45,46 +43,6 @@ type Row = {
   goal: number;
   ratio: number;
 };
-
-function BudgetCard({ row, currency, saving }: { row: Row; currency: string; saving: boolean }) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
-  const { budget, spent, goal, ratio } = row;
-  const diff = spent - goal;
-  const exceeded = !saving && goal > 0 && diff > 0;
-  const look = lookOf(budget, colors.accentSoft);
-  const kind = isProjectBudget(budget) ? 'Proyecto' : saving ? 'Meta de ahorro' : 'Presupuesto de gasto';
-  const status = exceeded
-    ? `Excedido por ${formatMoneyMajor(diff, currency)}`
-    : saving
-      ? diff < 0
-        ? `Faltan ${formatMoneyMajor(-diff, currency)}`
-        : 'Meta alcanzada 🎉'
-      : `Quedan ${formatMoneyMajor(Math.max(-diff, 0), currency)}`;
-  const statusColor = exceeded ? colors.expense : saving ? (diff >= 0 ? '#60a5fa' : colors.textSecondary) : colors.income;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Abrir ${budget.name || 'presupuesto'}`}
-      onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })}>
-      <Card>
-        <View className="flex-row items-center gap-3">
-          <CategoryBadge icon={look.icon} color={look.color} size={40} />
-          <View className="flex-1">
-            <Text className="font-inter-semibold text-base text-gf-text" numberOfLines={1}>
-              {budget.name || 'Presupuesto'}
-            </Text>
-            <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>{kind} · {periodSuffix(budget).replace('/', '')}</Text>
-          </View>
-          {goal > 0 && <BudgetMood ratio={ratio} saving={saving} size={40} />}
-        </View>
-        {goal > 0 && <BudgetProgress ratio={ratio} color={getBudgetBarColor(ratio, saving)} saving={saving} spent={spent} goal={goal} currency={currency} suffix={periodSuffix(budget)} />}
-        {goal > 0 && <Text className="font-inter-semibold text-sm" style={{ color: statusColor }}>{status}</Text>}
-      </Card>
-    </Pressable>
-  );
-}
 
 function NewButton({ label, kind }: { label: string; kind: 'spending' | 'saving' | 'project' }) {
   const scheme = useColorScheme();

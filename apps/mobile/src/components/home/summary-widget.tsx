@@ -1,16 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
+import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { CategoryBubbles } from '@/components/charts/category-bubbles';
 import { CategoryDonut } from '@/components/charts/category-donut';
 import { CategoryTreemap } from '@/components/charts/category-treemap';
 import { CompactTimeFilter } from '@/components/compact-time-filter';
 import { MonthlyBars } from '@/components/charts/monthly-bars';
-import { CategoryBadge } from '@/components/category-badge';
 import { Segmented } from '@/components/segmented';
 import { Card } from '@/components/ui/card';
+import { CategoryTable } from '@/components/home/category-table';
 import { Colors } from '@/constants/theme';
+import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { categoryBreakdown, groupSmallSlices, NO_SUBCATEGORY_NAME } from '@gastify/core/history/categoryBreakdown';
 import { historyRange, summarizePeriod, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
@@ -54,19 +56,62 @@ export function SummaryWidget({
   const [chart, setChart] = useState<'ring' | 'bubbles' | 'treemap'>('ring');
   const total = kind === 'spending' ? summary.totals.spending : summary.totals.incomes;
 
-  const categories = useMemo(() => groupSmallSlices(categoryBreakdown(movements, kind), MAX_ARCS), [movements, kind]);
-  const chosen = categories.find((slice) => slice.key === selected) ?? null;
+  // The chart groups the small slices; the table lists every category.
+  const allRows = useMemo(() => categoryBreakdown(movements, kind), [movements, kind]);
+  const categories = useMemo(() => groupSmallSlices(allRows, MAX_ARCS), [allRows]);
+  const chosen = allRows.find((slice) => slice.key === selected) ?? categories.find((slice) => slice.key === selected) ?? null;
   // Zoomed into a category the donut shows its subcategories; "Otras" shows the categories it merged. A
   // category with no subcategory of its own has nothing to zoom into: it is only highlighted.
   const zoomed = chosen !== null && chosen.children.some((child) => child.name !== NO_SUBCATEGORY_NAME);
   const shown = zoomed && chosen ? chosen.children : categories;
+  const tableRows = zoomed && chosen ? chosen.children : allRows;
   const shownTotal = chosen ? chosen.value : total;
+  const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
+  const [detailOpen, setDetailOpen] = useState(false);
 
   // Another kind or period: the chosen slice may not exist any more.
   useEffect(() => setSelected(null), [kind, movements]);
 
+  const select = (key: string) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)));
+
+  // The chart and the zoom controls. On the phone the card only shows it as a preview (a tap opens the sheet); the sheet and the tablet make it interactive.
+  const chartBlock = (interactive: boolean) => (
+    <View className="gap-3">
+      {chart !== 'ring' && chosen && interactive && (
+        <Pressable accessibilityRole="button" accessibilityLabel="Regresar a todas las categorías" onPress={() => setSelected(null)} className="self-start flex-row items-center gap-1 py-1">
+          <Ionicons name="arrow-back" size={18} color={colors.accent} />
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todas las categorías</Text>
+        </Pressable>
+      )}
+      {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} />}
+      {chart === 'treemap' && <CategoryTreemap slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} />}
+      {chart === 'ring' && (
+        <CategoryDonut
+          slices={shown}
+          selectedKey={zoomed ? null : selected}
+          onSelect={interactive ? select : () => setDetailOpen(true)}
+          centerTitle={chosen ? chosen.name : kind === 'spending' ? 'Gastos' : 'Ingresos'}
+          centerValue={formatMoneyMajor(shownTotal, currency)}
+          centerHint={interactive ? (zoomed ? '‹ Toca para volver' : chosen ? undefined : 'Toca una sección ›') : 'Toca para ver el detalle ›'}
+          centerIcon={chosen && chosen.icon ? { icon: chosen.icon, color: chosen.color } : null}
+          onCenterPress={interactive ? (chosen ? () => setSelected(null) : undefined) : () => setDetailOpen(true)}
+          trackColor={scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(27,16,61,0.06)'}
+        />
+      )}
+      {chart !== 'ring' && chosen && interactive && (
+        <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="items-center">
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{chosen.name}: {formatMoneyMajor(chosen.value, currency)} · quitar selección</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+
+  const table = (limit?: number) => (
+    <CategoryTable rows={tableRows} total={shownTotal} currency={currency} selectedKey={zoomed ? null : selected} disabled={zoomed} firstColumn={zoomed && chosen ? `${chosen.name} · subcategorías` : 'Categoría'} limit={limit} onPressRow={select} />
+  );
+
   return (
-    <Card title="Resumen de transacciones" info={{ title: 'Resumen de transacciones', text: 'Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución; toca una categoría para ver sus subcategorías y usa la flecha para regresar. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.' }}>
+    <Card title="Resumen de transacciones" info={{ title: 'Resumen de transacciones', text: 'Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución, y la tabla lista TODAS las categorías con su porcentaje y su monto. Toca una categoría para ver sus subcategorías y usa la flecha para regresar. En el teléfono, tocar la gráfica o «Ver todas» abre el detalle completo. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.' }}>
       <CompactTimeFilter preset={preset} onPreset={setPreset} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
       <Segmented options={[{ value: 'spending', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
       {categories.length > 0 && <Segmented options={[{ value: 'ring', label: 'Anillo' }, { value: 'bubbles', label: 'Burbujas' }, { value: 'treemap', label: 'Mapa' }]} value={chart} onChange={setChart} />}
@@ -74,49 +119,22 @@ export function SummaryWidget({
 
       {categories.length === 0 ? (
         <Text className="font-inter text-sm text-gf-text-muted">Sin {kind === 'spending' ? 'gastos' : 'ingresos'} en este periodo.</Text>
+      ) : tablet ? (
+        <View className="flex-row items-start gap-6">
+          <View style={{ flex: 1 }}>{chartBlock(true)}</View>
+          <View style={{ flex: 1 }}>{table()}</View>
+        </View>
       ) : (
         <>
-          {chart !== 'ring' && chosen && (
-            <Pressable accessibilityRole="button" accessibilityLabel="Regresar a todas las categorías" onPress={() => setSelected(null)} className="self-start flex-row items-center gap-1 py-1">
-              <Ionicons name="arrow-back" size={18} color={colors.accent} />
-              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todas las categorías</Text>
-            </Pressable>
-          )}
-          {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={(key) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)))} total={shownTotal} />}
-          {chart === 'treemap' && <CategoryTreemap slices={shown} selectedKey={zoomed ? null : selected} onSelect={(key) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)))} total={shownTotal} />}
-          {chart !== 'ring' && chosen && (
-            <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="items-center">
-              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{chosen.name}: {formatMoneyMajor(chosen.value, currency)} · quitar selección</Text>
-            </Pressable>
-          )}
-          {chart === 'ring' && (
-          <CategoryDonut
-            slices={shown}
-            selectedKey={zoomed ? null : selected}
-            onSelect={(key) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)))}
-            centerTitle={chosen ? chosen.name : kind === 'spending' ? 'Gastos' : 'Ingresos'}
-            centerValue={formatMoneyMajor(shownTotal, currency)}
-            centerHint={zoomed ? '‹ Toca para volver' : chosen ? undefined : 'Toca una sección ›'}
-            centerIcon={chosen && chosen.icon ? { icon: chosen.icon, color: chosen.color } : null}
-            onCenterPress={chosen ? () => setSelected(null) : undefined}
-            trackColor={scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(27,16,61,0.06)'}
-          />
-          )}
-          {shown.map((row) => (
-            <Pressable
-              key={row.key}
-              accessibilityRole="button"
-              accessibilityLabel={`${row.name}, ${formatMoneyMajor(row.value, currency)}`}
-              disabled={zoomed}
-              onPress={() => setSelected((current) => (current === row.key ? null : row.key))}
-              className="flex-row items-center gap-3"
-              style={{ opacity: selected !== null && !zoomed && selected !== row.key ? 0.45 : 1 }}>
-              {row.icon ? <CategoryBadge icon={row.icon} color={row.color} size={32} /> : <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: row.color }} />}
-              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.name}</Text>
-              <Text className="font-inter text-sm text-gf-text-muted">{shownTotal > 0 ? Math.round((row.value / shownTotal) * 100) : 0}%</Text>
-              <Text className="w-28 text-right font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
-            </Pressable>
-          ))}
+          {chartBlock(false)}
+          {table(5)}
+          <Pressable accessibilityRole="button" onPress={() => setDetailOpen(true)} className="items-center rounded-full py-3" style={{ backgroundColor: colors.accentSoft }}>
+            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver las {allRows.length} {allRows.length === 1 ? 'categoría' : 'categorías'} ›</Text>
+          </Pressable>
+          <DetailSheet visible={detailOpen} onClose={() => setDetailOpen(false)} title="Resumen de transacciones" subtitle={kind === 'spending' ? 'Gastos del periodo' : 'Ingresos del periodo'}>
+            {chartBlock(true)}
+            {table()}
+          </DetailSheet>
         </>
       )}
 

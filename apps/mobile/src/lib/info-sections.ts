@@ -1,4 +1,5 @@
 import type { InfoSection } from '@/components/info-content';
+import type { InfoText } from '@/components/info-tip';
 
 // Hand-made layouts (tables, equations, legends) for the tooltips that explain the most.
 
@@ -155,3 +156,64 @@ export const PACE_SECTIONS: InfoSection[] = [
   },
   { label: 'Cómo usarlo', blocks: [{ kind: 'bullets', items: ['Abre «Ver más» para revisar cada mes.'] }] },
 ];
+
+// The three panels at the top of the dashboard (the phone's carousel and the tablet's hero): what each one says.
+export const HERO_INFO = {
+  versus: {
+    title: 'Contra el periodo anterior',
+    text: 'Compara tus ingresos, gastos y balance del periodo elegido con el periodo inmediato anterior de la misma duración.',
+    sections: [
+      {
+        label: 'Qué muestra',
+        blocks: [{ kind: 'p', text: 'Cada renglón (Ingresos, Gastos, Balance) trae lo que cambió en dinero, el porcentaje, lo que valía el periodo anterior y lo que vale ahora.' }],
+      },
+      {
+        label: 'Cómo se calcula',
+        blocks: [
+          { kind: 'equation', left: 'Cambio', right: 'Actual − Anterior' },
+          { kind: 'equation', left: '%', right: '(Actual − Anterior) ÷ Anterior' },
+          { kind: 'p', text: 'El periodo anterior es el tramo justo antes del elegido y con la misma duración: si miras octubre, es septiembre; si miras 7 días, son los 7 días de antes.' },
+        ],
+      },
+      {
+        label: 'Cómo leerlo',
+        blocks: [
+          { kind: 'table', head: ['Señal', 'Significa'], rows: [['▲', 'Subió contra el periodo anterior'], ['▼', 'Bajó contra el periodo anterior']] },
+          { kind: 'legend', items: [
+            { color: '#6EE7A8', label: 'Ingresos', text: 'Verde: lo que entró.' },
+            { color: '#FF8A8A', label: 'Gastos', text: 'Rojo: lo que salió.' },
+            { color: '#7EC8FF', label: 'Balance', text: 'Azul: ingresos − gastos.' },
+          ] },
+        ],
+      },
+    ],
+  } satisfies InfoText,
+  summary: {
+    title: 'Resumen del periodo',
+    text: 'Lo que entró, lo que salió y lo que quedó en el periodo elegido.',
+    sections: [
+      {
+        label: 'Cómo se calcula',
+        blocks: [
+          { kind: 'equation', left: 'Balance', right: 'Ingresos − Gastos' },
+          { kind: 'p', text: 'Ingresos y gastos suman los movimientos del periodo en tu moneda principal. Las transferencias entre tus cuentas no cuentan, porque ni entran ni salen de tu dinero.' },
+        ],
+      },
+      { label: 'Cómo usarlo', blocks: [{ kind: 'bullets', items: ['Cambia el periodo con los filtros de arriba; el resumen se actualiza.'] }] },
+    ],
+  } satisfies InfoText,
+  accounts: {
+    title: 'Tus cuentas',
+    text: 'Tus cuentas, de la de mayor saldo a la de menor.',
+    sections: [
+      {
+        label: 'Qué muestra',
+        blocks: [
+          { kind: 'p', text: 'El saldo actual de cada cuenta en su propia moneda (las que no son de tu moneda principal llevan su código al lado).' },
+          { kind: 'p', text: 'El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente. Las tarjetas de crédito no se suman a tu dinero disponible.' },
+        ],
+      },
+      { label: 'Cómo usarlo', blocks: [{ kind: 'bullets', items: ['Abre «Cuentas» desde el menú para crear, editar o reordenar tus cuentas.'] }] },
+    ],
+  } satisfies InfoText,
+};

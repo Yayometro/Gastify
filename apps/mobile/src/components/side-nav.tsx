@@ -54,7 +54,9 @@ export function SideNav() {
       accessibilityState={{ selected: active }}
       onPress={onPress}
       hitSlop={6}
-      style={[styles.item, active && (dark ? styles.activeDark : { backgroundColor: colors.accentSoft })]}>
+      style={styles.item}>
+      {/* The selected item: a small, rounded, almost-square pill behind the icon (same width, less height). */}
+      {active && <View pointerEvents="none" style={[styles.pill2, dark ? styles.activeDark : { backgroundColor: colors.accentSoft }]} />}
       {icon}
     </Pressable>
   );
@@ -104,6 +106,7 @@ const styles = StyleSheet.create({
   item: { width: 66, height: 70, borderRadius: 33, alignItems: 'center', justifyContent: 'center' },
   // The selected item: the same violet pill with a light edge as the phone's bar.
   activeDark: { backgroundColor: 'rgba(168,85,247,0.55)', borderWidth: 1, borderColor: 'rgba(233,213,255,0.55)' },
+  pill2: { position: 'absolute', width: 60, height: 46, borderRadius: 16 },
   fab: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
   // The raised, three-dimensional look of the web's "+" and the phone bar's: a violet glow under the gradient.
   fabShadow: Platform.select({ ios: { shadowColor: '#7e22ce', shadowOpacity: 0.6, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }, default: { elevation: 10 } }) as object,

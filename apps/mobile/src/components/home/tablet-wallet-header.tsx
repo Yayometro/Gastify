@@ -1,6 +1,8 @@
 import { Text, View, useColorScheme } from 'react-native';
 
+import { InfoTip, type InfoText } from '@/components/info-tip';
 import { Colors } from '@/constants/theme';
+import { HERO_INFO } from '@/lib/info-sections';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { MonthTotals } from '@gastify/core/transactions/monthSummary';
@@ -12,12 +14,15 @@ const INCOME = '#6EE7A8';
 const EXPENSE = '#FF8A8A';
 const BALANCE = '#7EC8FF';
 
-function Panel({ label, children }: { label: string; children: React.ReactNode }) {
+function Panel({ label, info, children }: { label: string; info: InfoText; children: React.ReactNode }) {
   const dark = useColorScheme() === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];
   return (
     <View className="flex-1 gap-2 rounded-2xl p-4" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.10)' : colors.accentSoft }}>
-      <Text className="font-inter text-xs uppercase tracking-wide text-gf-text-muted">{label}</Text>
+      <View className="flex-row items-center justify-between">
+        <Text className="font-inter text-xs uppercase tracking-wide text-gf-text-muted">{label}</Text>
+        <InfoTip info={info} />
+      </View>
       {children}
     </View>
   );
@@ -79,7 +84,7 @@ export function TabletWalletHeader({
         {name ? `${name} ` : ''}Wallet
       </Text>
       <View className="flex-row items-stretch gap-4">
-        <Panel label="Tus cuentas">
+        <Panel label="Tus cuentas" info={HERO_INFO.accounts}>
           {sorted.length === 0 ? (
             <Text className="font-inter text-xs text-gf-text-muted">Todavía no tienes cuentas.</Text>
           ) : (
@@ -94,7 +99,7 @@ export function TabletWalletHeader({
             ))
           )}
         </Panel>
-        <Panel label="Resumen">
+        <Panel label="Resumen" info={HERO_INFO.summary}>
           <View className="flex-1 justify-end gap-2">
             <Row label="Ingresos:" value={totals.incomes ? money(totals.incomes) : 'Sin monto…'} color={INCOME} />
             <Row label="Gastos:" value={totals.spending ? money(totals.spending) : 'Sin monto…'} color={EXPENSE} />
@@ -102,7 +107,7 @@ export function TabletWalletHeader({
             <Text className="pt-1 text-center font-inter text-xs text-gf-text-muted">{rangeText}</Text>
           </View>
         </Panel>
-        <Panel label="Vs. mes anterior">
+        <Panel label="Vs. mes anterior" info={HERO_INFO.versus}>
           <DeltaRow label="Ingresos" current={totals.incomes} previous={previous.incomes} color={INCOME} currency={currency} />
           <DeltaRow label="Gastos" current={totals.spending} previous={previous.spending} color={EXPENSE} currency={currency} />
           <DeltaRow label="Balance" current={totals.balance} previous={previous.balance} color={BALANCE} currency={currency} />

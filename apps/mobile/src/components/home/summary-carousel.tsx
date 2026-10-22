@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui/card';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
+import { HERO_INFO } from '@/lib/info-sections';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { percentChange } from '@gastify/core/history/periodComparison';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
@@ -111,6 +112,7 @@ export function SummaryCarousel(props: Props) {
   return (
     <Card
       title={names[page]}
+      info={[HERO_INFO.versus, HERO_INFO.summary, HERO_INFO.accounts][page]}
       action={
         <Pressable accessibilityRole="button" onPress={() => setMore(true)} hitSlop={8}>
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>
