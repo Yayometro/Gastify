@@ -49,6 +49,8 @@ export default function MoreScreen() {
   return (
     <Screen title="Más" subtitle="Tus cuentas, categorías y perfil.">
       <Card>
+        <MenuRow label="Notificaciones" icon="notifications-outline" onPress={() => router.push('/notifications')} />
+        <View className="h-px bg-gf-border" />
         <MenuRow label="Cuentas" icon="wallet-outline" onPress={() => router.push('/more/accounts')} />
         <View className="h-px bg-gf-border" />
         <MenuRow label="Categorías" icon="pricetags-outline" onPress={() => router.push('/more/categories')} />

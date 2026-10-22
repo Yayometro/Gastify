@@ -14,6 +14,7 @@ import { TopRanking } from '@/components/top-ranking';
 import { MovementRow } from '@/components/movements/movement-row';
 import { PeriodControls } from '@/components/period-controls';
 import { Screen } from '@/components/screen';
+import { NotificationsBell } from '@/components/notifications-bell';
 import { SummaryCarousel } from '@/components/home/summary-carousel';
 import { Card } from '@/components/ui/card';
 import { SkeletonRows } from '@/components/ui/skeleton';
@@ -83,6 +84,7 @@ export default function HomeScreen() {
     <Screen
       title={firstName ? `Hola, ${firstName}` : 'Inicio'}
       subtitle={period.preset === 'month' ? period.label : rangeLabelEs(period.range.start, period.range.end)}
+      headerAction={<NotificationsBell />}
       refreshing={refreshing}
       onRefresh={refresh}
       hero={<TabletWalletHeader name={session?.user.name ?? undefined} accounts={accounts} totals={summary.totals} previous={previous.totals} currency={currency} rangeText={`Del ${period.range.start.toLocaleDateString('es-MX')} al ${period.range.end.toLocaleDateString('es-MX')}.`} />}>

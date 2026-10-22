@@ -16,6 +16,8 @@ export interface AccountData {
   institution?: string | null;
   bankId?: string | null;
   cardNumber?: string | null;
+  cardColor?: string;
+  cardPattern?: string;
   balanceUpdatedAt?: Date | string | null;
   schemaVersion?: number;
   order?: number;

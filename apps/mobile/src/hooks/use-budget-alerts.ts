@@ -29,17 +29,17 @@ async function readShown(): Promise<string[]> {
 // In-app notices about the budgets, saving goals and projects (70 / 80 / 90 / 100 %, congratulations, savings progress).
 // Each notice is shown once per budget and period. Delivering them as push notifications while the app is closed needs
 // the server to send them; this is the part that lives in the app.
-export function useBudgetAlerts() {
-  const toast = useToast();
+// The notices that apply right now: one per budget, saving goal or project that reached a level this period. The toasts
+// show them as they appear, and the Notifications screen lists the same ones.
+export function useBudgetAlertList(): BudgetAlert[] {
   const budgets = useSelector((state: RootState) => state.budgetReducer.data);
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const accounts = useSelector((state: RootState) => state.accountsReducer.data);
   const ready = useSelector((state: RootState) => state.transacctionsReducer.status === 'succeeded' && state.budgetReducer.status === 'succeeded');
   const currency = usePrimaryCurrency();
   const rates = useRatesToPrimary([...budgets.map((budget) => budget.currency), ...accounts.map((account) => account.currency)], currency);
-  const busy = useRef(false);
 
-  const alerts = useMemo<BudgetAlert[]>(() => {
+  return useMemo<BudgetAlert[]>(() => {
     if (!ready) return [];
     const now = new Date();
     const bounds = monthBounds(now.getFullYear(), now.getMonth());
@@ -66,6 +66,15 @@ export function useBudgetAlerts() {
     }
     return out;
   }, [ready, budgets, transactions, accounts, currency, rates]);
+}
+
+// In-app notices about the budgets, saving goals and projects (70 / 80 / 90 / 100 %, congratulations, savings progress).
+// Each notice is shown once per budget and period. Delivering them as push notifications while the app is closed needs
+// the server to send them; this is the part that lives in the app.
+export function useBudgetAlerts() {
+  const toast = useToast();
+  const alerts = useBudgetAlertList();
+  const busy = useRef(false);
 
   useEffect(() => {
     if (alerts.length === 0 || busy.current) return;

@@ -88,35 +88,33 @@ export function SummaryWidget({
   };
   const back = () => setPath((current) => backOne(current));
 
-  // The chart and the zoom controls. On the phone the card only shows it as a preview (a tap opens the sheet); the sheet and the tablet make it interactive.
-  const chartBlock = (interactive: boolean) => (
+  // The way back up one level, shown above the chart on the card and in the sheet alike.
+  const backRow = zoomed && chosen ? (
+    <Pressable accessibilityRole="button" onPress={back} className="self-start flex-row items-center gap-1 py-1">
+      <Ionicons name="arrow-back" size={18} color={colors.accent} />
+      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{level === 1 ? 'Todas las categorías' : `Volver a ${chosen.name}`}</Text>
+    </Pressable>
+  ) : null;
+
+  // The chart, the same on the card and in the sheet: a tap on a slice opens the next level right here (its
+  // subcategories, then its movements). Only "Ver las N categorías" opens the sheet.
+  const chartBlock = () => (
     <View className="gap-3">
-      {chart !== 'ring' && chosen && interactive && (
-        <Pressable accessibilityRole="button" accessibilityLabel="Regresar un nivel" onPress={back} className="self-start flex-row items-center gap-1 py-1">
-          <Ionicons name="arrow-back" size={18} color={colors.accent} />
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{level === 1 ? 'Todas las categorías' : `Volver a ${chosen?.name ?? 'categoría'}`}</Text>
-        </Pressable>
-      )}
-      {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} height={tablet && interactive ? bigChart : undefined} />}
-      {chart === 'treemap' && <CategoryTreemap slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} height={tablet && interactive ? bigChart : undefined} />}
+      {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={select} total={shownTotal} height={tablet ? bigChart : undefined} />}
+      {chart === 'treemap' && <CategoryTreemap slices={shown} selectedKey={zoomed ? null : selected} onSelect={select} total={shownTotal} height={tablet ? bigChart : undefined} />}
       {chart === 'ring' && (
         <CategoryDonut
           slices={shown}
           selectedKey={zoomed ? null : selected}
-          onSelect={interactive ? select : () => setDetailOpen(true)}
+          onSelect={select}
           centerTitle={chosen ? chosen.name : kind === 'spending' ? 'Gastos' : 'Ingresos'}
           centerValue={formatMoneyMajor(shownTotal, currency)}
-          centerHint={interactive ? (zoomed ? '‹ Toca para volver' : 'Toca una sección ›') : 'Toca para ver el detalle ›'}
+          centerHint={zoomed ? '‹ Toca para volver' : 'Toca una sección ›'}
           centerIcon={chosen && chosen.icon ? { icon: chosen.icon, color: chosen.color } : null}
-          onCenterPress={interactive ? (zoomed ? back : undefined) : () => setDetailOpen(true)}
+          onCenterPress={zoomed ? back : undefined}
           trackColor={scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(27,16,61,0.06)'}
-          size={tablet && interactive ? bigChart : undefined}
+          size={tablet ? bigChart : undefined}
         />
-      )}
-      {chart !== 'ring' && chosen && interactive && (
-        <Pressable accessibilityRole="button" onPress={back} className="items-center">
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{chosen.name}: {formatMoneyMajor(chosen.value, currency)} · quitar selección</Text>
-        </Pressable>
       )}
     </View>
   );
@@ -139,19 +137,14 @@ export function SummaryWidget({
       <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver las {allRows.length} {allRows.length === 1 ? 'categoría' : 'categorías'} ›</Text>
     </Pressable>
   );
-  // The big sheet: the filters and every category (1 to 50), no chart; the table scrolls and each row can be opened.
+  // The big sheet: the filters, the same chart as the card (it drills down the same way) and every category, each row can be opened.
   const sheet = (
     <DetailSheet tall visible={detailOpen} onClose={() => setDetailOpen(false)} title="Resumen de transacciones" subtitle={`${allRows.length} ${allRows.length === 1 ? 'categoría' : 'categorías'} · ${kind === 'spending' ? 'gastos' : 'ingresos'}`}>
       {filters}
       {chartPicker}
       {totalText}
-      {chartBlock(true)}
-      {zoomed && chosen && (
-        <Pressable accessibilityRole="button" onPress={back} className="self-start flex-row items-center gap-1 py-1">
-          <Ionicons name="arrow-back" size={18} color={colors.accent} />
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todas las categorías</Text>
-        </Pressable>
-      )}
+      {backRow}
+      {chartBlock()}
       {table()}
     </DetailSheet>
   );
@@ -169,7 +162,8 @@ export function SummaryWidget({
             {filters}
             {chartPicker}
             {totalText}
-            {chartBlock(true)}
+            {backRow}
+            {chartBlock()}
           </View>
           <View style={{ flex: 2 }} className="gap-3">
             {table(MAX_ROWS)}
@@ -181,7 +175,8 @@ export function SummaryWidget({
           {filters}
           {chartPicker}
           {totalText}
-          {chartBlock(false)}
+          {backRow}
+          {chartBlock()}
           {table(5)}
           {seeMore}
         </>

@@ -1,5 +1,6 @@
 import mongoose, {Schema} from 'mongoose'
 import { SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies'
+import { DEFAULT_CARD_COLOR, DEFAULT_CARD_PATTERN } from '@gastify/core/accounts/cardStyle'
 
 export interface IAccount extends mongoose.Document {
     name?: string;
@@ -20,6 +21,9 @@ export interface IAccount extends mongoose.Document {
     // (digits only). Never a CVV. Both null when the person did not set them.
     bankId?: string | null;
     cardNumber?: string | null;
+    // How the account's card looks (see @gastify/core/accounts/cardStyle): a color id or "auto", and a pattern id.
+    cardColor?: string;
+    cardPattern?: string;
     balanceUpdatedAt?: Date | null;
     schemaVersion?: number;
     // User-controlled display order for the Accounts resume cards. Accounts
@@ -60,6 +64,8 @@ const accountSchema = new Schema<IAccount>({
     institution: { type: String, default: null },
     bankId: { type: String, default: null },
     cardNumber: { type: String, default: null },
+    cardColor: { type: String, default: DEFAULT_CARD_COLOR },
+    cardPattern: { type: String, default: DEFAULT_CARD_PATTERN },
     balanceUpdatedAt: { type: Date, default: null },
     schemaVersion: { type: Number, default: 1 },
     // User-controlled display order for the Accounts resume cards. Accounts

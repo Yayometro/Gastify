@@ -37,7 +37,7 @@ export function AccountsCarousel({
             width={ACCOUNT_CARD_WIDTH}
             activity={activity[idOf(account)]}
             rate={rates[account.currency ?? '']}
-            onPress={() => router.push({ pathname: '/more/accounts/[id]', params: { id: idOf(account) } })}
+            onPress={() => router.navigate({ pathname: '/more/accounts/[id]', params: { id: idOf(account), returnTo: '/' } })}
           />
         </View>
       ))}

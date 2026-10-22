@@ -31,12 +31,14 @@ import { monthTotals, sortNewestFirst } from '@gastify/core/transactions/monthSu
 
 // Edits one account: name, kind and balance. The currency stays as it was created.
 export default function EditAccountScreen() {
-  const { id: rawId } = useLocalSearchParams<{ id: string }>();
+  const { id: rawId, returnTo: rawReturn } = useLocalSearchParams<{ id: string; returnTo?: string }>();
   const id = String(rawId ?? '');
+  // Opened from Inicio, the card goes back to Inicio itself (the tab that opened it), not to the screen before in this stack.
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const account = useSelector((state: RootState) => state.accountsReducer.data.find((item) => idOf(item) === id));
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/more/accounts'));
+  const returnTo = typeof rawReturn === 'string' && rawReturn ? rawReturn : null;
+  const back = () => (returnTo ? router.navigate(returnTo as never) : router.canGoBack() ? router.back() : router.replace('/more/accounts'));
   const primary = usePrimaryCurrency();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const mine = useMemo(() => sortNewestFirst(transactions.filter((movement) => idOf(movement.account) === id)), [transactions, id]);
@@ -81,10 +83,10 @@ export default function EditAccountScreen() {
   };
 
   return (
-    <Screen title={account.name || 'Cuenta'} subtitle={`Moneda: ${account.currency || 'MXN'}`} backLabel="Cuentas" onBack={back}>
+    <Screen title={account.name || 'Cuenta'} subtitle={`Moneda: ${account.currency || 'MXN'}`} backLabel={returnTo ? 'Inicio' : 'Cuentas'} onBack={back}>
       <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} />
 
-      <CardColorPicker accountId={id} />
+      <CardColorPicker account={account} />
 
       {bankById(account.bankId) || account.cardNumber ? (
         <Card title="Banco y número" info={{ title: 'Banco y número', text: 'El banco al que pertenece la cuenta y, si lo quisiste, su número de tarjeta o de cuenta, oculto de forma predeterminada (toca el ojito para verlo). Nunca se guarda el CVV ni el NIP.' }}>

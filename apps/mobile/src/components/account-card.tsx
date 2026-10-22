@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 
 import { BankBadge } from '@/components/bank-badge';
+import { CardPattern } from '@/components/account-card-pattern';
+import { cardPalette } from '@/lib/account-card-style';
 import { bankById, formatCardNumber } from '@gastify/core/banks/banks';
-import { useAccountCardStyle, cardPalette } from '@/lib/account-card-style';
 
 import type { AccountActivity } from '@gastify/core/accounts/accountActivity';
 import { accountGradient } from '@gastify/core/accounts/accountActivity';
 import { ACCOUNT_TYPES } from '@gastify/core/accounts/accountForm';
+import { DEFAULT_CARD_PATTERN } from '@gastify/core/accounts/cardStyle';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
@@ -18,9 +20,9 @@ const TYPE_LABEL: Record<string, string> = Object.fromEntries(ACCOUNT_TYPES.map(
 
 export const ACCOUNT_CARD_WIDTH = 300;
 
-// An account drawn like a credit card, as on the web: a gradient (always the same one for the same account unless the
-// person chose another color), its name, the balance in its own currency, what that is worth in the main currency,
-// and what came in and went out in the period shown. The text takes its color from the card, so it always reads.
+// An account drawn like a credit card, as on the web: a color (the one saved on the account, or the one the app picks
+// from it), a pattern over it, its name, the balance in its own currency, what that is worth in the main currency, and
+// what came in and went out in the period shown. The text takes its color from the card, so it always reads.
 export function AccountCard({
   account,
   primary,
@@ -39,8 +41,7 @@ export function AccountCard({
   const [reveal, setReveal] = useState(false);
   const bank = bankById(account.bankId);
   const id = idOf(account);
-  const style = useAccountCardStyle(id);
-  const { from, to, ink, tint, light } = cardPalette(style, accountGradient(id || account.name || 'cuenta'));
+  const { stops, ink, tint, light } = cardPalette(account.cardColor, accountGradient(id || account.name || 'cuenta'));
   const up = light ? '#15803d' : '#86efac';
   const down = light ? '#be123c' : '#fda4af';
   const code = account.currency || primary;
@@ -52,7 +53,7 @@ export function AccountCard({
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`Cuenta ${account.name}`} onPress={onPress} disabled={!onPress} style={{ width: width ?? '100%' }}>
       <LinearGradient
-        colors={[from, to]}
+        colors={stops as [string, string, ...string[]]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[
@@ -60,8 +61,7 @@ export function AccountCard({
           light ? { borderWidth: 1, borderColor: 'rgba(17,24,39,0.12)' } : null,
           Platform.select({ ios: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } }, default: { elevation: 8 } }),
         ]}>
-        <View pointerEvents="none" style={{ position: 'absolute', right: -40, top: -40, width: 150, height: 150, borderRadius: 75, backgroundColor: tint(0.12) }} />
-        <View pointerEvents="none" style={{ position: 'absolute', right: 30, bottom: -60, width: 130, height: 130, borderRadius: 65, backgroundColor: tint(0.08) }} />
+        <CardPattern pattern={account.cardPattern ?? DEFAULT_CARD_PATTERN} tint={tint} />
         <View className="flex-row items-center justify-between gap-3">
           {account.bankId ? <BankBadge bankId={account.bankId} size={44} /> : null}
           <Text className="flex-1 font-inter-semibold text-lg" numberOfLines={1} style={{ color: ink }}>{account.name || 'Cuenta'}</Text>

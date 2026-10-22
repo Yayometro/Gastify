@@ -424,6 +424,22 @@ Prefijo AF.
 | AF05 | Tooltip completo en el botón «+» y en cada tipo (gasto, ingreso, transferir, cuenta, categoría, presupuesto, ahorro, proyecto). | HECHO (parcial) | Verificado el tooltip del título y la tarjeta de «Gasto». Los tooltips de los demás tipos no se abrieron en el emulador. |
 | AF06 | Overlay «Can't perform a React state update on a component that hasn't mounted yet» al abrir «+». | ABIERTO | Ocurrió una vez; en la segunda apertura no apareció. Sin componente identificado. |
 
+## Decimosexta ronda (2026-10-21)
+
+Prefijo AG.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AG01 | Resumen en iPhone: la gráfica de la tarjeta es interactiva ahí mismo (categoría → subcategoría → movimientos); solo «Ver las N categorías» abre el modal. | HECHO | Verificado en el emulador: tocar la sección House baja a su desglose dentro de la tarjeta, sin modal. |
+| AG02 | Modal del resumen de tamaño fijo, casi toda la pantalla, en cualquier nivel. | HECHO | Verificado en dos niveles: misma altura. Causa: `BottomSheet` solo tenía `maxHeight`, así que crecía con el contenido. |
+| AG03 | Tocar «…» estando en Cuentas o Categorías: regresa a Más sin la animación superpuesta. | HECHO | La pila de Más ya no anima las pantallas (en teléfono y tablet). Verificado: regresa a la raíz de Más. Los empujes dentro de Más también son instantáneos ahora. |
+| AG04 | «Atrás» desde una cuenta abierta desde Inicio regresa a Inicio, no a la cuenta anterior. | HECHO | Causa: el carrusel empujaba la cuenta dentro de la pila de Más. Ahora navega a Inicio y la etiqueta dice «‹ Inicio». Verificado. |
+| AG05 | Color y patrón de la tarjeta guardados en la cuenta (`cardColor`, `cardPattern`), visibles en todos los dispositivos. | HECHO | Campos nuevos en el modelo y en `update-account` (validados contra la lista). Paleta por familias (neutros, rojos, naranjas, amarillos, verdes, azules, morados, tierra y arcoíris) y 6 patrones (círculos, liso, puntos, rayas, cuadrícula, ondas). Verificado blanca y puntos; el cambio sobrevive la navegación. Falta comprobar tras cerrar la app por completo. |
+| AG06 | Sección de notificaciones: página, campana con contador en Inicio, entrada en Más y en el menú lateral del iPad (sustituye a «Cerrar sesión»). | HECHO (teléfono) | Teléfono verificado: la página lista los avisos y al tocar uno aparece el toast. iPad sin verificar. Cerrar sesión sigue en Más y en Perfil. |
+| AG07 | Campana de Inicio separada del engranaje. | HECHO | Verificado en el emulador. |
+| AG08 | Caja roja «!» con «Can't perform a React state update…» al abrir la app. | ABIERTO | No es un toast de la app: es la caja de errores de Expo en desarrollo. Componente sin identificar. |
+| AG09 | Celebración con fuegos artificiales al tocar una notificación de felicitación. | ABIERTO (por verificar) | Se ve el toast con su texto. El modal con fuegos no se vio en la captura de 1,5 s. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

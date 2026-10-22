@@ -13,8 +13,9 @@ export function DetailSheet({ visible, title, subtitle, info, onClose, children,
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   return (
-    <BottomSheet visible={visible} onClose={onClose} maxHeight={tall ? '95%' : '86%'} wideWidth={tall ? 900 : 640}>
-          <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
+    // The tall sheet is always the same size (almost the whole screen), so it never moves what is under the finger.
+    <BottomSheet visible={visible} onClose={onClose} maxHeight={tall ? '92%' : '86%'} wideWidth={tall ? 900 : 640} fill={tall}>
+          <SafeAreaView edges={['bottom']} style={{ flex: tall ? 1 : undefined, flexShrink: 1 }}>
             <View className="flex-row items-start justify-between px-6 pb-2 pt-5">
               <View className="flex-1 pr-3">
                 <Text className="font-inter-bold text-xl text-gf-text">{title}</Text>
@@ -27,7 +28,7 @@ export function DetailSheet({ visible, title, subtitle, info, onClose, children,
                 </Pressable>
               </View>
             </View>
-            <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 28, gap: 12 }}>{children}</ScrollView>
+            <ScrollView style={tall ? { flex: 1 } : undefined} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 28, gap: 12 }}>{children}</ScrollView>
           </SafeAreaView>
     </BottomSheet>
   );

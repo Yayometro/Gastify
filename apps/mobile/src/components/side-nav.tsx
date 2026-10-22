@@ -7,7 +7,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
-import { authClient } from '@/auth-client';
+import { NotificationsGlyph } from '@/components/notifications-bell';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { useThemeMode } from '@/hooks/use-theme-mode';
@@ -89,7 +89,7 @@ export function SideNav() {
           ), is(pathname, '/add'))}
           {AFTER_ADD.map(navItem)}
           {iconButton('theme', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro', () => setMode(dark ? 'light' : 'dark'), <Ionicons name={dark ? 'sunny-outline' : 'moon-outline'} size={26} color={colors.text} />)}
-          {iconButton('signout', 'Cerrar sesión', () => authClient.signOut(), <Ionicons name="log-out-outline" size={26} color={colors.text} />)}
+          {iconButton('notifications', 'Notificaciones', () => router.navigate('/notifications' as never), <NotificationsGlyph size={26} />, is(pathname, '/notifications'))}
         </ScrollView>
       </GlassSurface>
       </View>

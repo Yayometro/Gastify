@@ -5,6 +5,7 @@ import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { SUPPORTED_CURRENCIES, majorToMinor } from "@gastify/core/money/currencies";
 import { bankById, normalizeCardNumber } from "@gastify/core/banks/banks";
+import { isCardColor, isCardPattern } from "@gastify/core/accounts/cardStyle";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface UpdateAccountRequestBody {
@@ -15,6 +16,8 @@ export interface UpdateAccountRequestBody {
   currency?: string;
   bankId?: string | null;
   cardNumber?: string | number | null;
+  cardColor?: string;
+  cardPattern?: string;
   [key: string]: unknown;
 }
 
@@ -86,16 +89,29 @@ export async function POST(
       findAccount.cardNumber = card.value;
     }
 
+    // The card's look: only touched when the body mentions it, and only the values the lists allow.
+    if ("cardColor" in body) {
+      if (!isCardColor(body.cardColor)) throw new Error(`Unknown card color: ${body.cardColor}`);
+      findAccount.cardColor = body.cardColor;
+    }
+    if ("cardPattern" in body) {
+      if (!isCardPattern(body.cardPattern)) throw new Error(`Unknown card pattern: ${body.cardPattern}`);
+      findAccount.cardPattern = body.cardPattern;
+    }
+
     findAccount.name = !name ? findAccount.name : name;
-    findAccount.amount = !amount ? findAccount.amount : amount;
     findAccount.accountType = !accountType
       ? findAccount.accountType
       : accountType;
-    findAccount.balanceMinor = majorToMinor(
-      findAccount.amount || 0,
-      findAccount.currency
-    );
-    findAccount.balanceUpdatedAt = new Date();
+    // The balance is only recalculated when a new one comes in: restyling a card must not touch it.
+    if (amount) {
+      findAccount.amount = amount;
+      findAccount.balanceMinor = majorToMinor(
+        findAccount.amount || 0,
+        findAccount.currency
+      );
+      findAccount.balanceUpdatedAt = new Date();
+    }
     const savedAccount = await findAccount.save();
     //IF ERROR
     if (!findAccount)

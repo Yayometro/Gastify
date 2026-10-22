@@ -19,6 +19,7 @@ export function Screen({
   onBack,
   hero,
   titleInfo,
+  headerAction,
   children,
 }: {
   title: string;
@@ -32,6 +33,8 @@ export function Screen({
   hero?: ReactNode;
   // A "?" next to the title that explains the whole screen.
   titleInfo?: InfoText;
+  // An action at the right of the title (the bell of Inicio).
+  headerAction?: ReactNode;
   children?: ReactNode;
 }) {
   const tablet = useIsTablet();
@@ -62,6 +65,7 @@ export function Screen({
               <View className="flex-row items-center gap-3">
                 <Text className="font-inter-bold text-4xl text-gf-text">{title}</Text>
                 {titleInfo ? <InfoTip info={titleInfo} /> : null}
+                {headerAction ? <View className="ml-auto" style={{ marginRight: 56 }}>{headerAction}</View> : null}
               </View>
               {subtitle ? <Text className="font-inter text-base text-gf-text-muted">{subtitle}</Text> : null}
             </View>

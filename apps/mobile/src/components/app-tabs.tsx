@@ -107,6 +107,8 @@ export default function AppTabs() {
       />
       {/* Template leftover (src/app/explore.tsx): kept out of the bar until the file is removed. */}
       <Tabs.Screen name="explore" options={{ href: null }} />
+      {/* Opened from the bell (Inicio, the side bar, Más), never from the bar. */}
+      <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
   );
 

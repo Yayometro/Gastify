@@ -1,27 +1,13 @@
-import * as SecureStore from 'expo-secure-store';
-import { useEffect, useSyncExternalStore } from 'react';
+import { CARD_COLORS, DEFAULT_CARD_COLOR, DEFAULT_CARD_PATTERN } from '@gastify/core/accounts/cardStyle';
 
-// How an account's card looks. "auto" is the color the app picks from the account itself (the one the web shows);
-// the rest are a short list on purpose, so every card still looks like a card of this app. The text on each card is
-// chosen from its background, so a white card gets dark text and a black one gets light text.
-export type CardStyleId = 'auto' | 'white' | 'black' | 'navy' | 'emerald' | 'amber' | 'rose';
+// The colors a card is drawn with, from the color chosen for the account (saved on the account, so every device agrees).
+// "auto" (or a card saved before colors existed) keeps the color the app picks from the account itself.
 
-export const CARD_STYLES: { id: CardStyleId; label: string; from?: string; to?: string }[] = [
-  { id: 'auto', label: 'Automática' },
-  { id: 'white', label: 'Blanca', from: '#ffffff', to: '#e5e7eb' },
-  { id: 'black', label: 'Negra', from: '#27272a', to: '#09090b' },
-  { id: 'navy', label: 'Marino', from: '#1e3a8a', to: '#172554' },
-  { id: 'emerald', label: 'Esmeralda', from: '#059669', to: '#064e3b' },
-  { id: 'amber', label: 'Ámbar', from: '#fcd34d', to: '#f59e0b' },
-  { id: 'rose', label: 'Rosa', from: '#fb7185', to: '#e11d48' },
-];
-
-const KEY = 'gastify-account-card-styles';
 const DARK_INK = '#111827';
 const LIGHT_INK = '#ffffff';
 
-// Relative luminance (WCAG): above the middle, the background is light and the text goes dark.
-function isLightColor(hex: string): boolean {
+// Relative luminance (WCAG): above the middle, the card is light and its text goes dark.
+export function isLightColor(hex: string): boolean {
   const channel = (start: number) => {
     const value = parseInt(hex.slice(start, start + 2), 16) / 255;
     return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
@@ -30,62 +16,13 @@ function isLightColor(hex: string): boolean {
   return luminance > 0.36;
 }
 
-// The colors a card is drawn with: its gradient, the text on it, and a soft overlay that reads on that ground.
-export function cardPalette(style: CardStyleId, autoColors: [string, string]) {
-  const preset = CARD_STYLES.find((item) => item.id === style);
-  const [from, to] = preset?.from && preset.to ? [preset.from, preset.to] : autoColors;
-  const light = preset?.from ? isLightColor(preset.from) : false;
+export function cardPalette(color: string | null | undefined, autoColors: [string, string]) {
+  const preset = color && color !== DEFAULT_CARD_COLOR ? CARD_COLORS.find((option) => option.id === color) : undefined;
+  const stops = preset ? preset.stops : autoColors;
+  const light = preset ? isLightColor(preset.stops[0]) : false;
   const ink = light ? DARK_INK : LIGHT_INK;
   const tint = (alpha: number) => (light ? `rgba(17,24,39,${alpha})` : `rgba(255,255,255,${alpha})`);
-  return { from, to, ink, tint, light };
+  return { stops, ink, tint, light };
 }
 
-// The choices of every account, read once from the device and kept in memory for the screens that show them.
-let cache: Record<string, CardStyleId> | null = null;
-let loading: Promise<void> | null = null;
-const listeners = new Set<() => void>();
-
-function emit() {
-  listeners.forEach((listener) => listener());
-}
-
-function load(): Promise<void> {
-  if (!loading) {
-    loading = (async () => {
-      try {
-        const raw = await SecureStore.getItemAsync(KEY);
-        cache = raw ? (JSON.parse(raw) as Record<string, CardStyleId>) : {};
-      } catch {
-        cache = {};
-      }
-      emit();
-    })();
-  }
-  return loading;
-}
-
-export async function setAccountCardStyle(accountId: string, style: CardStyleId): Promise<void> {
-  await load();
-  const next = { ...(cache ?? {}) };
-  if (style === 'auto') delete next[accountId];
-  else next[accountId] = style;
-  cache = next;
-  emit();
-  try {
-    await SecureStore.setItemAsync(KEY, JSON.stringify(next));
-  } catch {
-    // Not saved: the choice still shows until the app restarts.
-  }
-}
-
-const subscribe = (listener: () => void) => {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-};
-
-export function useAccountCardStyle(accountId: string): CardStyleId {
-  useEffect(() => {
-    void load();
-  }, []);
-  return useSyncExternalStore(subscribe, () => cache?.[accountId] ?? 'auto', () => 'auto');
-}
+export { DEFAULT_CARD_COLOR, DEFAULT_CARD_PATTERN };
