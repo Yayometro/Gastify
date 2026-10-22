@@ -70,6 +70,12 @@ function HistoricalComparativeCategoriesView({
           compontentsArray={components}
           tooltip={"Select the tab that you want to see 😎"}
           contentStyle={"flex flex-col justify-center items-center"}
+          tabInfo={{
+            bills: APP_INFO.gastos_por_categor_a,
+            incomes: APP_INFO.ingresos_por_categor_a,
+            "compare bills": APP_INFO.gastos_por_categor_a_2,
+            "compare incomes": APP_INFO.ingresos_por_categor_a_2,
+          }}
         />
       )}
     </div>

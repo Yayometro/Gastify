@@ -46,6 +46,7 @@ import {
 } from "@gastify/core/time/timeFunctions";
 import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
+import LatestMovementsCard from "./multiUsedComp/LatestMovementsCard";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
@@ -633,6 +634,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 <ResumeTabsTrans timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
               )}
             </LazyMount>
+            <LatestMovementsCard />
             <div className="top-3-general-container w-full">
               <LazyMount className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
                 <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]}/>

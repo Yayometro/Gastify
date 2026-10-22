@@ -6,6 +6,8 @@ import { IoNotificationsOutline, IoCheckmarkCircleOutline } from "react-icons/io
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "./CategoIcon";
 import useBudgetAlertList from "@/hooks/useBudgetAlertList";
+import { InfoTip } from "./InfoTip";
+import { APP_INFO } from "@gastify/core/info/appInfo";
 import type { BudgetAlert } from "@gastify/core/budgets/budgetAlerts";
 
 // The bell of the navigation bar: the number of notices that apply now, and the list of them in a window (the same
@@ -47,7 +49,10 @@ function NotificationsBell(): React.JSX.Element {
           renderContent={
             <div className="content absolute gf-glass-violet z-[5001] flex max-h-[80vh] w-[94vw] max-w-[480px] flex-col overflow-hidden rounded-3xl animate__animated animate__zoomIn animate__faster">
               <div className="flex items-center justify-between gap-3 px-6 pb-3 pt-6">
-                <h2 className="text-xl font-bold text-white">Notificaciones</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-white">Notificaciones</h2>
+                  <InfoTip info={APP_INFO.notificaciones} />
+                </div>
                 <button type="button" aria-label="Cerrar" onClick={() => setOpen(false)} className="rounded-full gf-glass-card p-1.5 text-purple-100 transition-colors hover:text-white">
                   <CategoIcon type={"MdClose"} siz={18} />
                 </button>

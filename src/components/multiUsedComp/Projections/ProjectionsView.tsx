@@ -4,6 +4,8 @@ import React from "react";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "../InfoTip";
 
 export interface ProjectionRow {
   monthName: string;
@@ -87,7 +89,7 @@ function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.
       <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
         <thead>
           <tr className="bg-purple-600 text-white">
-            <th className="py-2 px-3">Month</th>
+            <th className="py-2 px-3"><span className="inline-flex items-center gap-1">Month<InfoTip info={APP_INFO.c_mo_leer_esta_tabla} /></span></th>
             <th className="py-2 px-3">Income</th>
             <th className="py-2 px-3">Expense</th>
             <th className="py-2 px-3">

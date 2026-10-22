@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import UniversalCategoIcon from "../UniversalCategoIcon";
+import React from "react";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import type { ProjectionAccuracyRow } from "@/hooks/useProjectionTable";
-import ProjectionAccuracyInfoModal from "./ProjectionAccuracyInfoModal";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "../InfoTip";
 import ProjectionVarianceCell from "./ProjectionVarianceCell";
 
 export interface ProjectionAccuracyReportProps {
@@ -20,21 +20,13 @@ export interface ProjectionAccuracyReportProps {
 // dimensiones numéricas por mes (proyectado y real) que no caben como una
 // sola columna más en la tabla existente.
 function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReportProps): React.JSX.Element | null {
-  const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
   if (!rows || rows.length === 0) return null;
 
   return (
     <div className="w-full mt-6">
-      <h2 className="text-purple-300 text-lg mb-2 flex items-center">
+      <h2 className="text-purple-300 text-lg mb-2 flex items-center gap-1">
         Precisión de tus proyecciones
-        <button
-          type="button"
-          aria-label="How to read this table"
-          className="inline-block ml-1 align-middle cursor-pointer text-purple-500"
-          onClick={() => setShowInfoModal(true)}
-        >
-          <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={14} />
-        </button>
+        <InfoTip info={APP_INFO.c_mo_leer_esta_tabla_2} />
       </h2>
       <div className="w-full overflow-x-auto">
         <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
@@ -94,7 +86,6 @@ function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReport
       <p className="text-xs text-gf-text-muted mt-2 px-1">
         Solo se muestran meses cerrados con un historial de proyección registrado.
       </p>
-      {showInfoModal && <ProjectionAccuracyInfoModal onClose={() => setShowInfoModal(false)} />}
     </div>
   );
 }
