@@ -488,6 +488,16 @@ Prefijo AJ.
 | AJ07 | Divisa en la edición masiva (web y móvil). | PENDIENTE | Falta decidir qué significa: cambiar la divisa convirtiendo los montos, o mover a cuentas de otra divisa. Ver la pregunta. |
 | AJ08 | Categoría por defecto «sin categoría». | DESCARTADO | Se mantiene: el usuario elige categoría al guardar. |
 
+## Vigésima ronda (2026-10-21)
+
+Prefijo AK.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AK01 | Subcategoría: el color y el ícono se muestran desplegados, sin el botón «Cambiar color / ícono». | HECHO (sin verificar en el teléfono) | `app/more/categories/[id].tsx`: se quitaron los botones que ocultaban los selectores. |
+| AK02 | Divisa en la edición masiva (móvil y web): convierte el monto con el tipo de cambio de la fecha; solo cambia si la cuenta está en la nueva divisa (o no tiene cuenta); los incompatibles se reportan con su motivo y el mismo aviso ofrece una cuenta de esa divisa. | HECHO (sin ejecutar contra la base) | Regla pura en `packages/core/src/money/currencyChange.ts` (con prueba). Ruta `edit-many` con `currency` y `skipped`. Pendiente: probarla en la cuenta QA; escribe saldos, requiere aprobación. |
+| AK03 | Flecha «Ver transacciones» de la gráfica (ya en AJ05). | HECHO | Sin cambios en esta ronda. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

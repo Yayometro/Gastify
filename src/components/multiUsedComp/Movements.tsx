@@ -11,7 +11,7 @@ import Tag from "./Tag";
 import fetcher from "@/helpers/fetcher";
 import EditSingleTransModal from "./EditSingleTransModal";
 import { IoCheckmarkDoneCircleOutline, IoSearchOutline } from "react-icons/io5";
-import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineSettings, MdOutlineFileDownload } from "react-icons/md";
+import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineCurrencyExchange, MdOutlineSettings, MdOutlineFileDownload } from "react-icons/md";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { VscJson } from "react-icons/vsc";
 import { Tooltip, Button, Modal, Skeleton } from "antd";
@@ -1390,6 +1390,7 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
                       { field: "type",     icon: <MdOutlineSwapVert size={13} />,                label: "Type" },
                       { field: "category", icon: <MdOutlineCategory size={13} />,               label: "Category" },
                       { field: "account",  icon: <MdOutlineAccountBalance size={13} />,          label: "Account" },
+                      { field: "currency", icon: <MdOutlineCurrencyExchange size={13} />,       label: "Currency" },
                     ].map(({ field, icon, label }) => (
                       <button
                         key={field}

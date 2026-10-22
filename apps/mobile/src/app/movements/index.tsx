@@ -69,6 +69,7 @@ const BULK_ACTIONS: { field: BulkField; label: string; icon: ComponentProps<type
   { field: 'type', label: 'Tipo', icon: 'swap-vertical-outline' },
   { field: 'category', label: 'Categoría', icon: 'pricetag-outline' },
   { field: 'account', label: 'Cuenta', icon: 'card-outline' },
+  { field: 'currency', label: 'Divisa', icon: 'cash-outline' },
   { field: 'general', label: 'Edición general', icon: 'settings-outline' },
 ];
 
@@ -351,7 +352,7 @@ export default function MovementsScreen() {
         <BulkEditSheet
           field={bulkField}
           ids={selected}
-          accounts={accountsData.map((account) => ({ id: idOf(account), label: account.name || 'Cuenta' }))}
+          accounts={accountsData.map((account) => ({ id: idOf(account), label: account.name || 'Cuenta', currency: account.currency }))}
           categories={categoryItems}
           onClose={() => setBulkField(null)}
           onDone={() => { setBulkField(null); finishAction(); }}

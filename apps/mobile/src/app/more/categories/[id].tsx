@@ -37,8 +37,6 @@ export default function EditCategoryScreen() {
   const subs = subCategoriesOf(allSubs, id);
 
   const [draft, setDraft] = useState<SubDraft | null>(null);
-  const [showColor, setShowColor] = useState(false);
-  const [showIcon, setShowIcon] = useState(false);
   const [busy, setBusy] = useState(false);
   const [subError, setSubError] = useState<string | null>(null);
 
@@ -74,8 +72,6 @@ export default function EditCategoryScreen() {
 
   const startSub = (sub?: { _id?: string; name?: string; icon?: string; color?: string }) => {
     setSubError(null);
-    setShowColor(false);
-    setShowIcon(false);
     setDraft({
       id: sub ? idOf(sub) : undefined,
       name: sub?.name ?? '',
@@ -176,14 +172,15 @@ export default function EditCategoryScreen() {
                 title="Categorías"
               />
             </View>
-            <Pressable accessibilityRole="button" onPress={() => setShowColor((open) => !open)}>
-              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{showColor ? 'Ocultar colores' : 'Cambiar color'}</Text>
-            </Pressable>
-            {showColor && <ColorPicker value={draft.color} onChange={(color) => setDraft({ ...draft, color })} />}
-            <Pressable accessibilityRole="button" onPress={() => setShowIcon((open) => !open)}>
-              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{showIcon ? 'Ocultar íconos' : 'Cambiar ícono'}</Text>
-            </Pressable>
-            {showIcon && <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />}
+            {/* The color and the icon are always open, as in the category form: nothing to tap before choosing. */}
+            <View className="gap-2">
+              <Text className="font-inter-semibold text-base text-gf-text">Color</Text>
+              <ColorPicker value={draft.color} onChange={(color) => setDraft({ ...draft, color })} />
+            </View>
+            <View className="gap-2">
+              <Text className="font-inter-semibold text-base text-gf-text">Ícono</Text>
+              <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />
+            </View>
             <FormError message={subError} />
             <GradientButton label={draft.id ? 'Guardar subcategoría' : 'Agregar subcategoría'} onPress={saveSub} loading={busy} disabled={busy} />
             <Pressable accessibilityRole="button" onPress={() => setDraft(null)} className="items-center py-1">

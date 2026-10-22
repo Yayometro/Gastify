@@ -19,6 +19,7 @@ import BasicModal from "../modals/basicModal/BasicModal";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
 import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
+import { ACCOUNT_CURRENCIES } from "@gastify/core/accounts/accountForm";
 
 const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.ComponentType<{
   onClose?: () => void;
@@ -37,6 +38,7 @@ export const FIELD_META: Record<string, FieldMetaItem> = {
   category: { label: "Change category", description: "Assign a category (and subcategory) to all selected transactions." },
   account:  { label: "Change account", description: "Assign an account to all selected transactions." },
   tags:     { label: "Change tags",    description: "Set tags (separated by comma) for all selected transactions." },
+  currency: { label: "Change currency", description: "Convert the selected transactions to another currency, with the rate of each date. Each one needs an account in that currency (or none)." },
 };
 
 export type QuickEditField = "name" | "date" | "type" | "category" | "account" | "tags" | string;
@@ -63,11 +65,22 @@ export interface QuickEditState {
   subCategory: string;
   account: string | null;
   tags: string;
+  currency: string;
+  destinationAccount: string;
+}
+
+// What a currency change could not move, with its reason (the server reports it, the movements stay as they were).
+interface BlockedMovement {
+  id: string;
+  name: string;
+  accountCurrency: string;
+  reason: string;
 }
 
 interface EditManyResponse {
   data?: TransactionData[];
   message?: string;
+  skipped?: BlockedMovement[];
   [key: string]: unknown;
 }
 
@@ -103,7 +116,10 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
     subCategory: "",
     account: "",
     tags: "",
+    currency: "",
+    destinationAccount: "",
   });
+  const [blocked, setBlocked] = useState<BlockedMovement[]>([]);
 
   const handleCategory = (cat?: CategorySelectedItem | null) => {
     if (!cat) return;
@@ -132,6 +148,11 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
       payload = { ...payload, fields: ["category", "subCategory"], category: value.category, subCategory: value.subCategory || null };
     } else if (field === "account") {
       payload = { ...payload, fields: ["account"], account: value.account || null };
+    } else if (field === "currency") {
+      if (!value.currency) { runNotify("error", "Choose the new currency"); setIsLoading(false); return; }
+      // Only the movements that could not move are sent again, with the account the person chose for them.
+      const ids = blocked.length > 0 ? blocked.map((item) => item.id) : transIds;
+      payload = { transactions: ids, fields: value.destinationAccount ? ["currency", "account"] : ["currency"], currency: value.currency, account: value.destinationAccount || undefined };
     } else if (field === "tags") {
       const tagsArr = typeof value.tags === "string"
         ? value.tags.split(",").map((t) => t.trim()).filter(Boolean)
@@ -141,6 +162,14 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
 
     try {
       const response = (await toFetch.post("general-data/transactions/edit-many", payload)) as EditManyResponse;
+      // Some movements could not change currency: they stay here, with the reason, and the account can be chosen for them.
+      if (field === "currency" && response.skipped && response.skipped.length > 0) {
+        setBlocked(response.skipped);
+        setValue((v) => ({ ...v, destinationAccount: "" }));
+        runNotify("error", `${response.data?.length ?? 0} changed, ${response.skipped.length} need another account`);
+        setIsLoading(false);
+        return;
+      }
       if (response.data) {
         runNotify("ok", response.message);
         dispatch(updateManyTransactions(response.data));
@@ -248,6 +277,42 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
         ))}
       </select>
     );
+
+    if (field === "currency") {
+      const currencyAccounts = (accounts ?? []).filter((acc) => acc.currency === value.currency);
+      return (
+        <div className="flex flex-col gap-3">
+          <select
+            className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm bg-gf-surface outline-none focus:border-purple-400"
+            value={value.currency}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setValue((v) => ({ ...v, currency: e.target.value, destinationAccount: "" })); setBlocked([]); }}
+          >
+            <option value="">Choose a currency</option>
+            {ACCOUNT_CURRENCIES.map((code) => (
+              <option key={code} value={code}>{code}</option>
+            ))}
+          </select>
+          {blocked.length > 0 && (
+            <div className="flex flex-col gap-2 rounded-xl border border-gf-border p-3 text-xs">
+              <p className="font-semibold">{blocked.length} can&apos;t change with their current account:</p>
+              {blocked.map((item) => (
+                <p key={item.id} className="text-gf-text-muted">• {item.name}: {item.reason}</p>
+              ))}
+              <select
+                className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm bg-gf-surface outline-none focus:border-purple-400"
+                value={value.destinationAccount}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setValue((v) => ({ ...v, destinationAccount: e.target.value }))}
+              >
+                <option value="">Choose an account in {value.currency}</option>
+                {currencyAccounts.map((acc) => (
+                  <option key={acc._id} value={acc._id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+      );
+    }
 
     if (field === "tags") return (
       <input

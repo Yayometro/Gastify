@@ -13,3 +13,10 @@ export async function sendWrite<T = unknown>(path: string, body: unknown): Promi
 export function messageOf(error: unknown): string {
   return error instanceof Error && error.message ? error.message : 'No pudimos guardar los cambios. Intenta de nuevo.';
 }
+
+// The whole answer of a change, for the routes that report more than their data (a list of what they could not do).
+export async function sendWriteAnswer<T = unknown, Extra extends object = Record<string, never>>(path: string, body: unknown): Promise<{ data: T } & Extra> {
+  const answer = await getApi().post<ApiAnswer<T> & Extra>(path, body);
+  if (!answer?.ok) throw new Error(answer?.message || 'No pudimos guardar los cambios.');
+  return answer as unknown as { data: T } & Extra;
+}

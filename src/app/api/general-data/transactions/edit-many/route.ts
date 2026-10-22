@@ -11,7 +11,9 @@ import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { assertOwnedOrDefault } from "@/lib/auth/ownership";
-import { minorToMajor } from "@gastify/core/money/currencies";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
+import { planCurrencyChange } from "@gastify/core/money/currencyChange";
+import { convert } from "@/lib/money/server/fxRateService";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoney } from "@/lib/money/server/transactionReadService";
 
@@ -72,6 +74,8 @@ export async function POST(
       subCategory,
       tags,
     } = body;
+    // The new currency for the "currency" field (only used when that field is targeted).
+    const targetCurrency = typeof (body as { currency?: unknown }).currency === "string" ? String((body as { currency?: unknown }).currency) : "";
 
     // Security fix: this route previously lacked session verification and
     // performed Transaction.findById / Transaction.save directly with zero ownership check.
@@ -138,6 +142,8 @@ export async function POST(
     }
 
     const savedTrans: unknown[] = [];
+    // Movements that could not change currency, with the reason: they are reported, not failed.
+    const skipped: { id: string; name: string; accountCurrency: string; reason: string }[] = [];
 
     for (const transId of transactions) {
       const transaction = await Transaction.findOne({ _id: transId, wallet: userWallet });
@@ -148,6 +154,48 @@ export async function POST(
       const amountTouched = shouldUpdate("amount") && amount !== undefined && amount !== "" && amount !== null;
       const accountTouched = shouldUpdate("account");
       const dateTouched = shouldUpdate("date") && Boolean(date);
+
+      // Currency: the amount is converted with the rate of the movement's date, and the movement goes to the destination
+      // account (chosen in the change) only when that account is in the new currency. Movements with no account convert
+      // directly. Anything else is reported in "skipped" and left as it was.
+      let currencyDone = false;
+      if (shouldUpdate("currency") && targetCurrency) {
+        const destination = accountTouched && account ? await Account.findOne({ _id: account, wallet: userWallet }).lean() : null;
+        const ownAccount = transaction.account ? await Account.findOne({ _id: transaction.account, wallet: userWallet }).lean() : null;
+        const plan = planCurrencyChange(
+          [{ id: String(transaction._id), name: transaction.name || "Movimiento", accountCurrency: ownAccount?.currency ?? null }],
+          targetCurrency,
+          destination ? { id: String(destination._id), currency: destination.currency || "MXN" } : null
+        );
+        if (plan.blocked.length > 0) {
+          skipped.push({ id: String(transaction._id), name: transaction.name || "Movimiento", accountCurrency: plan.blocked[0].accountCurrency, reason: plan.blocked[0].reason });
+          continue;
+        }
+        const fromCurrency = currentAccountCurrency;
+        if (fromCurrency !== targetCurrency) {
+          const currentAmount = transaction.money?.account
+            ? minorToMajor(transaction.money.account.amountMinor, transaction.money.account.currency)
+            : Number(transaction.amount) || 0;
+          const converted = await convert({ amountMinor: majorToMinor(currentAmount, fromCurrency), fromCurrency, toCurrency: targetCurrency, date: transaction.date });
+          if (!converted.available) {
+            skipped.push({ id: String(transaction._id), name: transaction.name || "Movimiento", accountCurrency: fromCurrency, reason: "No hay tipo de cambio para la fecha de este movimiento." });
+            continue;
+          }
+          const newAmount = minorToMajor(converted.amountMinor, targetCurrency);
+          transaction.amount = newAmount;
+          transaction.money = await buildTransactionMoney({
+            accountAmount: newAmount,
+            accountCurrency: targetCurrency,
+            merchantAmount: undefined,
+            merchantCurrency: undefined,
+            walletPrimaryCurrency: parentWallet?.primaryCurrency || "MXN",
+            date: transaction.date,
+            manualReportingAmount: undefined,
+          });
+        }
+        if (destination) transaction.account = destination._id as mongoose.Types.ObjectId;
+        currencyDone = true;
+      }
 
       if (shouldUpdate("name") && name !== undefined && name !== "" && name !== null)
         transaction.name = name;
@@ -168,7 +216,7 @@ export async function POST(
       if (accountTouched)
         transaction.account = (account as unknown as mongoose.Types.ObjectId) || undefined;
 
-      if (amountTouched || accountTouched || dateTouched) {
+      if (!currencyDone && (amountTouched || accountTouched || dateTouched)) {
         // Already validated same-currency above when the Account changes,
         // so no per-transaction conversion strategy is needed here.
         const nextAccountCurrency = accountTouched
@@ -236,6 +284,7 @@ export async function POST(
     return NextResponse.json({
       message: `${savedTrans.length} transaction(s) updated successfully 😎`,
       data: savedTrans,
+      skipped,
       status: 201,
       ok: true,
     });
