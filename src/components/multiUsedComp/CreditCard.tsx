@@ -1,26 +1,19 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import "@/components/styles/animations.css";
-import Image from "next/image";
-import randomColor from "randomcolor";
 
-import {
-  MdKeyboardDoubleArrowUp,
-  MdKeyboardDoubleArrowDown,
-} from "react-icons/md";
 import "animate.css";
 import CategoIcon from "./CategoIcon";
-import { IoColorPalette } from "react-icons/io5";
+import AccountCardFace from "./AccountCardFace";
 import { FaRegQuestionCircle } from "react-icons/fa";
 import { Tooltip } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { formatMoneyMajor, formatMoneyMinor, majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
+import { formatMoneyMinor, majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import type { RootState } from "@/lib/store";
-import { bankById, formatCardNumber } from "@gastify/core/banks/banks";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+
 
 export interface CreditCardAccountRef {
   _id?: string;
@@ -82,25 +75,10 @@ function getNativeAmount(tra?: CreditCardTransaction | null): number {
   return Number(tra?.amount) || 0;
 }
 
-export interface CurrencyChipProps {
-  currency?: string | null;
-}
-
-function CurrencyChip({ currency }: CurrencyChipProps): React.JSX.Element | null {
-  if (!currency) return null;
-  return (
-    <span className="text-[9px] sm:text-[10px] font-semibold text-white/90 bg-gf-surface/15 px-1.5 py-0.5 rounded shrink-0 self-center leading-none">
-      {currency}
-    </span>
-  );
-}
-
 function CreditCard({
   acc,
   user,
   trans,
-  cardColor,
-  current,
   walletPrimaryCurrency: walletPrimaryCurrencyProp,
 }: CreditCardProps): React.JSX.Element {
   const router = useRouter();
@@ -111,19 +89,13 @@ function CreditCard({
   const [, setTotalReadTransactions] = useState<CreditCardTransaction[]>([]);
   const [, setBillTransactions] = useState<CreditCardTransaction[]>([]);
   const [, setIncomeTransactions] = useState<CreditCardTransaction[]>([]);
-  const [totalAmount, setTotalAmount] = useState(0);
   const [totalBill, setTotalBill] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
   const [nativeTotalBill, setNativeTotalBill] = useState(0);
   const [nativeTotalIncome, setNativeTotalIncome] = useState(0);
   const [selectedDuration, setSelectedDuration] = useState(30);
-  const [cardColore, setCardColore] = useState("");
-  const manualColor = false;
   const [equivalentQuote, setEquivalentQuote] = useState<EquivalentQuote | null>(null);
   const accountCurrency = account?.currency || "MXN";
-  const bank = bankById(account?.bankId);
-  const [revealNumber, setRevealNumber] = useState(false);
-  const [logoFailed, setLogoFailed] = useState(false);
 
   useEffect(() => {
     if (acc && user && trans) {
@@ -132,7 +104,6 @@ function CreditCard({
       // console.log(trans)
       setAllTransacctions(trans);
       setAccount(acc);
-      setCardColore(cardColor);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acc, user, trans]);
@@ -156,10 +127,7 @@ function CreditCard({
       // be summed in that currency too - raw tra.amount is in the
       // transaction's own native currency, which only happens to equal the
       // Wallet primary for an all-MXN wallet.
-      const finalAmount = total.reduce(
-        (currentVal, tra) => currentVal + getPrimaryAmount(tra),
-        0
-      );
+
       const finalBill = accBills.reduce(
         (currentVal, bill) => currentVal + getPrimaryAmount(bill),
         0
@@ -182,7 +150,7 @@ function CreditCard({
       setTotalReadTransactions(total);
       setBillTransactions(accBills);
       setIncomeTransactions(accIncomes);
-      setTotalAmount(finalAmount);
+
       setTotalBill(finalBill);
       setTotalIncome(finalIncome);
       setNativeTotalBill(nativeBill);
@@ -224,237 +192,61 @@ function CreditCard({
     };
   }, [account?._id, account?.amount, accountCurrency, walletPrimaryCurrency]);
 
-  const generateRandomColor = () => {
-    const color1 = randomColor();
-    const color2 = randomColor();
-
-    return `linear-gradient(90deg, ${color1} 0%, ${color2} 100%)`;
-  };
-  const changeColor = () => {
-    setCardColore(generateRandomColor());
-  };
-  const changeColorHandler = () => {
-    // Solo cambia el color si no ha sido cambiado manualmente
-    if (!manualColor) {
-      changeColor();
-    }
-  };
-
   const isForeignAccount = accountCurrency !== walletPrimaryCurrency;
 
-  return (
-    <div className="pulse-animation-short h-full">
-      <div
-        style={{
-          background:
-            cardColore ||
-            "linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(18,127,205,1) 100%)",
-        }}
-        className="h-full shadow-2xl flex flex-col px-4 py-4 rounded-3xl w-[300px] max-w-[300px] sm:min-w-[450px] sm:min-h-[330px] md:min-w-[500px] sm:px-5 sm:py-5 m-1"
-      >
-        <div className="flex justify-between items-stretch my-auto">
-          <div
-            className="text-white w-[5px] sm:font-base sm:w-[20px] pulse-animation-short"
-            onClick={changeColorHandler}
-          >
-            <IoColorPalette size={17} />
-          </div>
-          <div className="filters flex items-center justify-center">
-            <div className="text-white w-fit text-sm font-thin flex items-center justify-center sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short">
-              <select
-                className="bg-transparent appearance-none w-full pr-4"
-                name="DateSelector"
-                value={selectedDuration}
-                onChange={handleDurationChange}
-              >
-                <option value={2}>Yesterday </option>
-                <option value={7}>Last week</option>
-                <option value={15}>Last 15 days</option>
-                <option value={30}>Last 30 days</option>
-                <option value={60}>Last 60 days</option>
-                <option value={90}>Last 90 days</option>
-              </select>
-              <div className="filterIconContainer absolute right-[0px] pointer-events-none">
-                <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
-              </div>
-            </div>
-            <Tooltip title="Select the color palette to change the color gradient of your credit card. Or select the time period to see the balance for the time you want 🤓">
-              <div className="text-white pl-4">
-                <FaRegQuestionCircle size={15} />
-              </div>
-            </Tooltip>
-          </div>
-        </div>
-        <div className="flex items-center justify-between gap-5 max-md:max-w-full max-md:flex-nowrap relative">
-          <Tooltip
-            title={
-              <>
-                {!account.name ? "Generic account" : account.name}
-                <br />
-                Click to go to the account
-              </>
-            }
-          >
-            <div
-              className="flex my-auto truncate cursor-pointer"
-              onClick={() => {
-                if (account?._id) router.push(`/dashboard/accounts?accountId=${account._id}`);
-              }}
-            >
-              <p className="max-w-fit text-white text-2xl font-bold mt-1 sm:text-4xl break-word text-ellipsis overflow-hidden group">
-                {!account.name ? "Generic account" : account.name}
-              </p>
-            </div>
-          </Tooltip>
-          {bank && !logoFailed ? (
-            // The bank's logo takes the place of the chip: the same size, on a white rounded tile.
-            <div className="flex flex-col items-center gap-1 shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/banks/${bank.id}.webp`}
-                alt={bank.name}
-                title={bank.name}
-                onError={() => setLogoFailed(true)}
-                className="bg-white rounded-2xl p-2 object-contain w-[56px] h-[56px] sm:w-[78px] sm:h-[78px]"
-              />
-              <span className="text-white/90 text-[10px] sm:text-xs font-medium max-w-[90px] truncate">{bank.name}</span>
-            </div>
-          ) : bank ? (
-            <div className="flex flex-col items-center gap-1 shrink-0">
-              <div
-                className="rounded-2xl w-[56px] h-[56px] sm:w-[78px] sm:h-[78px] flex items-center justify-center text-white font-bold text-sm sm:text-lg"
-                style={{ backgroundColor: bank.color }}
-                title={bank.name}
-              >
-                {bank.short}
-              </div>
-              <span className="text-white/90 text-[10px] sm:text-xs font-medium max-w-[90px] truncate">{bank.name}</span>
-            </div>
-          ) : (
-            <Image
-              src="/creditcard/chipSim.png"
-              width="100"
-              height="100"
-              alt="chip"
-              className="aspect-square object-contain object-center max-w-[50px] sm:min-w-[70px]"
-            />
-          )}
-        </div>
-        {account?.cardNumber ? (
-          <button
-            type="button"
-            className="flex items-center gap-2 text-white/90 text-sm sm:text-lg tracking-widest mt-1 self-start"
-            onClick={() => setRevealNumber((v) => !v)}
-            aria-label={revealNumber ? "Hide number" : "Show number"}
-          >
-            <span>{formatCardNumber(account.cardNumber, revealNumber)}</span>
-            {revealNumber ? <MdVisibilityOff /> : <MdVisibility />}
-          </button>
-        ) : null}
-        {!current ? (
-          ""
-        ) : (
-          <div className="z-[1] flex flex-col gap-1 mt-3 self-end items-end sm:mt-5">
-            <div className="flex gap-2.5 items-start">
-              <div className="text-white text-sm font-thin sm:font-base sm:font-extralight ">
-                Current:
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-                  {formatMoneyMajor(account.amount || 0, accountCurrency, { showCode: false })}
-                </div>
-                <CurrencyChip currency={accountCurrency} />
-              </div>
-            </div>
-            {equivalentQuote ? (
-              <Tooltip
-                title={`Valued at ${equivalentQuote.rate} (${equivalentQuote.source}${equivalentQuote.stale ? ", stale" : ""}) on ${new Date(equivalentQuote.effectiveDate as string | number | Date).toLocaleDateString()}. This is a valuation, not a second balance.`}
-              >
-                <div className="text-white/80 text-xs font-thin whitespace-nowrap">
-                  ≈ {formatMoneyMinor(equivalentQuote.amountMinor as number, equivalentQuote.currency as string, { showCode: false })} {equivalentQuote.currency}
-                </div>
-              </Tooltip>
-            ) : null}
-          </div>
-        )}
-        <div className="z-[1] flex gap-2.5 mt-3 self-end items-start sm:mt-5">
-          <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1 " />
-          <div className="flex flex-col gap-0.5 items-end">
-            <div className="flex items-center gap-1.5">
-              <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-                {!totalIncome
-                  ? "No incomes... 🤕"
-                  : formatMoneyMajor(
-                      isForeignAccount ? nativeTotalIncome : totalIncome,
-                      isForeignAccount ? accountCurrency : walletPrimaryCurrency,
-                      { showCode: false }
-                    )}
-              </div>
-              {totalIncome ? <CurrencyChip currency={isForeignAccount ? accountCurrency : walletPrimaryCurrency} /> : null}
-            </div>
-            {isForeignAccount && totalIncome ? (
-              <div className="text-white/80 text-xs font-thin whitespace-nowrap">
-                ≈ {formatMoneyMajor(totalIncome, walletPrimaryCurrency, { showCode: false })} {walletPrimaryCurrency}
-              </div>
-            ) : null}
-          </div>
-        </div>
-        <div className="flex gap-2.5 self-end items-start sm:mt-2">
-          <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1" />
-          <div className="flex flex-col gap-0.5 items-end">
-            <div className="flex items-center gap-1.5">
-              <div className="text-white text-xl font-extralight self-stretch grow whitespace-nowrap sm:text-4xl pulse-animation-short">
-                {!totalBill
-                  ? "No bills..."
-                  : formatMoneyMajor(
-                      isForeignAccount ? nativeTotalBill : totalBill,
-                      isForeignAccount ? accountCurrency : walletPrimaryCurrency,
-                      { showCode: false }
-                    )}
-              </div>
-              {totalBill ? <CurrencyChip currency={isForeignAccount ? accountCurrency : walletPrimaryCurrency} /> : null}
-            </div>
-            {isForeignAccount && totalBill ? (
-              <div className="text-white/80 text-xs font-thin whitespace-nowrap">
-                ≈ {formatMoneyMajor(totalBill, walletPrimaryCurrency, { showCode: false })} {walletPrimaryCurrency}
-              </div>
-            ) : null}
-          </div>
-        </div>
-        <div className="w-full flex justify-between items-center gap-3 mt-3 sm:mt-5">
-          <div className="text-white text-[10px] whitespace-nowrap mt-1.5 sm:text-lg">
-            Balance:
-          </div>
-          <div className="flex gap-2.5 self-end items-start sm:mt-2">
-            {totalIncome - totalBill < 0 ? (
-              <MdKeyboardDoubleArrowDown className=" w-4 h-4 text-red-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1" />
-            ) : (
-              <MdKeyboardDoubleArrowUp className=" w-4 h-4 text-green-400 mt-1.5 overflow-hidden shrink-0 sm:w-7 sm:h-7 sm:mt-1 md:w-8 md:h-8 md:mt-1" />
-            )}
+  // The card shows the account as the phone does: its saved color and pattern, the balance, the number and what came in and
+  // went out in the period. The period is chosen right under it, not on the card.
+  const incomeValue = isForeignAccount ? nativeTotalIncome : totalIncome;
+  const spendingValue = isForeignAccount ? nativeTotalBill : totalBill;
+  const equivalentText = equivalentQuote
+    ? `≈ ${formatMoneyMinor(equivalentQuote.amountMinor as number, equivalentQuote.currency as string, { showCode: false })} ${equivalentQuote.currency}`
+    : null;
+  const savedAccount = account as CreditCardAccountRef & { accountType?: string | null; cardColor?: string | null; cardPattern?: string | null };
 
-            <div className="flex flex-col gap-0.5 items-end">
-              <div className="flex items-center gap-1.5">
-                <div className="text-white text-2xl font-base whitespace-nowrap sm:text-5xl pulse-animation-short">
-                  {!totalAmount ? (
-                    <p className="text-xl sm:text-xl">No transactions... 🤕</p>
-                  ) : (
-                    formatMoneyMajor(
-                      isForeignAccount ? nativeTotalIncome - nativeTotalBill : totalIncome - totalBill,
-                      isForeignAccount ? accountCurrency : walletPrimaryCurrency,
-                      { showCode: false }
-                    )
-                  )}
-                </div>
-                {totalAmount ? <CurrencyChip currency={isForeignAccount ? accountCurrency : walletPrimaryCurrency} /> : null}
-              </div>
-              {isForeignAccount && totalAmount ? (
-                <div className="text-white/80 text-xs font-thin whitespace-nowrap">
-                  ≈ {formatMoneyMajor(totalIncome - totalBill, walletPrimaryCurrency, { showCode: false })} {walletPrimaryCurrency}
-                </div>
-              ) : null}
-            </div>
+  return (
+    <div className="pulse-animation-short flex h-full w-full flex-col gap-3">
+      <AccountCardFace
+        seed={String(account?._id ?? account?.name ?? "")}
+        name={account?.name}
+        bankId={account?.bankId}
+        accountType={savedAccount.accountType}
+        cardNumber={account?.cardNumber}
+        cardColor={savedAccount.cardColor}
+        cardPattern={savedAccount.cardPattern}
+        currency={accountCurrency}
+        balance={Number(account?.amount) || 0}
+        equivalent={equivalentText}
+        incomes={incomeValue}
+        spending={spendingValue}
+        flowCurrency={isForeignAccount ? accountCurrency : walletPrimaryCurrency}
+        onOpen={() => {
+          if (account?._id) router.push(`/dashboard/accounts?accountId=${account._id}`);
+        }}
+      />
+      <div className="flex items-center justify-center gap-2 text-sm font-thin text-gf-text">
+        <div className="relative w-fit">
+          <select
+            className="appearance-none bg-transparent pr-5"
+            name="DateSelector"
+            value={selectedDuration}
+            onChange={handleDurationChange}
+          >
+            <option value={2}>Yesterday</option>
+            <option value={7}>Last week</option>
+            <option value={15}>Last 15 days</option>
+            <option value={30}>Last 30 days</option>
+            <option value={60}>Last 60 days</option>
+            <option value={90}>Last 90 days</option>
+          </select>
+          <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2">
+            <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
           </div>
         </div>
+        <Tooltip title="Elige el periodo para ver los ingresos y gastos de esta cuenta 🤓">
+          <div className="pl-2">
+            <FaRegQuestionCircle size={15} />
+          </div>
+        </Tooltip>
       </div>
     </div>
   );
