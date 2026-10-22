@@ -1,21 +1,30 @@
 import { Tabs, router, usePathname } from 'expo-router';
-import type { ComponentProps, ReactNode } from 'react';
+import { Fragment, type ComponentProps, type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { NAV_ICON } from '@/lib/nav-icons';
+import { emitTabReselect } from '@/lib/tab-reselect';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
 const BAR_HEIGHT = 64;
-// From this width (the largest iPhones) the bar also holds Proyecciones at the left and the Analizador at the right.
+// From this width (the largest iPhones) the bar also holds Proyecciones and the Analizador.
 const WIDE_BAR_MIN_WIDTH = 428;
 
-// Gastify's bottom bar: a rounded bar floating above the bottom edge with icons only, like the
-// web app's mobile navbar. It only draws the bar; each screen sets its own icon (tabBarIcon)
-// in app-tabs.tsx, and Expo Router still handles the navigation.
+// Where each tab opens: a second tap on a tab already open goes back to this page, scrolls up and refreshes.
+const LANDING: Record<string, string> = { index: '/', movements: '/movements', budgets: '/budgets', more: '/more' };
+
+// The two extra sections of the wide bar. Both live under "Más", so the bar marks them by path and not by the tab.
+const EXTRA = {
+  projections: { href: '/more/projections', label: 'Proyecciones', glyph: (color: string) => NAV_ICON.projections(color, 24) },
+  analyzer: { href: '/more/analyzer', label: 'Analizador de cartera', glyph: (color: string) => NAV_ICON.analyzer(color, 24) },
+} as const;
+
+// Gastify's bottom bar: a rounded bar floating above the bottom edge with icons only, like the web app's mobile navbar.
+// Wide bar order: Inicio, Movimientos, Proyecciones, "+", Presupuestos, Analizador, Más (always the last, at the right).
 export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
@@ -29,12 +38,24 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
   const wideBar = useWindowDimensions().width >= WIDE_BAR_MIN_WIDTH;
   const inactive = isDark ? 'rgba(255,255,255,0.88)' : colors.textSecondary;
   const activeColor = isDark ? '#ffffff' : colors.accent;
-  // The two extra sections of the wide bar: the same glyph and the same active mark as the rest of the bar.
-  const extra = (key: string, href: '/more/projections' | '/more/analyzer', label: string, glyph: (color: string) => ReactNode) => {
-    const active = pathname.startsWith(href);
+  const onExtra = (key: keyof typeof EXTRA) => pathname.startsWith(EXTRA[key].href);
+  const anyExtra = onExtra('projections') || onExtra('analyzer');
+
+  const extra = (key: keyof typeof EXTRA) => {
+    const item = EXTRA[key];
+    const active = onExtra(key);
     return (
-      <Pressable key={key} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: active }} onPress={() => router.navigate(href)} style={styles.item}>
-        <View style={[styles.extraGlyph, { backgroundColor: active ? colors.accentSoft : 'transparent' }]}>{glyph(active ? activeColor : inactive)}</View>
+      <Pressable
+        key={key}
+        accessibilityRole="button"
+        accessibilityLabel={item.label}
+        accessibilityState={{ selected: active }}
+        onPress={() => (active ? emitTabReselect(item.href) : router.navigate(item.href as never))}
+        style={styles.item}>
+        <View style={styles.glyph}>
+          <View style={[styles.pill, isDark ? styles.pillDark : { backgroundColor: colors.accentSoft }, { opacity: active ? 1 : 0 }]} />
+          {item.glyph(active ? activeColor : inactive)}
+        </View>
       </Pressable>
     );
   };
@@ -55,42 +76,41 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
           }),
         ]}>
         <GlassSurface variant="nav" radius={BAR_HEIGHT / 2} style={styles.bar}>
-        {wideBar && extra('projections', '/more/projections', 'Proyecciones', (color) => NAV_ICON.projections(color, 24))}
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          // Screens hidden with `href: null` come through as display: 'none'.
-          if (StyleSheet.flatten(options.tabBarItemStyle)?.display === 'none') return null;
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            // Screens hidden with `href: null` come through as display: 'none'.
+            if (StyleSheet.flatten(options.tabBarItemStyle)?.display === 'none') return null;
 
-          const focused = state.index === index;
-          const onPress = () => {
-            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (event.defaultPrevented) return;
-            // A tab always opens its landing page, even when a detail in that tab was opened
-            // from another section. Merely navigating to the tab preserves its nested stack.
-            if (route.name === 'movements' || route.name === 'budgets' || route.name === 'more') {
-              navigation.navigate(route.name, { screen: 'index' });
-              return;
-            }
-            if (!focused) navigation.navigate(route.name, route.params);
-          };
+            // "Más" is not the open section while one of its two extra sections is on screen.
+            const focused = state.index === index && !(route.name === 'more' && anyExtra);
+            const landing = LANDING[route.name];
+            const onPress = () => {
+              const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+              if (event.defaultPrevented) return;
+              // Tapping the section that is already open: back to its top and a refresh.
+              if (focused && landing && pathname === landing) {
+                emitTabReselect(landing);
+                return;
+              }
+              // A tab always opens its landing page, even when a detail in that tab was opened
+              // from another section. Merely navigating to the tab preserves its nested stack.
+              if (route.name === 'movements' || route.name === 'budgets' || route.name === 'more') {
+                navigation.navigate(route.name, { screen: 'index' });
+                return;
+              }
+              if (!focused) navigation.navigate(route.name, route.params);
+            };
 
-          return (
-            <Pressable
-              key={route.key}
-              accessibilityRole="button"
-              accessibilityLabel={options.tabBarAccessibilityLabel ?? options.title}
-              accessibilityState={{ selected: focused }}
-              onPress={onPress}
-              style={styles.item}>
-              {options.tabBarIcon?.({
-                focused,
-                color: isDark ? (focused ? '#ffffff' : 'rgba(255,255,255,0.88)') : focused ? colors.accent : colors.textSecondary,
-                size: 24,
-              })}
-            </Pressable>
-          );
-        })}
-        {wideBar && extra('analyzer', '/more/analyzer', 'Analizador de cartera', (color) => NAV_ICON.analyzer(color, 24))}
+            return (
+              <Fragment key={route.key}>
+                <Pressable accessibilityRole="button" accessibilityLabel={options.tabBarAccessibilityLabel ?? options.title} accessibilityState={{ selected: focused }} onPress={onPress} style={styles.item}>
+                  {options.tabBarIcon?.({ focused, color: focused ? activeColor : inactive, size: 24 }) as ReactNode}
+                </Pressable>
+                {wideBar && route.name === 'movements' && extra('projections')}
+                {wideBar && route.name === 'budgets' && extra('analyzer')}
+              </Fragment>
+            );
+          })}
         </GlassSurface>
       </View>
     </View>
@@ -116,11 +136,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  extraGlyph: {
-    width: 44,
+  glyph: {
+    width: 52,
     height: 44,
-    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // The active mark: a narrow pill (42 × 40), the same as the tabs'.
+  pill: {
+    position: 'absolute',
+    top: 2,
+    left: 5,
+    width: 42,
+    height: 40,
+    borderRadius: 20,
+  },
+  pillDark: {
+    backgroundColor: 'rgba(168,85,247,0.55)',
+    borderWidth: 1,
+    borderColor: 'rgba(233,213,255,0.55)',
   },
 });

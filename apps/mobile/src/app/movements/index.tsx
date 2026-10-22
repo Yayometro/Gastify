@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useRef, useState, type ComponentProps } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import { ActivityIndicator, Alert, Animated, Pressable, RefreshControl, SectionList, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,6 +14,7 @@ import { MonthSwitcher } from '@/components/month-switcher';
 import { MovementFiltersPanel } from '@/components/movements/movement-filters';
 import { MovementRow } from '@/components/movements/movement-row';
 import { BulkEditSheet, type BulkField } from '@/components/movements/bulk-edit-sheet';
+import { onTabReselect } from '@/lib/tab-reselect';
 import { useToast } from '@/components/toast';
 import { ToolsSheet } from '@/components/tools/tools-fab';
 import { TotalsCard } from '@/components/totals-card';
@@ -111,6 +112,14 @@ export default function MovementsScreen() {
   const [headerHeight, setHeaderHeight] = useState(0);
   const railTop = scrollY.interpolate({ inputRange: [0, Math.max(1, headerHeight)], outputRange: [insets.top + 16 + headerHeight, insets.top + 16], extrapolate: 'clamp' });
   const listRef = useRef<SectionList<TransactionData, DaySection>>(null);
+  // A second tap on Movimientos: back to the top of the list and a refresh.
+  const refreshNow = useRefreshAppData().refresh;
+  useEffect(() => onTabReselect((path) => {
+    if (path !== '/movements') return;
+    // The list's own scroll view (the header is part of it), taken to its top.
+    (listRef.current?.getScrollResponder() as { scrollTo?: (options: { y: number; animated: boolean }) => void } | null | undefined)?.scrollTo?.({ y: 0, animated: true });
+    refreshNow();
+  }), [refreshNow]);
   const [exporting, setExporting] = useState(false);
   const { data: session } = authClient.useSession();
 

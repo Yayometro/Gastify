@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { usePathname } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,6 +8,7 @@ import { InfoTip, type InfoText } from '@/components/info-tip';
 import { BottomTabInset, Colors, MaxContentWidth, TabletContentWidth } from '@/constants/theme';
 import { useIsTablet } from '@/hooks/use-device-class';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
+import { onTabReselect } from '@/lib/tab-reselect';
 
 // Layout shared by the phase 4 screens: a title, a line under it, and a scroll area that leaves room
 // for the floating bar. Pulling down refreshes the data when onRefresh is given.
@@ -40,12 +42,22 @@ export function Screen({
   const tablet = useIsTablet();
   // Every screen can be pulled down to reload the data; a screen with its own reload passes `onRefresh`.
   const appRefresh = useRefreshAppData();
+  // A second tap on this page's tab (or extra section) scrolls it to the top and refreshes it.
+  const pathname = usePathname();
+  const scroller = useRef<ScrollView>(null);
+  const refreshNow = onRefresh ?? appRefresh.refresh;
+  useEffect(() => onTabReselect((path) => {
+    if (path !== pathname) return;
+    scroller.current?.scrollTo({ y: 0, animated: true });
+    refreshNow();
+  }), [pathname, refreshNow]);
   const scheme = useColorScheme();
   const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
   return (
     <View className="flex-1 bg-gf-bg">
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView
+          ref={scroller}
           contentContainerClassName="w-full gap-4 self-center p-6"
           contentContainerStyle={{ paddingBottom: BottomTabInset + 84, maxWidth: tablet ? TabletContentWidth : MaxContentWidth }}
           refreshControl={<RefreshControl refreshing={onRefresh ? refreshing : appRefresh.refreshing} onRefresh={onRefresh ?? appRefresh.refresh} />}>

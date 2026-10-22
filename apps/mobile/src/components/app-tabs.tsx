@@ -136,13 +136,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // The active mark is a narrow pill (42 × 40), the same as the bar's extra sections.
   highlight: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    borderRadius: 22,
+    top: 2,
+    left: 5,
+    width: 42,
+    height: 40,
+    borderRadius: 20,
   },
   // The selected tab: a clear violet pill with a light edge, so it stands out on the dark bar.
   highlightDark: {

@@ -459,6 +459,20 @@ Prefijo AH.
 | AH11 | Selección de movimientos: Seleccionar junto a Filtros, Off / Todos / Ninguno, acciones por campo (nombre, fecha, tipo, categoría, cuenta), edición general y borrar, con tooltip. | HECHO (parcial) | Verificado: la barra y las acciones aparecen. Ninguna edición masiva se envió: escribe sobre la cuenta QA y requiere tu aprobación. |
 | AH12 | Web: etiquetas sin color con texto blanco sobre violeta; botones de selección en blanco. | HECHO (sin verificar en el navegador) | Compila; no revisé la web visualmente. |
 
+## Decimooctava ronda (2026-10-21)
+
+Prefijo AI.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AI01 | Barra del iPhone en el orden pedido: Inicio, Movimientos, Proyecciones, +, Presupuestos, Analizador, Más (siempre a la derecha). | HECHO | Verificado en un ancho simulado de 430 pt: el orden es el correcto y «Más» queda al final. |
+| AI02 | El elemento activo es la sección abierta, no «Más», cuando se está en Proyecciones o Analizador. | HECHO | Verificado: al tocar Proyecciones se marca Proyecciones y «…» se apaga. |
+| AI03 | Pastilla activa más angosta (42 × 40). | HECHO | Verificado en la barra. |
+| AI04 | Doble toque en una sección abierta: sube al inicio y refresca (como Instagram o Facebook). | HECHO (sin verificar) | Implementado con un emisor (`lib/tab-reselect.ts`) que escuchan `Screen` y Movimientos. No vi el desplazamiento en el emulador. |
+| AI05 | Alarma (70 a 90 %) titila hasta cerrar el aviso o tocar «Ver mi presupuesto». | HECHO | El marco ya no se detiene solo. |
+| AI06 | Fuego (100 %): llamas y explosiones sobre la pantalla. | HECHO (sin verificar) | Código listo; el efecto no se vio en el emulador. |
+| AI07 | Descartar avisos con un deslizamiento corto y con indicador «Quitar» / «Suelta para quitar». | HECHO (sin verificar) | Umbral bajado de 110 a 72 px (o rápido), y captura horizontal más tolerante. No probé el nuevo gesto en el emulador. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

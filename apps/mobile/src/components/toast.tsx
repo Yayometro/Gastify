@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Animated, Easing, Modal, PanResponder, Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AlarmEdges } from '@/components/alarm-edges';
+import { AlarmEdges, FireEffect } from '@/components/alarm-edges';
 import { Celebration } from '@/components/celebration';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { GlassSurface } from '@/components/ui/glass';
@@ -139,6 +139,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         <View style={{ flex: 1, backgroundColor: presented?.mood === 'celebrate' || !presented ? 'rgba(10,5,25,0.82)' : 'rgba(26,4,12,0.78)', alignItems: 'center', justifyContent: 'center', padding: 28 }}>
           {presented?.mood === 'celebrate' && <Celebration active />}
           {presented && presented.mood !== 'celebrate' && <AlarmEdges color={MOOD_COLOR[presented.mood]} fast={presented.mood === 'fire'} />}
+          {presented?.mood === 'fire' && <FireEffect />}
           <GlassSurface radius={28} style={{ width: '100%', maxWidth: 420, backgroundColor: 'rgba(40,22,82,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
             <View className="items-center gap-4 p-7">
               <Text style={{ fontSize: 56 }}>{presented?.mood === 'fire' ? '🔥' : presented?.mood === 'alarm' ? '😬' : '🎉'}</Text>
