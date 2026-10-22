@@ -47,9 +47,11 @@ export interface EditAccountModalProps {
   eamAccount?: EditAccountModalAccount | null;
   eamWallet?: EditAccountModalWallet | null;
   eamClose: (state: boolean) => void;
+  // Inside a panel (the "+" window): no full-screen overlay of its own.
+  eamInline?: boolean;
 }
 
-function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAccountModalProps): React.JSX.Element {
+function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline = false }: EditAccountModalProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [active, setActive] = useState<unknown>(false);
   const [formAccount, setFormAccount] = useState<FormAccountState>({
@@ -187,11 +189,15 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
 
   return (
     <div
-      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[5000] bg-black/50 backdrop-blur-md ${
-        !active ? "hidden" : "flex"
-      } items-center justify-center`}
+      className={
+        eamInline
+          ? "w-full flex justify-center"
+          : `fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[5000] bg-black/50 backdrop-blur-md ${
+              !active ? "hidden" : "flex"
+            } items-center justify-center`
+      }
     >
-      <div className="content gf-glass-violet flex flex-col w-[350px] h-[820px] max-h-[95vh] overflow-y-auto relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
+      <div className={`content gf-glass-violet flex flex-col ${eamInline ? "w-full max-w-[420px]" : "w-[350px] h-[820px] max-h-[95vh]"} overflow-y-auto relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden`}>
         <div
           className={`${
             isLoading ? "absolute" : "hidden"

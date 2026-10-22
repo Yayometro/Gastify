@@ -167,6 +167,10 @@ export interface BudgetEditFormProps {
   budget?: BudgetModalItem | null;
   onClose: () => void;
   onBack?: (() => void) | null;
+  // Opens on this type (spending, saving or project) when creating.
+  initialType?: string;
+  // Inside a panel of the "+" window: no window of its own, and no × (the panel has its own).
+  inline?: boolean;
 }
 
 export type BudgetEditModalProps = BudgetEditFormProps;
@@ -177,13 +181,13 @@ interface ProviderData {
   [key: string]: unknown;
 }
 
-function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps): React.JSX.Element {
+function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = false }: BudgetEditFormProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [form, setForm] = useState<BudgetEditFormState>({
     name: "",
     goalAmount: "",
     savingAmount: "",
-    budgetType: BUDGET_TYPES.SPENDING,
+    budgetType: initialType ?? BUDGET_TYPES.SPENDING,
     category: "",
     subCategory: "",
     period: "monthly",
@@ -407,12 +411,12 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
   const isSaving = form.budgetType === BUDGET_TYPES.SAVING;
   const isSpending = form.budgetType === BUDGET_TYPES.SPENDING;
 
-  return <BasicModal close={onClose} renderContent={
-    <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[500px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl">
+  const panel = (
+    <div className={inline ? "content relative gf-glass-violet flex flex-col w-full max-h-full overflow-hidden rounded-3xl" : "content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[500px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl"}>
       {isLoading && <div className="absolute inset-0 bg-gf-surface/70 backdrop-blur-sm flex justify-center items-center z-[1002]"><Spin size="large" /></div>}
       <div className="relative pt-6 pb-5 px-4 text-center text-white shrink-0">
         {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors text-xs font-semibold">← Back</button>}
-        <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"><CategoIcon type="MdClose" siz={18} /></button>
+        {!inline && <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"><CategoIcon type="MdClose" siz={18} /></button>}
         <h1 className="text-2xl font-bold">{mode === "edition" ? "Edit" : "Create"} {isProject ? "Project" : "Budget"} 🪄</h1>
       </div>
       <div className="flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8">
@@ -512,7 +516,8 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
         </form>
       </div>
     </div>
-  } />;
+  );
+  return inline ? panel : <BasicModal close={onClose} renderContent={panel} />;
 }
 
 export default function BudgetEditModal(props: BudgetEditModalProps): React.JSX.Element {

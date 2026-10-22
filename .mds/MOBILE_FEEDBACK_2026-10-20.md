@@ -511,6 +511,16 @@ Prefijo AL.
 | AL03 | Importar desde Excel también en el botón «+». | HECHO (sin verificar) | Igual que en la web: botón en la pantalla Crear. |
 | AL04 | Estados de cuenta en PDF y XLSX. | FUERA DE ALCANCE AHORA | El usuario aclaró que se refería a la plantilla de Excel; el lector de estados de cuenta es un desarrollo aparte. |
 
+## Vigesimosegunda ronda (web, 2026-10-22)
+
+Prefijo AM. Pedido del usuario: que la web tenga todo lo que tiene el «+» de la app, y que las explicaciones con formato también estén en la web.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AM01 | El «+» de la web abre todo lo que el de la app: gasto, ingreso, transferir, cuenta, categoría, presupuesto, ahorro, proyecto e importar desde Excel. | HECHO | `AddTransactionModal.tsx` es ahora la ventana «Crear»: columna de opciones (en pantalla ancha) o fila deslizable (en angosta) y el formulario a la derecha. Verificado en Chrome: cuenta, presupuesto y la ventana de explicación. |
+| AM02 | Explicaciones con formato (secciones, tablas, ecuaciones, ejemplos) también en la web. | HECHO (parcial) | Los textos del «+» viven en `packages/core/src/info/createInfo.ts` y los usan la app y la web. La web tiene `InfoContent` e `InfoTip`. Pendiente: pasar las demás explicaciones de la app (presupuestos, proyecciones, analizador, historial). |
+| AM03 | Formularios de cuenta, presupuesto, ahorro y proyecto en un panel (sin ventana propia). | HECHO | `EditAccountModal`, `BudgetEditModal` y `AddTransactionComp` tienen modo en línea. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

@@ -28,6 +28,8 @@ import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 
 export interface AddTransactionCompProps {
   initialBudgetId?: string;
+  // Starts as an income (the "+" offers Gasto and Ingreso as two choices).
+  defaultIncome?: boolean;
   onCreated?: (data?: TransactionData | unknown) => void;
 }
 
@@ -93,14 +95,14 @@ export interface CategorySelection {
 
 
 
-function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionCompProps): React.JSX.Element {
+function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCreated }: AddTransactionCompProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
   const [transactionInfo, setTransactionInfo] = useState<TransactionFormState>({
     name: "",
     amount: "",
-    isIncome: false,
-    isBill: false,
+    isIncome: defaultIncome,
+    isBill: !defaultIncome,
     isReadable: true,
     isForSaving: false,
     date: new Date(),
