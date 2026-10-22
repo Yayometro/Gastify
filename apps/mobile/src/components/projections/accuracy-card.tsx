@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { zebra } from '@/components/ui/zebra';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
-import { ACCURACY_SECTIONS } from '@/lib/info-sections';
 import { esMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { APP_INFO } from '@gastify/core/info/appInfo';

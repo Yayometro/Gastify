@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { PROJECTION_MONTHS_SECTIONS } from '@/lib/info-sections';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';

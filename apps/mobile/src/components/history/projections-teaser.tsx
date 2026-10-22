@@ -5,10 +5,9 @@ import { useSelector } from 'react-redux';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { ChipPicker } from '@/components/chip-picker';
-import { ACCURACY_HELP, AccuracyBody } from '@/components/projections/accuracy-card';
+import { AccuracyBody } from '@/components/projections/accuracy-card';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
-import { ACCURACY_SECTIONS } from '@/lib/info-sections';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';

@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
-import { INSIGHTS_SECTIONS } from '@/lib/info-sections';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';

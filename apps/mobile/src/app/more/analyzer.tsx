@@ -1,5 +1,4 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { VS_SECTIONS, PACE_SECTIONS } from '@/lib/info-sections';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSelector } from 'react-redux';

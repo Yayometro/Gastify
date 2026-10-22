@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { BUDGET_FACES_SECTIONS } from '@/lib/info-sections';
 import { useMemo } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
