@@ -11,6 +11,8 @@ export interface BreakdownSlice {
   value: number;
   count: number;
   children: BreakdownSlice[];
+  // Only while building the breakdown: the movements of a subcategory, moved into `children` at the end.
+  movements?: BreakdownSlice[];
 }
 
 export const NO_CATEGORY_NAME = "Sin categoría";
@@ -49,11 +51,20 @@ export function categoryBreakdown(movements: TransactionLike[], kind: "spending"
     const sub = movement.subCategory;
     const subKey = sub?._id || sub?.name || NO_SUBCATEGORY_NAME;
     // A subcategory without its own color or icon looks like its category.
-    addTo(subs, subKey, sub?.name || NO_SUBCATEGORY_NAME, sub?.icon || slice.icon, sub?.color || slice.color, value);
+    const subSlice = addTo(subs, subKey, sub?.name || NO_SUBCATEGORY_NAME, sub?.icon || slice.icon, sub?.color || slice.color, value);
+    // Each movement is also kept as a slice of its own, the third level of the drill-down (movement -> its amount).
+    const named = movement as { _id?: unknown; name?: string | null; title?: string | null };
+    const label = named.name || named.title || "Movimiento";
+    subSlice.movements = [...(subSlice.movements ?? []), { key: `${subKey}:${String(named._id ?? label)}:${subSlice.movements?.length ?? 0}`, name: label, icon: sub?.icon || slice.icon, color: sub?.color || slice.color, value, count: 1, children: [] }];
   }
 
   return [...categories.values()]
-    .map((slice) => ({ ...slice, children: [...(subsByCategory.get(slice.key)?.values() ?? [])].sort(bySize) }))
+    .map((slice) => ({
+      ...slice,
+      children: [...(subsByCategory.get(slice.key)?.values() ?? [])]
+        .map((sub) => ({ ...sub, children: [...(sub.movements ?? [])].sort(bySize) }))
+        .sort(bySize),
+    }))
     .sort(bySize);
 }
 

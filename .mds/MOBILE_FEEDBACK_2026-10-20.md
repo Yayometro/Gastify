@@ -402,6 +402,14 @@ Prefijo AD.
 | AD03 | El usuario AUTORIZÓ descargar los logotipos de los bancos. | HECHO | 26 logos descargados de Wikimedia Commons, recortados y centrados en 256×256 WebP transparente (todos del mismo tamaño); en `apps/mobile/assets/banks` y `public/banks`. Sin logo (iniciales): Mercado Pago, Spin by OXXO, Klar, Albo, Invex. |
 | AD04 | Agregar el selector de bancos (con buscador) también a la página web. | CÓDIGO LISTO | Formulario de cuenta de la web: buscador, lista de bancos y número opcional con ojito; la tarjeta de la web muestra el logo del banco en lugar del chip, con su nombre y el número oculto. Falta verlo en el navegador. |
 
+## Decimocuarta ronda (2026-10-21)
+
+Prefijo AE.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AE01 | Resumen de transacciones: tres niveles de detalle (categoría → subcategoría → movimientos) en anillo, burbujas, mapa y tabla, en iPhone y iPad. | EN CURSO | Hecho en core con pruebas (categoryDrill, movimientos como tercer nivel de categoryBreakdown). En el teléfono: corregido el reinicio de ruta que causaba el aviso de React; el toque del anillo pasó a detectar el ángulo. NO verificado aún en el emulador: el toque sobre la rebanada no abrió el siguiente nivel. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

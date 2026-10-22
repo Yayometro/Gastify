@@ -13,7 +13,8 @@ import { Card } from '@/components/ui/card';
 import { CategoryTable } from '@/components/home/category-table';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
-import { categoryBreakdown, NO_SUBCATEGORY_NAME } from '@gastify/core/history/categoryBreakdown';
+import { categoryBreakdown } from '@gastify/core/history/categoryBreakdown';
+import { backOne, drillView, openSlice, type DrillState } from '@gastify/core/history/categoryDrill';
 import { historyRange, summarizePeriod, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
@@ -49,7 +50,6 @@ export function SummaryWidget({
     const range = historyRange(preset, now, { from: parseDateText(customFrom), to: parseDateText(customTo) }, month);
     return { summary: summarizePeriod(allMovements, range), movements: allMovements.filter((movement) => isInRange(movement, range)) };
   }, [preset, month, now, customFrom, customTo, allMovements, dashboardSummary, dashboardMovements]);
-  const [selected, setSelected] = useState<string | null>(null);
   // The chart type, as the web's selector: the nested ring, the bubbles or the treemap.
   const [chart, setChart] = useState<'ring' | 'bubbles' | 'treemap'>('ring');
   const total = kind === 'spending' ? summary.totals.spending : summary.totals.incomes;
@@ -58,31 +58,43 @@ export function SummaryWidget({
   const allRows = useMemo(() => categoryBreakdown(movements, kind), [movements, kind]);
   // The chart shows every category (the phone's table is the one that is cut short, not the chart).
   const categories = allRows;
-  const chosen = allRows.find((slice) => slice.key === selected) ?? categories.find((slice) => slice.key === selected) ?? null;
-  // Zoomed into a category the donut shows its subcategories; "Otras" shows the categories it merged. A
-  // category with no subcategory of its own has nothing to zoom into: it is only highlighted.
-  const zoomed = chosen !== null && chosen.children.some((child) => child.name !== NO_SUBCATEGORY_NAME);
-  const shown = zoomed && chosen ? chosen.children : categories;
-  const tableRows = zoomed && chosen ? chosen.children : allRows;
+  // The drill-down path: the category opened, then the subcategory opened inside it. Each level is drawn by the chart and
+  // the table alike (see drillView in core): categories, then subcategories, then the movements of a subcategory.
+  const [path, setPath] = useState<DrillState>({ path: [] });
+  const view = useMemo(() => drillView(allRows, path, total), [allRows, path, total]);
+  const chosen = view.current;
+  const level = view.level;
+  const zoomed = level > 0;
+  const shown = zoomed ? view.slices : categories;
+  const tableRows = zoomed ? view.slices : allRows;
   const shownTotal = chosen ? chosen.value : total;
+  // Nothing is highlighted: the opened slice is the level itself, and the chart shows its children.
+  const selected: string | null = null;
   const windowWidth = useWindowDimensions().width;
   const tablet = windowWidth >= TABLET_MIN_WIDTH;
   // On a tablet the ring takes the room of its column (about 60 % of the card).
   const bigChart = Math.max(280, Math.min(560, Math.round((windowWidth - 160) * 0.6 - 60)));
   const [detailOpen, setDetailOpen] = useState(false);
 
-  // Another kind or period: the chosen slice may not exist any more.
-  useEffect(() => setSelected(null), [kind, movements]);
+  // A different kind (gastos / ingresos) or period starts the drill-down from the top. Only those reset it: a data refresh
+  // must not, or the chart jumps back to the first level while the person is inside it.
+  const periodKey = `${preset}|${month.getTime()}|${customFrom}|${customTo}`;
+  useEffect(() => setPath({ path: [] }), [kind, periodKey]);
 
-  const select = (key: string) => (zoomed ? undefined : setSelected((current) => (current === key ? null : key)));
+  // Tapping a slice opens it one level deeper; tapping the open one again closes it. The deepest level (movements) is not opened further.
+  const select = (key: string) => {
+    if (level >= 2) return;
+    setPath((current) => openSlice(current, key));
+  };
+  const back = () => setPath((current) => backOne(current));
 
   // The chart and the zoom controls. On the phone the card only shows it as a preview (a tap opens the sheet); the sheet and the tablet make it interactive.
   const chartBlock = (interactive: boolean) => (
     <View className="gap-3">
       {chart !== 'ring' && chosen && interactive && (
-        <Pressable accessibilityRole="button" accessibilityLabel="Regresar a todas las categorías" onPress={() => setSelected(null)} className="self-start flex-row items-center gap-1 py-1">
+        <Pressable accessibilityRole="button" accessibilityLabel="Regresar un nivel" onPress={back} className="self-start flex-row items-center gap-1 py-1">
           <Ionicons name="arrow-back" size={18} color={colors.accent} />
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todas las categorías</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{level === 1 ? 'Todas las categorías' : `Volver a ${chosen?.name ?? 'categoría'}`}</Text>
         </Pressable>
       )}
       {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} height={tablet && interactive ? bigChart : undefined} />}
@@ -94,15 +106,15 @@ export function SummaryWidget({
           onSelect={interactive ? select : () => setDetailOpen(true)}
           centerTitle={chosen ? chosen.name : kind === 'spending' ? 'Gastos' : 'Ingresos'}
           centerValue={formatMoneyMajor(shownTotal, currency)}
-          centerHint={interactive ? (zoomed ? '‹ Toca para volver' : chosen ? undefined : 'Toca una sección ›') : 'Toca para ver el detalle ›'}
+          centerHint={interactive ? (zoomed ? '‹ Toca para volver' : 'Toca una sección ›') : 'Toca para ver el detalle ›'}
           centerIcon={chosen && chosen.icon ? { icon: chosen.icon, color: chosen.color } : null}
-          onCenterPress={interactive ? (chosen ? () => setSelected(null) : undefined) : () => setDetailOpen(true)}
+          onCenterPress={interactive ? (zoomed ? back : undefined) : () => setDetailOpen(true)}
           trackColor={scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(27,16,61,0.06)'}
           size={tablet && interactive ? bigChart : undefined}
         />
       )}
       {chart !== 'ring' && chosen && interactive && (
-        <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="items-center">
+        <Pressable accessibilityRole="button" onPress={back} className="items-center">
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{chosen.name}: {formatMoneyMajor(chosen.value, currency)} · quitar selección</Text>
         </Pressable>
       )}
@@ -110,7 +122,7 @@ export function SummaryWidget({
   );
 
   const table = (limit?: number) => (
-    <CategoryTable rows={tableRows} total={shownTotal} currency={currency} selectedKey={zoomed ? null : selected} disabled={zoomed} firstColumn={zoomed && chosen ? `${chosen.name} · subcategorías` : 'Categoría'} limit={limit} onPressRow={select} />
+    <CategoryTable rows={tableRows} total={shownTotal} currency={currency} selectedKey={zoomed ? null : selected} disabled={false} firstColumn={zoomed && chosen ? (level === 1 ? `${chosen.name} · subcategorías` : `${chosen.name} · movimientos`) : 'Categoría'} limit={limit} onPressRow={select} />
   );
 
   const filters = (
@@ -135,7 +147,7 @@ export function SummaryWidget({
       {totalText}
       {chartBlock(true)}
       {zoomed && chosen && (
-        <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="self-start flex-row items-center gap-1 py-1">
+        <Pressable accessibilityRole="button" onPress={back} className="self-start flex-row items-center gap-1 py-1">
           <Ionicons name="arrow-back" size={18} color={colors.accent} />
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todas las categorías</Text>
         </Pressable>

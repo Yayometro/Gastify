@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, type GestureResponderEvent } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { CategoryBadge } from '@/components/category-badge';
@@ -20,7 +20,7 @@ function geometry(size: number) {
     const large = endAngle - startAngle > 180 ? 1 : 0;
     return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${radius} ${radius} 0 ${large} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
   };
-  return { stroke, arcPath };
+  return { stroke, arcPath, radius, center };
 }
 
 // The donut of a breakdown (the web's sunburst): one arc per slice, the chosen one standing out, and
@@ -51,9 +51,24 @@ export function CategoryDonut({
   size?: number;
 }) {
   const SIZE = size;
-  const { stroke: STROKE, arcPath } = geometry(size);
+  const { stroke: STROKE, arcPath, radius: RADIUS, center: CENTER } = geometry(size);
   const arcs = donutArcs(slices);
   const byKey = new Map(slices.map((slice) => [slice.key, slice]));
+
+  // A touch on a thin painted arc often misses it, so one transparent area over the whole ring finds the slice from the
+  // angle of the touch: it is clockwise from 12 o'clock, like the arcs themselves.
+  const pick = (event: GestureResponderEvent) => {
+    const { locationX, locationY } = event.nativeEvent;
+    const dx = locationX - CENTER;
+    const dy = locationY - CENTER;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    // Only the band of the ring counts: the middle (the text) and the outside are not slices.
+    if (distance < RADIUS - STROKE / 2 - 6 || distance > RADIUS + STROKE / 2 + 6) return;
+    let angle = (Math.atan2(dx, -dy) * 180) / Math.PI;
+    if (angle < 0) angle += 360;
+    const hit = arcs.find((arc) => angle >= arc.startAngle && angle < arc.endAngle);
+    if (hit) onSelect(hit.key);
+  };
 
   return (
     <View style={{ width: SIZE, height: SIZE, alignSelf: 'center' }}>
@@ -70,11 +85,12 @@ export function CategoryDonut({
               strokeWidth={selectedKey === arc.key ? STROKE + 8 : STROKE}
               strokeOpacity={dimmed ? 0.35 : 1}
               fill="none"
-              onPress={() => onSelect(arc.key)}
             />
           );
         })}
       </Svg>
+      {/* One touch area over the ring: it tells the slice from the angle, so a tap anywhere on the band works. */}
+      <Pressable accessibilityRole="none" onPress={(event) => pick(event)} style={{ position: 'absolute', left: 0, top: 0, width: SIZE, height: SIZE }} />
       <Pressable
         accessibilityRole={onCenterPress ? 'button' : 'text'}
         accessibilityLabel={`${centerTitle}, ${centerValue}`}
