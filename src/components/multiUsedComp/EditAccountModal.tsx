@@ -6,6 +6,8 @@ import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
 import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/accountsSlice";
 import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
+import { BANKS, bankById } from "@gastify/core/banks/banks";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 export type EditAccountModalMode = "edition" | "creation" | boolean | string | null | undefined;
 
@@ -33,6 +35,8 @@ export interface FormAccountState {
   amount?: number | string;
   accountType?: string;
   currency?: string;
+  bankId?: string | null;
+  cardNumber?: string | null;
   userId?: unknown;
   walletId?: unknown;
   [key: string]: unknown;
@@ -54,7 +58,11 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
     amount: 0,
     accountType: "debit",
     currency: "MXN",
+    bankId: null,
+    cardNumber: "",
   });
+  const [bankQuery, setBankQuery] = useState<string>("");
+  const [showNumber, setShowNumber] = useState<boolean>(false);
   const toFetch = fetcher();
   //REDUX
   const dispatch = useDispatch();
@@ -72,6 +80,8 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
           amount: eamAccount.amount || 0,
           accountType: eamAccount.accountType || "debit",
           currency: eamAccount.currency || "MXN",
+          bankId: (eamAccount.bankId as string) || null,
+          cardNumber: (eamAccount.cardNumber as string) || "",
         });
       } else if (eamMode === "creation") {
         console.log(eamMode);
@@ -81,6 +91,8 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
           amount: 0,
           accountType: "debit",
           currency: eamWallet?.primaryCurrency || "MXN",
+          bankId: null,
+          cardNumber: "",
           userId: eamAccount.user,
           walletId: eamAccount.wallet,
         });
@@ -179,7 +191,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
         !active ? "hidden" : "flex"
       } items-center justify-center`}
     >
-      <div className="content gf-glass-violet flex flex-col w-[350px] h-[650px] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
+      <div className="content gf-glass-violet flex flex-col w-[350px] h-[820px] max-h-[95vh] overflow-y-auto relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         <div
           className={`${
             isLoading ? "absolute" : "hidden"
@@ -240,6 +252,49 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
               </select>
             </div>
           </Tooltip>
+          <p className="label-tfp ">Bank (optional)</p>
+          <input
+            type="text"
+            value={bankQuery}
+            onChange={(e) => setBankQuery(e.target.value)}
+            placeholder="Search bank…"
+          />
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
+            <select
+              className="bg-transparent appearance-none w-full pr-4"
+              name="bankId"
+              value={formAccount.bankId || ""}
+              onChange={(e) => setFormAccount({ ...formAccount, bankId: e.target.value || null })}
+            >
+              <option value="">No bank</option>
+              {BANKS.filter((b) => b.id === formAccount.bankId || !bankQuery.trim() || b.name.toLowerCase().includes(bankQuery.trim().toLowerCase())).map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {bankById(formAccount.bankId) ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`/banks/${formAccount.bankId}.webp`} alt="" className="bg-white rounded-xl p-1 w-10 h-10 object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+          ) : null}
+          <p className="label-tfp ">Card or account number (optional)</p>
+          <div className="flex items-center gap-2 w-full">
+            <input
+              type={showNumber ? "text" : "password"}
+              inputMode="numeric"
+              name="cardNumber"
+              value={formAccount.cardNumber || ""}
+              onChange={(e) => setFormAccount({ ...formAccount, cardNumber: e.target.value.replace(/[^\d\s-]/g, "") })}
+              placeholder="Only if you want it at hand"
+              maxLength={23}
+              autoComplete="off"
+            />
+            <button type="button" className="text-white text-xl" onClick={() => setShowNumber((v) => !v)} aria-label={showNumber ? "Hide number" : "Show number"}>
+              {showNumber ? <MdVisibilityOff /> : <MdVisibility />}
+            </button>
+          </div>
+          <p className="text-[10px] text-white/70">Optional. We never ask for or store the CVV or PIN.</p>
           <p className="label-tfp ">Account Type</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
             <select

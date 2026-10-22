@@ -19,9 +19,13 @@ import { useSelector } from "react-redux";
 import { formatMoneyMajor, formatMoneyMinor, majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import type { RootState } from "@/lib/store";
+import { bankById, formatCardNumber } from "@gastify/core/banks/banks";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 export interface CreditCardAccountRef {
   _id?: string;
+  bankId?: string | null;
+  cardNumber?: string | null;
   name?: string | null;
   currency?: string | null;
   amount?: number | null;
@@ -117,6 +121,9 @@ function CreditCard({
   const manualColor = false;
   const [equivalentQuote, setEquivalentQuote] = useState<EquivalentQuote | null>(null);
   const accountCurrency = account?.currency || "MXN";
+  const bank = bankById(account?.bankId);
+  const [revealNumber, setRevealNumber] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
 
   useEffect(() => {
     if (acc && user && trans) {
@@ -299,14 +306,51 @@ function CreditCard({
               </p>
             </div>
           </Tooltip>
-          <Image
-            src="/creditcard/chipSim.png"
-            width="100"
-            height="100"
-            alt="chip"
-            className="aspect-square object-contain object-center max-w-[50px] sm:min-w-[70px]"
-          />
+          {bank && !logoFailed ? (
+            // The bank's logo takes the place of the chip: the same size, on a white rounded tile.
+            <div className="flex flex-col items-center gap-1 shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/banks/${bank.id}.webp`}
+                alt={bank.name}
+                title={bank.name}
+                onError={() => setLogoFailed(true)}
+                className="bg-white rounded-2xl p-2 object-contain w-[56px] h-[56px] sm:w-[78px] sm:h-[78px]"
+              />
+              <span className="text-white/90 text-[10px] sm:text-xs font-medium max-w-[90px] truncate">{bank.name}</span>
+            </div>
+          ) : bank ? (
+            <div className="flex flex-col items-center gap-1 shrink-0">
+              <div
+                className="rounded-2xl w-[56px] h-[56px] sm:w-[78px] sm:h-[78px] flex items-center justify-center text-white font-bold text-sm sm:text-lg"
+                style={{ backgroundColor: bank.color }}
+                title={bank.name}
+              >
+                {bank.short}
+              </div>
+              <span className="text-white/90 text-[10px] sm:text-xs font-medium max-w-[90px] truncate">{bank.name}</span>
+            </div>
+          ) : (
+            <Image
+              src="/creditcard/chipSim.png"
+              width="100"
+              height="100"
+              alt="chip"
+              className="aspect-square object-contain object-center max-w-[50px] sm:min-w-[70px]"
+            />
+          )}
         </div>
+        {account?.cardNumber ? (
+          <button
+            type="button"
+            className="flex items-center gap-2 text-white/90 text-sm sm:text-lg tracking-widest mt-1 self-start"
+            onClick={() => setRevealNumber((v) => !v)}
+            aria-label={revealNumber ? "Hide number" : "Show number"}
+          >
+            <span>{formatCardNumber(account.cardNumber, revealNumber)}</span>
+            {revealNumber ? <MdVisibilityOff /> : <MdVisibility />}
+          </button>
+        ) : null}
         {!current ? (
           ""
         ) : (

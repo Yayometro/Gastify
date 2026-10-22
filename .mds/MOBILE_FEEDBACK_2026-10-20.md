@@ -391,6 +391,17 @@ Prefijo AC.
 | AC14 | Historial: junto al título, un tooltip que explique cada módulo, para qué sirve la página (comparar datos históricos: meses, trimestres, años) y cómo usarla. | CÓDIGO LISTO | «?» junto al título «Historial» con para qué sirve, cómo usarla y una tabla de los módulos. |
 | AC15 | Bancos: Revolut debe ser negro (no azul) y agregar un buscador de bancos por texto en el selector. | CÓDIGO LISTO | Revolut en negro y buscador de bancos por texto en el selector. |
 
+## Decimotercera ronda (2026-10-21)
+
+Prefijo AD.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AD01 | Al guardar una cuenta asociada a un banco (p. ej. Revolut), el banco no se quedaba guardado. | CÓDIGO LISTO | Causa más probable: el servidor web de desarrollo seguía con el modelo `Account` viejo en memoria (Mongoose descarta los campos que no conoce). Se reinició el servidor con el esquema nuevo. No pude hacer la prueba de punta a punta (el emulador dejó de responder): confirmar guardando una cuenta con banco. |
+| AD02 | El banco (logo, nombre, iniciales) debe verse en la tarjeta de la cuenta y en el detalle de la cuenta. | CÓDIGO LISTO | Tarjeta: logo en cuadro redondeado y el nombre del banco junto a la moneda. Detalle: tarjeta «Banco y número» con el logo grande, el nombre y el número con ojito. |
+| AD03 | El usuario AUTORIZÓ descargar los logotipos de los bancos. | HECHO | 26 logos descargados de Wikimedia Commons, recortados y centrados en 256×256 WebP transparente (todos del mismo tamaño); en `apps/mobile/assets/banks` y `public/banks`. Sin logo (iniciales): Mercado Pago, Spin by OXXO, Klar, Albo, Invex. |
+| AD04 | Agregar el selector de bancos (con buscador) también a la página web. | CÓDIGO LISTO | Formulario de cuenta de la web: buscador, lista de bancos y número opcional con ojito; la tarjeta de la web muestra el logo del banco en lugar del chip, con su nombre y el número oculto. Falta verlo en el navegador. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

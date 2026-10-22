@@ -5,6 +5,8 @@ import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { AccountCard } from '@/components/account-card';
+import { BankBadge } from '@/components/bank-badge';
+import { bankById, formatCardNumber } from '@gastify/core/banks/banks';
 import { AccountForm } from '@/components/forms/account-form';
 import { SummaryWidget } from '@/components/home/summary-widget';
 import { PeriodControls } from '@/components/period-controls';
@@ -45,6 +47,7 @@ export default function EditAccountScreen() {
   const rates = useRatesToPrimary([account?.currency], primary);
   const activity = useMemo(() => accountActivity(mine, period.range), [mine, period.range]);
   const [editOpen, setEditOpen] = useState(false);
+  const [showNumber, setShowNumber] = useState(false);
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
@@ -79,6 +82,26 @@ export default function EditAccountScreen() {
   return (
     <Screen title={account.name || 'Cuenta'} subtitle={`Moneda: ${account.currency || 'MXN'}`} backLabel="Cuentas" onBack={back}>
       <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} />
+
+      {bankById(account.bankId) || account.cardNumber ? (
+        <Card title="Banco y número" info={{ title: 'Banco y número', text: 'El banco al que pertenece la cuenta y, si lo quisiste, su número de tarjeta o de cuenta, oculto de forma predeterminada (toca el ojito para verlo). Nunca se guarda el CVV ni el NIP.' }}>
+          {bankById(account.bankId) ? (
+            <View className="flex-row items-center gap-3">
+              <BankBadge bankId={account.bankId} size={56} />
+              <View className="flex-1">
+                <Text className="font-inter-semibold text-lg text-gf-text">{bankById(account.bankId)?.name}</Text>
+                <Text className="font-inter text-sm text-gf-text-muted">{account.currency || 'MXN'}</Text>
+              </View>
+            </View>
+          ) : null}
+          {account.cardNumber ? (
+            <Pressable accessibilityRole="button" accessibilityLabel={showNumber ? 'Ocultar el número' : 'Mostrar el número'} onPress={() => setShowNumber((value) => !value)} className="flex-row items-center justify-between rounded-2xl border border-gf-border px-4 py-3">
+              <Text className="font-inter-semibold text-lg text-gf-text" style={{ letterSpacing: 1.5 }}>{formatCardNumber(account.cardNumber, showNumber)}</Text>
+              <Ionicons name={showNumber ? 'eye-off-outline' : 'eye-outline'} size={22} color={colors.accent} />
+            </Pressable>
+          ) : null}
+        </Card>
+      ) : null}
 
       <PeriodControls period={period} />
 
