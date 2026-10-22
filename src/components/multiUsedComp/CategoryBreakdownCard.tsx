@@ -19,10 +19,11 @@ import type { TransactionLike } from "@gastify/core/transformers/transactionsCha
 // opens the same level: categories, then subcategories, then the movements of a subcategory, with a way back at every level.
 
 const EMPTY: never[] = [];
+// The map opens first on the web; the ring goes last.
 const CHARTS = [
-  { id: "ring", label: "Anillo" },
-  { id: "bubbles", label: "Burbujas" },
   { id: "map", label: "Mapa" },
+  { id: "bubbles", label: "Burbujas" },
+  { id: "ring", label: "Anillo" },
 ] as const;
 type ChartId = (typeof CHARTS)[number]["id"];
 // The height of the chart panel. On desktop the list on the right stretches to the same height as the card's content.
@@ -36,7 +37,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
   const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
   const primary = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const [kind, setKind] = useState<"spending" | "incomes">("spending");
-  const [chart, setChart] = useState<ChartId>("ring");
+  const [chart, setChart] = useState<ChartId>("map");
   const [path, setPath] = useState<DrillState>({ path: [] });
 
   const startMs = timePeriod?.[0] ? new Date(timePeriod[0]).getTime() : null;
