@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
-import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { authClient } from '@/auth-client';
 import { AccountsCarousel } from '@/components/home/accounts-carousel';
-import { BudgetsWidget, MAX_DASHBOARD_BUDGETS, useDashboardBudgetRows } from '@/components/home/budgets-widget';
+import { BudgetsWidget } from '@/components/home/budgets-widget';
 import { InsightsWidget } from '@/components/home/insights-widget';
 import { SummaryWidget } from '@/components/home/summary-widget';
 import { TabletWalletHeader } from '@/components/home/tablet-wallet-header';
@@ -15,7 +15,8 @@ import { MovementRow } from '@/components/movements/movement-row';
 import { PeriodControls } from '@/components/period-controls';
 import { Screen } from '@/components/screen';
 import { SummaryCarousel } from '@/components/home/summary-carousel';
-import { Card, PairedColumn } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { SkeletonRows } from '@/components/ui/skeleton';
 import { Colors } from '@/constants/theme';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
 import { usePeriod } from '@/hooks/use-period';
@@ -62,9 +63,9 @@ export default function HomeScreen() {
   const previous = useMemo(() => summarizePeriod(transactions.data, compareRange('previous', period.range, { from: null, to: null })), [transactions.data, period.range]);
   const insights = useMemo(() => computeInsights(summary, previous, period.now), [summary, previous, period.now]);
   // Side by side on a wide screen, the latest movements are as tall as the budgets beside them: about three rows per budget card.
-  const { rows: budgetRows } = useDashboardBudgetRows();
   const wideFlag = useWindowDimensions().width >= WIDE_MIN_WIDTH;
-  const latestCount = wideFlag ? Math.min(40, Math.max(5, Math.min(budgetRows.length, MAX_DASHBOARD_BUDGETS) * 3)) : 5;
+  const [budgetsHeight, setBudgetsHeight] = useState(0);
+  const latestCount = wideFlag ? 30 : 5;
   const latest = useMemo(() => sortNewestFirst(transactions.data).slice(0, latestCount), [transactions.data, latestCount]);
 
   const accounts = accountsState.data;
@@ -117,7 +118,7 @@ export default function HomeScreen() {
       )}
       {accounts.length === 0 && accountsState.status !== 'failed' && (
         <Card title="Cuentas" onTitlePress={() => router.push('/more/accounts')} info={{ title: 'Cuentas', text: 'Cada tarjeta es una cuenta con su saldo actual. «Entró» y «salió» son la suma de los ingresos y gastos de esa cuenta en el periodo elegido arriba. El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente (las tarjetas de crédito no se suman a tu dinero disponible).' }}>
-          <Muted>{accountsState.status === 'loading' ? 'Cargando…' : 'Todavía no tienes cuentas.'}</Muted>
+          {accountsState.status === 'loading' ? <SkeletonRows count={2} /> : <Muted>Todavía no tienes cuentas.</Muted>}
         </Card>
       )}
 
@@ -125,29 +126,24 @@ export default function HomeScreen() {
       <InsightsWidget insights={insights} currency={currency} onOpenAnalyzer={() => router.push({ pathname: '/more/analyzer', params: { month: `${(period.preset === 'month' ? period.month : period.now).getFullYear()}-${String((period.preset === 'month' ? period.month : period.now).getMonth() + 1).padStart(2, '0')}` } })} />
       {wide ? (
         <>
-          <View className="flex-row items-stretch gap-4">
-            <PairedColumn>
-      <SummaryWidget summary={summary} movements={inPeriod} allMovements={transactions.data} currency={currency} />
-            </PairedColumn>
-            <PairedColumn>
-      <TopRanking movements={transactions.data} currency={currency} defaultPreset="thisMonth" />
-            </PairedColumn>
-          </View>
-          <View className="flex-row items-stretch gap-4">
-            <PairedColumn>
-      <BudgetsWidget />
-            </PairedColumn>
-            <PairedColumn>
-      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los movimientos con la fecha más reciente de toda tu cuenta (cinco en el teléfono; en la tablet los que quepan junto a tus presupuestos), sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+          <SummaryWidget summary={summary} movements={inPeriod} allMovements={transactions.data} currency={currency} />
+          <TopRanking movements={transactions.data} currency={currency} defaultPreset="thisMonth" />
+          {/* The latest movements are as tall as the budgets beside them, and scroll inside if there are more. */}
+          <View className="flex-row items-start gap-4">
+            <View style={{ flex: 1 }} onLayout={(event) => setBudgetsHeight(event.nativeEvent.layout.height)}>
+              <BudgetsWidget />
+            </View>
+            <View style={{ flex: 1, height: budgetsHeight || undefined }}>
+      <Card style={{ flex: 1 }} title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los movimientos con la fecha más reciente de toda tu cuenta (cinco en el teléfono; en la tablet los que quepan junto a tus presupuestos), sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
-          <Muted>Cargando…</Muted>
+          <SkeletonRows count={4} />
         ) : latest.length === 0 ? (
           <Muted>Todavía no tienes movimientos.</Muted>
         ) : (
-          latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/' } })} />)
+          <ScrollView nestedScrollEnabled style={{ flex: 1 }} showsVerticalScrollIndicator={false}>{latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/' } })} />)}</ScrollView>
         )}
       </Card>
-            </PairedColumn>
+            </View>
           </View>
         </>
       ) : (

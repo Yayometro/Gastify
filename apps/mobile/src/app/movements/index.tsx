@@ -17,6 +17,7 @@ import { useToast } from '@/components/toast';
 import { ToolsSheet } from '@/components/tools/tools-fab';
 import { TotalsCard } from '@/components/totals-card';
 import { Card } from '@/components/ui/card';
+import { SkeletonRows } from '@/components/ui/skeleton';
 import { glassFill } from '@/components/ui/glass-fill';
 import { BottomTabInset, Colors, MaxContentWidth, TabletContentWidth } from '@/constants/theme';
 import { useIsTablet } from '@/hooks/use-device-class';
@@ -365,7 +366,7 @@ export default function MovementsScreen() {
           ListHeaderComponent={header}
           ListEmptyComponent={
             loading ? (
-              <Text className="font-inter text-sm text-gf-text-muted">Cargando…</Text>
+              <SkeletonRows count={6} />
             ) : historyReady ? (
               <Text className="font-inter text-sm text-gf-text-muted">{active > 0 ? 'Ningún movimiento coincide con los filtros.' : `No hay movimientos en ${periodLabel}.`}</Text>
             ) : null

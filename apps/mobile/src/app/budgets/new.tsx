@@ -6,6 +6,7 @@ import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { useCatalog } from '@/hooks/use-catalog';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
+import { addNewBudget, fetchBudget } from '@gastify/core/features/budgetSlice';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
@@ -33,10 +34,14 @@ export default function NewBudgetScreen() {
         initial={initial}
         submitLabel="Crear"
         onSubmit={async (body) => {
-          await sendWrite('general-data/budget/new', body);
-          toast.show('Presupuesto creado');
-          reloadAfterWrite(dispatch);
+          const created = await sendWrite<Record<string, unknown> | null>('general-data/budget/new', body);
+          // Show it at once: the new budget goes into the list as soon as the server answers, the notice appears
+          // right away and the full reload (which can take seconds with many movements) runs afterwards.
+          if (created && typeof created === 'object' && '_id' in created) dispatch(addNewBudget(created as never));
+          toast.show(kind === 'project' ? 'Proyecto creado' : kind === 'saving' ? 'Meta de ahorro creada' : 'Presupuesto creado');
           router.back();
+          dispatch(fetchBudget(undefined));
+          reloadAfterWrite(dispatch);
         }}
       />
     </Screen>

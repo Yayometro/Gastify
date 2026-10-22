@@ -248,6 +248,7 @@ export default function BudgetDetailScreen() {
 
       <Card
         title="Editar"
+        onHeaderPress={() => setEditOpen((open) => !open)}
         action={
           <Pressable accessibilityRole="button" accessibilityState={{ expanded: editOpen }} accessibilityLabel={editOpen ? 'Ocultar edición' : 'Mostrar edición'} onPress={() => setEditOpen((open) => !open)} hitSlop={10}>
             <Ionicons name={editOpen ? 'chevron-up' : 'chevron-down'} size={22} color={colors.text} />

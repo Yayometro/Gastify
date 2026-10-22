@@ -9,11 +9,11 @@ import { Colors } from '@/constants/theme';
 
 // The sheet every analyzer card opens (the web opens a modal for each one): a title, an optional line under it and
 // the detail.
-export function DetailSheet({ visible, title, subtitle, info, onClose, children }: { visible: boolean; title: string; subtitle?: string; info?: InfoText; onClose: () => void; children: ReactNode }) {
+export function DetailSheet({ visible, title, subtitle, info, onClose, children, tall = false }: { visible: boolean; title: string; subtitle?: string; info?: InfoText; onClose: () => void; children: ReactNode; tall?: boolean }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   return (
-    <BottomSheet visible={visible} onClose={onClose} maxHeight="86%">
+    <BottomSheet visible={visible} onClose={onClose} maxHeight={tall ? '95%' : '86%'} wideWidth={tall ? 900 : 640}>
           <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
             <View className="flex-row items-start justify-between px-6 pb-2 pt-5">
               <View className="flex-1 pr-3">

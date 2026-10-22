@@ -22,6 +22,7 @@ export function MovementRow({
   currency,
   selected = false,
   divider = false,
+  bare = false,
   onPress,
   onLongPress,
 }: {
@@ -30,6 +31,8 @@ export function MovementRow({
   selected?: boolean;
   // A thin line under the row, for lists inside pop-ups.
   divider?: boolean;
+  // Inside another tile (a ranked row): no background or edge of its own, so the tile is not doubled.
+  bare?: boolean;
   onPress?: () => void;
   onLongPress?: () => void;
 }) {
@@ -56,8 +59,8 @@ export function MovementRow({
       className="flex-row items-center gap-3 rounded-2xl px-2.5 py-2.5"
       style={[
         // Dark mode: each movement is its own frosted-glass tile instead of blending into the background.
-        { backgroundColor: selected ? colors.accentSoft : scheme === 'dark' && !divider ? 'rgba(255,255,255,0.08)' : 'transparent' },
-        scheme === 'dark' && !divider && !selected ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', marginVertical: 3 } : null,
+        { backgroundColor: selected ? colors.accentSoft : scheme === 'dark' && !divider && !bare ? 'rgba(255,255,255,0.08)' : 'transparent' },
+        scheme === 'dark' && !divider && !bare && !selected ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', marginVertical: 3 } : null,
         divider ? { borderRadius: 0, borderBottomWidth: 1, borderBottomColor: colors.border } : null,
       ]}>
       <CategoryBadge icon={category?.icon} color={category?.color} size={44} />

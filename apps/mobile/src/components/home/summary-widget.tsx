@@ -110,33 +110,66 @@ export function SummaryWidget({
     <CategoryTable rows={tableRows} total={shownTotal} currency={currency} selectedKey={zoomed ? null : selected} disabled={zoomed} firstColumn={zoomed && chosen ? `${chosen.name} · subcategorías` : 'Categoría'} limit={limit} onPressRow={select} />
   );
 
-  return (
-    <Card title="Resumen de transacciones" info={{ title: 'Resumen de transacciones', text: 'Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución, y la tabla lista TODAS las categorías con su porcentaje y su monto. Toca una categoría para ver sus subcategorías y usa la flecha para regresar. En el teléfono, tocar la gráfica o «Ver todas» abre el detalle completo. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.' }}>
+  const filters = (
+    <>
       <CompactTimeFilter preset={preset} onPreset={setPreset} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
       <Segmented options={[{ value: 'spending', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
-      {categories.length > 0 && <Segmented options={[{ value: 'ring', label: 'Anillo' }, { value: 'bubbles', label: 'Burbujas' }, { value: 'treemap', label: 'Mapa' }]} value={chart} onChange={setChart} />}
-      <Text className="text-center font-inter-bold text-3xl" style={{ color: kind === 'spending' ? colors.expense : colors.income }}>{formatMoneyMajor(total, currency)}</Text>
+    </>
+  );
+  const totalText = <Text className="text-center font-inter-bold text-3xl" style={{ color: kind === 'spending' ? colors.expense : colors.income }}>{formatMoneyMajor(total, currency)}</Text>;
+  const chartPicker = categories.length > 0 ? <Segmented options={[{ value: 'ring', label: 'Anillo' }, { value: 'bubbles', label: 'Burbujas' }, { value: 'treemap', label: 'Mapa' }]} value={chart} onChange={setChart} /> : null;
+  const MAX_ROWS = 15;
+  const seeMore = (
+    <Pressable accessibilityRole="button" onPress={() => setDetailOpen(true)} className="items-center rounded-full py-3" style={{ backgroundColor: colors.accentSoft }}>
+      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver las {allRows.length} {allRows.length === 1 ? 'categoría' : 'categorías'} ›</Text>
+    </Pressable>
+  );
+  // The big sheet: the filters and every category (1 to 50), no chart; the table scrolls and each row can be opened.
+  const sheet = (
+    <DetailSheet tall visible={detailOpen} onClose={() => setDetailOpen(false)} title="Resumen de transacciones" subtitle={`${allRows.length} ${allRows.length === 1 ? 'categoría' : 'categorías'} · ${kind === 'spending' ? 'gastos' : 'ingresos'}`}>
+      {filters}
+      {totalText}
+      {zoomed && chosen && (
+        <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="self-start flex-row items-center gap-1 py-1">
+          <Ionicons name="arrow-back" size={18} color={colors.accent} />
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todas las categorías</Text>
+        </Pressable>
+      )}
+      {table()}
+    </DetailSheet>
+  );
 
+  return (
+    <Card title="Resumen de transacciones" info={{ title: 'Resumen de transacciones', text: 'Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución, y la tabla lista las categorías con su porcentaje y su monto (hasta 15 aquí; si hay más, «Ver las N categorías» abre una ventana grande con todas). Toca una categoría para ver sus subcategorías y usa la flecha para regresar. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.' }}>
       {categories.length === 0 ? (
-        <Text className="font-inter text-sm text-gf-text-muted">Sin {kind === 'spending' ? 'gastos' : 'ingresos'} en este periodo.</Text>
+        <>
+          {filters}
+          <Text className="font-inter text-sm text-gf-text-muted">Sin {kind === 'spending' ? 'gastos' : 'ingresos'} en este periodo.</Text>
+        </>
       ) : tablet ? (
         <View className="flex-row items-start gap-6">
-          <View style={{ flex: 1 }}>{chartBlock(true)}</View>
-          <View style={{ flex: 1 }}>{table()}</View>
+          <View style={{ flex: 1 }} className="gap-3">
+            {filters}
+            {chartPicker}
+            {totalText}
+            {chartBlock(true)}
+          </View>
+          <View style={{ flex: 1 }} className="gap-3">
+            {table(MAX_ROWS)}
+            {allRows.length > MAX_ROWS && !zoomed && seeMore}
+          </View>
         </View>
       ) : (
         <>
+          {filters}
+          {chartPicker}
+          {totalText}
           {chartBlock(false)}
           {table(5)}
-          <Pressable accessibilityRole="button" onPress={() => setDetailOpen(true)} className="items-center rounded-full py-3" style={{ backgroundColor: colors.accentSoft }}>
-            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver las {allRows.length} {allRows.length === 1 ? 'categoría' : 'categorías'} ›</Text>
-          </Pressable>
-          <DetailSheet visible={detailOpen} onClose={() => setDetailOpen(false)} title="Resumen de transacciones" subtitle={kind === 'spending' ? 'Gastos del periodo' : 'Ingresos del periodo'}>
-            {chartBlock(true)}
-            {table()}
-          </DetailSheet>
+          {seeMore}
         </>
       )}
+      {sheet}
 
       {summary.months.length > 1 && (
         <View className="gap-2 pt-1">

@@ -18,13 +18,13 @@ export function PairedColumn({ children }: { children: ReactNode }) {
 
 // A rounded surface, the same as the web's cards. The optional title sits on the left; on the right, the optional
 // action (a link, a button) and, when `info` is given, the "?" in the top right corner.
-export function Card({ title, info, action, onTitlePress, style, children }: { title?: string; info?: InfoText; action?: ReactNode; onTitlePress?: () => void; style?: StyleProp<ViewStyle>; children?: ReactNode }) {
+export function Card({ title, info, action, onTitlePress, onHeaderPress, style, children }: { title?: string; info?: InfoText; action?: ReactNode; onTitlePress?: () => void; onHeaderPress?: () => void; style?: StyleProp<ViewStyle>; children?: ReactNode }) {
   const fill = useContext(FillHeightContext);
   return (
     <GlassSurface style={[{ padding: 16, gap: 12 }, fill ? { flexGrow: 1 } : null, style]}>
       <FillHeightContext.Provider value={false}>
       {title || action || info ? (
-        <View className="flex-row items-center justify-between gap-3">
+        <Pressable accessibilityRole={onHeaderPress ? 'button' : undefined} disabled={!onHeaderPress} onPress={onHeaderPress} className="flex-row items-center justify-between gap-3">
           {title ? onTitlePress ? (
             <Pressable accessibilityRole="link" accessibilityLabel={`Abrir ${title}`} onPress={onTitlePress} hitSlop={8} className="flex-1">
               <Text className="font-inter-semibold text-base text-gf-text">{title}</Text>
@@ -34,7 +34,7 @@ export function Card({ title, info, action, onTitlePress, style, children }: { t
             {action}
             {info ? <InfoTip info={info} /> : null}
           </View>
-        </View>
+        </Pressable>
       ) : null}
       {children}
       </FillHeightContext.Provider>

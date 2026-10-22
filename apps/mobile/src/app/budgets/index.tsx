@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
+import { SkeletonRows } from '@/components/ui/skeleton';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Colors } from '@/constants/theme';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
@@ -24,7 +25,10 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import { rangeLabelEs } from '@gastify/core/format/spanishDates';
 import { BudgetSummarySheet, type BudgetLine, type GroupLine } from '@/components/budget-summary-sheet';
 import { BudgetCard } from '@/components/budgets/budget-card';
+import { OptionSheet } from '@/components/option-sheet';
+import { glassFill } from '@/components/ui/glass-fill';
 import { lookOf } from '@/lib/budget-look';
+import { BUDGET_ORDERS, sortBudgetRows, type BudgetOrder } from '@/lib/budget-sort';
 import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
@@ -182,6 +186,11 @@ export default function BudgetsScreen() {
     [spendingRows]
   );
 
+  const [order, setOrder] = useState<BudgetOrder>('spent');
+  const [orderOpen, setOrderOpen] = useState(false);
+  const sortedSpending = useMemo(() => sortBudgetRows(spendingRows, order), [spendingRows, order]);
+  const sortedSaving = useMemo(() => sortBudgetRows(savingRows, order), [savingRows, order]);
+  const sortedProjects = useMemo(() => sortBudgetRows(projectRows, order), [projectRows, order]);
   const loading = budgetsState.status === 'loading' && budgetsState.data.length === 0;
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -246,21 +255,27 @@ export default function BudgetsScreen() {
         }}
       />
 
+      <Pressable accessibilityRole="button" onPress={() => setOrderOpen(true)} className="flex-row items-center justify-between rounded-full px-5 py-3" style={glassFill(scheme === 'dark', colors.backgroundElement)}>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">Ordenar por</Text>
+        <Text className="font-inter-semibold text-sm text-gf-text">{BUDGET_ORDERS.find((item) => item.id === order)?.label} ▾</Text>
+      </Pressable>
+      <OptionSheet visible={orderOpen} title="Ordenar presupuestos" options={BUDGET_ORDERS} isSelected={(id) => id === order} onSelect={(id) => setOrder(id as BudgetOrder)} onClose={() => setOrderOpen(false)} />
+
       {loading ? (
-        <Muted>Cargando…</Muted>
+        <SkeletonRows count={4} />
       ) : (
         <>
           <Text className="font-inter-semibold text-lg text-gf-text">Gastos</Text>
           {spendingRows.length === 0 ? (
             <Muted>No tienes presupuestos de gasto activos.</Muted>
           ) : (
-            spendingRows.map((row) => <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)
+            sortedSpending.map((row) => <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)
           )}
 
           {savingRows.length > 0 && (
             <>
               <Text className="font-inter-semibold text-lg text-gf-text">Ahorro</Text>
-              {savingRows.map((row) => (
+              {sortedSaving.map((row) => (
                 <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving />
               ))}
             </>
@@ -269,7 +284,7 @@ export default function BudgetsScreen() {
           {projectRows.length > 0 && (
             <>
               <Text className="font-inter-semibold text-lg text-gf-text">Proyectos</Text>
-              {projectRows.map((row) => (
+              {sortedProjects.map((row) => (
                 <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />
               ))}
             </>

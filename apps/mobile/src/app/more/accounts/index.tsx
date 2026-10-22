@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { AccountCard } from '@/components/account-card';
 import { Screen } from '@/components/screen';
+import { SkeletonRows } from '@/components/ui/skeleton';
 import { useIsTablet } from '@/hooks/use-device-class';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
@@ -77,7 +78,7 @@ export default function AccountsScreen() {
 
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
       {accountsState.status === 'failed' && <Text className="font-inter text-sm text-red-500">No pudimos cargar tus cuentas.</Text>}
-      {loading && <Text className="font-inter text-sm text-gf-text-muted">Cargando…</Text>}
+      {loading && <SkeletonRows count={3} />}
       {!loading && accounts.length === 0 && accountsState.status !== 'failed' && (
         <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes cuentas. Crea la primera con «Nueva cuenta».</Text>
       )}

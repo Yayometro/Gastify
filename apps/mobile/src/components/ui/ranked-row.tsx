@@ -12,8 +12,8 @@ export function RankedRow({ rank, last = false, children }: { rank: number; last
   // Each row is its own glass tile (like the movements), with its number on the left.
   return (
     <View
-      className="flex-row items-center gap-2 rounded-2xl px-2 py-1"
-      style={{ marginVertical: 3, backgroundColor: dark ? 'rgba(255,255,255,0.08)' : colors.backgroundElement, borderWidth: 1, borderColor: dark ? 'rgba(255,255,255,0.10)' : colors.border }}>
+      className="flex-row items-center gap-2 rounded-2xl px-2"
+      style={{ marginVertical: 3, minHeight: 68, backgroundColor: dark ? 'rgba(255,255,255,0.08)' : colors.backgroundElement, borderWidth: 1, borderColor: dark ? 'rgba(255,255,255,0.10)' : colors.border }}>
       <Text className="w-6 text-center font-inter-bold text-sm text-gf-text-muted">{rank}</Text>
       <View className="flex-1">{children}</View>
     </View>

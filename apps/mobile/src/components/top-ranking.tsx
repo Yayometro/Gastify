@@ -1,12 +1,11 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
-import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { CompactTimeFilter } from '@/components/compact-time-filter';
 import { CategoryBadge } from '@/components/category-badge';
+import { CategoryDetailSheet } from '@/components/category-detail-sheet';
 import { MovementRow } from '@/components/movements/movement-row';
 import { RankedRow } from '@/components/ui/ranked-row';
 import { Segmented } from '@/components/segmented';
@@ -137,8 +136,8 @@ export function TopRanking({
             <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">Categorías</Text>
       {categories.map((row, index) => (
             <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
-            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3 py-1">
-              <CategoryBadge icon={row.icon} color={row.color} size={36} />
+            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
+              <CategoryBadge icon={row.icon} color={row.color} size={44} />
               <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
               <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
@@ -151,6 +150,7 @@ export function TopRanking({
       {biggest.map((movement, index) => (
             <RankedRow key={String(movement._id)} rank={index + 1} last={index === biggest.length - 1}>
             <MovementRow
+              bare
               movement={movement}
               currency={currency}
               onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })}
@@ -164,8 +164,8 @@ export function TopRanking({
       {by === 'categories'
         ? categories.map((row, index) => (
             <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
-            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3 py-1">
-              <CategoryBadge icon={row.icon} color={row.color} size={36} />
+            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
+              <CategoryBadge icon={row.icon} color={row.color} size={44} />
               <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
               <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
@@ -175,6 +175,7 @@ export function TopRanking({
         : biggest.map((movement, index) => (
             <RankedRow key={String(movement._id)} rank={index + 1} last={index === biggest.length - 1}>
             <MovementRow
+              bare
               movement={movement}
               currency={currency}
               onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })}
@@ -203,7 +204,7 @@ export function TopRanking({
                   ))
                 : column.biggest.map((movement, index) => (
                     <RankedRow key={String(movement._id)} rank={index + 1} last={index === column.biggest.length - 1}>
-                      <MovementRow movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })} />
+                      <MovementRow bare movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })} />
                     </RankedRow>
                   ))}
             </View>
@@ -224,39 +225,24 @@ export function TopRanking({
             </RankedRow>
           )) : previousBiggest.map((movement, index) => (
             <RankedRow key={String(movement._id)} rank={index + 1} last={index === previousBiggest.length - 1}>
-            <MovementRow movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })} />
+            <MovementRow bare movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })} />
             </RankedRow>
           ))}
         </View>
       )}
 
-      <BottomSheet visible={openCategory !== null} onClose={() => setOpenCategory(null)} maxHeight="82%">
-            <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
-              <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
-                <View className="flex-1 pr-3">
-                  <Text className="font-inter-bold text-xl text-gf-text" numberOfLines={1}>{openCategory?.name === 'No category' ? 'Sin categoría' : openCategory?.name}</Text>
-                  <Text className="font-inter text-sm text-gf-text-muted">{openCategory?.previous ? 'Periodo anterior · ' : ''}{categoryMovements.length} {categoryMovements.length === 1 ? 'movimiento' : 'movimientos'}</Text>
-                </View>
-                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setOpenCategory(null)} hitSlop={10}>
-                  <Ionicons name="close" size={26} color={colors.text} />
-                </Pressable>
-              </View>
-              <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 28 }}>
-                {categoryMovements.map((movement) => (
-                  <MovementRow
-                    divider
-                    key={String(movement._id)}
-                    movement={movement}
-                    currency={currency}
-                    onPress={() => {
-                      setOpenCategory(null);
-                      router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } });
-                    }}
-                  />
-                ))}
-              </ScrollView>
-            </SafeAreaView>
-      </BottomSheet>
+      <CategoryDetailSheet
+        visible={openCategory !== null}
+        name={openCategory?.name === 'No category' ? 'Sin categoría' : openCategory?.name ?? ''}
+        prefix={openCategory?.previous ? 'Periodo anterior' : undefined}
+        movements={categoryMovements}
+        currency={currency}
+        onOpenMovement={(movement) => {
+          setOpenCategory(null);
+          router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } });
+        }}
+        onClose={() => setOpenCategory(null)}
+      />
     </Card>
   );
 }

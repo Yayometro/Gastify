@@ -8,6 +8,7 @@ import { FloatingTabBar } from '@/components/floating-tab-bar';
 import { SideNav } from '@/components/side-nav';
 import { ToolsFab } from '@/components/tools/tools-fab';
 import { Colors } from '@/constants/theme';
+import { useBudgetAlerts } from '@/hooks/use-budget-alerts';
 import { useLoadAppData } from '@/hooks/use-load-app-data';
 
 const ICON_SIZE = 25;
@@ -29,6 +30,7 @@ const slideBetweenTabs = ({ current }: { current: { progress: Animated.Value } }
 export default function AppTabs() {
   // Only rendered for a signed-in, unlocked session (see AuthGate): the data loads start here, once.
   useLoadAppData();
+  useBudgetAlerts();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   // Wide screens (iPad, landscape) get the web's left column instead of the floating bar.

@@ -40,7 +40,7 @@ export function useDashboardBudgetRows() {
           const spent = getBudgetActualSpend(budget, transactions, bounds.start, bounds.end);
           return { budget, goal, spent, ratio: goal > 0 ? spent / goal : 0 };
         })
-        .sort((a, b) => b.ratio - a.ratio),
+        .sort((a, b) => b.spent - a.spent),
     [budgets, transactions, currency, rates, bounds]
   );
 
@@ -59,7 +59,7 @@ export function BudgetsWidget() {
         </Pressable>
         <View className="flex-row items-center gap-3">
           <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{rows.length > shown.length ? `Ver todos (${rows.length})` : 'Ver todos'}</Text></Pressable>
-          <InfoTip info={{ title: 'Presupuestos', text: 'Cada barra es lo gastado en el periodo del presupuesto ÷ su límite; el círculo marca el porcentaje y la carita cambia de ánimo según qué tan cerca estés del límite (verde tranquilo, naranja cerca, rojo excedido). Se ordenan del más cerca de su límite al más lejano y aquí se ven hasta 10; «Ver todos» abre todos. Toca uno para ver sus movimientos.', sections: BUDGET_FACES_SECTIONS }} />
+          <InfoTip info={{ title: 'Presupuestos', text: 'Cada barra es lo gastado en el periodo del presupuesto ÷ su límite; el círculo marca el porcentaje y la carita cambia de ánimo según qué tan cerca estés del límite (verde tranquilo, naranja cerca, rojo excedido). Se ordenan del que más has gastado al que menos y aquí se ven hasta 10; «Ver todos» abre todos. Toca uno para ver sus movimientos.', sections: BUDGET_FACES_SECTIONS }} />
         </View>
       </View>
       {rows.length === 0 && <Card><Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes presupuestos de gasto.</Text></Card>}
