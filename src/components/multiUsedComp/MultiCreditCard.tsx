@@ -51,6 +51,7 @@ export interface MultiCreditCardProps {
   mccSession?: unknown;
   walletPrimaryCurrency?: string;
   mail?: string;
+  timePeriod?: [Date, Date] | null;
 }
 
 function SortableCard({ account, children }: SortableCardProps): React.JSX.Element {
@@ -77,6 +78,7 @@ function MultiCreditCard({
   trans,
   walletPrimaryCurrency,
   mail,
+  timePeriod,
 }: MultiCreditCardProps): React.JSX.Element {
   const [userName, setUserName] = useState<string>("");
   const [allTransactions, setAllTransactions] = useState<MultiCreditCardTransaction[]>([]);
@@ -150,7 +152,7 @@ function MultiCreditCard({
           <InfoTip info={APP_INFO.total} />
         </h1>
       </div>
-      <div className="scrollbar-thin flex flex-row pb-6 px-1 overflow-x-scroll">
+      <div className="scrollbar-thin flex flex-row items-stretch gap-5 px-5 pb-6 overflow-x-auto">
         {accounts && accounts.length > 0 ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={accounts.map((a) => a._id)} strategy={horizontalListSortingStrategy}>
@@ -162,7 +164,7 @@ function MultiCreditCard({
                     trans={allTransactions}
                     cardColor={cardColors[ac._id]}
                     walletPrimaryCurrency={walletPrimaryCurrency}
-                    current
+                    timePeriod={timePeriod}
                   />
                 </SortableCard>
               ))}

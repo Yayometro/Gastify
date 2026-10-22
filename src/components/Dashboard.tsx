@@ -150,6 +150,7 @@ const UniversalCategoIconComp = UniversalCategoIcon as React.ComponentType<{
 }>;
 
 const MultiCreditCardComp = MultiCreditCard as React.ComponentType<{
+  timePeriod?: [Date, Date] | null;
   acc?: DashboardAccount[];
   user?: string;
   trans?: DashboardTransaction[];
@@ -619,6 +620,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
             <WalletAnalyzerTeaser timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
             <div className="multi-container lg:flex lg:item">
               <MultiCreditCardComp
+                timePeriod={[startDate, endDate]}
                 acc={accounts}
                 user={user.fullName}
                 trans={transactions}

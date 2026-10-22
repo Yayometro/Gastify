@@ -303,6 +303,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                   trans={transactionData}
                   walletPrimaryCurrency={walletData?.primaryCurrency}
                   mail={acSession}
+                  timePeriod={startDate && endDate ? [startDate, endDate] : null}
                 />
             </div>
             <div className="ac-dashboard-client w-full-h-full">

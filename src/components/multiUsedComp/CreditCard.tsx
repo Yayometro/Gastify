@@ -3,10 +3,7 @@ import React, { useEffect, useState } from "react";
 import "@/components/styles/animations.css";
 
 import "animate.css";
-import CategoIcon from "./CategoIcon";
 import AccountCardFace from "./AccountCardFace";
-import { FaRegQuestionCircle } from "react-icons/fa";
-import { Tooltip } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -63,6 +60,8 @@ export interface CreditCardProps {
   cardColor?: string | null;
   current?: boolean | null;
   walletPrimaryCurrency?: string | null;
+  // The period chosen at the top of the page (the same one every card follows).
+  timePeriod?: [Date, Date] | null;
 }
 
 // A transaction's own native amount, in its own native currency - as
@@ -80,6 +79,7 @@ function CreditCard({
   user,
   trans,
   walletPrimaryCurrency: walletPrimaryCurrencyProp,
+  timePeriod,
 }: CreditCardProps): React.JSX.Element {
   const router = useRouter();
   const reduxWalletPrimaryCurrency = (useSelector((state: RootState) => state.walletReducer?.data) as { primaryCurrency?: string })?.primaryCurrency;
@@ -93,7 +93,8 @@ function CreditCard({
   const [totalIncome, setTotalIncome] = useState(0);
   const [nativeTotalBill, setNativeTotalBill] = useState(0);
   const [nativeTotalIncome, setNativeTotalIncome] = useState(0);
-  const [selectedDuration, setSelectedDuration] = useState(30);
+  const periodStartMs = timePeriod?.[0] ? new Date(timePeriod[0]).getTime() : null;
+  const periodEndMs = timePeriod?.[1] ? new Date(timePeriod[1]).getTime() : null;
   const [equivalentQuote, setEquivalentQuote] = useState<EquivalentQuote | null>(null);
   const accountCurrency = account?.currency || "MXN";
 
@@ -109,16 +110,18 @@ function CreditCard({
   }, [acc, user, trans]);
 
   useEffect(() => {
-    const today = new Date();
-    const dayRange = new Date();
-    dayRange.setDate(today.getDate() - selectedDuration);
+    // The top period of the page; without one, the last 30 days.
+    const rangeEnd = periodEndMs !== null ? new Date(periodEndMs) : new Date();
+    rangeEnd.setHours(23, 59, 59, 999);
+    const rangeStart = periodStartMs !== null ? new Date(periodStartMs) : new Date(rangeEnd.getTime() - 30 * 24 * 3600 * 1000);
+    rangeStart.setHours(0, 0, 0, 0);
     if (allTransactions.length > 0 && account) {
       let total = allTransactions.filter(
         (tra) => tra.account?._id === account._id && tra.isReadable
       );
       total = total.filter((tra) => {
         const transactionDate = new Date((tra.date || tra.createdAt) as string | number | Date);
-        return transactionDate >= dayRange;
+        return transactionDate >= rangeStart && transactionDate <= rangeEnd;
       });
       const accBills = total.filter((bill) => bill.isBill);
       const accIncomes = total.filter((bill) => bill.isIncome);
@@ -156,11 +159,7 @@ function CreditCard({
       setNativeTotalBill(nativeBill);
       setNativeTotalIncome(nativeIncome);
     }
-  }, [allTransactions, account, selectedDuration]);
-
-  const handleDurationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDuration(parseInt(event.target.value, 10));
-  };
+  }, [allTransactions, account, periodStartMs, periodEndMs]);
 
   // Current-equivalent: a live valuation of this Account's native balance in
   // the Wallet's primary currency, not a second bank balance. Never shown
@@ -204,7 +203,7 @@ function CreditCard({
   const savedAccount = account as CreditCardAccountRef & { accountType?: string | null; cardColor?: string | null; cardPattern?: string | null };
 
   return (
-    <div className="pulse-animation-short flex h-full w-full flex-col gap-3">
+    <div className="pulse-animation-short h-full shrink-0">
       <AccountCardFace
         seed={String(account?._id ?? account?.name ?? "")}
         name={account?.name}
@@ -223,31 +222,6 @@ function CreditCard({
           if (account?._id) router.push(`/dashboard/accounts?accountId=${account._id}`);
         }}
       />
-      <div className="flex items-center justify-center gap-2 text-sm font-thin text-gf-text">
-        <div className="relative w-fit">
-          <select
-            className="appearance-none bg-transparent pr-5"
-            name="DateSelector"
-            value={selectedDuration}
-            onChange={handleDurationChange}
-          >
-            <option value={2}>Yesterday</option>
-            <option value={7}>Last week</option>
-            <option value={15}>Last 15 days</option>
-            <option value={30}>Last 30 days</option>
-            <option value={60}>Last 60 days</option>
-            <option value={90}>Last 90 days</option>
-          </select>
-          <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2">
-            <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
-          </div>
-        </div>
-        <Tooltip title="Elige el periodo para ver los ingresos y gastos de esta cuenta 🤓">
-          <div className="pl-2">
-            <FaRegQuestionCircle size={15} />
-          </div>
-        </Tooltip>
-      </div>
     </div>
   );
 }
