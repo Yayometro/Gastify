@@ -328,6 +328,26 @@ Prefijo Z.
 | Z05 | El usuario va a confirmar: que todas las páginas refrescan, los selectores por periodo y el modal de Mes a mes (sin acción por mi parte). | HECHO | Sin acción: lo confirma el usuario. |
 | Z06 | Al terminar, subir todos los commits a la rama (los pendientes y los nuevos). | HECHO | Todos los commits subidos a la rama mobile-phase-9-paridad (no a main). |
 
+## Décima ronda (2026-10-21, quinta prueba del iPad)
+
+Prefijo AA. El usuario aprobó el trabajo anterior ("muy buen trabajo").
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AA01 | iPad, menú lateral: el indicador del elemento activo (el cuadro rosita, no los íconos) está muy grande; hacerlo más chico: cuadrado redondeado/ovoidal, con el ancho actual o casi, pero menos alto. | PENDIENTE | |
+| AA02 | Perfil: falta poder cambiar la moneda principal; agregar la opción. | PENDIENTE | |
+| AA03 | Cuentas, iPad: en la tarjeta «Total» el «Saldo en dólares» queda muy lejos de su cantidad (todo a la derecha) y confunde; pegarlos en iPad. | PENDIENTE | |
+| AA04 | Cuentas, todos los dispositivos y la web: agregar los íconos de los bancos de México (convertir PNG a WebP), asociar cada cuenta con un banco al crearla (si la cuenta es MXN, ofrecer los bancos principales y los secundarios con su ícono) y mostrar el ícono del banco en la tarjeta de la cuenta. | PENDIENTE | |
+| AA05 | Cuentas: opción de asociar un número de tarjeta o de cuenta (opcional), con un ojito en la tarjeta para mostrarlo u ocultarlo; no se guarda ningún CVV y se debe dejar claro al usuario que es opcional. | PENDIENTE | |
+| AA06 | Cuentas, iPad: las tarjetas están muy separadas/grandes; ponerlas de dos en dos (una a la izquierda y una a la derecha). | PENDIENTE | |
+| AA07 | Tarjetas de cuenta: en lugar del ícono de chip de las tarjetas de crédito, mostrar el logotipo del banco (preferencia del usuario). | PENDIENTE | |
+| AA08 | Dashboard/Wallet: agregar un tooltip al «Vs. mes anterior» (la primera ficha de arriba) que explique bien cada cosa. | PENDIENTE | |
+| AA09 | Resumen de transacciones: la lista de categorías como tabla (encabezados Categoría / % / moneda, la moneda solo arriba), numerada 1, 2, 3… y con divisores. | PENDIENTE | |
+| AA10 | Resumen de transacciones: en el iPhone, tocar la gráfica o las categorías abre un modal con todas las categorías y se interactúa ahí; en el iPad, ocupar todo el ancho con la gráfica a la izquierda y la tabla de categorías a la derecha (con el drill-down a subcategorías ahí mismo). Hoy solo se ven unas pocas categorías y no las 14 que hay. | PENDIENTE | |
+| AA11 | Top 6 en el iPad: ocupar todo el ancho, con las categorías a la izquierda y los movimientos a la derecha (sin el selector categorías/movimientos); el iPhone conserva el selector. | PENDIENTE | |
+| AA12 | Dashboard, Presupuestos: cada presupuesto con su tarjetita como en la pantalla de Presupuestos, hasta 10 como máximo (menos si hay menos); «Ver todos» lleva a Presupuestos. | PENDIENTE | |
+| AA13 | Dashboard, Últimos movimientos: de la misma altura que Presupuestos, mostrando los movimientos que quepan. | PENDIENTE | |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.
