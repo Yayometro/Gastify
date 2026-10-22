@@ -115,7 +115,7 @@ export default function EditAccountScreen() {
       <AccountForm
         key={id}
         currencyLocked
-        initial={{ name: account.name ?? '', accountType: account.accountType ?? 'debit', currency: account.currency || 'MXN', amount: account.amount !== undefined && account.amount !== null ? String(account.amount) : '0' }}
+        initial={{ name: account.name ?? '', accountType: account.accountType ?? 'debit', currency: account.currency || 'MXN', amount: account.amount !== undefined && account.amount !== null ? String(account.amount) : '0', bankId: account.bankId ?? null, cardNumber: account.cardNumber ?? '' }}
         submitLabel="Guardar cambios"
         onSubmit={async (values) => {
           await sendWrite('general-data/accounts/update-account', { accountId: id, ...values });

@@ -14,6 +14,8 @@ export interface AccountData {
   currency?: string;
   balanceMinor?: number | null;
   institution?: string | null;
+  bankId?: string | null;
+  cardNumber?: string | null;
   balanceUpdatedAt?: Date | string | null;
   schemaVersion?: number;
   order?: number;

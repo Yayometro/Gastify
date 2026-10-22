@@ -4,6 +4,7 @@ import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { SUPPORTED_CURRENCIES, majorToMinor } from "@gastify/core/money/currencies";
+import { bankById, normalizeCardNumber } from "@gastify/core/banks/banks";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface NewAccountRequestBody {
@@ -11,6 +12,8 @@ export interface NewAccountRequestBody {
   amount?: number;
   accountType?: string;
   currency?: string;
+  bankId?: string | null;
+  cardNumber?: string | number | null;
   [key: string]: unknown;
 }
 
@@ -28,7 +31,7 @@ export async function POST(
 ): Promise<NextResponse<NewAccountResponse>> {
   try {
     if (!request) throw new Error("No data in request on NEW-ACCOUNT POST");
-    const { name, amount, accountType, currency } =
+    const { name, amount, accountType, currency, bankId, cardNumber } =
       (await request.json()) as NewAccountRequestBody;
     // Security fix: this route had zero session check - it created the
     // new Account under whatever userId/walletId the client sent in the
@@ -65,6 +68,10 @@ export async function POST(
     if (!SUPPORTED_CURRENCIES.includes(resolvedCurrency)) {
       throw new Error(`Unsupported currency: ${resolvedCurrency}`);
     }
+    // Optional bank and card/account number: validated here, not trusted from the client.
+    if (bankId && !bankById(bankId)) throw new Error(`Unknown bank: ${bankId}`);
+    const card = normalizeCardNumber(cardNumber);
+    if (!card.ok) throw new Error(card.message || "Invalid card number");
     const resolvedAmount = !amount ? 0 : amount;
     //
     const newAccount = new Account({
@@ -76,6 +83,8 @@ export async function POST(
       currency: resolvedCurrency,
       balanceMinor: majorToMinor(resolvedAmount, resolvedCurrency),
       balanceUpdatedAt: new Date(),
+      bankId: bankId || null,
+      cardNumber: card.value,
     });
     const savedAccount = await newAccount.save();
     if (!savedAccount)

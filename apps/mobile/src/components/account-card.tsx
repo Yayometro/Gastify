@@ -1,6 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
+
+import { BankBadge } from '@/components/bank-badge';
+import { formatCardNumber } from '@gastify/core/banks/banks';
 
 import type { AccountActivity } from '@gastify/core/accounts/accountActivity';
 import { accountGradient } from '@gastify/core/accounts/accountActivity';
@@ -31,6 +35,7 @@ export function AccountCard({
   onPress?: () => void;
   width?: number | undefined;
 }) {
+  const [reveal, setReveal] = useState(false);
   const [from, to] = accountGradient(idOf(account) || account.name || 'cuenta');
   const code = account.currency || primary;
   const balance = account.amount ?? 0;
@@ -51,6 +56,7 @@ export function AccountCard({
         <View pointerEvents="none" style={{ position: 'absolute', right: -40, top: -40, width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(255,255,255,0.12)' }} />
         <View pointerEvents="none" style={{ position: 'absolute', right: 30, bottom: -60, width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(255,255,255,0.08)' }} />
         <View className="flex-row items-center justify-between gap-3">
+          {account.bankId ? <BankBadge bankId={account.bankId} size={34} /> : null}
           <Text className="flex-1 font-inter-semibold text-lg" numberOfLines={1} style={{ color: '#ffffff' }}>{account.name || 'Cuenta'}</Text>
           <View style={{ backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
             <Text className="font-inter-medium text-[11px]" style={{ color: '#ffffff' }}>{TYPE_LABEL[type] ?? type}</Text>
@@ -63,6 +69,12 @@ export function AccountCard({
             <Text className="font-inter text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>≈ {formatMoneyMajor(equivalent, primary, { showCode: false })} {primary}</Text>
           )}
         </View>
+        {account.cardNumber ? (
+          <Pressable accessibilityRole="button" accessibilityLabel={reveal ? 'Ocultar el número' : 'Mostrar el número'} onPress={() => setReveal((value) => !value)} hitSlop={8} className="flex-row items-center gap-2 self-start">
+            <Text className="font-inter-medium text-sm" style={{ color: 'rgba(255,255,255,0.92)', letterSpacing: 1 }}>{formatCardNumber(account.cardNumber, reveal)}</Text>
+            <Ionicons name={reveal ? 'eye-off-outline' : 'eye-outline'} size={18} color="rgba(255,255,255,0.9)" />
+          </Pressable>
+        ) : null}
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-row items-center gap-1">
             <Ionicons name="arrow-up-circle" size={18} color="#86efac" />

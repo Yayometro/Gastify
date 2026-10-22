@@ -4,6 +4,7 @@ import Transaction from "@/model/Transaction";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { SUPPORTED_CURRENCIES, majorToMinor } from "@gastify/core/money/currencies";
+import { bankById, normalizeCardNumber } from "@gastify/core/banks/banks";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 export interface UpdateAccountRequestBody {
@@ -12,6 +13,8 @@ export interface UpdateAccountRequestBody {
   amount?: number;
   accountType?: string;
   currency?: string;
+  bankId?: string | null;
+  cardNumber?: string | number | null;
   [key: string]: unknown;
 }
 
@@ -29,8 +32,8 @@ export async function POST(
 ): Promise<NextResponse<UpdateAccountResponse>> {
   try {
     if (!request) throw new Error("No data in request on UPDATE-ACCOUNT POST");
-    const { accountId, name, amount, accountType, currency } =
-      (await request.json()) as UpdateAccountRequestBody;
+    const body = (await request.json()) as UpdateAccountRequestBody;
+    const { accountId, name, amount, accountType, currency } = body;
     // Security fix: this route had zero ownership/session check at all -
     // it took accountId straight from the client and updated whatever
     // Account matched, no matter who owned it. This endpoint isn't
@@ -70,6 +73,17 @@ export async function POST(
         );
       }
       findAccount.currency = currency;
+    }
+
+    // Bank and card/account number: only touched when the body mentions them (null clears them).
+    if ("bankId" in body) {
+      if (body.bankId && !bankById(body.bankId)) throw new Error(`Unknown bank: ${body.bankId}`);
+      findAccount.bankId = body.bankId || null;
+    }
+    if ("cardNumber" in body) {
+      const card = normalizeCardNumber(body.cardNumber);
+      if (!card.ok) throw new Error(card.message || "Invalid card number");
+      findAccount.cardNumber = card.value;
     }
 
     findAccount.name = !name ? findAccount.name : name;

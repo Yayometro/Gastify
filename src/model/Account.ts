@@ -16,6 +16,10 @@ export interface IAccount extends mongoose.Document {
     currency?: string;
     balanceMinor?: number | null;
     institution?: string | null;
+    // The bank the account belongs to (an id of @gastify/core/banks) and, optionally, its card or account number
+    // (digits only). Never a CVV. Both null when the person did not set them.
+    bankId?: string | null;
+    cardNumber?: string | null;
     balanceUpdatedAt?: Date | null;
     schemaVersion?: number;
     // User-controlled display order for the Accounts resume cards. Accounts
@@ -54,6 +58,8 @@ const accountSchema = new Schema<IAccount>({
     },
     balanceMinor: { type: Number, default: null },
     institution: { type: String, default: null },
+    bankId: { type: String, default: null },
+    cardNumber: { type: String, default: null },
     balanceUpdatedAt: { type: Date, default: null },
     schemaVersion: { type: Number, default: 1 },
     // User-controlled display order for the Accounts resume cards. Accounts
