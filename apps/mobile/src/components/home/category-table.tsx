@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { CategoryBadge } from '@/components/category-badge';
@@ -16,6 +17,7 @@ export function CategoryTable({
   firstColumn = 'Categoría',
   limit,
   onPressRow,
+  drillLabel,
 }: {
   rows: BreakdownSlice[];
   total: number;
@@ -25,6 +27,8 @@ export function CategoryTable({
   firstColumn?: string;
   limit?: number;
   onPressRow?: (key: string) => void;
+  // What a row opens, written under its name with an arrow ("Ver subcategorías", "Ver transacciones"): the next level down.
+  drillLabel?: string;
 }) {
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const shown = limit ? rows.slice(0, limit) : rows;
@@ -47,7 +51,15 @@ export function CategoryTable({
           style={{ borderTopWidth: 1, borderTopColor: colors.border, opacity: selectedKey && selectedKey !== row.key ? 0.45 : 1 }}>
           <Text className="w-6 text-center font-inter-bold text-sm text-gf-text-muted">{index + 1}</Text>
           {row.icon ? <CategoryBadge icon={row.icon} color={row.color} size={30} /> : <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: row.color }} />}
-          <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.name}</Text>
+          <View className="flex-1">
+            <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.name}</Text>
+            {drillLabel && (
+              <View className="flex-row items-center gap-0.5">
+                <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{drillLabel}</Text>
+                <Ionicons name="chevron-forward" size={12} color={colors.accent} />
+              </View>
+            )}
+          </View>
           <Text className="w-12 text-right font-inter text-sm text-gf-text-muted">{total > 0 ? Math.round((row.value / total) * 100) : 0}%</Text>
           <Text className="w-28 text-right font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.value, currency, { showCode: false })}</Text>
         </Pressable>

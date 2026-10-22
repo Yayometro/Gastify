@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type ComponentProps } from 'react';
 import { ActivityIndicator, Alert, Animated, Pressable, RefreshControl, SectionList, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,6 +13,7 @@ import { ExportSheet } from '@/components/export-sheet';
 import { MonthSwitcher } from '@/components/month-switcher';
 import { MovementFiltersPanel } from '@/components/movements/movement-filters';
 import { MovementRow } from '@/components/movements/movement-row';
+import { BulkEditSheet, type BulkField } from '@/components/movements/bulk-edit-sheet';
 import { useToast } from '@/components/toast';
 import { ToolsSheet } from '@/components/tools/tools-fab';
 import { TotalsCard } from '@/components/totals-card';
@@ -61,10 +62,20 @@ type DaySection = { key: string; title: string; data: TransactionData[] };
 // Every movement of the chosen period, newest first and grouped by day, with the web's filters and
 // duplicate finder. Tapping one opens it; a long press selects several to delete them or to give them the
 // same category. The months before the recent cutoff may still be loading (phased history): the notice says so.
+const BULK_ACTIONS: { field: BulkField; label: string; icon: ComponentProps<typeof Ionicons>['name'] }[] = [
+  { field: 'name', label: 'Nombre', icon: 'create-outline' },
+  { field: 'date', label: 'Fecha', icon: 'calendar-outline' },
+  { field: 'type', label: 'Tipo', icon: 'swap-vertical-outline' },
+  { field: 'category', label: 'Categoría', icon: 'pricetag-outline' },
+  { field: 'account', label: 'Cuenta', icon: 'card-outline' },
+  { field: 'general', label: 'Edición general', icon: 'settings-outline' },
+];
+
 export default function MovementsScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
+  const accountsData = useSelector((state: RootState) => state.accountsReducer.data);
   const currency = usePrimaryCurrency();
   const { accounts, categories, subCategories } = useCatalog();
   const { refresh, refreshing } = useRefreshAppData();
@@ -87,8 +98,9 @@ export default function MovementsScreen() {
   const [dupDraft, setDupDraft] = useState<DuplicateSettings>(DUPLICATE_DEFAULTS);
   const [dupApplied, setDupApplied] = useState<DuplicateSettings>(DUPLICATE_DEFAULTS);
   const [selected, setSelected] = useState<string[]>([]);
-  const [choosing, setChoosing] = useState(false);
-  const [categoryId, setCategoryId] = useState('');
+  // Selection mode: the person picks movements (tapping, or "Seleccionar" then tapping) and acts on all of them at once.
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [bulkField, setBulkField] = useState<BulkField | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
@@ -142,8 +154,7 @@ export default function MovementsScreen() {
 
   const finishAction = () => {
     setSelected([]);
-    setChoosing(false);
-    setCategoryId('');
+    setSelectionMode(false);
     reloadAfterWrite(dispatch, touchesOlder);
   };
 
@@ -169,21 +180,6 @@ export default function MovementsScreen() {
         },
       },
     ]);
-  };
-
-  const applyCategory = async () => {
-    if (!categoryId) return;
-    setBusy(true);
-    setActionError(null);
-    try {
-      await sendWrite('general-data/transactions/edit-many', { transactions: selected, fields: ['category', 'subCategory'], category: categoryId, subCategory: null });
-      toast.show('Categoría cambiada');
-      finishAction();
-    } catch (error) {
-      setActionError(messageOf(error));
-    } finally {
-      setBusy(false);
-    }
   };
 
   // The movements on screen as a file (Excel from the server like the web, or CSV / JSON made here),
@@ -259,18 +255,29 @@ export default function MovementsScreen() {
         </View>
       )}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ expanded: filtersOpen }}
-        onPress={() => setFiltersOpen((open) => !open)}
-        className="flex-row items-center justify-between rounded-full border border-gf-border px-5 py-3"
-        style={glassFill(scheme === 'dark', colors.backgroundElement)}>
-        <View className="flex-row items-center gap-2">
-          <Ionicons name="options-outline" size={20} color={colors.accent} />
-          <Text className="font-inter-semibold text-base text-gf-text">Filtros{active > 0 ? ` (${active})` : ''}</Text>
-        </View>
-        <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSecondary} />
-      </Pressable>
+      <View className="flex-row gap-3">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: filtersOpen }}
+          onPress={() => setFiltersOpen((open) => !open)}
+          className="flex-1 flex-row items-center justify-between rounded-full border border-gf-border px-5 py-3"
+          style={glassFill(scheme === 'dark', colors.backgroundElement)}>
+          <View className="flex-row items-center gap-2">
+            <Ionicons name="options-outline" size={20} color={colors.accent} />
+            <Text className="font-inter-semibold text-base text-gf-text">Filtros{active > 0 ? ` (${active})` : ''}</Text>
+          </View>
+          <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSecondary} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: selectionMode }}
+          onPress={() => { setSelectionMode((on) => !on); setSelected([]); }}
+          className="flex-row items-center justify-center gap-2 rounded-full px-5 py-3"
+          style={selectionMode ? { backgroundColor: colors.accent } : { backgroundColor: colors.backgroundElement, borderWidth: 1, borderColor: colors.border }}>
+          <Ionicons name="checkmark-done-outline" size={20} color={selectionMode ? '#ffffff' : colors.accent} />
+          <Text className="font-inter-semibold text-base" style={{ color: selectionMode ? '#ffffff' : colors.text }}>{selectionMode ? 'Listo' : 'Seleccionar'}</Text>
+        </Pressable>
+      </View>
 
       {filtersOpen && (
         <MovementFiltersPanel
@@ -293,30 +300,53 @@ export default function MovementsScreen() {
         />
       )}
 
-      {selected.length > 0 && (
-        <Card title={`${selected.length} ${selected.length === 1 ? 'seleccionado' : 'seleccionados'}`}>
-          <View className="flex-row flex-wrap gap-4">
-            <Pressable accessibilityRole="button" disabled={busy} onPress={() => setChoosing((open) => !open)}>
-              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Cambiar categoría</Text>
+      {selectionMode && (
+        <Card
+          title={`${selected.length} ${selected.length === 1 ? 'seleccionado' : 'seleccionados'}`}
+          info={{ title: 'Seleccionar movimientos', text: 'Marca los movimientos que quieras cambiar. Con los botones cambias un solo campo de todos a la vez (nombre, fecha, tipo, categoría o cuenta), o usas la edición general para llenar varios campos juntos. Lo que no llenes se queda como estaba en cada movimiento. «Borrar» quita todos los seleccionados. Mantener presionado un movimiento también lo selecciona.' }}>
+          <View className="flex-row items-center justify-between gap-3">
+            <Pressable accessibilityRole="button" accessibilityLabel="Salir de la selección" onPress={() => { setSelectionMode(false); setSelected([]); }} className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5" style={{ borderWidth: 1, borderColor: colors.accent }}>
+              <Ionicons name="close-circle-outline" size={16} color={colors.accent} />
+              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Off</Text>
             </Pressable>
-            <Pressable accessibilityRole="button" disabled={busy} onPress={removeSelected}>
-              <Text className="font-inter-semibold text-sm text-red-500">Borrar</Text>
-            </Pressable>
-            <Pressable accessibilityRole="button" onPress={() => { setSelected([]); setChoosing(false); }}>
-              <Text className="font-inter-semibold text-sm text-gf-text-muted">Cancelar</Text>
-            </Pressable>
+            <View className="flex-row items-center gap-4">
+              <Pressable accessibilityRole="button" onPress={() => setSelected(items.map((movement) => String(movement._id)))}>
+                <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todos</Text>
+              </Pressable>
+              {selected.length > 0 && (
+                <Pressable accessibilityRole="button" onPress={() => setSelected([])}>
+                  <Text className="font-inter-semibold text-sm text-gf-text-muted">Ninguno</Text>
+                </Pressable>
+              )}
+            </View>
           </View>
-          {choosing && (
-            <View className="gap-3">
-              <ChipPicker items={categoryItems} value={categoryId} onChange={setCategoryId} title="Categorías" />
-              <Pressable accessibilityRole="button" disabled={!categoryId || busy} onPress={applyCategory}>
-                <Text className="font-inter-semibold text-sm" style={{ color: categoryId ? colors.accent : colors.textSecondary }}>Aplicar a los seleccionados</Text>
+          {selected.length > 0 && (
+            <View className="flex-row flex-wrap gap-2">
+              {BULK_ACTIONS.map(({ field, label, icon }) => (
+                <Pressable key={field} accessibilityRole="button" disabled={busy} onPress={() => setBulkField(field)} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.accentSoft }}>
+                  <Ionicons name={icon} size={14} color={colors.accent} />
+                  <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{label}</Text>
+                </Pressable>
+              ))}
+              <Pressable accessibilityRole="button" disabled={busy} onPress={removeSelected} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ borderWidth: 1, borderColor: colors.border }}>
+                <Ionicons name="trash-outline" size={14} color="#f43f5e" />
+                <Text className="font-inter-semibold text-xs text-red-500">Borrar</Text>
               </Pressable>
             </View>
           )}
           {busy && <ActivityIndicator color={colors.accent} />}
           {actionError && <Text className="font-inter text-sm text-red-500">{actionError}</Text>}
         </Card>
+      )}
+      {bulkField && (
+        <BulkEditSheet
+          field={bulkField}
+          ids={selected}
+          accounts={accountsData.map((account) => ({ id: idOf(account), label: account.name || 'Cuenta' }))}
+          categories={categoryItems}
+          onClose={() => setBulkField(null)}
+          onDone={() => { setBulkField(null); finishAction(); }}
+        />
       )}
 
       {!historyReady && (
@@ -354,10 +384,10 @@ export default function MovementsScreen() {
                 currency={currency}
                 selected={selected.includes(id)}
                 onPress={() => {
-                  if (selected.length > 0) toggle(id);
+                  if (selectionMode) toggle(id);
                   else router.push({ pathname: '/movements/[id]', params: { id } });
                 }}
-                onLongPress={() => toggle(id)}
+                onLongPress={() => { setSelectionMode(true); toggle(id); }}
               />
             );
           }}

@@ -5,6 +5,9 @@ import { DEFAULT_CARD_PATTERN } from '@gastify/core/accounts/cardStyle';
 
 // The decoration over a card's color. Every pattern is a small tile repeated across the card, drawn in the card's
 // tint, so it reads on a light card and on a dark one alike. "circles" is the original soft circles.
+const CANVAS_WIDTH = 1000;
+const CANVAS_HEIGHT = 800;
+
 export function CardPattern({ pattern = DEFAULT_CARD_PATTERN, tint }: { pattern?: string; tint: (alpha: number) => string }) {
   if (pattern === 'plain') return null;
   if (pattern === 'circles' || !['dots', 'stripes', 'grid', 'waves'].includes(pattern)) {
@@ -18,7 +21,8 @@ export function CardPattern({ pattern = DEFAULT_CARD_PATTERN, tint }: { pattern?
   const tile = pattern === 'waves' ? 24 : pattern === 'dots' ? 18 : 14;
   const stroke = tint(0.16);
   return (
-    <Svg pointerEvents="none" style={StyleSheet.absoluteFill} width="100%" height="100%">
+    // A canvas larger than any card, clipped by the card's own edge: the pattern reaches every corner and edge.
+    <Svg pointerEvents="none" style={[StyleSheet.absoluteFill, { top: 0, left: 0 }]} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>
       <Defs>
         <Pattern id={`gf-card-${pattern}`} x={0} y={0} width={tile} height={tile} patternUnits="userSpaceOnUse">
           {pattern === 'dots' && <Circle cx={tile / 2} cy={tile / 2} r={1.8} fill={tint(0.22)} />}
@@ -27,7 +31,7 @@ export function CardPattern({ pattern = DEFAULT_CARD_PATTERN, tint }: { pattern?
           {pattern === 'waves' && <Path d={`M0 12 Q6 4 12 12 T24 12`} fill="none" stroke={stroke} strokeWidth={2} />}
         </Pattern>
       </Defs>
-      <Rect x={0} y={0} width="100%" height="100%" fill={`url(#gf-card-${pattern})`} />
+      <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={`url(#gf-card-${pattern})`} />
     </Svg>
   );
 }

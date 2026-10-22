@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
 import { useToast } from '@/components/toast';
+import { useDismissedAlertKeys } from '@/lib/alert-dismissals';
+import { alertMood } from '@/lib/alert-presentation';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';
@@ -32,6 +34,7 @@ async function readShown(): Promise<string[]> {
 // The notices that apply right now: one per budget, saving goal or project that reached a level this period. The toasts
 // show them as they appear, and the Notifications screen lists the same ones.
 export function useBudgetAlertList(): BudgetAlert[] {
+  const dismissed = useDismissedAlertKeys();
   const budgets = useSelector((state: RootState) => state.budgetReducer.data);
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const accounts = useSelector((state: RootState) => state.accountsReducer.data);
@@ -39,7 +42,7 @@ export function useBudgetAlertList(): BudgetAlert[] {
   const currency = usePrimaryCurrency();
   const rates = useRatesToPrimary([...budgets.map((budget) => budget.currency), ...accounts.map((account) => account.currency)], currency);
 
-  return useMemo<BudgetAlert[]>(() => {
+  const all = useMemo<BudgetAlert[]>(() => {
     if (!ready) return [];
     const now = new Date();
     const bounds = monthBounds(now.getFullYear(), now.getMonth());
@@ -66,6 +69,8 @@ export function useBudgetAlertList(): BudgetAlert[] {
     }
     return out;
   }, [ready, budgets, transactions, accounts, currency, rates]);
+  // The notices the person swiped away stay away (for this budget and period).
+  return useMemo(() => all.filter((alert) => !dismissed.includes(alert.key)), [all, dismissed]);
 }
 
 // In-app notices about the budgets, saving goals and projects (70 / 80 / 90 / 100 %, congratulations, savings progress).
@@ -84,7 +89,7 @@ export function useBudgetAlerts() {
       const fresh = alerts.filter((alert) => !shown.includes(alert.key)).slice(0, 3);
       for (let index = 0; index < fresh.length; index += 1) {
         const alert = fresh[index];
-        toast.show(alert.message, alert.tone === 'celebrate' ? 'celebrate' : 'warning', { title: alert.title, href: `/budgets/${alert.key.split(':')[0]}` });
+        toast.show(alert.message, alertMood(alert), { title: alert.title, href: `/budgets/${alert.key.split(':')[0]}` });
         shown.push(alert.key);
         try {
           await SecureStore.setItemAsync(STORE_KEY, JSON.stringify(shown.slice(-200)));

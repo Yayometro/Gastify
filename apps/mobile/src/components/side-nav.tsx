@@ -1,4 +1,4 @@
-import { FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, usePathname } from 'expo-router';
@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 import { NotificationsGlyph } from '@/components/notifications-bell';
+import { NAV_ICON } from '@/lib/nav-icons';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { useThemeMode } from '@/hooks/use-theme-mode';
@@ -25,16 +26,16 @@ const is = (path: string, prefix: string) => path === prefix || path.startsWith(
 // Movimientos, Wallet, Presupuestos, Proyecciones, the "+" in the middle, Cuentas, Historial, Categorías, the
 // light / dark switch and sign out, spread over the whole height (the web's `justify-between`).
 const BEFORE_ADD: Item[] = [
-  { key: 'movements', label: 'Movimientos', href: '/movements', active: (p) => is(p, '/movements'), icon: (c) => <FontAwesome6 name="money-bill-transfer" size={24} color={c} /> },
-  { key: 'wallet', label: 'Wallet', href: '/', active: (p) => p === '/' || p === '/index', icon: (c) => <FontAwesome6 name="wallet" size={22} color={c} /> },
-  { key: 'budgets', label: 'Presupuestos', href: '/budgets', active: (p) => is(p, '/budgets'), icon: (c) => <MaterialIcons name="savings" size={27} color={c} /> },
-  { key: 'projections', label: 'Proyecciones', href: '/more/projections', active: (p) => is(p, '/more/projections'), icon: (c) => <MaterialIcons name="auto-graph" size={27} color={c} /> },
-  { key: 'analyzer', label: 'Analizador de cartera', href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => <FontAwesome6 name="magnifying-glass-chart" size={22} color={c} /> },
+  { key: 'movements', label: 'Movimientos', href: '/movements', active: (p) => is(p, '/movements'), icon: (c) => NAV_ICON.movements(c, 26) },
+  { key: 'wallet', label: 'Wallet', href: '/', active: (p) => p === '/' || p === '/index', icon: (c) => NAV_ICON.wallet(c, 26) },
+  { key: 'budgets', label: 'Presupuestos', href: '/budgets', active: (p) => is(p, '/budgets'), icon: (c) => NAV_ICON.budgets(c, 26) },
+  { key: 'projections', label: 'Proyecciones', href: '/more/projections', active: (p) => is(p, '/more/projections'), icon: (c) => NAV_ICON.projections(c, 26) },
+  { key: 'analyzer', label: 'Analizador de cartera', href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => NAV_ICON.analyzer(c, 26) },
 ];
 const AFTER_ADD: Item[] = [
-  { key: 'accounts', label: 'Cuentas', href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => <MaterialIcons name="account-balance" size={26} color={c} /> },
-  { key: 'history', label: 'Historial', href: '/more/history', active: (p) => is(p, '/more/history'), icon: (c) => <FontAwesome6 name="clock-rotate-left" size={22} color={c} /> },
-  { key: 'categories', label: 'Categorías', href: '/more/categories', active: (p) => is(p, '/more/categories'), icon: (c) => <MaterialIcons name="category" size={26} color={c} /> },
+  { key: 'accounts', label: 'Cuentas', href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => NAV_ICON.accounts(c, 26) },
+  { key: 'history', label: 'Historial', href: '/more/history', active: (p) => is(p, '/more/history'), icon: (c) => NAV_ICON.history(c, 26) },
+  { key: 'categories', label: 'Categorías', href: '/more/categories', active: (p) => is(p, '/more/categories'), icon: (c) => NAV_ICON.categories(c, 26) },
 ];
 
 export function SideNav() {

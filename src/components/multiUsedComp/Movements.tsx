@@ -1342,16 +1342,16 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
                 {/* Row 1: selection controls */}
                 <div className="flex gap-2 justify-between items-center">
                   <div
-                    className="flex gap-1 items-center text-purple-500 cursor-pointer"
+                    className="flex gap-1 items-center text-white cursor-pointer"
                     onClick={handeTransSelection}
                   >
                     <HiMiniCursorArrowRipple size={18} />
-                    <div className="w-fit flex items-center border-2 border-purple-500 rounded-full px-1">
+                    <div className="w-fit flex items-center border-2 border-white rounded-full px-1">
                       <p className="pr-1 text-[11px]">Off</p>
                     </div>
                   </div>
                   <div className="flex gap-2 items-center">
-                    <div className="text-purple-500 flex gap-1 items-center cursor-pointer" onClick={handleSelectedAll}>
+                    <div className="text-white flex gap-1 items-center cursor-pointer" onClick={handleSelectedAll}>
                       <p className="text-[11px]">Select All</p>
                       <IoCheckmarkDoneCircleOutline size={15} />
                     </div>
@@ -1394,7 +1394,7 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
                       <button
                         key={field}
                         onClick={() => setQuickEditField(field)}
-                        className="flex items-center gap-1 text-[11px] text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full hover:bg-gf-accent-soft-bg transition-colors"
+                        className="flex items-center gap-1 text-[11px] text-white border border-white/60 px-2 py-0.5 rounded-full hover:bg-white/10 transition-colors"
                       >
                         {icon}{label}
                       </button>

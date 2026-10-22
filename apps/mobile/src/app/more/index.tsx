@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { authClient } from '@/auth-client';
@@ -8,17 +8,21 @@ import { Screen } from '@/components/screen';
 import { AppearanceCard } from '@/components/appearance-card';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
+import { NAV_ICON } from '@/lib/nav-icons';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
+// A row of the menu: the section's own glyph (the same as the iPad's side bar) or a plain Ionicons one.
 function MenuRow({
   label,
   icon,
+  glyph,
   onPress,
   soon = false,
 }: {
   label: string;
-  icon: IconName;
+  icon?: IconName;
+  glyph?: (color: string) => ReactNode;
   onPress?: () => void;
   soon?: boolean;
 }) {
@@ -33,7 +37,7 @@ function MenuRow({
       onPress={onPress}
       className="flex-row items-center gap-3 py-3"
       style={{ opacity: soon ? 0.5 : 1 }}>
-      <Ionicons name={icon} size={22} color={colors.text} />
+      <View style={{ width: 28, alignItems: 'center' }}>{glyph ? glyph(colors.text) : icon ? <Ionicons name={icon} size={22} color={colors.text} /> : null}</View>
       <Text className="flex-1 font-inter-medium text-base text-gf-text">{label}</Text>
       {soon ? (
         <Text className="font-inter text-sm text-gf-text-muted">Próximamente</Text>
@@ -51,15 +55,15 @@ export default function MoreScreen() {
       <Card>
         <MenuRow label="Notificaciones" icon="notifications-outline" onPress={() => router.push('/notifications')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Cuentas" icon="wallet-outline" onPress={() => router.push('/more/accounts')} />
+        <MenuRow label="Cuentas" glyph={(c) => NAV_ICON.accounts(c)} onPress={() => router.push('/more/accounts')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Categorías" icon="pricetags-outline" onPress={() => router.push('/more/categories')} />
+        <MenuRow label="Categorías" glyph={(c) => NAV_ICON.categories(c)} onPress={() => router.push('/more/categories')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Analizador de cartera" icon="telescope-outline" onPress={() => router.push('/more/analyzer')} />
+        <MenuRow label="Analizador de cartera" glyph={(c) => NAV_ICON.analyzer(c)} onPress={() => router.push('/more/analyzer')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Historial" icon="time-outline" onPress={() => router.push('/more/history')} />
+        <MenuRow label="Historial" glyph={(c) => NAV_ICON.history(c)} onPress={() => router.push('/more/history')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Proyecciones" icon="trending-up-outline" onPress={() => router.push('/more/projections')} />
+        <MenuRow label="Proyecciones" glyph={(c) => NAV_ICON.projections(c)} onPress={() => router.push('/more/projections')} />
         <View className="h-px bg-gf-border" />
         <MenuRow label="Perfil" icon="person-circle-outline" onPress={() => router.push('/more/profile')} />
       </Card>

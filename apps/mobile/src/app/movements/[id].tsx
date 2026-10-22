@@ -1,13 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { goBackTo, returnLabel, returnParam } from '@/lib/return-to';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { MovementForm } from '@/components/movement-form';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
+import { Colors } from '@/constants/theme';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch, RootState } from '@/store';
@@ -79,6 +80,8 @@ export default function MovementDetailScreen() {
     back();
   };
 
+  // The tags as chips (the form below keeps them editable as text).
+  const tagList = Array.isArray(movement.tags) ? movement.tags.filter((tag): tag is string => typeof tag === 'string' && tag.trim() !== '') : [];
   return (
     <Screen title="Movimiento" subtitle={movement.name || undefined} backLabel={backLabel} onBack={back}>
       {kind === 'transfer' ? (
@@ -92,7 +95,8 @@ export default function MovementDetailScreen() {
           </Pressable>
         </Card>
       ) : (
-        <View>
+        <View className="gap-4">
+          {tagList.length > 0 && <TagChips tags={tagList} />}
           <MovementForm
             key={id}
             submitLabel="Guardar cambios"
@@ -113,5 +117,21 @@ export default function MovementDetailScreen() {
         </View>
       )}
     </Screen>
+  );
+}
+
+// The tags of a movement as chips: the accent color on a soft fill, so they read in both themes.
+function TagChips({ tags }: { tags: string[] }) {
+  const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  return (
+    <Card title="Etiquetas">
+      <View className="flex-row flex-wrap gap-2">
+        {tags.map((tag) => (
+          <View key={tag} className="rounded-full px-3 py-1" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
+            <Text className="font-inter-medium text-sm" style={{ color: colors.accent }}>{tag}</Text>
+          </View>
+        ))}
+      </View>
+    </Card>
   );
 }

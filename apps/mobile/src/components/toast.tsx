@@ -4,16 +4,23 @@ import { router } from 'expo-router';
 import { Animated, Easing, Modal, PanResponder, Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AlarmEdges } from '@/components/alarm-edges';
 import { Celebration } from '@/components/celebration';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { GlassSurface } from '@/components/ui/glass';
+import { MOOD_COLOR, type AlertMood } from '@/lib/alert-presentation';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 
-type ToastKind = 'ok' | 'error' | 'warning' | 'celebrate';
+// alarm and fire are the budget notices (70 to 90 % and past 100 %); celebrate the congratulations.
+type ToastKind = 'ok' | 'error' | 'warning' | 'celebrate' | 'alarm' | 'fire';
 
 export type ToastOptions = { title?: string; href?: string };
 
-const ToastContext = createContext<{ show: (message: string, kind?: ToastKind, titleOrOptions?: string | ToastOptions) => void }>({ show: () => {} });
+const ToastContext = createContext<{
+  show: (message: string, kind?: ToastKind, titleOrOptions?: string | ToastOptions) => void;
+  // Opens the notice's own window right away (the Notifications list does this, without the toast first).
+  present: (message: string, mood: AlertMood, options?: ToastOptions) => void;
+}>({ show: () => {}, present: () => {} });
 
 // "Se guardó" and its siblings: a short message that drops in from the top with its icon in a soft
 // circle, and goes away by itself. Success is green, errors rose, like the money colors of the app.
@@ -21,19 +28,24 @@ export function useToast() {
   return useContext(ToastContext);
 }
 
-const TONES: Record<ToastKind, { icon: 'checkmark' | 'alert' | 'sparkles'; color: string; circle: string; title: string }> = {
+const TONES: Record<ToastKind, { icon: 'checkmark' | 'alert' | 'sparkles' | 'flame'; color: string; circle: string; title: string }> = {
   ok: { icon: 'checkmark', color: '#34d399', circle: 'rgba(52, 211, 153, 0.18)', title: 'Listo' },
   error: { icon: 'alert', color: '#fb7185', circle: 'rgba(251, 113, 133, 0.18)', title: 'Revisa esto' },
   warning: { icon: 'alert', color: '#f59e0b', circle: 'rgba(245, 158, 11, 0.20)', title: 'Aviso' },
   celebrate: { icon: 'sparkles', color: '#c084fc', circle: 'rgba(192, 132, 252, 0.22)', title: '¡Felicidades!' },
+  alarm: { icon: 'alert', color: '#f43f5e', circle: 'rgba(244, 63, 94, 0.20)', title: '¡Aguas!' },
+  fire: { icon: 'flame', color: '#f97316', circle: 'rgba(249, 115, 22, 0.22)', title: '¡Se está incendiando!' },
 };
+
+const isMood = (kind: ToastKind): kind is AlertMood => kind === 'celebrate' || kind === 'alarm' || kind === 'fire';
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
   const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const dark = useColorScheme() === 'dark';
   const [toast, setToast] = useState<{ id: number; message: string; kind: ToastKind; title?: string; href?: string } | null>(null);
-  const [celebrating, setCelebrating] = useState<{ title: string; message: string; href?: string } | null>(null);
+  // The window a notice opens when it is tapped: its mood decides the effect (confetti, the alarm frame or the fire).
+  const [presented, setPresented] = useState<{ mood: AlertMood; title: string; message: string; href?: string } | null>(null);
   const drag = useRef(new Animated.ValueXY()).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(-24)).current;
@@ -63,7 +75,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     [hide, opacity, slide, drag]
   );
 
-  const value = useMemo(() => ({ show }), [show]);
+  const present = useCallback((message: string, mood: AlertMood, options?: ToastOptions) => {
+    setPresented({ mood, title: options?.title ?? TONES[mood].title, message, href: options?.href });
+  }, []);
+
+  const value = useMemo(() => ({ show, present }), [show, present]);
 
   // The notice can be pushed away in any direction, and a tap on it opens what it is about (a congratulation opens its own
   // window with confetti and fireworks).
@@ -81,7 +97,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           if (moved < 8) {
             const open = current.current;
             hide();
-            if (open?.kind === 'celebrate') setCelebrating({ title: open.title ?? 'Felicidades', message: open.message, href: open.href });
+            if (open && isMood(open.kind)) present(open.message, open.kind, { title: open.title, href: open.href });
             else if (open?.href) router.push(open.href as never);
             return;
           }
@@ -93,7 +109,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           }
         },
       }),
-    [drag, hide]
+    [drag, hide, present]
   );
   const tone = toast ? TONES[toast.kind] : null;
 
@@ -119,16 +135,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           </Animated.View>
         </Animated.View>
       )}
-      <Modal visible={celebrating !== null} transparent animationType="fade" onRequestClose={() => setCelebrating(null)}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(10,5,25,0.82)', alignItems: 'center', justifyContent: 'center', padding: 28 }}>
-          <Celebration active={celebrating !== null} />
+      <Modal visible={presented !== null} transparent animationType="fade" onRequestClose={() => setPresented(null)}>
+        <View style={{ flex: 1, backgroundColor: presented?.mood === 'celebrate' || !presented ? 'rgba(10,5,25,0.82)' : 'rgba(26,4,12,0.78)', alignItems: 'center', justifyContent: 'center', padding: 28 }}>
+          {presented?.mood === 'celebrate' && <Celebration active />}
+          {presented && presented.mood !== 'celebrate' && <AlarmEdges color={MOOD_COLOR[presented.mood]} fast={presented.mood === 'fire'} />}
           <GlassSurface radius={28} style={{ width: '100%', maxWidth: 420, backgroundColor: 'rgba(40,22,82,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
             <View className="items-center gap-4 p-7">
-              <Text style={{ fontSize: 56 }}>🎉</Text>
-              <Text className="text-center font-inter-bold text-2xl" style={{ color: '#ffffff' }}>{celebrating?.title}</Text>
-              <Text className="text-center font-inter text-base" style={{ color: 'rgba(255,255,255,0.85)' }}>{celebrating?.message}</Text>
-              {celebrating?.href ? <View style={{ alignSelf: 'stretch' }}><GradientButton label="Ver mi presupuesto" onPress={() => { const href = celebrating.href; setCelebrating(null); if (href) router.push(href as never); }} /></View> : null}
-              <Pressable accessibilityRole="button" onPress={() => setCelebrating(null)} hitSlop={10}><Text className="font-inter-semibold text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>Cerrar</Text></Pressable>
+              <Text style={{ fontSize: 56 }}>{presented?.mood === 'fire' ? '🔥' : presented?.mood === 'alarm' ? '😬' : '🎉'}</Text>
+              <Text className="text-center font-inter-bold text-2xl" style={{ color: '#ffffff' }}>{presented?.title}</Text>
+              <Text className="text-center font-inter text-base" style={{ color: 'rgba(255,255,255,0.85)' }}>{presented?.message}</Text>
+              {presented?.href ? <View style={{ alignSelf: 'stretch' }}><GradientButton label="Ver mi presupuesto" onPress={() => { const href = presented.href; setPresented(null); if (href) router.push(href as never); }} /></View> : null}
+              <Pressable accessibilityRole="button" onPress={() => setPresented(null)} hitSlop={10}><Text className="font-inter-semibold text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>Cerrar</Text></Pressable>
             </View>
           </GlassSurface>
         </View>

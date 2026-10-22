@@ -120,7 +120,7 @@ export function SummaryWidget({
   );
 
   const table = (limit?: number) => (
-    <CategoryTable rows={tableRows} total={shownTotal} currency={currency} selectedKey={zoomed ? null : selected} disabled={false} firstColumn={zoomed && chosen ? (level === 1 ? `${chosen.name} · subcategorías` : `${chosen.name} · movimientos`) : 'Categoría'} limit={limit} onPressRow={select} />
+    <CategoryTable rows={tableRows} total={shownTotal} currency={currency} selectedKey={zoomed ? null : selected} disabled={false} firstColumn={zoomed && chosen ? (level === 1 ? `${chosen.name} · subcategorías` : `${chosen.name} · movimientos`) : 'Categoría'} limit={limit} onPressRow={select} drillLabel={level === 0 ? 'Ver subcategorías' : level === 1 ? 'Ver transacciones' : undefined} />
   );
 
   const filters = (

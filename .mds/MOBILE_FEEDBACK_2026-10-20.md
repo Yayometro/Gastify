@@ -440,6 +440,25 @@ Prefijo AG.
 | AG08 | Caja roja «!» con «Can't perform a React state update…» al abrir la app. | ABIERTO | No es un toast de la app: es la caja de errores de Expo en desarrollo. Componente sin identificar. |
 | AG09 | Celebración con fuegos artificiales al tocar una notificación de felicitación. | ABIERTO (por verificar) | Se ve el toast con su texto. El modal con fuegos no se vio en la captura de 1,5 s. |
 
+## Decimoséptima ronda (2026-10-21)
+
+Prefijo AH.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AH01 | Iconos iguales en iPhone y iPad (los rellenos del iPad: cuentas, categorías, analizador, proyecciones, historial). | HECHO | Un solo módulo `lib/nav-icons.tsx` para el menú lateral y la lista de Más. Verificado en la lista de Más. |
+| AH02 | Barra inferior en teléfonos grandes (≥ 428 pt): Proyecciones a la izquierda y Analizador a la derecha. | HECHO (sin verificar) | La densidad simulada dejó la barra tapada por la caja de errores; no se vieron los iconos extra. |
+| AH03 | IPad: «Hola, Nombre» en letra más chica y campana de notificaciones al lado. | HECHO (sin verificar en iPad) | Código listo; no probé en tablet. |
+| AH04 | Campana pegada a la derecha del Inicio, junto al engranaje. | HECHO | Verificado en el emulador. |
+| AH05 | Patrones de tarjeta que cubren todo el fondo. | HECHO | Verificado con puntos en la tarjeta blanca. |
+| AH06 | Colores de tarjeta en una hilera con «Ver todos los colores»; los patrones se muestran completos. | HECHO (sin verificar) | Código listo; la pantalla de color no se revisó después del cambio. |
+| AH07 | Aviso de 70–90 %: modal con marco rojo que parpadea y cara de dientes apretados; 100 % o más: fuego. Tocar un aviso abre el modal, no solo el toast. | HECHO | Verificado con «Casa: casi en el límite» (😬 y marco rojo). El fuego (100 %) no se vio. |
+| AH08 | Centro de notificaciones: tocar abre el modal directamente; deslizar a izquierda o derecha quita el aviso y se recuerda. | HECHO | Verificado: el aviso «Dólares» se quitó y la campana bajó a 4. |
+| AH09 | Etiquetas visibles en el detalle del movimiento (chips). | HECHO (sin verificar) | Código listo; no abrí un movimiento con etiquetas. |
+| AH10 | Resumen: «Ver subcategorías» / «Ver transacciones» con flecha en cada fila, para saber qué se abre. | HECHO (sin verificar) | Código listo; el iPad usa la misma tabla. |
+| AH11 | Selección de movimientos: Seleccionar junto a Filtros, Off / Todos / Ninguno, acciones por campo (nombre, fecha, tipo, categoría, cuenta), edición general y borrar, con tooltip. | HECHO (parcial) | Verificado: la barra y las acciones aparecen. Ninguna edición masiva se envió: escribe sobre la cuenta QA y requiere tu aprobación. |
+| AH12 | Web: etiquetas sin color con texto blanco sobre violeta; botones de selección en blanco. | HECHO (sin verificar en el navegador) | Compila; no revisé la web visualmente. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

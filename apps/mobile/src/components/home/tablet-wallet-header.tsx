@@ -1,4 +1,5 @@
 import { Text, View, useColorScheme } from 'react-native';
+import { NotificationsBell } from '@/components/notifications-bell';
 
 import { InfoTip, type InfoText } from '@/components/info-tip';
 import { Colors } from '@/constants/theme';
@@ -80,9 +81,10 @@ export function TabletWalletHeader({
   const sorted = [...accounts].sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0));
   return (
     <View className="gap-6 pb-1 pt-2">
-      <Text className="text-center font-inter-thin text-7xl text-gf-text">
-        {name ? `${name} ` : ''}Wallet
-      </Text>
+      <View className="flex-row items-center justify-center gap-4">
+        <Text className="font-inter-thin text-5xl text-gf-text">{name ? `Hola, ${name.split(' ')[0]}` : 'Inicio'}</Text>
+        <NotificationsBell size={44} />
+      </View>
       <View className="flex-row items-stretch gap-4">
         <Panel label="Tus cuentas" info={HERO_INFO.accounts}>
           {sorted.length === 0 ? (

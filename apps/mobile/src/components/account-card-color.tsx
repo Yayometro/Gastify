@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
 import { useDispatch } from 'react-redux';
 
 import { CardPattern } from '@/components/account-card-pattern';
@@ -58,10 +58,29 @@ export function CardColorPicker({ account }: { account: AccountData }) {
   };
 
   const palette = cardPalette(color, [autoFrom, autoTo]);
+  // The colors are a single row until the person asks for all of them: the families take a lot of room.
+  const [expanded, setExpanded] = useState(false);
+  const everyColor = [{ id: DEFAULT_CARD_COLOR, label: 'Automática', stops: [autoFrom, autoTo] }, ...CARD_COLORS];
+  const toggle = (label: string, onPress: () => void) => (
+    <Pressable accessibilityRole="button" onPress={onPress} className="items-center rounded-full py-2.5" style={{ backgroundColor: colors.accentSoft }}>
+      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{label}</Text>
+    </Pressable>
+  );
 
   return (
     <Card title="Color y patrón" info={INFO}>
-      {GROUPS.map((group) => (
+      {!expanded ? (
+        <View className="gap-3">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 2 }}>
+            {everyColor.map((option) => (
+              <Swatch key={option.id} selected={color === option.id} label={option.label} stops={option.stops} onPress={() => save({ cardColor: option.id })} accent={colors.accent} border={colors.border} text={colors.text} />
+            ))}
+          </ScrollView>
+          {toggle(`Ver todos los colores (${everyColor.length}) ›`, () => setExpanded(true))}
+        </View>
+      ) : (
+        <>
+          {GROUPS.map((group) => (
         <View key={group} className="gap-2">
           <Text className="font-inter-medium text-xs uppercase text-gf-text-muted">{group}</Text>
           <View className="flex-row flex-wrap gap-2.5">
@@ -73,7 +92,10 @@ export function CardColorPicker({ account }: { account: AccountData }) {
             ))}
           </View>
         </View>
-      ))}
+          ))}
+          {toggle('Ver menos colores ‹', () => setExpanded(false))}
+        </>
+      )}
 
       <View className="gap-2">
         <Text className="font-inter-medium text-xs uppercase text-gf-text-muted">Patrón</Text>

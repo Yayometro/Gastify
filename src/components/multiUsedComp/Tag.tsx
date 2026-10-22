@@ -22,7 +22,8 @@ function Tag({ tag, size }: TagProps): React.JSX.Element {
   const ownTextColor = readableTextColor(tag.color);
   const colors = tag.color
     ? { backgroundColor: tag.color, color: ownTextColor ?? "var(--gf-text)" }
-    : { backgroundColor: "var(--gf-accent-soft-bg)", color: "var(--gf-accent-soft-text)" };
+    // White on a solid violet: the accent text of the theme is pink on a pink fill and could not be read.
+    : { backgroundColor: "rgba(124, 58, 237, 0.9)", color: "#ffffff" };
   return (
     <div
       className="leading-none rounded-full px-1.5 py-0.5 text-center flex items-center border border-[var(--gf-border)] h-full"
