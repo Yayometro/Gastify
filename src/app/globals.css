@@ -79,8 +79,8 @@ body {
    sloppy see-through one. */
 .gf-loading-overlay {
   background: linear-gradient(160deg, rgba(24, 15, 46, 0.93) 0%, rgba(12, 7, 24, 0.96) 100%);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 :root[data-theme="light"] .gf-loading-overlay {
   background: rgba(244, 242, 250, 0.94);
@@ -96,8 +96,8 @@ body {
    equally-colorful backdrop behind it there for glass to react to. */
 .gf-nav-surface {
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 :root[data-theme="light"] .gf-nav-surface {
@@ -131,8 +131,8 @@ body {
    unchanged from before. */
 .gf-glass-card {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.35);
 }
 :root[data-theme="light"] .gf-glass-card {
@@ -197,14 +197,14 @@ body {
    glass via the blur + soft top highlight. */
 .gf-glass-chip {
   background: linear-gradient(160deg, rgba(20, 10, 40, 0.6) 0%, rgba(8, 4, 18, 0.7) 100%);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 6px 16px -6px rgba(0, 0, 0, 0.5);
 }
 :root[data-theme="light"] .gf-glass-chip {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.55) 100%);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 4px 12px -4px rgba(27, 16, 61, 0.2);
 }
 /* Raised outward 3D shell for tiles whose fill is an arbitrary per-item
@@ -252,8 +252,8 @@ body {
    the "not so dark, still interesting" ask. */
 .gf-glass-row {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
-  backdrop-filter: blur(6px) saturate(140%);
-  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
 }
 .gf-glass-row:hover {
@@ -300,8 +300,8 @@ body {
    surface in the app; no border, same as the rest of that language. */
 .gf-glass-warning {
   background: linear-gradient(160deg, rgba(245, 158, 11, 0.32) 0%, rgba(245, 158, 11, 0.16) 100%);
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
 }
 .gf-glass-warning:hover {
@@ -318,8 +318,8 @@ body {
 }
 .gf-glass-success {
   background: linear-gradient(160deg, rgba(16, 185, 129, 0.32) 0%, rgba(16, 185, 129, 0.16) 100%);
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
 }
 .gf-glass-success:hover {
@@ -336,8 +336,8 @@ body {
 }
 .gf-glass-info {
   background: linear-gradient(160deg, rgba(59, 130, 246, 0.32) 0%, rgba(59, 130, 246, 0.16) 100%);
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
 }
 .gf-glass-info:hover {
@@ -400,8 +400,8 @@ body {
      button while plain HTML <button>s using this same class kept it,
      reading as two different button styles side by side. */
   background: linear-gradient(160deg, rgba(168, 85, 247, 0.95) 0%, rgba(126, 34, 206, 0.95) 100%) !important;
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 16px -6px rgba(0, 0, 0, 0.5) !important;
   transition: filter 150ms ease, box-shadow 150ms ease;
 }
@@ -435,8 +435,8 @@ body {
   justify-content: center;
   border-radius: 9999px;
   background: linear-gradient(160deg, rgba(192, 132, 252, 0.95) 0%, rgba(168, 85, 247, 0.95) 55%, rgba(126, 34, 206, 0.95) 100%);
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 6px 16px -4px rgba(126, 34, 206, 0.6);
   color: #fff;
   cursor: pointer;
@@ -459,8 +459,8 @@ body {
    confirmation dialogs. */
 .gf-glass-button-danger {
   background: linear-gradient(160deg, rgba(248, 113, 113, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%) !important;
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 16px -6px rgba(0, 0, 0, 0.5) !important;
   transition: filter 150ms ease, box-shadow 150ms ease;
 }
@@ -481,8 +481,8 @@ body {
    raised surface with an explicit hover so it isn't a dead flat fill. */
 .gf-glass-button-neutral {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%) !important;
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 6px 16px -6px rgba(0, 0, 0, 0.4) !important;
   transition: background 150ms ease;
 }
@@ -505,8 +505,8 @@ body {
    continuous surface instead of stacked flat-purple blocks. */
 .gf-glass-violet {
   background: linear-gradient(165deg, rgba(147, 51, 234, 0.55) 0%, rgba(76, 29, 149, 0.65) 55%, rgba(46, 16, 101, 0.75) 100%);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16), 0 20px 60px -20px rgba(0, 0, 0, 0.6);
 }
 :root[data-theme="light"] .gf-glass-violet {
@@ -527,8 +527,8 @@ body {
    introducing a shade seam. */
 .gf-glass-violet-flat {
   background: rgba(88, 28, 135, 0.82);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
 }
 :root[data-theme="light"] .gf-glass-violet-flat {
@@ -543,8 +543,8 @@ body {
    other glass surface instead of a flat opaque fill. */
 .gf-glass-black {
   background: linear-gradient(165deg, rgba(20, 14, 36, 0.82) 0%, rgba(6, 4, 14, 0.9) 100%);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 20px 60px -20px rgba(0, 0, 0, 0.75);
 }
 :root[data-theme="light"] .gf-glass-black {
@@ -559,8 +559,8 @@ body {
    every other glass surface has instead of a flat opaque box. */
 .gf-antd-modal-glass .ant-modal-content {
   background: linear-gradient(165deg, rgba(20, 14, 36, 0.88) 0%, rgba(6, 4, 14, 0.94) 100%) !important;
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 20px 60px -20px rgba(0, 0, 0, 0.75) !important;
 }
 /* antd's .ant-modal-header paints its own flat solid colorBgElevated fill
@@ -881,8 +881,8 @@ body {
    fully covered by a flat panel. */
 .login-componnt-cont{
   background: linear-gradient(165deg, rgba(94, 20, 90, 0.6) 0%, rgba(20, 11, 38, 0.88) 100%);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 16px 40px -12px rgba(0, 0, 0, 0.65);
 }
 .modal-gradient{
