@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Animated, StyleSheet, View, useColorScheme } from 'react-native';
-import Svg, { Defs, RadialGradient, Rect, Stop, Circle } from 'react-native-svg';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
+
+import { Figure, type FigureKind } from '@/components/ambient-figures';
 
 import { ambientScrollY } from '@/lib/ambient-scroll';
 
@@ -47,15 +49,16 @@ const LAYERS: { from: number; to: number; blobs: Blob[] }[] = [
   },
 ];
 
-// Figures that drift behind the page, each slower than the page itself (a parallax): soft glows and thin rings.
-// `top` is where it starts on the screen, in points; `speed` is the share of the scroll it travels.
-const SHAPES: { glow?: string; ring?: boolean; left: string; top: number; size: number; speed: number; opacity: number }[] = [
-  { glow: '#c084fc', left: '70%', top: 120, size: 240, speed: 0.12, opacity: 0.26 },
-  { ring: true, left: '-8%', top: 360, size: 170, speed: 0.22, opacity: 0.2 },
-  { glow: '#f472b6', left: '6%', top: 780, size: 200, speed: 0.08, opacity: 0.2 },
-  { ring: true, left: '76%', top: 1180, size: 120, speed: 0.18, opacity: 0.2 },
-  { glow: '#818cf8', left: '58%', top: 1600, size: 300, speed: 0.1, opacity: 0.22 },
-  { ring: true, left: '12%', top: 2120, size: 150, speed: 0.2, opacity: 0.18 },
+// Figures that drift behind the page, each slower than the page itself (a parallax). `top` is where it starts on the
+// screen, in points; `speed` is the share of the scroll it travels.
+const SHAPES: { kind: FigureKind; left: string; top: number; size: number; speed: number; opacity: number }[] = [
+  { kind: 'waves', left: '-6%', top: 90, size: 460, speed: 0.1, opacity: 0.5 },
+  { kind: 'dots', left: '62%', top: 300, size: 220, speed: 0.18, opacity: 0.4 },
+  { kind: 'rings', left: '-14%', top: 640, size: 300, speed: 0.14, opacity: 0.45 },
+  { kind: 'hatch', left: '30%', top: 980, size: 420, speed: 0.08, opacity: 0.32 },
+  { kind: 'waves', left: '40%', top: 1420, size: 460, speed: 0.12, opacity: 0.45 },
+  { kind: 'dots', left: '-4%', top: 1800, size: 240, speed: 0.2, opacity: 0.38 },
+  { kind: 'rings', left: '60%', top: 2200, size: 280, speed: 0.1, opacity: 0.42 },
 ];
 
 export const DARK_BASE = '#140b26';
@@ -122,8 +125,6 @@ export function AmbientBackground({ baseOpacity = 1 }: { baseOpacity?: number } 
             position: 'absolute',
             left: shape.left as `${number}%`,
             top: shape.top,
-            width: shape.size,
-            height: shape.size,
             opacity: shape.opacity,
             transform: [
               {
@@ -131,19 +132,7 @@ export function AmbientBackground({ baseOpacity = 1 }: { baseOpacity?: number } 
               },
             ],
           }}>
-          {shape.ring ? (
-            <View style={{ flex: 1, borderRadius: shape.size / 2, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)' }} />
-          ) : (
-            <Svg width={shape.size} height={shape.size}>
-              <Defs>
-                <RadialGradient id={`shape-${index}`} cx="50%" cy="50%" r="50%">
-                  <Stop offset="0" stopColor={shape.glow} stopOpacity={1} />
-                  <Stop offset="1" stopColor={shape.glow} stopOpacity={0} />
-                </RadialGradient>
-              </Defs>
-              <Circle cx={shape.size / 2} cy={shape.size / 2} r={shape.size / 2} fill={`url(#shape-${index})`} />
-            </Svg>
-          )}
+          <Figure kind={shape.kind} size={shape.size} id={`fig-${index}`} />
         </Animated.View>
       ))}
     </View>

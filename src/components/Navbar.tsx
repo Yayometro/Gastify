@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import type { auth } from "@/lib/auth/betterAuth";
 import Link from "next/link";
 import Image from "next/image";
@@ -38,6 +39,10 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
   const [toggleNav, setToggleNav] = useState<boolean>(false);
   const [isAddTrans, setIsAddTrans] = useState<boolean>(false);
   const { mode, toggleMode } = useThemeMode();
+  const pathname = usePathname();
+  // The page the person is on: its icon gets the capsule (the same one the iPad's side bar uses).
+  const isActive = (href: string): boolean => (href === "/dashboard" ? pathname === "/dashboard" : pathname === href || pathname.startsWith(`${href}/`));
+  const navItemClass = (href: string): string => `gf-nav-item ${isActive(href) ? "gf-nav-active" : ""}`;
   const handleToggleNav = (): void => {
     setToggleNav(!toggleNav);
   };
@@ -71,32 +76,32 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             <p className="hidden hoverTooltip">Profile</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/movements">
+        <li className={navItemClass("/dashboard/movements")}>
+          <Link href="/dashboard/movements" aria-current={isActive("/dashboard/movements") ? "page" : undefined}>
             <FaMoneyBillTransfer size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Movements</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard">
+        <li className={navItemClass("/dashboard")}>
+          <Link href="/dashboard" aria-current={isActive("/dashboard") ? "page" : undefined}>
             <FaWallet size={27} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Wallet</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/budgets">
+        <li className={navItemClass("/dashboard/budgets")}>
+          <Link href="/dashboard/budgets" aria-current={isActive("/dashboard/budgets") ? "page" : undefined}>
             <MdSavings size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Budgets</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/projections">
+        <li className={navItemClass("/dashboard/projections")}>
+          <Link href="/dashboard/projections" aria-current={isActive("/dashboard/projections") ? "page" : undefined}>
             <MdAutoGraph size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Projections</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/analyzer">
+        <li className={navItemClass("/dashboard/analyzer")}>
+          <Link href="/dashboard/analyzer" aria-current={isActive("/dashboard/analyzer") ? "page" : undefined}>
             <FaMagnifyingGlassChart size={27} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Wallet Analyzer</p>
           </Link>
@@ -112,26 +117,26 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
               (isAddTrans && <AddTransactionModal  close={toogleAddTrans}/>)
             }
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/accounts">
+        <li className={navItemClass("/dashboard/accounts")}>
+          <Link href="/dashboard/accounts" aria-current={isActive("/dashboard/accounts") ? "page" : undefined}>
             <MdAccountBalance size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Accounts</p>
           </Link>
         </li>
         
-        <li className="micro-pulse">
-          <Link href={`/dashboard/history`}>
+        <li className={navItemClass("/dashboard/history")}>
+          <Link href="/dashboard/history" aria-current={isActive("/dashboard/history") ? "page" : undefined}>
             <FaHistory size={30} className="hidden sm:inline"  />
             <p className="sm:hidden hoverTooltip">History</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/categories">
+        <li className={navItemClass("/dashboard/categories")}>
+          <Link href="/dashboard/categories" aria-current={isActive("/dashboard/categories") ? "page" : undefined}>
             <BiSolidCategory size={30} className="hidden sm:inline" />
             <p className="sm:hidden hoverTooltip">Categories</p>
           </Link>
         </li>
-        <li className="micro-pulse">
+        <li className="gf-nav-item">
           <button onClick={toggleMode} type="button" aria-label="Toggle light/dark mode">
             {mode === "dark" ? (
               <MdLightMode size={26} className="hidden sm:inline" />
@@ -141,7 +146,7 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             <p className="sm:hidden hoverTooltip">{mode === "dark" ? "Light mode" : "Dark mode"}</p>
           </button>
         </li>
-        <li className="micro-pulse">
+        <li className="gf-nav-item">
           <NotificationsBell />
         </li>
       </ul>

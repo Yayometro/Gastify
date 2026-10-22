@@ -95,6 +95,21 @@ export function ToolsFab() {
   const last = useRef({ x: 0, y: 0 });
   const dragStart = useRef({ x: 0, y: 0 });
   const dragging = useRef(false);
+  // Alive: it pops in with a bounce, wiggles now and then, swells when picked up and rebounds when let go.
+  const scale = useRef(new Animated.Value(0)).current;
+  const wiggle = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(scale, { toValue: 1, friction: 4, tension: 110, useNativeDriver: true }).start();
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.delay(4200),
+        ...[1, -1, 0.7, -0.7, 0.35, 0].map((value) => Animated.timing(wiggle, { toValue: value, duration: 90, useNativeDriver: true })),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [scale, wiggle]);
 
   useEffect(() => {
     SecureStore.getItemAsync(SPOT_KEY).then((raw) => {
@@ -118,28 +133,31 @@ export function ToolsFab() {
         onPanResponderGrant: () => {
           dragging.current = true;
           dragStart.current = last.current;
+          Animated.spring(scale, { toValue: 1.2, friction: 5, tension: 180, useNativeDriver: true }).start();
         },
         onPanResponderMove: (_, gesture) => {
           pos.setValue({ x: dragStart.current.x + gesture.dx, y: dragStart.current.y + gesture.dy });
         },
         onPanResponderRelease: (_, gesture) => {
           dragging.current = false;
+          Animated.spring(scale, { toValue: 1, friction: 3, tension: 150, useNativeDriver: true }).start();
           if (Math.abs(gesture.dx) + Math.abs(gesture.dy) <= 6) {
             setOpen(true);
             return;
           }
           const next = snapOf(dragStart.current.x + gesture.dx, dragStart.current.y + gesture.dy, bounds);
           last.current = { x: next.x, y: next.y };
-          Animated.spring(pos, { toValue: { x: next.x, y: next.y }, useNativeDriver: true, friction: 9, tension: 90 }).start();
+          Animated.spring(pos, { toValue: { x: next.x, y: next.y }, useNativeDriver: true, friction: 6, tension: 70 }).start();
           setSpot(next.spot);
           SecureStore.setItemAsync(SPOT_KEY, JSON.stringify(next.spot)).catch(() => {});
         },
         onPanResponderTerminate: () => {
           dragging.current = false;
+          Animated.spring(scale, { toValue: 1, friction: 3, tension: 150, useNativeDriver: true }).start();
           pos.setValue(last.current);
         },
       }),
-    [bounds, pos]
+    [bounds, pos, scale]
   );
 
   return (
@@ -154,9 +172,11 @@ export function ToolsFab() {
           { position: 'absolute', left: 0, top: 0, width: SIZE, height: SIZE, zIndex: 50, transform: pos.getTranslateTransform() },
           Platform.select({ ios: { shadowColor: '#7e22ce', shadowOpacity: 0.5, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }, default: { elevation: 8 } }),
         ]}>
-        <LinearGradient colors={['#e879f9', '#9333ea']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ flex: 1, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="sparkles" size={22} color="#ffffff" />
-        </LinearGradient>
+        <Animated.View style={{ flex: 1, transform: [{ scale }, { rotate: wiggle.interpolate({ inputRange: [-1, 1], outputRange: ['-16deg', '16deg'] }) }] }}>
+          <LinearGradient colors={['#e879f9', '#9333ea']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ flex: 1, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="sparkles" size={22} color="#ffffff" />
+          </LinearGradient>
+        </Animated.View>
       </Animated.View>
 
       <ToolsSheet visible={open} onClose={() => setOpen(false)} />

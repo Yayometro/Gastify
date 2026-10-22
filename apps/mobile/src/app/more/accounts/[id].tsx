@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Alert, Animated, Easing, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -82,7 +83,17 @@ export default function EditAccountScreen() {
   };
 
   return (
-    <Screen title={account.name || 'Cuenta'} subtitle={`Moneda: ${account.currency || 'MXN'}`} backLabel={returnTo ? 'Inicio' : 'Cuentas'} onBack={back}>
+    <Screen
+      title={account.name || 'Cuenta'}
+      subtitle={`Moneda: ${account.currency || 'MXN'}`}
+      backLabel={returnTo ? 'Inicio' : 'Cuentas'}
+      onBack={back}
+      headerAction={
+        <Pressable accessibilityRole="button" accessibilityLabel="Editar cuenta" onPress={() => setEditOpen((open) => !open)} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ backgroundColor: colors.accentSoft }}>
+          <Ionicons name={editOpen ? 'close' : 'pencil'} size={16} color={colors.accent} />
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{editOpen ? 'Cerrar' : 'Editar'}</Text>
+        </Pressable>
+      }>
       <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} onEdit={() => setEditOpen((open) => !open)} />
 
       {editOpen ? (

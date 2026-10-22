@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
 
 import { BankBadge } from '@/components/bank-badge';
 import { TextField } from '@/components/ui/text-field';
@@ -7,11 +7,12 @@ import { Colors } from '@/constants/theme';
 import { normalizeText } from '@gastify/core/search/normalizeText';
 import { banksForCountry, type Bank } from '@gastify/core/banks/banks';
 
-// The banks of a country as tiles, the main ones first and the rest below. Tapping the chosen one again clears it (the bank
-// is optional).
+// The banks of a country as small tiles, the main ones first and the rest below. Each group is one row that scrolls sideways,
+// with a button that opens all of its banks at once. Tapping the chosen one again clears it (the bank is optional).
 export function BankPicker({ country, value, onChange }: { country: string; value: string | null; onChange: (id: string | null) => void }) {
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [query, setQuery] = useState('');
+  const [openAll, setOpenAll] = useState<Record<string, boolean>>({});
   const needle = normalizeText(query);
   const found = (bank: Bank) => !needle || normalizeText(`${bank.name} ${bank.short}`).includes(needle);
   const { main: allMain, other: allOther } = banksForCountry(country);
@@ -26,29 +27,40 @@ export function BankPicker({ country, value, onChange }: { country: string; valu
         accessibilityState={{ selected }}
         accessibilityLabel={bank.name}
         onPress={() => onChange(selected ? null : bank.id)}
-        className="items-center gap-1.5 rounded-2xl px-2 py-3"
-        style={{ width: '31%', borderWidth: 1, borderColor: selected ? colors.accent : colors.border, backgroundColor: selected ? colors.accentSoft : 'rgba(255,255,255,0.05)' }}>
-        <BankBadge bankId={bank.id} size={44} />
-        <Text className="text-center font-inter-medium text-xs text-gf-text" numberOfLines={2}>{bank.name}</Text>
+        className="items-center gap-1 rounded-2xl px-1.5 py-2"
+        style={{ width: 74, borderWidth: 1, borderColor: selected ? colors.accent : colors.border, backgroundColor: selected ? colors.accentSoft : 'rgba(255,255,255,0.05)' }}>
+        <BankBadge bankId={bank.id} size={32} />
+        <Text className="text-center font-inter-medium text-[10px] text-gf-text" numberOfLines={2}>{bank.name}</Text>
       </Pressable>
+    );
+  };
+  const group = (key: string, title: string, banks: Bank[]) => {
+    if (banks.length === 0) return null;
+    const expanded = Boolean(openAll[key]) || needle.length > 0;
+    return (
+      <View className="gap-2">
+        <View className="flex-row items-center justify-between">
+          <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{title}</Text>
+          {banks.length > 4 && needle.length === 0 ? (
+            <Pressable accessibilityRole="button" onPress={() => setOpenAll((current) => ({ ...current, [key]: !current[key] }))} hitSlop={8}>
+              <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? 'Ver menos ‹' : `Ver todos (${banks.length}) ›`}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        {expanded ? (
+          <View className="flex-row flex-wrap gap-2">{banks.map(tile)}</View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>{banks.map(tile)}</ScrollView>
+        )}
+      </View>
     );
   };
   return (
     <View className="gap-4">
       <TextField label="Buscar banco" value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder="Por ejemplo, Nu o BBVA" />
       {main.length === 0 && other.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Ningún banco coincide con «{query}».</Text>}
-      {main.length > 0 && (
-        <View className="gap-2">
-          <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">Principales</Text>
-          <View className="flex-row flex-wrap gap-2">{main.map(tile)}</View>
-        </View>
-      )}
-      {other.length > 0 && (
-        <View className="gap-2">
-          <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">Otros bancos y digitales</Text>
-          <View className="flex-row flex-wrap gap-2">{other.map(tile)}</View>
-        </View>
-      )}
+      {group('main', 'Principales', main)}
+      {group('other', 'Otros bancos y digitales', other)}
     </View>
   );
 }

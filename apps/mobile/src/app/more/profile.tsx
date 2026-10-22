@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { authClient } from '@/auth-client';
@@ -130,6 +130,14 @@ export default function ProfileScreen() {
       <ApiTokensCard />
 
       <Text className="font-inter text-sm text-gf-text-muted">La foto de perfil se cambia desde Gastify en la web.</Text>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Cerrar sesión"
+        onPress={() => authClient.signOut()}
+        className="items-center rounded-3xl bg-gf-surface p-4">
+        <Text className="font-inter-semibold text-base text-red-500">Cerrar sesión</Text>
+      </Pressable>
 
       <DeleteAccountCard email={email} twoFactorEnabled={Boolean((session?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled)} />
     </Screen>
