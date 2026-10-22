@@ -52,12 +52,12 @@ const LAYERS: { from: number; to: number; blobs: Blob[] }[] = [
 
 // Figures that drift behind the page, each slower than the page itself (a parallax). `top` is where it starts on the
 // screen, in points; `speed` is the share of the scroll it travels.
-const SHAPES: { kind: FigureKind; left: string; top: number; size: number; speed: number; opacity: number }[] = [
-  { kind: 'dots', left: '66%', top: 260, size: 200, speed: 0.18, opacity: 0.22 },
-  { kind: 'sparks', left: '8%', top: 560, size: 220, speed: 0.12, opacity: 0.3 },
-  { kind: 'dots', left: '-6%', top: 1100, size: 200, speed: 0.2, opacity: 0.2 },
-  { kind: 'sparks', left: '62%', top: 1500, size: 220, speed: 0.1, opacity: 0.28 },
-  { kind: 'dots', left: '58%', top: 2000, size: 200, speed: 0.16, opacity: 0.2 },
+const SHAPES: { kind: FigureKind; color: string; opacity: number; left: string; top: number; size: number; speed: number }[] = [
+  { kind: 'nebula', color: '#581c87', opacity: 0.55, left: '58%', top: 120, size: 340, speed: 0.1 },
+  { kind: 'orb', color: '#a855f7', opacity: 0.4, left: '-12%', top: 520, size: 240, speed: 0.16 },
+  { kind: 'nebula', color: '#3b0764', opacity: 0.6, left: '-10%', top: 1080, size: 380, speed: 0.08 },
+  { kind: 'orb', color: '#6d28d9', opacity: 0.4, left: '62%', top: 1560, size: 230, speed: 0.14 },
+  { kind: 'nebula', color: '#4c1d95', opacity: 0.55, left: '20%', top: 2100, size: 360, speed: 0.1 },
 ];
 
 export const DARK_BASE = '#140b26';
@@ -131,7 +131,7 @@ export function AmbientBackground({ baseOpacity = 1 }: { baseOpacity?: number } 
               },
             ],
           }}>
-          <Figure kind={shape.kind} size={shape.size} id={`fig-${index}`} />
+          <Figure kind={shape.kind} size={shape.size} id={`fig-${index}`} color={shape.color} opacity={shape.opacity} />
         </Animated.View>
       ))}
     </View>
