@@ -53,16 +53,16 @@ const LAYERS: { from: number; to: number; blobs: Blob[] }[] = [
 // Figures that drift behind the page, each slower than the page itself (a parallax). `top` is where it starts on the
 // screen, in points; `speed` is the share of the scroll it travels.
 const SHAPES: { kind: FigureKind; color: string; opacity: number; left: string; top: number; size: number; speed: number }[] = [
-  { kind: 'circle', color: '#7e22ce', opacity: 0.5, left: '-6%', top: 140, size: 230, speed: 0.12 },
-  { kind: 'circle', color: '#c026d3', opacity: 0.5, left: '70%', top: 380, size: 160, speed: 0.18 },
-  { kind: 'circle', color: '#4c1d95', opacity: 0.5, left: '12%', top: 620, size: 280, speed: 0.1 },
-  { kind: 'circle', color: '#a21caf', opacity: 0.5, left: '64%', top: 900, size: 120, speed: 0.22 },
-  { kind: 'circle', color: '#6d28d9', opacity: 0.5, left: '-10%', top: 1180, size: 260, speed: 0.14 },
-  { kind: 'circle', color: '#e879f9', opacity: 0.5, left: '72%', top: 1460, size: 190, speed: 0.16 },
-  { kind: 'circle', color: '#581c87', opacity: 0.5, left: '50%', top: 1760, size: 320, speed: 0.09 },
-  { kind: 'circle', color: '#9333ea', opacity: 0.5, left: '-4%', top: 2040, size: 150, speed: 0.2 },
-  { kind: 'circle', color: '#701a75', opacity: 0.5, left: '68%', top: 2300, size: 240, speed: 0.12 },
-  { kind: 'circle', color: '#7c3aed', opacity: 0.5, left: '20%', top: 2600, size: 180, speed: 0.18 },
+  { kind: 'circle', color: '#7e22ce', opacity: 0.1, left: '-6%', top: 140, size: 230, speed: 0.12 },
+  { kind: 'circle', color: '#c026d3', opacity: 0.1, left: '70%', top: 380, size: 160, speed: 0.18 },
+  { kind: 'circle', color: '#4c1d95', opacity: 0.1, left: '12%', top: 620, size: 280, speed: 0.1 },
+  { kind: 'circle', color: '#a21caf', opacity: 0.1, left: '64%', top: 900, size: 120, speed: 0.22 },
+  { kind: 'circle', color: '#6d28d9', opacity: 0.1, left: '-10%', top: 1180, size: 260, speed: 0.14 },
+  { kind: 'circle', color: '#e879f9', opacity: 0.1, left: '72%', top: 1460, size: 190, speed: 0.16 },
+  { kind: 'circle', color: '#581c87', opacity: 0.1, left: '50%', top: 1760, size: 320, speed: 0.09 },
+  { kind: 'circle', color: '#9333ea', opacity: 0.1, left: '-4%', top: 2040, size: 150, speed: 0.2 },
+  { kind: 'circle', color: '#701a75', opacity: 0.1, left: '68%', top: 2300, size: 240, speed: 0.12 },
+  { kind: 'circle', color: '#7c3aed', opacity: 0.1, left: '20%', top: 2600, size: 180, speed: 0.18 },
 ];
 
 export const DARK_BASE = '#140b26';
