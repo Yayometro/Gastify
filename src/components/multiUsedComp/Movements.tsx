@@ -859,7 +859,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         </div>
       ) : (
         <div className={`table-container w-full h-full relative px-1 ${embedded ? "overflow-y-auto" : "overflow-y-scroll max-h-[1000px]"}`}>
-          <div className={embedded ? "text-gf-text px-1 py-2 mb-1" : "gf-glass-card text-gf-text sticky z-50 top-0 px-1 py-2 mb-1 rounded-t-2xl"}>
+          <div className={embedded ? "text-gf-text px-1 py-2 mb-1" : "gf-glass-frost text-gf-text sticky z-50 top-0 px-1 py-2 mb-1 rounded-t-2xl"}>
             <div className="movement-content">
               <div className="flex items-center justify-center gap-2">
                 <h1 className="movement-title text-2xl text-center font-bold">
