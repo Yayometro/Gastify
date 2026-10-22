@@ -65,17 +65,19 @@ function TabsToggler({
 
   return (
     <div className="rtt-cont w-full h-full mt-1">
-      <div className="tabs-toggler w-full text-center flex justify-center items-center gap-2 gf-tab-bar-accent rounded-md mb-3">
+      <div className="tabs-toggler mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 overflow-x-auto rounded-full gf-glass-inset p-1">
         {!tabs || tabs.length <= 0
           ? "No tabs in array, set at least one... "
           : tabs.map((tab) => (
               <div
                 key={"tabsToggler-" + tab}
                 onClick={() => handleTab(tab)}
-                className={`tab-rtt-bill p-4 cursor-pointer hover:text-purple-300 ${
+                role="tab"
+                aria-selected={active === tab.toLowerCase()}
+                className={`flex shrink-0 cursor-pointer items-center whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
                   active === tab.toLowerCase()
-                    ? "border-b-2 border-purple-600 text-purple-600 "
-                    : ""
+                    ? "gf-glass-button text-white"
+                    : "text-purple-200/80 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 <span className="inline-flex items-center gap-1">

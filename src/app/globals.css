@@ -130,10 +130,10 @@ body {
    one visual language. Light mode falls back to the plain gf-surface fill,
    unchanged from before. */
 .gf-glass-card {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.35);
+  /* The phone's card: a translucent wash over the mesh, a hairline border and a soft top highlight. No blur (the phone only
+     blurs the bars and the side), so the mesh reads the same on both. */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 24px -8px rgba(0, 0, 0, 0.35);
 }
 :root[data-theme="light"] .gf-glass-card {
   background: var(--gf-surface);
