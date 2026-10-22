@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { Spin, Tooltip, Skeleton } from "antd";
@@ -387,6 +389,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                   <div className="ac-TransactionsDetails w-full h-full mt-10">
                     <h1 className=" font-bold text-2xl sm:text-3xl">
                       Account movements details
+                      <InfoTip info={APP_INFO.movimientos_de_la_cuenta} />
                     </h1>
                     <div className="filters flex flex-col justify-center items-center mb-2">
                       <span className="text-xs">

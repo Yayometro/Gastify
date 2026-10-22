@@ -876,6 +876,7 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
                   onClick={handeTransSelection}
                 >
                   <p className="pr-2">Select {isSelectionMode ? "ON" : ""}</p>
+                  <InfoTip info={APP_INFO.seleccionar_movimientos} />
                   <HiMiniCursorArrowRipple size={15} />
                 </div>
                 <Tooltip title="Filter by date using a preset range or a specific range 🤓">

@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import TabsToggler, { type TabsTogglerComponentItem } from "../../TabsComponents/TabsToggler";
 import { Skeleton } from "antd";
 import PeriodFiltersWithCompare from "../../periodFiltersWithCompare/PeriodFiltersWithCompare";
@@ -46,7 +48,7 @@ function HistoricalComparativeCategoriesView({
 }: HistoricalComparativeCategoriesViewProps): React.JSX.Element {
   return (
     <div className="w-full h-full">
-      {title || <h1 className=" text-3xl text-purple-300">Categories comparative</h1>}
+      {title || <div className="flex items-center gap-2"><h1 className=" text-3xl text-purple-300">Categories comparative</h1><InfoTip info={APP_INFO.gastos_por_categor_a} /></div>}
       <PeriodFiltersWithCompare
         timePeriod={timePeriod}
         getValueFromSelecter={getValueFromSelecter}

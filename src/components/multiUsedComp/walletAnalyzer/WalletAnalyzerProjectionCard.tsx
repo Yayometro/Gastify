@@ -3,6 +3,8 @@ import React from "react";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import ProjectionVarianceCell from "../Projections/ProjectionVarianceCell";
 import type { ProjectionComparisonData } from "./WalletAnalyzerView";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 // Typed bridge for unmigrated ProjectionVarianceCell
 interface ProjectionVarianceCellProps {
@@ -36,7 +38,7 @@ function WalletAnalyzerProjectionCard({ comparison, walletPrimaryCurrency }: Wal
 
   return (
     <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-      <p className="text-[15px] font-extrabold text-gf-text mb-0.5">Proyectado vs. Real</p>
+      <div className="mb-0.5 flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Proyectado vs. Real</p><InfoTip info={APP_INFO.proyecci_n_del_mes} /></div>
       <p className="text-xs text-gf-text-muted mb-4">
         {isInProgress
           ? "Este mes sigue en curso - comparado contra lo esperado hasta ahora."

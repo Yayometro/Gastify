@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { Skeleton, Tooltip } from "antd";
 import SelecterFilter, { type SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
@@ -34,7 +36,7 @@ function HistoricalBudgetsComparativeView({
 }: HistoricalBudgetsComparativeViewProps): React.JSX.Element {
   return (
     <div className="w-full h-full">
-      <h1 className="text-3xl text-purple-300">Budgets comparative</h1>
+      <div className="flex items-center gap-2"><h1 className="text-3xl text-purple-300">Budgets comparative</h1><InfoTip info={APP_INFO.presupuestos_del_periodo} /></div>
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs">
           From:{" "}

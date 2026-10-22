@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./multiUsedComp/EmptyModule";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
@@ -273,7 +275,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                   </div>
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">Password:</p>
+                  <div className="flex items-center gap-1"><p className="text-[11px]">Password:</p><InfoTip info={APP_INFO.acceso} /></div>
                   <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
                     <p className="text-lg font-light truncate text-left">
                       ***********
@@ -382,7 +384,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                     <div
                       className={` w-full cpc-name flex flex-col justify-center items-start gap-1 cursor-not-allowed`}
                     >
-                      <p className="text-[11px]">Password:</p>
+                      <div className="flex items-center gap-1"><p className="text-[11px]">Password:</p><InfoTip info={APP_INFO.acceso} /></div>
                       <input
                         className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
                         type="text"

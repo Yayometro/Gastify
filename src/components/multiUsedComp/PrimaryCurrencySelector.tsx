@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useDispatch } from "react-redux";
 import { Spin, Tooltip } from "antd";
 import fetcher from "@/helpers/fetcher";
@@ -54,6 +56,7 @@ function PrimaryCurrencySelector({ pcsWallet }: PrimaryCurrencySelectorProps): R
     <Tooltip title="Wallet reports and totals are displayed in this currency. It does not change how each Account's own balance is stored.">
       <div className="pcs-container flex items-center gap-1 text-[10px] font-light bg-gf-surface-2 text-gf-text rounded-2xl px-[8px] py-[2px] sm:text-xs">
         <span className="whitespace-nowrap">Primary currency:</span>
+        <InfoTip info={APP_INFO.moneda_principal} />
         {isSaving ? (
           <Spin size="small" />
         ) : (

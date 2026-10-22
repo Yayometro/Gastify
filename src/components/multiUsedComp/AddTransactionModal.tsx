@@ -6,7 +6,6 @@ import { useSelector } from "react-redux";
 import {
   IoAirplaneOutline,
   IoArrowDownCircleOutline,
-  IoArrowUpCircleOutline,
   IoCashOutline,
   IoDocumentAttachOutline,
   IoPieChartOutline,
@@ -95,7 +94,7 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
     const key = `${active}-${round}`;
     switch (active) {
       case "expense":
-        return <AddTransactionComp key={key} onCreated={again} />;
+        return <AddTransactionComp key={key} onCreated={again} inline />;
       case "transfer":
         return <TransferExchangeModal key={key} />;
       case "account":

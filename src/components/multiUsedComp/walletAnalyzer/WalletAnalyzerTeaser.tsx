@@ -9,6 +9,8 @@ import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurren
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { WalletAnalyzerSnapshotData } from "./WalletAnalyzerView";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 const EMPTY_ARRAY: never[] = [];
 
@@ -63,7 +65,7 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
       />
       <p className="text-xs text-gf-text mt-3">
         Hay mucho más por descubrir sobre tus gastos este mes 👀 — tendencias, presupuestos, suscripciones y patrones de
-        gasto te esperan en el análisis completo.
+        gasto te esperan en el análisis completo. <InfoTip info={APP_INFO.an_lisis_del_periodo} />
       </p>
       <button
         type="button"

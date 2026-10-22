@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import TabsTrans from "./TabsTrans";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
@@ -78,9 +80,12 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
 
   return (
     <div className="rtt-cont gf-glass-card w-full h-full rounded-[32px] p-4">
-      <h1 className="text-2xl text-center font-semibold pt-3">
-        Transactions Resume
-      </h1>
+      <div className="flex items-center justify-center gap-1.5 pt-3">
+        <h1 className="text-2xl text-center font-semibold">
+          Transactions Resume
+        </h1>
+        <InfoTip info={APP_INFO.resumen_de_transacciones} />
+      </div>
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs">
           From:{" "}

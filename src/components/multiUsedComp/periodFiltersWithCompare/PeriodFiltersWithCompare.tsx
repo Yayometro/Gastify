@@ -3,6 +3,8 @@
 import React from "react";
 import { Tooltip } from "antd";
 import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
@@ -92,6 +94,7 @@ function PeriodFiltersWithCompare({
             <b>{!timePeriod?.[1] ? "No time selected" : getDateInYearMonthDay(timePeriod[1])}</b>
           </span>
           <div className="flex items-center justify-center flex-wrap gap-2">
+            <InfoTip info={APP_INFO.periodo} />
             <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
               <div className="text-gf-text w-[10px]">
                 <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />

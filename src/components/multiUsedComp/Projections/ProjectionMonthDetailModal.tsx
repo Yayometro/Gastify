@@ -21,6 +21,8 @@ import CurrencyBreakdownChips, {
   type CurrencyBreakdownData,
 } from "../CurrencyBreakdownChips";
 import type { ProjectionTableRow } from "@/hooks/useProjectionTable";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 
 export interface BucketBreakdownItem {
@@ -180,6 +182,7 @@ function ProjectionMonthDetailModal({
           </div>
           <h1 className="text-2xl text-purple-300 capitalize mb-1 flex items-center">
             <span>{monthRow.monthName} {monthRow.year}</span>
+            <InfoTip info={APP_INFO.c_mo_leer_este_mes} />
             <QuestionTooltip title="Closed months show your real transactions. Future months are a pure estimate built from your active Budgets (expenses) and Income Sources (income). The current month blends both: it starts as an estimate and fills in with real numbers as the month happens. Use 'See transactions' to view the actual movements behind these numbers, and the buffers below to manually account for money that isn't tied to any Budget or Income Source." />
           </h1>
           <p className="text-xs text-gf-text-muted mb-4">
@@ -292,6 +295,7 @@ function ProjectionMonthDetailModal({
               <div className="w-full">
                 <p className="label-tfp flex items-center mb-1">
                   <span>Set actual balance for this month</span>
+                  <InfoTip info={APP_INFO.saldo_real_del_mes} />
                   <QuestionTooltip title="The app can't compute past balances automatically. If you know what your real account balance was at the end of this month, record it here." />
                 </p>
                 <div className="flex items-center gap-2 w-full">
@@ -319,6 +323,7 @@ function ProjectionMonthDetailModal({
               <div className="w-full">
                 <p className="label-tfp flex items-center mb-1">
                   <span>Unexpected expense buffer</span>
+                  <InfoTip info={APP_INFO.tope_de_gasto_inesperado} />
                   <QuestionTooltip title="A manual amount added to your expense estimate, for spending that doesn't have its own Budget." />
                 </p>
                 <input
@@ -332,6 +337,7 @@ function ProjectionMonthDetailModal({
               <div className="w-full">
                 <p className="label-tfp flex items-center mb-1">
                   <span>Unexpected income buffer</span>
+                  <InfoTip info={APP_INFO.tope_de_ingreso_inesperado} />
                   <QuestionTooltip title="A manual amount added to your income estimate, for money coming in that isn't tied to a recurring Income Source." />
                 </p>
                 <input

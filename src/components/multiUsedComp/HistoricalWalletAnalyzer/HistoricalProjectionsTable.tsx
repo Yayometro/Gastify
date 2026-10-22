@@ -6,6 +6,8 @@ import useGetUserSession from "@/hooks/useGetUserSession";
 import useProjectionTable from "@/hooks/useProjectionTable";
 import { getYearEndBalance } from "@/helpers/transformers/projectionsChange";
 import ProjectionsView from "../Projections/ProjectionsView";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import PeriodFiltersWithCompare from "../periodFiltersWithCompare/PeriodFiltersWithCompare";
 import type { PeriodStateProps } from "./HistoricalWalletAnalyzer";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
@@ -144,7 +146,7 @@ function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableP
 
   return (
     <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-      <p className="text-[15px] font-extrabold text-gf-text text-center">Proyecciones</p>
+      <div className="flex items-center justify-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text text-center">Proyecciones</p><InfoTip info={APP_INFO.mes_a_mes} /></div>
       <div className="flex justify-center mb-3">
         <TypedPeriodFiltersWithCompare
           timePeriod={timePeriod}

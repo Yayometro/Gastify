@@ -529,7 +529,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
 
   const comparisonPanel = loading || !periodReady ? panelSkeleton("Vs. mes anterior") : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
-      <span className="text-white/70 text-[10px] uppercase tracking-wide">Vs. mes anterior</span>
+      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">Vs. mes anterior</span><InfoTip info={APP_INFO.vs_el_mes_anterior} /></span>
       {renderDeltaRow("Ingresos", totalIncome, prevTotalIncome, INCOME_COLOR)}
       {renderDeltaRow("Gastos", totalBill, prevTotalBill, EXPENSE_COLOR)}
       {renderDeltaRow("Balance", totalAmountBalance, prevTotalIncome - prevTotalBill, BALANCE_COLOR)}

@@ -10,6 +10,8 @@ import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import UniversalCategoIcon from "../UniversalCategoIcon";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import WalletAnalyzerTrendChart from "./WalletAnalyzerTrendChart";
 import WalletAnalyzerWeekdayChart from "./WalletAnalyzerWeekdayChart";
 import InsightDetailModal from "./InsightDetailModal";
@@ -161,6 +163,8 @@ export interface WalletAnalyzerMonthlyAverages {
   avgIncome: number;
   avgExpense: number;
   avgTransactionCount: number;
+  // The months the averages cover (the trend: the chosen month and the ones before it).
+  monthsCount?: number;
   [key: string]: unknown;
 }
 
@@ -728,7 +732,7 @@ function WalletAnalyzerView({
 
         {/* Trend */}
         <div className="md:col-span-3 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Tendencia · 6 meses</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Tendencia · 6 meses</p><InfoTip info={APP_INFO.tendencia_2} /></div>
           <p className="text-xs text-gf-text-muted mb-3">Ingresos vs. gastos por mes — pasa el cursor o toca un mes para ver el detalle</p>
           <div
             onClick={() =>
@@ -756,7 +760,7 @@ function WalletAnalyzerView({
             className="grid grid-cols-3 gap-3 mb-4 cursor-pointer group"
           >
             <div className="rounded-xl bg-green-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">Promedio mensual · Ingresos</p>
+              <div className="flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">Promedio mensual · Ingresos</p><InfoTip info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount ?? 6)} /></div>
               <p className="text-lg font-extrabold text-green-400">{formatMoneyMajor(monthlyAverages.avgIncome, walletPrimaryCurrency)}</p>
             </div>
             <div className="rounded-xl bg-red-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
@@ -780,7 +784,7 @@ function WalletAnalyzerView({
 
       {/* Item-count control - governs both Top categories and Top transactions below */}
       <div className="flex items-center justify-between px-1 flex-wrap gap-2">
-        <p className="text-xs font-semibold text-gf-text-muted">Elementos en Top categorías y Top transacciones</p>
+        <div className="flex items-center gap-1.5"><p className="text-xs font-semibold text-gf-text-muted">Elementos en Top categorías y Top transacciones</p><InfoTip info={APP_INFO.analyzer(topN)} /></div>
         <div className="flex items-center gap-1 bg-gf-surface border border-gf-border rounded-full p-1 shadow-sm">
           {[3, 6, 12, 24].map((n) => (
             <button
@@ -877,8 +881,8 @@ function WalletAnalyzerView({
 
       {/* Budgets */}
       <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-        <p className="text-[15px] font-extrabold text-gf-text">Presupuestos · cumplimiento y rachas</p>
-        <p className="text-xs text-gf-text-muted mb-3">Qué tan cerca estuviste de tus límites mensuales — toca una fila para ver el detalle</p>
+        <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Presupuestos · cumplimiento y rachas</p><InfoTip info={APP_INFO.presupuestos_del_analizador} /></div>
+        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">Qué tan cerca estuviste de tus límites mensuales — toca una fila para ver el detalle</p><InfoTip info={APP_INFO.cumplimiento_del_presupuesto} className="mt-px" /></div>
         {budgetRows.length === 0 ? (
           <p className="text-xs text-gf-text-muted">No tienes presupuestos de gasto configurados.</p>
         ) : (
@@ -933,7 +937,7 @@ function WalletAnalyzerView({
       {/* Biggest spend patterns */}
       {biggestSpendPatterns && (
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Grandes gastos · últimos {biggestSpendPatterns.monthsBack} meses</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Grandes gastos · últimos {biggestSpendPatterns.monthsBack} meses</p><InfoTip info={APP_INFO.grandes_gastos_2} /></div>
           <p className="text-xs text-gf-text-muted mb-3">Dónde está tu gasto más grande, y si hay un patrón detrás</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
             <div
@@ -992,7 +996,7 @@ function WalletAnalyzerView({
           <p className="text-[11px] text-gf-text-muted -mt-2 mb-2">Toca una tarjeta para ver el detalle mes por mes</p>
 
           <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300 mb-1.5">Análisis</p>
+            <div className="mb-1.5 flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-purple-300">Análisis</p><InfoTip info={APP_INFO.de_d_nde_sale_este_an_lisis} /></div>
             <ul className="list-disc pl-4 space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
               {buildSpendPatternAnalysis(biggestSpendPatterns).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
@@ -1005,8 +1009,8 @@ function WalletAnalyzerView({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Subscriptions */}
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p>
-          <p className="text-xs text-gf-text-muted mb-3">Detectadas por nombre y frecuencia mensual</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p><InfoTip info={APP_INFO.suscripciones_recurrentes} /></div>
+          <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">Detectadas por nombre y frecuencia mensual</p><InfoTip info={APP_INFO.pagos_recurrentes} className="mt-px" /></div>
           {subscriptions.length === 0 ? (
             <p className="text-xs text-gf-text-muted">No se detectaron suscripciones recurrentes.</p>
           ) : (
@@ -1048,7 +1052,7 @@ function WalletAnalyzerView({
 
         {/* FX exposure */}
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Exposición multi-moneda</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Exposición multi-moneda</p><InfoTip info={APP_INFO.exposici_n_multimoneda} /></div>
           <p className="text-xs text-gf-text-muted mb-3">Valor de tus saldos en otras monedas</p>
           {fxExposure.loading ? (
             <p className="text-xs text-gf-text-muted">Consultando tipo de cambio…</p>
@@ -1096,7 +1100,7 @@ function WalletAnalyzerView({
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <p className="text-[15px] font-extrabold text-gf-text">Ritmo de gasto</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Ritmo de gasto</p><InfoTip info={APP_INFO.ritmo_de_gasto} /></div>
           <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
         </div>
         <p className="text-xs text-gf-text-muted mb-3">Comparado con tu propio promedio a esta altura del mes</p>
@@ -1127,10 +1131,10 @@ function WalletAnalyzerView({
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <p className="text-[15px] font-extrabold text-gf-text">Patrones por día de la semana</p>
-          <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Patrones por día de la semana</p><InfoTip info={APP_INFO.patr_n_semanal} /></div>
+  <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
         </div>
-        <p className="text-xs text-gf-text-muted mb-3">Promedio de gasto por día, este mes</p>
+        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">Promedio de gasto por día, este mes</p><InfoTip info={APP_INFO.c_mo_se_calcula} className="mt-px" /></div>
         <WalletAnalyzerWeekdayChart days={weekdaySpending.days} walletPrimaryCurrency={walletPrimaryCurrency} />
         <p className="text-xs text-gf-text-muted mt-3">{weekdaySpending.insight}</p>
       </div>

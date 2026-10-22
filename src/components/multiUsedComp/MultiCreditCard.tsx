@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import "@/components/styles/animations.css";
 import CreditCard from "./CreditCard";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import randomColor from "randomcolor";
 import { Skeleton } from "antd";
 import {
@@ -145,6 +147,7 @@ function MultiCreditCard({
       <div className="header text-center">
         <h1 className="movement-title text-gf-text text-2xl text-center font-bold py-4">
           Accounts resume
+          <InfoTip info={APP_INFO.total} />
         </h1>
       </div>
       <div className="scrollbar-thin flex flex-row pb-6 px-1 overflow-x-scroll">

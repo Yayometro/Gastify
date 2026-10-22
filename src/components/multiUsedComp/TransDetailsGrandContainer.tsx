@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import DisplayerCategoryTreemap from "./DisplayerCategoryTreemap";
 import DisplayerCategoryCirclePacking from "./DisplayerCategoryCirclePacking";
@@ -85,9 +87,12 @@ function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandC
 
   return (
     <div className="tdgc-cont gf-glass-card w-full h-full rounded-[32px] p-4">
-      <h1 className="text-2xl text-center font-semibold pt-5">
-        Category Details
-      </h1>
+      <div className="flex items-center justify-center gap-1.5 pt-5">
+        <h1 className="text-2xl text-center font-semibold">
+          Category Details
+        </h1>
+        <InfoTip info={APP_INFO.detalle_de_la_categor_a} />
+      </div>
       <div className="filters flex flex-col justify-center items-center pt-2">
         <span className="text-xs">
           From:{" "}

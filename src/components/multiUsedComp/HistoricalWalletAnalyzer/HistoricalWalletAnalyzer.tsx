@@ -363,13 +363,14 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           <p className="text-[15px] font-extrabold text-gf-text">
             {labelA} <span className="text-[11px] font-normal text-gf-text-muted">({formatShortDate(currentRange.start)} - {formatShortDate(currentRange.end)})</span>
             {" "}vs. periodo anterior equivalente{" "}
+            <InfoTip info={APP_INFO.vs_el_mes_anterior_2} />
             <span className="text-[11px] font-normal text-gf-text-muted">({formatShortDate(previousRange.start)} - {formatShortDate(previousRange.end)})</span>
           </p>
           <p className="text-xs text-gf-text-muted mb-3">Mismo número de días, justo antes de este periodo</p>
           <table className="w-full text-[13px]">
             <thead>
               <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
-                <th className="text-left font-bold pb-2"></th>
+                <th className="text-left font-bold pb-2"><InfoTip info={APP_INFO.totales} /></th>
                 <th className="text-right font-bold pb-2 text-gf-text-muted">Anterior</th>
                 <th className="text-right font-bold pb-2">{labelA}</th>
                 <th className="text-right font-bold pb-2">Cambio</th>
@@ -393,7 +394,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Balance</td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">Balance <InfoTip info={APP_INFO.resumen_2} /></td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{formatMoneyMajor(previousTotals.balance, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">{formatMoneyMajor(currentTotals.balance, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right border-t border-gf-border">
@@ -401,7 +402,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Tasa de ahorro</td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">Tasa de ahorro <InfoTip info={APP_INFO.datos_del_periodo} /></td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{Math.round(previousTotals.savingsRate * 100)}%</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">{Math.round(currentTotals.savingsRate * 100)}%</td>
                 <td className="py-2 text-right border-t border-gf-border">
@@ -456,7 +457,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
             className="grid grid-cols-3 gap-3 mb-4 cursor-pointer group"
           >
             <div className="rounded-xl bg-green-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">Promedio · Ingresos</p>
+              <div className="flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">Promedio · Ingresos</p><InfoTip info={APP_INFO.promedio_mensual(monthlyAverages.monthsCount ?? 6)} /></div>
               <p className="text-lg font-extrabold text-green-400">{formatMoneyMajor(monthlyAverages.avgIncome, walletPrimaryCurrency)}</p>
             </div>
             <div className="rounded-xl bg-red-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
@@ -498,7 +499,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
       {/* Top categories - previous equivalent period left, current right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías</p>
+          <div className="flex items-center gap-1.5"><p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías</p><InfoTip info={APP_INFO.analyzer(topN)} /></div>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousPeriodLabel}</p>
           {topCategoriesBillsPrevious.length === 0 ? (
             <p className="text-xs text-gf-text-muted">Sin gastos en el periodo anterior.</p>
@@ -569,8 +570,8 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
       {/* Budgets */}
       <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-        <p className="text-[15px] font-extrabold text-gf-text">Presupuestos · cumplimiento y rachas</p>
-        <p className="text-xs text-gf-text-muted mb-3">Qué tan cerca estuviste de tus límites mensuales - toca una fila para ver el detalle</p>
+        <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Presupuestos · cumplimiento y rachas</p><InfoTip info={APP_INFO.c_mo_leer_esto} /></div>
+        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">Qué tan cerca estuviste de tus límites mensuales - toca una fila para ver el detalle</p><InfoTip info={APP_INFO.cumplimiento_del_presupuesto} className="mt-px" /></div>
         {budgetRows.length === 0 ? (
           <p className="text-xs text-gf-text-muted">No tienes presupuestos de gasto configurados.</p>
         ) : (
@@ -664,10 +665,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
               </div>
             )}
           </div>
-          <p className="text-[11px] text-gf-text-muted -mt-2 mb-2">Toca una tarjeta para ver el detalle mes por mes</p>
+          <div className="-mt-2 mb-2 flex items-center gap-1"><p className="text-[11px] text-gf-text-muted">Toca una tarjeta para ver el detalle mes por mes</p><InfoTip info={APP_INFO.mes_a_mes_2} /></div>
 
           <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300 mb-1.5">Análisis</p>
+            <div className="mb-1.5 flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-purple-300">Análisis</p><InfoTip info={APP_INFO.de_d_nde_sale_este_an_lisis} /></div>
             <ul className="space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
               {buildSpendPatternAnalysis(biggestSpendPatterns).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
@@ -685,7 +686,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           single-month window since there'd be nothing to compare. */}
       {monthlyChampions && monthlyChampions.months.length > 1 && (
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Categoría líder por mes</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Categoría líder por mes</p><InfoTip info={APP_INFO.l_deres_por_mes} /></div>
           <p className="text-xs text-gf-text-muted mb-3">Qué categoría concentró más gasto, mes a mes, dentro de este periodo</p>
           <div className="flex flex-col">
             {monthlyChampions.months.map((m) => (
@@ -725,8 +726,8 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           non-primary currency, and how that's moved). */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p>
-          <p className="text-xs text-gf-text-muted mb-3">Detectadas por nombre y frecuencia mensual</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p><InfoTip info={APP_INFO.suscripciones_recurrentes} /></div>
+          <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">Detectadas por nombre y frecuencia mensual</p><InfoTip info={APP_INFO.pagos_recurrentes} className="mt-px" /></div>
           {subscriptions.length === 0 ? (
             <p className="text-xs text-gf-text-muted">No se detectaron suscripciones recurrentes.</p>
           ) : (
@@ -761,7 +762,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
         </div>
 
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Exposición multi-moneda</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Exposición multi-moneda</p><InfoTip info={APP_INFO.exposici_n_multimoneda} /></div>
           <p className="text-xs text-gf-text-muted mb-3">Valor de tus saldos en otras monedas</p>
           {fxExposure.loading ? (
             <p className="text-xs text-gf-text-muted">Consultando tipo de cambio…</p>
@@ -803,7 +804,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <p className="text-[15px] font-extrabold text-gf-text">Ritmo de gasto</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Ritmo de gasto</p><InfoTip info={APP_INFO.ritmo_de_gasto_2} /></div>
           <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
         </div>
         <p className="text-xs text-gf-text-muted mb-3">Comparado con tu propio promedio a esta misma altura de periodos anteriores</p>

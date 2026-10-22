@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import { Skeleton, Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
@@ -34,7 +36,7 @@ function TopElementContainerView({
 }: TopElementContainerViewProps): React.JSX.Element {
   return (
     <div className="gf-glass-card w-full h-full rounded-[32px] p-4">
-      <h1 className="text-center font-bold">Top {elementsToDisplay} elements by month</h1>
+      <div className="flex items-center justify-center gap-1.5"><h1 className="text-center font-bold">Top {elementsToDisplay} elements by month</h1><InfoTip info={APP_INFO.los_m_s_grandes} /></div>
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs ">
           From:{" "}

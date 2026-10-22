@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { Spin } from "antd";
 import dayjs from "dayjs";
 import fetcher from "@/helpers/fetcher";
@@ -94,7 +96,7 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h2 className="text-xl text-purple-300 font-normal">Connector access tokens</h2>
+        <div className="flex items-center gap-2"><h2 className="text-xl text-purple-300 font-normal">Connector access tokens</h2><InfoTip info={APP_INFO.tokens_de_acceso} /></div>
         <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (

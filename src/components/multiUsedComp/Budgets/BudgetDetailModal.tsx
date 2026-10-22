@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { usdFormatChanger, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
@@ -374,6 +376,7 @@ function BudgetDetailModal({
                 <div className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
                   <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-3">
                     Spending Distribution by Category
+                    <InfoTip info={APP_INFO.distribuci_n_del_gasto} />
                   </h3>
                   {/* Stacked bar */}
                   <div className="w-full h-3.5 bg-gf-surface-2 rounded-full overflow-hidden flex mb-3">
