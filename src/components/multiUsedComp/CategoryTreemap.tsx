@@ -135,7 +135,7 @@ function worstRatio<T extends { area: number }>(row: T[], shortSide: number): nu
   );
 }
 
-function squarify<T extends { value: number }>(
+export function squarify<T extends { value: number }>(
   nodes: T[],
   x0: number,
   y0: number,
@@ -199,10 +199,10 @@ function squarify<T extends { value: number }>(
 // is rendered as a percentage of it - the actual rendered aspect ratio is
 // set purely with CSS (`aspect-*` classes below), so real container
 // measurement (ResizeObserver et al.) is never needed.
-const NOMINAL_W = 1000;
-const NOMINAL_H = 420;
-const BIG_TILE_MIN_W = 150;
-const BIG_TILE_MIN_H = 95;
+export const NOMINAL_W = 1000;
+export const NOMINAL_H = 420;
+export const BIG_TILE_MIN_W = 150;
+export const BIG_TILE_MIN_H = 95;
 // Roughly the tooltip's own footprint - used to decide whether there's
 // still room to grow right/down from the cursor, or whether it needs to
 // flip to the left/up instead so it doesn't get clipped by the card's
@@ -232,7 +232,7 @@ interface TileTooltipPosition {
   flipY: boolean;
 }
 
-function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, onClick, entered, containerRef }: TreemapTileProps): React.JSX.Element {
+export function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, onClick, entered, containerRef }: TreemapTileProps): React.JSX.Element {
   const { node } = rect;
   const [hover, setHover] = useState(false);
   const [pos, setPos] = useState<TileTooltipPosition>({ x: 0, y: 0, w: 0, h: 0, flipX: false, flipY: false });

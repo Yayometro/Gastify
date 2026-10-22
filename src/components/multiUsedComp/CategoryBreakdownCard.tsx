@@ -7,18 +7,16 @@ import type { WalletData } from "@/lib/features/walletSlice";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { InfoTip } from "./InfoTip";
-import DisplayerCategoryTreemap from "./DisplayerCategoryTreemap";
-import DisplayerCategoryCirclePacking from "./DisplayerCategoryCirclePacking";
-import TransactionsResumeCont from "./TransactionsResumeCont";
+import { BreakdownBubbles, BreakdownMap, BreakdownRing, type BreakdownChartProps } from "./BreakdownCharts";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { categoryBreakdown, type BreakdownSlice } from "@gastify/core/history/categoryBreakdown";
 import { ALL_MOVEMENTS, backOne, drillView, openSlice, type DrillState } from "@gastify/core/history/categoryDrill";
 import type { TransactionLike } from "@gastify/core/transformers/transactionsChange";
 
-// The category breakdown of the period, the same as the phone's "Resumen de transacciones": one of the web's own charts
-// (ring, bubbles or map) on the left and the categories on the right. The list fills the card's height and scrolls when it
-// has more rows; opening a category shows its subcategories, and opening a subcategory its movements, with a way back at every level.
+// The category breakdown of the period, the same as the phone's "Resumen de transacciones": one of the charts (ring, bubbles
+// or map) on the left and the categories on the right. The chart and the list share one drill-down path, so a tap in either
+// opens the same level: categories, then subcategories, then the movements of a subcategory, with a way back at every level.
 
 const EMPTY: never[] = [];
 const CHARTS = [
@@ -44,7 +42,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
   const startMs = timePeriod?.[0] ? new Date(timePeriod[0]).getTime() : null;
   const endMs = timePeriod?.[1] ? new Date(timePeriod[1]).setHours(23, 59, 59, 999) : null;
 
-  // The period's movements, split the way the charts need them: bills and incomes.
+  // The period's movements, the ones the breakdown is built from.
   const inRange = useMemo(
     () =>
       transactions.filter((tx: TransactionData) => {
@@ -55,8 +53,6 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
       }),
     [transactions, startMs, endMs]
   );
-  const allBills = useMemo(() => inRange.filter((tx) => tx.isBill && !tx.isIncome), [inRange]);
-  const allIncomes = useMemo(() => inRange.filter((tx) => tx.isIncome), [inRange]);
 
   const slices = useMemo<BreakdownSlice[]>(
     () => categoryBreakdown(inRange as unknown as TransactionLike[], kind === "spending" ? "spending" : "incomes"),
@@ -65,6 +61,23 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
   const total = useMemo(() => slices.reduce((sum, slice) => sum + slice.value, 0), [slices]);
   const view = useMemo(() => drillView(slices, path, total), [slices, path, total]);
   const isSpending = kind === "spending";
+
+  // A tap in the chart or the list opens one level deeper; the deepest level (movements) does not open further, as on the phone.
+  const select = (key: string) => {
+    if (view.level >= 2) return;
+    setPath((current) => openSlice(current, key));
+  };
+  const back = () => setPath((current) => backOne(current));
+
+  const chartProps: BreakdownChartProps = {
+    slices: view.slices,
+    total: view.total,
+    level: view.level,
+    title: view.current?.name ?? (isSpending ? "Gastos" : "Ingresos"),
+    currency: primary,
+    onSelect: select,
+    onBack: back,
+  };
 
   return (
     <section className="gf-glass-card w-full rounded-[32px] p-5">
@@ -114,9 +127,9 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
           </p>
           {/* The chart is always inside this box: it fills it and never grows past it. */}
           <div className={`${PANEL_HEIGHT} w-full min-w-0 overflow-hidden`}>
-            {chart === "ring" && <TransactionsResumeCont trcBills={allBills} trcIncomes={allIncomes} bill={isSpending} fill />}
-            {chart === "bubbles" && <DisplayerCategoryCirclePacking dccpIncomes={allIncomes} dccoBills={allBills} bill={isSpending} fill />}
-            {chart === "map" && <DisplayerCategoryTreemap dccpIncomes={allIncomes} dccoBills={allBills} bill={isSpending} fill />}
+            {chart === "ring" && <BreakdownRing {...chartProps} />}
+            {chart === "bubbles" && <BreakdownBubbles {...chartProps} />}
+            {chart === "map" && <BreakdownMap {...chartProps} />}
           </div>
         </div>
 
@@ -124,7 +137,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
             push the card taller, and it scrolls when there are more rows than fit. */}
         <div className={`flex min-h-0 min-w-0 flex-col gap-2 ${PANEL_HEIGHT} lg:h-auto`}>
           {path.path.length > 0 && (
-            <button type="button" onClick={() => setPath((current) => backOne(current))} className="mb-1 flex items-center gap-1 self-start text-base font-semibold text-purple-300 hover:text-white">
+            <button type="button" onClick={back} className="mb-1 flex items-center gap-1 self-start text-base font-semibold text-purple-300 hover:text-white">
               ‹ {view.level === 1 ? "Todas las categorías" : view.current?.name ?? "Volver"}
             </button>
           )}
@@ -143,7 +156,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
                   <button
                     key={slice.key}
                     type="button"
-                    onClick={() => hasChildren && setPath((current) => openSlice(current, slice.key))}
+                    onClick={() => hasChildren && select(slice.key)}
                     disabled={!hasChildren}
                     className="flex shrink-0 items-center gap-3 rounded-2xl border border-gf-border bg-white/5 px-3 py-2 text-left transition-all enabled:hover:-translate-y-0.5 enabled:hover:bg-white/10 disabled:cursor-default"
                   >
