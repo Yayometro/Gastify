@@ -75,7 +75,7 @@
   transform: scale(0.9);
 }
 .gf-nav-active > a {
-  background: linear-gradient(135deg, rgba(232, 121, 249, 0.42), rgba(126, 34, 206, 0.45));
+  background: linear-gradient(135deg, rgba(192, 132, 252, 0.42), rgba(126, 34, 206, 0.45));
   box-shadow: 0 0 18px rgba(168, 85, 247, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   animation: gf-nav-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

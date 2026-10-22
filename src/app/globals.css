@@ -434,7 +434,7 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  background: linear-gradient(160deg, rgba(232, 121, 249, 0.95) 0%, rgba(168, 85, 247, 0.95) 55%, rgba(126, 34, 206, 0.95) 100%);
+  background: linear-gradient(160deg, rgba(192, 132, 252, 0.95) 0%, rgba(168, 85, 247, 0.95) 55%, rgba(126, 34, 206, 0.95) 100%);
   backdrop-filter: blur(10px) saturate(160%);
   -webkit-backdrop-filter: blur(10px) saturate(160%);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 6px 16px -4px rgba(126, 34, 206, 0.6);
@@ -450,7 +450,7 @@ body {
   transform: scale(0.96);
 }
 :root[data-theme="light"] .gf-glass-fab {
-  background: linear-gradient(160deg, #e879f9 0%, #9333ea 100%);
+  background: linear-gradient(160deg, #c084fc 0%, #9333ea 100%);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: 0 4px 12px -4px rgba(126, 34, 206, 0.4);
@@ -1072,4 +1072,32 @@ box-shadow: -1px 0px 20px 5px rgba(142, 142, 142, 0.7);
 :root:not([data-theme="light"]) .MuiPickersPopper-root .MuiDivider-root,
 :root:not([data-theme="light"]) .MuiDialog-root .MuiDivider-root {
   border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* The dashboard backdrop (DashboardBackdrop.tsx): a fixed layer behind the content. The isolation keeps it inside the
+   dashboard's own stacking, so it paints over the mesh and under every card. */
+.walllet-bg {
+  isolation: isolate;
+}
+.gf-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.gf-layer {
+  opacity: 1;
+}
+@supports (animation-timeline: scroll()) {
+  .gf-layer-1 { opacity: 0; animation: gf-layer-in-1 linear both; animation-timeline: scroll(root); }
+  .gf-layer-2 { opacity: 0; animation: gf-layer-in-2 linear both; animation-timeline: scroll(root); }
+  .gf-layer-3 { opacity: 0; animation: gf-layer-in-3 linear both; animation-timeline: scroll(root); }
+  .gf-figure { animation: gf-drift linear both; animation-timeline: scroll(root); }
+}
+@keyframes gf-layer-in-1 { 0%, 8% { opacity: 0; } 26%, 100% { opacity: 1; } }
+@keyframes gf-layer-in-2 { 0%, 36% { opacity: 0; } 56%, 100% { opacity: 1; } }
+@keyframes gf-layer-in-3 { 0%, 66% { opacity: 0; } 86%, 100% { opacity: 1; } }
+@keyframes gf-drift {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(var(--speed) * -3000px)); }
 }

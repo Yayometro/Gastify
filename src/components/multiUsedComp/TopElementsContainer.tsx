@@ -173,7 +173,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
   // thing next to the Wallet Analyzer's identical-looking [3,6,12,24] toggle.
   const topRankTitle = (label: string, total: string | number) => (
     <>
-      <p className="text-[10.5px] font-bold uppercase tracking-wide text-fuchsia-400">
+      <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-400">
         Top {elementsToDisplay} {label}
       </p>
       <p className="text-[15px] font-extrabold text-gf-text mb-2">Total: {total}</p>

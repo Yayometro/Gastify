@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/betterAuth";
 import { STEP_UP_TTL_MS } from "@/lib/auth/stepUpConfig";
+import DashboardBackdrop from "@/components/multiUsedComp/DashboardBackdrop";
 import Navbar from "@/components/Navbar";
 import AllDataProvider from "@/components/Providers/AllDataProvider";
 import ToolsFab from "@/components/multiUsedComp/ToolsFab";
@@ -45,6 +46,7 @@ async function DashboardLayout({
     <div
       className={`dashboard-layer-container walllet-bg h-full w-full flex flex-col flex-nowrap sm:flex-row m-0 p-0`}
     >
+      <DashboardBackdrop />
       <Navbar sesion={sesion} />
         {children}
         <ToolsFab mail={sesion.user.email} />
