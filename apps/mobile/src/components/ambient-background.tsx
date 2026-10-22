@@ -53,11 +53,18 @@ const LAYERS: { from: number; to: number; blobs: Blob[] }[] = [
 // Figures that drift behind the page, each slower than the page itself (a parallax). `top` is where it starts on the
 // screen, in points; `speed` is the share of the scroll it travels.
 const SHAPES: { kind: FigureKind; color: string; opacity: number; left: string; top: number; size: number; speed: number }[] = [
-  { kind: 'nebula', color: '#581c87', opacity: 0.55, left: '58%', top: 120, size: 340, speed: 0.1 },
-  { kind: 'orb', color: '#a855f7', opacity: 0.4, left: '-12%', top: 520, size: 240, speed: 0.16 },
-  { kind: 'nebula', color: '#3b0764', opacity: 0.6, left: '-10%', top: 1080, size: 380, speed: 0.08 },
-  { kind: 'orb', color: '#6d28d9', opacity: 0.4, left: '62%', top: 1560, size: 230, speed: 0.14 },
-  { kind: 'nebula', color: '#4c1d95', opacity: 0.55, left: '20%', top: 2100, size: 360, speed: 0.1 },
+  { kind: 'nebula', color: '#7e22ce', opacity: 0.7, left: '58%', top: 80, size: 380, speed: 0.1 },
+  { kind: 'orb', color: '#c026d3', opacity: 0.6, left: '-14%', top: 330, size: 300, speed: 0.16 },
+  { kind: 'nebula', color: '#6d28d9', opacity: 0.7, left: '-10%', top: 620, size: 400, speed: 0.08 },
+  { kind: 'orb', color: '#a21caf', opacity: 0.6, left: '64%', top: 900, size: 300, speed: 0.14 },
+  { kind: 'nebula', color: '#9333ea', opacity: 0.65, left: '30%', top: 1150, size: 420, speed: 0.09 },
+  { kind: 'orb', color: '#e879f9', opacity: 0.3, left: '-8%', top: 1420, size: 240, speed: 0.18 },
+  { kind: 'nebula', color: '#581c87', opacity: 0.8, left: '60%', top: 1700, size: 380, speed: 0.08 },
+  { kind: 'orb', color: '#7c3aed', opacity: 0.6, left: '-12%', top: 1960, size: 320, speed: 0.15 },
+  { kind: 'nebula', color: '#c026d3', opacity: 0.55, left: '24%', top: 2250, size: 400, speed: 0.1 },
+  { kind: 'orb', color: '#a855f7', opacity: 0.55, left: '66%', top: 2520, size: 280, speed: 0.14 },
+  { kind: 'nebula', color: '#7e22ce', opacity: 0.7, left: '-6%', top: 2800, size: 420, speed: 0.09 },
+  { kind: 'orb', color: '#f0abfc', opacity: 0.25, left: '50%', top: 3100, size: 260, speed: 0.2 },
 ];
 
 export const DARK_BASE = '#140b26';
@@ -124,6 +131,8 @@ export function AmbientBackground({ baseOpacity = 1 }: { baseOpacity?: number } 
             position: 'absolute',
             left: shape.left as `${number}%`,
             top: shape.top,
+            width: shape.size,
+            height: shape.size,
             opacity: shape.opacity,
             transform: [
               {
