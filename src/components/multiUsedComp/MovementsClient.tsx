@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Movements from "./Movements";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "@/lib/features/categoriesSlice";
@@ -27,8 +27,11 @@ const TypedCategorySuggestionsSection = CategorySuggestionsSection as React.Comp
 }>;
 
 // From a horizontal tablet or a laptop on, the page is split in two: the two tools on the left (40 %) and the transactions
-// on the right (60 %), as tall as the tools. Narrower screens stack everything: the tools are buttons, the transactions below.
+// on the right (60 %). Narrower screens stack everything: the tools are buttons, the transactions below.
 const WIDE_QUERY = "(min-width: 1024px)";
+// How far the split stops short of the bottom of the window, in pixels.
+const BOTTOM_GAP = 8;
+const MIN_SPLIT_HEIGHT = 480;
 
 function useIsWide(): boolean {
   const [wide, setWide] = useState<boolean>(false);
@@ -57,6 +60,24 @@ function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element
 
   const wide = useIsWide();
 
+  // On wide screens the split runs from its top down to the bottom of the window (less a few pixels), so the transactions
+  // fill the screen and the tools column is as tall as they are.
+  const splitRef = useRef<HTMLDivElement | null>(null);
+  const [splitHeight, setSplitHeight] = useState<number>(0);
+  useEffect(() => {
+    if (!wide) return;
+    const fit = () => {
+      const node = splitRef.current;
+      if (!node) return;
+      // The top in the document, so the height does not change when the page is scrolled.
+      const top = node.getBoundingClientRect().top + window.scrollY;
+      setSplitHeight(Math.max(MIN_SPLIT_HEIGHT, Math.round(window.innerHeight - top - BOTTOM_GAP)));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [wide]);
+
   useEffect(() => {
     // User
     if (ccUser.status === "idle") {
@@ -79,19 +100,27 @@ function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element
   return (
     <div className=" w-full h-full sm:pr-2">
       <div className="w-full h-full relative">
-        <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">
+        <div className="content-profile-cont w-full content-wallet-glass text-center items-center mt-[10px] rounded-t-[100px] rounded-b-2xl px-2 pt-3 pb-[80px] min-h-[calc(100dvh-20px)]">
           <div className="cc-categoryList-cont w-full flex flex-col justify-center items-center">
             <h1 className="text-3xl min-[text-[45px]]: py-2">
               Movements details
             </h1>
           </div>
-          <div className={wide ? "grid grid-cols-[2fr_3fr] items-stretch gap-4" : "flex flex-col gap-4"}>
-            {/* The tools: the two cards on wide screens, the two buttons (each opens its tool) on narrow ones. */}
+          <div
+            ref={splitRef}
+            className={wide ? "grid grid-cols-[2fr_3fr] items-stretch gap-4" : "flex flex-col gap-4"}
+          >
+            {/* The tools: the two cards on wide screens (the categorizer takes the height left under the import), the two
+                buttons (each opens its tool) on narrow ones. */}
             <div className={wide ? "flex min-w-0 flex-col gap-4" : "flex flex-wrap items-center justify-center gap-3"}>
               {wide ? (
                 <>
-                  <TypedReadFileComp />
-                  <TypedCategorySuggestionsSection mail={mcSession} variant="card" />
+                  <div className="shrink-0">
+                    <TypedReadFileComp />
+                  </div>
+                  <div className="flex min-h-0 flex-1 flex-col">
+                    <TypedCategorySuggestionsSection mail={mcSession} variant="card" />
+                  </div>
                 </>
               ) : (
                 <>
@@ -100,8 +129,8 @@ function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element
                 </>
               )}
             </div>
-            {/* The transactions: as tall as the tools column on wide screens (the list scrolls inside), a fixed box on narrow ones. */}
-            <div className={wide ? "relative min-w-0" : "relative h-[640px]"}>
+            {/* The transactions: on wide screens as tall as the split (the list scrolls inside), a fixed box on narrow ones. */}
+            <div className={wide ? "relative min-w-0" : "relative h-[640px]"} style={wide ? { minHeight: splitHeight } : undefined}>
               <div className="gf-glass-frost absolute inset-0 flex flex-col rounded-[32px] p-4">
                 <TypedMovements mail={mcSession} embedded />
               </div>
