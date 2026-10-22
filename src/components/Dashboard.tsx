@@ -45,7 +45,6 @@ import {
 } from "@gastify/core/time/timeFunctions";
 import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
-import LatestMovementsCard from "./multiUsedComp/LatestMovementsCard";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
@@ -629,13 +628,12 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
             <LazyMount className="w-full">
               <CategoryBreakdownCard timePeriod={[startDate, endDate]} />
             </LazyMount>
-            <LatestMovementsCard />
             <div className="top-3-general-container w-full">
               <LazyMount className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
                 <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]}/>
               </LazyMount>
             </div>
-            <div className="wallet-total-col-container flex flex-col items-center justify-center lg:flex-row lg:gap-2 lg:items-start ">
+            <div className="wallet-total-col-container grid w-full grid-cols-1 items-start gap-8 lg:grid-cols-2">
               {/* <div className="wallet-left-col-container w-full lg:max-w-[50%]">
                 <div className="TransactionsDetails w-full h-full">
                   {allTransactions.length <= 0 ? (
@@ -666,16 +664,15 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                   </div>
                 </div>
               </div> */}
-              <div className="wallet-right-col-container w-full h-full lg:max-w-[50%]s flex flex-col gap-8 justify-center items-center">
-                <LazyMount className="movements w-full h-full lg:max-w-[800px] flex flex-row justify-center items-center">
-                  <Movements
-                    timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
-                  />
-                </LazyMount>
-                <LazyMount className="budget w-full">
-                  <BudgetCont bcSession={session} />
-                </LazyMount>
-              </div>
+              {/* Budgets on the left, Transactions details on the right: each one takes half of the screen on desktop. */}
+              <LazyMount className="budget w-full min-w-0">
+                <BudgetCont bcSession={session} />
+              </LazyMount>
+              <LazyMount className="movements gf-glass-card w-full min-w-0 rounded-[32px] p-5">
+                <Movements
+                  timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
+                />
+              </LazyMount>
             </div>
           </HistoryGate>
         </div>

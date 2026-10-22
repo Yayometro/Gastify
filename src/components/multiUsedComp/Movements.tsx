@@ -57,6 +57,7 @@ import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
 import DuplicateComparisonTable from "./DuplicateComparisonTable";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import MovementsGuideModal from "./MovementsGuideModal";
 
 const TypedEditMultipleTransModal = EditMultipleTransModal as React.ComponentType<{
   hidden?: React.ReactNode[];
@@ -219,6 +220,7 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
   const [exportFormat, setExportFormat] = useState<"excel" | "json" | null>(null); // 'excel' | 'json'
   const [exportModalOpen, setExportModalOpen] = useState<boolean>(false);
   const [exportLoading, setExportLoading] = useState<boolean>(false);
+  const [guideOpen, setGuideOpen] = useState<boolean>(false);
 
   const { close, handleClose } = useModal();
   const selectCategoryCtx = useContext(SelectCategoryContext);
@@ -685,6 +687,7 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
 
   return (
     <div className="w-full h-full pt-5">
+      <MovementsGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />
       {editingTrans && (
         <EditSingleTransModal
           key={editKey}
@@ -856,12 +859,21 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
         <div className="table-container w-full h-full overflow-y-scroll relative max-h-[1000px] px-1">
           <div className="gf-glass-violet-flat text-gf-text sticky z-50 top-0 px-1 py-2 mb-1 rounded-t-2xl">
             <div className="movement-content">
-              <h1 className="movement-title text-2xl text-center font-bold">
-                Transactions details
-              </h1>
+              <div className="flex items-center justify-center gap-2">
+                <h1 className="movement-title text-2xl text-center font-bold">
+                  Transactions details
+                </h1>
+                <button
+                  type="button"
+                  onClick={() => setGuideOpen(true)}
+                  aria-label="Cómo usar Transactions details"
+                  className="text-gf-text-muted hover:text-purple-300 transition-colors cursor-pointer"
+                >
+                  <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
+                </button>
+              </div>
             </div>
             <div className="header-filters">
-              <span className="inline-flex items-center gap-1.5"><p className="text-center font-xl">Filters</p><InfoTip info={APP_INFO.filtros} /></span>
               <span className="text-xs flex justify-center">
                 From:{" "}
                 <b className="mx-1">{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : "—"}</b>
