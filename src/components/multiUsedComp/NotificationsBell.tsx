@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import "animate.css";
 import { IoNotificationsOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "./CategoIcon";
 import useBudgetAlertList from "@/hooks/useBudgetAlertList";
 import { InfoTip } from "./InfoTip";
+import AlertCelebration from "./notifications/AlertCelebration";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import type { BudgetAlert } from "@gastify/core/budgets/budgetAlerts";
 
@@ -21,7 +21,7 @@ const TONE_CLASS: Record<BudgetAlert["tone"], string> = {
 
 function NotificationsBell(): React.JSX.Element {
   const { alerts, dismiss, dismissAll } = useBudgetAlertList();
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [celebrating, setCelebrating] = useState<BudgetAlert | null>(null);
   const [clearing, setClearing] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [leaving, setLeaving] = useState<string | null>(null);
@@ -53,6 +53,8 @@ function NotificationsBell(): React.JSX.Element {
           </span>
         )}
       </button>
+
+      {celebrating && <AlertCelebration alert={celebrating} onClose={() => setCelebrating(null)} />}
 
       {open && (
         <BasicModal
@@ -91,22 +93,16 @@ function NotificationsBell(): React.JSX.Element {
                         <div
                           role="button"
                           tabIndex={0}
-                          aria-expanded={expanded === alert.key}
-                          onClick={() => setExpanded((current) => (current === alert.key ? null : alert.key))}
+                          onClick={() => setCelebrating(alert)}
                           onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") setExpanded((current) => (current === alert.key ? null : alert.key));
+                            if (event.key === "Enter" || event.key === " ") setCelebrating(alert);
                           }}
-                          className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] ${TONE_CLASS[alert.tone]} ${expanded === alert.key ? "animate__animated animate__pulse" : ""}`}
+                          className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] ${TONE_CLASS[alert.tone]}`}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="text-sm font-bold text-white">{alert.title}</p>
-                              <p className={`mt-1 text-xs leading-relaxed text-purple-100/90 ${expanded === alert.key ? "" : "line-clamp-2"}`}>{alert.message}</p>
-                              {expanded === alert.key && (
-                                <Link href="/dashboard/budgets" onClick={(event) => { event.stopPropagation(); setOpen(false); }} className="animate__animated animate__fadeInUp mt-3 inline-flex items-center gap-1 rounded-full gf-glass-button px-3 py-1 text-xs font-bold text-white">
-                                  Ver presupuestos →
-                                </Link>
-                              )}
+                              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-purple-100/90">{alert.message}</p>
                             </div>
                             <button type="button" aria-label={`Quitar el aviso de ${alert.title}`} onClick={(event) => { event.stopPropagation(); remove(alert.key); }} className="shrink-0 rounded-full p-1 text-purple-100 transition-transform hover:scale-125 hover:text-white">
                               <CategoIcon type={"MdClose"} siz={16} />

@@ -87,7 +87,7 @@ function AccountCardFace({
 
   return (
     <div
-      className="relative flex h-[200px] w-[300px] shrink-0 flex-col justify-between overflow-hidden rounded-[26px] p-[18px] shadow-2xl"
+      className="relative flex h-[200px] w-[300px] shrink-0 flex-col justify-between overflow-hidden rounded-[26px] p-[18px] text-left shadow-2xl"
       style={{
         background: `linear-gradient(135deg, ${stops.join(", ")})`,
         border: light ? "1px solid rgba(17,24,39,0.12)" : undefined,

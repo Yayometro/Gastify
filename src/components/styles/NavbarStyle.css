@@ -111,3 +111,26 @@
     height: clamp(26px, 4.4vh, 40px);
   }
 }
+
+
+/* The notice windows: flames that rise and keep rising, and the alarm frame around the screen (see AlertCelebration). */
+@keyframes gf-flame-rise {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(-75vh) scale(1.4); opacity: 0; }
+}
+.gf-flame {
+  animation-name: gf-flame-rise;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-out;
+}
+@keyframes gf-alarm-pulse {
+  from { opacity: 1; }
+  to { opacity: 0.15; }
+}
+.gf-alarm {
+  animation-name: gf-alarm-pulse;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-in-out;
+}
