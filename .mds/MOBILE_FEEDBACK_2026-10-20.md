@@ -369,6 +369,27 @@ Prefijo AB. El usuario confirmó: moneda principal en Perfil, cuentas en dos col
 | AB13 | Cuentas, bancos (el usuario AUTORIZÓ el cambio de esquema en el servidor): campo de banco en la cuenta, íconos de los bancos de México buscados por mí, convertidos y homogeneizados (mismo tamaño y altura); más países después. | CÓDIGO LISTO | Modelo `bankId`, rutas, catálogo de 32 bancos y selector listos. Los logotipos reales NO están: se muestran las iniciales sobre el color del banco; ver pregunta al usuario. La web aún no tiene el selector. |
 | AB14 | Cuentas: número de tarjeta o de cuenta opcional (autorizado), con ojito para mostrar u ocultar; nunca CVV; dejar claro que es opcional. | CÓDIGO LISTO | Campo `cardNumber` (solo dígitos, 4 a 19), ojito en el formulario y en la tarjeta, aclaración de que es opcional y de que no se guarda el CVV. |
 
+## Duodécima ronda (2026-10-21, séptima prueba del iPad)
+
+Prefijo AC.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AC01 | iPhone, Resumen de transacciones: el modal de «Ver las N categorías» debe incluir también la gráfica y el selector Anillo / Burbujas / Mapa para interactuar con ella (no solo el total y la tabla). | PENDIENTE | |
+| AC02 | iPhone, Análisis del periodo: usar los mismos cuadritos del iPad, pero más chicos (hoy está muy amontonado). | PENDIENTE | |
+| AC03 | iPad, Resumen de transacciones: la gráfica debe ocupar toda la altura y ancho disponibles; reparto 60 % gráfica y filtros / 40 % lista de categorías. | PENDIENTE | |
+| AC04 | Modal de una categoría: quitar las repeticiones (nombre + «5 movimientos» y luego «Total de la categoría» + «5 movimientos»); en iPad poner el nombre a la izquierda y el total grande a la derecha; en las subcategorías mostrar su ícono. | PENDIENTE | |
+| AC05 | Presupuestos: el orden por defecto en la página de Presupuestos es el más cerca del límite (no el mayor gasto). | PENDIENTE | |
+| AC06 | Resumen de transacciones: la gráfica debe mostrar TODAS las categorías (hoy agrupa en «Otras», el espacio gris). | PENDIENTE | |
+| AC07 | Avisos: se deben poder quitar deslizando (arriba, abajo, izquierda, derecha); al tocarlos llevan al presupuesto; los de felicitación abren un modal con tu presupuesto y una animación de fuegos artificiales y confeti en toda la pantalla; y deben ser notificaciones del sistema (pantalla bloqueada de iPhone, Android, iPad). | PENDIENTE | |
+| AC08 | iPad, Proyecciones: números más grandes en la tabla «Mes a mes» y en «Precisión de tus proyecciones» (hoy se ven chicos). | PENDIENTE | |
+| AC09 | Cambiar el ícono del Analizador de cartera (iPad y iPhone): no le gusta el actual (el de pastel). | PENDIENTE | |
+| AC10 | iPad, Analizador: las barras de la tendencia de 6 meses mucho más anchas y con más información a simple vista. | PENDIENTE | |
+| AC11 | Todos los modales de un Top 6 (Analizador, Historial, Wallet) deben ser el modal de categoría nuevo: con ordenador, tabla de movimientos y total, desglose por subcategorías de mayor a menor con sus transacciones, cada una con su ícono. | PENDIENTE | |
+| AC12 | Analizador, Presupuestos (cumplimiento y rachas): ordenar de los más llenos o excedidos a los menos llenos. | PENDIENTE | |
+| AC13 | Detalle de una cuenta: primero el Resumen de transacciones y debajo los movimientos de la cuenta. | PENDIENTE | |
+| AC14 | Historial: junto al título, un tooltip que explique cada módulo, para qué sirve la página (comparar datos históricos: meses, trimestres, años) y cómo usarla. | PENDIENTE | |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.
