@@ -9,6 +9,7 @@ import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
+import { tagNames } from '@/lib/tags';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch, RootState } from '@/store';
@@ -81,7 +82,7 @@ export default function MovementDetailScreen() {
   };
 
   // The tags as chips (the form below keeps them editable as text).
-  const tagList = Array.isArray(movement.tags) ? movement.tags.filter((tag): tag is string => typeof tag === 'string' && tag.trim() !== '') : [];
+  const tagList = tagNames(movement.tags);
   return (
     <Screen title="Movimiento" subtitle={movement.name || undefined} backLabel={backLabel} onBack={back}>
       {kind === 'transfer' ? (
@@ -109,7 +110,7 @@ export default function MovementDetailScreen() {
               subCategoryId: idOf(movement.subCategory),
               budgetId: idOf(movement.budget),
               date: dateText(new Date(time ?? Date.now())),
-              tags: Array.isArray(movement.tags) ? movement.tags.filter((tag): tag is string => typeof tag === 'string').join(', ') : '',
+              tags: tagNames(movement.tags).join(', '),
             }}
             onSubmit={save}
             onDelete={remove}

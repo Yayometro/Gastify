@@ -1,4 +1,5 @@
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { CategoryBadge } from '@/components/category-badge';
 import { Colors } from '@/constants/theme';
@@ -41,6 +42,21 @@ export function MovementRow({
   const category = movement.category ?? null;
   const kind = movementKind(movement);
   const time = clock(movementTime(movement));
+  // A short shiver when the row is picked or let go, as the selection of the web and of iPhone lists.
+  const wiggle = useRef(new Animated.Value(0)).current;
+  const wasSelected = useRef(selected);
+  useEffect(() => {
+    if (wasSelected.current === selected) return;
+    wasSelected.current = selected;
+    Animated.sequence([
+      Animated.timing(wiggle, { toValue: 1, duration: 60, useNativeDriver: true }),
+      Animated.timing(wiggle, { toValue: -1, duration: 90, useNativeDriver: true }),
+      Animated.timing(wiggle, { toValue: 0.7, duration: 90, useNativeDriver: true }),
+      Animated.timing(wiggle, { toValue: -0.7, duration: 90, useNativeDriver: true }),
+      Animated.timing(wiggle, { toValue: 0, duration: 80, useNativeDriver: true }),
+    ]).start();
+  }, [selected, wiggle]);
+  const rotate = wiggle.interpolate({ inputRange: [-1, 1], outputRange: ['-1.6deg', '1.6deg'] });
 
   const sign = kind === 'income' ? '+' : kind === 'expense' ? '-' : '';
   const amountColor = kind === 'income' ? colors.income : kind === 'expense' ? colors.expense : colors.textSecondary;
@@ -49,6 +65,7 @@ export function MovementRow({
   const amount = formatMoneyMajor(Math.abs(getPrimaryAmount(movement)), currency);
 
   return (
+    <Animated.View style={{ transform: [{ rotate }] }}>
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
@@ -77,5 +94,6 @@ export function MovementRow({
         {amount}
       </Text>
     </Pressable>
+    </Animated.View>
   );
 }

@@ -37,7 +37,17 @@ export function movementSlices(sub: BreakdownSlice): BreakdownSlice[] {
   return sub.children;
 }
 
+// The key that, pushed after a category, opens every movement of that category at once (level 2).
+export const ALL_MOVEMENTS = "__all__";
+
 export function drillView(all: BreakdownSlice[], state: DrillState, total: number): DrillView {
+  if (state.path.length === 2 && state.path[1] === ALL_MOVEMENTS) {
+    const category = follow(all, state.path.slice(0, 1));
+    if (category) {
+      const movements = category.children.flatMap((sub) => sub.children);
+      return { slices: movements, current: { ...category, key: ALL_MOVEMENTS, name: `${category.name} · todas`, children: movements }, total: category.value, level: 2 };
+    }
+  }
   const current = follow(all, state.path);
   if (!current) return { slices: all, current: null, total, level: 0 };
   const level = state.path.length;

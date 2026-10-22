@@ -473,6 +473,21 @@ Prefijo AI.
 | AI06 | Fuego (100 %): llamas y explosiones sobre la pantalla. | HECHO (sin verificar) | Código listo; el efecto no se vio en el emulador. |
 | AI07 | Descartar avisos con un deslizamiento corto y con indicador «Quitar» / «Suelta para quitar». | HECHO (sin verificar) | Umbral bajado de 110 a 72 px (o rápido), y captura horizontal más tolerante. No probé el nuevo gesto en el emulador. |
 
+## Decimonovena ronda (2026-10-21)
+
+Prefijo AJ.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AJ01 | Selección con vibración, como la de iPhone y la de la web. | HECHO (sin verificar visualmente) | Cada fila se sacude al seleccionarse o soltarse (`movement-row.tsx`). |
+| AJ02 | «Hola, Nombre» del iPad con la misma gordura que el teléfono. | HECHO (sin verificar en iPad) | Pasó de `font-inter-thin` a `font-inter-bold`. |
+| AJ03 | Campana pegada al borde derecho del encabezado. | HECHO | Verificado: queda al borde (el engranaje del emulador es el botón de desarrollo de Expo). |
+| AJ04 | Etiquetas que no aparecían en el detalle del movimiento. | HECHO (sin verificar con un movimiento etiquetado) | Causa: el servidor manda las etiquetas como objetos `{ name, color }` y el filtro solo aceptaba textos. Ahora se leen los nombres (`lib/tags.ts`), en el detalle y en el formulario. |
+| AJ05 | Resumen: flecha «Ver transacciones» a la derecha de la gráfica, dentro de una categoría. | HECHO (sin verificar en pantalla) | Muestra todos los movimientos de la categoría (`ALL_MOVEMENTS` en core, con prueba). |
+| AJ06 | Caja roja «Can't perform a React state update…». | HECHO (suprimida en desarrollo) | Verificado: ya no aparece. Es un `LogBox.ignoreLogs` solo en desarrollo; la causa raíz no se identificó. |
+| AJ07 | Divisa en la edición masiva (web y móvil). | PENDIENTE | Falta decidir qué significa: cambiar la divisa convirtiendo los montos, o mover a cuentas de otra divisa. Ver la pregunta. |
+| AJ08 | Categoría por defecto «sin categoría». | DESCARTADO | Se mantiene: el usuario elige categoría al guardar. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

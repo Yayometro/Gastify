@@ -82,7 +82,7 @@ export function TabletWalletHeader({
   return (
     <View className="gap-6 pb-1 pt-2">
       <View className="flex-row items-center justify-center gap-4">
-        <Text className="font-inter-thin text-5xl text-gf-text">{name ? `Hola, ${name.split(' ')[0]}` : 'Inicio'}</Text>
+        <Text className="font-inter-bold text-5xl text-gf-text">{name ? `Hola, ${name.split(' ')[0]}` : 'Inicio'}</Text>
         <NotificationsBell size={44} />
       </View>
       <View className="flex-row items-stretch gap-4">

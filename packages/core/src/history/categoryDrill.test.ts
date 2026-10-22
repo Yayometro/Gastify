@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import type { BreakdownSlice } from "./categoryBreakdown";
-import { backOne, drillView, openSlice } from "./categoryDrill";
+import { ALL_MOVEMENTS, backOne, drillView, openSlice } from "./categoryDrill";
 
 const leaf = (key: string, value: number): BreakdownSlice => ({ key, name: key, icon: "", color: "#000", value, count: 1, children: [] });
 const sub = (key: string, value: number, children: BreakdownSlice[] = []): BreakdownSlice => ({ key, name: key, icon: "", color: "#000", value, count: children.length || 1, children });
@@ -37,5 +37,29 @@ describe("categoryDrill", () => {
 
   it("falls back to the top when the path points at something that is gone", () => {
     expect(drillView(tree, { path: ["Nope"] }, 140).level).toBe(0);
+  });
+});
+
+describe("drill into every movement of a category", () => {
+  it("lists the movements of all its subcategories at level 2", () => {
+    const movement = (key: string, value: number) => ({ key, name: key, value, color: "#000", icon: null, children: [] });
+    const categories = [
+      {
+        key: "food",
+        name: "Comida",
+        value: 30,
+        color: "#f00",
+        icon: null,
+        children: [
+          { key: "cafe", name: "Café", value: 10, color: "#0f0", icon: null, children: [movement("m1", 10)] },
+          { key: "rest", name: "Restaurantes", value: 20, color: "#00f", icon: null, children: [movement("m2", 15), movement("m3", 5)] },
+        ],
+      },
+    ] as never;
+    const view = drillView(categories, { path: ["food", ALL_MOVEMENTS] }, 100);
+    expect(view.level).toBe(2);
+    expect(view.slices.map((slice) => slice.key)).toEqual(["m1", "m2", "m3"]);
+    expect(view.total).toBe(30);
+    expect(view.current?.name).toBe("Comida · todas");
   });
 });

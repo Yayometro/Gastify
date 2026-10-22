@@ -2,7 +2,7 @@ import { Inter_200ExtraLight, Inter_400Regular, Inter_500Medium, Inter_600SemiBo
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { View, useColorScheme } from 'react-native';
+import { LogBox, View, useColorScheme } from 'react-native';
 import { Provider } from 'react-redux';
 
 import '@/global.css';
@@ -16,6 +16,12 @@ import { applyThemeMode, loadThemeMode } from '@/lib/theme-mode';
 import { store } from '@/store';
 
 SplashScreen.preventAutoHideAsync();
+
+// Development only: React's "state update on a component that hasn't mounted yet" warning opened the red error box on
+// every start. It is hidden from the box here; the rest of the warnings still show.
+if (__DEV__) {
+  LogBox.ignoreLogs([/Can't perform a React state update on a component that hasn't mounted yet/]);
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();

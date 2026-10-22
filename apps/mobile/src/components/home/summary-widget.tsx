@@ -14,7 +14,7 @@ import { CategoryTable } from '@/components/home/category-table';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { categoryBreakdown } from '@gastify/core/history/categoryBreakdown';
-import { backOne, drillView, openSlice, type DrillState } from '@gastify/core/history/categoryDrill';
+import { ALL_MOVEMENTS, backOne, drillView, openSlice, type DrillState } from '@gastify/core/history/categoryDrill';
 import { historyRange, summarizePeriod, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
@@ -89,11 +89,20 @@ export function SummaryWidget({
   const back = () => setPath((current) => backOne(current));
 
   // The way back up one level, shown above the chart on the card and in the sheet alike.
+  // Above the chart: back up one level on the left; inside a category, also the way down to its movements on the right.
   const backRow = zoomed && chosen ? (
-    <Pressable accessibilityRole="button" onPress={back} className="self-start flex-row items-center gap-1 py-1">
-      <Ionicons name="arrow-back" size={18} color={colors.accent} />
-      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{level === 1 ? 'Todas las categorías' : `Volver a ${chosen.name}`}</Text>
-    </Pressable>
+    <View className="flex-row items-center justify-between gap-3">
+      <Pressable accessibilityRole="button" onPress={back} className="flex-row items-center gap-1 py-1">
+        <Ionicons name="arrow-back" size={18} color={colors.accent} />
+        <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{level === 1 ? 'Todas las categorías' : `Volver a ${chosen.name}`}</Text>
+      </Pressable>
+      {level === 1 && (
+        <Pressable accessibilityRole="button" accessibilityLabel={`Ver las transacciones de ${chosen.name}`} onPress={() => setPath((current) => ({ path: [...current.path, ALL_MOVEMENTS] }))} className="flex-row items-center gap-1 py-1">
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver transacciones</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.accent} />
+        </Pressable>
+      )}
+    </View>
   ) : null;
 
   // The chart, the same on the card and in the sheet: a tap on a slice opens the next level right here (its
