@@ -437,9 +437,11 @@ export interface BreadcrumbInfo {
 export interface CategoryTreemapProps {
   ctTransactions?: (TransactionData | TreemapTransaction)[];
   ctIsBill?: boolean;
+  // Inside the breakdown card the chart takes the card's height instead of sizing itself by its width.
+  ctFill?: boolean;
 }
 
-function CategoryTreemap({ ctTransactions, ctIsBill }: CategoryTreemapProps): React.JSX.Element {
+function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapProps): React.JSX.Element {
   const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   // path = [] -> top-level categories.
   // path = [categoryName] -> that category's subcategories, UNLESS it has
@@ -638,14 +640,16 @@ function CategoryTreemap({ ctTransactions, ctIsBill }: CategoryTreemapProps): Re
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center">
-      <div className="CategoryTreemap-Content-title pt-5">
-        <h1 className="wallet-budget-title text-2xl text-center font-bold">
-          Category {ctIsBill ? "Bills" : "Incomes"} Details
-        </h1>
-      </div>
-      <div className="w-full px-3 sm:px-6 pt-4 pb-6">
-        <div className="rounded-[32px] overflow-hidden gf-glass-card border border-gf-border">
+    <div className={ctFill ? "flex h-full w-full flex-col" : "w-full h-full flex flex-col items-center justify-center"}>
+      {!ctFill && (
+        <div className="CategoryTreemap-Content-title pt-5">
+          <h1 className="wallet-budget-title text-2xl text-center font-bold">
+            Category {ctIsBill ? "Bills" : "Incomes"} Details
+          </h1>
+        </div>
+      )}
+      <div className={ctFill ? "flex min-h-0 w-full flex-1 flex-col px-3 pb-3 sm:px-6" : "w-full px-3 sm:px-6 pt-4 pb-6"}>
+        <div className={`rounded-[32px] overflow-hidden gf-glass-card border border-gf-border ${ctFill ? "flex min-h-0 flex-1 flex-col" : ""}`}>
           <div className="flex items-start justify-between px-5 pt-5 pb-3">
             <div className="flex items-center gap-2 min-w-0">
               {path.length > 0 && (
@@ -752,7 +756,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }: CategoryTreemapProps): Re
 
           <div
             ref={tilesContainerRef}
-            className="relative w-full px-4 aspect-[4/3] sm:aspect-[2/1] md:aspect-[12/5]"
+            className={ctFill ? "relative min-h-0 w-full flex-1 px-4" : "relative w-full px-4 aspect-[4/3] sm:aspect-[2/1] md:aspect-[12/5]"}
           >
             {rects.map((r, i) => (
               <TreemapTile
@@ -771,7 +775,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill }: CategoryTreemapProps): Re
             ))}
           </div>
 
-          <div className="flex flex-wrap gap-2 justify-center px-5 py-5">
+          <div className={`flex shrink-0 flex-wrap justify-center gap-2 px-5 ${ctFill ? "py-3" : "py-5"}`}>
             {topCategories.map((cat) => {
               const isActive = path[0] === cat.name;
               const total = cat.loc + (cat.children || []).reduce((a, c) => a + c.loc, 0);

@@ -8,6 +8,7 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 interface TransResumeChartProps {
   trchTransactions?: TransactionData[];
   trchIsBill?: boolean;
+  trchFill?: boolean;
 }
 
 const TypedTransResumeChart = TransResumeChart as React.ComponentType<TransResumeChartProps>;
@@ -17,9 +18,11 @@ export interface TransactionsResumeContProps {
   trcBills?: TransactionData[];
   // Controlled by the card above (Gastos / Ingresos): when given, the chart's own switch is hidden.
   bill?: boolean;
+  // Inside the card the chart fills the card's height instead of its own fixed one.
+  fill?: boolean;
 }
 
-function TransactionsResumeCont({ trcIncomes, trcBills, bill }: TransactionsResumeContProps): React.JSX.Element {
+function TransactionsResumeCont({ trcIncomes, trcBills, bill, fill }: TransactionsResumeContProps): React.JSX.Element {
   const [ownBill, setOwnBill] = useState<boolean>(true);
   const isBillTab = bill ?? ownBill;
   const handleTab = (budType: string) => {
@@ -59,10 +62,10 @@ function TransactionsResumeCont({ trcIncomes, trcBills, bill }: TransactionsResu
         </Tooltip>
       </div>
       <div className={`trc-container-sub w-full h-full ${isBillTab ? "" : "hidden"}`}>
-        <TypedTransResumeChart trchTransactions={trcBills} trchIsBill={true} />
+        <TypedTransResumeChart trchTransactions={trcBills} trchIsBill={true} trchFill={fill} />
       </div>
       <div className={`trc-container-sub w-full h-full ${isBillTab ? "hidden" : ""}`}>
-        <TypedTransResumeChart trchTransactions={trcIncomes} trchIsBill={false} />
+        <TypedTransResumeChart trchTransactions={trcIncomes} trchIsBill={false} trchFill={fill} />
       </div>
     </div>
   );

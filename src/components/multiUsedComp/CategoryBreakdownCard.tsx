@@ -17,8 +17,8 @@ import { ALL_MOVEMENTS, backOne, drillView, openSlice, type DrillState } from "@
 import type { TransactionLike } from "@gastify/core/transformers/transactionsChange";
 
 // The category breakdown of the period, the same as the phone's "Resumen de transacciones": one of the web's own charts
-// (ring, bubbles or map) on the left and the categories on the right. The list shows ten rows and scrolls for the rest;
-// opening a category shows its subcategories, and opening a subcategory its movements, with a way back at every level.
+// (ring, bubbles or map) on the left and the categories on the right. The list fills the card's height and scrolls when it
+// has more rows; opening a category shows its subcategories, and opening a subcategory its movements, with a way back at every level.
 
 const EMPTY: never[] = [];
 const CHARTS = [
@@ -27,7 +27,7 @@ const CHARTS = [
   { id: "map", label: "Mapa" },
 ] as const;
 type ChartId = (typeof CHARTS)[number]["id"];
-// Ten rows at their height, and the chart as tall as the list, so the two columns line up.
+// The height of the chart panel. On desktop the list on the right stretches to the same height as the card's content.
 const PANEL_HEIGHT = "h-[560px]";
 
 export interface CategoryBreakdownCardProps {
@@ -112,14 +112,17 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
           <p className="text-2xl font-bold" style={{ color: isSpending ? "#fb7185" : "#4ade80" }}>
             {formatMoneyMajor(total, primary, { showCode: false })}
           </p>
-          <div className={`${PANEL_HEIGHT} w-full min-w-0`}>
-            {chart === "ring" && <TransactionsResumeCont trcBills={allBills} trcIncomes={allIncomes} bill={isSpending} />}
-            {chart === "bubbles" && <DisplayerCategoryCirclePacking dccpIncomes={allIncomes} dccoBills={allBills} bill={isSpending} />}
-            {chart === "map" && <DisplayerCategoryTreemap dccpIncomes={allIncomes} dccoBills={allBills} bill={isSpending} />}
+          {/* The chart is always inside this box: it fills it and never grows past it. */}
+          <div className={`${PANEL_HEIGHT} w-full min-w-0 overflow-hidden`}>
+            {chart === "ring" && <TransactionsResumeCont trcBills={allBills} trcIncomes={allIncomes} bill={isSpending} fill />}
+            {chart === "bubbles" && <DisplayerCategoryCirclePacking dccpIncomes={allIncomes} dccoBills={allBills} bill={isSpending} fill />}
+            {chart === "map" && <DisplayerCategoryTreemap dccpIncomes={allIncomes} dccoBills={allBills} bill={isSpending} fill />}
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-col gap-2">
+        {/* On desktop this column stretches to the chart column's height; the list sits in an absolute box so its rows never
+            push the card taller, and it scrolls when there are more rows than fit. */}
+        <div className={`flex min-h-0 min-w-0 flex-col gap-2 ${PANEL_HEIGHT} lg:h-auto`}>
           {path.path.length > 0 && (
             <button type="button" onClick={() => setPath((current) => backOne(current))} className="mb-1 flex items-center gap-1 self-start text-base font-semibold text-purple-300 hover:text-white">
               ‹ {view.level === 1 ? "Todas las categorías" : view.current?.name ?? "Volver"}
@@ -131,31 +134,33 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
             </button>
           )}
           {view.slices.length === 0 && <p className="text-sm text-gf-text-muted">Sin movimientos en este periodo.</p>}
-          <div className={`${PANEL_HEIGHT} flex min-w-0 flex-col gap-2 overflow-y-auto pr-1`}>
-            {view.slices.map((slice) => {
-              const percent = view.total > 0 ? Math.round((slice.value / view.total) * 100) : 0;
-              const hasChildren = view.level < 2 && slice.children.length > 0;
-              return (
-                <button
-                  key={slice.key}
-                  type="button"
-                  onClick={() => hasChildren && setPath((current) => openSlice(current, slice.key))}
-                  disabled={!hasChildren}
-                  className="flex shrink-0 items-center gap-3 rounded-2xl border border-gf-border bg-white/5 px-3 py-2 text-left transition-all enabled:hover:-translate-y-0.5 enabled:hover:bg-white/10 disabled:cursor-default"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: slice.color }}>
-                    <UniversalCategoIcon type={slice.icon} siz={16} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-base font-semibold text-gf-text">{slice.name}</span>
-                    {hasChildren && <span className="text-xs text-purple-300">Ver subcategorías ›</span>}
-                    {view.level === 2 && <span className="text-xs text-gf-text-muted">{slice.count} movimiento{slice.count === 1 ? "" : "s"}</span>}
-                  </span>
-                  {view.level < 2 && <span className="shrink-0 text-xs text-gf-text-muted">{percent}%</span>}
-                  <span className="shrink-0 text-base font-bold text-gf-text">{formatMoneyMajor(slice.value, primary, { showCode: false })}</span>
-                </button>
-              );
-            })}
+          <div className="relative min-h-0 flex-1">
+            <div className="absolute inset-0 flex flex-col gap-2 overflow-y-auto pr-1">
+              {view.slices.map((slice) => {
+                const percent = view.total > 0 ? Math.round((slice.value / view.total) * 100) : 0;
+                const hasChildren = view.level < 2 && slice.children.length > 0;
+                return (
+                  <button
+                    key={slice.key}
+                    type="button"
+                    onClick={() => hasChildren && setPath((current) => openSlice(current, slice.key))}
+                    disabled={!hasChildren}
+                    className="flex shrink-0 items-center gap-3 rounded-2xl border border-gf-border bg-white/5 px-3 py-2 text-left transition-all enabled:hover:-translate-y-0.5 enabled:hover:bg-white/10 disabled:cursor-default"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: slice.color }}>
+                      <UniversalCategoIcon type={slice.icon} siz={16} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-base font-semibold text-gf-text">{slice.name}</span>
+                      {hasChildren && <span className="text-xs text-purple-300">Ver subcategorías ›</span>}
+                      {view.level === 2 && <span className="text-xs text-gf-text-muted">{slice.count} movimiento{slice.count === 1 ? "" : "s"}</span>}
+                    </span>
+                    {view.level < 2 && <span className="shrink-0 text-xs text-gf-text-muted">{percent}%</span>}
+                    <span className="shrink-0 text-base font-bold text-gf-text">{formatMoneyMajor(slice.value, primary, { showCode: false })}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

@@ -52,7 +52,7 @@ function DashboardBackdrop(): React.JSX.Element {
             width: circle.size,
             height: circle.size,
             background: circle.color,
-            opacity: 0.25,
+            opacity: 0.1,
             ["--speed" as string]: circle.speed,
           }}
         />

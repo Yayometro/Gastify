@@ -22,9 +22,11 @@ export interface CategoryPackingNode {
 export interface CategoryCirclePackingProps {
   ccpTransacctions?: TransactionData[];
   ccpIsBill?: boolean;
+  // Inside the breakdown card the chart takes the card's height instead of its own fixed one.
+  ccpFill?: boolean;
 }
 
-function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }: CategoryCirclePackingProps): React.JSX.Element {
+function CategoryCirclePacking({ ccpTransacctions, ccpIsBill, ccpFill }: CategoryCirclePackingProps): React.JSX.Element {
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const [zoomedId, setZoomedId] = useState<string | null>(null);
   const [dataCat, setDataCat] = useState<CategoryPackingNode>({});
@@ -41,13 +43,15 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }: CategoryCirclePa
   // console.log(dataCat);
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
-      <div className="CategoryCircle-Content-title pt-5">
-        <h1 className="wallet-budget-title text-2xl text-center font-bold">
-          Category {ccpIsBill ? "Bills" : "Incomes"} Details
-        </h1>
-      </div>
-      <div className="circle-graph-container w-full h-full">
-        <div className="circle-graph-container w-[100%] h-[500px] sm:h-[700px] md:h-[800px]">
+      {!ccpFill && (
+        <div className="CategoryCircle-Content-title pt-5">
+          <h1 className="wallet-budget-title text-2xl text-center font-bold">
+            Category {ccpIsBill ? "Bills" : "Incomes"} Details
+          </h1>
+        </div>
+      )}
+      <div className={ccpFill ? "relative min-h-0 w-full flex-1" : "circle-graph-container w-full h-full"}>
+        <div className={ccpFill ? "absolute inset-0" : "circle-graph-container w-[100%] h-[500px] sm:h-[700px] md:h-[800px]"}>
           <ResponsiveCirclePacking<CategoryPackingNode>
             data={dataCat}
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}

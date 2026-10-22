@@ -9,6 +9,7 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 interface CategoryCirclePackingProps {
   ccpTransacctions?: TransactionData[];
   ccpIsBill?: boolean;
+  ccpFill?: boolean;
 }
 
 const TypedCategoryCirclePacking = CategoryCirclePacking as React.ComponentType<CategoryCirclePackingProps>;
@@ -18,12 +19,15 @@ export interface DisplayerCategoryCirclePackingProps {
   dccoBills?: TransactionData[];
   // Controlled by the card above (Gastos / Ingresos): when given, the chart's own switch is hidden.
   bill?: boolean;
+  // Inside the card the chart fills the card's height instead of its own fixed one.
+  fill?: boolean;
 }
 
 function DisplayerCategoryCirclePacking({
   dccpIncomes,
   dccoBills,
   bill,
+  fill,
 }: DisplayerCategoryCirclePackingProps): React.JSX.Element {
   // Función para renderizar el contenido de cada pestaña
   const [ownBill, setOwnBill] = useState(true);
@@ -64,7 +68,7 @@ function DisplayerCategoryCirclePacking({
           </div>
         </Tooltip>
       </div>
-      <div className="dccp-tab-content">
+      <div className={`dccp-tab-content ${fill ? "h-full" : ""}`}>
         <div
           className={`dccp-tc-bill w-full h-full ${tabBill ? "" : "hidden"}`}
         >
@@ -72,13 +76,13 @@ function DisplayerCategoryCirclePacking({
             dccoBills.length <= 0 ? (
               <div className="w-full py-[20px]">
               <EmptyModule
-                emMessage={`Ups... Nothing here 🤔. 
-                If this module is empty maybe the is not data in general or there is no data in this time-period. 
+                emMessage={`Ups... Nothing here 🤔.
+                If this module is empty maybe the is not data in general or there is no data in this time-period.
                 Try with a time-period older, like 3 months or 6 months to check.`}
               />
             </div>
             ) : (
-              <TypedCategoryCirclePacking ccpTransacctions={dccoBills} ccpIsBill={true}/>
+              <TypedCategoryCirclePacking ccpTransacctions={dccoBills} ccpIsBill={true} ccpFill={fill}/>
             )
           }
         </div>
@@ -89,8 +93,8 @@ function DisplayerCategoryCirclePacking({
             dccpIncomes.length <= 0 ? (
               <div className="w-full py-[20px]">
               <EmptyModule
-                emMessage={`Ups... Nothing here 🤔. 
-                If this module is empty maybe the is not data in general or there is no data in this time-period. 
+                emMessage={`Ups... Nothing here 🤔.
+                If this module is empty maybe the is not data in general or there is no data in this time-period.
                 Try with a time-period older, like 3 months or 6 months to check.`}
               />
             </div>
@@ -98,6 +102,7 @@ function DisplayerCategoryCirclePacking({
               <TypedCategoryCirclePacking
                 ccpTransacctions={dccpIncomes}
                 ccpIsBill={false}
+                ccpFill={fill}
               />
             )
           }

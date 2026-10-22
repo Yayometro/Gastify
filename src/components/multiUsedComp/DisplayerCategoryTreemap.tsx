@@ -9,6 +9,7 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 interface CategoryTreemapProps {
   ctTransactions?: TransactionData[];
   ctIsBill?: boolean;
+  ctFill?: boolean;
 }
 
 const TypedCategoryTreemap = CategoryTreemap as React.ComponentType<CategoryTreemapProps>;
@@ -18,6 +19,8 @@ export interface DisplayerCategoryTreemapProps {
   dccoBills?: TransactionData[];
   // Controlled by the card above (Gastos / Ingresos): when given, the chart's own switch is hidden.
   bill?: boolean;
+  // Inside the card the chart fills the card's height; on Account movements it keeps its own size.
+  fill?: boolean;
 }
 
 // Same Bills/Incomes tab wrapper as DisplayerCategoryCirclePacking, but
@@ -28,6 +31,7 @@ function DisplayerCategoryTreemap({
   dccpIncomes,
   dccoBills,
   bill,
+  fill,
 }: DisplayerCategoryTreemapProps): React.JSX.Element {
   const [ownBill, setOwnBill] = useState(true);
   const tabBill = bill ?? ownBill;
@@ -67,7 +71,7 @@ function DisplayerCategoryTreemap({
           </div>
         </Tooltip>
       </div>
-      <div className="dccp-tab-content">
+      <div className={`dccp-tab-content ${fill ? "h-full" : ""}`}>
         <div
           className={`dccp-tc-bill w-full h-full ${tabBill ? "" : "hidden"}`}
         >
@@ -81,7 +85,7 @@ function DisplayerCategoryTreemap({
               />
             </div>
             ) : (
-              <TypedCategoryTreemap ctTransactions={dccoBills} ctIsBill={true}/>
+              <TypedCategoryTreemap ctTransactions={dccoBills} ctIsBill={true} ctFill={fill}/>
             )
           }
         </div>
@@ -101,6 +105,7 @@ function DisplayerCategoryTreemap({
               <TypedCategoryTreemap
                 ctTransactions={dccpIncomes}
                 ctIsBill={false}
+                ctFill={fill}
               />
             )
           }
