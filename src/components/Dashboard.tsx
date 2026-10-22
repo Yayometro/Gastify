@@ -21,14 +21,13 @@ import {
   fetchTrans,
 } from "@/lib/features/transacctionsSlice";
 //
-import ResumeTabsTrans from "./multiUsedComp/ResumeTabsTrans";
+import CategoryBreakdownCard from "./multiUsedComp/CategoryBreakdownCard";
 import {
   MdKeyboardDoubleArrowUp,
   MdKeyboardDoubleArrowDown,
   MdChevronLeft,
   MdChevronRight,
 } from "react-icons/md";
-import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
 import WalletAnalyzerTeaser from "./multiUsedComp/walletAnalyzer/WalletAnalyzerTeaser";
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
@@ -174,7 +173,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
   const [startDate, setStartDate] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
   const [endDate, setEndDate] = useState<Date>(getLastDayOfMonth(today.getFullYear(), today.getMonth()));
   //TRANSACTIONS and TYPES OF
-  const [allTransactions, setAllTransacctions] = useState<DashboardTransaction[]>([]);
+  const [, setAllTransacctions] = useState<DashboardTransaction[]>([]);
   const [, setAllBills] = useState<DashboardTransaction[]>([]);
   const [, setAllIncomes] = useState<DashboardTransaction[]>([]);
   const [totalAmountBalance, setTotalAmountBalance] = useState<number>(0);
@@ -627,32 +626,13 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 mail={session}
               />
             </div>
-            <LazyMount className="resume-transactions-cont-tabs w-full h-full">
-              {allTransactions.length <= 0 ? (
-                <div className="w-full py-[20px]">
-                  <Skeleton active />
-                </div>
-              ) : (
-                <ResumeTabsTrans timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
-              )}
+            <LazyMount className="w-full">
+              <CategoryBreakdownCard timePeriod={[startDate, endDate]} />
             </LazyMount>
             <LatestMovementsCard />
             <div className="top-3-general-container w-full">
               <LazyMount className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
                 <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]}/>
-              </LazyMount>
-            </div>
-            <div className="wallet-left-col-container w-full h-full">
-              <LazyMount className="TransactionsDetails w-full h-full">
-                {allTransactions.length <= 0 ? (
-                  <div className="w-full py-[20px]">
-                    <Skeleton active />
-                  </div>
-                ) : (
-                  <TransDetailsGrandContainer
-                    timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
-                  />
-                )}
               </LazyMount>
             </div>
             <div className="wallet-total-col-container flex flex-col items-center justify-center lg:flex-row lg:gap-2 lg:items-start ">
