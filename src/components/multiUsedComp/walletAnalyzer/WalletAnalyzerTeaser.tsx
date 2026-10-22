@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo } from "react";
+import Link from "next/link";
 import { useSelector } from "react-redux";
 import { buildWalletAnalyzerSnapshot } from "@/helpers/transformers/walletAnalyzer";
 import WalletAnalyzerInsightsStrip from "./WalletAnalyzerInsightsStrip";
@@ -44,14 +45,6 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
     [transactions, budgets, timePeriodFromFather, today]
   );
 
-  function scrollToFullAnalyzer(): void {
-    // "smooth" scroll animation isn't reliably driven in every browser
-    // context (confirmed hanging at scrollY 0 in this session's automated
-    // pane) - "auto" (an instant jump) is the safe choice since this is a
-    // navigational shortcut, not a decorative animation.
-    document.getElementById("wallet-analyzer-full")?.scrollIntoView({ behavior: "auto", block: "start" });
-  }
-
   if (transactions.length === 0) return null;
 
   return (
@@ -63,17 +56,12 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
         currentRange={snapshot.currentRange}
         title="Wallet Analyzer — resumen del mes"
       />
-      <p className="text-xs text-gf-text mt-3">
-        Hay mucho más por descubrir sobre tus gastos este mes 👀 — tendencias, presupuestos, suscripciones y patrones de
-        gasto te esperan en el análisis completo. <InfoTip info={APP_INFO.an_lisis_del_periodo} />
-      </p>
-      <button
-        type="button"
-        onClick={scrollToFullAnalyzer}
-        className="mt-1.5 text-sm font-bold text-purple-300 hover:text-white transition-colors flex items-center gap-1"
-      >
-        Ver análisis completo ↓
-      </button>
+      <div className="mt-3 flex items-center justify-end gap-2">
+        <Link href="/dashboard/analyzer" className="flex items-center gap-1 text-sm font-bold text-purple-300 transition-colors hover:text-white">
+          Ver análisis completo <span aria-hidden="true">→</span>
+        </Link>
+        <InfoTip info={APP_INFO.an_lisis_del_periodo} />
+      </div>
     </div>
   );
 }

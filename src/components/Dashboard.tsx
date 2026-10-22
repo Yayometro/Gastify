@@ -29,7 +29,6 @@ import {
   MdChevronRight,
 } from "react-icons/md";
 import TransDetailsGrandContainer from "./multiUsedComp/TransDetailsGrandContainer";
-import WalletAnalyzer from "./multiUsedComp/walletAnalyzer/WalletAnalyzer";
 import WalletAnalyzerTeaser from "./multiUsedComp/walletAnalyzer/WalletAnalyzerTeaser";
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
@@ -694,9 +693,6 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 </LazyMount>
               </div>
             </div>
-            <LazyMount id="wallet-analyzer-full" className="wallet-analyzer-container w-full" minHeight={600}>
-              <WalletAnalyzer timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} mail={session} />
-            </LazyMount>
           </HistoryGate>
         </div>
       ) : (

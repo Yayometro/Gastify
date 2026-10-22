@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth/authClient";
 import type { auth } from "@/lib/auth/betterAuth";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,12 +9,11 @@ import "@/components/styles/animations.css";
 
 import { IoIosArrowUp } from "react-icons/io";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
-import { FaWallet } from "react-icons/fa6";
+import { FaMagnifyingGlassChart, FaWallet } from "react-icons/fa6";
 import { MdAutoGraph } from "react-icons/md";
 import { MdSavings } from "react-icons/md";
 import { IoAdd } from "react-icons/io5";
 import { MdAccountBalance } from "react-icons/md";
-import { IoMdExit } from "react-icons/io";
 import { BiSolidCategory } from "react-icons/bi";
 import { MdLightMode, MdDarkMode } from "react-icons/md";
 
@@ -25,6 +22,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/store";
 import type { UserData } from "@/lib/features/userSlice";
 import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
+import NotificationsBell from "./multiUsedComp/NotificationsBell";
 import { FaHistory } from "react-icons/fa";
 import { useThemeMode } from "@/app/ThemeProvider";
 
@@ -40,12 +38,6 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
   const [toggleNav, setToggleNav] = useState<boolean>(false);
   const [isAddTrans, setIsAddTrans] = useState<boolean>(false);
   const { mode, toggleMode } = useThemeMode();
-  const router = useRouter();
-  const handleSignOut = (): void => {
-    authClient.signOut({
-      fetchOptions: { onSuccess: () => router.push("/login") },
-    });
-  };
   const handleToggleNav = (): void => {
     setToggleNav(!toggleNav);
   };
@@ -103,6 +95,12 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             <p className="sm:hidden hoverTooltip">Projections</p>
           </Link>
         </li>
+        <li className="micro-pulse">
+          <Link href="/dashboard/analyzer">
+            <FaMagnifyingGlassChart size={27} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">Wallet Analyzer</p>
+          </Link>
+        </li>
         <li >
           <div className="add-more sm:flex micro-pulse">
               <button type="button" onClick={toogleAddTrans} aria-label="Add a transaction" className="gf-glass-fab w-[50px] h-[50px]">
@@ -143,11 +141,8 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             <p className="sm:hidden hoverTooltip">{mode === "dark" ? "Light mode" : "Dark mode"}</p>
           </button>
         </li>
-        <li className=" flash">
-          <button onClick={handleSignOut}>
-            <IoMdExit size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Sign Out</p>
-          </button>
+        <li className="micro-pulse">
+          <NotificationsBell />
         </li>
       </ul>
       <ul className="gf-nav-surface text-gf-text mb-3 n-mobile w-[93%] flex flex-row justify-between py-2 px-3 items-center rounded-full shadow-xl z-[1002] fadeInUp md:hidden">

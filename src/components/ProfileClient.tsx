@@ -7,6 +7,7 @@ import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./multiUsedComp/EmptyModule";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
+import SignOutPanel from "./multiUsedComp/SignOutPanel";
 import "@/components/styles/animations.css";
 import { Switch, Spin, ConfigProvider, Space, Input } from "antd";
 import runNotify from "@/helpers/gastifyNotifier";
@@ -316,6 +317,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                 <TwoFactorPanel />
                 <TypedApiTokensPanel mail={pcSession} />
               </div>
+              <SignOutPanel />
               <DeleteAccountPanel />
             </div>
           ) : (
@@ -469,6 +471,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                   </button>
                 </div>
               </form>
+              <SignOutPanel />
               <DeleteAccountPanel />
             </div>
           )}
