@@ -500,6 +500,17 @@ Prefijo AK.
 | AK02 | Divisa en la edición masiva (móvil y web): convierte el monto con el tipo de cambio de la fecha; solo cambia si la cuenta está en la nueva divisa (o no tiene cuenta); los incompatibles se reportan con su motivo y el mismo aviso ofrece una cuenta de esa divisa. | HECHO (sin ejecutar contra la base) | Regla pura en `packages/core/src/money/currencyChange.ts` (con prueba). Ruta `edit-many` con `currency` y `skipped`. Pendiente: probarla en la cuenta QA; escribe saldos, requiere aprobación. |
 | AK03 | Flecha «Ver transacciones» de la gráfica (ya en AJ05). | HECHO | Sin cambios en esta ronda. |
 
+## Vigésimoprimera ronda (2026-10-22)
+
+Prefijo AL.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AL01 | Modales: que se cierren tocando afuera y que tengan × arriba a la derecha, en todo. | HECHO | Móvil: una sola ventana centrada (`BottomSheet`) con fondo que cierra; selectores de elementos y de categorías convertidos a la misma ventana; alarma/celebración con fondo y × ; info con ×; exportar y calendario de iOS con ×. Web: 6 overlays propios cierran al tocar el fondo. Verificado en el emulador la ventana de información. Exportar no cierra con el fondo mientras exporta (intencional). |
+| AL02 | Pendientes: los 157 puntos «código listo». | HECHO | Confirmados por el usuario (ver nota de revisión arriba). |
+| AL03 | Importar desde Excel también en el botón «+». | HECHO (sin verificar) | Igual que en la web: botón en la pantalla Crear. |
+| AL04 | Estados de cuenta en PDF y XLSX. | FUERA DE ALCANCE AHORA | El usuario aclaró que se refería a la plantilla de Excel; el lector de estados de cuenta es un desarrollo aparte. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

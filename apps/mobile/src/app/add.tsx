@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useState, type ComponentProps } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch } from 'react-redux';
@@ -115,6 +116,11 @@ export default function AddScreen() {
 
   return (
     <Screen title="Crear" subtitle="Elige qué quieres agregar." titleInfo={CREATE_SCREEN_INFO}>
+      {/* The same import as in Movimientos and on the web's Crear button: the Excel template, filled and uploaded. */}
+      <Pressable accessibilityRole="button" onPress={() => router.push('/movements/import')} className="flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
+        <Ionicons name="document-attach-outline" size={18} color={colors.accent} />
+        <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Importar desde Excel</Text>
+      </Pressable>
       <View className="flex-row flex-wrap gap-2">
         {KINDS.map((item) => {
           const selected = item.value === kind;
