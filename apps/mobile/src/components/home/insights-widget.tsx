@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
 import { INSIGHTS_SECTIONS } from '@/lib/info-sections';
@@ -30,6 +31,20 @@ export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insight
   const tablet = width >= TABLET_MIN_WIDTH;
   const columns = width >= WIDE_MIN_WIDTH ? 3 : 2;
   const pct = (value: number) => `${value >= 0 ? '+' : ''}${Math.round(value * 100)}%`;
+  const tile = (key: string, fact: Omit<Parameters<typeof Fact>[0], 'tile' | 'compact'>) => <Fact key={key} tile compact={!tablet} {...fact} />;
+  const facts: ReactElement[] = [tile('daily', { label: 'Gasto por día', value: formatMoneyMajor(insights.dailyAverage, currency), detail: `en ${insights.daysElapsed} ${insights.daysElapsed === 1 ? 'día' : 'días'}` })];
+  if (insights.projectedSpending !== null) facts.push(tile('projected', { label: 'Al ritmo actual', value: formatMoneyMajor(insights.projectedSpending, currency), detail: `gastarías en ${insights.days} días` }));
+  if (insights.savingsRate !== null) facts.push(tile('savings', { label: 'Lo que conservas', value: `${Math.round(insights.savingsRate * 100)}%`, detail: 'de tus ingresos', tone: insights.savingsRate < 0 ? colors.expense : colors.income }));
+  if (insights.spendingChange !== null) facts.push(tile('spending-change', { label: 'Gastos vs periodo anterior', value: pct(insights.spendingChange), tone: insights.spendingChange > 0 ? colors.expense : colors.income }));
+  if (insights.incomeChange !== null) facts.push(tile('income-change', { label: 'Ingresos vs periodo anterior', value: pct(insights.incomeChange), tone: insights.incomeChange >= 0 ? colors.income : colors.expense }));
+  if (insights.topCategory) facts.push(tile('top-category', { label: 'Lo que más pesa', value: insights.topCategory.name, detail: `${Math.round(insights.topCategory.share * 100)}% de los gastos` }));
+  if (insights.biggestExpense) facts.push(tile('biggest', { label: 'Gasto más grande', value: formatMoneyMajor(insights.biggestExpense.amount, currency), detail: `${insights.biggestExpense.name} · ${Math.round(insights.biggestExpense.share * 100)}% del gasto` }));
+  if (insights.averageExpense !== null) facts.push(tile('average', { label: 'Gasto promedio', value: formatMoneyMajor(insights.averageExpense, currency), detail: 'por cada gasto' }));
+  facts.push(tile('balance', { label: 'Balance del periodo', value: formatMoneyMajor(insights.balance, currency), detail: `${insights.movementCount} ${insights.movementCount === 1 ? 'movimiento' : 'movimientos'}`, tone: insights.balance < 0 ? colors.expense : colors.income }));
+  const perRow = tablet ? columns : 2;
+  const rows: ReactElement[][] = [];
+  for (let index = 0; index < facts.length; index += perRow) rows.push(facts.slice(index, index + perRow));
+
   return (
     <Card
       title="Análisis del periodo"
@@ -38,30 +53,13 @@ export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insight
       info={{
         title: 'Análisis del periodo',
         text: 'Gasto por día = gasto del periodo ÷ días transcurridos. Al ritmo actual = ese promedio × los días del periodo (solo mientras sigue en curso). Lo que conservas = (ingresos − gastos) ÷ ingresos. Los cambios comparan contra el periodo inmediato anterior de la misma duración. El gasto promedio es el gasto total ÷ el número de gastos. Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.', sections: INSIGHTS_SECTIONS }}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Abrir el Analizador de cartera" onPress={onOpenAnalyzer} className={tablet ? 'flex-row flex-wrap gap-3' : 'flex-row flex-wrap gap-2'}>
-        <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { flexBasis: '47%', flexGrow: 1, flexDirection: 'row' }}><Fact tile compact={!tablet} label="Gasto por día" value={formatMoneyMajor(insights.dailyAverage, currency)} detail={`en ${insights.daysElapsed} ${insights.daysElapsed === 1 ? 'día' : 'días'}`} /></View>
-        {insights.projectedSpending !== null && (
-          <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile compact={!tablet} label="Al ritmo actual" value={formatMoneyMajor(insights.projectedSpending, currency)} detail={`gastarías en ${insights.days} días`} /></View>
-        )}
-        {insights.savingsRate !== null && (
-          <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile compact={!tablet} label="Lo que conservas" value={`${Math.round(insights.savingsRate * 100)}%`} detail="de tus ingresos" tone={insights.savingsRate < 0 ? colors.expense : colors.income} /></View>
-        )}
-        {insights.spendingChange !== null && (
-          <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile compact={!tablet} label="Gastos vs periodo anterior" value={pct(insights.spendingChange)} tone={insights.spendingChange > 0 ? colors.expense : colors.income} /></View>
-        )}
-        {insights.incomeChange !== null && (
-          <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile compact={!tablet} label="Ingresos vs periodo anterior" value={pct(insights.incomeChange)} tone={insights.incomeChange >= 0 ? colors.income : colors.expense} /></View>
-        )}
-        {insights.topCategory && (
-          <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile compact={!tablet} label="Lo que más pesa" value={insights.topCategory.name} detail={`${Math.round(insights.topCategory.share * 100)}% de los gastos`} /></View>
-        )}
-        {insights.biggestExpense && (
-          <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile compact={!tablet} label="Gasto más grande" value={formatMoneyMajor(insights.biggestExpense.amount, currency)} detail={`${insights.biggestExpense.name} · ${Math.round(insights.biggestExpense.share * 100)}% del gasto`} /></View>
-        )}
-        {insights.averageExpense !== null && (
-          <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile compact={!tablet} label="Gasto promedio" value={formatMoneyMajor(insights.averageExpense, currency)} detail="por cada gasto" /></View>
-        )}
-        <View style={tablet ? { flexBasis: columns === 3 ? '31%' : '47%', flexGrow: 1, flexDirection: 'row' } : { width: '45%' }}><Fact tile compact={!tablet} label="Balance del periodo" value={formatMoneyMajor(insights.balance, currency)} detail={`${insights.movementCount} ${insights.movementCount === 1 ? 'movimiento' : 'movimientos'}`} tone={insights.balance < 0 ? colors.expense : colors.income} /></View>
+      <Pressable accessibilityRole="button" accessibilityLabel="Abrir el Analizador de cartera" onPress={onOpenAnalyzer} className={tablet ? 'gap-3' : 'gap-2'}>
+        {rows.map((row, rowIndex) => (
+          // Each row shares the width equally, so tiles in a row match in size and an unpaired last tile fills the row.
+          <View key={rowIndex} className={`flex-row ${tablet ? 'gap-3' : 'gap-2'}`}>
+            {row.map((fact, index) => <View key={index} className="flex-1 flex-row">{fact}</View>)}
+          </View>
+        ))}
       </Pressable>
     </Card>
   );

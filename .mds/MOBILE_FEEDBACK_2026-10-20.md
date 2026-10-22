@@ -411,6 +411,19 @@ Prefijo AE.
 | AE01 | Resumen de transacciones: tres niveles de detalle (categoría → subcategoría → movimientos) en anillo, burbujas, mapa y tabla, en iPhone y iPad. | EN CURSO | Hecho en core con pruebas (categoryDrill, movimientos como tercer nivel de categoryBreakdown). En el teléfono: corregido el reinicio de ruta que causaba el aviso de React; el toque del anillo pasó a detectar el ángulo. NO verificado aún en el emulador: el toque sobre la rebanada no abrió el siguiente nivel. |
 | AE02 | Avisos de presupuesto (90 % y 100 %) al entrar al inicio: salían como toast rojo de error. | HECHO (código) | Ahora se muestran como advertencia (ámbar). Pendiente de verificar en el emulador. |
 
+## Decimoquinta ronda (2026-10-21)
+
+Prefijo AF.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AF01 | Análisis del periodo en iPhone: mosaicos simétricos; si la última fila tiene uno, ocupa todo el ancho. | HECHO | Verificado en el emulador (teléfono): cuatro filas de dos y «Balance del periodo» a todo el ancho. Causa del primer intento: celdas en columna colapsaban el mosaico. |
+| AF02 | Presupuestos del inicio ordenados como en Presupuestos (primero la barra más llena o pasada del límite). | HECHO | Verificado: Casa 96 %, Comida 43 %, QA 0 %. |
+| AF03 | Proyecciones mes a mes en iPad: texto más grande (mes, tipo, ingresos, gastos, neto, balance) y menos padding vertical. | HECHO (código) | Sin verificar en tablet; el emulador está en tamaño de teléfono. |
+| AF04 | Personalizar el color de la tarjeta de cuenta: automática, blanca, negra, marino, esmeralda, ámbar y rosa; el texto se elige por contraste. | HECHO (local) | Verificado con la blanca (texto oscuro, marca de selección). Se guarda en este teléfono (SecureStore), no en la base: no se ve en la web hasta que se apruebe un campo en el backend. |
+| AF05 | Tooltip completo en el botón «+» y en cada tipo (gasto, ingreso, transferir, cuenta, categoría, presupuesto, ahorro, proyecto). | HECHO (parcial) | Verificado el tooltip del título y la tarjeta de «Gasto». Los tooltips de los demás tipos no se abrieron en el emulador. |
+| AF06 | Overlay «Can't perform a React state update on a component that hasn't mounted yet» al abrir «+». | ABIERTO | Ocurrió una vez; en la segunda apertura no apareció. Sin componente identificado. |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.

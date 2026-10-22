@@ -5,6 +5,7 @@ import { Platform, Pressable, Text, View } from 'react-native';
 
 import { BankBadge } from '@/components/bank-badge';
 import { bankById, formatCardNumber } from '@gastify/core/banks/banks';
+import { useAccountCardStyle, cardPalette } from '@/lib/account-card-style';
 
 import type { AccountActivity } from '@gastify/core/accounts/accountActivity';
 import { accountGradient } from '@gastify/core/accounts/accountActivity';
@@ -17,9 +18,9 @@ const TYPE_LABEL: Record<string, string> = Object.fromEntries(ACCOUNT_TYPES.map(
 
 export const ACCOUNT_CARD_WIDTH = 300;
 
-// An account drawn like a credit card, as on the web: a gradient (always the same one for the same account), its
-// name, the balance in its own currency, what that is worth in the main currency, and what came in and went out in
-// the period shown.
+// An account drawn like a credit card, as on the web: a gradient (always the same one for the same account unless the
+// person chose another color), its name, the balance in its own currency, what that is worth in the main currency,
+// and what came in and went out in the period shown. The text takes its color from the card, so it always reads.
 export function AccountCard({
   account,
   primary,
@@ -37,7 +38,11 @@ export function AccountCard({
 }) {
   const [reveal, setReveal] = useState(false);
   const bank = bankById(account.bankId);
-  const [from, to] = accountGradient(idOf(account) || account.name || 'cuenta');
+  const id = idOf(account);
+  const style = useAccountCardStyle(id);
+  const { from, to, ink, tint, light } = cardPalette(style, accountGradient(id || account.name || 'cuenta'));
+  const up = light ? '#15803d' : '#86efac';
+  const down = light ? '#be123c' : '#fda4af';
   const code = account.currency || primary;
   const balance = account.amount ?? 0;
   const equivalent = code !== primary && rate ? balance * rate : null;
@@ -52,38 +57,39 @@ export function AccountCard({
         end={{ x: 1, y: 1 }}
         style={[
           { borderRadius: 26, padding: 18, minHeight: 190, justifyContent: 'space-between', overflow: 'hidden' },
+          light ? { borderWidth: 1, borderColor: 'rgba(17,24,39,0.12)' } : null,
           Platform.select({ ios: { shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } }, default: { elevation: 8 } }),
         ]}>
-        <View pointerEvents="none" style={{ position: 'absolute', right: -40, top: -40, width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(255,255,255,0.12)' }} />
-        <View pointerEvents="none" style={{ position: 'absolute', right: 30, bottom: -60, width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+        <View pointerEvents="none" style={{ position: 'absolute', right: -40, top: -40, width: 150, height: 150, borderRadius: 75, backgroundColor: tint(0.12) }} />
+        <View pointerEvents="none" style={{ position: 'absolute', right: 30, bottom: -60, width: 130, height: 130, borderRadius: 65, backgroundColor: tint(0.08) }} />
         <View className="flex-row items-center justify-between gap-3">
           {account.bankId ? <BankBadge bankId={account.bankId} size={44} /> : null}
-          <Text className="flex-1 font-inter-semibold text-lg" numberOfLines={1} style={{ color: '#ffffff' }}>{account.name || 'Cuenta'}</Text>
-          <View style={{ backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
-            <Text className="font-inter-medium text-[11px]" style={{ color: '#ffffff' }}>{TYPE_LABEL[type] ?? type}</Text>
+          <Text className="flex-1 font-inter-semibold text-lg" numberOfLines={1} style={{ color: ink }}>{account.name || 'Cuenta'}</Text>
+          <View style={{ backgroundColor: tint(0.22), borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
+            <Text className="font-inter-medium text-[11px]" style={{ color: ink }}>{TYPE_LABEL[type] ?? type}</Text>
           </View>
         </View>
         <View>
-          <Text className="font-inter-medium text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{code}{bank ? ` · ${bank.name}` : account.institution ? ` · ${account.institution}` : ''}</Text>
-          <Text className="font-inter-bold text-3xl" numberOfLines={1} adjustsFontSizeToFit style={{ color: '#ffffff' }}>{money(balance)}</Text>
+          <Text className="font-inter-medium text-xs" style={{ color: tint(0.8) }}>{code}{bank ? ` · ${bank.name}` : account.institution ? ` · ${account.institution}` : ''}</Text>
+          <Text className="font-inter-bold text-3xl" numberOfLines={1} adjustsFontSizeToFit style={{ color: ink }}>{money(balance)}</Text>
           {equivalent !== null && (
-            <Text className="font-inter text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>≈ {formatMoneyMajor(equivalent, primary, { showCode: false })} {primary}</Text>
+            <Text className="font-inter text-xs" style={{ color: tint(0.85) }}>≈ {formatMoneyMajor(equivalent, primary, { showCode: false })} {primary}</Text>
           )}
         </View>
         {account.cardNumber ? (
           <Pressable accessibilityRole="button" accessibilityLabel={reveal ? 'Ocultar el número' : 'Mostrar el número'} onPress={() => setReveal((value) => !value)} hitSlop={8} className="flex-row items-center gap-2 self-start">
-            <Text className="font-inter-medium text-sm" style={{ color: 'rgba(255,255,255,0.92)', letterSpacing: 1 }}>{formatCardNumber(account.cardNumber, reveal)}</Text>
-            <Ionicons name={reveal ? 'eye-off-outline' : 'eye-outline'} size={18} color="rgba(255,255,255,0.9)" />
+            <Text className="font-inter-medium text-sm" style={{ color: tint(0.92), letterSpacing: 1 }}>{formatCardNumber(account.cardNumber, reveal)}</Text>
+            <Ionicons name={reveal ? 'eye-off-outline' : 'eye-outline'} size={18} color={tint(0.9)} />
           </Pressable>
         ) : null}
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-row items-center gap-1">
-            <Ionicons name="arrow-up-circle" size={18} color="#86efac" />
-            <Text className="font-inter-semibold text-sm" numberOfLines={1} style={{ color: '#ffffff' }}>{money(activity?.incomes ?? 0)}</Text>
+            <Ionicons name="arrow-up-circle" size={18} color={up} />
+            <Text className="font-inter-semibold text-sm" numberOfLines={1} style={{ color: ink }}>{money(activity?.incomes ?? 0)}</Text>
           </View>
           <View className="flex-row items-center gap-1">
-            <Ionicons name="arrow-down-circle" size={18} color="#fda4af" />
-            <Text className="font-inter-semibold text-sm" numberOfLines={1} style={{ color: '#ffffff' }}>{money(activity?.spending ?? 0)}</Text>
+            <Ionicons name="arrow-down-circle" size={18} color={down} />
+            <Text className="font-inter-semibold text-sm" numberOfLines={1} style={{ color: ink }}>{money(activity?.spending ?? 0)}</Text>
           </View>
         </View>
       </LinearGradient>

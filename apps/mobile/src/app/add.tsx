@@ -8,6 +8,7 @@ import { BudgetForm } from '@/components/forms/budget-form';
 import { CategoryForm } from '@/components/forms/category-form';
 import { MovementForm } from '@/components/movement-form';
 import { Screen } from '@/components/screen';
+import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/toast';
 import { TransferForm } from '@/components/transfer-form';
 import { Colors } from '@/constants/theme';
@@ -15,9 +16,10 @@ import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
+import { CREATE_KIND_INFO, CREATE_KIND_SUMMARY, CREATE_SCREEN_INFO, type CreateKind } from '@/lib/create-info';
 import { emptyBudgetValues } from '@gastify/core/budgets/budgetForm';
 
-type Kind = 'expense' | 'income' | 'transfer' | 'account' | 'category' | 'budget' | 'saving' | 'project';
+type Kind = CreateKind;
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const KINDS: { value: Kind; label: string; icon: IconName }[] = [
@@ -112,7 +114,7 @@ export default function AddScreen() {
   };
 
   return (
-    <Screen title="Crear" subtitle="Elige qué quieres agregar.">
+    <Screen title="Crear" subtitle="Elige qué quieres agregar." titleInfo={CREATE_SCREEN_INFO}>
       <View className="flex-row flex-wrap gap-2">
         {KINDS.map((item) => {
           const selected = item.value === kind;
@@ -136,6 +138,9 @@ export default function AddScreen() {
           );
         })}
       </View>
+      <Card title={KINDS.find((item) => item.value === kind)?.label ?? ''} info={CREATE_KIND_INFO[kind]}>
+        <Text className="font-inter text-sm text-gf-text-muted">{CREATE_KIND_SUMMARY[kind]}</Text>
+      </Card>
       <View>{form()}</View>
     </Screen>
   );

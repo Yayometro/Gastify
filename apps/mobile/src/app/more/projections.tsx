@@ -175,27 +175,27 @@ export default function ProjectionsScreen() {
             const balanceText = (entry: { balance?: number | null; estimatedBalance?: number | null } | undefined) =>
               typeof entry?.balance === 'number' ? money(entry.balance) : typeof entry?.estimatedBalance === 'number' ? `≈ ${money(entry.estimatedBalance)}` : '—';
             return (
-              <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={`Abrir ${row.monthName}`} onPress={() => setOpenMonth(index)} className={`gap-1 rounded-xl px-3 ${T('py-3', 'py-5')}`} style={zebra(index, dark)}>
+              <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={`Abrir ${row.monthName}`} onPress={() => setOpenMonth(index)} className="gap-1 rounded-xl px-3 py-3" style={zebra(index, dark)}>
                 <View className="flex-row items-center justify-between">
-                  <Text className={`font-inter-semibold ${T('text-base', 'text-2xl')} capitalize text-gf-text`}>{MONTHS_ES[index] ?? row.monthName}</Text>
-                  <Text className={`font-inter-medium ${T('text-xs', 'text-base')}`} style={{ color: row.type === 'estimate' ? colors.accent : colors.textSecondary }}>{TYPE_LABEL[row.type]}</Text>
+                  <Text className={`font-inter-semibold ${T('text-base', 'text-3xl')} capitalize text-gf-text`}>{MONTHS_ES[index] ?? row.monthName}</Text>
+                  <Text className={`font-inter-medium ${T('text-xs', 'text-lg')}`} style={{ color: row.type === 'estimate' ? colors.accent : colors.textSecondary }}>{TYPE_LABEL[row.type]}</Text>
                 </View>
                 <View className="flex-row gap-3">
                   <View className="flex-1">
-                    <Text className={`font-inter ${T('text-xs', 'text-base')} text-gf-text-muted`} style={{ minHeight: 22 }}>Ingresos</Text>
-                    <Text className={`font-inter-medium ${T('text-sm', 'text-2xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.income }}>{money(income ?? 0)}</Text>
+                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>Ingresos</Text>
+                    <Text className={`font-inter-medium ${T('text-sm', 'text-3xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.income }}>{money(income ?? 0)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className={`font-inter ${T('text-xs', 'text-base')} text-gf-text-muted`} style={{ minHeight: 22 }}>Gastos</Text>
-                    <Text className={`font-inter-medium ${T('text-sm', 'text-2xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(expense ?? 0)}</Text>
+                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>Gastos</Text>
+                    <Text className={`font-inter-medium ${T('text-sm', 'text-3xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(expense ?? 0)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className={`font-inter ${T('text-xs', 'text-base')} text-gf-text-muted`} style={{ minHeight: 22 }}>Neto</Text>
-                    <Text className={`font-inter-semibold ${T('text-sm', 'text-2xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: net < 0 ? colors.expense : colors.income }}>{money(net)}</Text>
+                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>Neto</Text>
+                    <Text className={`font-inter-semibold ${T('text-sm', 'text-3xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: net < 0 ? colors.expense : colors.income }}>{money(net)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className={`font-inter ${T('text-xs', 'text-base')} text-gf-text-muted`} style={{ minHeight: 22 }}>Balance</Text>
-                    <Text className={`font-inter-semibold ${T('text-sm', 'text-2xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.text }}>
+                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>Balance</Text>
+                    <Text className={`font-inter-semibold ${T('text-sm', 'text-3xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.text }}>
                       {balanceText(balanceRows[index])}
                     </Text>
                   </View>

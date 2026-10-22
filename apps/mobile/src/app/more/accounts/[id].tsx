@@ -5,6 +5,7 @@ import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { AccountCard } from '@/components/account-card';
+import { CardColorPicker } from '@/components/account-card-color';
 import { BankBadge } from '@/components/bank-badge';
 import { bankById, formatCardNumber } from '@gastify/core/banks/banks';
 import { AccountForm } from '@/components/forms/account-form';
@@ -82,6 +83,8 @@ export default function EditAccountScreen() {
   return (
     <Screen title={account.name || 'Cuenta'} subtitle={`Moneda: ${account.currency || 'MXN'}`} backLabel="Cuentas" onBack={back}>
       <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} />
+
+      <CardColorPicker accountId={id} />
 
       {bankById(account.bankId) || account.cardNumber ? (
         <Card title="Banco y número" info={{ title: 'Banco y número', text: 'El banco al que pertenece la cuenta y, si lo quisiste, su número de tarjeta o de cuenta, oculto de forma predeterminada (toca el ojito para verlo). Nunca se guarda el CVV ni el NIP.' }}>
