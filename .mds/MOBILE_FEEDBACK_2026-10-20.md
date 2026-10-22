@@ -348,6 +348,27 @@ Prefijo AA. El usuario aprobó el trabajo anterior ("muy buen trabajo").
 | AA12 | Dashboard, Presupuestos: cada presupuesto con su tarjetita como en la pantalla de Presupuestos, hasta 10 como máximo (menos si hay menos); «Ver todos» lleva a Presupuestos. | HECHO | Verificado: cada presupuesto con la misma tarjeta de Presupuestos, hasta 10; «Ver todos (N)». |
 | AA13 | Dashboard, Últimos movimientos: de la misma altura que Presupuestos, mostrando los movimientos que quepan. | HECHO | Verificado: Últimos movimientos junto a Presupuestos, con más filas (3 por cada presupuesto, hasta 40). |
 
+## Undécima ronda (2026-10-21, sexta prueba del iPad)
+
+Prefijo AB. El usuario confirmó: moneda principal en Perfil, cuentas en dos columnas (iPad), indicador activo, tabla del Resumen.
+
+| ID | Punto | Estado | Notas |
+|---|---|---|---|
+| AB01 | iPad, Wallet: «Resumen de transacciones» debe ocupar todo el ancho (ya no compartir fila con el Top 6): a la izquierda filtros y gráfica, a la derecha la lista de categorías con un máximo de 15. | PENDIENTE | |
+| AB02 | Resumen de transacciones: si hay más de 15 categorías, botón «Ver más» que abre un modal muy grande (casi pantalla completa, en iPad y en iPhone) con los filtros y TODAS las categorías (de 1 a 50), con scroll e interactividad, sin la gráfica. | PENDIENTE | |
+| AB03 | Top 6: ocupa todo el ancho (ya está), pero los movimientos tienen doble fondo (el del número y el de la transacción): dejar el número sin fondo; o hacerlo en forma de tabla. | PENDIENTE | |
+| AB04 | Top 6: categorías y movimientos con la misma altura de fila (todo simétrico, en tabla). | PENDIENTE | |
+| AB05 | Modal de una categoría (al tocarla en el Top): mostrar el nombre, el total en dinero, el número de movimientos y las subcategorías ordenadas de mayor a menor gasto; dentro de cada subcategoría, sus transacciones indentadas, también de mayor a menor; con opción de ordenar de menor a mayor. | PENDIENTE | |
+| AB06 | Mientras cargan los widgets/componentes: animaciones de carga mucho más bonitas. | PENDIENTE | |
+| AB07 | Wallet: «Últimos movimientos» no debe pasar de la altura de Presupuestos; limitar o dar scroll interno; la referencia de altura es Presupuestos. | PENDIENTE | |
+| AB08 | Presupuestos (pantalla y Wallet): ordenar por defecto del mayor gasto al menor; con un selector de orden. | PENDIENTE | |
+| AB09 | Notificaciones de presupuestos: avisos al llegar al 70 %, 80 %, 90 % y al pasar el 100 %; felicitación (con fuegos artificiales) si en 15 días un presupuesto no se ha movido o está bajo 50 %; lo mismo para ahorros (avances) y proyectos (felicitar si no pasa de 50 %, alarma si se acerca o excede). Prioridad absoluta. | PENDIENTE | |
+| AB10 | Crear un proyecto desde el iPad: tardó mucho en verse en la interfaz y no hubo aviso de que se creó; corregir (aviso inmediato y actualización de la lista). | PENDIENTE | |
+| AB11 | Presupuestos, la barra «Editar»: debe expandirse/plegarse al tocar en cualquier parte de la caja, no solo en la flechita. | PENDIENTE | |
+| AB12 | iPad: los avisos (toasts) abarcan todo el ancho; deben ser una tarjeta no tan grande en la esquina superior derecha, con efecto glass (hoy son demasiado translúcidos, no se distinguen del fondo) y con una versión para fondo claro y otra para fondo oscuro. | PENDIENTE | |
+| AB13 | Cuentas, bancos (el usuario AUTORIZÓ el cambio de esquema en el servidor): campo de banco en la cuenta, íconos de los bancos de México buscados por mí, convertidos y homogeneizados (mismo tamaño y altura); más países después. | PENDIENTE | |
+| AB14 | Cuentas: número de tarjeta o de cuenta opcional (autorizado), con ojito para mostrar u ocultar; nunca CVV; dejar claro que es opcional. | PENDIENTE | |
+
 ## Notas
 
 - **Nota iPad (G04):** el usuario pregunta si conviene hacerlo ahora o después. Recomendación: hacerlo pronto, en una fase corta de diseño adaptable (menú lateral en pantallas anchas), porque si no cada pantalla nueva se rehace dos veces.
