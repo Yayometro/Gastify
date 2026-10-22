@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
-import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
+import { Animated, StyleSheet, View, useColorScheme } from 'react-native';
+import Svg, { Defs, RadialGradient, Rect, Stop, Circle } from 'react-native-svg';
+
+import { ambientScrollY } from '@/lib/ambient-scroll';
 
 // The five blobs of the web's `.walllet-bg` mesh (violet, magenta, indigo, plum), drawn as radial
 // gradients over its dark base. Dark mode only, like the web: in light mode the screens keep the flat
@@ -13,6 +15,49 @@ const BLOBS = [
   { id: 'e', cx: '90%', cy: '90%', r: '52%', color: '#7c3aed', opacity: 0.28 },
 ] as const;
 
+type Blob = { cx: string; cy: string; r: string; color: string; opacity: number };
+
+// More colour as the page goes down: each layer fades in over its own stretch of scroll (points), so a long page
+// (the dashboard) keeps finding new hues the further down it goes. The layers stack over the mesh above.
+const LAYERS: { from: number; to: number; blobs: Blob[] }[] = [
+  {
+    from: 420,
+    to: 880,
+    blobs: [
+      { cx: '94%', cy: '40%', r: '50%', color: '#d946ef', opacity: 0.34 },
+      { cx: '6%', cy: '64%', r: '46%', color: '#be185d', opacity: 0.24 },
+    ],
+  },
+  {
+    from: 1100,
+    to: 1640,
+    blobs: [
+      { cx: '20%', cy: '42%', r: '52%', color: '#4338ca', opacity: 0.32 },
+      { cx: '98%', cy: '74%', r: '42%', color: '#0ea5e9', opacity: 0.16 },
+    ],
+  },
+  {
+    from: 1900,
+    to: 2480,
+    blobs: [
+      { cx: '50%', cy: '94%', r: '60%', color: '#a21caf', opacity: 0.36 },
+      { cx: '4%', cy: '18%', r: '40%', color: '#6d28d9', opacity: 0.28 },
+      { cx: '96%', cy: '28%', r: '36%', color: '#f0abfc', opacity: 0.12 },
+    ],
+  },
+];
+
+// Figures that drift behind the page, each slower than the page itself (a parallax): soft glows and thin rings.
+// `top` is where it starts on the screen, in points; `speed` is the share of the scroll it travels.
+const SHAPES: { glow?: string; ring?: boolean; left: string; top: number; size: number; speed: number; opacity: number }[] = [
+  { glow: '#c084fc', left: '70%', top: 120, size: 240, speed: 0.12, opacity: 0.26 },
+  { ring: true, left: '-8%', top: 360, size: 170, speed: 0.22, opacity: 0.2 },
+  { glow: '#f472b6', left: '6%', top: 780, size: 200, speed: 0.08, opacity: 0.2 },
+  { ring: true, left: '76%', top: 1180, size: 120, speed: 0.18, opacity: 0.2 },
+  { glow: '#818cf8', left: '58%', top: 1600, size: 300, speed: 0.1, opacity: 0.22 },
+  { ring: true, left: '12%', top: 2120, size: 150, speed: 0.2, opacity: 0.18 },
+];
+
 export const DARK_BASE = '#140b26';
 
 // `baseOpacity` < 1 lets whatever is behind show through the dark base (the sheets' light see-through glass).
@@ -23,6 +68,8 @@ export function AmbientBackground({ baseOpacity = 1 }: { baseOpacity?: number } 
   // screen was left without the gradient.
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   if (scheme !== 'dark') return null;
+  const svgKey = size ? `${size.width}x${size.height}` : 'initial';
+  const svgSize = { width: size ? size.width : '100%', height: size ? size.height : '100%' } as const;
   return (
     <View
       pointerEvents="none"
@@ -31,7 +78,7 @@ export function AmbientBackground({ baseOpacity = 1 }: { baseOpacity?: number } 
         const { width, height } = event.nativeEvent.layout;
         setSize((current) => (current && current.width === width && current.height === height ? current : { width, height }));
       }}>
-      <Svg key={size ? `${size.width}x${size.height}` : 'initial'} width={size ? size.width : '100%'} height={size ? size.height : '100%'} preserveAspectRatio="none">
+      <Svg key={svgKey} {...svgSize} preserveAspectRatio="none">
         <Defs>
           {BLOBS.map((blob) => (
             <RadialGradient key={blob.id} id={blob.id} cx={blob.cx} cy={blob.cy} r={blob.r} gradientUnits="objectBoundingBox">
@@ -45,6 +92,60 @@ export function AmbientBackground({ baseOpacity = 1 }: { baseOpacity?: number } 
           <Rect key={blob.id} x="0" y="0" width="100%" height="100%" fill={`url(#${blob.id})`} />
         ))}
       </Svg>
+
+      {LAYERS.map((layer, index) => (
+        <Animated.View
+          key={`layer-${index}`}
+          pointerEvents="none"
+          style={[StyleSheet.absoluteFill, { opacity: ambientScrollY.interpolate({ inputRange: [layer.from, layer.to], outputRange: [0, 1], extrapolate: 'clamp' }) }]}>
+          <Svg key={`${svgKey}-${index}`} {...svgSize} preserveAspectRatio="none">
+            <Defs>
+              {layer.blobs.map((blob, blobIndex) => (
+                <RadialGradient key={blobIndex} id={`layer-${index}-${blobIndex}`} cx={blob.cx} cy={blob.cy} r={blob.r} gradientUnits="objectBoundingBox">
+                  <Stop offset="0" stopColor={blob.color} stopOpacity={blob.opacity} />
+                  <Stop offset="1" stopColor={blob.color} stopOpacity={0} />
+                </RadialGradient>
+              ))}
+            </Defs>
+            {layer.blobs.map((_, blobIndex) => (
+              <Rect key={blobIndex} x="0" y="0" width="100%" height="100%" fill={`url(#layer-${index}-${blobIndex})`} />
+            ))}
+          </Svg>
+        </Animated.View>
+      ))}
+
+      {SHAPES.map((shape, index) => (
+        <Animated.View
+          key={`shape-${index}`}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: shape.left as `${number}%`,
+            top: shape.top,
+            width: shape.size,
+            height: shape.size,
+            opacity: shape.opacity,
+            transform: [
+              {
+                translateY: ambientScrollY.interpolate({ inputRange: [0, 1000], outputRange: [0, -1000 * shape.speed], extrapolate: 'extend' }),
+              },
+            ],
+          }}>
+          {shape.ring ? (
+            <View style={{ flex: 1, borderRadius: shape.size / 2, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)' }} />
+          ) : (
+            <Svg width={shape.size} height={shape.size}>
+              <Defs>
+                <RadialGradient id={`shape-${index}`} cx="50%" cy="50%" r="50%">
+                  <Stop offset="0" stopColor={shape.glow} stopOpacity={1} />
+                  <Stop offset="1" stopColor={shape.glow} stopOpacity={0} />
+                </RadialGradient>
+              </Defs>
+              <Circle cx={shape.size / 2} cy={shape.size / 2} r={shape.size / 2} fill={`url(#shape-${index})`} />
+            </Svg>
+          )}
+        </Animated.View>
+      ))}
     </View>
   );
 }

@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
-import { Platform, Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, PanResponder, Platform, Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Categorizer } from '@/components/tools/categorizer';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { SIDE_NAV_WIDTH } from '@/components/side-nav';
 import { BottomTabInset, Colors } from '@/constants/theme';
 
 type Tool = { id: string; label: string; title: string; about: string; render: () => React.JSX.Element };
@@ -21,27 +23,141 @@ const TOOLS: Tool[] = [
   },
 ];
 
-// The web's floating "Tools" button (the sparkles) and the sheet it opens. It floats above every screen: bottom
-// right on the phone (above the tab bar) and on the iPad.
+// The web's floating "Tools" button (the sparkles) and the sheet it opens. It floats above every screen and can be
+// dragged to any border: the left or right edge at any height, or the top or bottom edge at any place along it. Let go,
+// it settles on the nearest edge. Where it was left is remembered on the device. Tapping it opens the sheet.
+const SIZE = 48;
+const EDGE = 12;
+const SPOT_KEY = 'tools_fab_spot';
+const DEFAULT_SPOT: Spot = { edge: 'right', ratio: 1 };
+
+type Edge = 'left' | 'right' | 'top' | 'bottom';
+// A place on an edge: the edge, and how far along it (0 = the start, 1 = the end), so a rotation keeps it on that edge.
+type Spot = { edge: Edge; ratio: number };
+type Bounds = { minX: number; maxX: number; minY: number; maxY: number };
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+// The area the button may use: under the status bar, above the tab bar (or the bottom inset on the iPad), and right of the
+// side bar on the iPad. Positions are the button's top-left corner, in the window.
+function boundsFor(width: number, height: number, top: number, bottomOffset: number, leftOffset: number): Bounds {
+  return { minX: leftOffset + EDGE, maxX: width - SIZE - EDGE, minY: top + EDGE, maxY: height - bottomOffset - SIZE };
+}
+
+function spotPosition(spot: Spot, b: Bounds): { x: number; y: number } {
+  const r = clamp(spot.ratio, 0, 1);
+  switch (spot.edge) {
+    case 'left': return { x: b.minX, y: b.minY + r * (b.maxY - b.minY) };
+    case 'right': return { x: b.maxX, y: b.minY + r * (b.maxY - b.minY) };
+    case 'top': return { x: b.minX + r * (b.maxX - b.minX), y: b.minY };
+    default: return { x: b.minX + r * (b.maxX - b.minX), y: b.maxY };
+  }
+}
+
+// Where a let-go button settles: the nearest edge, keeping the place it was let go along that edge.
+function snapOf(x: number, y: number, b: Bounds): { x: number; y: number; spot: Spot } {
+  const cx = clamp(x, b.minX, b.maxX);
+  const cy = clamp(y, b.minY, b.maxY);
+  const distances: [Edge, number][] = [['left', cx - b.minX], ['right', b.maxX - cx], ['top', cy - b.minY], ['bottom', b.maxY - cy]];
+  const edge = distances.reduce((best, item) => (item[1] < best[1] ? item : best))[0];
+  const ratioX = (cx - b.minX) / (b.maxX - b.minX || 1);
+  const ratioY = (cy - b.minY) / (b.maxY - b.minY || 1);
+  switch (edge) {
+    case 'left': return { x: b.minX, y: cy, spot: { edge, ratio: ratioY } };
+    case 'right': return { x: b.maxX, y: cy, spot: { edge, ratio: ratioY } };
+    case 'top': return { x: cx, y: b.minY, spot: { edge, ratio: ratioX } };
+    default: return { x: cx, y: b.maxY, spot: { edge, ratio: ratioX } };
+  }
+}
+
+function readSpot(raw: string | null): Spot | null {
+  try {
+    const value = raw ? (JSON.parse(raw) as Partial<Spot>) : null;
+    const edges: Edge[] = ['left', 'right', 'top', 'bottom'];
+    return value && edges.includes(value.edge as Edge) && typeof value.ratio === 'number' ? (value as Spot) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function ToolsFab() {
   const insets = useSafeAreaInsets();
-  const wide = useWindowDimensions().width >= 768;
+  const { width, height } = useWindowDimensions();
+  const wide = width >= 768;
   const [open, setOpen] = useState(false);
+  const [spot, setSpot] = useState<Spot>(DEFAULT_SPOT);
+  const bounds = useMemo(
+    () => boundsFor(width, height, insets.top, wide ? insets.bottom + 16 : BottomTabInset + 8, wide ? SIDE_NAV_WIDTH : 0),
+    [width, height, insets.top, insets.bottom, wide]
+  );
+  const pos = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  // Where the button is now, kept by hand (the native driver does not report it while it springs).
+  const last = useRef({ x: 0, y: 0 });
+  const dragStart = useRef({ x: 0, y: 0 });
+  const dragging = useRef(false);
+
+  useEffect(() => {
+    SecureStore.getItemAsync(SPOT_KEY).then((raw) => {
+      const saved = readSpot(raw);
+      if (saved) setSpot(saved);
+    }).catch(() => {});
+  }, []);
+
+  // Sits on its spot whenever the spot or the window changes (a rotation keeps it on the same edge), unless it is being dragged.
+  useEffect(() => {
+    if (dragging.current) return;
+    const target = spotPosition(spot, bounds);
+    last.current = target;
+    pos.setValue(target);
+  }, [spot, bounds, pos]);
+
+  const responder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderGrant: () => {
+          dragging.current = true;
+          dragStart.current = last.current;
+        },
+        onPanResponderMove: (_, gesture) => {
+          pos.setValue({ x: dragStart.current.x + gesture.dx, y: dragStart.current.y + gesture.dy });
+        },
+        onPanResponderRelease: (_, gesture) => {
+          dragging.current = false;
+          if (Math.abs(gesture.dx) + Math.abs(gesture.dy) <= 6) {
+            setOpen(true);
+            return;
+          }
+          const next = snapOf(dragStart.current.x + gesture.dx, dragStart.current.y + gesture.dy, bounds);
+          last.current = { x: next.x, y: next.y };
+          Animated.spring(pos, { toValue: { x: next.x, y: next.y }, useNativeDriver: true, friction: 9, tension: 90 }).start();
+          setSpot(next.spot);
+          SecureStore.setItemAsync(SPOT_KEY, JSON.stringify(next.spot)).catch(() => {});
+        },
+        onPanResponderTerminate: () => {
+          dragging.current = false;
+          pos.setValue(last.current);
+        },
+      }),
+    [bounds, pos]
+  );
 
   return (
     <>
-      <Pressable
+      <Animated.View
+        {...responder.panHandlers}
+        accessible
         accessibilityRole="button"
         accessibilityLabel="Abrir herramientas"
-        onPress={() => setOpen(true)}
+        accessibilityHint="Arrástralo a otro borde o esquina"
         style={[
-          { position: 'absolute', right: 16, bottom: wide ? insets.bottom + 16 : BottomTabInset + 8, width: 48, height: 48, zIndex: 50 },
+          { position: 'absolute', left: 0, top: 0, width: SIZE, height: SIZE, zIndex: 50, transform: pos.getTranslateTransform() },
           Platform.select({ ios: { shadowColor: '#7e22ce', shadowOpacity: 0.5, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }, default: { elevation: 8 } }),
         ]}>
         <LinearGradient colors={['#e879f9', '#9333ea']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ flex: 1, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="sparkles" size={22} color="#ffffff" />
         </LinearGradient>
-      </Pressable>
+      </Animated.View>
 
       <ToolsSheet visible={open} onClose={() => setOpen(false)} />
     </>

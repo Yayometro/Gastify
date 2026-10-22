@@ -1,13 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { Alert, Pressable, Text, View, useColorScheme } from 'react-native';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Alert, Animated, Easing, Pressable, Text, View, useColorScheme } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { AccountCard } from '@/components/account-card';
 import { CardColorPicker } from '@/components/account-card-color';
-import { BankBadge } from '@/components/bank-badge';
-import { bankById, formatCardNumber } from '@gastify/core/banks/banks';
 import { AccountForm } from '@/components/forms/account-form';
 import { SummaryWidget } from '@/components/home/summary-widget';
 import { PeriodControls } from '@/components/period-controls';
@@ -30,7 +27,9 @@ import { Colors } from '@/constants/theme';
 import { monthTotals, sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { APP_INFO } from '@gastify/core/info/appInfo';
 
-// Edits one account: name, kind and balance. The currency stays as it was created.
+// One account: its card (bank, name, currency, number), and the pencil on the card that opens the edition right under
+// it: the color and pattern, then the name, type and balance. The card already shows the bank and the number, so there
+// is no separate section for them.
 export default function EditAccountScreen() {
   const { id: rawId, returnTo: rawReturn } = useLocalSearchParams<{ id: string; returnTo?: string }>();
   const id = String(rawId ?? '');
@@ -51,7 +50,6 @@ export default function EditAccountScreen() {
   const rates = useRatesToPrimary([account?.currency], primary);
   const activity = useMemo(() => accountActivity(mine, period.range), [mine, period.range]);
   const [editOpen, setEditOpen] = useState(false);
-  const [showNumber, setShowNumber] = useState(false);
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
@@ -85,32 +83,31 @@ export default function EditAccountScreen() {
 
   return (
     <Screen title={account.name || 'Cuenta'} subtitle={`Moneda: ${account.currency || 'MXN'}`} backLabel={returnTo ? 'Inicio' : 'Cuentas'} onBack={back}>
-      <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} />
+      <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} onEdit={() => setEditOpen((open) => !open)} />
 
-      <CardColorPicker account={account} />
-
-      {bankById(account.bankId) || account.cardNumber ? (
-        <Card title="Banco y número" info={APP_INFO.banco_y_n_mero}>
-          {bankById(account.bankId) ? (
-            <View className="flex-row items-center gap-3">
-              <BankBadge bankId={account.bankId} size={56} />
-              <View className="flex-1">
-                <Text className="font-inter-semibold text-lg text-gf-text">{bankById(account.bankId)?.name}</Text>
-                <Text className="font-inter text-sm text-gf-text-muted">{account.currency || 'MXN'}</Text>
-              </View>
-            </View>
-          ) : null}
-          {account.cardNumber ? (
-            <Pressable accessibilityRole="button" accessibilityLabel={showNumber ? 'Ocultar el número' : 'Mostrar el número'} onPress={() => setShowNumber((value) => !value)} className="flex-row items-center justify-between rounded-2xl border border-gf-border px-4 py-3">
-              <Text className="font-inter-semibold text-lg text-gf-text" style={{ letterSpacing: 1.5 }}>{formatCardNumber(account.cardNumber, showNumber)}</Text>
-              <Ionicons name={showNumber ? 'eye-off-outline' : 'eye-outline'} size={22} color={colors.accent} />
-            </Pressable>
-          ) : null}
-        </Card>
+      {editOpen ? (
+        <RevealUnder>
+          <View className="gap-4">
+            <CardColorPicker account={account} />
+            <Card title="Editar cuenta">
+              <AccountForm
+                key={id}
+                currencyLocked
+                initial={{ name: account.name ?? '', accountType: account.accountType ?? 'debit', currency: account.currency || 'MXN', amount: account.amount !== undefined && account.amount !== null ? String(account.amount) : '0', bankId: account.bankId ?? null, cardNumber: account.cardNumber ?? '' }}
+                submitLabel="Guardar cambios"
+                onSubmit={async (values) => {
+                  await sendWrite('general-data/accounts/update-account', { accountId: id, ...values });
+                  toast.show('Cuenta guardada');
+                  reloadAfterWrite(dispatch);
+                  setEditOpen(false);
+                }}
+              />
+            </Card>
+          </View>
+        </RevealUnder>
       ) : null}
 
       <PeriodControls period={period} />
-
 
       <SummaryWidget summary={summary} movements={inPeriod} allMovements={mine} currency={primary} />
 
@@ -134,31 +131,29 @@ export default function EditAccountScreen() {
         )}
       </Card>
 
-      <Card
-        title="Editar cuenta"
-        action={
-          <Pressable accessibilityRole="button" accessibilityState={{ expanded: editOpen }} accessibilityLabel={editOpen ? 'Ocultar edición' : 'Mostrar edición'} onPress={() => setEditOpen((open) => !open)} hitSlop={10}>
-            <Ionicons name={editOpen ? 'chevron-up' : 'chevron-down'} size={22} color={colors.text} />
-          </Pressable>
-        }>
-        {editOpen && (
-      <AccountForm
-        key={id}
-        currencyLocked
-        initial={{ name: account.name ?? '', accountType: account.accountType ?? 'debit', currency: account.currency || 'MXN', amount: account.amount !== undefined && account.amount !== null ? String(account.amount) : '0', bankId: account.bankId ?? null, cardNumber: account.cardNumber ?? '' }}
-        submitLabel="Guardar cambios"
-        onSubmit={async (values) => {
-          await sendWrite('general-data/accounts/update-account', { accountId: id, ...values });
-          toast.show('Cuenta guardada');
-          reloadAfterWrite(dispatch);
-          back();
-        }}
-      />
-        )}
-      </Card>
       <Pressable accessibilityRole="button" onPress={remove} className="items-center py-2">
         <Text className="font-inter-semibold text-base text-red-500">Borrar cuenta</Text>
       </Pressable>
     </Screen>
+  );
+}
+
+// The edition opens as if it came out of the card: it fades in and slides down from it, then settles in place.
+function RevealUnder({ children }: { children: ReactNode }) {
+  const progress = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(progress, { toValue: 1, duration: 320, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+  }, [progress]);
+  return (
+    <Animated.View
+      style={{
+        opacity: progress,
+        transform: [
+          { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [-28, 0] }) },
+          { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [0.97, 1] }) },
+        ],
+      }}>
+      {children}
+    </Animated.View>
   );
 }

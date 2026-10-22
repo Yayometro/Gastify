@@ -29,6 +29,7 @@ export function AccountCard({
   activity,
   rate,
   onPress,
+  onEdit,
   width,
 }: {
   account: AccountData;
@@ -36,6 +37,8 @@ export function AccountCard({
   activity?: AccountActivity;
   rate?: number;
   onPress?: () => void;
+  // The pencil in the card's corner: opens the account's edition under the card.
+  onEdit?: () => void;
   width?: number | undefined;
 }) {
   const [reveal, setReveal] = useState(false);
@@ -68,6 +71,11 @@ export function AccountCard({
           <View style={{ backgroundColor: tint(0.22), borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
             <Text className="font-inter-medium text-[11px]" style={{ color: ink }}>{TYPE_LABEL[type] ?? type}</Text>
           </View>
+          {onEdit ? (
+            <Pressable accessibilityRole="button" accessibilityLabel={`Editar ${account.name || 'la cuenta'}`} onPress={onEdit} hitSlop={10} style={{ backgroundColor: tint(0.22), borderRadius: 12, padding: 6 }}>
+              <Ionicons name="pencil" size={15} color={ink} />
+            </Pressable>
+          ) : null}
         </View>
         <View>
           <Text className="font-inter-medium text-xs" style={{ color: tint(0.8) }}>{code}{bank ? ` · ${bank.name}` : account.institution ? ` · ${account.institution}` : ''}</Text>
