@@ -75,7 +75,7 @@ export function useBudgetAlerts() {
       const fresh = alerts.filter((alert) => !shown.includes(alert.key)).slice(0, 3);
       for (let index = 0; index < fresh.length; index += 1) {
         const alert = fresh[index];
-        toast.show(alert.message, alert.tone === 'celebrate' ? 'celebrate' : alert.tone === 'danger' ? 'error' : 'warning', { title: alert.title, href: `/budgets/${alert.key.split(':')[0]}` });
+        toast.show(alert.message, alert.tone === 'celebrate' ? 'celebrate' : 'warning', { title: alert.title, href: `/budgets/${alert.key.split(':')[0]}` });
         shown.push(alert.key);
         try {
           await SecureStore.setItemAsync(STORE_KEY, JSON.stringify(shown.slice(-200)));

@@ -409,6 +409,7 @@ Prefijo AE.
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
 | AE01 | Resumen de transacciones: tres niveles de detalle (categoría → subcategoría → movimientos) en anillo, burbujas, mapa y tabla, en iPhone y iPad. | EN CURSO | Hecho en core con pruebas (categoryDrill, movimientos como tercer nivel de categoryBreakdown). En el teléfono: corregido el reinicio de ruta que causaba el aviso de React; el toque del anillo pasó a detectar el ángulo. NO verificado aún en el emulador: el toque sobre la rebanada no abrió el siguiente nivel. |
+| AE02 | Avisos de presupuesto (90 % y 100 %) al entrar al inicio: salían como toast rojo de error. | HECHO (código) | Ahora se muestran como advertencia (ámbar). Pendiente de verificar en el emulador. |
 
 ## Notas
 
