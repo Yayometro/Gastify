@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Easing, Keyboard, Modal, Platform, Pressable, StyleSheet, View, useColorScheme, type DimensionValue, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BlurView } from 'expo-blur';
 
@@ -14,6 +15,7 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
   const dark = useColorScheme() === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];
   const { width, height: screenHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const wide = width >= 768;
   const [mounted, setMounted] = useState(visible);
   // The keyboard rises over the window: lift it by the keyboard's height so the field being typed in stays visible.
@@ -48,8 +50,10 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
     return () => animation.stop();
   }, [visible, fade, grow]);
 
-  // The cap in pixels, so the window is never taller than the screen allows and a long list scrolls inside it.
-  const available = Math.max(200, screenHeight - keyboard);
+  // The cap in pixels, so the window is never taller than the screen allows and a long list scrolls inside it. The window is
+  // centred, so it keeps clear of the top of the screen on both sides: under the notch or the Dynamic Island, by 5 points.
+  const topClearance = insets.top + 5;
+  const available = Math.max(200, screenHeight - keyboard - 2 * topClearance);
   const maxPx = typeof maxHeight === 'string' && maxHeight.endsWith('%') ? Math.min((screenHeight * parseFloat(maxHeight)) / 100, available - 24) : typeof maxHeight === 'number' ? Math.min(maxHeight, available - 24) : undefined;
   const radius = { borderRadius: 28 };
 

@@ -119,7 +119,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {toast && tone && (
         <Animated.View
           accessibilityLiveRegion="polite"
-          style={[{ position: 'absolute', top: insets.top + 8, opacity, transform: [{ translateY: slide }], zIndex: 100 }, tablet ? { right: 20, width: 380 } : { left: 16, right: 16 }]}>
+          style={[{ position: 'absolute', top: insets.top + 13, opacity, transform: [{ translateY: slide }], zIndex: 100 }, tablet ? { right: 20, width: 380 } : { left: 16, right: 16 }]}>
           <Animated.View {...pan.panHandlers} style={{ transform: drag.getTranslateTransform() }}>
           <GlassSurface radius={24} style={{ backgroundColor: dark ? 'rgba(30,18,60,0.88)' : 'rgba(255,255,255,0.94)', borderWidth: 1, borderColor: dark ? 'rgba(255,255,255,0.18)' : 'rgba(27,16,61,0.10)', shadowColor: '#000', shadowOpacity: dark ? 0.5 : 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 14 }}>
             <View className="flex-row items-center gap-3 px-4 py-3">
