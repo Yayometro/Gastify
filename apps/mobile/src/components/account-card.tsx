@@ -5,7 +5,6 @@ import { Platform, Pressable, Text, View } from 'react-native';
 
 import { BankBadge } from '@/components/bank-badge';
 import { CardPattern } from '@/components/account-card-pattern';
-import { useIsTablet } from '@/hooks/use-device-class';
 import { cardPalette } from '@/lib/account-card-style';
 import { bankById, formatCardNumber } from '@gastify/core/banks/banks';
 
@@ -30,7 +29,6 @@ export function AccountCard({
   activity,
   rate,
   onPress,
-  onEdit,
   width,
 }: {
   account: AccountData;
@@ -38,11 +36,8 @@ export function AccountCard({
   activity?: AccountActivity;
   rate?: number;
   onPress?: () => void;
-  // The pencil in the card's corner: opens the account's edition under the card.
-  onEdit?: () => void;
   width?: number | undefined;
 }) {
-  const tablet = useIsTablet();
   const [reveal, setReveal] = useState(false);
   const bank = bankById(account.bankId);
   const id = idOf(account);
@@ -73,12 +68,6 @@ export function AccountCard({
           <View style={{ backgroundColor: tint(0.22), borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
             <Text className="font-inter-medium text-[11px]" style={{ color: ink }}>{TYPE_LABEL[type] ?? type}</Text>
           </View>
-          {onEdit ? (
-            <Pressable accessibilityRole="button" accessibilityLabel={`Editar ${account.name || 'la cuenta'}`} onPress={onEdit} hitSlop={10} style={{ backgroundColor: tint(0.22), borderRadius: 14, paddingVertical: 6, paddingHorizontal: tablet ? 12 : 7, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="pencil" size={15} color={ink} />
-              {tablet ? <Text className="font-inter-semibold text-xs" style={{ color: ink }}>Editar cuenta</Text> : null}
-            </Pressable>
-          ) : null}
         </View>
         <View>
           <Text className="font-inter-medium text-xs" style={{ color: tint(0.8) }}>{code}{bank ? ` · ${bank.name}` : account.institution ? ` · ${account.institution}` : ''}</Text>

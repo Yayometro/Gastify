@@ -94,7 +94,7 @@ export default function EditAccountScreen() {
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{editOpen ? 'Cerrar' : 'Editar'}</Text>
         </Pressable>
       }>
-      <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} onEdit={() => setEditOpen((open) => !open)} />
+      <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} />
 
       {editOpen ? (
         <RevealUnder>

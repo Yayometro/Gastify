@@ -83,3 +83,31 @@
   0% { transform: scale(0.8); }
   100% { transform: scale(1); }
 }
+
+
+/* On a short window the bar fits itself: its items, icons and spacing shrink with the height, so every icon stays inside it. */
+@media (min-width: 768px) {
+  .nav-full {
+    gap: clamp(2px, 0.9vh, 16px) !important;
+    padding-top: clamp(8px, 2vh, 32px) !important;
+    padding-bottom: clamp(8px, 2vh, 48px) !important;
+    overflow: hidden;
+  }
+  .gf-nav-item > a,
+  .gf-nav-item > button {
+    width: clamp(28px, calc((95vh - 120px) / 12.5), 46px);
+    height: clamp(28px, calc((95vh - 120px) / 12.5), 46px);
+  }
+  .gf-nav-item svg {
+    width: 56%;
+    height: 56%;
+  }
+  .nav-full .add-more button {
+    width: clamp(32px, calc((95vh - 100px) / 11), 50px);
+    height: clamp(32px, calc((95vh - 100px) / 11), 50px);
+  }
+  .nav-full img {
+    width: clamp(26px, 4.4vh, 40px);
+    height: clamp(26px, 4.4vh, 40px);
+  }
+}

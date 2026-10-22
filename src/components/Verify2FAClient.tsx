@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import QRCode from "qrcode";
 import { authClient } from "@/lib/auth/authClient";
+import { signInWithPasskeyOnce } from "@/lib/auth/passkeyCeremony";
 import runNotify from "@/helpers/gastifyNotifier";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
 import { FACTOR_CHANGE_STEP_UP_TTL_MINUTES, STEP_UP_TTL_MINUTES } from "@/lib/auth/stepUpConfig";
@@ -314,7 +315,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
     try {
       setLoading(true);
       setPasskeyNotice("");
-      const { error } = await authClient.signIn.passkey();
+      const { error } = await signInWithPasskeyOnce();
       if (error) {
         // Closing the system dialog (Esc / Cancel) is not a failed guess: no
         // attempt is spent, the user is told what happened and can retry or use a code.

@@ -23,7 +23,18 @@ export default function NotificationsScreen() {
   const back = () => (router.canGoBack() ? router.back() : router.navigate('/'));
 
   return (
-    <Screen title="Notificaciones" subtitle="Avisos de tus presupuestos, ahorros y proyectos de este mes." backLabel="Atrás" onBack={back}>
+    <Screen
+      title="Notificaciones"
+      subtitle="Avisos de tus presupuestos, ahorros y proyectos de este mes."
+      backLabel="Atrás"
+      onBack={back}
+      headerAction={
+        alerts.length > 0 ? (
+          <Pressable accessibilityRole="button" accessibilityLabel="Limpiar todas las notificaciones" onPress={() => alerts.forEach((alert) => void dismissAlert(alert.key))} className="rounded-full px-3 py-2" style={{ backgroundColor: colors.accentSoft }}>
+            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Limpiar todas</Text>
+          </Pressable>
+        ) : undefined
+      }>
       {alerts.length === 0 && (
         <Card title="Sin avisos por ahora" info={APP_INFO.notificaciones}>
           <Text className="font-inter text-sm text-gf-text-muted">Cuando un presupuesto o una meta llegue a un punto importante, aparecerá aquí.</Text>

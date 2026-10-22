@@ -35,7 +35,7 @@ function writeDismissed(keys: string[]): void {
 
 // The notices about budgets, saving goals and projects (70 / 80 / 90 / 100 %, congratulations, saving progress): the same
 // rules as the app's, so both show the same notices. Budgets are converted to the wallet's currency first.
-export default function useBudgetAlertList(): { alerts: BudgetAlert[]; dismiss: (key: string) => void } {
+export default function useBudgetAlertList(): { alerts: BudgetAlert[]; dismiss: (key: string) => void; dismissAll: () => void } {
   const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
   const storedBudgets = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY;
   const accounts = useSelector((state: RootState) => state.accountsReducer?.data) || EMPTY;
@@ -92,5 +92,14 @@ export default function useBudgetAlertList(): { alerts: BudgetAlert[]; dismiss: 
     });
   }, []);
 
-  return { alerts: visible, dismiss };
+  // Clears every notice that shows now.
+  const dismissAll = useCallback(() => {
+    setDismissed((current) => {
+      const next = [...current, ...alerts.map((alert) => alert.key)];
+      writeDismissed(next);
+      return next;
+    });
+  }, [alerts]);
+
+  return { alerts: visible, dismiss, dismissAll };
 }

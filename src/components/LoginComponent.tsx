@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaKey } from "react-icons/fa";
 import { authClient } from "@/lib/auth/authClient";
+import { signInWithPasskeyOnce } from "@/lib/auth/passkeyCeremony";
 import Link from "next/link";
 import runNotify from "@/helpers/gastifyNotifier";
 import useHydrated from "@/hooks/useHydrated";
@@ -83,7 +84,7 @@ function LoginComponent(): React.JSX.Element {
   const passkeySignIn = async (): Promise<void> => {
     try {
       setLoading(true);
-      const { error } = await authClient.signIn.passkey();
+      const { error } = await signInWithPasskeyOnce();
       if (error) {
         runNotify("error", error.message || "Could not sign in with that passkey 🤕");
         setLoading(false);

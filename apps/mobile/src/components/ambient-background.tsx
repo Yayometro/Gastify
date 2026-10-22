@@ -26,25 +26,26 @@ const LAYERS: { from: number; to: number; blobs: Blob[] }[] = [
     from: 420,
     to: 880,
     blobs: [
-      { cx: '94%', cy: '40%', r: '50%', color: '#d946ef', opacity: 0.34 },
-      { cx: '6%', cy: '64%', r: '46%', color: '#be185d', opacity: 0.24 },
+      { cx: '94%', cy: '40%', r: '55%', color: '#6b21a8', opacity: 0.4 },
+      { cx: '6%', cy: '64%', r: '50%', color: '#4a044e', opacity: 0.42 },
     ],
   },
   {
     from: 1100,
     to: 1640,
     blobs: [
-      { cx: '20%', cy: '42%', r: '52%', color: '#4338ca', opacity: 0.32 },
-      { cx: '98%', cy: '74%', r: '42%', color: '#0ea5e9', opacity: 0.16 },
+      { cx: '20%', cy: '42%', r: '56%', color: '#3b0764', opacity: 0.5 },
+      { cx: '98%', cy: '74%', r: '46%', color: '#1e1b4b', opacity: 0.5 },
     ],
   },
   {
     from: 1900,
     to: 2480,
     blobs: [
-      { cx: '50%', cy: '94%', r: '60%', color: '#a21caf', opacity: 0.36 },
-      { cx: '4%', cy: '18%', r: '40%', color: '#6d28d9', opacity: 0.28 },
-      { cx: '96%', cy: '28%', r: '36%', color: '#f0abfc', opacity: 0.12 },
+      { cx: '50%', cy: '94%', r: '62%', color: '#581c87', opacity: 0.45 },
+      { cx: '4%', cy: '18%', r: '44%', color: '#2e1065', opacity: 0.5 },
+      // The only light touch: a faint glimmer now and then.
+      { cx: '96%', cy: '28%', r: '30%', color: '#c084fc', opacity: 0.07 },
     ],
   },
 ];
@@ -52,13 +53,11 @@ const LAYERS: { from: number; to: number; blobs: Blob[] }[] = [
 // Figures that drift behind the page, each slower than the page itself (a parallax). `top` is where it starts on the
 // screen, in points; `speed` is the share of the scroll it travels.
 const SHAPES: { kind: FigureKind; left: string; top: number; size: number; speed: number; opacity: number }[] = [
-  { kind: 'waves', left: '-6%', top: 90, size: 460, speed: 0.1, opacity: 0.5 },
-  { kind: 'dots', left: '62%', top: 300, size: 220, speed: 0.18, opacity: 0.4 },
-  { kind: 'rings', left: '-14%', top: 640, size: 300, speed: 0.14, opacity: 0.45 },
-  { kind: 'hatch', left: '30%', top: 980, size: 420, speed: 0.08, opacity: 0.32 },
-  { kind: 'waves', left: '40%', top: 1420, size: 460, speed: 0.12, opacity: 0.45 },
-  { kind: 'dots', left: '-4%', top: 1800, size: 240, speed: 0.2, opacity: 0.38 },
-  { kind: 'rings', left: '60%', top: 2200, size: 280, speed: 0.1, opacity: 0.42 },
+  { kind: 'dots', left: '66%', top: 260, size: 200, speed: 0.18, opacity: 0.22 },
+  { kind: 'sparks', left: '8%', top: 560, size: 220, speed: 0.12, opacity: 0.3 },
+  { kind: 'dots', left: '-6%', top: 1100, size: 200, speed: 0.2, opacity: 0.2 },
+  { kind: 'sparks', left: '62%', top: 1500, size: 220, speed: 0.1, opacity: 0.28 },
+  { kind: 'dots', left: '58%', top: 2000, size: 200, speed: 0.16, opacity: 0.2 },
 ];
 
 export const DARK_BASE = '#140b26';

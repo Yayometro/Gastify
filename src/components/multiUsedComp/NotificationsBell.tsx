@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import "animate.css";
 import { IoNotificationsOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
@@ -19,7 +20,9 @@ const TONE_CLASS: Record<BudgetAlert["tone"], string> = {
 };
 
 function NotificationsBell(): React.JSX.Element {
-  const { alerts, dismiss } = useBudgetAlertList();
+  const { alerts, dismiss, dismissAll } = useBudgetAlertList();
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [clearing, setClearing] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [leaving, setLeaving] = useState<string | null>(null);
 
@@ -28,6 +31,14 @@ function NotificationsBell(): React.JSX.Element {
     window.setTimeout(() => {
       dismiss(key);
       setLeaving(null);
+    }, 380);
+  };
+
+  const clearAll = (): void => {
+    setClearing(true);
+    window.setTimeout(() => {
+      dismissAll();
+      setClearing(false);
     }, 380);
   };
 
@@ -53,9 +64,16 @@ function NotificationsBell(): React.JSX.Element {
                   <h2 className="text-xl font-bold text-white">Notificaciones</h2>
                   <InfoTip info={APP_INFO.notificaciones} />
                 </div>
+                <div className="flex items-center gap-2">
+                  {alerts.length > 0 && (
+                    <button type="button" onClick={clearAll} className="rounded-full gf-glass-card px-3 py-1 text-xs font-semibold text-purple-100 transition-transform hover:scale-105 hover:text-white active:scale-95">
+                      Limpiar todas
+                    </button>
+                  )}
                 <button type="button" aria-label="Cerrar" onClick={() => setOpen(false)} className="rounded-full gf-glass-card p-1.5 text-purple-100 transition-colors hover:text-white">
                   <CategoIcon type={"MdClose"} siz={18} />
                 </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto px-6 pb-6">
                 {alerts.length === 0 ? (
@@ -68,16 +86,32 @@ function NotificationsBell(): React.JSX.Element {
                     {alerts.map((alert) => (
                       <li
                         key={alert.key}
-                        className={`rounded-2xl border p-4 ${TONE_CLASS[alert.tone]} ${leaving === alert.key ? "animate__animated animate__fadeOutRight animate__faster" : "animate__animated animate__fadeInDown"}`}
+                        className={`${leaving === alert.key || clearing ? "animate__animated animate__fadeOutRight animate__faster" : "animate__animated animate__fadeInDown"}`}
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="text-sm font-bold text-white">{alert.title}</p>
-                            <p className="mt-1 text-xs leading-relaxed text-purple-100/90">{alert.message}</p>
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          aria-expanded={expanded === alert.key}
+                          onClick={() => setExpanded((current) => (current === alert.key ? null : alert.key))}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") setExpanded((current) => (current === alert.key ? null : alert.key));
+                          }}
+                          className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] ${TONE_CLASS[alert.tone]} ${expanded === alert.key ? "animate__animated animate__pulse" : ""}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-white">{alert.title}</p>
+                              <p className={`mt-1 text-xs leading-relaxed text-purple-100/90 ${expanded === alert.key ? "" : "line-clamp-2"}`}>{alert.message}</p>
+                              {expanded === alert.key && (
+                                <Link href="/dashboard/budgets" onClick={(event) => { event.stopPropagation(); setOpen(false); }} className="animate__animated animate__fadeInUp mt-3 inline-flex items-center gap-1 rounded-full gf-glass-button px-3 py-1 text-xs font-bold text-white">
+                                  Ver presupuestos →
+                                </Link>
+                              )}
+                            </div>
+                            <button type="button" aria-label={`Quitar el aviso de ${alert.title}`} onClick={(event) => { event.stopPropagation(); remove(alert.key); }} className="shrink-0 rounded-full p-1 text-purple-100 transition-transform hover:scale-125 hover:text-white">
+                              <CategoIcon type={"MdClose"} siz={16} />
+                            </button>
                           </div>
-                          <button type="button" aria-label={`Quitar el aviso de ${alert.title}`} onClick={() => remove(alert.key)} className="shrink-0 rounded-full p-1 text-purple-100 transition-colors hover:text-white">
-                            <CategoIcon type={"MdClose"} siz={16} />
-                          </button>
                         </div>
                       </li>
                     ))}
