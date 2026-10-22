@@ -385,7 +385,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-black/50 backdrop-blur-md flex items-center justify-center">
+    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-black/50 backdrop-blur-md flex items-center justify-center" onClick={(event) => { if (event.target === event.currentTarget) handleClose(); }}>
       <div className="content gf-glass-violet flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         {isLoading && (
           <div className="absolute top-0 left-0 bg-gf-surface/70 flex justify-center items-center w-full h-full z-[10001]">

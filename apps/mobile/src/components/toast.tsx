@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import { router } from 'expo-router';
-import { Animated, Easing, Modal, PanResponder, Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { Animated, Easing, Modal, PanResponder, Pressable, StyleSheet, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AlarmEdges, FireEffect } from '@/components/alarm-edges';
@@ -137,10 +137,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       )}
       <Modal visible={presented !== null} transparent animationType="fade" onRequestClose={() => setPresented(null)}>
         <View style={{ flex: 1, backgroundColor: presented?.mood === 'celebrate' || !presented ? 'rgba(10,5,25,0.82)' : 'rgba(26,4,12,0.78)', alignItems: 'center', justifyContent: 'center', padding: 28 }}>
+          {/* A tap outside the card closes the window, as the "×" does. */}
+          <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setPresented(null)} style={StyleSheet.absoluteFill} />
           {presented?.mood === 'celebrate' && <Celebration active />}
           {presented && presented.mood !== 'celebrate' && <AlarmEdges color={MOOD_COLOR[presented.mood]} fast={presented.mood === 'fire'} />}
           {presented?.mood === 'fire' && <FireEffect />}
           <GlassSurface radius={28} style={{ width: '100%', maxWidth: 420, backgroundColor: 'rgba(40,22,82,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setPresented(null)} hitSlop={10} style={{ position: 'absolute', top: 14, right: 14, zIndex: 2 }}>
+              <Ionicons name="close" size={24} color="rgba(255,255,255,0.85)" />
+            </Pressable>
             <View className="items-center gap-4 p-7">
               <Text style={{ fontSize: 56 }}>{presented?.mood === 'fire' ? '🔥' : presented?.mood === 'alarm' ? '😬' : '🎉'}</Text>
               <Text className="text-center font-inter-bold text-2xl" style={{ color: '#ffffff' }}>{presented?.title}</Text>

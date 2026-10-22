@@ -41,7 +41,7 @@ function ToolsModal({ mail, onClose }: ToolsModalProps): React.JSX.Element {
   const current = tabs.find((t) => t.id === activeTab) || tabs[0];
 
   return createPortal(
-    <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={(event) => { if (event.target === event.currentTarget) onClose?.(); }}>
       <div className="gf-glass-violet rounded-3xl w-full max-w-[560px] sm:max-w-[780px] mx-2 sm:mx-4 flex flex-col gap-5 p-4 sm:p-7 max-h-[90vh] overflow-y-auto relative">
         <div
           className="absolute top-3 right-3 rounded-full gf-glass-card text-purple-100 hover:text-white transition-colors p-1.5 cursor-pointer"

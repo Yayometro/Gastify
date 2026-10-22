@@ -137,7 +137,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
   const maxW = deleteAll ? "max-w-[1000px]" : "max-w-[1280px]";
 
   return createPortal(
-    <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
       <div className={`bg-gf-surface rounded-3xl shadow-2xl w-full ${maxW} mx-2 sm:mx-4 flex flex-col gap-5 p-4 sm:p-7 max-h-[95vh] overflow-y-auto`}>
 
         {/* Header */}

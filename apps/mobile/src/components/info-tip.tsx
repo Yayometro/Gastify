@@ -27,6 +27,9 @@ export function InfoTip({ info }: { info: InfoText }) {
           <View className="flex-row items-center gap-3 px-6 pb-3 pt-6">
             <Ionicons name="help-circle" size={26} color="#c084fc" />
             <Text className="flex-1 font-inter-bold text-xl text-gf-text">{info.title}</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setOpen(false)} hitSlop={10}>
+              <Ionicons name="close" size={24} color={colors.text} />
+            </Pressable>
           </View>
           <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 12 }} showsVerticalScrollIndicator={false}>
             <InfoContent text={info.text} sections={info.sections} />

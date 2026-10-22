@@ -649,7 +649,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
 
       {/* Declarative confirmation modal — avoids Ant Design static Modal.confirm minified chunk issues in Vercel */}
       {confirmDelete && createPortal(
-        <div className="fixed inset-0 z-[30000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[30000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={(event) => { if (event.target === event.currentTarget) close?.(); }}>
           <div className={`gf-glass-black rounded-2xl ${dupMode && confirmDelete.type === "many" ? "max-w-3xl" : "max-w-lg"} w-full p-6 flex flex-col gap-4`}>
             <div className="flex items-center gap-3 text-red-400">
               <CategoIcon type="MdWarning" siz={24} />

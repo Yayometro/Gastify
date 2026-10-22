@@ -62,6 +62,11 @@ export function DateField({ label, value, onChange }: { label: string; value: st
                 paddingBottom: wide ? 20 : 34,
                 gap: 12,
               }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={keepAndClose} hitSlop={10}>
+                  <Ionicons name="close" size={24} color={dark ? '#ffffff' : '#1b103d'} />
+                </Pressable>
+              </View>
               <View style={{ alignItems: 'center' }}>
                 <DateTimePicker
                   value={draft}

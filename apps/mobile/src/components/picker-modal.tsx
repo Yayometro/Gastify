@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, Text, View, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FlatList, Pressable, Text, View, useColorScheme } from 'react-native';
 
-import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { CategoryBadge } from '@/components/category-badge';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
@@ -50,15 +49,21 @@ export function PickerModal({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={close} presentationStyle="pageSheet">
-      <View style={{ flex: 1, backgroundColor: dark ? DARK_BASE : colors.background }}>
-        <AmbientBackground />
-        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-          <View className="flex-row items-center justify-between px-6 pb-2 pt-4">
-            <Text className="font-inter-bold text-2xl text-gf-text">{title}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={multiple ? 'Listo' : 'Cerrar'} onPress={close} hitSlop={10}>
-              {multiple ? <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>Listo</Text> : <Ionicons name="close" size={28} color={colors.text} />}
-            </Pressable>
+    // A window like the others (it closes with its "×" or a tap outside), with the list filling it.
+    <BottomSheet visible={visible} onClose={close} maxHeight="88%" fill>
+      <View style={{ flex: 1 }}>
+          <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
+            <Text className="flex-1 pr-3 font-inter-bold text-2xl text-gf-text">{title}</Text>
+            <View className="flex-row items-center gap-4">
+              {multiple && (
+                <Pressable accessibilityRole="button" onPress={close} hitSlop={10}>
+                  <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>Listo</Text>
+                </Pressable>
+              )}
+              <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={close} hitSlop={10}>
+                <Ionicons name="close" size={26} color={colors.text} />
+              </Pressable>
+            </View>
           </View>
           <View className="px-6 pb-2">
             <TextField label="" value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder={searchPlaceholder} autoCorrect={false} />
@@ -91,8 +96,7 @@ export function PickerModal({
               );
             }}
           />
-        </SafeAreaView>
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }

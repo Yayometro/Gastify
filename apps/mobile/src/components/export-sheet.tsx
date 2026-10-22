@@ -27,7 +27,14 @@ export function ExportSheet({
     <BottomSheet visible={visible} onClose={onClose} dismissible={!busy}>
         <SafeAreaView edges={['bottom']}>
           <View className="gap-1 px-6 pb-6 pt-5">
-            <Text className="font-inter-bold text-xl text-gf-text">Exportar movimientos</Text>
+            <View className="flex-row items-center justify-between gap-3">
+              <Text className="flex-1 font-inter-bold text-xl text-gf-text">Exportar movimientos</Text>
+              {!busy && (
+                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>
+                  <Ionicons name="close" size={24} color={colors.text} />
+                </Pressable>
+              )}
+            </View>
             <Text className="pb-2 font-inter text-sm text-gf-text-muted">
               {count === 1 ? '1 movimiento' : `${count} movimientos`} del periodo y los filtros que ves. Elige el formato.
             </Text>

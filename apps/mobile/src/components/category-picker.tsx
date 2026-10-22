@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useRef, useState } from 'react';
-import { FlatList, Modal, PanResponder, Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FlatList, PanResponder, Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
 
-import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { CategoryBadge } from '@/components/category-badge';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
@@ -171,14 +170,13 @@ export function CategoryPicker({
         <Chip label={`Ver todas (${categories.length})`} icon="search" onPress={() => setOpen(true)} />
       </ScrollView>
 
-      <Modal visible={open} animationType="slide" presentationStyle="pageSheet" onRequestClose={close}>
-        <View style={{ flex: 1, backgroundColor: dark ? DARK_BASE : colors.background }}>
-          <AmbientBackground />
-          <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-            <View className="flex-row items-center justify-between px-6 pb-2 pt-4">
+      <BottomSheet visible={open} onClose={close} maxHeight="88%" fill>
+        <View style={{ flex: 1 }}>
+          <View>
+            <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
               <Text className="font-inter-bold text-2xl text-gf-text">Categorías</Text>
               <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={close} hitSlop={10}>
-                <Ionicons name="close" size={28} color={colors.text} />
+                <Ionicons name="close" size={26} color={colors.text} />
               </Pressable>
             </View>
             <View className="px-6 pb-2">
@@ -245,9 +243,9 @@ export function CategoryPicker({
                 </View>
               )}
             </View>
-          </SafeAreaView>
+          </View>
         </View>
-      </Modal>
+      </BottomSheet>
     </View>
   );
 }
