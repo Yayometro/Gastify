@@ -115,27 +115,27 @@ function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandC
           <TimeRange rpDate={handleRangeDate} />
         </div>
       </div>
-      <div className="tdgc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 gf-tab-bar-accent ">
+      <div className="tdgc-tab-headers-cont mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 rounded-full gf-glass-inset p-1.5 gf-tab-bar-accent ">
         <div
           onClick={() => setActiveTab("treemap")}
-          className={`tab-treemap p-4 cursor-pointer hover:text-purple-400 ${
-            activeTab === "treemap" ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-treemap px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            activeTab === "treemap" ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
           Treemap
         </div>
         <div
           onClick={() => setActiveTab("bubble")}
-          className={`tab-budget p-4 cursor-pointer hover:text-purple-400 ${
-            activeTab === "bubble" ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-budget px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            activeTab === "bubble" ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
           Bubble
         </div>
         <div
           onClick={() => setActiveTab("nestedPie")}
-          className={`tab-saving p-4 cursor-pointer hover:text-purple-400 ${
-            activeTab === "nestedPie" ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-saving px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            activeTab === "nestedPie" ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
           Nested Pie

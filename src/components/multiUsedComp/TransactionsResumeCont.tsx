@@ -15,33 +15,36 @@ const TypedTransResumeChart = TransResumeChart as React.ComponentType<TransResum
 export interface TransactionsResumeContProps {
   trcIncomes?: TransactionData[];
   trcBills?: TransactionData[];
+  // Controlled by the card above (Gastos / Ingresos): when given, the chart's own switch is hidden.
+  bill?: boolean;
 }
 
-function TransactionsResumeCont({ trcIncomes, trcBills }: TransactionsResumeContProps): React.JSX.Element {
-  const [isBillTab, setIsBillTab] = useState<boolean>(true);
+function TransactionsResumeCont({ trcIncomes, trcBills, bill }: TransactionsResumeContProps): React.JSX.Element {
+  const [ownBill, setOwnBill] = useState<boolean>(true);
+  const isBillTab = bill ?? ownBill;
   const handleTab = (budType: string) => {
     if (budType === "bill") {
-      setIsBillTab(true);
+      setOwnBill(true);
     } else {
-      setIsBillTab(false);
+      setOwnBill(false);
     }
   };
 
   return (
     <div className="trc-container w-full h-full">
-      <div className="bc-tab-headers-cont w-full text-center flex justify-center items-center gap-2">
+      <div className={`bc-tab-headers-cont mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 rounded-full gf-glass-inset p-1.5 ${bill === undefined ? "" : "hidden"}`}>
         <div
           onClick={() => handleTab("bill")}
-          className={`tab-budget p-4 cursor-pointer hover:text-purple-400 ${
-            isBillTab ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-budget px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
           Bills Details
         </div>
         <div
           onClick={() => handleTab("")}
-          className={`tab-saving p-4 cursor-pointer hover:text-purple-400 ${
-            !isBillTab ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-saving px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            !isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
           Income details

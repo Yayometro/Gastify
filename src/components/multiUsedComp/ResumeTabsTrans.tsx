@@ -108,19 +108,19 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
           <TimeRange rpDate={handleRangeDate} />
         </div>
       </div>
-      <div className="bc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 mt-2">
+      <div className="bc-tab-headers-cont mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 rounded-full gf-glass-inset p-1.5 mt-2">
         <div
           onClick={() => handleTab("bill")}
-          className={`tab-rtt-bill p-4 cursor-pointer hover:text-purple-400 ${
-            isBillTab ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-rtt-bill px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
           Bills Resume
         </div>
         <div
           onClick={() => handleTab("")}
-          className={`tab-rtt-inc p-4 cursor-pointer hover:text-purple-400 ${
-            !isBillTab ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-rtt-inc px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            !isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
           Income Resume
