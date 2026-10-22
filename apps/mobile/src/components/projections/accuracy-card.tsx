@@ -1,8 +1,9 @@
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
 import { Card } from '@/components/ui/card';
 import { zebra } from '@/components/ui/zebra';
 import { Colors } from '@/constants/theme';
+import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { ACCURACY_SECTIONS } from '@/lib/info-sections';
 import { esMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
@@ -33,6 +34,7 @@ export const ACCURACY_HELP = [
 // difference, laid out as a small table (rows: income and spending; columns: projected, real, difference). A positive
 // income difference is good news and a positive expense difference is bad news, so the colors are mirrored.
 export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
+  const big = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const money = (value: number | undefined) => formatMoneyMajor(value ?? 0, currency, { showCode: false });
@@ -44,12 +46,12 @@ export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyR
     const color = neutral ? colors.text : better ? colors.income : colors.expense;
     return (
       <View className="flex-row items-center gap-2 py-1.5">
-        <Text className="w-14 font-inter-medium text-xs text-gf-text-muted">{label}</Text>
-        <Text className="flex-1 text-right font-inter text-xs text-gf-text-muted" numberOfLines={1} adjustsFontSizeToFit>{money(projected)}</Text>
-        <Text className="flex-1 text-right font-inter-semibold text-xs" style={{ color: tone }} numberOfLines={1} adjustsFontSizeToFit>{money(real)}</Text>
+        <Text className={`font-inter-medium ${big ? 'w-24 text-base' : 'w-14 text-xs'} text-gf-text-muted`}>{label}</Text>
+        <Text className="flex-1 text-right font-inter ${big ? 'text-xl' : 'text-xs'} text-gf-text-muted" numberOfLines={1} adjustsFontSizeToFit>{money(projected)}</Text>
+        <Text className={`flex-1 text-right font-inter-semibold ${big ? 'text-xl' : 'text-xs'}`} style={{ color: tone }} numberOfLines={1} adjustsFontSizeToFit>{money(real)}</Text>
         <View className="flex-[1.2] flex-row items-center justify-end gap-1">
           <Text style={{ color: neutral ? '#f59e0b' : color, fontWeight: '700', fontSize: 12 }}>{neutral ? '▬' : amount > 0 ? '▲' : '▼'}</Text>
-          <Text className="font-inter-semibold text-xs" style={{ color }} numberOfLines={1} adjustsFontSizeToFit>{amount > 0 ? '+' : ''}{money(amount)}</Text>
+          <Text className={`font-inter-semibold ${big ? 'text-xl' : 'text-xs'}`} style={{ color }} numberOfLines={1} adjustsFontSizeToFit>{amount > 0 ? '+' : ''}{money(amount)}</Text>
         </View>
       </View>
     );
@@ -63,15 +65,15 @@ export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyR
           <Text className="font-inter-semibold text-base text-gf-text">{esMonthLabel(row.monthName)}</Text>
           <View className="flex-row items-center gap-2 pt-1">
             <Text className="w-14" />
-            <Text className="flex-1 text-right font-inter-medium text-[10px] uppercase text-gf-text-muted">Proyectado</Text>
-            <Text className="flex-1 text-right font-inter-medium text-[10px] uppercase text-gf-text-muted">Real</Text>
-            <Text className="flex-[1.2] text-right font-inter-medium text-[10px] uppercase text-gf-text-muted">Desajuste</Text>
+            <Text className={`flex-1 text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>Proyectado</Text>
+            <Text className={`flex-1 text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>Real</Text>
+            <Text className={`flex-[1.2] text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>Desajuste</Text>
           </View>
           {line('Ingreso', row.projectedIncome, row.actualIncome, row.varianceIncome, true, colors.income)}
           {line('Gasto', row.projectedExpense, row.actualExpense, row.varianceExpense, false, colors.expense)}
         </Pressable>
       ))}
-      <Text className="font-inter text-xs text-gf-text-muted">Solo se muestran meses cerrados con un historial de proyección registrado.</Text>
+      <Text className="font-inter text-sm text-gf-text-muted">Solo se muestran meses cerrados con un historial de proyección registrado.</Text>
     </>
   );
 }

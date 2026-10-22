@@ -13,7 +13,7 @@ import { Card } from '@/components/ui/card';
 import { CategoryTable } from '@/components/home/category-table';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
-import { categoryBreakdown, groupSmallSlices, NO_SUBCATEGORY_NAME } from '@gastify/core/history/categoryBreakdown';
+import { categoryBreakdown, NO_SUBCATEGORY_NAME } from '@gastify/core/history/categoryBreakdown';
 import { historyRange, summarizePeriod, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
@@ -21,8 +21,6 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionLike } from '@gastify/core/transformers/transactionsChange';
 
 type Kind = 'spending' | 'incomes';
-
-const MAX_ARCS = 7;
 
 // Gastos / Ingresos of the period: the total, a donut of how it splits across categories (tap a slice to
 // see its subcategories, like the web's sunburst), the list, and the months side by side.
@@ -58,7 +56,8 @@ export function SummaryWidget({
 
   // The chart groups the small slices; the table lists every category.
   const allRows = useMemo(() => categoryBreakdown(movements, kind), [movements, kind]);
-  const categories = useMemo(() => groupSmallSlices(allRows, MAX_ARCS), [allRows]);
+  // The chart shows every category (the phone's table is the one that is cut short, not the chart).
+  const categories = allRows;
   const chosen = allRows.find((slice) => slice.key === selected) ?? categories.find((slice) => slice.key === selected) ?? null;
   // Zoomed into a category the donut shows its subcategories; "Otras" shows the categories it merged. A
   // category with no subcategory of its own has nothing to zoom into: it is only highlighted.
@@ -66,7 +65,10 @@ export function SummaryWidget({
   const shown = zoomed && chosen ? chosen.children : categories;
   const tableRows = zoomed && chosen ? chosen.children : allRows;
   const shownTotal = chosen ? chosen.value : total;
-  const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
+  const windowWidth = useWindowDimensions().width;
+  const tablet = windowWidth >= TABLET_MIN_WIDTH;
+  // On a tablet the ring takes the room of its column (about 60 % of the card).
+  const bigChart = Math.max(280, Math.min(560, Math.round((windowWidth - 160) * 0.6 - 60)));
   const [detailOpen, setDetailOpen] = useState(false);
 
   // Another kind or period: the chosen slice may not exist any more.
@@ -83,8 +85,8 @@ export function SummaryWidget({
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todas las categorías</Text>
         </Pressable>
       )}
-      {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} />}
-      {chart === 'treemap' && <CategoryTreemap slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} />}
+      {chart === 'bubbles' && <CategoryBubbles slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} height={tablet && interactive ? bigChart : undefined} />}
+      {chart === 'treemap' && <CategoryTreemap slices={shown} selectedKey={zoomed ? null : selected} onSelect={interactive ? select : () => setDetailOpen(true)} total={shownTotal} height={tablet && interactive ? bigChart : undefined} />}
       {chart === 'ring' && (
         <CategoryDonut
           slices={shown}
@@ -96,6 +98,7 @@ export function SummaryWidget({
           centerIcon={chosen && chosen.icon ? { icon: chosen.icon, color: chosen.color } : null}
           onCenterPress={interactive ? (chosen ? () => setSelected(null) : undefined) : () => setDetailOpen(true)}
           trackColor={scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(27,16,61,0.06)'}
+          size={tablet && interactive ? bigChart : undefined}
         />
       )}
       {chart !== 'ring' && chosen && interactive && (
@@ -128,7 +131,9 @@ export function SummaryWidget({
   const sheet = (
     <DetailSheet tall visible={detailOpen} onClose={() => setDetailOpen(false)} title="Resumen de transacciones" subtitle={`${allRows.length} ${allRows.length === 1 ? 'categoría' : 'categorías'} · ${kind === 'spending' ? 'gastos' : 'ingresos'}`}>
       {filters}
+      {chartPicker}
       {totalText}
+      {chartBlock(true)}
       {zoomed && chosen && (
         <Pressable accessibilityRole="button" onPress={() => setSelected(null)} className="self-start flex-row items-center gap-1 py-1">
           <Ionicons name="arrow-back" size={18} color={colors.accent} />
@@ -148,13 +153,13 @@ export function SummaryWidget({
         </>
       ) : tablet ? (
         <View className="flex-row items-start gap-6">
-          <View style={{ flex: 1 }} className="gap-3">
+          <View style={{ flex: 3 }} className="gap-3">
             {filters}
             {chartPicker}
             {totalText}
             {chartBlock(true)}
           </View>
-          <View style={{ flex: 1 }} className="gap-3">
+          <View style={{ flex: 2 }} className="gap-3">
             {table(MAX_ROWS)}
             {allRows.length > MAX_ROWS && !zoomed && seeMore}
           </View>

@@ -82,6 +82,9 @@ export default function EditAccountScreen() {
 
       <PeriodControls period={period} />
 
+
+      <SummaryWidget summary={summary} movements={inPeriod} allMovements={mine} currency={primary} />
+
       <Card title={`Movimientos de ${period.label}`} info={{ title: 'Movimientos de la cuenta', text: 'Lo que entró y salió de esta cuenta en el periodo elegido, y sus movimientos más recientes. Las transferencias entre tus cuentas no cuentan como ingreso ni gasto.' }}>
         <View className="flex-row justify-between">
           <Text className="font-inter text-base text-gf-text-muted">Entró</Text>
@@ -101,8 +104,6 @@ export default function EditAccountScreen() {
           </Pressable>
         )}
       </Card>
-
-      <SummaryWidget summary={summary} movements={inPeriod} allMovements={mine} currency={primary} />
 
       <Card
         title="Editar cuenta"

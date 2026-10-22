@@ -1,14 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Animated, Easing, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { router } from 'expo-router';
+import { Animated, Easing, Modal, PanResponder, Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Celebration } from '@/components/celebration';
+import { GradientButton } from '@/components/ui/gradient-button';
 import { GlassSurface } from '@/components/ui/glass';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 
 type ToastKind = 'ok' | 'error' | 'warning' | 'celebrate';
 
-const ToastContext = createContext<{ show: (message: string, kind?: ToastKind, title?: string) => void }>({ show: () => {} });
+export type ToastOptions = { title?: string; href?: string };
+
+const ToastContext = createContext<{ show: (message: string, kind?: ToastKind, titleOrOptions?: string | ToastOptions) => void }>({ show: () => {} });
 
 // "Se guardó" and its siblings: a short message that drops in from the top with its icon in a soft
 // circle, and goes away by itself. Success is green, errors rose, like the money colors of the app.
@@ -27,7 +32,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
   const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const dark = useColorScheme() === 'dark';
-  const [toast, setToast] = useState<{ id: number; message: string; kind: ToastKind; title?: string } | null>(null);
+  const [toast, setToast] = useState<{ id: number; message: string; kind: ToastKind; title?: string; href?: string } | null>(null);
+  const [celebrating, setCelebrating] = useState<{ title: string; message: string; href?: string } | null>(null);
+  const drag = useRef(new Animated.ValueXY()).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(-24)).current;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -40,9 +47,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [opacity, slide]);
 
   const show = useCallback(
-    (message: string, kind: ToastKind = 'ok', title?: string) => {
+    (message: string, kind: ToastKind = 'ok', titleOrOptions?: string | ToastOptions) => {
+      const options: ToastOptions = typeof titleOrOptions === 'string' ? { title: titleOrOptions } : titleOrOptions ?? {};
       if (timer.current) clearTimeout(timer.current);
-      setToast({ id: Date.now(), message, kind, title });
+      drag.setValue({ x: 0, y: 0 });
+      setToast({ id: Date.now(), message, kind, title: options.title, href: options.href });
       opacity.setValue(0);
       slide.setValue(-24);
       Animated.parallel([
@@ -51,10 +60,41 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       ]).start();
       timer.current = setTimeout(hide, kind === 'ok' ? 2800 : 5200);
     },
-    [hide, opacity, slide]
+    [hide, opacity, slide, drag]
   );
 
   const value = useMemo(() => ({ show }), [show]);
+
+  // The notice can be pushed away in any direction, and a tap on it opens what it is about (a congratulation opens its own
+  // window with confetti and fireworks).
+  const current = useRef(toast);
+  current.current = toast;
+  const pan = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: (_event, gesture) => Math.abs(gesture.dx) + Math.abs(gesture.dy) > 6,
+        onPanResponderGrant: () => { if (timer.current) clearTimeout(timer.current); },
+        onPanResponderMove: (_event, gesture) => drag.setValue({ x: gesture.dx, y: gesture.dy }),
+        onPanResponderRelease: (_event, gesture) => {
+          const moved = Math.abs(gesture.dx) + Math.abs(gesture.dy);
+          if (moved < 8) {
+            const open = current.current;
+            hide();
+            if (open?.kind === 'celebrate') setCelebrating({ title: open.title ?? 'Felicidades', message: open.message, href: open.href });
+            else if (open?.href) router.push(open.href as never);
+            return;
+          }
+          if (moved > 60) {
+            Animated.timing(drag, { toValue: { x: gesture.dx * 6, y: gesture.dy * 6 }, duration: 180, useNativeDriver: false }).start(() => { setToast(null); drag.setValue({ x: 0, y: 0 }); });
+          } else {
+            Animated.spring(drag, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+            timer.current = setTimeout(hide, 3000);
+          }
+        },
+      }),
+    [drag, hide]
+  );
   const tone = toast ? TONES[toast.kind] : null;
 
   return (
@@ -62,9 +102,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       {toast && tone && (
         <Animated.View
-          pointerEvents="none"
           accessibilityLiveRegion="polite"
           style={[{ position: 'absolute', top: insets.top + 8, opacity, transform: [{ translateY: slide }], zIndex: 100 }, tablet ? { right: 20, width: 380 } : { left: 16, right: 16 }]}>
+          <Animated.View {...pan.panHandlers} style={{ transform: drag.getTranslateTransform() }}>
           <GlassSurface radius={24} style={{ backgroundColor: dark ? 'rgba(30,18,60,0.88)' : 'rgba(255,255,255,0.94)', borderWidth: 1, borderColor: dark ? 'rgba(255,255,255,0.18)' : 'rgba(27,16,61,0.10)', shadowColor: '#000', shadowOpacity: dark ? 0.5 : 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 14 }}>
             <View className="flex-row items-center gap-3 px-4 py-3">
               <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: tone.circle, alignItems: 'center', justifyContent: 'center' }}>
@@ -76,8 +116,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </View>
             </View>
           </GlassSurface>
+          </Animated.View>
         </Animated.View>
       )}
+      <Modal visible={celebrating !== null} transparent animationType="fade" onRequestClose={() => setCelebrating(null)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(10,5,25,0.82)', alignItems: 'center', justifyContent: 'center', padding: 28 }}>
+          <Celebration active={celebrating !== null} />
+          <GlassSurface radius={28} style={{ width: '100%', maxWidth: 420, backgroundColor: 'rgba(40,22,82,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
+            <View className="items-center gap-4 p-7">
+              <Text style={{ fontSize: 56 }}>🎉</Text>
+              <Text className="text-center font-inter-bold text-2xl" style={{ color: '#ffffff' }}>{celebrating?.title}</Text>
+              <Text className="text-center font-inter text-base" style={{ color: 'rgba(255,255,255,0.85)' }}>{celebrating?.message}</Text>
+              {celebrating?.href ? <View style={{ alignSelf: 'stretch' }}><GradientButton label="Ver mi presupuesto" onPress={() => { const href = celebrating.href; setCelebrating(null); if (href) router.push(href as never); }} /></View> : null}
+              <Pressable accessibilityRole="button" onPress={() => setCelebrating(null)} hitSlop={10}><Text className="font-inter-semibold text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>Cerrar</Text></Pressable>
+            </View>
+          </GlassSurface>
+        </View>
+      </Modal>
     </ToastContext.Provider>
   );
 }

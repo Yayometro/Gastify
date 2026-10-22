@@ -17,6 +17,7 @@ import { Screen } from '@/components/screen';
 import { Card, PairedColumn } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
+import { HISTORY_INFO } from '@/lib/info-sections';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import type { RootState } from '@/store';
 import { GfSwitch } from '@/components/ui/switch';
@@ -101,7 +102,7 @@ export default function HistoryScreen() {
   const cell = (value: number) => formatMoneyMajor(value, currency);
 
   return (
-    <Screen title="Historial" subtitle={labelA} backLabel="Más" onBack={() => router.back()}>
+    <Screen title="Historial" subtitle={labelA} backLabel="Más" onBack={() => router.back()} titleInfo={HISTORY_INFO}>
       <Card title="Periodo" info={{ title: 'Periodo', text: 'Elige qué tramo de tiempo analizar; todas las tarjetas de abajo que dicen «Igual que arriba» lo siguen. Al comparar con otro periodo (el mismo tramo del año anterior, el periodo inmediato anterior de la misma duración o uno que elijas) cada cifra muestra cuánto cambió. Por defecto se analizan los últimos 3 meses.' }}>
         {tablet ? (
           <PeriodBar

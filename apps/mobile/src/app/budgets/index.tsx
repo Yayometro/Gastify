@@ -186,7 +186,7 @@ export default function BudgetsScreen() {
     [spendingRows]
   );
 
-  const [order, setOrder] = useState<BudgetOrder>('spent');
+  const [order, setOrder] = useState<BudgetOrder>('ratio');
   const [orderOpen, setOrderOpen] = useState(false);
   const sortedSpending = useMemo(() => sortBudgetRows(spendingRows, order), [spendingRows, order]);
   const sortedSaving = useMemo(() => sortBudgetRows(savingRows, order), [savingRows, order]);

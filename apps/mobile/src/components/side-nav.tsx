@@ -29,7 +29,7 @@ const BEFORE_ADD: Item[] = [
   { key: 'wallet', label: 'Wallet', href: '/', active: (p) => p === '/' || p === '/index', icon: (c) => <FontAwesome6 name="wallet" size={22} color={c} /> },
   { key: 'budgets', label: 'Presupuestos', href: '/budgets', active: (p) => is(p, '/budgets'), icon: (c) => <MaterialIcons name="savings" size={27} color={c} /> },
   { key: 'projections', label: 'Proyecciones', href: '/more/projections', active: (p) => is(p, '/more/projections'), icon: (c) => <MaterialIcons name="auto-graph" size={27} color={c} /> },
-  { key: 'analyzer', label: 'Analizador de cartera', href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => <FontAwesome6 name="chart-pie" size={22} color={c} /> },
+  { key: 'analyzer', label: 'Analizador de cartera', href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => <FontAwesome6 name="magnifying-glass-chart" size={22} color={c} /> },
 ];
 const AFTER_ADD: Item[] = [
   { key: 'accounts', label: 'Cuentas', href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => <MaterialIcons name="account-balance" size={26} color={c} /> },

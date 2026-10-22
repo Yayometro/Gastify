@@ -4,21 +4,23 @@ import Svg, { Path } from 'react-native-svg';
 import { CategoryBadge } from '@/components/category-badge';
 import { donutArcs, type BreakdownSlice } from '@gastify/core/history/categoryBreakdown';
 
-const SIZE = 230;
-const STROKE = 30;
-const RADIUS = (SIZE - STROKE) / 2 - 4;
-const CENTER = SIZE / 2;
+const DEFAULT_SIZE = 230;
 
-function point(angleDegrees: number): { x: number; y: number } {
-  const radians = (angleDegrees * Math.PI) / 180;
-  return { x: CENTER + RADIUS * Math.sin(radians), y: CENTER - RADIUS * Math.cos(radians) };
-}
-
-function arcPath(startAngle: number, endAngle: number): string {
-  const start = point(startAngle);
-  const end = point(endAngle);
-  const large = endAngle - startAngle > 180 ? 1 : 0;
-  return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${RADIUS} ${RADIUS} 0 ${large} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+function geometry(size: number) {
+  const stroke = Math.round(size * 0.13);
+  const radius = (size - stroke) / 2 - 4;
+  const center = size / 2;
+  const point = (angleDegrees: number) => {
+    const radians = (angleDegrees * Math.PI) / 180;
+    return { x: center + radius * Math.sin(radians), y: center - radius * Math.cos(radians) };
+  };
+  const arcPath = (startAngle: number, endAngle: number) => {
+    const start = point(startAngle);
+    const end = point(endAngle);
+    const large = endAngle - startAngle > 180 ? 1 : 0;
+    return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${radius} ${radius} 0 ${large} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+  };
+  return { stroke, arcPath };
 }
 
 // The donut of a breakdown (the web's sunburst): one arc per slice, the chosen one standing out, and
@@ -34,6 +36,7 @@ export function CategoryDonut({
   onCenterPress,
   centerIcon,
   trackColor,
+  size = DEFAULT_SIZE,
 }: {
   slices: BreakdownSlice[];
   selectedKey: string | null;
@@ -45,7 +48,10 @@ export function CategoryDonut({
   // The icon of the category that is open, shown above its name in the middle of the ring.
   centerIcon?: { icon?: string; color?: string } | null;
   trackColor: string;
+  size?: number;
 }) {
+  const SIZE = size;
+  const { stroke: STROKE, arcPath } = geometry(size);
   const arcs = donutArcs(slices);
   const byKey = new Map(slices.map((slice) => [slice.key, slice]));
 

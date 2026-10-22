@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
+import { CategoryBadge } from '@/components/category-badge';
 import { MovementRow } from '@/components/movements/movement-row';
 import { Colors } from '@/constants/theme';
+import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 
-type Group = { key: string; name: string; total: number; items: TransactionData[] };
+type Group = { key: string; name: string; icon?: string | null; color?: string | null; total: number; items: TransactionData[] };
 
 // One category opened: its total, how many movements it has and, below, its subcategories from the biggest spending to
 // the smallest, each with its own movements indented under it, also from the biggest. A switch reverses the order.
@@ -36,8 +38,10 @@ export function CategoryDetailSheet({
   const { total, groups } = useMemo(() => {
     const map = new Map<string, Group>();
     for (const tx of movements) {
-      const sub = (tx as { subCategory?: { name?: string } | null }).subCategory?.name || 'Sin subcategoría';
-      const group = map.get(sub) ?? { key: sub, name: sub, total: 0, items: [] };
+      const subCategory = (tx as { subCategory?: { name?: string; icon?: string; color?: string } | null }).subCategory;
+      const category = (tx as { category?: { icon?: string; color?: string } | null }).category;
+      const sub = subCategory?.name || 'Sin subcategoría';
+      const group = map.get(sub) ?? { key: sub, name: sub, icon: subCategory?.icon ?? category?.icon, color: subCategory?.color ?? category?.color, total: 0, items: [] };
       group.total += Math.abs(getPrimaryAmount(tx));
       group.items.push(tx);
       map.set(sub, group);
@@ -49,19 +53,33 @@ export function CategoryDetailSheet({
     return { total: sorted.reduce((sum, group) => sum + group.total, 0), groups: sorted };
   }, [movements, ascending]);
 
+  const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
+  const count = `${movements.length} ${movements.length === 1 ? 'movimiento' : 'movimientos'} · ${groups.length} ${groups.length === 1 ? 'subcategoría' : 'subcategorías'}`;
+
   return (
     <DetailSheet
       tall
       visible={visible}
       onClose={onClose}
-      title={name}
-      subtitle={`${prefix ? `${prefix} · ` : ''}${movements.length} ${movements.length === 1 ? 'movimiento' : 'movimientos'}`}
+      title={tablet ? '' : name}
+      subtitle={tablet ? undefined : prefix}
       info={{ title: 'Detalle de la categoría', text: 'Total de la categoría = la suma de todos sus movimientos en el periodo. Abajo, cada subcategoría con su total, ordenadas de mayor a menor gasto, y dentro de cada una sus movimientos, también de mayor a menor. Con el interruptor puedes invertir el orden (de menor a mayor). Toca un movimiento para abrirlo.' }}>
-      <View className="gap-1 rounded-2xl p-4" style={{ backgroundColor: colors.accentSoft }}>
-        <Text className="font-inter text-sm text-gf-text-muted">Total de la categoría</Text>
-        <Text className="font-inter-bold text-3xl text-gf-text">{money(total)}</Text>
-        <Text className="font-inter text-sm text-gf-text-muted">{movements.length} {movements.length === 1 ? 'movimiento' : 'movimientos'} · {groups.length} {groups.length === 1 ? 'subcategoría' : 'subcategorías'}</Text>
-      </View>
+      {/* The name and the total, once each: side by side on a tablet (big), the total under the name on a phone. */}
+      {tablet ? (
+        <View className="flex-row items-end justify-between gap-4">
+          <View className="flex-1">
+            {prefix ? <Text className="font-inter-medium text-sm text-gf-text-muted">{prefix}</Text> : null}
+            <Text className="font-inter-bold text-4xl text-gf-text" numberOfLines={1}>{name}</Text>
+            <Text className="font-inter text-base text-gf-text-muted">{count}</Text>
+          </View>
+          <Text className="font-inter-bold text-4xl text-gf-text">{money(total)}</Text>
+        </View>
+      ) : (
+        <View className="gap-1 rounded-2xl p-4" style={{ backgroundColor: colors.accentSoft }}>
+          <Text className="font-inter-bold text-3xl text-gf-text">{money(total)}</Text>
+          <Text className="font-inter text-sm text-gf-text-muted">{count}</Text>
+        </View>
+      )}
       <View className="flex-row gap-2">
         {[false, true].map((asc) => (
           <Pressable key={String(asc)} accessibilityRole="button" accessibilityState={{ selected: ascending === asc }} onPress={() => setAscending(asc)} className="rounded-full border border-gf-border px-4 py-2" style={{ backgroundColor: ascending === asc ? colors.accentSoft : undefined }}>
@@ -71,7 +89,8 @@ export function CategoryDetailSheet({
       </View>
       {groups.map((group) => (
         <View key={group.key} className="gap-1">
-          <View className="flex-row items-center justify-between gap-3 border-b border-gf-border pb-2 pt-3">
+          <View className="flex-row items-center gap-3 border-b border-gf-border pb-2 pt-3">
+            <CategoryBadge icon={group.icon} color={group.color} size={32} />
             <Text className="flex-1 font-inter-semibold text-base text-gf-text" numberOfLines={1}>{group.name}</Text>
             <Text className="font-inter text-xs text-gf-text-muted">{group.items.length} {group.items.length === 1 ? 'mov.' : 'movs.'}</Text>
             <Text className="font-inter-bold text-base text-gf-text">{money(group.total)}</Text>

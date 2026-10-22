@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
+import { CategoryDetailSheet } from '@/components/category-detail-sheet';
 import { CategoryBadge } from '@/components/category-badge';
 import { CompactTimeFilter } from '@/components/compact-time-filter';
 import { MovementRow } from '@/components/movements/movement-row';
@@ -102,7 +103,8 @@ export function OwnPeriodCategories({
           {compare && <ProgressBar ratio={row.b / max} color={`${row.color || '#888888'}66`} />}
         </Pressable>
       ))}
-      <DetailSheet visible={selectedRow !== undefined} onClose={() => setSelectedCategory(null)} title={selectedRow?.name ?? ''} subtitle={`${selectedMovements.length} movimientos · ${formatMoneyMajor(selectedRow?.a ?? 0, currency)}`}>
+      {comparing && compareSummary ? (
+      <DetailSheet tall visible={selectedRow !== undefined} onClose={() => setSelectedCategory(null)} title={selectedRow?.name ?? ''} subtitle={`${selectedMovements.length} movimientos · ${formatMoneyMajor(selectedRow?.a ?? 0, currency)}`}>
         <View className="flex-row gap-2">
           <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'desc' }} onPress={() => setOrder('desc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'desc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Mayor primero</Text></Pressable>
           <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'asc' }} onPress={() => setOrder('asc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'asc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Menor primero</Text></Pressable>
@@ -117,6 +119,16 @@ export function OwnPeriodCategories({
           </>
         ) : selectedMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => open(tx)} />)}
       </DetailSheet>
+      ) : (
+        <CategoryDetailSheet
+          visible={selectedRow !== undefined}
+          name={selectedRow?.name ?? ''}
+          movements={selectedMovements}
+          currency={currency}
+          onOpenMovement={open}
+          onClose={() => setSelectedCategory(null)}
+        />
+      )}
     </Card>
   );
 }

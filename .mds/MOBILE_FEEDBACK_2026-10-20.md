@@ -375,20 +375,21 @@ Prefijo AC.
 
 | ID | Punto | Estado | Notas |
 |---|---|---|---|
-| AC01 | iPhone, Resumen de transacciones: el modal de «Ver las N categorías» debe incluir también la gráfica y el selector Anillo / Burbujas / Mapa para interactuar con ella (no solo el total y la tabla). | PENDIENTE | |
-| AC02 | iPhone, Análisis del periodo: usar los mismos cuadritos del iPad, pero más chicos (hoy está muy amontonado). | PENDIENTE | |
-| AC03 | iPad, Resumen de transacciones: la gráfica debe ocupar toda la altura y ancho disponibles; reparto 60 % gráfica y filtros / 40 % lista de categorías. | PENDIENTE | |
-| AC04 | Modal de una categoría: quitar las repeticiones (nombre + «5 movimientos» y luego «Total de la categoría» + «5 movimientos»); en iPad poner el nombre a la izquierda y el total grande a la derecha; en las subcategorías mostrar su ícono. | PENDIENTE | |
-| AC05 | Presupuestos: el orden por defecto en la página de Presupuestos es el más cerca del límite (no el mayor gasto). | PENDIENTE | |
-| AC06 | Resumen de transacciones: la gráfica debe mostrar TODAS las categorías (hoy agrupa en «Otras», el espacio gris). | PENDIENTE | |
-| AC07 | Avisos: se deben poder quitar deslizando (arriba, abajo, izquierda, derecha); al tocarlos llevan al presupuesto; los de felicitación abren un modal con tu presupuesto y una animación de fuegos artificiales y confeti en toda la pantalla; y deben ser notificaciones del sistema (pantalla bloqueada de iPhone, Android, iPad). | PENDIENTE | |
-| AC08 | iPad, Proyecciones: números más grandes en la tabla «Mes a mes» y en «Precisión de tus proyecciones» (hoy se ven chicos). | PENDIENTE | |
-| AC09 | Cambiar el ícono del Analizador de cartera (iPad y iPhone): no le gusta el actual (el de pastel). | PENDIENTE | |
-| AC10 | iPad, Analizador: las barras de la tendencia de 6 meses mucho más anchas y con más información a simple vista. | PENDIENTE | |
-| AC11 | Todos los modales de un Top 6 (Analizador, Historial, Wallet) deben ser el modal de categoría nuevo: con ordenador, tabla de movimientos y total, desglose por subcategorías de mayor a menor con sus transacciones, cada una con su ícono. | PENDIENTE | |
-| AC12 | Analizador, Presupuestos (cumplimiento y rachas): ordenar de los más llenos o excedidos a los menos llenos. | PENDIENTE | |
-| AC13 | Detalle de una cuenta: primero el Resumen de transacciones y debajo los movimientos de la cuenta. | PENDIENTE | |
-| AC14 | Historial: junto al título, un tooltip que explique cada módulo, para qué sirve la página (comparar datos históricos: meses, trimestres, años) y cómo usarla. | PENDIENTE | |
+| AC01 | iPhone, Resumen de transacciones: el modal de «Ver las N categorías» debe incluir también la gráfica y el selector Anillo / Burbujas / Mapa para interactuar con ella (no solo el total y la tabla). | CÓDIGO LISTO | La hoja grande de «Ver las N categorías» incluye el selector Anillo/Burbujas/Mapa y la gráfica interactiva, además de filtros y tabla. |
+| AC02 | iPhone, Análisis del periodo: usar los mismos cuadritos del iPad, pero más chicos (hoy está muy amontonado). | CÓDIGO LISTO | Los mismos cuadritos del iPad, más chicos (2 columnas, texto compacto) en el teléfono. |
+| AC03 | iPad, Resumen de transacciones: la gráfica debe ocupar toda la altura y ancho disponibles; reparto 60 % gráfica y filtros / 40 % lista de categorías. | CÓDIGO LISTO | En tablet: 60 % gráfica y filtros / 40 % lista; el anillo, las burbujas y el mapa crecen con el ancho (280–560 px). |
+| AC04 | Modal de una categoría: quitar las repeticiones (nombre + «5 movimientos» y luego «Total de la categoría» + «5 movimientos»); en iPad poner el nombre a la izquierda y el total grande a la derecha; en las subcategorías mostrar su ícono. | CÓDIGO LISTO | Sin repeticiones: el nombre y el total una sola vez; en tablet el nombre a la izquierda y el total grande a la derecha; íconos en las subcategorías. |
+| AC05 | Presupuestos: el orden por defecto en la página de Presupuestos es el más cerca del límite (no el mayor gasto). | CÓDIGO LISTO | Presupuestos abre ordenado por «Más cerca del límite» (el Wallet sigue por mayor gasto). |
+| AC06 | Resumen de transacciones: la gráfica debe mostrar TODAS las categorías (hoy agrupa en «Otras», el espacio gris). | CÓDIGO LISTO | La gráfica ya no agrupa en «Otras»: muestra todas las categorías. |
+| AC07 | Avisos: se deben poder quitar deslizando (arriba, abajo, izquierda, derecha); al tocarlos llevan al presupuesto; los de felicitación abren un modal con tu presupuesto y una animación de fuegos artificiales y confeti en toda la pantalla; y deben ser notificaciones del sistema (pantalla bloqueada de iPhone, Android, iPad). | CÓDIGO LISTO | Los avisos se quitan deslizando en cualquier dirección; tocarlos abre el presupuesto, y los de felicitación abren una ventana con confeti y fuegos artificiales. Las notificaciones del sistema (pantalla bloqueada) NO están hechas: necesitan que el servidor las envíe (push) o una tarea en segundo plano; decisión del usuario. |
+| AC08 | iPad, Proyecciones: números más grandes en la tabla «Mes a mes» y en «Precisión de tus proyecciones» (hoy se ven chicos). | CÓDIGO LISTO | Números de 2xl en las tablas de Proyecciones y de Precisión en tablet. |
+| AC09 | Cambiar el ícono del Analizador de cartera (iPad y iPhone): no le gusta el actual (el de pastel). | CÓDIGO LISTO | Nuevo ícono: lupa con gráfica en el menú lateral del iPad y telescopio en el menú «Más» del teléfono. |
+| AC10 | iPad, Analizador: las barras de la tendencia de 6 meses mucho más anchas y con más información a simple vista. | CÓDIGO LISTO | Barras de la tendencia de 44 px y 240 px de alto en tablet, con el monto sobre cada barra y el neto de cada mes debajo. |
+| AC11 | Todos los modales de un Top 6 (Analizador, Historial, Wallet) deben ser el modal de categoría nuevo: con ordenador, tabla de movimientos y total, desglose por subcategorías de mayor a menor con sus transacciones, cada una con su ícono. | CÓDIGO LISTO | El modal de categoría nuevo se usa en el Top, el Analizador y el Historial (el Historial con comparación conserva sus dos columnas). |
+| AC12 | Analizador, Presupuestos (cumplimiento y rachas): ordenar de los más llenos o excedidos a los menos llenos. | CÓDIGO LISTO | Presupuestos del Analizador ordenados del más lleno o excedido al menos lleno. |
+| AC13 | Detalle de una cuenta: primero el Resumen de transacciones y debajo los movimientos de la cuenta. | CÓDIGO LISTO | Detalle de cuenta: primero el Resumen de transacciones y debajo los movimientos. |
+| AC14 | Historial: junto al título, un tooltip que explique cada módulo, para qué sirve la página (comparar datos históricos: meses, trimestres, años) y cómo usarla. | CÓDIGO LISTO | «?» junto al título «Historial» con para qué sirve, cómo usarla y una tabla de los módulos. |
+| AC15 | Bancos: Revolut debe ser negro (no azul) y agregar un buscador de bancos por texto en el selector. | CÓDIGO LISTO | Revolut en negro y buscador de bancos por texto en el selector. |
 
 ## Notas
 

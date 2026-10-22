@@ -6,24 +6,23 @@ import { useSelector } from 'react-redux';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { esMonthLabel } from '@/lib/month-label';
+import { CategoryDetailSheet } from '@/components/category-detail-sheet';
 import { Explain, Indicator } from '@/components/analyzer/sheets';
 import { AnalyzerBiggest, AnalyzerBudgets, AnalyzerFxExposure, AnalyzerHighlights, AnalyzerProjection, AnalyzerWeekday } from '@/components/analyzer/supplement';
 import { CategoryBadge } from '@/components/category-badge';
 import { RankedRow } from '@/components/ui/ranked-row';
 import { ChipPicker } from '@/components/chip-picker';
 import { MonthSwitcher } from '@/components/month-switcher';
-import { MovementRow } from '@/components/movements/movement-row';
 import { Screen } from '@/components/screen';
 import { Card, PairedColumn } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
-import { WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
+import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useAccountsFxExposure } from '@/hooks/use-accounts-fx-exposure';
 import { useAnalyzerProjection } from '@/hooks/use-analyzer-projection';
 import type { RootState } from '@/store';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
-import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { buildWalletAnalyzerSnapshot, type WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
 
 type Detail =
@@ -56,7 +55,6 @@ export default function AnalyzerScreen() {
   });
   const [topN, setTopN] = useState<(typeof TOP_SIZES)[number]>('6');
   const [detail, setDetail] = useState<Detail | null>(null);
-  const [categoryOrder, setCategoryOrder] = useState<'desc' | 'asc'>('desc');
   const fxExposure = useAccountsFxExposure(accounts, currency, month);
   const projection = useAnalyzerProjection(month, transactions, budgets, currency);
 
@@ -66,6 +64,10 @@ export default function AnalyzerScreen() {
   );
   const { currentTotals: now_, previousTotals: before, trend, topCategoriesBills, topCategoriesBillsPrevious, topTransactionsBills, monthlyAverages, pace, subscriptions } = snapshot;
   const money = (value: number) => formatMoneyMajor(value, currency);
+  const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
+  const barArea = tablet ? 240 : 120;
+  const barWidth = tablet ? 44 : 9;
+  const short = (value: number) => (value >= 1000 ? `${Math.round(value / 100) / 10}k` : String(Math.round(value)));
   const maxTrend = Math.max(1, ...trend.flatMap((item) => [item.income, item.expense]));
   const change = (current: number, previous: number) => (previous > 0 ? ((current - previous) / previous) * 100 : null);
 
@@ -80,9 +82,8 @@ export default function AnalyzerScreen() {
   const categoryMovements = useMemo(() => {
     if (detail?.kind !== 'category') return [];
     return transactions
-      .filter((tx) => tx.isBill && !tx.isIncome && isInRange(tx, detail.period === 'previous' ? snapshot.previousRange : snapshot.currentRange) && (tx.category?.name || 'Sin categoría') === detail.name)
-      .sort((a, b) => categoryOrder === 'desc' ? getPrimaryAmount(b) - getPrimaryAmount(a) : getPrimaryAmount(a) - getPrimaryAmount(b));
-  }, [transactions, detail, snapshot.currentRange, snapshot.previousRange, categoryOrder]);
+      .filter((tx) => tx.isBill && !tx.isIncome && isInRange(tx, detail.period === 'previous' ? snapshot.previousRange : snapshot.currentRange) && (tx.category?.name || 'Sin categoría') === detail.name);
+  }, [transactions, detail, snapshot.currentRange, snapshot.previousRange]);
 
   return (
     <Screen title="Analizador de cartera" subtitle="Tus números del mes, a fondo" backLabel={monthParam ? 'Inicio' : 'Más'} onBack={() => router.back()}>
@@ -150,7 +151,7 @@ export default function AnalyzerScreen() {
             </PairedColumn>
           </View>
       <Card title="Tendencia de 6 meses" info={{ title: 'Tendencia', text: 'Ingresos (verde) y gastos (rojo) de cada uno de los últimos seis meses, terminando en el mes elegido. Toca un mes para ver su tabla: ingresos, gastos y balance contra el mes anterior, con flechas que dicen si subieron o bajaron.' }}>
-        <View className="flex-row items-end justify-between gap-2" style={{ height: 150 }}>
+        <View className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
           {trend.map((item) => (
             <Pressable
               key={item.label}
@@ -158,11 +159,18 @@ export default function AnalyzerScreen() {
               accessibilityLabel={`${item.label}: ingresos ${money(item.income)}, gastos ${money(item.expense)}`}
               onPress={() => { const before_ = trend[trend.indexOf(item) - 1]; setDetail({ kind: 'month', label: item.label, income: item.income, expense: item.expense, count: item.transactionCount, previous: before_ ? { label: before_.label, income: before_.income, expense: before_.expense, count: before_.transactionCount } : null }); }}
               className="flex-1 items-center justify-end gap-1"
-              style={{ height: 150 }}>
-              <View className="flex-row items-end gap-0.5" style={{ height: 120 }}>
-                <View style={{ width: 9, height: Math.max(3, (item.income / maxTrend) * 118), borderRadius: 4, backgroundColor: colors.income }} />
-                <View style={{ width: 9, height: Math.max(3, (item.expense / maxTrend) * 118), borderRadius: 4, backgroundColor: colors.expense }} />
+              style={{ height: barArea + 70 }}>
+              <View className="flex-row items-end" style={{ height: barArea, gap: tablet ? 6 : 2 }}>
+                <View className="items-center justify-end gap-1">
+                  {tablet && <Text className="font-inter-semibold text-[11px]" style={{ color: colors.income }}>{short(item.income)}</Text>}
+                  <View style={{ width: barWidth, height: Math.max(3, (item.income / maxTrend) * (barArea - (tablet ? 22 : 2))), borderRadius: tablet ? 10 : 4, backgroundColor: colors.income }} />
+                </View>
+                <View className="items-center justify-end gap-1">
+                  {tablet && <Text className="font-inter-semibold text-[11px]" style={{ color: colors.expense }}>{short(item.expense)}</Text>}
+                  <View style={{ width: barWidth, height: Math.max(3, (item.expense / maxTrend) * (barArea - (tablet ? 22 : 2))), borderRadius: tablet ? 10 : 4, backgroundColor: colors.expense }} />
+                </View>
               </View>
+              {tablet && <Text className="font-inter-medium text-xs" style={{ color: item.income - item.expense >= 0 ? colors.income : colors.expense }}>{item.income - item.expense >= 0 ? '+' : '−'}{short(Math.abs(item.income - item.expense))}</Text>}
               <Text className="font-inter text-[11px] text-gf-text-muted">{esMonthLabel(item.shortLabel ?? item.label.slice(0, 3)).replace(/^Mayo$/, 'May')}</Text>
             </Pressable>
           ))}
@@ -192,7 +200,7 @@ export default function AnalyzerScreen() {
         <Explain>Compara el mes elegido con el mes de antes: lo verde mejoró, lo rojo empeoró y lo naranja se mantuvo.</Explain>
       </Card>
       <Card title="Tendencia de 6 meses" info={{ title: 'Tendencia', text: 'Ingresos (verde) y gastos (rojo) de cada uno de los últimos seis meses, terminando en el mes elegido. Toca un mes para ver su tabla: ingresos, gastos y balance contra el mes anterior, con flechas que dicen si subieron o bajaron.' }}>
-        <View className="flex-row items-end justify-between gap-2" style={{ height: 150 }}>
+        <View className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
           {trend.map((item) => (
             <Pressable
               key={item.label}
@@ -200,11 +208,18 @@ export default function AnalyzerScreen() {
               accessibilityLabel={`${item.label}: ingresos ${money(item.income)}, gastos ${money(item.expense)}`}
               onPress={() => { const before_ = trend[trend.indexOf(item) - 1]; setDetail({ kind: 'month', label: item.label, income: item.income, expense: item.expense, count: item.transactionCount, previous: before_ ? { label: before_.label, income: before_.income, expense: before_.expense, count: before_.transactionCount } : null }); }}
               className="flex-1 items-center justify-end gap-1"
-              style={{ height: 150 }}>
-              <View className="flex-row items-end gap-0.5" style={{ height: 120 }}>
-                <View style={{ width: 9, height: Math.max(3, (item.income / maxTrend) * 118), borderRadius: 4, backgroundColor: colors.income }} />
-                <View style={{ width: 9, height: Math.max(3, (item.expense / maxTrend) * 118), borderRadius: 4, backgroundColor: colors.expense }} />
+              style={{ height: barArea + 70 }}>
+              <View className="flex-row items-end" style={{ height: barArea, gap: tablet ? 6 : 2 }}>
+                <View className="items-center justify-end gap-1">
+                  {tablet && <Text className="font-inter-semibold text-[11px]" style={{ color: colors.income }}>{short(item.income)}</Text>}
+                  <View style={{ width: barWidth, height: Math.max(3, (item.income / maxTrend) * (barArea - (tablet ? 22 : 2))), borderRadius: tablet ? 10 : 4, backgroundColor: colors.income }} />
+                </View>
+                <View className="items-center justify-end gap-1">
+                  {tablet && <Text className="font-inter-semibold text-[11px]" style={{ color: colors.expense }}>{short(item.expense)}</Text>}
+                  <View style={{ width: barWidth, height: Math.max(3, (item.expense / maxTrend) * (barArea - (tablet ? 22 : 2))), borderRadius: tablet ? 10 : 4, backgroundColor: colors.expense }} />
+                </View>
               </View>
+              {tablet && <Text className="font-inter-medium text-xs" style={{ color: item.income - item.expense >= 0 ? colors.income : colors.expense }}>{item.income - item.expense >= 0 ? '+' : '−'}{short(Math.abs(item.income - item.expense))}</Text>}
               <Text className="font-inter text-[11px] text-gf-text-muted">{esMonthLabel(item.shortLabel ?? item.label.slice(0, 3)).replace(/^Mayo$/, 'May')}</Text>
             </Pressable>
           ))}
@@ -419,8 +434,18 @@ export default function AnalyzerScreen() {
       )}
       <AnalyzerWeekday snapshot={snapshot} currency={currency} />
 
+      <CategoryDetailSheet
+        visible={detail?.kind === 'category'}
+        name={detail?.kind === 'category' ? detail.name : ''}
+        prefix={detail?.kind === 'category' ? (detail.period === 'previous' ? 'Mes anterior' : `Mes elegido${detail.changePct !== null && detail.changePct !== undefined ? ` · ${pct(detail.changePct)} contra el mes anterior` : ''}`) : undefined}
+        movements={categoryMovements}
+        currency={currency}
+        onOpenMovement={(tx) => { setDetail(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } }); }}
+        onClose={() => setDetail(null)}
+      />
+
       <DetailSheet
-        visible={detail !== null}
+        visible={detail !== null && detail.kind !== 'category'}
         onClose={() => setDetail(null)}
         info={detail?.kind === 'month' ? { title: 'Detalle del mes', text: 'Ingresos y gastos son la suma de los movimientos del mes; balance = ingresos − gastos. El % es el cambio contra el mes anterior de la tendencia: (mes − anterior) ÷ anterior. ▲ subió, ▼ bajó y ▬ casi no cambió (menos de 0.5%). Verde = buena noticia (más ingresos o balance, menos gastos), rojo = mala, naranja = sin cambio.' } : detail?.kind === 'averages' ? { title: 'Promedio mensual', text: `Promedio de ${monthlyAverages.monthsCount} meses: la suma de ingresos, de gastos y de movimientos de los meses de la tabla ÷ ${monthlyAverages.monthsCount}. Es el mismo cálculo de la web.` } : undefined}
         title={
@@ -465,18 +490,6 @@ export default function AnalyzerScreen() {
             </>
           );
         })()}
-        {detail?.kind === 'category' && (
-          <>
-            <Text className="font-inter-bold text-2xl text-gf-text">{money(detail.current)}</Text>
-            {detail.period === 'previous' ? <Text className="font-inter text-base text-gf-text-muted">Movimientos del mes anterior</Text> : <><Text className="font-inter text-base text-gf-text-muted">Mes anterior: {money(detail.previous)}</Text><Text className="font-inter-semibold text-base text-gf-text">{pct(detail.changePct)} contra el mes anterior</Text></>}
-            <Text className="font-inter-semibold text-base text-gf-text">Todos los movimientos ({categoryMovements.length})</Text>
-            <View className="flex-row gap-2">
-              <Pressable accessibilityRole="button" accessibilityState={{ selected: categoryOrder === 'desc' }} onPress={() => setCategoryOrder('desc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: categoryOrder === 'desc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Mayor primero</Text></Pressable>
-              <Pressable accessibilityRole="button" accessibilityState={{ selected: categoryOrder === 'asc' }} onPress={() => setCategoryOrder('asc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: categoryOrder === 'asc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Menor primero</Text></Pressable>
-            </View>
-            {categoryMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => { setDetail(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } }); }} />)}
-          </>
-        )}
         {detail?.kind === 'averages' && (
           <>
             <View className="gap-1">

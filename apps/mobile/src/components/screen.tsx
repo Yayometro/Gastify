@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { InfoTip, type InfoText } from '@/components/info-tip';
 import { BottomTabInset, Colors, MaxContentWidth, TabletContentWidth } from '@/constants/theme';
 import { useIsTablet } from '@/hooks/use-device-class';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
@@ -17,6 +18,7 @@ export function Screen({
   backLabel,
   onBack,
   hero,
+  titleInfo,
   children,
 }: {
   title: string;
@@ -28,6 +30,8 @@ export function Screen({
   onBack?: () => void;
   // On the tablet, a screen can replace its title with the web's own hero (the Wallet's name and panels).
   hero?: ReactNode;
+  // A "?" next to the title that explains the whole screen.
+  titleInfo?: InfoText;
   children?: ReactNode;
 }) {
   const tablet = useIsTablet();
@@ -55,7 +59,10 @@ export function Screen({
           ) : null}
           {tablet && hero ? hero : (
             <View className="gap-1">
-              <Text className="font-inter-bold text-4xl text-gf-text">{title}</Text>
+              <View className="flex-row items-center gap-3">
+                <Text className="font-inter-bold text-4xl text-gf-text">{title}</Text>
+                {titleInfo ? <InfoTip info={titleInfo} /> : null}
+              </View>
               {subtitle ? <Text className="font-inter text-base text-gf-text-muted">{subtitle}</Text> : null}
             </View>
           )}

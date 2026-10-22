@@ -37,7 +37,7 @@ export const BANKS: Bank[] = [
   bank("klar", "Klar", "KLAR", "#111827", "other"),
   bank("stori", "Stori", "STO", "#00B4A6", "other"),
   bank("uala", "Ualá", "UALA", "#2F54EB", "other"),
-  bank("revolut", "Revolut", "REV", "#0075EB", "other"),
+  bank("revolut", "Revolut", "REV", "#000000", "other"),
   bank("openbank", "Openbank", "OPEN", "#E10500", "other"),
   bank("albo", "Albo", "ALBO", "#7B2CBF", "other"),
   bank("bajio", "BanBajío", "BAJ", "#00A651", "other"),

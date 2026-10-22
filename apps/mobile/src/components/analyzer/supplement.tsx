@@ -97,9 +97,9 @@ export function AnalyzerProjection({ comparison, loading, error, missing, curren
 export function AnalyzerBudgets({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
   const [open, setOpen] = useState<WalletAnalyzerBudgetRow | null>(null);
   return (
-    <Card title="Presupuestos · cumplimiento y rachas" info={{ title: 'Presupuestos del analizador', text: 'Compara el gasto de cada presupuesto con su límite en el periodo y muestra cuántos meses seguidos se cumplió (la racha). Toca uno para ver sus últimos 12 meses: lo gastado, el límite de cada mes y si se cumplió.' }}>
+    <Card title="Presupuestos · cumplimiento y rachas" info={{ title: 'Presupuestos del analizador', text: 'Compara el gasto de cada presupuesto con su límite en el periodo, de los más llenos o excedidos a los menos llenos, y muestra cuántos meses seguidos se cumplió (la racha). Toca uno para ver sus últimos 12 meses: lo gastado, el límite de cada mes y si se cumplió.' }}>
       {snapshot.budgetRows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No tienes presupuestos de gasto configurados.</Text>}
-      {snapshot.budgetRows.map((row) => {
+      {[...snapshot.budgetRows].sort((a, b) => (b.limit > 0 ? b.spent / b.limit : 0) - (a.limit > 0 ? a.spent / a.limit : 0)).map((row) => {
         const ratio = row.limit > 0 ? row.spent / row.limit : 0;
         return (
           <Pressable key={row.budgetId} accessibilityRole="button" onPress={() => setOpen(row)} className="gap-1.5 border-t border-gf-border py-2">

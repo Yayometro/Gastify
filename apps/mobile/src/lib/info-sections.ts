@@ -217,3 +217,51 @@ export const HERO_INFO = {
     ],
   } satisfies InfoText,
 };
+
+// What the History screen is for and how each of its modules reads.
+export const HISTORY_INFO = {
+  title: 'Historial',
+  text: 'El Historial sirve para comparar tu dinero a lo largo del tiempo: meses, trimestres, semestres y años.',
+  sections: [
+    {
+      label: 'Para qué sirve',
+      blocks: [
+        { kind: 'p', text: 'Es la pantalla para mirar hacia atrás y comparar: ¿gasté más que el año pasado?, ¿este trimestre fue mejor que el anterior?, ¿qué meses pesan más? Se hizo pensando en periodos largos, no en el día a día (para eso están Inicio y Movimientos).' },
+      ],
+    },
+    {
+      label: 'Cómo usarla',
+      blocks: [
+        {
+          kind: 'bullets',
+          items: [
+            'Elige arriba el periodo (por defecto, los últimos 3 meses) y muévelo con las flechas.',
+            'Activa «Comparar con otro periodo» para ver cada cifra contra el mismo tramo del año pasado, contra el periodo anterior o contra uno que elijas.',
+            'Cada módulo de abajo puede tener su propio periodo («Igual que arriba» lo sigue).',
+          ],
+        },
+      ],
+    },
+    {
+      label: 'Qué hace cada módulo',
+      blocks: [
+        {
+          kind: 'table',
+          head: ['Módulo', 'Para qué'],
+          rows: [
+            ['Periodo', 'Elige el tramo a analizar y, si quieres, con qué compararlo.'],
+            ['Resumen', 'Ingresos, gastos y balance del periodo (y del comparado).'],
+            ['Datos del periodo', 'Movimientos, lo que conservaste, gasto promedio por mes, lo que más pesa y el gasto más grande.'],
+            ['Mes a mes', 'Barras de ingresos y gastos de cada mes; toca un mes para ver su detalle.'],
+            ['Gastos e ingresos por categoría', 'En qué se fue y de dónde vino tu dinero; toca una categoría para ver sus subcategorías y movimientos.'],
+            ['Grandes gastos', 'La transacción, categoría y subcategoría más grandes de los últimos 12 meses y quién lideró cada mes.'],
+            ['Suscripciones recurrentes', 'Cargos que se repiten cada mes.'],
+            ['Presupuestos del periodo', 'Cuántos meses cumpliste cada presupuesto y cuánto gastaste contra su meta.'],
+            ['Proyecciones', 'El neto de cada mes del año, real o estimado.'],
+            ['Top', 'Las categorías o movimientos más grandes, mes por mes para compararlos.'],
+          ],
+        },
+      ],
+    },
+  ] as import('@/components/info-content').InfoSection[],
+};
