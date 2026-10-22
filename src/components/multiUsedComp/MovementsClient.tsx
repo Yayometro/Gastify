@@ -8,7 +8,7 @@ import { fetchCategories } from "@/lib/features/categoriesSlice";
 import { fetchSubCat } from "@/lib/features/subCategorySlice";
 import { fetchUser, type UserData } from "@/lib/features/userSlice";
 import { fetchAccounts } from "@/lib/features/accountsSlice";
-import ReadFileComp from "./ReadFileComp";
+import ImportFromExcelButton from "./ImportFromExcelButton";
 import CategorySuggestionsSection from "./CategorySuggestions/CategorySuggestionsSection";
 import type { AppDispatch, RootState } from "@/lib/store";
 
@@ -17,8 +17,6 @@ const TypedMovements = Movements as React.ComponentType<{
   mail?: string | null;
   timePeriodFromFather?: Date[];
 }>;
-
-const TypedReadFileComp = ReadFileComp as React.ComponentType<Record<string, never>>;
 
 const TypedCategorySuggestionsSection = CategorySuggestionsSection as React.ComponentType<{
   mail?: string | null;
@@ -80,13 +78,9 @@ function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element
               Movements details
             </h1>
           </div>
-          <div className="movements-panels-cont w-full grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
-            <div className="add-file-trans w-full h-full flex justify-center items-center">
-              <TypedReadFileComp />
-            </div>
-            <div className="category-suggestions w-full h-full flex justify-center items-center">
-              <TypedCategorySuggestionsSection mail={mcSession} />
-            </div>
+          <div className="movements-panels-cont w-full flex flex-wrap justify-center items-center gap-3">
+            <ImportFromExcelButton />
+            <TypedCategorySuggestionsSection mail={mcSession} />
           </div>
           <div className="mov-grans-cont w-full flex justify-center items-center ">
             <div className="w-full h-full min-[810px]:w-[800px] max-h-[1000px]  px-1 relative">
