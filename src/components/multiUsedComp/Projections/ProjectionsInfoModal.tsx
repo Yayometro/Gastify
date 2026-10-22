@@ -1,80 +1,16 @@
 "use client";
 
 import React from "react";
-import BasicModal from "@/components/modals/basicModal/BasicModal";
-import CategoIcon from "../CategoIcon";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoWindow } from "../InfoTip";
 
+// The explanation is the app's own text (packages/core/src/info/appInfo.ts), shown in the same format.
 export interface ProjectionsInfoModalProps {
   onClose: () => void;
 }
 
 function ProjectionsInfoModal({ onClose }: ProjectionsInfoModalProps): React.JSX.Element {
-  return (
-    <BasicModal
-      close={onClose}
-      renderContent={
-        <div className="content absolute gf-glass-violet flex flex-col w-[95%] max-w-[550px] max-h-[85%] rounded-2xl items-center overflow-y-auto z-[5001] p-6">
-          <button
-            type="button"
-            aria-label="Close"
-            className="close-con absolute top-2 right-2 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors cursor-pointer"
-            onClick={onClose}
-          >
-            <CategoIcon type={"MdClose"} siz={20} />
-          </button>
-          <h1 className="text-2xl text-purple-300 mb-4">How Projections work</h1>
-
-          <div className="w-full flex flex-col gap-4 text-left">
-            <div>
-              <p className="font-bold text-purple-300">Net</p>
-              <p className="text-sm text-gf-text-muted">
-                Income minus expense for that one month. It&apos;s the &quot;result&quot; of that specific
-                month — positive means you came out ahead, negative means you spent more than
-                you earned that month.
-              </p>
-            </div>
-            <div>
-              <p className="font-bold text-purple-300">Balance</p>
-              <p className="text-sm text-gf-text-muted">
-                Your running account total, carried forward month by month starting from
-                today&apos;s real balance. Past months show a dash because the app never
-                auto-adjusts your account balance when you add a transaction — there&apos;s no
-                reliable way to know what it actually was back then, so instead of guessing,
-                you can set it yourself by clicking a past month and entering it manually.
-              </p>
-            </div>
-            <div>
-              <p className="font-bold text-purple-300">Why the current month can look &quot;too high&quot;</p>
-              <p className="text-sm text-gf-text-muted">
-                For the month in progress, each Budget shows whichever is bigger: what you
-                budgeted, or what you&apos;ve actually spent so far. So if you budgeted $20,000 for
-                a category but have only spent $17,000 so far this month, Projections still
-                shows $20,000 for it — because the month isn&apos;t over, and that&apos;s what you
-                planned to spend. Once your real spending passes the budget, the real number
-                takes over automatically. This is why the current month&apos;s total can be a bit
-                higher than what you&apos;ve actually spent up to today — it&apos;s a forecast for the
-                whole month, not a running total of what already happened.
-              </p>
-            </div>
-            <div>
-              <p className="font-bold text-purple-300">Current Month Balance</p>
-              <p className="text-sm text-gf-text-muted">
-                To estimate your balance at the end of the current month, Gastify takes the money you have today and adds the &quot;remainder&quot; of your projection (what&apos;s left to earn minus what&apos;s left to spend, including buffers). As you record real transactions, this estimate automatically calibrates itself so it never counts money twice.
-              </p>
-            </div>
-            <div>
-              <p className="font-bold text-purple-300">Unexpected buffers</p>
-              <p className="text-sm text-gf-text-muted">
-                Two manual amounts (one for expenses, one for income) that cover anything that
-                doesn&apos;t have its own Budget or Income source — your &quot;just in case&quot; cushion.
-                Edit them from any month&apos;s detail view.
-              </p>
-            </div>
-          </div>
-        </div>
-      }
-    />
-  );
+  return <InfoWindow info={APP_INFO.proyecciones} onClose={onClose} />;
 }
 
 export default ProjectionsInfoModal;

@@ -20,6 +20,7 @@ import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionLike } from '@gastify/core/transformers/transactionsChange';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type Kind = 'spending' | 'incomes';
 
@@ -159,7 +160,7 @@ export function SummaryWidget({
   );
 
   return (
-    <Card title="Resumen de transacciones" info={{ title: 'Resumen de transacciones', text: 'Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución, y la tabla lista las categorías con su porcentaje y su monto (hasta 15 aquí; si hay más, «Ver las N categorías» abre una ventana grande con todas). Toca una categoría para ver sus subcategorías y usa la flecha para regresar. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.' }}>
+    <Card title="Resumen de transacciones" info={APP_INFO.resumen_de_transacciones}>
       {categories.length === 0 ? (
         <>
           {filters}

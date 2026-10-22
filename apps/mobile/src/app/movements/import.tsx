@@ -16,6 +16,7 @@ import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { shareExcelTemplate, uploadExcelTemplate } from '@/lib/export-file';
 import { messageOf } from '@/lib/write';
 import type { AppDispatch } from '@/store';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // Import movements from Excel, as the web does: download the template, fill it in and upload it; the server reads it
 // and creates the movements (categories, tags and accounts are matched with the ones the person already has).
@@ -70,7 +71,7 @@ export default function ImportScreen() {
 
   return (
     <Screen title="Importar desde Excel" backLabel="Movimientos" onBack={() => router.back()}>
-      <Card title="1. Descarga la plantilla" info={{ title: 'Plantilla', text: 'Es el mismo formato que usa la web. Llénala con fecha, concepto, monto, moneda y tipo; las categorías, etiquetas y cuentas se enlazan con las que ya tienes.' }}>
+      <Card title="1. Descarga la plantilla" info={APP_INFO.plantilla}>
         <Text className="font-inter text-sm text-gf-text-muted">Se guarda como archivo Excel y se abre el menú para enviarla a tu computadora, a Archivos o a tu app de hojas de cálculo.</Text>
         <OutlineButton label="Descargar plantilla" icon={<Ionicons name="download-outline" size={20} color="#7e22ce" />} onPress={template} loading={busy === 'template'} disabled={busy !== null || !email} />
       </Card>

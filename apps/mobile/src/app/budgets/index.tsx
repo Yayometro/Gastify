@@ -33,6 +33,7 @@ import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -225,13 +226,13 @@ export default function BudgetsScreen() {
       {/* Two tiles, as the web's summary: the total spending and the part no budget covers. Each opens its detail. */}
       <View className="flex-row gap-3">
         <Pressable accessibilityRole="button" onPress={() => setSheet('total')} className="flex-1">
-          <Card title="Gasto total" style={{ minHeight: 160, flex: 1 }} info={{ title: 'Gasto total', text: 'Suma de todos tus gastos del periodo elegido, estén o no cubiertos por un presupuesto, en tu moneda principal. Sirve para saber cuánto sale en total antes de ver cuánto está controlado. Toca la tarjeta para ver el desglose por presupuesto.' }}>
+          <Card title="Gasto total" style={{ minHeight: 160, flex: 1 }} info={APP_INFO.gasto_total}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.totalSpent, currency)}</Text>
             <Text className="font-inter text-xs text-gf-text-muted">Toca para ver el detalle</Text>
           </Card>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => setSheet('unbudgeted')} className="flex-1">
-          <Card title="Sin presupuesto" style={{ minHeight: 160, flex: 1 }} info={{ title: 'Sin presupuesto', text: 'Gasto total del periodo menos lo que cae dentro de algún presupuesto activo (por categoría o subcategoría). El porcentaje es esa parte ÷ el gasto total. Sirve para detectar dinero que se va sin control. Toca la tarjeta para ver de qué categorías viene y crear un presupuesto.' }}>
+          <Card title="Sin presupuesto" style={{ minHeight: 160, flex: 1 }} info={APP_INFO.sin_presupuesto}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.unbudgetedSpent, currency)}</Text>
             <ProgressBar ratio={Math.min(1, coverage.unbudgetedPercentage / 100)} color={colors.accent} />
             <Text className="font-inter text-xs text-gf-text-muted">{Math.round(coverage.unbudgetedPercentage)}% del gasto</Text>

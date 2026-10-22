@@ -10,6 +10,7 @@ import { Colors } from '@/constants/theme';
 import { dismissAlert } from '@/lib/alert-dismissals';
 import { alertMood, MOOD_COLOR, type AlertMood } from '@/lib/alert-presentation';
 import { useBudgetAlertList } from '@/hooks/use-budget-alerts';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 const GLYPH: Record<AlertMood, 'sparkles' | 'alert-circle' | 'flame'> = { celebrate: 'sparkles', alarm: 'alert-circle', fire: 'flame' };
 
@@ -24,7 +25,7 @@ export default function NotificationsScreen() {
   return (
     <Screen title="Notificaciones" subtitle="Avisos de tus presupuestos, ahorros y proyectos de este mes." backLabel="Atrás" onBack={back}>
       {alerts.length === 0 && (
-        <Card title="Sin avisos por ahora" info={{ title: 'Notificaciones', text: 'Te avisamos cuando un presupuesto llega al 70, 80, 90 o 100 % de su límite, cuando un ahorro avanza, y cuando vas bien a mitad del periodo. Cada aviso aparece una vez por presupuesto y periodo. Desliza un aviso a la izquierda o a la derecha para quitarlo de la lista.' }}>
+        <Card title="Sin avisos por ahora" info={APP_INFO.notificaciones}>
           <Text className="font-inter text-sm text-gf-text-muted">Cuando un presupuesto o una meta llegue a un punto importante, aparecerá aquí.</Text>
         </Card>
       )}

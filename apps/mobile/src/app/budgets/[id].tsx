@@ -30,6 +30,7 @@ import { getExplicitBudgetId, isProjectBudget, isSavingBudget } from '@gastify/c
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { getBudgetActualSpend, matchBillToBudget } from '@gastify/core/transformers/projectionsChange';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // One budget: where it stands this month (or in total, for a project), the movements that count toward
 // it, and the same form that creates it to change it or delete it.
@@ -192,7 +193,7 @@ export default function BudgetDetailScreen() {
       </Card>
 
       {!saving && distribution.length > 0 && (
-        <Card title="Distribución del gasto por categoría" info={{ title: 'Distribución del gasto', text: 'Cada tramo muestra qué parte de los movimientos que cuentan para este presupuesto corresponde a una categoría o subcategoría. El porcentaje se calcula sobre esos movimientos.' }}>
+        <Card title="Distribución del gasto por categoría" info={APP_INFO.distribuci_n_del_gasto}>
           <View className="flex-row overflow-hidden rounded-full" style={{ height: 14 }} accessibilityLabel="Distribución del gasto por categoría">
             {distribution.map((row) => <View key={row.key} style={{ flex: row.amount, backgroundColor: row.color }} />)}
           </View>

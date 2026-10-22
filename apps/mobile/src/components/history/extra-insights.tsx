@@ -10,6 +10,7 @@ import { Colors } from '@/constants/theme';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { computeMonthlyChampions, detectSubscriptions, findBiggestSpendPatterns } from '@gastify/core/transformers/walletAnalyzer';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 export function HistoryExtraInsights({ movements, currency, end, compareEnd }: { movements: TransactionData[]; currency: string; end: Date; compareEnd?: Date }) {
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
@@ -29,7 +30,7 @@ export function HistoryExtraInsights({ movements, currency, end, compareEnd }: {
 
   return (
     <>
-      <Card title="Grandes gastos · últimos 12 meses" info={{ title: 'Grandes gastos', text: 'La mayor transacción, categoría y subcategoría del año móvil que termina en el periodo elegido. Toca cada una para ver quién lideró cada mes (con su mes), «Ver líderes mes por mes» para el resumen y «Ver análisis» para una lectura en palabras.' }}>
+      <Card title="Grandes gastos · últimos 12 meses" info={APP_INFO.grandes_gastos_2}>
         {!patterns && <Text className="font-inter text-sm text-gf-text-muted">No hay gastos registrados en estos doce meses.</Text>}
         {patterns && <>
           <Pressable accessibilityRole="button" accessibilityLabel="Ver la transacción más grande de cada mes" onPress={() => setKind('transaction')} className="gap-1 rounded-2xl p-3" style={tile}>
@@ -51,7 +52,7 @@ export function HistoryExtraInsights({ movements, currency, end, compareEnd }: {
       <ChampionsSheet kind={kind} months={champions.months} currency={currency} onClose={() => setKind(null)} />
       <SpendAnalysisSheet patterns={patterns} visible={analysis} onClose={() => setAnalysis(false)} />
 
-      <Card title="Suscripciones recurrentes" info={{ title: 'Suscripciones recurrentes', text: 'Se detectan gastos con el mismo nombre que aparecen en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. El monto mostrado es el cargo más reciente. Toca uno para revisar sus fechas e importes (y abrir cada movimiento); se marca «nuevo» si antes no existía y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.' }}>
+      <Card title="Suscripciones recurrentes" info={APP_INFO.suscripciones_recurrentes}>
         {subscriptions.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No se detectaron pagos recurrentes en este periodo.</Text>}
         {subscriptions.map((item) => <Pressable key={item.name} accessibilityRole="button" onPress={() => setOpenSubscription(item.name)} className="flex-row items-center gap-3 border-t border-gf-border py-2">
           <CategoryBadge icon={item.icon} color={item.color} size={32} />

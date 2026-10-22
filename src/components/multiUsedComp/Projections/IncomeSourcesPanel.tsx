@@ -12,6 +12,8 @@ import CategoIcon from "../CategoIcon";
 import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { IIncomeSource, IncomeSourceRecurrence } from "@/model/IncomeSource";
 import type { IncomeSourceItem } from "@/hooks/useProjectionTable";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 export type IncomeSourceLike = IIncomeSource | IncomeSourceItem;
 
@@ -157,7 +159,7 @@ function IncomeSourcesPanel({
         onClick={() => setIsOpen(!isOpen)}
       >
         <h2 className="text-xl text-purple-300 font-normal">
-          Income sources ({(incomeSources || []).length})
+          Income sources ({(incomeSources || []).length})<InfoTip info={APP_INFO.fuentes_de_ingreso} />
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>

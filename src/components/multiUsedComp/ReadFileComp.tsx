@@ -21,6 +21,8 @@ import { MdFormatAlignLeft, MdOutlineCleaningServices } from "react-icons/md";
 import type { UserData } from "@/lib/features/userSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import type { AppDispatch, RootState } from "@/lib/store";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 export type UploadStatusKey = "idle" | "uploading" | "processing" | "done" | "error";
 
@@ -385,7 +387,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           onClick={handleDownloadTemplate}
         >
           <MdFormatAlignLeft size={16} />
-          <span>{isDownloading ? "Generating template..." : "Download format"}</span>
+          <span className="inline-flex items-center gap-1.5"><span>{isDownloading ? "Generating template..." : "Download format"}</span><InfoTip info={APP_INFO.plantilla} /></span>
         </div>
       </div>
 

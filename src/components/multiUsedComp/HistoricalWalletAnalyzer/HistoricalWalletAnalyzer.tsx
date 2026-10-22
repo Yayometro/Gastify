@@ -43,6 +43,8 @@ import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -426,7 +428,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
         {/* Trend */}
         <div className="md:col-span-3 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Tendencia</p>
+          <span className="inline-flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Tendencia</p><InfoTip info={APP_INFO.tendencia} /></span>
           <p className="text-xs text-gf-text-muted mb-3">Ingresos vs. gastos por periodo anterior equivalente</p>
           <div
             onClick={() =>
@@ -612,7 +614,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
       {/* Biggest spend patterns */}
       {biggestSpendPatterns && (
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Grandes gastos</p>
+          <span className="inline-flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Grandes gastos</p><InfoTip info={APP_INFO.grandes_gastos} /></span>
           <p className="text-xs text-gf-text-muted mb-3">Dónde está tu gasto más grande en este periodo, y si hay un patrón detrás</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
             <div

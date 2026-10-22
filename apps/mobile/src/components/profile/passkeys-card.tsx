@@ -5,6 +5,7 @@ import { authClient } from '@/auth-client';
 import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type Passkey = { id: string; name?: string | null; createdAt?: string | Date | null; deviceType?: string | null };
 
@@ -57,7 +58,7 @@ export function PasskeysCard() {
     ]);
 
   return (
-    <Card title="Passkeys" info={{ title: 'Passkeys', text: 'Un passkey te deja entrar con tu huella, tu cara o el código de tu teléfono, sin contraseña. Se agrega desde la web o desde la app instalada.' }}>
+    <Card title="Passkeys" info={APP_INFO.passkeys}>
       {loading && <ActivityIndicator color={colors.accent} />}
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
       {!loading && !error && passkeys.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes passkeys.</Text>}

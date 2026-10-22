@@ -12,6 +12,7 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { topSpendingCategories } from '@gastify/core/transactions/monthSummary';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 const BAR_AREA = 150;
 const TABLET_BAR_AREA = 230;
@@ -63,7 +64,7 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
   }, [open, compareStart, previous, movements]);
 
   return (
-    <Card title="Mes a mes" info={{ title: 'Mes a mes', text: 'Ingresos (verde) y gastos (rojo) de cada mes del periodo, con la cifra sobre cada barra. Toca un mes para ver su detalle y su categoría líder. Si comparas, las barras tenues corresponden al mes y año indicados abajo.' }}>
+    <Card title="Mes a mes" info={APP_INFO.mes_a_mes_2}>
       <CompactTimeFilter preset={own} onPreset={setOwn} month={ownMonth} onMonth={setOwnMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard periodSelect />
       {compare && compareStart && <Text className="font-inter-semibold text-xs text-gf-text-muted">Actual: {labelAt(start, 0, months[0]?.label ?? '')} · Comparado: {labelAt(compareStart, 0, compare[0]?.label ?? '')}</Text>}
       <View className="flex-row items-end gap-1.5" style={{ height: barArea + 48 }}>
@@ -104,7 +105,7 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
         onClose={() => setOpen(null)}
         title={currentLabel}
         subtitle={previous ? `Comparado con ${previousLabel}` : undefined}
-        info={{ title: 'Detalle del mes', text: previous ? 'A la izquierda, el mes elegido del periodo; a la derecha, el mes que le corresponde en el periodo con el que comparas. Cada renglón compara lo mismo: ingresos contra ingresos, gastos contra gastos, balance contra balance y la categoría que más pesó en cada mes.' : 'Ingresos y gastos del mes, su balance (ingresos − gastos) y la categoría que más gasto tuvo ese mes.' }}>
+        info={APP_INFO.detalle_del_mes(Boolean(previous))}>
         {current && (() => {
           const rowsData = [
             { label: 'Ingresos', a: money(current.incomes), b: previous ? money(previous.incomes) : null, tone: colors.income },

@@ -26,6 +26,8 @@ import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 import PrimaryCurrencySelector, { type PrimaryCurrencySelectorWallet } from "../PrimaryCurrencySelector";
 import type { MonthDateRange } from "@gastify/core/time/timeFunctions";
 import type { CurrencyBreakdownData } from "../CurrencyBreakdownChips";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 export interface ProjectionsClientProps {
   mcSession?: string | null;
@@ -143,7 +145,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
     <div className="w-full h-full sm:pr-2 pb-10">
       <div className="w-full profile-img py-4 text-center text-white">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
-          Projections
+          Projections<InfoTip info={APP_INFO.proyecciones} />
         </h1>
       </div>
       <div className="w-full flex items-center justify-center pt-2">

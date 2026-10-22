@@ -35,6 +35,13 @@ export interface AddTransactionModalProps {
 
 type Option = { id: "excel" | CreateKind; label: string; icon: React.ReactNode; info: InfoText; summary: string };
 
+// A transaction is an income or an expense: the same explanation, under one name.
+const TRANSACTION_INFO: InfoText = {
+  ...CREATE_KIND_INFO.expense,
+  title: "Transacción",
+  text: "Una transacción es dinero que entra (ingreso) o sale (gasto) de una de tus cuentas. Elige cuál es con el interruptor del formulario.",
+};
+
 // The Excel import has its own explanation: the same template the app downloads, filled and uploaded.
 const EXCEL_INFO: InfoText = {
   title: "Importar desde Excel",
@@ -52,8 +59,8 @@ const EXCEL_INFO: InfoText = {
 
 // The options of the "+", in the order of the app's hub. Each one opens its own form on the right.
 const OPTIONS: Option[] = [
-  { id: "expense", label: "Gasto", icon: <IoArrowDownCircleOutline size={20} />, info: CREATE_KIND_INFO.expense, summary: CREATE_KIND_SUMMARY.expense },
-  { id: "income", label: "Ingreso", icon: <IoArrowUpCircleOutline size={20} />, info: CREATE_KIND_INFO.income, summary: CREATE_KIND_SUMMARY.income },
+  // One form for both: a switch in it chooses whether it is an income or an expense.
+  { id: "expense", label: "Transacción", icon: <IoArrowDownCircleOutline size={20} />, info: TRANSACTION_INFO, summary: "Elige si es un ingreso o un gasto con el interruptor del formulario." },
   { id: "transfer", label: "Transferir", icon: <IoSwapHorizontalOutline size={20} />, info: CREATE_KIND_INFO.transfer, summary: CREATE_KIND_SUMMARY.transfer },
   { id: "account", label: "Cuenta", icon: <IoWalletOutline size={20} />, info: CREATE_KIND_INFO.account, summary: CREATE_KIND_SUMMARY.account },
   { id: "category", label: "Categoría", icon: <IoPricetagOutline size={20} />, info: CREATE_KIND_INFO.category, summary: CREATE_KIND_SUMMARY.category },
@@ -89,8 +96,6 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
     switch (active) {
       case "expense":
         return <AddTransactionComp key={key} onCreated={again} />;
-      case "income":
-        return <AddTransactionComp key={key} defaultIncome onCreated={again} />;
       case "transfer":
         return <TransferExchangeModal key={key} />;
       case "account":

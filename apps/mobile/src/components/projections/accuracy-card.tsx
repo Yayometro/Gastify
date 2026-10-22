@@ -7,6 +7,7 @@ import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { ACCURACY_SECTIONS } from '@/lib/info-sections';
 import { esMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 export type AccuracyRow = {
   monthName: string;
@@ -82,7 +83,7 @@ export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyR
   const scheme = useColorScheme();
   if (rows.length === 0) return null;
   return (
-    <Card style={{ backgroundColor: scheme === 'dark' ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title="Precisión de tus proyecciones" info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP, sections: ACCURACY_SECTIONS }}>
+    <Card style={{ backgroundColor: scheme === 'dark' ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title="Precisión de tus proyecciones" info={APP_INFO.c_mo_leer_esta_tabla_2}>
       <AccuracyBody rows={rows} currency={currency} onMonthPress={onMonthPress} />
     </Card>
   );

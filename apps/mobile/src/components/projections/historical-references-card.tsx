@@ -12,6 +12,7 @@ import { messageOf, sendWrite } from '@/lib/write';
 import { monthTitleEs } from '@gastify/core/format/spanishDates';
 import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type AnyRecord = Record<string, unknown>;
 type Kind = 'income' | 'expense';
@@ -90,7 +91,7 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
   return (
     <Card
       title="Referencias históricas"
-      info={{ title: 'Referencias históricas', text: 'Montos por mes que las proyecciones usan como punto de partida: lo que de verdad ingresó o gastó, o un estimado que vale por un tiempo. Ingresos y gastos se guardan por separado.' }}>
+      info={APP_INFO.referencias_hist_ricas}>
       <ChipPicker
         items={[{ id: 'income', label: 'Ingresos' }, { id: 'expense', label: 'Gastos' }]}
         value={kind}

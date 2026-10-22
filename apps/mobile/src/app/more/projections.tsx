@@ -33,6 +33,7 @@ import { zebra } from '@/components/ui/zebra';
 import { AccuracyCard } from '@/components/projections/accuracy-card';
 import { ProjectionMonthSheet } from '@/components/projections/month-sheet';
 import type { RootState } from '@/store';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -160,7 +161,7 @@ export default function ProjectionsScreen() {
       {!error && sources === null && <ActivityIndicator color={colors.accent} />}
 
       {sources !== null && (
-        <Card style={{ backgroundColor: dark ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title="Mes a mes" info={{ title: 'Mes a mes', text: 'Cada mes del año en una tarjeta. Ingresos: lo que entra. Gastos: lo que sale. Neto: ingresos menos gastos (verde si sobra, rojo si falta). Saldo: el dinero que tendrías al cierre del mes en tu moneda principal. «Real» es un mes que ya ocurrió, con tus movimientos; «Estimado» se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas; «Este mes» arranca como estimado y se llena con lo real. Con ≈, el saldo es una estimación hecha hacia atrás cuando no guardaste el saldo real. Todas las cifras están en tu moneda principal. Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.', sections: PROJECTION_MONTHS_SECTIONS }}>
+        <Card style={{ backgroundColor: dark ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title="Mes a mes" info={APP_INFO.mes_a_mes}>
           {inputs.missing.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
               {`Todavía no hay tipo de cambio para ${inputs.missing.join(', ')}: esas cifras se muestran sin convertir.`}

@@ -9,6 +9,7 @@ import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
 import { messageOf, sendWrite } from '@/lib/write';
 import { getApi } from '@gastify/core/api/client';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type Token = { _id?: unknown; name: string; createdAt?: string | number | Date; lastUsedAt?: string | number | Date | null };
 
@@ -81,7 +82,7 @@ export function ApiTokensCard() {
     ]);
 
   return (
-    <Card title="Tokens de acceso" info={{ title: 'Tokens de acceso', text: 'Un token permite que otra herramienta (un asistente, un script) lea y escriba en tu cuenta sin tu contraseña. Se muestra una sola vez al crearlo; si lo pierdes, revócalo y crea otro.' }}>
+    <Card title="Tokens de acceso" info={APP_INFO.tokens_de_acceso}>
       {loading && <ActivityIndicator color={colors.accent} />}
       {!loading && tokens.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No tienes tokens.</Text>}
       {tokens.map((token) => (

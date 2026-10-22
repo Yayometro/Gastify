@@ -17,6 +17,7 @@ import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // The most budgets the dashboard shows; the rest are one tap away on «Ver todos».
 export const MAX_DASHBOARD_BUDGETS = 10;
@@ -58,7 +59,7 @@ export function BudgetsWidget() {
         </Pressable>
         <View className="flex-row items-center gap-3">
           <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{rows.length > shown.length ? `Ver todos (${rows.length})` : 'Ver todos'}</Text></Pressable>
-          <InfoTip info={{ title: 'Presupuestos', text: 'Cada barra es lo gastado en el periodo del presupuesto ÷ su límite; el círculo marca el porcentaje y la carita cambia de ánimo según qué tan cerca estés del límite (verde tranquilo, naranja cerca, rojo excedido). Se ordenan igual que en Presupuestos: primero la barra más llena o pasada del límite, y así hasta la más vacía. Aquí se ven hasta 10; «Ver todos» abre todos. Toca uno para ver sus movimientos.', sections: BUDGET_FACES_SECTIONS }} />
+          <InfoTip info={APP_INFO.presupuestos} />
         </View>
       </View>
       {rows.length === 0 && <Card><Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes presupuestos de gasto.</Text></Card>}

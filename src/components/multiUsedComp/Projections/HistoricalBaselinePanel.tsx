@@ -11,6 +11,8 @@ import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
 import { formatMoneyMajor, isSupportedCurrency, minorToMajor, SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 import type { ProjectionBaselineData } from "@/hooks/useProjectionTable";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 export interface BaselineTimelineEntry {
   _id?: string;
@@ -295,7 +297,7 @@ function HistoricalBaselinePanel({
         onClick={() => setIsOpen(!isOpen)}
       >
         <h2 className="text-xl text-purple-300 font-normal">
-          Referencia histórica ({totalEntries})
+          Referencia histórica ({totalEntries})<InfoTip info={APP_INFO.referencias_hist_ricas} />
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>

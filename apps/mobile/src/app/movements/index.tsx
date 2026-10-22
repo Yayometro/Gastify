@@ -56,6 +56,7 @@ import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { getDuplicates, getDuplicatesToDelete } from '@gastify/core/transformers/transactionDuplicates';
 import { DUPLICATE_DEFAULTS, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type DaySection = { key: string; title: string; data: TransactionData[] };
 
@@ -313,7 +314,7 @@ export default function MovementsScreen() {
       {selectionMode && (
         <Card
           title={`${selected.length} ${selected.length === 1 ? 'seleccionado' : 'seleccionados'}`}
-          info={{ title: 'Seleccionar movimientos', text: 'Marca los movimientos que quieras cambiar. Con los botones cambias un solo campo de todos a la vez (nombre, fecha, tipo, categoría o cuenta), o usas la edición general para llenar varios campos juntos. Lo que no llenes se queda como estaba en cada movimiento. «Borrar» quita todos los seleccionados. Mantener presionado un movimiento también lo selecciona.' }}>
+          info={APP_INFO.seleccionar_movimientos}>
           <View className="flex-row items-center justify-between gap-3">
             <Pressable accessibilityRole="button" accessibilityLabel="Salir de la selección" onPress={() => { setSelectionMode(false); setSelected([]); }} className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5" style={{ borderWidth: 1, borderColor: colors.accent }}>
               <Ionicons name="close-circle-outline" size={16} color={colors.accent} />

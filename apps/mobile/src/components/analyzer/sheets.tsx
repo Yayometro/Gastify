@@ -15,6 +15,7 @@ import type {
   WalletAnalyzerMonthlyChampionEntry,
   WalletAnalyzerWeekdaySpendingData,
 } from '@gastify/core/transformers/walletAnalyzer';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // The detail sheets of the Wallet Analyzer, one per card, in the web's words. They are shared by the Analyzer and the
 // History screen, so both explain the same numbers the same way.
@@ -103,7 +104,7 @@ export function InsightSheet({ insight, currency, onClose }: { insight: WalletAn
     <DetailSheet
       visible={Boolean(insight)}
       title={insight ? `${insight.icon ?? ''} ${insight.title}`.trim() : ''}
-      info={{ title: 'Cómo leer esto', text: 'Cada renglón es un mes (o una fecha) que sirvió para calcular la señal. ✓ significa que se cumplió el límite o la meta; ✗, que no. Los montos están en tu moneda principal.' }}
+      info={APP_INFO.c_mo_leer_esto}
       onClose={onClose}>
       {explanation}
       <View>{rows}</View>
@@ -120,7 +121,7 @@ export function BudgetSeriesSheet({ row, currency, onClose }: { row: WalletAnaly
       visible={Boolean(row)}
       title={row?.category ?? ''}
       subtitle={row ? `Límite mensual ${money(row.limit)} · racha ${row.streakMonths} ${row.streakMonths === 1 ? 'mes' : 'meses'}` : undefined}
-      info={{ title: 'Cumplimiento del presupuesto', text: 'Cada mes se compara lo gastado en la categoría con el límite del presupuesto. ✓ si no lo superaste, ✗ si sí. La racha cuenta los meses seguidos, hasta el actual, dentro del límite. Si el presupuesto es nuevo, los meses anteriores usan su meta más antigua como estimado.' }}
+      info={APP_INFO.cumplimiento_del_presupuesto}
       onClose={onClose}>
       {series.length === 0 && <Explain>Todavía no hay meses suficientes para mostrar.</Explain>}
       <View>{series.map((m) => <Row key={m.label} label={m.label} right={`${money(m.actual)} / ${money(m.goal)}`} met={m.met} />)}</View>
@@ -149,7 +150,7 @@ export function ChampionsSheet({ kind, months, currency, onClose }: { kind: Cham
     <DetailSheet
       visible={kind !== null}
       title={kind ? CHAMPION_TITLES[kind] : ''}
-      info={{ title: 'Líderes por mes', text: 'Para cada uno de los últimos doce meses se busca el movimiento, la categoría o la subcategoría con más gasto. La lista va de mayor a menor para que se vea cuál ganó en el año. En categorías, el % es su parte del gasto de los doce meses.' }}
+      info={APP_INFO.l_deres_por_mes}
       onClose={onClose}>
       {rows.map(({ entry, champion }) => (
         <Pressable
@@ -179,7 +180,7 @@ export function SpendAnalysisSheet({ patterns, visible, onClose }: { patterns: B
     <DetailSheet
       visible={visible && Boolean(patterns)}
       title="Análisis de grandes gastos"
-      info={{ title: 'De dónde sale este análisis', text: 'No usa inteligencia artificial: cada frase es la lectura directa de un cálculo sobre tus últimos doce meses (si la transacción más grande está en la categoría líder, qué parte del gasto es la categoría, qué tan aislado fue el gasto y qué etiqueta se repite).' }}
+      info={APP_INFO.de_d_nde_sale_este_an_lisis}
       onClose={onClose}>
       {bullets.map((bullet, index) => <Text key={index} className="border-t border-gf-border py-2.5 font-inter text-base text-gf-text">• {bullet}</Text>)}
     </DetailSheet>
@@ -196,7 +197,7 @@ export function WeekdaySheet({ data, visible, currency, onClose }: { data: Walle
     <DetailSheet
       visible={visible && Boolean(data)}
       title="Patrones por día de la semana"
-      info={{ title: 'Cómo se calcula', text: 'Se suma el gasto de cada día de la semana (todos los lunes, todos los martes…) durante el mes y se divide entre cuántas veces cayó ese día; un mes tiene 4 o 5 de cada uno, así que dividir hace justa la comparación.' }}
+      info={APP_INFO.c_mo_se_calcula}
       onClose={onClose}>
       {best && (
         <View className="gap-0.5 rounded-2xl p-3" style={{ backgroundColor: colors.accentSoft }}>

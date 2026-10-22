@@ -16,6 +16,7 @@ import { idOf } from '@gastify/core/categories/categoryForm';
 import { SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { DUPLICATE_CRITERIA_LABELS, toleranceFrom, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
 import { EMPTY_FILTERS, type MovementFilters, type ReadableFilter, type TypeFilter } from '@gastify/core/transactions/movementFilters';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 const READABLE: { id: ReadableFilter; label: string }[] = [
   { id: 'all', label: 'Todos' },
@@ -68,7 +69,7 @@ export function MovementFiltersPanel({
   const accountItems: ChipItem[] = [{ id: '', label: 'Todas' }, ...accounts.map((a) => ({ id: idOf(a), label: `${a.name} · ${a.currency}` }))];
 
   return (
-    <Card title="Filtros" info={{ title: 'Filtros', text: 'Acota la lista: por texto, tipo, legibilidad, categoría, cuenta o monto exacto. El buscador de duplicados encuentra movimientos repetidos para borrarlos de una vez.' }}>
+    <Card title="Filtros" info={APP_INFO.filtros}>
       <TextField label="Buscar" value={filters.query} onChangeText={(text) => set('query', text)} onClear={() => set('query', '')} placeholder="Nombre, categoría, etiqueta…" autoCorrect={false} />
 
       <View className="gap-2">

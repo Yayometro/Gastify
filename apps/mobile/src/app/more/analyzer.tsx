@@ -24,6 +24,7 @@ import type { RootState } from '@/store';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { buildWalletAnalyzerSnapshot, type WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type Detail =
   | { kind: 'month'; label: string; income: number; expense: number; count: number; previous: { label: string; income: number; expense: number; count: number } | null }
@@ -95,7 +96,7 @@ export default function AnalyzerScreen() {
         <>
           <View className="flex-row items-stretch gap-4">
             <PairedColumn>
-      <Card title="VS el mes anterior" info={{ title: 'VS el mes anterior', text: 'Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.', sections: VS_SECTIONS }}>
+      <Card title="VS el mes anterior" info={APP_INFO.vs_el_mes_anterior}>
         <View className="flex-row items-center gap-2 pb-1">
           <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
           <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Antes</Text>
@@ -118,7 +119,7 @@ export default function AnalyzerScreen() {
             </PairedColumn>
             <PairedColumn>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'averages' })}>
-        <Card title="Promedio mensual" info={{ title: 'Promedio mensual', text: `Es el promedio de los ${monthlyAverages.monthsCount} meses de la tendencia (el mes elegido y los ${Math.max(0, monthlyAverages.monthsCount - 1)} anteriores): se suman los ingresos, los gastos y los movimientos de esos meses y se divide entre ${monthlyAverages.monthsCount}. Es el mismo cálculo de la web. Toca para ver mes por mes.` }}>
+        <Card title="Promedio mensual" info={APP_INFO.promedio_mensual(monthlyAverages.monthsCount)}>
           <View className="flex-row justify-between gap-3">
             <View className="flex-1">
               <Text className="font-inter text-xs text-gf-text-muted">Ingresos</Text>
@@ -150,7 +151,7 @@ export default function AnalyzerScreen() {
       </Pressable>
             </PairedColumn>
           </View>
-      <Card title="Tendencia de 6 meses" info={{ title: 'Tendencia', text: 'Ingresos (verde) y gastos (rojo) de cada uno de los últimos seis meses, terminando en el mes elegido. Toca un mes para ver su tabla: ingresos, gastos y balance contra el mes anterior, con flechas que dicen si subieron o bajaron.' }}>
+      <Card title="Tendencia de 6 meses" info={APP_INFO.tendencia}>
         <View className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
           {trend.map((item) => (
             <Pressable
@@ -179,7 +180,7 @@ export default function AnalyzerScreen() {
         </>
       ) : (
         <>
-      <Card title="VS el mes anterior" info={{ title: 'VS el mes anterior', text: 'Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.', sections: VS_SECTIONS }}>
+      <Card title="VS el mes anterior" info={APP_INFO.vs_el_mes_anterior_2}>
         <View className="flex-row items-center gap-2 pb-1">
           <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
           <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Antes</Text>
@@ -199,7 +200,7 @@ export default function AnalyzerScreen() {
         ))}
         <Explain>Compara el mes elegido con el mes de antes: lo verde mejoró, lo rojo empeoró y lo naranja se mantuvo.</Explain>
       </Card>
-      <Card title="Tendencia de 6 meses" info={{ title: 'Tendencia', text: 'Ingresos (verde) y gastos (rojo) de cada uno de los últimos seis meses, terminando en el mes elegido. Toca un mes para ver su tabla: ingresos, gastos y balance contra el mes anterior, con flechas que dicen si subieron o bajaron.' }}>
+      <Card title="Tendencia de 6 meses" info={APP_INFO.tendencia_2}>
         <View className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
           {trend.map((item) => (
             <Pressable
@@ -226,7 +227,7 @@ export default function AnalyzerScreen() {
         </View>
       </Card>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'averages' })}>
-        <Card title="Promedio mensual" info={{ title: 'Promedio mensual', text: `Es el promedio de los ${monthlyAverages.monthsCount} meses de la tendencia (el mes elegido y los ${Math.max(0, monthlyAverages.monthsCount - 1)} anteriores): se suman los ingresos, los gastos y los movimientos de esos meses y se divide entre ${monthlyAverages.monthsCount}. Es el mismo cálculo de la web. Toca para ver mes por mes.` }}>
+        <Card title="Promedio mensual" info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount)}>
           <View className="flex-row justify-between gap-3">
             <View className="flex-1">
               <Text className="font-inter text-xs text-gf-text-muted">Ingresos</Text>
@@ -248,7 +249,7 @@ export default function AnalyzerScreen() {
 
 
 
-      <Card title={`Top ${topN}`} info={{ title: `Top ${topN}`, text: 'Las categorías y los movimientos con más gasto del mes elegido, con el cambio contra el mes anterior. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo directamente.' }}>
+      <Card title={`Top ${topN}`} info={APP_INFO.analyzer(topN)}>
         <ChipPicker items={TOP_SIZES.map((n) => ({ id: n, label: `Top ${n}` }))} value={topN} onChange={(id) => setTopN(id as (typeof TOP_SIZES)[number])} moreAfter={99} />
         {wide ? (
           <>
@@ -388,7 +389,7 @@ export default function AnalyzerScreen() {
 
       {subscriptions.length > 0 && (
         <Pressable accessibilityRole="button" onPress={() => setDetail({ kind: 'subscriptions' })}>
-          <Card title="Pagos recurrentes" info={{ title: 'Pagos recurrentes', text: 'Gastos con el mismo nombre que se repiten en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. Toca la tarjeta para ver todos, con su cuenta, categoría y cargos; toca un cargo para abrir el movimiento. Se marca «nuevo» si no existía antes y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.' }}>
+          <Card title="Pagos recurrentes" info={APP_INFO.pagos_recurrentes}>
             {subscriptions.slice(0, 4).map((sub) => (
               <View key={sub.name} className="flex-row items-center gap-3">
                 <CategoryBadge icon={sub.icon} color={sub.color} size={30} />
@@ -408,7 +409,7 @@ export default function AnalyzerScreen() {
           </PairedColumn>
           <PairedColumn>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Ritmo de gasto', text: 'Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.', sections: PACE_SECTIONS }}>
+        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={APP_INFO.ritmo_de_gasto}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
             Al día {pace.dayOfMonth}; lo normal a esta altura es {money(pace.avgPaceForSameDay)}
@@ -422,7 +423,7 @@ export default function AnalyzerScreen() {
         <>
       <AnalyzerFxExposure rows={fxExposure.rows} loading={fxExposure.loading} missing={fxExposure.missing} currency={currency} />
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={{ title: 'Ritmo de gasto', text: 'Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.', sections: PACE_SECTIONS }}>
+        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={APP_INFO.ritmo_de_gasto_2}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
             Al día {pace.dayOfMonth}; lo normal a esta altura es {money(pace.avgPaceForSameDay)}

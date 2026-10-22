@@ -12,6 +12,7 @@ import { messageOf, sendWrite } from '@/lib/write';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -74,7 +75,7 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
   };
 
   return (
-    <Card title="Fuentes de ingreso" info={{ title: 'Fuentes de ingreso', text: 'Lo que entra cada periodo (sueldo, rentas...). Las proyecciones lo suman mes a mes, convertido a la moneda principal.' }}>
+    <Card title="Fuentes de ingreso" info={APP_INFO.fuentes_de_ingreso}>
       {sources.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes fuentes de ingreso.</Text>}
       {sources.map((source) => (
         <View key={idOf(source as never)} className="flex-row items-center gap-3">

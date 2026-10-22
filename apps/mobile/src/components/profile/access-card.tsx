@@ -13,6 +13,7 @@ import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { updateUser, type UserData } from '@gastify/core/features/userSlice';
 import { validateEmailAddress, validateNewPassword } from '@gastify/core/profile/accessRules';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // How the person signs in: the e-mail and the password, changed through the same route as the web's profile
 // (`general-data/user/update-user`). Changing the e-mail signs the person out, so they come back in with the new one.
@@ -73,7 +74,7 @@ export function AccessCard({ email }: { email: string }) {
   };
 
   return (
-    <Card title="Acceso" info={{ title: 'Acceso', text: 'Con qué correo y contraseña entras a Gastify. Si entras con Google y nunca definiste una contraseña, aquí puedes crear una.' }}>
+    <Card title="Acceso" info={APP_INFO.acceso}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: openForm === 'email' }} onPress={() => setOpenForm(openForm === 'email' ? null : 'email')} className="flex-row items-center justify-between py-1">
         <View className="flex-1">
           <Text className="font-inter-semibold text-base text-gf-text">Cambiar correo</Text>

@@ -22,6 +22,7 @@ import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { moveInList } from '@gastify/core/accounts/accountForm';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@/store';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // Every account with its balance in its own currency and the total in the primary one. Tap one to
 // edit it; the arrows change the order the accounts are listed in (the web's order, saved on the server).
@@ -84,7 +85,7 @@ export default function AccountsScreen() {
       )}
 
       {accounts.length > 0 && (
-        <Card title="Total" info={{ title: 'Total', text: 'Suma del saldo de todas tus cuentas, cada una convertida a tu moneda principal con el tipo de cambio más reciente (saldo × tasa). Si una moneda no tiene tipo de cambio, esa cuenta no suma y se avisa. Sirve para saber cuánto dinero tienes en total hoy.' }}>
+        <Card title="Total" info={APP_INFO.total}>
           <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(total.total, currency)}</Text>
           {Object.entries(byCurrency)
             .filter(([code]) => code !== currency)

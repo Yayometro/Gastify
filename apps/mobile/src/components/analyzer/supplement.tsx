@@ -12,6 +12,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
 import type { ProjectionMonthComparison } from '@gastify/core/transformers/projectionsChange';
 import type { WalletAnalyzerBudgetRow, WalletAnalyzerInsightItem, WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // The second line of a highlight tile on a tablet: a bit of context so the tile says more than the phone's single line.
 function highlightSubtext(item: WalletAnalyzerInsightItem, currency: string): string {
@@ -33,7 +34,7 @@ export function AnalyzerHighlights({ snapshot, currency }: { snapshot: WalletAna
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [open, setOpen] = useState<WalletAnalyzerInsightItem | null>(null);
   return (
-    <Card title="Lo más destacado del mes" info={{ title: 'Lo más destacado', text: 'Señales calculadas con tus movimientos del mes: límites superados, categorías fuera de lo habitual (contra el promedio de los 6 meses anteriores, sin contar el actual, y con al menos 3 meses de historial), suscripciones detectadas, rachas y ritmo de gasto. Toca una para ver los meses y el cálculo detrás. No son movimientos adicionales.' }}>
+    <Card title="Lo más destacado del mes" info={APP_INFO.lo_m_s_destacado}>
       {snapshot.insights.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin alertas destacadas este mes.</Text>}
       {tablet ? (
         <View className="flex-row flex-wrap gap-3">
@@ -70,7 +71,7 @@ export function AnalyzerProjection({ comparison, loading, error, missing, curren
   const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
-    <Card title="Proyección del mes" info={{ title: 'Proyección del mes', text: 'Contrasta lo previsto con lo real del mes elegido. Previsto = tus fuentes de ingreso (ingresos) y tus presupuestos activos más los topes que hayas puesto (gastos); Real = la suma de tus movimientos del mes. Para un mes cerrado solo aparece la comparación si había referencias o ajustes registrados; en el mes en curso muestra el avance contra lo previsto. Sirve para ver si tu plan se está cumpliendo.' }} action={<Pressable accessibilityRole="link" onPress={() => router.push('/more/projections')}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver proyecciones</Text></Pressable>}>
+    <Card title="Proyección del mes" info={APP_INFO.proyecci_n_del_mes} action={<Pressable accessibilityRole="link" onPress={() => router.push('/more/projections')}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver proyecciones</Text></Pressable>}>
       {loading && <Text className="font-inter text-sm text-gf-text-muted">Calculando proyección…</Text>}
       {error && <Text className="font-inter text-sm text-red-500">No se pudo cargar la proyección.</Text>}
       {!loading && !error && !comparison && <Text className="font-inter text-sm text-gf-text-muted">No hay una referencia guardada para comparar este mes cerrado, o el mes todavía no ha comenzado.</Text>}
@@ -97,7 +98,7 @@ export function AnalyzerProjection({ comparison, loading, error, missing, curren
 export function AnalyzerBudgets({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
   const [open, setOpen] = useState<WalletAnalyzerBudgetRow | null>(null);
   return (
-    <Card title="Presupuestos · cumplimiento y rachas" info={{ title: 'Presupuestos del analizador', text: 'Compara el gasto de cada presupuesto con su límite en el periodo, de los más llenos o excedidos a los menos llenos, y muestra cuántos meses seguidos se cumplió (la racha). Toca uno para ver sus últimos 12 meses: lo gastado, el límite de cada mes y si se cumplió.' }}>
+    <Card title="Presupuestos · cumplimiento y rachas" info={APP_INFO.presupuestos_del_analizador}>
       {snapshot.budgetRows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No tienes presupuestos de gasto configurados.</Text>}
       {[...snapshot.budgetRows].sort((a, b) => (b.limit > 0 ? b.spent / b.limit : 0) - (a.limit > 0 ? a.spent / a.limit : 0)).map((row) => {
         const ratio = row.limit > 0 ? row.spent / row.limit : 0;
@@ -126,7 +127,7 @@ export function AnalyzerBiggest({ snapshot, currency }: { snapshot: WalletAnalyz
   if (!patterns) return null;
   const tile = { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border } as const;
   return (
-    <Card title={`Grandes gastos · últimos ${patterns.monthsBack ?? 12} meses`} info={{ title: 'Grandes gastos', text: 'Muestra la transacción, la categoría y la subcategoría con más gasto en los últimos doce meses. Toca cada una para ver quién lideró cada mes, o abre «Ver mes por mes» para el resumen completo y «Ver análisis» para una lectura en palabras.' }}>
+    <Card title={`Grandes gastos · últimos ${patterns.monthsBack ?? 12} meses`} info={APP_INFO.grandes_gastos}>
       <Pressable accessibilityRole="button" onPress={() => setKind('transaction')} className="gap-1 rounded-2xl p-3" style={tile}>
         <Text className="font-inter text-xs text-gf-text-muted">Transacción más grande · toca para ver cada mes</Text>
         <Text className="font-inter-semibold text-base text-gf-text">{patterns.biggestTransaction.name}</Text>
@@ -163,7 +164,7 @@ export function AnalyzerBiggest({ snapshot, currency }: { snapshot: WalletAnalyz
 export function AnalyzerFxExposure({ rows, loading, missing, currency }: { rows: FxExposureRow[]; loading: boolean; missing: string[]; currency: string }) {
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
-    <Card title="Exposición multimoneda" info={{ title: 'Exposición multimoneda', text: 'Tus saldos en monedas distintas a la principal, convertidos con el tipo de cambio actual (saldo nativo × tasa). El porcentaje compara ese valor con el que tendría el MISMO saldo nativo al cierre del mes anterior; mide cuánto te ayudó o perjudicó el tipo de cambio, no es rendimiento de la cuenta. Sirve para saber qué tan expuesto estás a variaciones de otras monedas.' }}>
+    <Card title="Exposición multimoneda" info={APP_INFO.exposici_n_multimoneda}>
       {loading && <Text className="font-inter text-sm text-gf-text-muted">Consultando tipos de cambio…</Text>}
       {!loading && rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No hay saldos en otra moneda con una cotización disponible.</Text>}
       {rows.map((row) => <View key={row.currency} className="flex-row items-center justify-between gap-2 border-t border-gf-border py-2">
@@ -187,7 +188,7 @@ export function AnalyzerWeekday({ snapshot, currency }: { snapshot: WalletAnalyz
   const data = snapshot.weekdaySpending;
   const max = Math.max(1, ...data.days.map((day) => day.avgPerOccurrence));
   return (
-    <Card title="Patrón por día de la semana" info={{ title: 'Patrón semanal', text: 'Se suma el gasto de cada día de la semana en el mes elegido y se divide entre cuántas veces cayó ese día (un mes tiene 4 o 5 de cada uno), para que la comparación sea justa. «Ver detalle» muestra la semana con más gasto y cada día.' }} action={<Pressable accessibilityRole="button" onPress={() => setExpanded(true)}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver detalle</Text></Pressable>}>
+    <Card title="Patrón por día de la semana" info={APP_INFO.patr_n_semanal} action={<Pressable accessibilityRole="button" onPress={() => setExpanded(true)}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver detalle</Text></Pressable>}>
       {data.days.map((day) => <View key={day.dayIndex} className="flex-row items-center gap-2">
         <Text className="w-20 font-inter-medium text-xs text-gf-text">{day.dayName}</Text>
         <View className="h-2 flex-1 overflow-hidden rounded-full bg-gf-surface"><View style={{ width: `${Math.max(0, Math.min(100, (day.avgPerOccurrence / max) * 100))}%`, height: '100%', backgroundColor: colors.accent }} /></View>

@@ -18,6 +18,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { convertBaselineToPrimary, convertSourcesToPrimary, foreignCurrenciesOf } from '@gastify/core/transformers/projectionInputs';
 import { buildProjectionAccuracyReport, buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -101,7 +102,7 @@ export function ProjectionsTeaser() {
   const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
 
   return (
-    <Card title="Proyecciones" info={{ title: 'Proyecciones', text: 'Cada barra es el neto del mes (ingresos − gastos). Los meses cerrados usan tus movimientos reales; los futuros se estiman con tus fuentes de ingreso, tus presupuestos y tus referencias históricas; el mes en curso mezcla ambos. Verde: sobra. Rojo: falta. Toca «Ver el detalle» para la tabla completa y el detalle de cada mes.' }}>
+    <Card title="Proyecciones" info={APP_INFO.proyecciones}>
       <ChipPicker items={years.map((y) => ({ id: String(y), label: String(y) }))} value={String(year)} onChange={(id) => setYear(Number(id))} moreAfter={99} />
       {sources === null ? (
         <Text className="font-inter text-sm text-gf-text-muted">Calculando…</Text>
@@ -123,7 +124,7 @@ export function ProjectionsTeaser() {
           <Pressable accessibilityRole="button" onPress={() => setShowDetail(true)} className="items-center rounded-full border border-gf-border py-2.5">
             <Text className="font-inter-semibold text-sm text-gf-text">Ver proyectado contra real</Text>
           </Pressable>
-          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title="Proyectado contra real" subtitle={`Meses cerrados de ${year}`} info={{ title: 'Cómo leer esta tabla', text: ACCURACY_HELP, sections: ACCURACY_SECTIONS }}>
+          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title="Proyectado contra real" subtitle={`Meses cerrados de ${year}`} info={APP_INFO.c_mo_leer_esta_tabla}>
             <AccuracyBody rows={accuracy as never[]} currency={currency} />
           </DetailSheet>
         </>

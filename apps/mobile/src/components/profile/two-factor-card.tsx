@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type Setup = { uri: string; secret: string; codes: string[] };
 
@@ -89,7 +90,7 @@ export function TwoFactorCard() {
   return (
     <Card
       title="Verificación en dos pasos"
-      info={{ title: 'Verificación en dos pasos', text: 'Además de tu contraseña, Gastify te pide un código de 6 dígitos de una app autenticadora. Los códigos de respaldo sirven si pierdes el teléfono: guárdalos en un lugar seguro.' }}>
+      info={APP_INFO.verificaci_n_en_dos_pasos}>
       <Text className="font-inter text-sm" style={{ color: enabled ? colors.income : colors.textSecondary }}>
         {enabled ? 'Activada con app autenticadora' : 'Desactivada. Actívala para proteger tu cuenta.'}
       </Text>

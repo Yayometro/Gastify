@@ -9,6 +9,8 @@ import runNotify from "@/helpers/gastifyNotifier";
 import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
 import CategoIcon from "./CategoIcon";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 // Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
 const TypedCategoIcon = CategoIcon as React.ComponentType<{
@@ -267,7 +269,7 @@ function TwoFactorPanel(): React.JSX.Element {
   return (
     <div className="two-factor-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
       <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-        <h2 className="text-xl text-purple-300 font-normal">Autenticación en dos pasos</h2>
+        <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 font-normal">Autenticación en dos pasos</h2><InfoTip info={APP_INFO.verificaci_n_en_dos_pasos} /></span>
         <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (

@@ -53,6 +53,8 @@ import type { UserData } from "@/lib/features/userSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { AppDispatch } from "@/lib/store";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 export interface BudgetsClientProps {
   mcSession?: string | null;
@@ -339,7 +341,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
           <Skeleton active />
         ) : (
           <>
-            <h2 className="text-xl text-purple-300 mb-2">Spending budgets</h2>
+            <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 mb-2">Spending budgets</h2><InfoTip info={APP_INFO.presupuestos} /></span>
             {(spendingBudgets.length > 0 || (coverage as SpendingSummaryCoverage).totalSpent > 0) && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                 <div
@@ -353,14 +355,14 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
                   className="flex-1 bg-gf-accent-soft-bg rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
                   onClick={() => setShowSpendingSummary(true)}
                 >
-                  <p className="text-xs text-gf-text-muted">Total spent</p>
+                  <span className="inline-flex items-center gap-1.5"><p className="text-xs text-gf-text-muted">Total spent</p><InfoTip info={APP_INFO.gasto_total} /></span>
                   <p className="text-lg text-purple-300 font-bold">{usdFormatChanger((coverage as SpendingSummaryCoverage).totalSpent)}</p>
                 </div>
                 <div
                   className="flex-1 gf-glass-warning rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
                   onClick={() => setShowSpendingSummary(true)}
                 >
-                  <p className="text-xs text-amber-400">Unbudgeted</p>
+                  <span className="inline-flex items-center gap-1.5"><p className="text-xs text-amber-400">Unbudgeted</p><InfoTip info={APP_INFO.sin_presupuesto} /></span>
                   <p className="text-lg text-amber-400 font-bold">
                     {usdFormatChanger((coverage as SpendingSummaryCoverage).unbudgetedSpent)}
                     <span className="text-xs font-normal ml-1">

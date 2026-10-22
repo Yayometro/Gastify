@@ -7,6 +7,7 @@ import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
 import type { PeriodInsights } from '@gastify/core/history/insights';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // On a tablet each reading is its own glass tile (as the web's highlights are), with room for a longer subtext; on the phone
 // it is plain text in two columns.
@@ -50,9 +51,7 @@ export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insight
       title="Análisis del periodo"
       onTitlePress={onOpenAnalyzer}
       action={<Pressable accessibilityRole="link" onPress={onOpenAnalyzer} hitSlop={8}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>Ver análisis completo</Text></Pressable>}
-      info={{
-        title: 'Análisis del periodo',
-        text: 'Gasto por día = gasto del periodo ÷ días transcurridos. Al ritmo actual = ese promedio × los días del periodo (solo mientras sigue en curso). Lo que conservas = (ingresos − gastos) ÷ ingresos. Los cambios comparan contra el periodo inmediato anterior de la misma duración. El gasto promedio es el gasto total ÷ el número de gastos. Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.', sections: INSIGHTS_SECTIONS }}>
+      info={APP_INFO.an_lisis_del_periodo}>
       <Pressable accessibilityRole="button" accessibilityLabel="Abrir el Analizador de cartera" onPress={onOpenAnalyzer} className={tablet ? 'gap-3' : 'gap-2'}>
         {rows.map((row, rowIndex) => (
           // Each row shares the width equally, so tiles in a row match in size and an unpaired last tile fills the row.

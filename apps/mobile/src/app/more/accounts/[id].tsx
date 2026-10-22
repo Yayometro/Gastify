@@ -28,6 +28,7 @@ import { accountActivity } from '@gastify/core/accounts/accountActivity';
 import { summarizePeriod } from '@gastify/core/history/periodComparison';
 import { Colors } from '@/constants/theme';
 import { monthTotals, sortNewestFirst } from '@gastify/core/transactions/monthSummary';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // Edits one account: name, kind and balance. The currency stays as it was created.
 export default function EditAccountScreen() {
@@ -89,7 +90,7 @@ export default function EditAccountScreen() {
       <CardColorPicker account={account} />
 
       {bankById(account.bankId) || account.cardNumber ? (
-        <Card title="Banco y número" info={{ title: 'Banco y número', text: 'El banco al que pertenece la cuenta y, si lo quisiste, su número de tarjeta o de cuenta, oculto de forma predeterminada (toca el ojito para verlo). Nunca se guarda el CVV ni el NIP.' }}>
+        <Card title="Banco y número" info={APP_INFO.banco_y_n_mero}>
           {bankById(account.bankId) ? (
             <View className="flex-row items-center gap-3">
               <BankBadge bankId={account.bankId} size={56} />
@@ -113,7 +114,7 @@ export default function EditAccountScreen() {
 
       <SummaryWidget summary={summary} movements={inPeriod} allMovements={mine} currency={primary} />
 
-      <Card title={`Movimientos de ${period.label}`} info={{ title: 'Movimientos de la cuenta', text: 'Lo que entró y salió de esta cuenta en el periodo elegido, y sus movimientos más recientes. Las transferencias entre tus cuentas no cuentan como ingreso ni gasto.' }}>
+      <Card title={`Movimientos de ${period.label}`} info={APP_INFO.movimientos_de_la_cuenta}>
         <View className="flex-row justify-between">
           <Text className="font-inter text-base text-gf-text-muted">Entró</Text>
           <Text className="font-inter-semibold text-base" style={{ color: colors.income }}>+{formatMoneyMajor(totals.incomes, primary)}</Text>

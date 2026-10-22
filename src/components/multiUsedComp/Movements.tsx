@@ -55,6 +55,8 @@ import ModalCategoryContent from "@/components/modals/contents/selectCategory/Mo
 import useModal from "@/hooks/useModalBasic";
 import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
 import DuplicateComparisonTable from "./DuplicateComparisonTable";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 const TypedEditMultipleTransModal = EditMultipleTransModal as React.ComponentType<{
   hidden?: React.ReactNode[];
@@ -859,7 +861,7 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
               </h1>
             </div>
             <div className="header-filters">
-              <p className="text-center font-xl">Filters</p>
+              <span className="inline-flex items-center gap-1.5"><p className="text-center font-xl">Filters</p><InfoTip info={APP_INFO.filtros} /></span>
               <span className="text-xs flex justify-center">
                 From:{" "}
                 <b className="mx-1">{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : "—"}</b>

@@ -32,6 +32,7 @@ import { compareRange, summarizePeriod } from '@gastify/core/history/periodCompa
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { isInRange, yearsWithMovements } from '@gastify/core/transactions/movementFilters';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -119,7 +120,7 @@ export default function HomeScreen() {
         </View>
       )}
       {accounts.length === 0 && accountsState.status !== 'failed' && (
-        <Card title="Cuentas" onTitlePress={() => router.push('/more/accounts')} info={{ title: 'Cuentas', text: 'Cada tarjeta es una cuenta con su saldo actual. «Entró» y «salió» son la suma de los ingresos y gastos de esa cuenta en el periodo elegido arriba. El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente (las tarjetas de crédito no se suman a tu dinero disponible).' }}>
+        <Card title="Cuentas" onTitlePress={() => router.push('/more/accounts')} info={APP_INFO.cuentas}>
           {accountsState.status === 'loading' ? <SkeletonRows count={2} /> : <Muted>Todavía no tienes cuentas.</Muted>}
         </Card>
       )}
@@ -136,7 +137,7 @@ export default function HomeScreen() {
               <BudgetsWidget />
             </View>
             <View style={{ flex: 1, height: budgetsHeight || undefined }}>
-      <Card style={{ flex: 1 }} title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los movimientos con la fecha más reciente de toda tu cuenta (cinco en el teléfono; en la tablet los que quepan junto a tus presupuestos), sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+      <Card style={{ flex: 1 }} title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={APP_INFO.ltimos_movimientos} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <SkeletonRows count={4} />
         ) : latest.length === 0 ? (
@@ -154,7 +155,7 @@ export default function HomeScreen() {
       <TopRanking movements={transactions.data} currency={currency} defaultPreset="thisMonth" />
       <BudgetsWidget />
 
-      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={{ title: 'Últimos movimientos', text: 'Los cinco movimientos con la fecha más reciente de toda tu cuenta, sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.' }} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={APP_INFO.ltimos_movimientos_2} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <Muted>Cargando…</Muted>
         ) : latest.length === 0 ? (

@@ -12,6 +12,7 @@ import { idOf } from '@gastify/core/categories/categoryForm';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { buildBudgetHistoricalComparative } from '@gastify/core/transformers/budgetHistoricalComparative';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // Budgets against the period, month by month: how many months each one stayed within its limit (the web's
 // "compliance"), with a small strip of months (green kept, red exceeded) and a tap for each month's figures.
@@ -49,7 +50,7 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
   const chosenPrevious = open ? comparedById.get(open) : undefined;
 
   return (
-    <Card title="Presupuestos del periodo" info={{ title: 'Presupuestos del periodo', text: 'Para cada presupuesto se cuenta, mes por mes del periodo, cuántos meses lo gastado no superó la meta (por ejemplo 4 de 6) y se compara el gasto total contra la meta total del periodo. Si activas la comparación arriba, verás también los resultados del otro periodo. Toca una fila para revisar cada mes; ≈ indica una meta estimada (el presupuesto es más nuevo que ese mes).' }}>
+    <Card title="Presupuestos del periodo" info={APP_INFO.presupuestos_del_periodo}>
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No hay presupuestos de gasto en este periodo.</Text>}
       {rows.map((row) => {
         const id = idOf(row.budget as never);

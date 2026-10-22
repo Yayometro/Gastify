@@ -17,6 +17,7 @@ import { getValueActiveInMonth } from '@gastify/core/transformers/budgetHistory'
 import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getExpectedOccurrencesInMonth, getMonthBucketBreakdown, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
 import { filterBillsOrIncomes, getTransactionsFromTimeRange } from '@gastify/core/transformers/transactionsChange';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type AnyRecord = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -138,7 +139,7 @@ export function ProjectionMonthSheet({
       onClose={onClose}
       title={row ? `${esMonthLabel(row.monthName)} ${year}` : ''}
       subtitle={row ? (row.type === 'actual' ? 'Mes cerrado: con tus movimientos reales.' : row.type === 'estimate' ? 'Mes futuro: estimado con tus presupuestos y fuentes de ingreso.' : 'Mes en curso: arranca como estimado y se llena con lo real conforme pasa el mes.') : undefined}
-      info={{ title: 'Cómo leer este mes', text: 'Los meses cerrados muestran tus movimientos reales. Los futuros son un estimado puro hecho con tus presupuestos activos (gastos) y tus fuentes de ingreso (ingresos). El mes en curso mezcla ambos: empieza como estimado y se llena con lo real. Con «Ver movimientos» ves los movimientos detrás de estas cifras, y los topes de abajo sirven para sumar dinero que no está ligado a ningún presupuesto ni fuente de ingreso.' }}>
+      info={APP_INFO.c_mo_leer_este_mes}>
       {range && (
         <Pressable accessibilityRole="button" accessibilityState={{ expanded: showMovements }} onPress={() => setShowMovements((open) => !open)} className="items-center rounded-full border border-gf-border py-2.5">
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{showMovements ? 'Ocultar movimientos' : `Ver movimientos del mes (${monthTransactions.length})`}</Text>
@@ -211,7 +212,7 @@ export function ProjectionMonthSheet({
         <View className="gap-2 border-t border-gf-border pt-4">
           <View className="flex-row items-center gap-2">
             <Text className="flex-1 font-inter-semibold text-base text-gf-text">Saldo real de este mes</Text>
-            <InfoTip info={{ title: 'Saldo real del mes', text: 'La app no puede calcular saldos pasados por sí sola. Si sabes cuánto tenías en tus cuentas al terminar este mes, regístralo aquí: se usa como punto de partida en la columna de saldo de la proyección.' }} />
+            <InfoTip info={APP_INFO.saldo_real_del_mes} />
           </View>
           <TextField label="Saldo al cierre del mes" value={balance} onChangeText={setBalance} keyboardType="decimal-pad" placeholder="Por ejemplo, 45000" />
           <GradientButton label="Guardar saldo" onPress={() => save('balance')} loading={busy === 'balance'} disabled={busy !== null} />
@@ -223,14 +224,14 @@ export function ProjectionMonthSheet({
         <View className="gap-1">
           <View className="flex-row items-center gap-2">
             <Text className="flex-1 font-inter-medium text-sm text-gf-text-muted">Tope de gasto inesperado</Text>
-            <InfoTip info={{ title: 'Tope de gasto inesperado', text: 'Un monto manual que se suma a tu estimado de gastos, para gastos que no tienen su propio presupuesto.' }} />
+            <InfoTip info={APP_INFO.tope_de_gasto_inesperado} />
           </View>
           <TextField label="Monto" value={expenseBuffer} onChangeText={setExpenseBuffer} keyboardType="decimal-pad" placeholder="0" />
         </View>
         <View className="gap-1">
           <View className="flex-row items-center gap-2">
             <Text className="flex-1 font-inter-medium text-sm text-gf-text-muted">Tope de ingreso inesperado</Text>
-            <InfoTip info={{ title: 'Tope de ingreso inesperado', text: 'Un monto manual que se suma a tu estimado de ingresos, para dinero que entra y no está ligado a una fuente de ingreso recurrente.' }} />
+            <InfoTip info={APP_INFO.tope_de_ingreso_inesperado} />
           </View>
           <TextField label="Monto" value={incomeBuffer} onChangeText={setIncomeBuffer} keyboardType="decimal-pad" placeholder="0" />
         </View>

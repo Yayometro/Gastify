@@ -47,6 +47,8 @@ import {
 } from "@gastify/core/time/timeFunctions";
 import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 interface DashboardProps {
   dataServ?: unknown;
@@ -439,7 +441,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
 
   const accountsPanel = (
     <div className="scrollbar-thin-white bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full overflow-y-auto">
-      <span className="text-white/70 text-[10px] uppercase tracking-wide">Tus cuentas</span>
+      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">Tus cuentas</span><InfoTip info={APP_INFO.cuentas} /></span>
       {!accounts || accounts.length === 0 ? (
         <span className="text-white/60 text-xs">No accounts yet</span>
       ) : (
@@ -473,7 +475,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
 
   const summaryPanel = loading || !periodReady ? panelSkeleton("Resumen") : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
-      <span className="text-white/70 text-[10px] uppercase tracking-wide">Resumen</span>
+      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">Resumen</span><InfoTip info={APP_INFO.resumen} /></span>
       <div className="flex flex-col gap-2 justify-end flex-1">
       <div className="flex items-center justify-between gap-3 w-full">
         <span className="flex items-center gap-1.5 text-white text-sm shrink-0">

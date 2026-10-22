@@ -37,6 +37,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
@@ -103,7 +104,7 @@ export default function HistoryScreen() {
 
   return (
     <Screen title="Historial" subtitle={labelA} backLabel="Más" onBack={() => router.back()} titleInfo={HISTORY_INFO}>
-      <Card title="Periodo" info={{ title: 'Periodo', text: 'Elige qué tramo de tiempo analizar; todas las tarjetas de abajo que dicen «Igual que arriba» lo siguen. Al comparar con otro periodo (el mismo tramo del año anterior, el periodo inmediato anterior de la misma duración o uno que elijas) cada cifra muestra cuánto cambió. Por defecto se analizan los últimos 3 meses.' }}>
+      <Card title="Periodo" info={APP_INFO.periodo}>
         {tablet ? (
           <PeriodBar
             preset={preset}
@@ -151,7 +152,7 @@ export default function HistoryScreen() {
       {tablet ? (
         <View className="flex-row items-stretch gap-4">
           <PairedColumn>
-      <Card title="Resumen" info={{ title: 'Resumen', text: 'Ingresos = suma de lo que entró en el periodo; gastos = suma de lo que salió; balance = ingresos − gastos. Las transferencias entre tus cuentas no cuentan. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje es (periodo − comparado) ÷ comparado; en gastos, que suba es malo (rojo) y que baje es bueno (verde).' }}>
+      <Card title="Resumen" info={APP_INFO.resumen}>
         {[
           { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
           { label: 'Gastos', av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
@@ -177,7 +178,7 @@ export default function HistoryScreen() {
       </Card>
           </PairedColumn>
           <PairedColumn>
-      <Card title="Datos del periodo" info={{ title: 'Datos del periodo', text: 'Lecturas rápidas del mismo periodo: cuántos movimientos tuvo, qué parte de tus ingresos conservaste ((ingresos − gastos) ÷ ingresos), cuánto gastaste en promedio por mes, qué categoría pesó más y cuál fue tu gasto más grande. Se calculan con los mismos movimientos que el resumen.' }}>
+      <Card title="Datos del periodo" info={APP_INFO.datos_del_periodo}>
         <View className="flex-row flex-wrap gap-3">
           {periodFacts(a, cell).map((fact, index) => ({ ...fact, versus: b ? periodFacts(b, cell)[index].value : null })).map((tile) => (
             <View key={tile.label} className="gap-1 rounded-2xl p-4" style={{ flexBasis: '47%', flexGrow: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
@@ -192,7 +193,7 @@ export default function HistoryScreen() {
           </PairedColumn>
         </View>
       ) : (
-      <Card title="Resumen" info={{ title: 'Resumen', text: 'Ingresos = suma de lo que entró en el periodo; gastos = suma de lo que salió; balance = ingresos − gastos. Las transferencias entre tus cuentas no cuentan. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje es (periodo − comparado) ÷ comparado; en gastos, que suba es malo (rojo) y que baje es bueno (verde).' }}>
+      <Card title="Resumen" info={APP_INFO.resumen_2}>
         {[
           { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
           { label: 'Gastos', av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
@@ -226,7 +227,7 @@ export default function HistoryScreen() {
       <OwnPeriodCategories
         kind="spending"
         title="Gastos por categoría"
-        info={{ title: 'Gastos por categoría', text: 'Suma de los gastos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo (por defecto «Igual que arriba», con su comparación si la activaste), pero puedes elegir otro sin cambiar el resto de la pantalla. Sirve para ver en qué se fue tu dinero. Toca una categoría para ver sus movimientos.' }}
+        info={APP_INFO.gastos_por_categor_a}
         movements={transactions}
         summary={a}
         compareSummary={b}
@@ -237,7 +238,7 @@ export default function HistoryScreen() {
       <OwnPeriodCategories
         kind="incomes"
         title="Ingresos por categoría"
-        info={{ title: 'Ingresos por categoría', text: 'Suma de los ingresos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo, igual que los gastos. Sirve para ver de dónde viene tu dinero. Toca una categoría para ver sus movimientos.' }}
+        info={APP_INFO.ingresos_por_categor_a}
         movements={transactions}
         summary={a}
         compareSummary={b}
@@ -250,7 +251,7 @@ export default function HistoryScreen() {
       <OwnPeriodCategories
         kind="spending"
         title="Gastos por categoría"
-        info={{ title: 'Gastos por categoría', text: 'Suma de los gastos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo (por defecto «Igual que arriba», con su comparación si la activaste), pero puedes elegir otro sin cambiar el resto de la pantalla. Sirve para ver en qué se fue tu dinero. Toca una categoría para ver sus movimientos.' }}
+        info={APP_INFO.gastos_por_categor_a_2}
         movements={transactions}
         summary={a}
         compareSummary={b}
@@ -260,7 +261,7 @@ export default function HistoryScreen() {
       <OwnPeriodCategories
         kind="incomes"
         title="Ingresos por categoría"
-        info={{ title: 'Ingresos por categoría', text: 'Suma de los ingresos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo, igual que los gastos. Sirve para ver de dónde viene tu dinero. Toca una categoría para ver sus movimientos.' }}
+        info={APP_INFO.ingresos_por_categor_a_2}
         movements={transactions}
         summary={a}
         compareSummary={b}

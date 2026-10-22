@@ -10,6 +10,7 @@ import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch, RootState } from '@/store';
 import { updateWallet } from '@gastify/core/features/walletSlice';
 import { CURRENCY_META, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // The main currency, as the web's selector: every total and report is shown in it. It only changes how things are
 // presented: each account keeps its own balance in its own currency.
@@ -47,10 +48,7 @@ export function CurrencyCard() {
   return (
     <Card
       title="Moneda principal"
-      info={{
-        title: 'Moneda principal',
-        text: 'Es la moneda en la que se muestran tus totales, presupuestos, historial y proyecciones. Cada cuenta conserva su saldo en su propia moneda; solo cambia cómo se presentan los totales, convertidos con el tipo de cambio más reciente. Cambiarla no modifica ningún movimiento.',
-      }}>
+      info={APP_INFO.moneda_principal}>
       <ChipPicker items={SUPPORTED_CURRENCIES.map((code) => ({ id: code, label: `${code} (${CURRENCY_META[code].symbol})` }))} value={current} onChange={change} moreAfter={99} />
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
     </Card>

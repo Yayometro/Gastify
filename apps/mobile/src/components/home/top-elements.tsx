@@ -11,6 +11,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { filterBillsOrIncomes, getPrimaryAmount, orderByHighestValue, reduceTransCategoriesSliced } from '@gastify/core/transformers/transactionsChange';
 import type { MonthBounds } from '@gastify/core/transactions/monthSummary';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 // The biggest of the period, as the web's "Top" modules: gastos or ingresos, by category or one by one.
 export function TopElements({ movements, range, currency }: { movements: TransactionData[]; range: MonthBounds; currency: string }) {
@@ -22,7 +23,7 @@ export function TopElements({ movements, range, currency }: { movements: Transac
   const biggest = [...list].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, 5);
 
   return (
-    <Card title="Los más grandes" info={{ title: 'Los más grandes', text: 'Para qué sirve: ver en qué se fue la mayor parte de tu dinero. Cómo se calcula: se toman los gastos (o ingresos) del periodo, se agrupan por categoría y se ordenan de mayor a menor suma; en «Movimientos» se ordenan uno por uno por monto. Filtro: el periodo y el tipo (gastos o ingresos) que elijas en esta tarjeta; las transferencias entre tus cuentas no cuentan.' }}>
+    <Card title="Los más grandes" info={APP_INFO.los_m_s_grandes}>
       <Segmented options={[{ value: 'bills', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
       <Segmented options={[{ value: 'categories', label: 'Por categoría' }, { value: 'movements', label: 'Movimientos' }]} value={by} onChange={setBy} />
       {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}

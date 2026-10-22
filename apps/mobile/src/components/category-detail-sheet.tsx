@@ -9,6 +9,7 @@ import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
+import { APP_INFO } from '@gastify/core/info/appInfo';
 
 type Group = { key: string; name: string; icon?: string | null; color?: string | null; total: number; items: TransactionData[] };
 
@@ -63,7 +64,7 @@ export function CategoryDetailSheet({
       onClose={onClose}
       title={tablet ? '' : name}
       subtitle={tablet ? undefined : prefix}
-      info={{ title: 'Detalle de la categoría', text: 'Total de la categoría = la suma de todos sus movimientos en el periodo. Abajo, cada subcategoría con su total, ordenadas de mayor a menor gasto, y dentro de cada una sus movimientos, también de mayor a menor. Con el interruptor puedes invertir el orden (de menor a mayor). Toca un movimiento para abrirlo.' }}>
+      info={APP_INFO.detalle_de_la_categor_a}>
       {/* The name and the total, once each: side by side on a tablet (big), the total under the name on a phone. */}
       {tablet ? (
         <View className="flex-row items-end justify-between gap-4">

@@ -8,6 +8,8 @@ import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/acco
 import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 import { BANKS, bankById } from "@gastify/core/banks/banks";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { APP_INFO } from "@gastify/core/info/appInfo";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 
 export type EditAccountModalMode = "edition" | "creation" | boolean | string | null | undefined;
 
@@ -258,7 +260,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
               </select>
             </div>
           </Tooltip>
-          <p className="label-tfp ">Bank (optional)</p>
+          <p className="label-tfp ">Bank (optional)<InfoTip info={APP_INFO.banco_y_n_mero} /></p>
           <input
             type="text"
             value={bankQuery}
