@@ -175,12 +175,14 @@ export interface DuplicatePairItem {
 export interface MovementsProps {
   timePeriodFromFather?: [Date, Date] | (Date | string | number)[] | null;
   mail?: string;
+  // Inside the dashboard's card: no violet header and no fixed max height; the list scrolls inside the card's box.
+  embedded?: boolean;
   [key: string]: unknown;
 }
 
 const today = new Date();
 
-function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React.JSX.Element {
+function MovementsContent({ timePeriodFromFather, mail, embedded = false }: MovementsProps): React.JSX.Element {
   const defaultPeriod: [Date, Date] | (Date | string | number)[] = timePeriodFromFather || [
     new Date(today.getFullYear(), today.getMonth(), 1),
     new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59),
@@ -856,8 +858,8 @@ function MovementsContent({ timePeriodFromFather, mail }: MovementsProps): React
           <Skeleton active />
         </div>
       ) : (
-        <div className="table-container w-full h-full overflow-y-scroll relative max-h-[1000px] px-1">
-          <div className="gf-glass-violet-flat text-gf-text sticky z-50 top-0 px-1 py-2 mb-1 rounded-t-2xl">
+        <div className={`table-container w-full h-full relative px-1 ${embedded ? "overflow-y-auto" : "overflow-y-scroll max-h-[1000px]"}`}>
+          <div className={embedded ? "text-gf-text px-1 py-2 mb-1" : "gf-glass-violet-flat text-gf-text sticky z-50 top-0 px-1 py-2 mb-1 rounded-t-2xl"}>
             <div className="movement-content">
               <div className="flex items-center justify-center gap-2">
                 <h1 className="movement-title text-2xl text-center font-bold">

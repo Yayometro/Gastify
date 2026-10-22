@@ -38,6 +38,7 @@ export function CategoryTable({
         <Text className="w-6 text-center font-inter-semibold text-xs uppercase text-gf-text-muted">#</Text>
         <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted">{firstColumn}</Text>
         <Text className="w-12 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">%</Text>
+        <Text className="w-14 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Trans.</Text>
         <Text className="w-28 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{currency}</Text>
       </View>
       {shown.map((row, index) => (
@@ -61,6 +62,7 @@ export function CategoryTable({
             )}
           </View>
           <Text className="w-12 text-right font-inter text-sm text-gf-text-muted">{total > 0 ? Math.round((row.value / total) * 100) : 0}%</Text>
+          <Text className="w-14 text-right font-inter text-sm text-gf-text-muted">{row.count}</Text>
           <Text className="w-28 text-right font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.value, currency, { showCode: false })}</Text>
         </Pressable>
       ))}

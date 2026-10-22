@@ -93,7 +93,7 @@ function TopElementContainerView({
           tabs={["Bills", "Incomes"]}
           compontentsArray={components}
           tooltip={"Select the tab that you want to see 😎"}
-          contentStyle={"grid grid-cols-1 md:grid-cols-2 gap-4 items-start"}
+          contentStyle={"grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"}
         />
       )}
     </div>

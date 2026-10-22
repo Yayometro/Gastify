@@ -201,6 +201,8 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       props: {
         items: transactionCategories.bills.children,
         title: topRankTitle("Categories", transactionCategories.bills.total),
+        // Each category row says how many transactions it holds.
+        showCount: true,
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
@@ -209,6 +211,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       props: {
         items: transactionCategories.incomes.children,
         title: topRankTitle("Categories", transactionCategories.incomes.total),
+        showCount: true,
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },

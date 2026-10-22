@@ -169,8 +169,14 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
                       {hasChildren && <span className="text-xs text-purple-300">Ver subcategorías ›</span>}
                       {view.level === 2 && <span className="text-xs text-gf-text-muted">{slice.count} movimiento{slice.count === 1 ? "" : "s"}</span>}
                     </span>
-                    {view.level < 2 && <span className="shrink-0 text-xs text-gf-text-muted">{percent}%</span>}
-                    <span className="shrink-0 text-base font-bold text-gf-text">{formatMoneyMajor(slice.value, primary, { showCode: false })}</span>
+                    <span className="flex shrink-0 flex-col items-end gap-0.5">
+                      <span className="text-base font-bold text-gf-text">{formatMoneyMajor(slice.value, primary, { showCode: false })}</span>
+                      {view.level < 2 && (
+                        <span className="text-xs text-gf-text-muted">
+                          {slice.count} {slice.count === 1 ? "transacción" : "transacciones"} · {percent}%
+                        </span>
+                      )}
+                    </span>
                   </button>
                 );
               })}

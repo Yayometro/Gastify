@@ -633,7 +633,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]}/>
               </LazyMount>
             </div>
-            <div className="wallet-total-col-container grid w-full grid-cols-1 items-start gap-8 lg:grid-cols-2">
+            <div className="wallet-total-col-container grid w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-2">
               {/* <div className="wallet-left-col-container w-full lg:max-w-[50%]">
                 <div className="TransactionsDetails w-full h-full">
                   {allTransactions.length <= 0 ? (
@@ -668,10 +668,14 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
               <LazyMount className="budget w-full min-w-0">
                 <BudgetCont bcSession={session} />
               </LazyMount>
-              <LazyMount className="movements gf-glass-card w-full min-w-0 rounded-[32px] p-5">
-                <Movements
-                  timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
-                />
+              {/* The card is as tall as the budgets beside it (on desktop); its list scrolls inside the card. */}
+              <LazyMount className="movements relative w-full min-w-0 h-[640px] lg:h-auto">
+                <div className="gf-glass-card absolute inset-0 flex flex-col rounded-[32px] p-5">
+                  <Movements
+                    embedded
+                    timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
+                  />
+                </div>
               </LazyMount>
             </div>
           </HistoryGate>

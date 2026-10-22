@@ -7,8 +7,9 @@ import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "./CategoIcon";
 import { InfoContent } from "./InfoContent";
 
-// The window of an explanation: its title, the formatted text and the buttons to close it.
-export function InfoWindow({ info, onClose }: { info: InfoText; onClose: () => void }): React.JSX.Element {
+// The window of an explanation: its title, the formatted text and the buttons to close it. A window with its own
+// body (a guide with desplegables, say) passes it in `body`; the shell, the scroll and the buttons stay the same.
+export function InfoWindow({ info, onClose, body }: { info: InfoText; onClose: () => void; body?: React.ReactNode }): React.JSX.Element {
   return (
     <BasicModal
       zIndexClass="z-[10010]"
@@ -19,8 +20,8 @@ export function InfoWindow({ info, onClose }: { info: InfoText; onClose: () => v
             <IoHelpCircleOutline size={26} className="shrink-0 text-purple-300" />
             <h2 className="flex-1 text-xl font-bold text-white">{info.title}</h2>
           </div>
-          <div className="flex-1 overflow-y-auto px-6 pb-4">
-            <InfoContent text={info.text} sections={info.sections} />
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-4">
+            {body ?? <InfoContent text={info.text} sections={info.sections} />}
           </div>
           <div className="px-6 pb-6 pt-2">
             <button type="button" onClick={onClose} className="w-full rounded-full p-2 font-semibold text-white gf-glass-button">
