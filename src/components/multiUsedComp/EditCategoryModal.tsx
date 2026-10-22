@@ -3,20 +3,13 @@ import CategoIcon from "./CategoIcon";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { DownOutlined } from "@ant-design/icons";
-import {
-  ColorPicker,
-  ConfigProvider,
-  Space,
-  Spin,
-  Switch,
-  Tooltip,
-} from "antd";
+import { ConfigProvider, Space, Spin, Switch } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import IconDisplayerMenu from "./IconDisplayerMenu";
+import CategoryColorPicker from "./CategoryColorPicker";
 import { useDispatch, useSelector } from "react-redux";
-import useModal from "@/hooks/useModalBasic";
-import BasicModal from "../modals/basicModal/BasicModal";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
+import { CATEGORY_COLORS } from "@gastify/core/categories/categoryForm";
 import {
   addNewCategory,
   removeOneCategory,
@@ -61,16 +54,16 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
     id: "",
     name: "",
     icon: "",
-    color: 0,
+    color: CATEGORY_COLORS[0],
     fatherCategory: "",
     user: "",
     wallet: "",
   });
   const [isSub, setIsSub] = useState(false);
   const [fatherCat, setFatherCat] = useState<CategoryData>({});
-  const [isCatMenuOpen, setIsCatMenuOpen] = useState(false);
+  // The father picker opens in place, under its box (no window of its own).
+  const [isFatherOpen, setIsFatherOpen] = useState(false);
   const toFetch = fetcher();
-  const { close: isSelectorOpen, handleClose: handleSelectorClose } = useModal();
 
   //REDUX
   const dispatchEcm = useDispatch<AppDispatch>();
@@ -241,7 +234,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
     setFormCategory({
       name: "",
       icon: "",
-      color: 0,
+      color: CATEGORY_COLORS[0],
       fatherCategory: "",
       user: "",
       wallet: "",
@@ -255,9 +248,8 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
     const { name, value } = e.target;
     setFormCategory({ ...formCategory, [name]: value });
   };
-  const handleColorChange = (e: string) => {
-    // console.log(`#${e}`);
-    setFormCategory({ ...formCategory, color: `#${e}` });
+  const handleColorChange = (color: string) => {
+    setFormCategory((prev) => ({ ...prev, color }));
   };
 
   const handleFatherCategory = (cat: CategoryData) => {
@@ -338,11 +330,6 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
             onSubmit={handlerSubmit}
             className={`w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 ${!isInline ? 'rounded-t-[60px] pt-[30px]' : 'pt-4'} pb-20`}
           >
-            {isInline && (
-              <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full pb-4">
-                Create New Category
-              </h1>
-            )}
             <p className="label-tfp ">Name</p>
             <input
               type="text"
@@ -352,56 +339,20 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
               onChange={handleChange}
               placeholder="CategoryName"
             />
-            <div className="w-full flex flex-col sm:flex-row gap-4 sm:items-start">
-              <div className="flex flex-col">
-                <p className="label-tfp ">Icon</p>
-                <div className="icon-form-cont flex gap-2 min-h-[64px] items-center">
-                  <div
-                    className="selected-icon-form-cont gf-glass-inset rounded-2xl p-2 flex flex-col items-center justify-center cursor-pointer"
-                    onClick={() => setIsCatMenuOpen(true)}
-                  >
-                    <p className="label-tfp ">
-                      {formCategory?.icon ? "Selected" : "No icon"}
-                    </p>
-                    <UniversalCategoIcon
-                      type={`${formCategory?.icon || "md/MdFilterNone"}`}
-                      siz={30}
-                    />
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <IconDisplayerMenu
-                      idmActive={isCatMenuOpen}
-                      idmIcon={(i: string) =>
-                        setFormCategory({ ...formCategory, icon: i })
-                      }
-                      idmClose={(a: boolean) => setIsCatMenuOpen(a)}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col">
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col gap-2 w-full">
                 <p className="label-tfp ">Color</p>
-                <div className="flex gap-2 items-center min-h-[64px]">
-                  <Space direction="vertical">
-                    <ColorPicker
-                      value={formCategory?.color ? String(formCategory.color) : "#ABABAB"}
-                      format="hex"
-                      showText
-                      style={{
-                        border: `2px solid ${formCategory?.color ? String(formCategory.color) : "#ABABAB"}`,
-                      }}
-                      onChange={(c) => handleColorChange(c.toHex())}
-                    />
-                  </Space>
-                  <Tooltip title="Select the color you want to set for your category or subcategory... 🤓">
-                    <div className="text-white w-[10px]">
-                      <UniversalCategoIcon
-                        type={`${"fa/FaRegQuestionCircle"}`}
-                        siz={15}
-                      />
-                    </div>
-                  </Tooltip>
-                </div>
+                <CategoryColorPicker
+                  value={typeof formCategory.color === "string" && formCategory.color ? formCategory.color : CATEGORY_COLORS[0]}
+                  onChange={handleColorChange}
+                />
+              </div>
+              <div className="flex flex-col gap-2 w-full">
+                <p className="label-tfp ">Icon</p>
+                <IconDisplayerMenu
+                  idmValue={formCategory?.icon || ""}
+                  idmIcon={(i: string) => setFormCategory((prev) => ({ ...prev, icon: i }))}
+                />
               </div>
               {(ecmMode === "creation" || (ecmMode === "edition" && isSub)) && (
                 <div className="flex flex-col">
@@ -438,7 +389,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                 >
                   <p className="label-tfp !text-[12px] !text-purple-600">Selected Father Category:</p>
                   <div
-                    onClick={handleSelectorClose}
+                    onClick={() => setIsFatherOpen((open) => !open)}
                     className="w-full gf-glass-inset rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:brightness-110 transition-[filter]"
                   >
                     <div className="flex items-center gap-3">
@@ -453,19 +404,12 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                     <DownOutlined className="text-purple-600" />
                   </div>
                 </div>
-                {isSelectorOpen && (
-                  <BasicModal
-                    close={handleSelectorClose}
-                    zIndexClass="z-[20000]"
-                    renderContent={
-                      <ModalCategoryContent
-                        close={handleSelectorClose}
-                        getSelected={handleFatherCategory}
-                        onlyFathers={true}
-                      />
-                    }
-                    renderBodyContent={undefined}
-                    renderHeader={undefined}
+                {isSub && isFatherOpen && (
+                  <ModalCategoryContent
+                    close={() => setIsFatherOpen(false)}
+                    getSelected={handleFatherCategory}
+                    onlyFathers={true}
+                    inline
                   />
                 )}
               </>

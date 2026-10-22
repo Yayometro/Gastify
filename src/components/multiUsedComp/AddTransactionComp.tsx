@@ -15,8 +15,6 @@ import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { addNewTransacction, type TransactionData } from "@/lib/features/transacctionsSlice";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
-import useModal from "@/hooks/useModalBasic";
-import BasicModal from "../modals/basicModal/BasicModal";
 import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
@@ -125,7 +123,8 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
   const [amountTouchedManually, setAmountTouchedManually] = useState(false);
   const [merchantQuoting, setMerchantQuoting] = useState(false);
 
-  const { close, handleClose } = useModal();
+  // The category list opens in place, under its button (no window of its own).
+  const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
   //REDUX
   const { user, wallet, accounts, budgets = [] } = useGetDataFromProvider() as ProviderData;
   const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
@@ -446,17 +445,12 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
               </LocalizationProvider>
             </div>
             <p className="label-tfp ">Category</p>
-              <BtnSelectCategoryContext onClose={handleClose} />
-              {close && (
-                <BasicModal
-                  close={handleClose}
-                  zIndexClass="z-[20000]"
-                  renderContent={
-                    <ModalCategoryContent
-                      close={handleClose}
-                      getSelected={handleCategory}
-                    />
-                  }
+              <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
+              {isCategoryPickerOpen && (
+                <ModalCategoryContent
+                  inline
+                  close={() => setIsCategoryPickerOpen(false)}
+                  getSelected={handleCategory}
                 />
               )}
             <p className="label-tfp ">Tags</p>

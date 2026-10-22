@@ -199,7 +199,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
             } items-center justify-center`
       }
     >
-      <div className={`content gf-glass-violet flex flex-col ${eamInline ? "w-full max-w-[420px]" : "w-[350px] h-[820px] max-h-[95vh]"} overflow-y-auto relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden`}>
+      <div className={eamInline ? "relative flex w-full max-w-[460px] flex-col" : "content gf-glass-violet flex flex-col w-[350px] h-[820px] max-h-[95vh] overflow-y-auto relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden"}>
         <div
           className={`${
             isLoading ? "absolute" : "hidden"
@@ -207,19 +207,23 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
         >
           <Spin size="large" />
         </div>
-        <h1 className="text-center py-[20px] text-2xl text-white">
-          {eamMode === "edition" ? "Edit" : "Create"} Account 🪄
-        </h1>
+        {!eamInline && (
+          <h1 className="text-center py-[20px] text-2xl text-white">
+            {eamMode === "edition" ? "Edit" : "Create"} Account 🪄
+          </h1>
+        )}
         <form
           onSubmit={handleSubmit}
-          className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20`}
+          className={eamInline ? "form-trans-edit flex w-full flex-col gap-2 items-start justify-start pb-2" : "form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20"}
         >
-          <div
-            className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer"
-            onClick={handleClose}
-          >
-            <CategoIcon type={"MdClose"} siz={20} />
-          </div>
+          {!eamInline && (
+            <div
+              className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer"
+              onClick={handleClose}
+            >
+              <CategoIcon type={"MdClose"} siz={20} />
+            </div>
+          )}
           <p className="label-tfp ">Name</p>
           <input
             type="text"

@@ -16,7 +16,6 @@ import {
 import BtnSelectCategoryContext from "@/components/buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalCategoryContent from "@/components/modals/contents/selectCategory/ModalCategoryContent";
-import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import { addNewBudget, updateBudget, removeBudget, type BudgetData } from "@/lib/features/budgetSlice";
 import { updateTransaction, type TransactionData } from "@/lib/features/transacctionsSlice";
@@ -199,10 +198,10 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
     icon: DEFAULT_PROJECT_ICON,
     currency: "MXN",
   });
-  const [isIconMenuOpen, setIsIconMenuOpen] = useState<boolean>(false);
+  // The category list opens in place, under its button (no window of its own).
+  const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState<boolean>(false);
   const toFetch = fetcher();
   const dispatch = useDispatch<AppDispatch>();
-  const { close, handleClose } = useModal();
   const { setItemSelected } = useContext(SelectCategoryContext);
   const { transacciones = [], wallet } = useGetDataFromProvider() as ProviderData;
   const ccAccounts = useSelector((state: RootState) => (state.accountsReducer?.data || []) as AccountData[]);
@@ -411,15 +410,18 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
   const isSaving = form.budgetType === BUDGET_TYPES.SAVING;
   const isSpending = form.budgetType === BUDGET_TYPES.SPENDING;
 
+  // Inside the "+" window the form is the panel: no card, no header and no × of its own.
   const panel = (
-    <div className={inline ? "content relative gf-glass-violet flex flex-col w-full max-h-full overflow-hidden rounded-3xl" : "content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[500px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl"}>
+    <div className={inline ? "relative flex w-full flex-col" : "content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[500px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl"}>
       {isLoading && <div className="absolute inset-0 bg-gf-surface/70 backdrop-blur-sm flex justify-center items-center z-[1002]"><Spin size="large" /></div>}
-      <div className="relative pt-6 pb-5 px-4 text-center text-white shrink-0">
-        {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors text-xs font-semibold">← Back</button>}
-        {!inline && <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"><CategoIcon type="MdClose" siz={18} /></button>}
-        <h1 className="text-2xl font-bold">{mode === "edition" ? "Edit" : "Create"} {isProject ? "Project" : "Budget"} 🪄</h1>
-      </div>
-      <div className="flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8">
+      {!inline && (
+        <div className="relative pt-6 pb-5 px-4 text-center text-white shrink-0">
+          {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors text-xs font-semibold">← Back</button>}
+          <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"><CategoIcon type="MdClose" siz={18} /></button>
+          <h1 className="text-2xl font-bold">{mode === "edition" ? "Edit" : "Create"} {isProject ? "Project" : "Budget"} 🪄</h1>
+        </div>
+      )}
+      <div className={inline ? "w-full" : "flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8"}>
         <form onSubmit={handleSubmit} className="form-trans-edit flex flex-col gap-3">
           <p className="label-tfp">Name</p>
           <input type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? "e.g. Japan 2027" : "Budget name"} required className="w-full" />
@@ -465,20 +467,9 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
           {isProject && <div className="flex flex-col gap-3 bg-gf-surface border border-gf-border rounded-2xl p-4 mt-1">
             <div>
               <p className="label-tfp mb-1">Project icon</p>
-              <button
-                type="button"
-                onClick={() => setIsIconMenuOpen(true)}
-                className="w-full flex items-center gap-3 rounded-2xl border-2 border-purple-300 bg-gf-accent-soft-bg px-3 py-2 text-left hover:border-purple-500 transition-colors"
-              >
-                <span className="w-10 h-10 rounded-full bg-gf-surface text-purple-300 flex items-center justify-center shadow-sm shrink-0">
-                  <UniversalCategoIcon type={form.icon || DEFAULT_PROJECT_ICON} siz={24} />
-                </span>
-                <span><span className="block text-xs font-bold text-purple-300">Selected icon</span><span className="block text-[10px] text-gf-text-muted">Click to choose another icon</span></span>
-              </button>
               <IconDisplayerMenu
-                idmActive={isIconMenuOpen}
+                idmValue={form.icon || DEFAULT_PROJECT_ICON}
                 idmIcon={(icon: string) => setForm((prev) => ({ ...prev, icon }))}
-                idmClose={setIsIconMenuOpen}
               />
             </div>
             <div><p className="font-bold text-sm text-purple-300">Project window</p><p className="text-[11px] text-gf-text-muted">Informational and fully editable. Linked expenses count even if their purchase date falls outside this window.</p></div>
@@ -507,8 +498,8 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
             <p className="label-tfp mt-1">Categories ({form.categories.length})</p>
             {!!form.categories.length && <div className="flex flex-wrap gap-1.5">{form.categories.map((c, index) => <div key={`${c.category}:${c.subCategory}:${index}`} className="flex items-center gap-1 bg-gf-accent-soft-bg text-purple-300 rounded-full px-2.5 py-1 text-xs"><span>{c.name}</span><button type="button" onClick={() => setForm((prev) => ({ ...prev, categories: prev.categories.filter((_, i) => i !== index) }))}>×</button></div>)}</div>}
             {!!categoryConflicts.length && <div className="bg-amber-500/15 border border-amber-300 text-amber-400 rounded-2xl px-3 py-2 text-xs"><p className="font-bold">This coverage already exists</p><p>Also covered by {(categoryConflicts as BudgetData[]).map((item) => item.name || "Unnamed budget").join(", ")}.</p></div>}
-            <BtnSelectCategoryContext onClose={handleClose} />
-            {close && <BasicModal close={handleClose} renderContent={<ModalCategoryContent close={handleClose} getSelected={handleCategory} />} />}
+            <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
+            {isCategoryPickerOpen && <ModalCategoryContent inline close={() => setIsCategoryPickerOpen(false)} getSelected={handleCategory} />}
           </>}
 
           {mode === "edition" && <button type="button" onClick={handleDelete} className="mt-2 w-full cursor-pointer gf-glass-button-danger text-white text-center rounded-full p-2">Delete this {isProject ? "project" : "budget"}</button>}
