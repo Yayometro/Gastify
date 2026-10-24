@@ -14,6 +14,7 @@ import type { IIncomeSource, IncomeSourceRecurrence } from "@/model/IncomeSource
 import type { IncomeSourceItem } from "@/hooks/useProjectionTable";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT } from "@/i18n/client";
 
 export type IncomeSourceLike = IIncomeSource | IncomeSourceItem;
 
@@ -55,6 +56,7 @@ function IncomeSourcesPanel({
   walletPrimaryCurrency,
   onChange,
 }: IncomeSourcesPanelProps): React.JSX.Element {
+  const t = useT();
   const defaultCurrency = walletPrimaryCurrency || "MXN";
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -99,7 +101,7 @@ function IncomeSourcesPanel({
     e.preventDefault();
     // An empty amount used to become 0 silently (Number("") is 0, bug 75).
     if (String(form.amount).trim() === "" || !Number.isFinite(Number(form.amount))) {
-      runNotify("error", "Enter an amount");
+      runNotify("error", t("projections.enterAmount"));
       return;
     }
     try {
@@ -159,7 +161,7 @@ function IncomeSourcesPanel({
         onClick={() => setIsOpen(!isOpen)}
       >
         <h2 className="text-xl text-purple-300 font-normal">
-          Income sources ({(incomeSources || []).length})<InfoTip info={APP_INFO.fuentes_de_ingreso} />
+          {t("projections.sources.title")}{(incomeSources || []).length})<InfoTip info={APP_INFO.fuentes_de_ingreso} />
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
@@ -196,18 +198,18 @@ function IncomeSourcesPanel({
             className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">
-              <p className="label-tfp mb-1">Name</p>
+              <p className="label-tfp mb-1">{t("projections.sources.name")}</p>
               <input
                 type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="e.g. Sueldo Nomina"
+                placeholder={t("projections.sources.namePlaceholder")}
                 required
               />
             </div>
             <div className="flex flex-col">
-              <p className="label-tfp mb-1">Amount / occurrence</p>
+              <p className="label-tfp mb-1">{t("projections.sources.amount")}</p>
               <input
                 type="number"
                 name="amount"
@@ -217,7 +219,7 @@ function IncomeSourcesPanel({
               />
             </div>
             <div className="flex flex-col">
-              <p className="label-tfp mb-1">Currency</p>
+              <p className="label-tfp mb-1">{t("projections.sources.currency")}</p>
               <select
                 className="etm-selector"
                 name="currency"
@@ -232,7 +234,7 @@ function IncomeSourcesPanel({
               </select>
             </div>
             <div className="flex flex-col">
-              <p className="label-tfp mb-1">Recurrence</p>
+              <p className="label-tfp mb-1">{t("projections.sources.recurrence")}</p>
               <select
                 className="etm-selector"
                 name="recurrence"
@@ -247,7 +249,7 @@ function IncomeSourcesPanel({
               </select>
             </div>
             <div className="flex flex-col">
-              <p className="label-tfp mb-1">First payment date</p>
+              <p className="label-tfp mb-1">{t("projections.sources.firstDate")}</p>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <MobileDateTimePicker
                   slotProps={{ textField: { size: "small", variant: "standard" } }}
@@ -283,7 +285,7 @@ function IncomeSourcesPanel({
             </button>
             {editingId && (
               <button type="button" className="gf-glass-button-neutral text-gf-text rounded-full px-4 py-2" onClick={resetForm}>
-                Cancel
+                {t("projections.sources.cancel")}
               </button>
             )}
           </form>

@@ -23,6 +23,7 @@ import CurrencyBreakdownChips, {
 import type { ProjectionTableRow } from "@/hooks/useProjectionTable";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT } from "@/i18n/client";
 
 
 export interface BucketBreakdownItem {
@@ -107,6 +108,7 @@ function ProjectionMonthDetailModal({
   onClose,
   mail,
 }: ProjectionMonthDetailModalProps): React.JSX.Element | null {
+  const t = useT();
   const [bufferValue, setBufferValue] = useState<number | string>(unexpectedBuffer ?? 0);
   const [incomeBufferValue, setIncomeBufferValue] = useState<number | string>(unexpectedIncomeBuffer ?? 0);
   const [balanceValue, setBalanceValue] = useState<number | string>(monthRow?.manualBalance ?? "");
@@ -134,7 +136,7 @@ function ProjectionMonthDetailModal({
         unexpectedBuffer: Number(bufferValue),
         unexpectedIncomeBuffer: Number(incomeBufferValue),
       });
-      runNotify("ok", "Unexpected buffers updated");
+      runNotify("ok", t("projections.error.buffers"));
     } catch (e) {
       runNotify("error", String(e));
     } finally {
@@ -145,13 +147,13 @@ function ProjectionMonthDetailModal({
   const handleSaveBalance = async () => {
     // Nothing typed is not a balance of 0 (Number("") is 0, bug 64).
     if (String(balanceValue).trim() === "" || !Number.isFinite(Number(balanceValue))) {
-      runNotify("error", "Enter a balance first");
+      runNotify("error", t("projections.balance.enterFirst"));
       return;
     }
     try {
       setIsSavingBalance(true);
       await onSaveMonthBalance(Number(balanceValue));
-      runNotify("ok", "Balance saved for this month");
+      runNotify("ok", t("projections.balance.saved"));
     } catch (e) {
       runNotify("error", String(e));
     } finally {
@@ -183,7 +185,7 @@ function ProjectionMonthDetailModal({
           <h1 className="text-2xl text-purple-300 capitalize mb-1 flex items-center">
             <span>{monthRow.monthName} {monthRow.year}</span>
             <InfoTip info={APP_INFO.c_mo_leer_este_mes} />
-            <QuestionTooltip title="Closed months show your real transactions. Future months are a pure estimate built from your active Budgets (expenses) and Income Sources (income). The current month blends both: it starts as an estimate and fills in with real numbers as the month happens. Use 'See transactions' to view the actual movements behind these numbers, and the buffers below to manually account for money that isn't tied to any Budget or Income Source." />
+            <QuestionTooltip title={t("projections.intro")} />
           </h1>
           <p className="text-xs text-gf-text-muted mb-4">
             {monthRow.type === "actual" && "Closed month — showing real transactions."}
@@ -205,18 +207,18 @@ function ProjectionMonthDetailModal({
           {monthRow.type === "current" && (
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
-                <p className="text-gf-text-muted">Income</p>
+                <p className="text-gf-text-muted">{t("projections.income")}</p>
                 <p className="text-lg text-green-400">{usdFormatChanger(monthRow.projectedIncome || 0)}</p>
                 <p className="text-xs text-gf-text-muted">
-                  real so far: {usdFormatChanger(monthRow.actualIncome || 0)} / expected: {usdFormatChanger(monthRow.shadowIncome || 0)}
+                  {t("projections.realSoFar", { p1: usdFormatChanger(monthRow.actualIncome || 0), p2: usdFormatChanger(monthRow.shadowIncome || 0) })}
                 </p>
                 <CurrencyBreakdownChips breakdown={incomeCurrencyBreakdown} walletPrimaryCurrency={walletPrimaryCurrency} />
               </div>
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
-                <p className="text-gf-text-muted">Expense</p>
+                <p className="text-gf-text-muted">{t("projections.expense")}</p>
                 <p className="text-lg text-red-500">{usdFormatChanger(monthRow.projectedExpense || 0)}</p>
                 <p className="text-xs text-gf-text-muted">
-                  real so far: {usdFormatChanger(monthRow.actualExpense || 0)} / budgeted: {usdFormatChanger(monthRow.shadowExpense || 0)}
+                  {t("projections.realBudgeted", { p1: usdFormatChanger(monthRow.actualExpense || 0), p2: usdFormatChanger(monthRow.shadowExpense || 0) })}
                 </p>
                 <CurrencyBreakdownChips breakdown={expenseCurrencyBreakdown} walletPrimaryCurrency={walletPrimaryCurrency} />
               </div>
@@ -226,11 +228,11 @@ function ProjectionMonthDetailModal({
           {monthRow.type === "estimate" && (
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
-                <p className="text-gf-text-muted">Estimated income</p>
+                <p className="text-gf-text-muted">{t("projections.estimatedIncome")}</p>
                 <p className="text-lg text-emerald-500">{usdFormatChanger(monthRow.income || 0)}</p>
               </div>
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
-                <p className="text-gf-text-muted">Estimated expense</p>
+                <p className="text-gf-text-muted">{t("projections.estimatedExpense")}</p>
                 <p className="text-lg text-rose-400">{usdFormatChanger(monthRow.expense || 0)}</p>
               </div>
             </div>
@@ -239,18 +241,18 @@ function ProjectionMonthDetailModal({
           {monthRow.type === "actual" && (
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
-                <p className="text-gf-text-muted">Real income</p>
+                <p className="text-gf-text-muted">{t("projections.realIncome")}</p>
                 <p className="text-lg text-green-400">{usdFormatChanger(monthRow.income || 0)}</p>
                 {monthRow.historicalIncome !== undefined && (
-                  <p className="text-xs text-gf-text-muted">expected back then: {usdFormatChanger(monthRow.historicalIncome || 0)}</p>
+                  <p className="text-xs text-gf-text-muted">{t("projections.expectedThen", { p1: usdFormatChanger(monthRow.historicalIncome || 0) })}</p>
                 )}
                 <CurrencyBreakdownChips breakdown={incomeCurrencyBreakdown} walletPrimaryCurrency={walletPrimaryCurrency} />
               </div>
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
-                <p className="text-gf-text-muted">Real expense</p>
+                <p className="text-gf-text-muted">{t("projections.realExpense")}</p>
                 <p className="text-lg text-red-400">{usdFormatChanger(monthRow.expense || 0)}</p>
                 {monthRow.historicalExpense !== undefined && (
-                  <p className="text-xs text-gf-text-muted">budgeted back then: {usdFormatChanger(monthRow.historicalExpense || 0)}</p>
+                  <p className="text-xs text-gf-text-muted">{t("projections.budgetedThen", { p1: usdFormatChanger(monthRow.historicalExpense || 0) })}</p>
                 )}
                 <CurrencyBreakdownChips breakdown={expenseCurrencyBreakdown} walletPrimaryCurrency={walletPrimaryCurrency} />
               </div>
@@ -265,8 +267,8 @@ function ProjectionMonthDetailModal({
                   mode: "grouped",
                   height: 260,
                   legend: [
-                    { id: "Budgeted", label: "Budgeted", color: "#a78bfa" },
-                    { id: "Actual", label: "Actual", color: "#f87171" },
+                    { id: "Budgeted", label: t("projections.budgeted"), color: "#a78bfa" },
+                    { id: "Actual", label: t("projections.actual"), color: "#f87171" },
                   ],
                   valueFormat: (value) => formatMoneyMajor(value, walletPrimaryCurrency),
                 }}
@@ -276,7 +278,7 @@ function ProjectionMonthDetailModal({
 
           {incomeOccurrences && incomeOccurrences.length > 0 && (
             <div className="w-full mb-4">
-              <h2 className="text-purple-300 mb-1">Expected income this month</h2>
+              <h2 className="text-purple-300 mb-1">{t("projections.expectedIncomeThisMonth")}</h2>
               <ul className="flex flex-col gap-1">
                 {incomeOccurrences.map((row, i) => (
                   <li key={i} className="flex justify-between text-sm bg-gf-accent-soft-bg rounded-xl px-3 py-1">
@@ -294,16 +296,16 @@ function ProjectionMonthDetailModal({
             <div className="form-trans-edit w-full flex flex-col gap-2 mb-6 pt-3 border-t border-gf-border">
               <div className="w-full">
                 <p className="label-tfp flex items-center mb-1">
-                  <span>Set actual balance for this month</span>
+                  <span>{t("projections.balance.setThisMonth")}</span>
                   <InfoTip info={APP_INFO.saldo_real_del_mes} />
-                  <QuestionTooltip title="The app can't compute past balances automatically. If you know what your real account balance was at the end of this month, record it here." />
+                  <QuestionTooltip title={t("projections.balance.help")} />
                 </p>
                 <div className="flex items-center gap-2 w-full">
                   <input
                     type="number"
                     value={balanceValue}
                     onChange={(e) => setBalanceValue(e.target.value)}
-                    placeholder="e.g. 45000"
+                    placeholder={t("projections.balance.example")}
                     className="w-full"
                   />
                   <button
@@ -322,9 +324,9 @@ function ProjectionMonthDetailModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
               <div className="w-full">
                 <p className="label-tfp flex items-center mb-1">
-                  <span>Unexpected expense buffer</span>
+                  <span>{t("projections.buffer.expense")}</span>
                   <InfoTip info={APP_INFO.tope_de_gasto_inesperado} />
-                  <QuestionTooltip title="A manual amount added to your expense estimate, for spending that doesn't have its own Budget." />
+                  <QuestionTooltip title={t("projections.buffer.expenseHelp")} />
                 </p>
                 <input
                   type="number"
@@ -336,9 +338,9 @@ function ProjectionMonthDetailModal({
               </div>
               <div className="w-full">
                 <p className="label-tfp flex items-center mb-1">
-                  <span>Unexpected income buffer</span>
+                  <span>{t("projections.buffer.income")}</span>
                   <InfoTip info={APP_INFO.tope_de_ingreso_inesperado} />
-                  <QuestionTooltip title="A manual amount added to your income estimate, for money coming in that isn't tied to a recurring Income Source." />
+                  <QuestionTooltip title={t("projections.buffer.incomeHelp")} />
                 </p>
                 <input
                   type="number"
@@ -359,7 +361,7 @@ function ProjectionMonthDetailModal({
             {bufferRevisions && bufferRevisions.length > 0 && (
               <details className="text-xs">
                 <summary className="text-purple-500 cursor-pointer select-none">
-                  Historial de esta proyección ({bufferRevisions.length})
+                  {t("projections.history.title", { p1: bufferRevisions.length })}
                 </summary>
                 <ul className="mt-2 flex flex-col gap-1">
                   {[...bufferRevisions]
@@ -370,7 +372,7 @@ function ProjectionMonthDetailModal({
                           {rev.updatedAt && !Number.isNaN(revisionTime(rev.updatedAt)) ? new Date(rev.updatedAt as string | number | Date).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                         </span>
                         <span>
-                          gasto: {usdFormatChanger(rev.unexpectedBuffer || 0)} · ingreso: {usdFormatChanger(rev.unexpectedIncomeBuffer || 0)}
+                          {t("projections.history.values", { p1: usdFormatChanger(rev.unexpectedBuffer || 0), p2: usdFormatChanger(rev.unexpectedIncomeBuffer || 0) })}
                         </span>
                       </li>
                     ))}

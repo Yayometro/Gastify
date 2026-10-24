@@ -28,6 +28,7 @@ import type { MonthDateRange } from "@gastify/core/time/timeFunctions";
 import type { CurrencyBreakdownData } from "../CurrencyBreakdownChips";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT } from "@/i18n/client";
 
 export interface ProjectionsClientProps {
   mcSession?: string | null;
@@ -41,6 +42,7 @@ export interface SelectedMonthDetails {
 }
 
 function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Element {
+  const t = useT();
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [selectedMonthName, setSelectedMonthName] = useState<string | null>(null);
@@ -145,11 +147,11 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
     <div className="w-full h-full sm:pr-2 pb-10">
       <div className="w-full profile-img py-4 text-center text-white">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
-          Projections<InfoTip info={APP_INFO.proyecciones} />
+          {t("projections.title")}<InfoTip info={APP_INFO.proyecciones} />
         </h1>
       </div>
       <div className="w-full flex items-center justify-center pt-2">
-        <Tooltip title="Every figure in these projections is expressed in this currency. Change it here if you want projections in a different currency.">
+        <Tooltip title={t("projections.currency.help")}>
           <div>
             <PrimaryCurrencySelector pcsWallet={wallet as PrimaryCurrencySelectorWallet | null | undefined} />
           </div>
@@ -171,9 +173,9 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
 
         <div className="flex items-center justify-center gap-1 mb-4 text-purple-300">
           <p className="text-lg">
-            Total money today: <span className="font-bold">{usdFormatChanger(startingBalance)}</span>
+            {t("projections.today.total")} <span className="font-bold">{usdFormatChanger(startingBalance)}</span>
           </p>
-          <Tooltip title="Sum of all your non-credit accounts (debit, cash, savings) as of right now. Credit accounts are excluded since that money isn't really yours to spend.">
+          <Tooltip title={t("projections.today.help")}>
             <div>
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
             </div>

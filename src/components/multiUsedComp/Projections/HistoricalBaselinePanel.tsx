@@ -13,6 +13,7 @@ import { formatMoneyMajor, isSupportedCurrency, minorToMajor, SUPPORTED_CURRENCI
 import type { ProjectionBaselineData } from "@/hooks/useProjectionTable";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT } from "@/i18n/client";
 
 export interface BaselineTimelineEntry {
   _id?: string;
@@ -81,6 +82,7 @@ function BaselineTimelineEditor({
   mail,
   onChange,
 }: BaselineTimelineEditorProps): React.JSX.Element {
+  const t = useT();
   const defaultCurrency = walletPrimaryCurrency || "MXN";
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [editingId, setEditingId] = useState<string | null | undefined>(null);
@@ -113,7 +115,7 @@ function BaselineTimelineEditor({
     if (!effectiveFrom) return;
     // An empty amount used to be saved as 0 (bug 69); a typed 0 is still allowed.
     if (String(amount).trim() === "" || !Number.isFinite(Number(amount))) {
-      runNotify("error", "Escribe un monto");
+      runNotify("error", t("projections.reference.enterAmount"));
       return;
     }
     try {
@@ -171,7 +173,7 @@ function BaselineTimelineEditor({
               className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
             >
               <p className="text-purple-300 capitalize">
-                Desde {formatMonthYear(entry.effectiveFrom)}
+                {t("projections.reference.from")} {formatMonthYear(entry.effectiveFrom)}
                 {entry.effectiveTo ? ` hasta ${formatMonthYear(entry.effectiveTo)}` : " (en curso)"}
                 <span className="text-xs text-gf-text-muted normal-case ml-2">
                   ~{formatMoneyMajor(
@@ -201,7 +203,7 @@ function BaselineTimelineEditor({
         className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
       >
         <div className="flex flex-col">
-          <p className="label-tfp mb-1">Desde</p>
+          <p className="label-tfp mb-1">{t("projections.reference.from")}</p>
           <ConfigProvider locale={esES} theme={pickerTheme}>
             <DatePicker
               picker="month"
@@ -209,14 +211,14 @@ function BaselineTimelineEditor({
               value={effectiveFrom ? effectiveFrom.locale("es") : null}
               onChange={(d) => setEffectiveFrom(d)}
               format="MMMM YYYY"
-              placeholder="Elige un mes"
+              placeholder={t("projections.reference.pickMonth")}
               allowClear={false}
               style={{ height: 40 }}
             />
           </ConfigProvider>
         </div>
         <div className="flex flex-col">
-          <p className="label-tfp mb-1">Hasta (opcional)</p>
+          <p className="label-tfp mb-1">{t("projections.reference.toOptional")}</p>
           <ConfigProvider locale={esES} theme={pickerTheme}>
             <DatePicker
               picker="month"
@@ -225,14 +227,14 @@ function BaselineTimelineEditor({
               onChange={(d) => setEffectiveTo(d)}
               disabledDate={(d) => Boolean(effectiveFrom && d.isBefore(effectiveFrom, "month"))}
               format="MMMM YYYY"
-              placeholder="En curso"
+              placeholder={t("projections.reference.ongoing")}
               allowClear
               style={{ height: 40 }}
             />
           </ConfigProvider>
         </div>
         <div className="flex flex-col flex-1">
-          <p className="label-tfp mb-1">Monto mensual aproximado</p>
+          <p className="label-tfp mb-1">{t("projections.reference.approxMonthly")}</p>
           <input
             type="number"
             value={amount}
@@ -242,7 +244,7 @@ function BaselineTimelineEditor({
           />
         </div>
         <div className="flex flex-col">
-          <p className="label-tfp mb-1">Moneda</p>
+          <p className="label-tfp mb-1">{t("projections.reference.currency")}</p>
           <select
             className="etm-selector"
             value={currency}
@@ -263,7 +265,7 @@ function BaselineTimelineEditor({
         </button>
         {editingId && (
           <button type="button" className="gf-glass-button-neutral text-gf-text rounded-full px-4 py-2 shrink-0" onClick={resetForm}>
-            Cancelar
+            {t("projections.cancel")}
           </button>
         )}
       </form>
@@ -287,6 +289,7 @@ function HistoricalBaselinePanel({
   onChange,
   defaultOpen,
 }: HistoricalBaselinePanelProps): React.JSX.Element {
+  const t = useT();
   const [isOpen, setIsOpen] = useState<boolean>(!!defaultOpen);
   const totalEntries = (baseline?.incomeHistory?.length || 0) + (baseline?.expenseHistory?.length || 0);
 
@@ -297,23 +300,19 @@ function HistoricalBaselinePanel({
         onClick={() => setIsOpen(!isOpen)}
       >
         <h2 className="text-xl text-purple-300 font-normal">
-          Referencia histórica ({totalEntries})<InfoTip info={APP_INFO.referencias_hist_ricas} />
+          {t("projections.reference.title")}{totalEntries})<InfoTip info={APP_INFO.referencias_hist_ricas} />
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
         <div className="mt-3">
           <p className="text-xs text-gf-text-muted mb-3">
-            Solo se usa para rellenar meses sin transacciones, Presupuestos o Fuentes de ingreso
-            reales — donde sí haya datos reales, esos siempre ganan. Ingreso y gasto se manejan por
-            separado, ya que no necesariamente cambian al mismo tiempo. Si dos periodos se cruzan
-            (ej. dos trabajos a la vez), se suman. Deja &ldquo;Hasta&rdquo; en blanco si sigue vigente. Aplica a
-            cualquier año que veas, no solo a uno.
+            {t("projections.reference.help")}
           </p>
           <BaselineTimelineEditor
             kind="income"
-            label="Ingreso aproximado"
-            placeholder="e.g. 150000"
+            label={t("projections.reference.approxIncome")}
+            placeholder={t("projections.reference.approxIncomeExample")}
             entries={baseline?.incomeHistory}
             moneyField="incomeMoney"
             walletPrimaryCurrency={walletPrimaryCurrency}
@@ -322,8 +321,8 @@ function HistoricalBaselinePanel({
           />
           <BaselineTimelineEditor
             kind="expense"
-            label="Gasto aproximado"
-            placeholder="e.g. 100000"
+            label={t("projections.reference.approxExpense")}
+            placeholder={t("projections.reference.approxExpenseExample")}
             entries={baseline?.expenseHistory}
             moneyField="expenseMoney"
             walletPrimaryCurrency={walletPrimaryCurrency}

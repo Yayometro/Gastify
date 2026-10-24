@@ -1,0 +1,449 @@
+{
+  "namespace": "projections",
+  "entries": [
+    {
+      "key": "projections.error.buffers",
+      "source": "Unexpected buffers updated",
+      "es": "Buffers no esperados actualizados",
+      "en": "Unexpected buffers updated"
+    },
+    {
+      "key": "projections.balance.enterFirst",
+      "source": "Enter a balance first",
+      "es": "Escribe primero un saldo",
+      "en": "Enter a balance first"
+    },
+    {
+      "key": "projections.balance.saved",
+      "source": "Balance saved for this month",
+      "es": "Saldo guardado para este mes",
+      "en": "Balance saved for this month"
+    },
+    {
+      "key": "projections.intro",
+      "source": "Closed months show your real transactions. Future months are a pure estimate built from your active Budgets (expenses) and Income Sources (income). The current month blends both: it starts as an estimate and fills in with real numbers as the month happens. Use 'See transactions' to view the actual movements behind these numbers, and the buffers below to manually account for money that isn't tied to any Budget or Income Source.",
+      "es": "Los meses cerrados muestran tus movimientos reales. Los meses futuros son solo una estimación, armada con tus Presupuestos activos (gastos) y tus Fuentes de ingreso (ingresos). El mes actual combina ambos: empieza como estimación y se llena con datos reales conforme avanza el mes. Usa «Ver movimientos» para ver los movimientos reales detrás de estos números, y los buffers de abajo para contar a mano el dinero que no está ligado a ningún Presupuesto ni Fuente de ingreso.",
+      "en": "Closed months show your real transactions. Future months are a pure estimate built from your active Budgets (expenses) and Income Sources (income). The current month blends both: it starts as an estimate and fills in with real numbers as the month happens. Use 'See transactions' to view the actual movements behind these numbers, and the buffers below to manually account for money that isn't tied to any Budget or Income Source."
+    },
+    {
+      "key": "projections.income",
+      "source": "Income",
+      "es": "Ingreso",
+      "en": "Income"
+    },
+    {
+      "key": "projections.realSoFar",
+      "source": "real so far: {p1}/ expected: {p2}",
+      "es": "real hasta ahora: {p1} / esperado: {p2}",
+      "en": "real so far: {p1} / expected: {p2}"
+    },
+    {
+      "key": "projections.expense",
+      "source": "Expense",
+      "es": "Gasto",
+      "en": "Expense"
+    },
+    {
+      "key": "projections.realBudgeted",
+      "source": "real so far: {p1}/ budgeted: {p2}",
+      "es": "real hasta ahora: {p1} / presupuestado: {p2}",
+      "en": "real so far: {p1} / budgeted: {p2}"
+    },
+    {
+      "key": "projections.estimatedIncome",
+      "source": "Estimated income",
+      "es": "Ingreso estimado",
+      "en": "Estimated income"
+    },
+    {
+      "key": "projections.estimatedExpense",
+      "source": "Estimated expense",
+      "es": "Gasto estimado",
+      "en": "Estimated expense"
+    },
+    {
+      "key": "projections.realIncome",
+      "source": "Real income",
+      "es": "Ingreso real",
+      "en": "Real income"
+    },
+    {
+      "key": "projections.expectedThen",
+      "source": "expected back then: {p1}",
+      "es": "esperado en ese momento: {p1}",
+      "en": "expected back then: {p1}"
+    },
+    {
+      "key": "projections.realExpense",
+      "source": "Real expense",
+      "es": "Gasto real",
+      "en": "Real expense"
+    },
+    {
+      "key": "projections.budgetedThen",
+      "source": "budgeted back then: {p1}",
+      "es": "presupuestado en ese momento: {p1}",
+      "en": "budgeted back then: {p1}"
+    },
+    {
+      "key": "projections.budgeted",
+      "source": "Budgeted",
+      "es": "Presupuestado",
+      "en": "Budgeted"
+    },
+    {
+      "key": "projections.actual",
+      "source": "Actual",
+      "es": "Real",
+      "en": "Actual"
+    },
+    {
+      "key": "projections.expectedIncomeThisMonth",
+      "source": "Expected income this month",
+      "es": "Ingreso esperado este mes",
+      "en": "Expected income this month"
+    },
+    {
+      "key": "projections.balance.setThisMonth",
+      "source": "Set actual balance for this month",
+      "es": "Define el saldo real de este mes",
+      "en": "Set actual balance for this month"
+    },
+    {
+      "key": "projections.balance.help",
+      "source": "The app can't compute past balances automatically. If you know what your real account balance was at the end of this month, record it here.",
+      "es": "La app no puede calcular saldos pasados por sí sola. Si sabes cuál fue el saldo real de tu cuenta al cierre de este mes, regístralo aquí.",
+      "en": "The app can't compute past balances automatically. If you know what your real account balance was at the end of this month, record it here."
+    },
+    {
+      "key": "projections.balance.example",
+      "source": "e.g. 45000",
+      "es": "p. ej. 45000",
+      "en": "e.g. 45000"
+    },
+    {
+      "key": "projections.buffer.expense",
+      "source": "Unexpected expense buffer",
+      "es": "Buffer de gastos no esperados",
+      "en": "Unexpected expense buffer"
+    },
+    {
+      "key": "projections.buffer.expenseHelp",
+      "source": "A manual amount added to your expense estimate, for spending that doesn't have its own Budget.",
+      "es": "Un monto manual que se suma a tu estimación de gasto, para gastos que no tienen su propio Presupuesto.",
+      "en": "A manual amount added to your expense estimate, for spending that doesn't have its own Budget."
+    },
+    {
+      "key": "projections.buffer.income",
+      "source": "Unexpected income buffer",
+      "es": "Buffer de ingresos no esperados",
+      "en": "Unexpected income buffer"
+    },
+    {
+      "key": "projections.buffer.incomeHelp",
+      "source": "A manual amount added to your income estimate, for money coming in that isn't tied to a recurring Income Source.",
+      "es": "Un monto manual que se suma a tu estimación de ingreso, para dinero que entra y no está ligado a una Fuente de ingreso recurrente.",
+      "en": "A manual amount added to your income estimate, for money coming in that isn't tied to a recurring Income Source."
+    },
+    {
+      "key": "projections.history.title",
+      "source": "Historial de esta proyección ({p1})",
+      "es": "Historial de esta proyección ({p1})",
+      "en": "History of this projection ({p1})"
+    },
+    {
+      "key": "projections.history.values",
+      "source": "gasto: {p1}· ingreso: {p2}",
+      "es": "gasto: {p1} · ingreso: {p2}",
+      "en": "expense: {p1} · income: {p2}"
+    },
+    {
+      "key": "projections.reference.enterAmount",
+      "source": "Escribe un monto",
+      "es": "Escribe un monto",
+      "en": "Enter an amount"
+    },
+    {
+      "key": "projections.reference.from",
+      "source": "Desde",
+      "es": "Desde",
+      "en": "From"
+    },
+    {
+      "key": "projections.reference.pickMonth",
+      "source": "Elige un mes",
+      "es": "Elige un mes",
+      "en": "Pick a month"
+    },
+    {
+      "key": "projections.reference.toOptional",
+      "source": "Hasta (opcional)",
+      "es": "Hasta (opcional)",
+      "en": "To (optional)"
+    },
+    {
+      "key": "projections.reference.ongoing",
+      "source": "En curso",
+      "es": "En curso",
+      "en": "Ongoing"
+    },
+    {
+      "key": "projections.reference.approxMonthly",
+      "source": "Monto mensual aproximado",
+      "es": "Monto mensual aproximado",
+      "en": "Approximate monthly amount"
+    },
+    {
+      "key": "projections.reference.currency",
+      "source": "Moneda",
+      "es": "Moneda",
+      "en": "Currency"
+    },
+    {
+      "key": "projections.cancel",
+      "source": "Cancelar",
+      "es": "Cancelar",
+      "en": "Cancel"
+    },
+    {
+      "key": "projections.reference.title",
+      "source": "Referencia histórica (",
+      "es": "Referencia histórica (",
+      "en": "Historical reference ("
+    },
+    {
+      "key": "projections.reference.help",
+      "source": "Solo se usa para rellenar meses sin transacciones, Presupuestos o Fuentes de ingreso reales — donde sí haya datos reales, esos siempre ganan. Ingreso y gasto se manejan por separado, ya que no necesariamente cambian al mismo tiempo. Si dos periodos se cruzan (ej. dos trabajos a la vez), se suman. Deja &ldquo;Hasta&rdquo; en blanco si sigue vigente. Aplica a cualquier año que veas, no solo a uno.",
+      "es": "Solo se usa para rellenar meses sin transacciones, Presupuestos o Fuentes de ingreso reales — donde sí haya datos reales, esos siempre ganan. Ingreso y gasto se manejan por separado, ya que no necesariamente cambian al mismo tiempo. Si dos periodos se cruzan (ej. dos trabajos a la vez), se suman. Deja «Hasta» en blanco si sigue vigente. Aplica a cualquier año que veas, no solo a uno.",
+      "en": "Only used to fill months with no real transactions, Budgets or Income Sources — where there is real data, that always wins. Income and expense are handled separately, since they don't necessarily change at the same time. If two periods overlap (e.g. two jobs at once), they add up. Leave “To” blank if it is still in effect. It applies to any year you look at, not just one."
+    },
+    {
+      "key": "projections.reference.approxIncome",
+      "source": "Ingreso aproximado",
+      "es": "Ingreso aproximado",
+      "en": "Approximate income"
+    },
+    {
+      "key": "projections.reference.approxIncomeExample",
+      "source": "e.g. 150000",
+      "es": "p. ej. 150000",
+      "en": "e.g. 150000"
+    },
+    {
+      "key": "projections.reference.approxExpense",
+      "source": "Gasto aproximado",
+      "es": "Gasto aproximado",
+      "en": "Approximate expense"
+    },
+    {
+      "key": "projections.reference.approxExpenseExample",
+      "source": "e.g. 100000",
+      "es": "p. ej. 100000",
+      "en": "e.g. 100000"
+    },
+    {
+      "key": "projections.accuracy.title",
+      "source": "Precisión de tus proyecciones",
+      "es": "Precisión de tus proyecciones",
+      "en": "Accuracy of your projections"
+    },
+    {
+      "key": "projections.accuracy.month",
+      "source": "Mes",
+      "es": "Mes",
+      "en": "Month"
+    },
+    {
+      "key": "projections.accuracy.projectedIncome",
+      "source": "Ingreso proyectado",
+      "es": "Ingreso proyectado",
+      "en": "Projected income"
+    },
+    {
+      "key": "projections.accuracy.realIncome",
+      "source": "Ingreso real",
+      "es": "Ingreso real",
+      "en": "Real income"
+    },
+    {
+      "key": "projections.accuracy.projectedExpense",
+      "source": "Gasto proyectado",
+      "es": "Gasto proyectado",
+      "en": "Projected expense"
+    },
+    {
+      "key": "projections.accuracy.realExpense",
+      "source": "Gasto real",
+      "es": "Gasto real",
+      "en": "Real expense"
+    },
+    {
+      "key": "projections.accuracy.gap",
+      "source": "Desajuste",
+      "es": "Desajuste",
+      "en": "Gap"
+    },
+    {
+      "key": "projections.accuracy.income",
+      "source": "Ingreso",
+      "es": "Ingreso",
+      "en": "Income"
+    },
+    {
+      "key": "projections.accuracy.expense",
+      "source": "Gasto",
+      "es": "Gasto",
+      "en": "Expense"
+    },
+    {
+      "key": "projections.accuracy.help",
+      "source": "Solo se muestran meses cerrados con un historial de proyección registrado.",
+      "es": "Solo se muestran meses cerrados con un historial de proyección registrado.",
+      "en": "Only closed months with a recorded projection history are shown."
+    },
+    {
+      "key": "projections.table.month",
+      "source": "Month",
+      "es": "Mes",
+      "en": "Month"
+    },
+    {
+      "key": "projections.table.net",
+      "source": "Net",
+      "es": "Neto",
+      "en": "Net"
+    },
+    {
+      "key": "projections.table.netHelp",
+      "source": "Income minus expense for that single month.",
+      "es": "Ingreso menos gasto de ese mes.",
+      "en": "Income minus expense for that single month."
+    },
+    {
+      "key": "projections.table.balance",
+      "source": "Balance",
+      "es": "Balance",
+      "en": "Balance"
+    },
+    {
+      "key": "projections.table.balanceHelp",
+      "source": "Running account total from today forward. Past months show a dash unless you set one manually by clicking that month.",
+      "es": "Total acumulado de la cuenta desde hoy en adelante. Los meses pasados muestran un guion, a menos que definas uno a mano haciendo clic en ese mes.",
+      "en": "Running account total from today forward. Past months show a dash unless you set one manually by clicking that month."
+    },
+    {
+      "key": "projections.table.manuallySet",
+      "source": "manually set",
+      "es": "definido a mano",
+      "en": "manually set"
+    },
+    {
+      "key": "projections.table.basis",
+      "source": "Basado en tus transacciones reales donde existen, y en tu ingreso/gasto aproximado el resto del tiempo - no un valor exacto.",
+      "es": "Basado en tus transacciones reales donde existen, y en tu ingreso/gasto aproximado el resto del tiempo — no un valor exacto.",
+      "en": "Based on your real transactions where they exist, and on your approximate income/expense the rest of the time — not an exact value."
+    },
+    {
+      "key": "projections.table.approx",
+      "source": "aproximado",
+      "es": "aproximado",
+      "en": "approximate"
+    },
+    {
+      "key": "projections.table.balanceAnchor",
+      "source": "Balance is anchored to your accounts' current totals (as of today) and may not reflect every past transaction if account balances aren't kept up to date.",
+      "es": "El balance se ancla a los totales actuales de tus cuentas (al día de hoy) y puede no reflejar cada movimiento pasado si los saldos de las cuentas no se mantienen al día.",
+      "en": "Balance is anchored to your accounts' current totals (as of today) and may not reflect every past transaction if account balances aren't kept up to date."
+    },
+    {
+      "key": "projections.enterAmount",
+      "source": "Enter an amount",
+      "es": "Escribe un monto",
+      "en": "Enter an amount"
+    },
+    {
+      "key": "projections.sources.title",
+      "source": "Income sources (",
+      "es": "Fuentes de ingreso (",
+      "en": "Income sources ("
+    },
+    {
+      "key": "projections.sources.name",
+      "source": "Name",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "projections.sources.namePlaceholder",
+      "source": "e.g. Sueldo Nomina",
+      "es": "p. ej. Sueldo de nómina",
+      "en": "e.g. Payroll salary"
+    },
+    {
+      "key": "projections.sources.amount",
+      "source": "Amount / occurrence",
+      "es": "Monto por pago",
+      "en": "Amount per payment"
+    },
+    {
+      "key": "projections.sources.currency",
+      "source": "Currency",
+      "es": "Moneda",
+      "en": "Currency"
+    },
+    {
+      "key": "projections.sources.recurrence",
+      "source": "Recurrence",
+      "es": "Recurrencia",
+      "en": "Recurrence"
+    },
+    {
+      "key": "projections.sources.firstDate",
+      "source": "First payment date",
+      "es": "Fecha del primer pago",
+      "en": "First payment date"
+    },
+    {
+      "key": "projections.sources.cancel",
+      "source": "Cancel",
+      "es": "Cancelar",
+      "en": "Cancel"
+    },
+    {
+      "key": "projections.title",
+      "source": "Projections",
+      "es": "Proyecciones",
+      "en": "Projections"
+    },
+    {
+      "key": "projections.currency.help",
+      "source": "Every figure in these projections is expressed in this currency. Change it here if you want projections in a different currency.",
+      "es": "Todas las cifras de estas proyecciones se expresan en esta moneda. Cámbiala aquí si quieres proyecciones en otra moneda.",
+      "en": "Every figure in these projections is expressed in this currency. Change it here if you want projections in a different currency."
+    },
+    {
+      "key": "projections.today.total",
+      "source": "Total money today:",
+      "es": "Dinero total hoy:",
+      "en": "Total money today:"
+    },
+    {
+      "key": "projections.today.help",
+      "source": "Sum of all your non-credit accounts (debit, cash, savings) as of right now. Credit accounts are excluded since that money isn't really yours to spend.",
+      "es": "La suma de todas tus cuentas que no son de crédito (débito, efectivo, ahorro) hasta este momento. Las cuentas de crédito se excluyen porque ese dinero no es realmente tuyo para gastar.",
+      "en": "Sum of all your non-credit accounts (debit, cash, savings) as of right now. Credit accounts are excluded since that money isn't really yours to spend."
+    },
+    {
+      "key": "projections.real",
+      "source": "real (",
+      "es": "real (",
+      "en": "real ("
+    },
+    {
+      "key": "projections.projected",
+      "source": "proyectado (",
+      "es": "proyectado (",
+      "en": "projected ("
+    }
+  ]
+}
