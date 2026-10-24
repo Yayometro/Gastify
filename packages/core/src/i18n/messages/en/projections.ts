@@ -75,7 +75,7 @@ const en: Record<keyof typeof projections, string> = {
   "projections.currency.help": "Every figure in these projections is expressed in this currency. Change it here if you want projections in a different currency.",
   "projections.today.total": "Total money today:",
   "projections.today.help": "Sum of all your non-credit accounts (debit, cash, savings) as of right now. Credit accounts are excluded since that money isn't really yours to spend.",
-  "projections.real": "real (",
+  "projections.real": "actual (",
   "projections.projected": "projected ("
 };
 

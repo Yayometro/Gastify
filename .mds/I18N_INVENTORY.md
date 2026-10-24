@@ -9,13 +9,13 @@ Es un conteo de **piso**, no exacto: encuentra el texto JSX, los atributos que l
 | Área | Archivos con texto | Textos |
 |---|---:|---:|
 | web | 3 | 5 |
-| mobile | 7 | 7 |
+| mobile | 6 | 6 |
 | core | 1 | 1 |
-| **Total** | **11** | **13** |
+| **Total** | **10** | **12** |
 
-Textos distintos: 8 (un mismo texto aparece en varias pantallas; el trabajo de traducción cuenta una vez cada texto distinto).
+Textos distintos: 7 (un mismo texto aparece en varias pantallas; el trabajo de traducción cuenta una vez cada texto distinto).
 
-Por tipo: texto JSX 0 · atributo visible 12 · mensaje de API 0 · Alert.alert 0 · aviso al usuario 0 · texto del core 1
+Por tipo: texto JSX 0 · atributo visible 11 · mensaje de API 0 · Alert.alert 0 · aviso al usuario 0 · texto del core 1
 
 ## Inicio y pantallas públicas
 
@@ -34,7 +34,6 @@ Pantallas de autenticación (login, registro, 2FA, passkeys): 0 textos en 0 arch
 | budgets | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
 | mobile/app/raíz | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
 | mobile/components/home | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
-| mobile/components/raíz | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
 | mobile/components/movements | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
 | core/transformers | 1 | 0 | 0 | 0 | 0 | 0 | 1 | **1** |
 
@@ -72,12 +71,6 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 <details><summary><strong>mobile/components/home</strong> — 1 textos en 1 archivos</summary>
 
 - [ ] `apps/mobile/src/components/home/category-table.tsx` — 1 (atributo visible 1)
-
-</details>
-
-<details><summary><strong>mobile/components/raíz</strong> — 1 textos en 1 archivos</summary>
-
-- [ ] `apps/mobile/src/components/month-switcher.tsx` — 1 (atributo visible 1)
 
 </details>
 
