@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { InfoBlock, InfoSection } from "@gastify/core/info/createInfo";
+import { useT } from "@/i18n/client";
 
 // The formatted explanation of a "?": the same layout the app uses (labelled sections, tables, equations in little
 // boxes, definitions, bullet lists and an example box). Colour words in the text (verde, rojo, ▲…) take their colour.
@@ -95,6 +96,7 @@ function Table({ head, rows }: { head?: string[]; rows: string[][] }) {
 }
 
 function Block({ block }: { block: InfoBlock }) {
+  const t = useT();
   switch (block.kind) {
     case "p":
       return <p className="text-sm leading-relaxed"><Rich text={block.text} /></p>;
@@ -135,7 +137,7 @@ function Block({ block }: { block: InfoBlock }) {
     case "example":
       return (
         <div className="rounded-xl border border-white/15 bg-white/10 p-3">
-          <p className="text-xs font-semibold uppercase text-purple-200">Ejemplo</p>
+          <p className="text-xs font-semibold uppercase text-purple-200">{t("shared.example")}</p>
           <p className="text-sm"><Rich text={block.text} muted={false} /></p>
         </div>
       );

@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import UniversalCategoIcon from "../../UniversalCategoIcon";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 export interface ResponsiveBarsChartDatum {
   type: string;
@@ -32,6 +33,7 @@ function ResponsiveBarsChartComponent({
   legendLeft,
   header,
 }: ResponsiveBarsChartComponentProps): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const rest = {
     data: data as BarDatum[],
@@ -143,15 +145,15 @@ function ResponsiveBarsChartComponent({
             </div>
             <div className="flex flex-col text-[13px] font-semibold">
               <div className="flex gap-2">
-                <p className="font-semibold">Total spent:</p>
+                <p className="font-semibold">{t("shared.totalSpent")}</p>
                 {formatMoneyMajor(totalValue as number, walletPrimaryCurrency)}
               </div>
               <div className="flex gap-2 underline">
-                <p className="font-semibold">Amount:</p>
+                <p className="font-semibold">{t("shared.amount")}</p>
                 {formatMoneyMajor(dataa.value, walletPrimaryCurrency)}
               </div>
               <div className="flex gap-2">
-                <p className="font-semibold">Percentage:</p>
+                <p className="font-semibold">{t("shared.percentage")}</p>
                 {String(((dataa.value / (totalValue as number)) * 100)).slice(0, 4)}%
               </div>
             </div>
@@ -169,7 +171,7 @@ function ResponsiveBarsChartComponent({
     <div className="responsive-bars-chart-comp w-[100%] h-[400px] min-h-[300px] max-h-[600px]">
       {header}
       <span className=" text-center text-xs">
-        Total:{" "}
+        {t("shared.total")}{" "}
         <b>
           {formatMoneyMajor(totalValue as number, walletPrimaryCurrency)}
         </b>

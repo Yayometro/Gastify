@@ -5,10 +5,12 @@ import { LEGACY_ICONS } from "./legacyIconRegistry";
 import { LEGACY_TO_FLUENT } from "./iconLegacyMap";
 import { fluentIconUrl } from "./fluentIcons";
 import { defaultIcons } from "@/helpers/defaultIconsDB";
+import { useT } from "@/i18n/client";
 
 const BRANDS = ["fa/FaGoogle", "fa/FaAmazon", "fa/FaApple", "fa/FaCcApplePay", "fa/FaLinkedin", "fa/FaYoutube", "fa/FaAirbnb", "fa/FaXbox", "fa/FaSteam", "fa/FaGithub"];
 
 function Row({ legacy, slug }: { legacy: string; slug?: string }) {
+  const t = useT();
   const Old = LEGACY_ICONS[legacy];
   return (
     <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2 text-xs">
@@ -19,7 +21,7 @@ function Row({ legacy, slug }: { legacy: string; slug?: string }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={fluentIconUrl(slug)} alt="" width={44} height={44} />
         ) : (
-          <span className="text-[10px] text-gf-text-muted text-center">sin cambio</span>
+          <span className="text-[10px] text-gf-text-muted text-center">{t("shared.noChange")}</span>
         )}
       </span>
       <span className="flex flex-col min-w-0">
@@ -32,6 +34,7 @@ function Row({ legacy, slug }: { legacy: string; slug?: string }) {
 
 // Dev-only review page for the old -> Fluent equivalence table.
 export default function IconsPreviewClient(): React.JSX.Element {
+  const t = useT();
   const [filter, setFilter] = useState("");
   const sections = useMemo(() => {
     const seen = new Set<string>();
@@ -40,23 +43,23 @@ export default function IconsPreviewClient(): React.JSX.Element {
       names: g.icons.filter((n) => (seen.has(n) ? false : (seen.add(n), true))),
     }));
     const extra = Object.keys(LEGACY_TO_FLUENT).filter((n) => !seen.has(n));
-    result.push({ title: "Solo en tus datos / valores por defecto (no están en el selector antiguo)", names: extra });
-    result.push({ title: "Logos de marcas: no existen como emoji, se quedan igual", names: BRANDS });
+    result.push({ title: t("shared.icons.onlyDefaults"), names: extra });
+    result.push({ title: t("shared.icons.brandLogos"), names: BRANDS });
     return result;
   }, []);
   const needle = filter.trim().toLowerCase();
 
   return (
     <div className="w-full p-6 md:pl-[100px]">
-      <h1 className="text-3xl font-semibold text-center">Equivalencias de íconos (solo desarrollo)</h1>
+      <h1 className="text-3xl font-semibold text-center">{t("shared.icons.mapping")}</h1>
       <p className="text-center text-sm text-gf-text-muted pt-2">
-        Izquierda: el ícono de hoy. Derecha: el emoji Fluent 3D con el que se dibujará. {Object.keys(LEGACY_TO_FLUENT).length} equivalencias.
+        {t("shared.icons.help", { p1: Object.keys(LEGACY_TO_FLUENT).length })}
       </p>
       <div className="flex justify-center py-3">
         <input
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filtrar (nombre viejo o nuevo)..."
+          placeholder={t("shared.icons.filter")}
           className="w-full max-w-[420px] border-2 border-purple-500 px-3 py-1 rounded-full bg-transparent"
         />
       </div>

@@ -1,5 +1,7 @@
+"use client";
 import React from "react";
 import { readableTextColor } from "@gastify/core/format/readableTextColor";
+import { useT } from "@/i18n/client";
 
 export interface TagItem {
   _id?: string;
@@ -14,7 +16,8 @@ export interface TagProps {
 }
 
 function Tag({ tag, size }: TagProps): React.JSX.Element {
-  if (!tag) return <p>No tag...</p>;
+  const t = useT();
+  if (!tag) return <p>{t("shared.noTag")}</p>;
   // A tag with its own colour keeps it, with text that stays readable on it. A tag
   // without one (all of them today) follows the theme: it used to fall back to a
   // fixed light grey with the page's text colour, which is white-on-white in dark

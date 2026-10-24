@@ -5,6 +5,7 @@ import { Tooltip } from "antd";
 import EmptyModule from "../EmptyModule";
 import { InfoTip } from "../InfoTip";
 import type { InfoText } from "@gastify/core/info/createInfo";
+import { useT } from "@/i18n/client";
 
 export interface TabsTogglerComponentItem<P extends object = Record<string, unknown>> {
   tab: string;
@@ -30,6 +31,7 @@ function TabsToggler({
   contentStyle,
   tabInfo,
 }: TabsTogglerProps): React.JSX.Element {
+  const t = useT();
   const [active, setActive] = useState(tabs?.[0]?.toLowerCase() || "");
 
   // Every "Compare" toggle on the History page adds/removes tabs at
@@ -97,7 +99,7 @@ function TabsToggler({
       </div>
       <div className={contentStyle || "tabs-toggler-content-cont"}>
         {activeComponent || (
-          <EmptyModule emMessage="Ups... Nothing here 🤔. Component SHOULD have an array of components! 🚨" />
+          <EmptyModule emMessage={t("shared.tabs.missing")} />
         )}
       </div>
     </div>

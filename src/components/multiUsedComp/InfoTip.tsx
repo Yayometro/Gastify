@@ -6,10 +6,12 @@ import type { InfoText } from "@gastify/core/info/createInfo";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "./CategoIcon";
 import { InfoContent } from "./InfoContent";
+import { useT } from "@/i18n/client";
 
 // The window of an explanation: its title, the formatted text and the buttons to close it. A window with its own
 // body (a guide with desplegables, say) passes it in `body`; the shell, the scroll and the buttons stay the same.
 export function InfoWindow({ info, onClose, body }: { info: InfoText; onClose: () => void; body?: React.ReactNode }): React.JSX.Element {
+  const t = useT();
   return (
     <BasicModal
       zIndexClass="z-[10010]"
@@ -25,10 +27,10 @@ export function InfoWindow({ info, onClose, body }: { info: InfoText; onClose: (
           </div>
           <div className="px-6 pb-6 pt-2">
             <button type="button" onClick={onClose} className="w-full rounded-full p-2 font-semibold text-white gf-glass-button">
-              Entendido
+              {t("shared.understood")}
             </button>
           </div>
-          <button type="button" aria-label="Cerrar" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors">
+          <button type="button" aria-label={t("shared.close")} onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors">
             <CategoIcon type={"MdClose"} siz={18} />
           </button>
         </div>

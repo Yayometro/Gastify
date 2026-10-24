@@ -331,6 +331,8 @@ function apply(namespace, files) {
     if (todoHere.length === 0) continue;
 
     const fn = hookName(sf);
+    // Only the pages and layouts under src/app are server components; any other component is rendered by the client.
+    const clientMode = !(rel.startsWith("src/app/") && !client);
     const names = new Set(todoHere.map((item) => item.component.name));
 
     // 1) The texts, replaced from the end of the file backwards so the earlier positions stay valid.
@@ -355,11 +357,11 @@ function apply(namespace, files) {
       if (body.getText(reparsed).includes(`const ${fn} = useT()`) || body.getText(reparsed).includes(`const ${fn} = await serverT(`)) continue;
       const firstStatement = body.statements[0];
       const indent = firstStatement ? " ".repeat(reparsed.getLineAndCharacterOfPosition(firstStatement.getStart(reparsed)).character) : "  ";
-      const line = client
+      const line = clientMode
         ? `\n${indent}const ${fn} = useT();`
         : `\n${indent}const ${fn} = await serverT(["${namespace}"]);`;
       inserts.push({ at: body.getStart(reparsed) + 1, text: line });
-      if (!client) {
+      if (!clientMode) {
         const isAsync = Boolean(node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword));
         if (!isAsync) {
           const keyword = ts.isFunctionDeclaration(node) ? node.getChildren(reparsed).find((c) => c.kind === ts.SyntaxKind.FunctionKeyword) : null;
@@ -373,7 +375,8 @@ function apply(namespace, files) {
     }
 
     // 3) The import, after the last import (or after "use client" when there is none).
-    const importLine = client ? HOOK_IMPORT : 'import { serverT } from "@/i18n/server";';
+    const importLine = clientMode ? HOOK_IMPORT : 'import { serverT } from "@/i18n/server";';
+    if (clientMode && !isUseClient(reparsed)) out = '"use client";\n' + out;
     if (!out.includes(importLine)) {
       const check = ts.createSourceFile(abs, out, ts.ScriptTarget.Latest, true, abs.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
       const imports = check.statements.filter((statement) => ts.isImportDeclaration(statement));
@@ -383,7 +386,7 @@ function apply(namespace, files) {
 
     writeFileSync(abs, out, "utf8");
     rewritten += todoHere.length;
-    console.log(`  ${rel}: ${todoHere.length} textos (${client ? "cliente" : "servidor"})`);
+    console.log(`  ${rel}: ${todoHere.length} textos (${clientMode ? "cliente" : "servidor"})`);
   }
 
   // The catalogs, from the todo file: the same keys in Spanish and English.

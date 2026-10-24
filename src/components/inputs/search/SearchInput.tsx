@@ -1,4 +1,6 @@
+"use client";
 import React from "react";
+import { useT } from "@/i18n/client";
 
 export interface SearchInputProps {
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
@@ -7,6 +9,7 @@ export interface SearchInputProps {
 }
 
 function SearchInput({ onChange, renderBtn, style }: SearchInputProps): React.JSX.Element {
+  const t = useT();
   return (
     <div
       className={
@@ -14,7 +17,7 @@ function SearchInput({ onChange, renderBtn, style }: SearchInputProps): React.JS
         "w-full max-w-[500px] border-[1px] border-purple-600 py-2 px-2 rounded-3xl flex justify-between items-center"
       }
     >
-      <p className="text-xs text-purple-300 hover:text-purple-500 pr-2">Search</p>
+      <p className="text-xs text-purple-300 hover:text-purple-500 pr-2">{t("shared.search")}</p>
       <input
         type="search"
         style={{

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import TransactionItemList, { type TransactionItemMovement } from "@/components/Transactions/ItemList/TransactionItemList";
 import dayjs from "dayjs";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 export interface DedupExcelMatch {
   name?: string | null;
@@ -116,6 +117,7 @@ function SideColumn({ title, colorClass, children, maxH = "max-h-[55vh]", header
 }
 
 function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming }: DedupPreviewModalProps): React.JSX.Element | React.ReactPortal {
+  const tr = useT();
   const { toDelete = [], toKeep = [], scanned = 0 } = preview;
 
   const [deselected, setDeselected] = useState<Set<string>>(new Set());
@@ -142,10 +144,9 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
 
         {/* Header */}
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gf-text">Confirm deduplication</h2>
+          <h2 className="text-xl font-semibold text-gf-text">{tr("shared.dedup.confirm")}</h2>
           <p className="text-xs text-gf-text-muted mt-1">
-            {scanned} row{scanned !== 1 ? "s" : ""} scanned
-            {!deleteAll && " · uncheck any item to skip deletion"}
+            {tr("shared.dedup.scanned", { p1: scanned, p2: scanned !== 1 ? "s" : "", p3: !deleteAll && " · uncheck any item to skip deletion" })}
           </p>
         </div>
 
@@ -154,20 +155,20 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between pr-1">
               <h3 className="text-sm font-semibold text-red-500">
-                Will be deleted{" "}
+                {tr("shared.dedup.willDelete")}{" "}
                 <span className="font-normal text-gf-text-muted">
-                  ({effective.length} of {toDelete.length})
-                  {skipped > 0 && <span> · {skipped} skipped</span>}
+                  ({effective.length} {tr("shared.of")} {toDelete.length})
+                  {skipped > 0 && <span> {tr("shared.dedup.skipped", { p1: skipped })}</span>}
                 </span>
               </h3>
               {toDelete.length > 0 && (
                 <span className="text-[10px] uppercase tracking-wide text-amber-500 w-[clamp(160px,22%,220px)] text-center">
-                  Excel row
+                  {tr("shared.dedup.excelRow")}
                 </span>
               )}
             </div>
             {toDelete.length === 0 ? (
-              <p className="text-xs text-gf-text-muted italic">No transactions will be deleted.</p>
+              <p className="text-xs text-gf-text-muted italic">{tr("shared.dedup.noneDeleted")}</p>
             ) : (
               <div className="flex flex-col gap-2 max-h-[58vh] overflow-y-auto pr-1">
                 {toDelete.map((t) => (
@@ -192,7 +193,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
               colorClass="text-green-400"
             >
               {toKeep.length === 0
-                ? <p className="text-xs text-gf-text-muted italic">Nothing to keep.</p>
+                ? <p className="text-xs text-gf-text-muted italic">{tr("shared.dedup.nothingKeep")}</p>
                 : toKeep.map((t) => (
                     <div key={String(t._id)} className="min-w-0">
                       <TransactionItemList movement={t as unknown as TransactionItemMovement} />
@@ -211,13 +212,13 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
               headerRight={
                 toDelete.length > 0 ? (
                   <span className="text-[10px] uppercase tracking-wide text-amber-500 w-[clamp(160px,22%,220px)] text-center">
-                    Excel row
+                    {tr("shared.dedup.excelRow")}
                   </span>
                 ) : null
               }
             >
               {toDelete.length === 0
-                ? <p className="text-xs text-gf-text-muted italic">No transactions will be deleted.</p>
+                ? <p className="text-xs text-gf-text-muted italic">{tr("shared.dedup.noneDeleted")}</p>
                 : toDelete.map((t) => (
                     <DeleteRow
                       key={String(t._id)}
@@ -247,7 +248,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
             disabled={confirming}
             className="px-4 py-2 rounded-full text-sm text-gf-text-muted hover:text-gf-text-muted hover:bg-gf-surface-2 transition-colors disabled:opacity-50"
           >
-            Cancel
+            {tr("shared.dedup.cancel")}
           </button>
           <button
             onClick={handleConfirm}
