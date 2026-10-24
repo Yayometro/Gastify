@@ -8,6 +8,7 @@ import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
 import dayjs from "dayjs";
 import { Tooltip } from "antd";
 import { formatMoneyMinor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
@@ -89,6 +90,7 @@ function TransactionItemList({
   selected,
   onSelect,
 }: TransactionItemListProps): React.JSX.Element {
+  const t = useT();
   // displayMoney is attached server-side (transactionReadService) by every
   // read route this component's data comes through. Fall back to the plain
   // legacy amount for any caller that hasn't been updated yet, rather than
@@ -105,16 +107,16 @@ function TransactionItemList({
 
   const fxTooltipTitle = hasFxDetail ? (
     <div className="flex flex-col gap-0.5 text-[11px]">
-      {merchant && <div>Merchant: {formatMoneyMinor(merchant.amountMinor, merchant.currency)}</div>}
-      {native && <div>Account: {formatMoneyMinor(native.amountMinor, native.currency)}</div>}
+      {merchant && <div>{t("movements.row.merchant", { p1: formatMoneyMinor(merchant.amountMinor, merchant.currency) })}</div>}
+      {native && <div>{t("movements.row.account", { p1: formatMoneyMinor(native.amountMinor, native.currency) })}</div>}
       {primary ? (
         <>
-          <div>Reported ({primary.currency}): {formatMoneyMinor(primary.amountMinor, primary.currency)}</div>
-          <div>Rate: {primary.rate} ({primary.source})</div>
+          <div>{t("movements.row.reported", { p1: primary.currency, p2: formatMoneyMinor(primary.amountMinor, primary.currency) })}</div>
+          <div>{t("movements.row.rate", { p1: primary.rate, p2: primary.source })}</div>
           <div>{new Date(primary.effectiveDate as string | number | Date).toLocaleDateString()} — {primary.estimated ? "estimated" : "exact"}{primary.stale ? ", stale" : ""}</div>
         </>
       ) : (
-        <div>Exchange-rate estimate unavailable</div>
+        <div>{t("movements.row.rateUnavailable")}</div>
       )}
     </div>
   ) : null;
@@ -162,9 +164,9 @@ function TransactionItemList({
             </p>
           </div>
           <div className="tra-tag-cont flex flex-wrap gap-1 items-center justify-start text-[10px] font-thin">
-            <p className="font-light">Tags: </p>
+            <p className="font-light">{t("movements.row.tagsLabel")} </p>
             {!movement.tags ? (
-              <p>No tags...</p>
+              <p>{t("movements.row.noTags")}</p>
             ) : (
               movement.tags.map((tag) => (
                 <Tag tag={tag} key={tag._id} size={8} />
@@ -185,7 +187,7 @@ function TransactionItemList({
             {hasFxDetail && (
               <Tooltip title={fxTooltipTitle}>
                 <span className="ml-1 text-[9px] font-bold text-purple-500 border border-purple-300 rounded px-1 cursor-default">
-                  FX
+                  {t("movements.row.fx")}
                 </span>
               </Tooltip>
             )}
