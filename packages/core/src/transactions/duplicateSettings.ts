@@ -23,12 +23,13 @@ export const DUPLICATE_DEFAULTS: DuplicateSettings = {
 };
 
 // The criteria labels in the order the web lists them.
+// The labels are catalog keys: the screen shows them with t(label).
 export const DUPLICATE_CRITERIA_LABELS: { key: keyof DuplicateCriteria; label: string }[] = [
-  { key: "name", label: "Nombre" },
-  { key: "date", label: "Fecha" },
-  { key: "amount", label: "Monto" },
-  { key: "category", label: "Categoría" },
-  { key: "subcategory", label: "Subcategoría" },
+  { key: "name", label: "movements.duplicate.name" },
+  { key: "date", label: "movements.duplicate.date" },
+  { key: "amount", label: "movements.duplicate.amount" },
+  { key: "category", label: "movements.duplicate.category" },
+  { key: "subcategory", label: "movements.duplicate.subcategory" },
 ];
 
 // A tolerance typed by hand: never negative, never NaN (an empty box counts as 0).

@@ -1,4 +1,5 @@
 "use client";
+import { useWalletText } from "@/i18n/client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { buildWalletAnalyzerSnapshot } from "@/helpers/transformers/walletAnalyzer";
@@ -133,6 +134,7 @@ function formatMonthLabel(date: Date): string {
 // stomped by the parent filter, and a later parent-filter change is
 // ignored once the user has picked their own month.
 function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): React.JSX.Element | null {
+  const text = useWalletText();
   const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
   const storedBudgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
   const accounts: AccountData[] = useSelector((state: RootState) => state.accountsReducer?.data) || EMPTY_ARRAY;
@@ -156,7 +158,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): Re
   }, [timePeriodFromFather]);
 
   const snapshot = useMemo(
-    () => buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: referenceMonth, topN }),
+    () => buildWalletAnalyzerSnapshot({ text,  transactions, budgets, referenceDate: referenceMonth, topN }),
     [transactions, budgets, referenceMonth, topN]
   );
 

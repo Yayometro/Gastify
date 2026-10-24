@@ -45,7 +45,7 @@ import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -148,6 +148,7 @@ export interface HistoricalWalletAnalyzerProps {
 // buildSpendPatternAnalysis) so both Wallet Analyzers speak the exact same
 // visual language without a second copy of any of them.
 function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps): React.JSX.Element {
+  const text = useWalletText();
   const { APP_INFO } = useInfo();
   const tr = useT();
   const { timePeriod, comparePeriod, compareEnabled, labelA, labelB, timePeriodsForSelecter } = periodState;
@@ -196,7 +197,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
   const snapshot = useMemo(() => {
     if (!range || transactions.length < 1) return null;
-    return buildPeriodSnapshot({ transactions, budgets, range, topN });
+    return buildPeriodSnapshot({ text,  transactions, budgets, range, topN });
   }, [range, transactions, budgets, topN]);
 
   const comparison = useMemo(() => {
@@ -204,7 +205,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
     if (!range || !comparePeriod?.[0] || !comparePeriod?.[1]) return null;
     if (transactions.length < 1) return null;
     const rangeB = { start: comparePeriod[0], end: comparePeriod[1] };
-    return buildPeriodComparison({ transactions, budgets, rangeA: range, rangeB, labelA, labelB: labelB || "", topN });
+    return buildPeriodComparison({ text,  transactions, budgets, rangeA: range, rangeB, labelA, labelB: labelB || "", topN });
   }, [compareEnabled, range, comparePeriod, transactions, budgets, labelA, labelB, topN]);
 
   function openCategoryModal(
@@ -212,7 +213,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
     isBill: boolean,
     forRange?: DateRange
   ) {
-    const children = getCategoryTransactions(transactions, item.name, isBill, forRange);
+    const children = getCategoryTransactions(text, transactions, item.name, isBill, forRange);
     renderModal(
       <ModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill, value: item.current ?? item.amount, children }}

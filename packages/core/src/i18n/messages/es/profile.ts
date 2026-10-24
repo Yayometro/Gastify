@@ -1,5 +1,8 @@
 // Texts of the "profile" namespace. Spanish is the source text.
 const profile = {
+  "profile.error.nameRequired": "Escribe tu nombre.",
+  "profile.error.nameTooLong": "Máximo {p1} caracteres.",
+  "profile.error.phone": "Escribe un teléfono de 7 a 15 dígitos.",
   "profile.avatar.saved": "Tu nuevo avatar se subió correctamente a nuestra base de datos. Ahora GUARDA LOS CAMBIOS para aplicarlo 🤓",
   "profile.toggle.off": "Apagado",
   "profile.fullName.label": "Nombre completo:",

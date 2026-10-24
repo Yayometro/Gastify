@@ -24,7 +24,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { buildWalletAnalyzerSnapshot, type WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 type Detail =
   | { kind: 'month'; label: string; income: number; expense: number; count: number; previous: { label: string; income: number; expense: number; count: number } | null }
@@ -40,6 +40,7 @@ const pct = (value: number | null | undefined) => (value === null || value === u
 // The Wallet Analyzer on the phone: the same snapshot the web builds (totals against the previous month, a six-month
 // trend, averages, the biggest categories and movements, the spending pace), each card opening its detail.
 export default function AnalyzerScreen() {
+  const text = useWalletText();
   const { APP_INFO } = useInfo();
   const t = useT();
   const { month: monthParam } = useLocalSearchParams<{ month?: string }>();
@@ -62,7 +63,7 @@ export default function AnalyzerScreen() {
   const projection = useAnalyzerProjection(month, transactions, budgets, currency);
 
   const snapshot = useMemo<WalletAnalyzerSnapshotData>(
-    () => buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: month, topN: Number(topN) }),
+    () => buildWalletAnalyzerSnapshot({ text,  transactions, budgets, referenceDate: month, topN: Number(topN) }),
     [transactions, budgets, month, topN]
   );
   const { currentTotals: now_, previousTotals: before, trend, topCategoriesBills, topCategoriesBillsPrevious, topTransactionsBills, monthlyAverages, pace, subscriptions } = snapshot;

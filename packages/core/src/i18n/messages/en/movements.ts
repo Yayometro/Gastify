@@ -2,6 +2,11 @@ import type movements from "../es/movements";
 
 // English for the "movements" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof movements, string> = {
+  "movements.duplicate.name": "Name",
+  "movements.duplicate.date": "Date",
+  "movements.duplicate.amount": "Amount",
+  "movements.duplicate.category": "Category",
+  "movements.duplicate.subcategory": "Subcategory",
   "movements.range.month": "By month",
   "movements.range.last7": "7 days",
   "movements.range.last30": "30 days",

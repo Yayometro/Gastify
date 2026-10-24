@@ -1,5 +1,6 @@
 "use client";
 
+import { useWalletText } from "@/i18n/client";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/store";
@@ -44,6 +45,7 @@ export interface HistoricalBudgetsApiResponse {
 function HistoricalBudgetsComparative({
   periodState,
 }: HistoricalBudgetsComparativeProps): React.JSX.Element {
+  const text = useWalletText();
   const { timePeriod, timePeriodsForSelecter, getValueFromSelecter, handleRangeDate } = periodState;
   const [budgets, setBudgets] = useState<BudgetHistoricalInput[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -79,7 +81,7 @@ function HistoricalBudgetsComparative({
     budgets.length >= 1 &&
     timePeriod[0] &&
     timePeriod[1]
-      ? buildBudgetHistoricalComparative({
+      ? buildBudgetHistoricalComparative({ locale: text.locale, 
           budgets,
           transactions: ccTransacciones.data,
           startDate: timePeriod[0],

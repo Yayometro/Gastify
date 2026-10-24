@@ -173,7 +173,8 @@ function DuplicateSubfilters({
     <View className="gap-3">
       <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.coincidencias")}</Text>
       <View className="flex-row flex-wrap gap-2">
-        {DUPLICATE_CRITERIA_LABELS.map(({ key, label }) => {
+        {DUPLICATE_CRITERIA_LABELS.map(({ key, label: labelKey }) => {
+          const label = t(labelKey);
           const on = draft.criteria[key];
           return (
             <Pressable

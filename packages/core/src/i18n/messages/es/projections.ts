@@ -1,5 +1,6 @@
 // Texts of the "projections" namespace. Spanish is the source text.
 const projections = {
+  "projections.unexpectedRow": "Inesperado/Otro",
   "projections.error.buffers": "Buffers no esperados actualizados",
   "projections.balance.enterFirst": "Escribe primero un saldo",
   "projections.balance.saved": "Saldo guardado para este mes",

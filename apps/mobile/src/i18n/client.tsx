@@ -4,6 +4,7 @@ import { createTranslator, type Dict, type TranslateFn } from "@gastify/core/i18
 import { DEFAULT_LOCALE, LOCALES, resolveLocale, isLocale, type Locale } from "@gastify/core/i18n/locales";
 import { loadMessages, NAMESPACES } from "@gastify/core/i18n/catalogs";
 import { loadInfo, SPANISH_INFO, type InfoData } from "@gastify/core/info/catalog";
+import type { WalletText } from "@gastify/core/transformers/walletAnalyzer";
 
 // The app's language: the one the person chose (kept on the device), or else the device's own language, or Spanish.
 const STORE_KEY = "gf_locale";
@@ -98,4 +99,11 @@ export function useSetLocale(): (locale: Locale) => void {
 // The explanations ("?") of the current language.
 export function useInfo(): InfoData {
   return (useContext(I18nContext) ?? UNPROVIDED).info;
+}
+
+// The wallet analyzer's texts in the current language: its month names, weekdays and sentences.
+export function useWalletText(): WalletText {
+  const t = useT();
+  const locale = useLocale();
+  return useMemo<WalletText>(() => ({ locale, t }), [locale, t]);
 }

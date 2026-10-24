@@ -1,4 +1,5 @@
-import { months as monthNames } from "@gastify/core/time/timeFunctions";
+import { monthTitle } from "../i18n/dates";
+import type { Locale } from "../i18n/locales";
 import { getTransactionsFromTimeRange, getPrimaryAmount } from "./transactionsChange";
 import { getValueActiveInMonth } from "./budgetHistory";
 import { matchBillToBudget } from "./projectionsChange";
@@ -89,6 +90,8 @@ export interface BuildBudgetHistoricalComparativeParams<
   startDate: Date;
   endDate: Date;
   today?: Date;
+  // The language of the month labels ("Octubre 2026").
+  locale: Locale;
 }
 
 // A Budget's goalAmount is scoped to its own period (a quarterly budget's
@@ -96,7 +99,7 @@ export interface BuildBudgetHistoricalComparativeParams<
 // needs a monthly-equivalent share.
 const PERIOD_MONTHS: Record<string, number> = { monthly: 1, quarterly: 3, biannual: 6, yearly: 12 };
 
-function getMonthsInRange(start: Date, end: Date): MonthRangeItem[] {
+function getMonthsInRange(start: Date, end: Date, locale: Locale): MonthRangeItem[] {
   const result: MonthRangeItem[] = [];
   let cursor = new Date(start.getFullYear(), start.getMonth(), 1);
   const last = new Date(end.getFullYear(), end.getMonth(), 1);
@@ -106,7 +109,7 @@ function getMonthsInRange(start: Date, end: Date): MonthRangeItem[] {
     result.push({
       monthStart,
       monthEnd,
-      label: `${monthNames[cursor.getMonth()]} ${cursor.getFullYear()}`,
+      label: monthTitle(cursor, locale),
     });
     cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
   }
@@ -176,9 +179,10 @@ export function buildBudgetHistoricalComparative<
   startDate,
   endDate,
   today = new Date(),
+  locale,
 }: BuildBudgetHistoricalComparativeParams<TBudget, TTransaction>): BudgetHistoricalComparativeRowData<TBudget>[] {
   const spendingBudgets = ((budgets || []) as BudgetTypeInput[]).filter(isSpendingBudget) as unknown as (TBudget & BudgetHistoricalInput)[];
-  const monthsInRange = getMonthsInRange(startDate, endDate).filter((m) => m.monthStart <= today);
+  const monthsInRange = getMonthsInRange(startDate, endDate, locale).filter((m) => m.monthStart <= today);
 
   const rows: BudgetHistoricalComparativeRowData<TBudget>[] = spendingBudgets
     .map((budget: TBudget & BudgetHistoricalInput) => {

@@ -13,11 +13,12 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { buildBudgetHistoricalComparative } from '@gastify/core/transformers/budgetHistoricalComparative';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 // Budgets against the period, month by month: how many months each one stayed within its limit (the web's
 // "compliance"), with a small strip of months (green kept, red exceeded) and a tap for each month's figures.
 export function BudgetsComparative({ start, end, compareStart, compareEnd }: { start: Date; end: Date; compareStart?: Date; compareEnd?: Date }) {
+  const text = useWalletText();
   const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
@@ -30,7 +31,7 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
 
   const rows = useMemo(
     () =>
-      buildBudgetHistoricalComparative({
+      buildBudgetHistoricalComparative({ locale: text.locale, 
         budgets: convertBudgetsToPrimary(budgets.filter((budget) => !budget.archived), currency, rates),
         transactions,
         startDate: start,
@@ -40,7 +41,7 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
   );
   const comparedRows = useMemo(() => {
     if (!compareStart || !compareEnd) return [];
-    return buildBudgetHistoricalComparative({
+    return buildBudgetHistoricalComparative({ locale: text.locale, 
       budgets: convertBudgetsToPrimary(budgets.filter((budget) => !budget.archived), currency, rates),
       transactions,
       startDate: compareStart,

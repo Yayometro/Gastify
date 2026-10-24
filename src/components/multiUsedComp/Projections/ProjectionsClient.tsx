@@ -106,7 +106,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
             })
             .filter(Boolean)
         : nonSavingBudgets.filter((b) => !b.archived);
-    const bucketBreakdown = getMonthBucketBreakdown(bills, budgetsForChart, selectedUnexpectedBuffer);
+    const bucketBreakdown = getMonthBucketBreakdown(bills, budgetsForChart, selectedUnexpectedBuffer, { budget: t("budgets.alert.defaultName"), unexpected: t("projections.unexpectedRow") });
     const incomeOccurrences =
       selectedRow.type === "actual"
         ? []

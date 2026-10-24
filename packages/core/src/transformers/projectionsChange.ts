@@ -371,16 +371,17 @@ function sumPerBucketMax(bills: BillLike[], budgets: MatchableBudget[], bufferAm
   return total;
 }
 
-// Per-bucket breakdown (one row per Budget + one "Unexpected" row) for the detail-modal chart.
-export function getMonthBucketBreakdown(bills: BillLike[], budgets: MatchableBudget[], bufferAmount?: number): MonthBucketBreakdownRow[] {
+// Per-bucket breakdown (one row per Budget + one "Unexpected" row) for the detail-modal chart. The two names the rows
+// fall back to (a budget with no name, and the unexpected row) come from the caller, in the person's language.
+export function getMonthBucketBreakdown(bills: BillLike[], budgets: MatchableBudget[], bufferAmount: number | undefined, labels: { budget: string; unexpected: string }): MonthBucketBreakdownRow[] {
   const { perBudget, unmatched } = assignBillsToBudgets(bills, budgets);
   const rows = budgets.map((budget, index) => ({
-    label: budget.name || (budget.subCategory as IdRef)?.name || (budget.category as IdRef)?.name || "Budget",
+    label: budget.name || (budget.subCategory as IdRef)?.name || (budget.category as IdRef)?.name || labels.budget,
     budgeted: budget.goalAmount || 0,
     actual: sum(perBudget[index].map(getPrimaryAmount)),
   }));
   rows.push({
-    label: "Unexpected/Other",
+    label: labels.unexpected,
     budgeted: bufferAmount || 0,
     actual: sum(unmatched.map(getPrimaryAmount)),
   });

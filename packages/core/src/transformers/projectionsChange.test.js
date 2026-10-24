@@ -508,8 +508,8 @@ describe("computeYearRowsWithBalance", () => {
 describe("getMonthBucketBreakdown — currency correctness", () => {
   it("sums matched/unmatched bills using the converted amount", () => {
     const bill = usdTransaction({ amount: 20, isIncome: false, isBill: true, date: new Date(), primaryAmountMinor: 33800 }); // 20 USD -> 338 MXN
-    const rows = getMonthBucketBreakdown([bill], [], 0);
-    const unexpectedRow = rows.find((r) => r.label === "Unexpected/Other");
+    const rows = getMonthBucketBreakdown([bill], [], 0, { budget: "Presupuesto", unexpected: "Inesperado/Otro" });
+    const unexpectedRow = rows.find((r) => r.label === "Inesperado/Otro");
     expect(unexpectedRow.actual).toBe(338);
   });
 });

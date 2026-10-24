@@ -107,11 +107,11 @@ export default function ProfileScreen() {
       <Card title={t("mobile.tus.datos")}>
         <View className="gap-2">
           <TextField label={t("mobile.nombre")} value={fullName} onChangeText={setFullName} maxLength={PROFILE_NAME_MAX} autoCapitalize="words" textContentType="name" />
-          {errors.fullName && <Text className="font-inter text-sm text-red-500">{errors.fullName}</Text>}
+          {errors.fullName && <Text className="font-inter text-sm text-red-500">{t(errors.fullName, { p1: PROFILE_NAME_MAX })}</Text>}
         </View>
         <View className="gap-2">
           <TextField label={t("mobile.telefono.opcional")} value={phone} onChangeText={setPhone} keyboardType="phone-pad" textContentType="telephoneNumber" placeholder="55 1234 5678" />
-          {errors.phone && <Text className="font-inter text-sm text-red-500">{errors.phone}</Text>}
+          {errors.phone && <Text className="font-inter text-sm text-red-500">{t(errors.phone)}</Text>}
         </View>
         <FormError message={formError} />
         <GradientButton label={t("mobile.guardar.cambios")} onPress={save} loading={saving} disabled={saving || unchanged} />

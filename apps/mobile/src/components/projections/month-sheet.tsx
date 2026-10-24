@@ -94,7 +94,7 @@ export function ProjectionMonthSheet({
             })
             .filter(Boolean)
         : spending.filter((budget) => !budget.archived);
-    return getMonthBucketBreakdown(bills as never[], forChart as never[], buffers?.unexpectedBuffer ?? 0);
+    return getMonthBucketBreakdown(bills as never[], forChart as never[], buffers?.unexpectedBuffer ?? 0, { budget: t("budgets.alert.defaultName"), unexpected: t("projections.unexpectedRow") });
   }, [row, range, monthTransactions, budgets, buffers]);
 
   const expected = useMemo(() => {

@@ -10,12 +10,12 @@ Es un conteo de **piso**, no exacto: encuentra el texto JSX, los atributos que l
 |---|---:|---:|
 | web | 77 | 148 |
 | mobile | 46 | 59 |
-| core | 6 | 30 |
-| **Total** | **129** | **237** |
+| core | 1 | 1 |
+| **Total** | **124** | **208** |
 
-Textos distintos: 191 (un mismo texto aparece en varias pantallas; el trabajo de traducción cuenta una vez cada texto distinto).
+Textos distintos: 166 (un mismo texto aparece en varias pantallas; el trabajo de traducción cuenta una vez cada texto distinto).
 
-Por tipo: texto JSX 2 · atributo visible 93 · mensaje de API 86 · Alert.alert 4 · aviso al usuario 22 · texto del core 30
+Por tipo: texto JSX 2 · atributo visible 93 · mensaje de API 86 · Alert.alert 4 · aviso al usuario 22 · texto del core 1
 
 ## Inicio y pantallas públicas
 
@@ -30,7 +30,6 @@ Pantallas de autenticación (login, registro, 2FA, passkeys): 2 textos en 2 arch
 | Zona | Archivos | Texto JSX | Atributos | API | Alertas | Avisos | Core | Total |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | categories | 9 | 0 | 13 | 0 | 0 | 5 | 0 | **18** |
-| core/transformers | 3 | 0 | 0 | 0 | 0 | 0 | 18 | **18** |
 | mobile/components/raíz | 14 | 0 | 16 | 0 | 0 | 0 | 0 | **16** |
 | api/transactions | 8 | 0 | 0 | 15 | 0 | 0 | 0 | **15** |
 | api/accounts | 3 | 0 | 0 | 14 | 0 | 0 | 0 | **14** |
@@ -47,11 +46,9 @@ Pantallas de autenticación (login, registro, 2FA, passkeys): 2 textos en 2 arch
 | mobile/components/analyzer | 2 | 0 | 5 | 0 | 0 | 0 | 0 | **5** |
 | mobile/components/history | 4 | 0 | 5 | 0 | 0 | 0 | 0 | **5** |
 | mobile/components/profile | 5 | 0 | 1 | 0 | 4 | 0 | 0 | **5** |
-| core/transactions | 1 | 0 | 0 | 0 | 0 | 0 | 5 | **5** |
 | api/categories | 3 | 0 | 0 | 4 | 0 | 0 | 0 | **4** |
 | api/projections | 2 | 0 | 0 | 4 | 0 | 0 | 0 | **4** |
 | mobile/components/home | 3 | 0 | 4 | 0 | 0 | 0 | 0 | **4** |
-| core/money | 1 | 0 | 0 | 0 | 0 | 0 | 4 | **4** |
 | api/subcategory | 3 | 0 | 0 | 3 | 0 | 0 | 0 | **3** |
 | api/tags | 3 | 0 | 0 | 3 | 0 | 0 | 0 | **3** |
 | api/user | 3 | 0 | 0 | 3 | 0 | 0 | 0 | **3** |
@@ -59,7 +56,6 @@ Pantallas de autenticación (login, registro, 2FA, passkeys): 2 textos en 2 arch
 | navbar y accesos rápidos | 2 | 0 | 3 | 0 | 0 | 0 | 0 | **3** |
 | mobile/components/charts | 3 | 0 | 3 | 0 | 0 | 0 | 0 | **3** |
 | mobile/components/forms | 2 | 0 | 3 | 0 | 0 | 0 | 0 | **3** |
-| core/profile | 1 | 0 | 0 | 0 | 0 | 0 | 3 | **3** |
 | api/category-rules | 2 | 0 | 0 | 2 | 0 | 0 | 0 | **2** |
 | api/otras | 1 | 0 | 0 | 2 | 0 | 0 | 0 | **2** |
 | auth (login, registro, 2FA, passkeys) | 2 | 0 | 0 | 0 | 0 | 2 | 0 | **2** |
@@ -72,6 +68,7 @@ Pantallas de autenticación (login, registro, 2FA, passkeys): 2 textos en 2 arch
 | mobile/components/budgets | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
 | mobile/components/projections | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
 | mobile/components/ui | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
+| core/transformers | 1 | 0 | 0 | 0 | 0 | 0 | 1 | **1** |
 
 ## Checklist por zona
 
@@ -88,14 +85,6 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 - [ ] `src/components/categories/categoriesModalList/CategoriesModalList.tsx` — 1 (atributo visible 1)
 - [ ] `src/components/categories/categoryCircleWithChilds/CategoryCircleWithChilds.tsx` — 1 (atributo visible 1)
 - [ ] `src/components/multiUsedComp/CategoryColorPicker.tsx` — 1 (atributo visible 1)
-
-</details>
-
-<details><summary><strong>core/transformers</strong> — 18 textos en 3 archivos</summary>
-
-- [ ] `packages/core/src/transformers/walletAnalyzer.ts` — 16 (texto del core 16)
-- [ ] `packages/core/src/transformers/budgetHistoricalComparative.ts` — 1 (texto del core 1)
-- [ ] `packages/core/src/transformers/projectionsChange.ts` — 1 (texto del core 1)
 
 </details>
 
@@ -252,12 +241,6 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 
 </details>
 
-<details><summary><strong>core/transactions</strong> — 5 textos en 1 archivos</summary>
-
-- [ ] `packages/core/src/transactions/duplicateSettings.ts` — 5 (texto del core 5)
-
-</details>
-
 <details><summary><strong>api/categories</strong> — 4 textos en 3 archivos</summary>
 
 - [ ] `src/app/api/general-data/categories/update-category/route.ts` — 2 (mensaje de API 2)
@@ -278,12 +261,6 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 - [ ] `apps/mobile/src/components/home/summary-widget.tsx` — 2 (atributo visible 2)
 - [ ] `apps/mobile/src/components/home/category-table.tsx` — 1 (atributo visible 1)
 - [ ] `apps/mobile/src/components/home/summary-carousel.tsx` — 1 (atributo visible 1)
-
-</details>
-
-<details><summary><strong>core/money</strong> — 4 textos en 1 archivos</summary>
-
-- [ ] `packages/core/src/money/currencies.ts` — 4 (texto del core 4)
 
 </details>
 
@@ -336,12 +313,6 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 
 - [ ] `apps/mobile/src/components/forms/budget-form.tsx` — 2 (atributo visible 2)
 - [ ] `apps/mobile/src/components/forms/account-form.tsx` — 1 (atributo visible 1)
-
-</details>
-
-<details><summary><strong>core/profile</strong> — 3 textos en 1 archivos</summary>
-
-- [ ] `packages/core/src/profile/profileForm.ts` — 3 (texto del core 3)
 
 </details>
 
@@ -418,6 +389,12 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 <details><summary><strong>mobile/components/ui</strong> — 1 textos en 1 archivos</summary>
 
 - [ ] `apps/mobile/src/components/ui/card.tsx` — 1 (atributo visible 1)
+
+</details>
+
+<details><summary><strong>core/transformers</strong> — 1 textos en 1 archivos</summary>
+
+- [ ] `packages/core/src/transformers/walletAnalyzer.ts` — 1 (texto del core 1)
 
 </details>
 

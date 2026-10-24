@@ -5,6 +5,8 @@ import { getBudgetCoverage } from "./budgetCoverage";
 import { suggestCategory } from "./categoryRuleMatcher";
 import { getExpectedOccurrencesInMonth, getMonthBucketBreakdown, buildYearProjectionTable } from "./projectionsChange";
 
+const labels = { budget: "Presupuesto", unexpected: "Inesperado/Otro" };
+
 describe("getBudgetType (bug 29)", () => {
   it("an explicit budgetType of saving is a saving budget even without isSaving", () => {
     expect(getBudgetType({ budgetType: "saving" } as never)).toBe("saving");
@@ -29,9 +31,9 @@ describe("buildBudgetHistoricalComparative (bugs 30, 32)", () => {
 
   it("a budget with no history and no createdAt marks every month as estimated (bug 31)", () => {
     const legacy = { _id: "old", name: "Old", goalAmount: 100, period: "monthly", category: "c1" };
-    const [row] = buildBudgetHistoricalComparative({ budgets: [legacy as never], transactions: [bill as never], ...range });
+    const [row] = buildBudgetHistoricalComparative({ locale: "es",  budgets: [legacy as never], transactions: [bill as never], ...range });
     expect(row.monthlySeries.every((m: { estimated: boolean }) => m.estimated)).toBe(true);
-    const [dated] = buildBudgetHistoricalComparative({
+    const [dated] = buildBudgetHistoricalComparative({ locale: "es", 
       budgets: [{ ...legacy, createdAt: new Date(2026, 0, 1) } as never],
       transactions: [bill as never],
       ...range,
@@ -40,7 +42,7 @@ describe("buildBudgetHistoricalComparative (bugs 30, 32)", () => {
   });
 
   it("budgets with the same compliance keep a fixed order by name", () => {
-    const rows = buildBudgetHistoricalComparative({
+    const rows = buildBudgetHistoricalComparative({ locale: "es", 
       budgets: [budget({ name: "Zeta" }), budget({ name: "Alpha" }), budget({ name: "Mid" })] as never,
       transactions: [bill] as never,
       ...range,
@@ -49,7 +51,7 @@ describe("buildBudgetHistoricalComparative (bugs 30, 32)", () => {
   });
 
   it("a history entry with an invalid effectiveFrom does not break the earliest-goal lookup", () => {
-    const rows = buildBudgetHistoricalComparative({
+    const rows = buildBudgetHistoricalComparative({ locale: "es", 
       budgets: [
         budget({
           name: "Odd",
@@ -127,17 +129,17 @@ describe("a bill claimed by several budgets counts once (bug 104)", () => {
 
   it("goes to the most specific budget, whatever the list order", () => {
     for (const budgets of [[food, groceries], [groceries, food]]) {
-      const rows = getMonthBucketBreakdown([groceriesBill as never, restaurantBill as never], budgets as never, 0);
+      const rows = getMonthBucketBreakdown([groceriesBill as never, restaurantBill as never], budgets as never, 0, labels);
       const byLabel = Object.fromEntries(rows.map((r) => [r.label, r.actual]));
       expect(byLabel.Groceries).toBe(80);
       expect(byLabel.Food).toBe(30);
-      expect(byLabel["Unexpected/Other"]).toBe(0);
+      expect(byLabel[labels.unexpected]).toBe(0);
     }
   });
 
   it("on a tie the first budget in the list keeps it, and the total is not doubled", () => {
     const foodTwo = { name: "Food 2", goalAmount: 100, category: "c1" };
-    const rows = getMonthBucketBreakdown([restaurantBill as never], [food, foodTwo] as never, 0);
+    const rows = getMonthBucketBreakdown([restaurantBill as never], [food, foodTwo] as never, 0, labels);
     expect(rows.map((r) => r.actual)).toEqual([30, 0, 0]);
   });
 

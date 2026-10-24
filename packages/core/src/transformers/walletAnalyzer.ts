@@ -6,7 +6,9 @@ import {
   orderItemsInRelativeMonth,
 } from "./transactionsChange";
 import { buildBudgetHistoricalComparative } from "./budgetHistoricalComparative";
-import { months } from "@gastify/core/time/timeFunctions";
+import type { Locale } from "../i18n/locales";
+import type { TranslateFn } from "../i18n/translate";
+import { monthName, monthTitle } from "../i18n/dates";
 import type { TransactionData } from "../features/transacctionsSlice";
 import type { BudgetData } from "../features/budgetSlice";
 
@@ -15,6 +17,13 @@ import type { BudgetData } from "../features/budgetSlice";
 // phone's) from rejecting `unknown[]`.
 type LooseList = (TransactionData | { [key: string]: unknown } | unknown)[];
 type Loose = { [key: string]: any };
+// What the analyzer writes in the person's language: the month names, the weekdays, the sentences, and the names it gives a
+// category, a transaction or a budget when it has none. The screen builds it from its locale and translator (see useWalletText).
+export interface WalletText {
+  locale: Locale;
+  t: TranslateFn;
+}
+
 function getTransactionsFromTimeRange(trans: LooseList, start: Date, end: Date): Loose[] {
   return getTransactionsFromTimeRangeStrict(trans as { date?: never; createdAt?: never }[], start, end) as unknown as Loose[];
 }
@@ -450,6 +459,7 @@ export interface WalletAnalyzerFacts {
 }
 
 export interface BuildWalletAnalyzerSnapshotParams {
+  text: WalletText;
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[];
   budgets: (BudgetData | unknown)[];
   referenceDate: Date | string | number;
@@ -500,6 +510,7 @@ export interface MonthComparisonData {
 }
 
 export interface BuildMonthComparisonParams {
+  text: WalletText;
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[];
   monthADate: Date | string | number;
   monthBDate: Date | string | number;
@@ -553,6 +564,7 @@ export interface PeriodComparisonData {
 }
 
 export interface BuildPeriodComparisonParams {
+  text: WalletText;
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[];
   budgets: (BudgetData | unknown)[];
   rangeA: DateRange;
@@ -563,6 +575,7 @@ export interface BuildPeriodComparisonParams {
 }
 
 export interface BuildPeriodSnapshotParams {
+  text: WalletText;
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[];
   budgets: (BudgetData | unknown)[];
   range: DateRange;
@@ -695,12 +708,12 @@ function formatShortDate(date: Date): string {
 // A period's display label: "Julio 2026" when it happens to be exactly one
 // calendar month (the common case - matches the existing month-based
 // labeling convention elsewhere in this file), a short date range otherwise.
-function formatPeriodLabel(period: DateRange): string {
+function formatPeriodLabel(text: WalletText, period: DateRange): string {
   const sameCalendarMonth =
     period.start.getDate() === 1 &&
     period.start.getMonth() === period.end.getMonth() &&
     period.start.getFullYear() === period.end.getFullYear();
-  if (sameCalendarMonth) return `${months[period.start.getMonth()]} ${period.start.getFullYear()}`;
+  if (sameCalendarMonth) return monthTitle(period.start, text.locale);
   return `${formatShortDate(period.start)} - ${formatShortDate(period.end)}`;
 }
 
@@ -741,6 +754,7 @@ export function getMonthTotals(
 // mirroring how top transactions already work (two independent top-N
 // lists, not one merged comparison row).
 export function rankCategoriesForRange(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   isBill: boolean,
   range: DateRange,
@@ -750,7 +764,7 @@ export function rankCategoriesForRange(
   const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
   const map = new Map<string, WalletAnalyzerRankCategory>();
   set.forEach((t) => {
-    const name = t.category?.name || "No category";
+    const name = t.category?.name || text.t("history.noCategory");
     if (!map.has(name)) {
       map.set(name, { name, color: t.category?.color || "#ABABAB", icon: t.category?.icon || "MdFilterNone", amount: 0 });
     }
@@ -764,6 +778,7 @@ export function rankCategoriesForRange(
 // Raw transaction docs for one category in one range - feeds the
 // existing ModalContentTopMonthItem drill-down modal's `children`.
 export function getCategoryTransactions(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   categoryName: string,
   isBill: boolean,
@@ -771,7 +786,7 @@ export function getCategoryTransactions(
 ): TransactionData[] {
   const tx = getTransactionsFromTimeRange(transactions, range.start, range.end);
   const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
-  return set.filter((t) => (t.category?.name || "No category") === categoryName) as unknown as TransactionData[];
+  return set.filter((t) => (t.category?.name || text.t("history.noCategory")) === categoryName) as unknown as TransactionData[];
 }
 
 // Same as getCategoryTransactions, but for one subcategory.
@@ -790,6 +805,7 @@ export function getSubcategoryTransactions(
 // category's previous-month total. `isNew` marks a category with nothing
 // in the previous month at all (not just a dip to zero).
 export function compareCategoriesAcrossMonths(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   isBill: boolean,
   currentRange: DateRange,
@@ -801,7 +817,7 @@ export function compareCategoriesAcrossMonths(
     const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
     const map = new Map<string, { name: string; color: string; icon: string; value: number }>();
     set.forEach((t) => {
-      const name = t.category?.name || "No category";
+      const name = t.category?.name || text.t("history.noCategory");
       if (!map.has(name)) {
         map.set(name, { name, color: t.category?.color || "#ABABAB", icon: t.category?.icon || "MdFilterNone", value: 0 });
       }
@@ -835,6 +851,7 @@ export function compareCategoriesAcrossMonths(
 // single-month-over-single-month comparison above, which can't tell a
 // one-off dip in an otherwise-typical previous month from a real trend.
 export function computeCategoryHistoryAverage(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   categoryName: string,
   isBill: boolean,
@@ -850,10 +867,10 @@ export function computeCategoryHistoryAverage(
     const tx = getTransactionsFromTimeRange(transactions, start, end);
     const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
     const total = set
-      .filter((t) => (t.category?.name || "No category") === categoryName)
+      .filter((t) => (t.category?.name || text.t("history.noCategory")) === categoryName)
       .reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     monthlyTotals.push(total);
-    monthlyTotalsLabeled.push({ label: `${months[monthDate.getMonth()]} ${monthDate.getFullYear()}`, amount: total });
+    monthlyTotalsLabeled.push({ label: monthTitle(monthDate, text.locale), amount: total });
   }
   const monthsOfHistory = monthlyTotals.filter((v) => v > 0).length;
   const average = monthlyTotals.reduce((a, b) => a + b, 0) / (monthlyTotals.length || 1);
@@ -866,6 +883,7 @@ export function computeCategoryHistoryAverage(
 // version above (`monthsOfHistory`/`monthlyTotals`) so downstream
 // rendering (categoryAnomaly cards/modals) works with either unchanged.
 export function computeCategoryHistoryAverageForRange(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   categoryName: string,
   isBill: boolean,
@@ -879,10 +897,10 @@ export function computeCategoryHistoryAverageForRange(
     const tx = getTransactionsFromTimeRange(transactions, period.start, period.end);
     const set = (isBill ? filterBillsOrIncomes(tx).bills : filterBillsOrIncomes(tx).incomes) as WalletAnalyzerTransaction[];
     const total = set
-      .filter((t) => (t.category?.name || "No category") === categoryName)
+      .filter((t) => (t.category?.name || text.t("history.noCategory")) === categoryName)
       .reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     totals.push(total);
-    totalsLabeled.push({ label: formatPeriodLabel(period), amount: total });
+    totalsLabeled.push({ label: formatPeriodLabel(text, period), amount: total });
   });
   const monthsOfHistory = totals.filter((v) => v > 0).length;
   const average = totals.reduce((a, b) => a + b, 0) / (totals.length || 1);
@@ -893,6 +911,7 @@ export function computeCategoryHistoryAverageForRange(
 // the previous month - transactions don't repeat month to month the way
 // categories do, so this is two independent top-N lists, not a joined one.
 export function compareTransactionsAcrossMonths(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   isBill: boolean,
   currentRange: DateRange,
@@ -905,8 +924,8 @@ export function compareTransactionsAcrossMonths(
     return set
       .map((t) => ({
         _id: t._id,
-        name: t.name || "Transaction",
-        categoryName: t.category?.name || "No category",
+        name: t.name || text.t("analyzer.fallback.transaction"),
+        categoryName: t.category?.name || text.t("history.noCategory"),
         subcategoryName: t.subCategory?.name || null,
         amount: getPrimaryAmount(t),
         date: t.date || t.createdAt,
@@ -924,6 +943,7 @@ export function compareTransactionsAcrossMonths(
 // orderItemsInRelativeMonth (already used by the Top-elements compare
 // table) instead of re-deriving month-bucketing from scratch.
 export function computeTrend(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   referenceDate: Date | string | number,
   monthsBack: number = 6
@@ -944,7 +964,7 @@ export function computeTrend(
   for (let i = 0; i < monthsBack; i++) {
     const monthDate = new Date(rangeStart.getFullYear(), rangeStart.getMonth() + i, 1);
     result.push({
-      label: `${months[monthDate.getMonth()]} ${monthDate.getFullYear()}`,
+      label: monthTitle(monthDate, text.locale),
       income: incomeByIndex.get(i) || 0,
       expense: expenseByIndex.get(i) || 0,
       transactionCount: expenseCountByIndex.get(i) || 0,
@@ -958,6 +978,7 @@ export function computeTrend(
 // the same trend-chart shape ({label, income, expense, transactionCount}),
 // so computeMonthlyAverages below works on either unchanged.
 export function computeTrendForRange(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   range: DateRange,
   periodsBack: number = 6
@@ -967,7 +988,7 @@ export function computeTrendForRange(
     const tx = getTransactionsFromTimeRange(transactions, period.start, period.end);
     const { incomes, bills } = filterBillsOrIncomes(tx);
     return {
-      label: formatPeriodLabel(period),
+      label: formatPeriodLabel(text, period),
       income: incomes.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0),
       expense: bills.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0),
       transactionCount: bills.length,
@@ -994,6 +1015,7 @@ export function computeMonthlyAverages(
 // resolves each month's goal via the budget's history[]) instead of
 // re-deriving month-by-month compliance.
 export function computeBudgetStreaks(
+  text: WalletText,
   budgets: (BudgetData | unknown)[],
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   referenceDate: Date | string | number,
@@ -1002,7 +1024,7 @@ export function computeBudgetStreaks(
   const ref = new Date(referenceDate);
   const startDate = new Date(ref.getFullYear(), ref.getMonth() - (lookbackMonths - 1), 1);
   const endDate = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
-  const rows: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({
+  const rows: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({ locale: text.locale, 
     budgets,
     transactions,
     startDate,
@@ -1026,7 +1048,7 @@ export function computeBudgetStreaks(
       // a list need `budgetId` (unique) as the key, not `category` (only
       // unique in the common case).
       budgetId: String(row.budget._id),
-      category: row.budget.category?.name || row.budget.name || "Budget",
+      category: row.budget.category?.name || row.budget.name || text.t("budgets.alert.defaultName"),
       limit: last.goal,
       spent: last.actual,
       pct,
@@ -1048,6 +1070,7 @@ function normalizeTxName(name?: string | null): string {
 }
 
 export function detectSubscriptions(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   referenceDate: Date | string | number,
   lookbackMonths: number = 3,
@@ -1113,8 +1136,8 @@ export function detectSubscriptions(
     }
 
     results.push({
-      name: latest.name || "Subscription",
-      categoryName: latest.category?.name || "No category",
+      name: latest.name || text.t("analyzer.fallback.subscription"),
+      categoryName: latest.category?.name || text.t("history.noCategory"),
       accountName: latest.account?.name || null,
       amount: avg,
       color: latest.category?.color || "#ABABAB",
@@ -1139,6 +1162,7 @@ export function detectSubscriptions(
 // resolving the bills-in-range set is identical either way, so this is the
 // one place that logic lives.
 function computeBiggestSpendPatternsCore(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   range: DateRange
 ): BiggestSpendPatternsData | null {
@@ -1151,14 +1175,14 @@ function computeBiggestSpendPatternsCore(
     (a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)
   )[0];
   const transactionAmount = getPrimaryAmount(biggestTransactionRaw);
-  const transactionCategoryName = biggestTransactionRaw.category?.name || "No category";
+  const transactionCategoryName = biggestTransactionRaw.category?.name || text.t("history.noCategory");
   const transactionSubcategoryName = biggestTransactionRaw.subCategory?.name || null;
 
   const byCategory = new Map<string, SpendPatternsCategory>();
   const byCategoryTagCounts = new Map<string, Map<string, number>>(); // categoryName -> Map(tagName -> count)
   const bySubcategory = new Map<string, SpendPatternsSubcategory>();
   bills.forEach((t) => {
-    const catName = t.category?.name || "No category";
+    const catName = t.category?.name || text.t("history.noCategory");
     if (!byCategory.has(catName)) {
       byCategory.set(catName, { name: catName, color: t.category?.color || "#ABABAB", icon: t.category?.icon || "MdFilterNone", total: 0 });
     }
@@ -1210,7 +1234,7 @@ function computeBiggestSpendPatternsCore(
   return {
     biggestTransaction: {
       _id: biggestTransactionRaw._id,
-      name: biggestTransactionRaw.name || "Transaction",
+      name: biggestTransactionRaw.name || text.t("analyzer.fallback.transaction"),
       amount: transactionAmount,
       categoryName: transactionCategoryName,
       subcategoryName: transactionSubcategoryName,
@@ -1228,6 +1252,7 @@ function computeBiggestSpendPatternsCore(
 }
 
 export function findBiggestSpendPatterns(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   referenceDate: Date | string | number,
   monthsBack: number = 12
@@ -1235,17 +1260,18 @@ export function findBiggestSpendPatterns(
   const ref = new Date(referenceDate);
   const start = new Date(ref.getFullYear(), ref.getMonth() - (monthsBack - 1), 1, 0, 0, 0, 0);
   const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
-  const core = computeBiggestSpendPatternsCore(transactions, { start, end });
+  const core = computeBiggestSpendPatternsCore(text, transactions, { start, end });
   return core ? { ...core, monthsBack } : null;
 }
 
 // Arbitrary-width sibling - the range IS the lookback window, no monthsBack
 // concept (the caller already chose the window's width by picking `range`).
 export function findBiggestSpendPatternsForRange(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   range: DateRange
 ): BiggestSpendPatternsData | null {
-  return computeBiggestSpendPatternsCore(transactions, range);
+  return computeBiggestSpendPatternsCore(text, transactions, range);
 }
 
 // Per-month version of findBiggestSpendPatterns - instead of one winner
@@ -1257,6 +1283,7 @@ export function findBiggestSpendPatternsForRange(
 // directly comparable to each other and to findBiggestSpendPatterns'
 // own categoryShareOfTotal.
 export function computeMonthlyChampions(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   referenceDate: Date | string | number,
   monthsBack: number = 12
@@ -1271,7 +1298,7 @@ export function computeMonthlyChampions(
   for (let m = monthsBack - 1; m >= 0; m--) {
     const monthDate = new Date(ref.getFullYear(), ref.getMonth() - m, 1);
     const range = getMonthRange(monthDate);
-    const label = `${months[monthDate.getMonth()]} ${monthDate.getFullYear()}`;
+    const label = monthTitle(monthDate, text.locale);
     const bills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, range.start, range.end)).bills as WalletAnalyzerTransaction[];
 
     if (bills.length === 0) {
@@ -1287,7 +1314,7 @@ export function computeMonthlyChampions(
     const byCategory = new Map<string, SpendPatternsCategory>();
     const bySubcategory = new Map<string, { name: string; categoryName: string; categoryColor: string; categoryIcon: string; total: number }>();
     bills.forEach((t) => {
-      const catName = t.category?.name || "No category";
+      const catName = t.category?.name || text.t("history.noCategory");
       if (!byCategory.has(catName)) {
         byCategory.set(catName, { name: catName, color: t.category?.color || "#ABABAB", icon: t.category?.icon || "MdFilterNone", total: 0 });
       }
@@ -1315,9 +1342,9 @@ export function computeMonthlyChampions(
       total,
       biggestTransaction: {
         _id: biggestTransactionRaw._id,
-        name: biggestTransactionRaw.name || "Transaction",
+        name: biggestTransactionRaw.name || text.t("analyzer.fallback.transaction"),
         amount: getPrimaryAmount(biggestTransactionRaw),
-        categoryName: biggestTransactionRaw.category?.name || "No category",
+        categoryName: biggestTransactionRaw.category?.name || text.t("history.noCategory"),
         date: biggestTransactionRaw.date || biggestTransactionRaw.createdAt,
         color: biggestTransactionRaw.category?.color || "#ABABAB",
         icon: biggestTransactionRaw.category?.icon || "MdFilterNone",
@@ -1347,6 +1374,7 @@ export function computeMonthlyChampions(
 // cover Oct(previous year)-Sept instead). This walks calendar months from
 // range.start through min(range.end, today) directly.
 export function computeMonthlyChampionsForRange(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   range: DateRange,
   today: Date = new Date()
@@ -1357,7 +1385,7 @@ export function computeMonthlyChampionsForRange(
   }
   const monthsBack =
     (effectiveEnd.getFullYear() - range.start.getFullYear()) * 12 + (effectiveEnd.getMonth() - range.start.getMonth()) + 1;
-  return computeMonthlyChampions(transactions, effectiveEnd, monthsBack);
+  return computeMonthlyChampions(text, transactions, effectiveEnd, monthsBack);
 }
 
 // The single busiest calendar month inside a champions window - the
@@ -1374,7 +1402,7 @@ export function findPeakMonth(monthlyChampions: WalletAnalyzerMonthlyChampionsDa
 // slice - meaningful once a period spans enough months to compare more
 // than one quarter against another (a 3-month "last quarter" selection
 // only ever touches one bucket, so there's nothing to compare there).
-export function computeQuarterTotals(monthlyChampions: WalletAnalyzerMonthlyChampionsData): WalletAnalyzerQuarterTotal[] {
+export function computeQuarterTotals(text: WalletText, monthlyChampions: WalletAnalyzerMonthlyChampionsData): WalletAnalyzerQuarterTotal[] {
   const byQuarter = new Map<string, WalletAnalyzerQuarterTotal>();
   monthlyChampions.months.forEach((m) => {
     const monthDate = m.range.start;
@@ -1382,7 +1410,7 @@ export function computeQuarterTotals(monthlyChampions: WalletAnalyzerMonthlyCham
     const quarter = Math.floor(monthDate.getMonth() / 3) + 1;
     const key = `${year}-Q${quarter}`;
     if (!byQuarter.has(key)) {
-      byQuarter.set(key, { label: `Q${quarter} ${year}`, year, quarter, total: 0, months: [] });
+      byQuarter.set(key, { label: text.t("analyzer.quarter", { p1: quarter, p2: year }), year, quarter, total: 0, months: [] });
     }
     const entry = byQuarter.get(key)!;
     entry.total += m.total;
@@ -1408,6 +1436,7 @@ export function findPeakQuarter(quarterTotals: WalletAnalyzerQuarterTotal[]): Wa
 // past month it runs through that month's last day (a full-month
 // comparison), since "today" has no meaning there.
 export function computeSpendingPace(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   referenceDate: Date | string | number,
   isBill: boolean = true,
@@ -1438,7 +1467,7 @@ export function computeSpendingPace(
       : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, pastStart, pastEnd)).incomes;
     const amount = pastSet.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     pastPaces.push(amount);
-    monthlyDetail.push({ label: `${months[pastMonthDate.getMonth()]} ${pastMonthDate.getFullYear()}`, throughDay: cappedDay, amount });
+    monthlyDetail.push({ label: monthTitle(pastMonthDate, text.locale), throughDay: cappedDay, amount });
   }
   const avgPaceForSameDay = pastPaces.length > 0 ? pastPaces.reduce((a, b) => a + b, 0) / pastPaces.length : 0;
   return {
@@ -1457,6 +1486,7 @@ export function computeSpendingPace(
 // (`dayOfMonth`/`monthlyDetail`) so existing pace-card rendering works with
 // either - "day of month" reads fine as "day of period" too.
 export function computeSpendingPaceForRange(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   range: DateRange,
   isBill: boolean = true,
@@ -1482,7 +1512,7 @@ export function computeSpendingPaceForRange(
       : filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, period.start, pastEnd)).incomes;
     const amount = pastSet.reduce<number>((a: number, t: object) => a + getPrimaryAmount(t), 0);
     pastPaces.push(amount);
-    monthlyDetail.push({ label: formatPeriodLabel(period), throughDay: cappedDays, amount });
+    monthlyDetail.push({ label: formatPeriodLabel(text, period), throughDay: cappedDays, amount });
   });
   const avgPaceForSameDay = pastPaces.length > 0 ? pastPaces.reduce((a, b) => a + b, 0) / pastPaces.length : 0;
   return {
@@ -1495,16 +1525,10 @@ export function computeSpendingPaceForRange(
   };
 }
 
-const WEEKDAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-const WEEKDAY_PLURAL: Record<string, string> = {
-  Lunes: "lunes",
-  Martes: "martes",
-  Miércoles: "miércoles",
-  Jueves: "jueves",
-  Viernes: "viernes",
-  Sábado: "sábados",
-  Domingo: "domingos",
-};
+// The weekday names, Monday first, in the person's language.
+const weekdayNames = (text: WalletText): string[] => [0, 1, 2, 3, 4, 5, 6].map((i) => text.t(`analyzer.weekday.${i}`));
+// A weekday in plural, for a sentence ("los lunes" / "Mondays"), by its place in the week (Monday first).
+const weekdayPlural = (index: number, text: WalletText): string => text.t(`analyzer.weekday.plural.${index}`);
 
 // JS Date#getDay(): 0=Sunday..6=Saturday. Remapped to a Monday-first index
 // (0=Monday..6=Sunday) so a calendar week reads left-to-right naturally.
@@ -1520,6 +1544,7 @@ function mondayFirstIndex(jsDay: number): number {
 // unevenly - raw totals would unfairly favor whichever weekday occurs
 // one extra time.
 export function computeSpendingByWeekday(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   referenceDate: Date | string | number
 ): WalletAnalyzerWeekdaySpendingData {
@@ -1541,7 +1566,7 @@ export function computeSpendingByWeekday(
     occurrences[mondayFirstIndex(new Date(ref.getFullYear(), ref.getMonth(), day).getDay())] += 1;
   }
 
-  const days: WalletAnalyzerWeekdayDay[] = WEEKDAY_NAMES.map((dayName, i) => ({
+  const days: WalletAnalyzerWeekdayDay[] = weekdayNames(text).map((dayName, i) => ({
     dayIndex: i,
     dayName,
     total: totals[i],
@@ -1569,17 +1594,17 @@ export function computeSpendingByWeekday(
 
   let insight: string;
   if (!hasAnySpend) {
-    insight = "Sin gastos este mes para detectar un patrón.";
+    insight = text.t("analyzer.insight.noSpend.month");
   } else if (standout.avgPerOccurrence > 0 && (runnerUp.avgPerOccurrence === 0 || standout.avgPerOccurrence > runnerUp.avgPerOccurrence * 1.5)) {
-    insight = `Los ${WEEKDAY_PLURAL[standout.dayName]} destacan como tu día de mayor gasto este mes.`;
+    insight = text.t("analyzer.insight.standout.month", { p1: weekdayPlural(days.indexOf(standout), text) });
   } else if (weekendAvg > weekdayAvg * 1.2) {
-    insight = "Sueles gastar más los fines de semana este mes.";
+    insight = text.t("analyzer.insight.weekend.month");
   } else if (weekdayAvg > weekendAvg * 1.2) {
-    insight = "Sueles gastar más entre semana este mes.";
+    insight = text.t("analyzer.insight.weekday.month");
   } else if (overallMean > 0 && standout.avgPerOccurrence > overallMean * 1.3) {
-    insight = `Los ${WEEKDAY_PLURAL[standout.dayName]} destacan como tu día de mayor gasto este mes.`;
+    insight = text.t("analyzer.insight.standout.month", { p1: weekdayPlural(days.indexOf(standout), text) });
   } else {
-    insight = "Sin un patrón claro por día de la semana este mes.";
+    insight = text.t("analyzer.insight.flat.month");
   }
 
   // Day-by-day and week-by-week breakdowns, for the detail modal - "why
@@ -1599,7 +1624,7 @@ export function computeSpendingByWeekday(
   for (let day = 1; day <= lastDay; day++) {
     const jsDay = new Date(ref.getFullYear(), ref.getMonth(), day).getDay();
     const entry = dailyTotalsByDay.get(day) || { total: 0, count: 0 };
-    dailyBreakdown.push({ dayOfMonth: day, dayName: WEEKDAY_NAMES[mondayFirstIndex(jsDay)], total: entry.total, count: entry.count });
+    dailyBreakdown.push({ dayOfMonth: day, dayName: weekdayNames(text)[mondayFirstIndex(jsDay)], total: entry.total, count: entry.count });
   }
 
   // Simple day-range weeks (1-7, 8-14, ...) rather than calendar weeks,
@@ -1610,7 +1635,7 @@ export function computeSpendingByWeekday(
     const weekEnd = Math.min(weekStart + 6, lastDay);
     const weekDays = dailyBreakdown.filter((d) => d.dayOfMonth >= weekStart && d.dayOfMonth <= weekEnd);
     weeks.push({
-      label: `Días ${weekStart}-${weekEnd}`,
+      label: text.t("analyzer.daysRange", { p1: weekStart, p2: weekEnd }),
       startDay: weekStart,
       endDay: weekEnd,
       total: weekDays.reduce((a, d) => a + d.total, 0),
@@ -1625,6 +1650,7 @@ export function computeSpendingByWeekday(
 // of one calendar month's days, so the pattern reflects the entire
 // selected period (e.g. "last 3 months"), not just its final month.
 export function computeSpendingByWeekdayForRange(
+  text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   range: DateRange
 ): WalletAnalyzerWeekdaySpendingDataForRange {
@@ -1644,7 +1670,7 @@ export function computeSpendingByWeekdayForRange(
     occurrences[mondayFirstIndex(addDays(range.start, i).getDay())] += 1;
   }
 
-  const days: WalletAnalyzerWeekdayDay[] = WEEKDAY_NAMES.map((dayName, i) => ({
+  const days: WalletAnalyzerWeekdayDay[] = weekdayNames(text).map((dayName, i) => ({
     dayIndex: i,
     dayName,
     total: totals[i],
@@ -1666,17 +1692,17 @@ export function computeSpendingByWeekdayForRange(
 
   let insight: string;
   if (!hasAnySpend) {
-    insight = "Sin gastos en este periodo para detectar un patrón.";
+    insight = text.t("analyzer.insight.noSpend.period");
   } else if (standout.avgPerOccurrence > 0 && (runnerUp.avgPerOccurrence === 0 || standout.avgPerOccurrence > runnerUp.avgPerOccurrence * 1.5)) {
-    insight = `Los ${WEEKDAY_PLURAL[standout.dayName]} destacan como tu día de mayor gasto en este periodo.`;
+    insight = text.t("analyzer.insight.standout.period", { p1: weekdayPlural(days.indexOf(standout), text) });
   } else if (weekendAvg > weekdayAvg * 1.2) {
-    insight = "Sueles gastar más los fines de semana en este periodo.";
+    insight = text.t("analyzer.insight.weekend.period");
   } else if (weekdayAvg > weekendAvg * 1.2) {
-    insight = "Sueles gastar más entre semana en este periodo.";
+    insight = text.t("analyzer.insight.weekday.period");
   } else if (overallMean > 0 && standout.avgPerOccurrence > overallMean * 1.3) {
-    insight = `Los ${WEEKDAY_PLURAL[standout.dayName]} destacan como tu día de mayor gasto en este periodo.`;
+    insight = text.t("analyzer.insight.standout.period", { p1: weekdayPlural(days.indexOf(standout), text) });
   } else {
-    insight = "Sin un patrón claro por día de la semana en este periodo.";
+    insight = text.t("analyzer.insight.flat.period");
   }
 
   const dailyTotalsByKey = new Map<string, { total: number; count: number }>();
@@ -1695,7 +1721,7 @@ export function computeSpendingByWeekdayForRange(
   for (let i = 0; i < widthDays; i++) {
     const day = addDays(range.start, i);
     const entry = dailyTotalsByKey.get(day.toDateString()) || { total: 0, count: 0 };
-    dailyBreakdown.push({ date: day, dayName: WEEKDAY_NAMES[mondayFirstIndex(day.getDay())], total: entry.total, count: entry.count });
+    dailyBreakdown.push({ date: day, dayName: weekdayNames(text)[mondayFirstIndex(day.getDay())], total: entry.total, count: entry.count });
   }
 
   // Simple day-range weeks (day 1-7, 8-14, ...) across the whole span,
@@ -1733,6 +1759,7 @@ const INSIGHT_PRIORITY: Record<string, number> = { warning: 0, positive: 1, info
 // existing single-month caller (buildWalletAnalyzerSnapshot, the
 // Dashboard) behaves exactly as before.
 export function generateInsights(
+  text: WalletText,
   facts: WalletAnalyzerFacts | PeriodFacts,
   extraInsights: WalletAnalyzerInsightItem[] = [],
   maxInsights: number = 5
@@ -1744,7 +1771,7 @@ export function generateInsights(
     insights.push({
       icon: "⚠️",
       tone: "warning",
-      title: `${worstBudget.category} superó su presupuesto`,
+      title: text.t("analyzer.insight.budgetOver.title", { p1: worstBudget.category }),
       type: "budget",
       data: worstBudget,
     });
@@ -1755,7 +1782,7 @@ export function generateInsights(
     insights.push({
       icon: changePct >= 0 ? "🔥" : "🧊",
       tone: changePct >= 0 ? "warning" : "positive",
-      title: `${facts.categoryAnomaly.name} ${changePct >= 0 ? "+" : ""}${Math.round(changePct)}% vs. tu promedio`,
+      title: text.t("analyzer.insight.anomaly.title", { p1: facts.categoryAnomaly.name, p2: (changePct >= 0 ? "+" : "") + Math.round(changePct) }),
       type: "category_anomaly",
       data: facts.categoryAnomaly,
     });
@@ -1766,7 +1793,7 @@ export function generateInsights(
     insights.push({
       icon: "🆕",
       tone: "info",
-      title: `Nueva categoría: ${newCategory.name}`,
+      title: text.t("analyzer.insight.newCategory.title", { p1: newCategory.name }),
       type: "new_category",
       data: newCategory,
     });
@@ -1777,7 +1804,7 @@ export function generateInsights(
     insights.push({
       icon: "🆕",
       tone: "info",
-      title: `Nueva suscripción: ${newSubscription.name}`,
+      title: text.t("analyzer.insight.newSubscription.title", { p1: newSubscription.name }),
       type: "subscription",
       data: newSubscription,
     });
@@ -1788,7 +1815,7 @@ export function generateInsights(
     insights.push({
       icon: "📈",
       tone: "positive",
-      title: `Racha de ${bestStreak.streakMonths} meses en ${bestStreak.category}`,
+      title: text.t("analyzer.insight.streak.title", { p1: bestStreak.streakMonths, p2: bestStreak.category }),
       type: "budget",
       data: bestStreak,
     });
@@ -1803,7 +1830,7 @@ export function generateInsights(
       insights.push({
         icon: "💰",
         tone: "positive",
-        title: `Mejor tasa de ahorro en ${facts.savingsHistory.length} meses`,
+        title: text.t("analyzer.insight.bestSavings.title", { p1: facts.savingsHistory.length }),
         type: "savings_rate",
         data: { currentRate: current, savingsHistoryLabeled: facts.savingsHistoryLabeled },
       });
@@ -1811,7 +1838,7 @@ export function generateInsights(
       insights.push({
         icon: "📉",
         tone: "warning",
-        title: `Tasa de ahorro más baja en ${facts.savingsHistory.length} meses`,
+        title: text.t("analyzer.insight.lowestSavings.title", { p1: facts.savingsHistory.length }),
         type: "savings_rate",
         data: { currentRate: current, savingsHistoryLabeled: facts.savingsHistoryLabeled },
       });
@@ -1824,13 +1851,13 @@ export function generateInsights(
 // Orchestrator - composes every sync computation above into one snapshot.
 // FX exposure isn't included here: it needs network calls (fx/quote), so
 // it's computed separately by a hook the component calls alongside this.
-export function buildWalletAnalyzerSnapshot({
+export function buildWalletAnalyzerSnapshot({ text,
   transactions,
   budgets,
   referenceDate,
   today = new Date(),
   topN = 12,
-}: BuildWalletAnalyzerSnapshotParams): WalletAnalyzerSnapshotData {
+ }: BuildWalletAnalyzerSnapshotParams): WalletAnalyzerSnapshotData {
   const ref = new Date(referenceDate);
   const currentRange = getMonthRange(ref);
   const previousRange = getPreviousMonthRange(ref);
@@ -1838,19 +1865,19 @@ export function buildWalletAnalyzerSnapshot({
   const currentTotals = getMonthTotals(transactions, currentRange.start, currentRange.end);
   const previousTotals = getMonthTotals(transactions, previousRange.start, previousRange.end);
 
-  const topCategoriesBills = compareCategoriesAcrossMonths(transactions, true, currentRange, previousRange, topN);
-  const topCategoriesIncomes = compareCategoriesAcrossMonths(transactions, false, currentRange, previousRange, topN);
-  const topCategoriesBillsPrevious = rankCategoriesForRange(transactions, true, previousRange, topN);
-  const topTransactionsBills = compareTransactionsAcrossMonths(transactions, true, currentRange, previousRange, topN);
+  const topCategoriesBills = compareCategoriesAcrossMonths(text, transactions, true, currentRange, previousRange, topN);
+  const topCategoriesIncomes = compareCategoriesAcrossMonths(text, transactions, false, currentRange, previousRange, topN);
+  const topCategoriesBillsPrevious = rankCategoriesForRange(text, transactions, true, previousRange, topN);
+  const topTransactionsBills = compareTransactionsAcrossMonths(text, transactions, true, currentRange, previousRange, topN);
 
-  const trend = computeTrend(transactions, ref, 6);
+  const trend = computeTrend(text, transactions, ref, 6);
   const monthlyAverages = computeMonthlyAverages(trend);
-  const budgetRows = computeBudgetStreaks(budgets, transactions, ref, 12);
-  const subscriptions = detectSubscriptions(transactions, ref, 3, 6);
-  const pace = computeSpendingPace(transactions, ref, true, 6, today);
-  const biggestSpendPatterns = findBiggestSpendPatterns(transactions, ref, 12);
-  const monthlyChampions = computeMonthlyChampions(transactions, ref, 12);
-  const weekdaySpending = computeSpendingByWeekday(transactions, ref);
+  const budgetRows = computeBudgetStreaks(text, budgets, transactions, ref, 12);
+  const subscriptions = detectSubscriptions(text, transactions, ref, 3, 6);
+  const pace = computeSpendingPace(text, transactions, ref, true, 6, today);
+  const biggestSpendPatterns = findBiggestSpendPatterns(text, transactions, ref, 12);
+  const monthlyChampions = computeMonthlyChampions(text, transactions, ref, 12);
+  const weekdaySpending = computeSpendingByWeekday(text, transactions, ref);
 
   const savingsHistory: number[] = [];
   const savingsHistoryLabeled: WalletAnalyzerSavingsHistoryLabeled[] = [];
@@ -1859,7 +1886,7 @@ export function buildWalletAnalyzerSnapshot({
     const { start, end } = getMonthRange(monthDate);
     const rate = getMonthTotals(transactions, start, end).savingsRate;
     savingsHistory.push(rate);
-    savingsHistoryLabeled.unshift({ label: `${months[monthDate.getMonth()]} ${monthDate.getFullYear()}`, rate });
+    savingsHistoryLabeled.unshift({ label: monthTitle(monthDate, text.locale), rate });
   }
 
   // Among the top few categories, whichever deviates most (in either
@@ -1867,7 +1894,7 @@ export function buildWalletAnalyzerSnapshot({
   // - not necessarily whichever spends the most in absolute terms.
   let categoryAnomaly: WalletAnalyzerCategoryAnomaly | null = null;
   topCategoriesBills.slice(0, 5).forEach((c) => {
-    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverage(transactions, c.name, true, ref, 6);
+    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverage(text, transactions, c.name, true, ref, 6);
     if (average <= 0 || monthsOfHistory < 3) return;
     const changePct = ((c.current - average) / average) * 100;
     if (!categoryAnomaly || Math.abs(changePct) > Math.abs(categoryAnomaly.changePct)) {
@@ -1897,7 +1924,7 @@ export function buildWalletAnalyzerSnapshot({
     categoryAnomaly,
   };
 
-  return { ...facts, insights: generateInsights(facts), currentRange, previousRange };
+  return { ...facts, insights: generateInsights(text, facts), currentRange, previousRange };
 }
 
 // Every computation inside buildWalletAnalyzerSnapshot caps its own lookback
@@ -1965,19 +1992,19 @@ export function buildCuratedWalletSummary(snapshot: WalletAnalyzerSnapshotData):
 // compareTransactionsAcrossMonths) - both already take two independent
 // ranges as parameters, so no new comparison math is needed here, just an
 // orchestrator that doesn't assume the two ranges are consecutive.
-export function buildMonthComparison({ transactions, monthADate, monthBDate, topN = 12 }: BuildMonthComparisonParams): MonthComparisonData {
+export function buildMonthComparison({ text, transactions, monthADate, monthBDate, topN = 12  }: BuildMonthComparisonParams): MonthComparisonData {
   const dateA = new Date(monthADate);
   const dateB = new Date(monthBDate);
   const rangeA = getMonthRange(dateA);
   const rangeB = getMonthRange(dateB);
-  const labelFor = (d: Date) => `${months[d.getMonth()]} ${d.getFullYear()}`;
+  const labelFor = (d: Date) => monthTitle(d, text.locale);
 
   return {
     monthA: { label: labelFor(dateA), totals: getMonthTotals(transactions, rangeA.start, rangeA.end) },
     monthB: { label: labelFor(dateB), totals: getMonthTotals(transactions, rangeB.start, rangeB.end) },
-    categoriesBills: compareCategoriesAcrossMonths(transactions, true, rangeA, rangeB, topN),
-    categoriesIncomes: compareCategoriesAcrossMonths(transactions, false, rangeA, rangeB, topN),
-    transactionsBills: compareTransactionsAcrossMonths(transactions, true, rangeA, rangeB, topN),
+    categoriesBills: compareCategoriesAcrossMonths(text, transactions, true, rangeA, rangeB, topN),
+    categoriesIncomes: compareCategoriesAcrossMonths(text, transactions, false, rangeA, rangeB, topN),
+    transactionsBills: compareTransactionsAcrossMonths(text, transactions, true, rangeA, rangeB, topN),
   };
 }
 
@@ -2007,13 +2034,14 @@ function sumBudgetSeries(row: HistoricalComparativeBudgetRow): SumBudgetSeriesRe
 }
 
 export function buildBudgetPeriodChanges(
+  text: WalletText,
   budgets: (BudgetData | unknown)[],
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
   rangeA: DateRange,
   rangeB: DateRange
 ): BudgetPeriodChangeRow[] {
-  const rowsA: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeA.start, endDate: rangeA.end });
-  const rowsB: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({ budgets, transactions, startDate: rangeB.start, endDate: rangeB.end });
+  const rowsA: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({ locale: text.locale,  budgets, transactions, startDate: rangeA.start, endDate: rangeA.end });
+  const rowsB: HistoricalComparativeBudgetRow[] = buildBudgetHistoricalComparative({ locale: text.locale,  budgets, transactions, startDate: rangeB.start, endDate: rangeB.end });
 
   const byId = (rows: HistoricalComparativeBudgetRow[]) =>
     new Map<string, HistoricalComparativeBudgetRow>(rows.map((row) => [String(row.budget._id), row]));
@@ -2029,7 +2057,7 @@ export function buildBudgetPeriodChanges(
     results.push({
       budgetId: id,
       budget,
-      category: budget.category?.name || budget.name || "Budget",
+      category: budget.category?.name || budget.name || text.t("budgets.alert.defaultName"),
       periodA: rowA ? sumBudgetSeries(rowA) : null,
       periodB: rowB ? sumBudgetSeries(rowB) : null,
     });
@@ -2044,7 +2072,7 @@ export function buildBudgetPeriodChanges(
 // getMonthTotals/compareCategoriesAcrossMonths/compareTransactionsAcrossMonths
 // already accept a range of any width on each side, so this is a pure
 // orchestrator - no new comparison math beyond the budget merge above.
-export function buildPeriodComparison({
+export function buildPeriodComparison({ text,
   transactions,
   budgets,
   rangeA,
@@ -2052,14 +2080,14 @@ export function buildPeriodComparison({
   labelA,
   labelB,
   topN = 12,
-}: BuildPeriodComparisonParams): PeriodComparisonData {
+ }: BuildPeriodComparisonParams): PeriodComparisonData {
   return {
     periodA: { label: labelA, totals: getMonthTotals(transactions, rangeA.start, rangeA.end) },
     periodB: { label: labelB, totals: getMonthTotals(transactions, rangeB.start, rangeB.end) },
-    categoriesBills: compareCategoriesAcrossMonths(transactions, true, rangeA, rangeB, topN),
-    categoriesIncomes: compareCategoriesAcrossMonths(transactions, false, rangeA, rangeB, topN),
-    transactionsBills: compareTransactionsAcrossMonths(transactions, true, rangeA, rangeB, topN),
-    budgetChanges: buildBudgetPeriodChanges(budgets, transactions, rangeA, rangeB),
+    categoriesBills: compareCategoriesAcrossMonths(text, transactions, true, rangeA, rangeB, topN),
+    categoriesIncomes: compareCategoriesAcrossMonths(text, transactions, false, rangeA, rangeB, topN),
+    transactionsBills: compareTransactionsAcrossMonths(text, transactions, true, rangeA, rangeB, topN),
+    budgetChanges: buildBudgetPeriodChanges(text, budgets, transactions, rangeA, rangeB),
   };
 }
 
@@ -2076,14 +2104,14 @@ export function buildPeriodComparison({
 // (budget limits, subscription billing cycles, "which calendar month
 // spent the most"): generalizing those to the display period's own width
 // would be answering a question nobody asked.
-export function buildPeriodSnapshot({
+export function buildPeriodSnapshot({ text,
   transactions,
   budgets,
   range,
   periodsBack,
   topN = 12,
   today = new Date(),
-}: BuildPeriodSnapshotParams): PeriodSnapshotData {
+ }: BuildPeriodSnapshotParams): PeriodSnapshotData {
   const previousRange = getPrecedingPeriods(range, 1)[0];
 
   // A fixed periodsBack (the original month-based Wallet Analyzer always
@@ -2103,12 +2131,12 @@ export function buildPeriodSnapshot({
   const currentTotals = getMonthTotals(transactions, range.start, range.end);
   const previousTotals = getMonthTotals(transactions, previousRange.start, previousRange.end);
 
-  const topCategoriesBills = compareCategoriesAcrossMonths(transactions, true, range, previousRange, topN);
-  const topCategoriesIncomes = compareCategoriesAcrossMonths(transactions, false, range, previousRange, topN);
-  const topCategoriesBillsPrevious = rankCategoriesForRange(transactions, true, previousRange, topN);
-  const topTransactionsBills = compareTransactionsAcrossMonths(transactions, true, range, previousRange, topN);
+  const topCategoriesBills = compareCategoriesAcrossMonths(text, transactions, true, range, previousRange, topN);
+  const topCategoriesIncomes = compareCategoriesAcrossMonths(text, transactions, false, range, previousRange, topN);
+  const topCategoriesBillsPrevious = rankCategoriesForRange(text, transactions, true, previousRange, topN);
+  const topTransactionsBills = compareTransactionsAcrossMonths(text, transactions, true, range, previousRange, topN);
 
-  const trend = computeTrendForRange(transactions, range, resolvedPeriodsBack);
+  const trend = computeTrendForRange(text, transactions, range, resolvedPeriodsBack);
   const monthlyAverages = computeMonthlyAverages(trend);
   // Budget streaks/subscriptions/"biggest month" are inherently monthly
   // (budget limits and billing cycles don't stretch to match a wide
@@ -2120,19 +2148,19 @@ export function buildPeriodSnapshot({
   // exists earlier in the very same range - clamping to "today" instead
   // fixes that without changing anything for a fully-closed past range.
   const monthAnchor = range.end < today ? range.end : today;
-  const budgetRows = computeBudgetStreaks(budgets, transactions, monthAnchor, 12);
-  const subscriptions = detectSubscriptions(transactions, monthAnchor, 3, 6);
-  const pace = computeSpendingPaceForRange(transactions, range, true, resolvedPeriodsBack, today);
-  const biggestSpendPatterns = findBiggestSpendPatternsForRange(transactions, range);
+  const budgetRows = computeBudgetStreaks(text, budgets, transactions, monthAnchor, 12);
+  const subscriptions = detectSubscriptions(text, transactions, monthAnchor, 3, 6);
+  const pace = computeSpendingPaceForRange(text, transactions, range, true, resolvedPeriodsBack, today);
+  const biggestSpendPatterns = findBiggestSpendPatternsForRange(text, transactions, range);
   // Scoped exactly to the selected range (see computeMonthlyChampionsForRange's
   // own comment) - and computed for the previous equivalent range too, so
   // "peak month"/"peak quarter" can be compared period-over-period below,
   // matching what History always needs: this section only ever analyzes
   // periods of 3+ months, never a single calendar month.
-  const monthlyChampions = computeMonthlyChampionsForRange(transactions, range, today);
-  const previousMonthlyChampions = computeMonthlyChampionsForRange(transactions, previousRange, today);
-  const quarterTotals = computeQuarterTotals(monthlyChampions);
-  const weekdaySpending = computeSpendingByWeekdayForRange(transactions, range);
+  const monthlyChampions = computeMonthlyChampionsForRange(text, transactions, range, today);
+  const previousMonthlyChampions = computeMonthlyChampionsForRange(text, transactions, previousRange, today);
+  const quarterTotals = computeQuarterTotals(text, monthlyChampions);
+  const weekdaySpending = computeSpendingByWeekdayForRange(text, transactions, range);
 
   // savingsHistory[0] is the CURRENT period (matching generateInsights'
   // `facts.savingsHistory[0]` = current convention), oldest last - the
@@ -2143,14 +2171,14 @@ export function buildPeriodSnapshot({
   orderedPeriods.forEach((period) => {
     const rate = getMonthTotals(transactions, period.start, period.end).savingsRate;
     savingsHistory.push(rate);
-    savingsHistoryLabeled.unshift({ label: formatPeriodLabel(period), rate });
+    savingsHistoryLabeled.unshift({ label: formatPeriodLabel(text, period), rate });
   });
 
   // Among the top few categories, whichever deviates most (in either
   // direction) from its own trailing average is the one worth calling out.
   let categoryAnomaly: WalletAnalyzerCategoryAnomaly | null = null;
   topCategoriesBills.slice(0, 5).forEach((c) => {
-    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverageForRange(transactions, c.name, true, range, resolvedPeriodsBack);
+    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverageForRange(text, transactions, c.name, true, range, resolvedPeriodsBack);
     if (average <= 0 || monthsOfHistory < 3) return;
     const changePct = ((c.current - average) / average) * 100;
     if (!categoryAnomaly || Math.abs(changePct) > Math.abs(categoryAnomaly.changePct)) {
@@ -2174,7 +2202,7 @@ export function buildPeriodSnapshot({
     periodInsights.push({
       icon: "📊",
       tone: "info",
-      title: `${peakMonth.label} fue el mes con más gasto del período`,
+      title: text.t("analyzer.insight.peakMonth.title", { p1: peakMonth.label }),
       type: "peak_month",
       data: { peakMonth },
     });
@@ -2186,8 +2214,8 @@ export function buildPeriodSnapshot({
         icon: "🔁",
         tone: "info",
         title: samePosition
-          ? `${months[peakMonth.range.start.getMonth()]} también fue el mes de mayor gasto en el período anterior`
-          : `El período anterior gastó más en ${previousPeakMonth.label}, este período en ${peakMonth.label}`,
+          ? text.t("analyzer.insight.peakMonth.alsoPrev", { p1: monthTitle(peakMonth.range.start, text.locale) })
+          : text.t("analyzer.insight.peakMonth.vsPrev", { p1: previousPeakMonth.label, p2: peakMonth.label }),
         type: "peak_month_vs_previous",
         data: { current: peakMonth, previous: previousPeakMonth },
       });
@@ -2199,7 +2227,7 @@ export function buildPeriodSnapshot({
     periodInsights.push({
       icon: "🗓️",
       tone: "info",
-      title: `${peakQuarter.label} concentró el mayor gasto del período`,
+      title: text.t("analyzer.insight.peakQuarter.title", { p1: peakQuarter.label }),
       type: "peak_quarter",
       data: { peakQuarter },
     });
@@ -2227,7 +2255,7 @@ export function buildPeriodSnapshot({
     categoryAnomaly,
   };
 
-  return { ...facts, insights: generateInsights(facts, periodInsights, 8), currentRange: range, previousRange };
+  return { ...facts, insights: generateInsights(text, facts, periodInsights, 8), currentRange: range, previousRange };
 }
 
 // The MCP tools fetch transactions fresh from the database on every call

@@ -23,7 +23,7 @@ import MonthlyChampionsModal from "./MonthlyChampionsModal";
 import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerTrendItem } from "./WalletAnalyzer";
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 interface ModalContentTopMonthItemProps {
@@ -492,6 +492,7 @@ function WalletAnalyzerView({
   transactions,
   projectionComparison,
 }: WalletAnalyzerViewProps): React.JSX.Element {
+  const text = useWalletText();
   const { APP_INFO } = useInfo();
   const tr = useT();
   const {
@@ -562,7 +563,7 @@ function WalletAnalyzerView({
   }
 
   function openCategoryModal(item: { name: string; icon?: string; color?: string; amount?: number }, range: { start: Date; end: Date }, onBack?: () => void) {
-    const children = getCategoryTransactions(transactions || [], item.name, true, range);
+    const children = getCategoryTransactions(text, transactions || [], item.name, true, range);
     renderModal(
       <TypedModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill: true, value: item.amount, children }}

@@ -6,12 +6,12 @@ import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
 import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/accountsSlice";
-import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, currencyName } from "@gastify/core/money/currencies";
 import { BANKS, bankById } from "@gastify/core/banks/banks";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 export type EditAccountModalMode = "edition" | "creation" | boolean | string | null | undefined;
 
@@ -58,6 +58,7 @@ export interface EditAccountModalProps {
 function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline = false }: EditAccountModalProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [active, setActive] = useState<unknown>(false);
   const [formAccount, setFormAccount] = useState<FormAccountState>({
@@ -262,7 +263,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
               >
                 {SUPPORTED_CURRENCIES.map((code) => (
                   <option key={code} value={code}>
-                    {code} ({CURRENCY_META[code].symbol}) - {CURRENCY_META[code].label}
+                    {code} ({CURRENCY_META[code].symbol}) - {currencyName(code, locale)}
                   </option>
                 ))}
               </select>

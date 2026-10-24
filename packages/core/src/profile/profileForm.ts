@@ -20,10 +20,11 @@ export function phoneDigits(text: string): string {
 export function validateProfile(values: ProfileValues): ProfileErrors {
   const errors: ProfileErrors = {};
   const name = values.fullName.trim();
-  if (!name) errors.fullName = "Escribe tu nombre.";
-  else if (name.length > PROFILE_NAME_MAX) errors.fullName = `Máximo ${PROFILE_NAME_MAX} caracteres.`;
+  // The errors are catalog keys: the screen shows them with t(key, { p1 }), the maximum for the name's key.
+  if (!name) errors.fullName = "profile.error.nameRequired";
+  else if (name.length > PROFILE_NAME_MAX) errors.fullName = "profile.error.nameTooLong";
   const digits = phoneDigits(values.phone);
-  if (values.phone.trim() !== "" && (digits.length < 7 || digits.length > 15)) errors.phone = "Escribe un teléfono de 7 a 15 dígitos.";
+  if (values.phone.trim() !== "" && (digits.length < 7 || digits.length > 15)) errors.phone = "profile.error.phone";
   return errors;
 }
 

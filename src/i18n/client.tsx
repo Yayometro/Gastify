@@ -4,6 +4,7 @@ import React, { createContext, useContext, useMemo } from "react";
 import { createTranslator, type Dict, type TranslateFn } from "@gastify/core/i18n/translate";
 import { DEFAULT_LOCALE, type Locale } from "@gastify/core/i18n/locales";
 import { SPANISH_INFO, type InfoData } from "@gastify/core/info/catalog";
+import type { WalletText } from "@gastify/core/transformers/walletAnalyzer";
 
 interface I18nValue {
   locale: Locale;
@@ -35,4 +36,11 @@ export function useLocale(): Locale {
 // The explanations ("?") of the current language.
 export function useInfo(): InfoData {
   return (useContext(I18nContext) ?? UNPROVIDED).info;
+}
+
+// The wallet analyzer's texts in the current language: its month names, weekdays and sentences.
+export function useWalletText(): WalletText {
+  const t = useT();
+  const locale = useLocale();
+  return useMemo<WalletText>(() => ({ locale, t }), [locale, t]);
 }

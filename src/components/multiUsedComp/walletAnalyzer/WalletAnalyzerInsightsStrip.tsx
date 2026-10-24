@@ -10,7 +10,7 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerInsightItem } from "./WalletAnalyzerView";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -167,13 +167,14 @@ function WalletAnalyzerInsightsStrip({
   currentRange,
   title = "Lo más destacado del mes",
 }: WalletAnalyzerInsightsStripProps): React.JSX.Element {
+  const text = useWalletText();
   const { APP_INFO } = useInfo();
   const t = useT();
   const { close, handleClose, renderModal, modalContent } = useModal();
   const [activeInsight, setActiveInsight] = useState<WalletAnalyzerInsightItem | null>(null);
 
   function openCategoryModal(item: CategoryModalItem, range?: { start: Date | string; end: Date | string } | null) {
-    const children = getCategoryTransactions(transactions || [], item.name, true, range as { start: Date; end: Date });
+    const children = getCategoryTransactions(text, transactions || [], item.name, true, range as { start: Date; end: Date });
     renderModal(
       <ModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill: true, value: item.amount, children }}

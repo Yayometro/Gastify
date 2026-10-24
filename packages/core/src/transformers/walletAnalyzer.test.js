@@ -38,6 +38,14 @@ import {
   buildCuratedPeriodSummary,
 } from "./walletAnalyzer";
 
+import analyzerEs from "../i18n/messages/es/analyzer";
+import historyEs from "../i18n/messages/es/history";
+import budgetsEs from "../i18n/messages/es/budgets";
+import { createTranslator } from "../i18n/translate";
+
+const text = { locale: "es", t: createTranslator("es", { ...analyzerEs, ...historyEs, ...budgetsEs }) };
+
+
 const CAT_FOOD = { _id: "cat-food", name: "Food", color: "#f00", icon: "md/MdFastfood" };
 const CAT_HEALTH = { _id: "cat-health", name: "Health", color: "#0f0", icon: "md/MdHealth" };
 const ACCOUNT_A = { _id: "acc-1", name: "Checking" };
@@ -48,7 +56,7 @@ function tx({ amount, date, isBill = true, category = null, subCategory = null, 
 
 describe("getMonthRange / getPreviousMonthRange", () => {
   it("builds a full-day-precision range for the given month", () => {
-    const { start, end } = getMonthRange(new Date(2026, 7, 15)); // August 2026
+    const { start, end } = getMonthRange(new Date(2026, 7, 15)); // Agosto 2026
     expect(start).toEqual(new Date(2026, 7, 1, 0, 0, 0, 0));
     expect(end).toEqual(new Date(2026, 7, 31, 23, 59, 59, 999));
   });
@@ -84,7 +92,7 @@ describe("compareCategoriesAcrossMonths", () => {
       tx({ amount: 100, date: new Date(2026, 7, 5), category: CAT_FOOD }),
       tx({ amount: 50, date: new Date(2026, 6, 5), category: CAT_FOOD }),
     ];
-    const [row] = compareCategoriesAcrossMonths(
+    const [row] = compareCategoriesAcrossMonths(text, 
       transactions,
       true,
       getMonthRange(new Date(2026, 7, 1)),
@@ -95,7 +103,7 @@ describe("compareCategoriesAcrossMonths", () => {
 
   it("marks a category isNew when the previous month has nothing", () => {
     const transactions = [tx({ amount: 100, date: new Date(2026, 7, 5), category: CAT_FOOD })];
-    const [row] = compareCategoriesAcrossMonths(
+    const [row] = compareCategoriesAcrossMonths(text, 
       transactions,
       true,
       getMonthRange(new Date(2026, 7, 1)),
@@ -109,7 +117,7 @@ describe("compareCategoriesAcrossMonths", () => {
       tx({ amount: 50, date: new Date(2026, 7, 5), category: CAT_FOOD }),
       tx({ amount: 200, date: new Date(2026, 7, 5), category: CAT_HEALTH }),
     ];
-    const rows = compareCategoriesAcrossMonths(
+    const rows = compareCategoriesAcrossMonths(text, 
       transactions,
       true,
       getMonthRange(new Date(2026, 7, 1)),
@@ -128,7 +136,7 @@ describe("computeCategoryHistoryAverage", () => {
       tx({ amount: 60, date: new Date(2026, 6, 5), category: CAT_FOOD }),
       tx({ amount: 40, date: new Date(2026, 5, 5), category: CAT_FOOD }),
     ];
-    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverage(
+    const { average, monthsOfHistory, monthlyTotals } = computeCategoryHistoryAverage(text, 
       transactions,
       "Food",
       true,
@@ -138,7 +146,7 @@ describe("computeCategoryHistoryAverage", () => {
     expect(monthsOfHistory).toBe(2);
     expect(average).toBeCloseTo((60 + 40) / 6, 5);
     expect(monthlyTotals).toHaveLength(6);
-    expect(monthlyTotals[monthlyTotals.length - 1]).toMatchObject({ label: "July 2026", amount: 60 });
+    expect(monthlyTotals[monthlyTotals.length - 1]).toMatchObject({ label: "Julio 2026", amount: 60 });
   });
 });
 
@@ -148,7 +156,7 @@ describe("rankCategoriesForRange", () => {
       tx({ amount: 50, date: new Date(2026, 7, 5), category: CAT_FOOD }),
       tx({ amount: 200, date: new Date(2026, 7, 5), category: CAT_HEALTH }),
     ];
-    const rows = rankCategoriesForRange(transactions, true, getMonthRange(new Date(2026, 7, 1)), 1);
+    const rows = rankCategoriesForRange(text, transactions, true, getMonthRange(new Date(2026, 7, 1)), 1);
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ name: "Health", amount: 200 });
   });
@@ -162,7 +170,7 @@ describe("getCategoryTransactions", () => {
       tx({ amount: 200, date: new Date(2026, 7, 5), category: CAT_HEALTH }),
       tx({ amount: 30, date: new Date(2026, 6, 5), category: CAT_FOOD }), // outside range
     ];
-    const result = getCategoryTransactions(transactions, "Food", true, getMonthRange(new Date(2026, 7, 1)));
+    const result = getCategoryTransactions(text, transactions, "Food", true, getMonthRange(new Date(2026, 7, 1)));
     expect(result).toEqual([foodTx]);
   });
 });
@@ -174,7 +182,7 @@ describe("compareTransactionsAcrossMonths", () => {
       tx({ amount: 100, date: new Date(2026, 7, 6), category: CAT_FOOD, name: "Small August" }),
       tx({ amount: 500, date: new Date(2026, 6, 5), category: CAT_HEALTH, name: "Big July" }),
     ];
-    const { current, previous } = compareTransactionsAcrossMonths(
+    const { current, previous } = compareTransactionsAcrossMonths(text, 
       transactions,
       true,
       getMonthRange(new Date(2026, 7, 1)),
@@ -187,7 +195,7 @@ describe("compareTransactionsAcrossMonths", () => {
   it("carries the transaction's _id so the view can look up the raw doc for a detail modal", () => {
     const transactions = [tx({ amount: 300, date: new Date(2026, 7, 5), category: CAT_FOOD, name: "Big August" })];
     transactions[0]._id = "tx-1";
-    const { current } = compareTransactionsAcrossMonths(
+    const { current } = compareTransactionsAcrossMonths(text, 
       transactions,
       true,
       getMonthRange(new Date(2026, 7, 1)),
@@ -204,11 +212,11 @@ describe("computeTrend", () => {
       tx({ amount: 400, date: new Date(2026, 7, 5), category: CAT_FOOD }),
       tx({ amount: 200, date: new Date(2026, 3, 5), category: CAT_FOOD }),
     ];
-    const trend = computeTrend(transactions, new Date(2026, 7, 20), 6);
+    const trend = computeTrend(text, transactions, new Date(2026, 7, 20), 6);
     expect(trend).toHaveLength(6);
-    expect(trend[0].label).toBe("March 2026");
-    expect(trend[5]).toMatchObject({ label: "August 2026", income: 1000, expense: 400, transactionCount: 1 });
-    expect(trend[1]).toMatchObject({ label: "April 2026", income: 0, expense: 200, transactionCount: 1 });
+    expect(trend[0].label).toBe("Marzo 2026");
+    expect(trend[5]).toMatchObject({ label: "Agosto 2026", income: 1000, expense: 400, transactionCount: 1 });
+    expect(trend[1]).toMatchObject({ label: "Abril 2026", income: 0, expense: 200, transactionCount: 1 });
     expect(trend[2]).toMatchObject({ transactionCount: 0 });
   });
 });
@@ -216,8 +224,8 @@ describe("computeTrend", () => {
 describe("computeMonthlyAverages", () => {
   it("averages income, expense and transaction count across the trend window", () => {
     const trend = [
-      { label: "March 2026", income: 1000, expense: 400, transactionCount: 3 },
-      { label: "April 2026", income: 2000, expense: 800, transactionCount: 7 },
+      { label: "Marzo 2026", income: 1000, expense: 400, transactionCount: 3 },
+      { label: "Abril 2026", income: 2000, expense: 800, transactionCount: 7 },
     ];
     expect(computeMonthlyAverages(trend)).toEqual({ avgIncome: 1500, avgExpense: 600, avgTransactionCount: 5, monthsCount: 2 });
   });
@@ -247,7 +255,7 @@ describe("computeBudgetStreaks", () => {
       tx({ amount: 500, date: new Date(2026, 6, 10), category: CAT_FOOD }), // Jul: met
       tx({ amount: 1500, date: new Date(2026, 5, 10), category: CAT_FOOD }), // Jun: exceeded
     ];
-    const [row] = computeBudgetStreaks([monthlyBudget()], transactions, new Date(2026, 7, 20), 3);
+    const [row] = computeBudgetStreaks(text, [monthlyBudget()], transactions, new Date(2026, 7, 20), 3);
     expect(row.streakMonths).toBe(2);
     expect(row.status).toBe("ok");
     expect(row.monthlySeries).toHaveLength(3);
@@ -256,7 +264,7 @@ describe("computeBudgetStreaks", () => {
 
   it("has a 0 streak and 'over' status when the reference month itself is exceeded", () => {
     const transactions = [tx({ amount: 1500, date: new Date(2026, 7, 10), category: CAT_FOOD })];
-    const [row] = computeBudgetStreaks([monthlyBudget()], transactions, new Date(2026, 7, 20), 3);
+    const [row] = computeBudgetStreaks(text, [monthlyBudget()], transactions, new Date(2026, 7, 20), 3);
     expect(row.streakMonths).toBe(0);
     expect(row.status).toBe("over");
     expect(row.pct).toBeCloseTo(150, 5);
@@ -264,7 +272,7 @@ describe("computeBudgetStreaks", () => {
 
   it("flags 'warning' between 80% and 100% of the limit", () => {
     const transactions = [tx({ amount: 850, date: new Date(2026, 7, 10), category: CAT_FOOD })];
-    const [row] = computeBudgetStreaks([monthlyBudget()], transactions, new Date(2026, 7, 20), 1);
+    const [row] = computeBudgetStreaks(text, [monthlyBudget()], transactions, new Date(2026, 7, 20), 1);
     expect(row.status).toBe("warning");
   });
 });
@@ -276,7 +284,7 @@ describe("detectSubscriptions", () => {
       tx({ amount: 199, date: new Date(2026, 6, 3), category: CAT_FOOD, name: "Netflix", account: ACCOUNT_A }),
       tx({ amount: 199, date: new Date(2026, 5, 3), category: CAT_FOOD, name: "Netflix", account: ACCOUNT_A }),
     ];
-    const [sub] = detectSubscriptions(transactions, new Date(2026, 7, 20), 3, 6);
+    const [sub] = detectSubscriptions(text, transactions, new Date(2026, 7, 20), 3, 6);
     expect(sub).toMatchObject({ name: "Netflix", amount: 199 });
     expect(sub.occurrences).toHaveLength(3);
     expect(sub.occurrences[0]).toMatchObject({ amount: 199 });
@@ -284,7 +292,7 @@ describe("detectSubscriptions", () => {
 
   it("does not flag a one-off transaction that only appears once", () => {
     const transactions = [tx({ amount: 199, date: new Date(2026, 7, 3), category: CAT_FOOD, name: "One-off" })];
-    expect(detectSubscriptions(transactions, new Date(2026, 7, 20), 3, 6)).toHaveLength(0);
+    expect(detectSubscriptions(text, transactions, new Date(2026, 7, 20), 3, 6)).toHaveLength(0);
   });
 
   it("does not flag a repeating name whose amount varies too much", () => {
@@ -292,7 +300,7 @@ describe("detectSubscriptions", () => {
       tx({ amount: 100, date: new Date(2026, 7, 3), category: CAT_FOOD, name: "Variable" }),
       tx({ amount: 400, date: new Date(2026, 6, 3), category: CAT_FOOD, name: "Variable" }),
     ];
-    expect(detectSubscriptions(transactions, new Date(2026, 7, 20), 3, 6)).toHaveLength(0);
+    expect(detectSubscriptions(text, transactions, new Date(2026, 7, 20), 3, 6)).toHaveLength(0);
   });
 
   it("marks isNew when the subscription has no occurrence before the lookback window", () => {
@@ -300,7 +308,7 @@ describe("detectSubscriptions", () => {
       tx({ amount: 99, date: new Date(2026, 7, 3), category: CAT_FOOD, name: "New Sub" }),
       tx({ amount: 99, date: new Date(2026, 6, 3), category: CAT_FOOD, name: "New Sub" }),
     ];
-    const [sub] = detectSubscriptions(transactions, new Date(2026, 7, 20), 3, 6);
+    const [sub] = detectSubscriptions(text, transactions, new Date(2026, 7, 20), 3, 6);
     expect(sub.isNew).toBe(true);
   });
 
@@ -310,14 +318,14 @@ describe("detectSubscriptions", () => {
       tx({ amount: 99, date: new Date(2026, 6, 3), category: CAT_FOOD, name: "Old Sub" }),
       tx({ amount: 99, date: new Date(2026, 3, 3), category: CAT_FOOD, name: "Old Sub" }),
     ];
-    const [sub] = detectSubscriptions(transactions, new Date(2026, 7, 20), 3, 6);
+    const [sub] = detectSubscriptions(text, transactions, new Date(2026, 7, 20), 3, 6);
     expect(sub.isNew).toBe(false);
   });
 });
 
 describe("findBiggestSpendPatterns", () => {
   it("returns null when there's nothing in the lookback window", () => {
-    expect(findBiggestSpendPatterns([], new Date(2026, 7, 20), 12)).toBeNull();
+    expect(findBiggestSpendPatterns(text, [], new Date(2026, 7, 20), 12)).toBeNull();
   });
 
   it("measures each ratio against the right base and flags when the biggest transaction sits in a different category than the biggest category", () => {
@@ -345,7 +353,7 @@ describe("findBiggestSpendPatterns", () => {
         tags: [{ _id: "tag-insurance", name: "Insurance" }],
       }),
     ];
-    const result = findBiggestSpendPatterns(transactions, new Date(2026, 7, 20), 12);
+    const result = findBiggestSpendPatterns(text, transactions, new Date(2026, 7, 20), 12);
 
     expect(result.biggestTransaction).toMatchObject({ name: "Big Dinner", amount: 5000, categoryName: "Food", tags: ["Trip"] });
     expect(result.biggestCategory).toMatchObject({ name: "Health", total: 6000 });
@@ -380,7 +388,7 @@ describe("findBiggestSpendPatterns", () => {
         tags: [{ _id: "tag-party", name: "Party" }],
       }),
     ];
-    const result = findBiggestSpendPatterns(transactions, new Date(2026, 7, 20), 12);
+    const result = findBiggestSpendPatterns(text, transactions, new Date(2026, 7, 20), 12);
 
     expect(result.analysis.transactionIsInBiggestCategory).toBe(true);
     expect(result.analysis.transactionIsBiggestSubcategory).toBe(true);
@@ -395,12 +403,12 @@ describe("computeMonthlyChampions", () => {
       tx({ amount: 1000, date: new Date(2026, 6, 5), category: CAT_FOOD, subCategory: { _id: "sub-snacks", name: "Snacks" }, name: "July Big" }),
       tx({ amount: 3000, date: new Date(2026, 7, 5), category: CAT_HEALTH, subCategory: { _id: "sub-dental", name: "Dental" }, name: "August Big" }),
     ];
-    const result = computeMonthlyChampions(transactions, new Date(2026, 7, 20), 2);
+    const result = computeMonthlyChampions(text, transactions, new Date(2026, 7, 20), 2);
 
     expect(result.windowTotal).toBe(4000);
     expect(result.months).toHaveLength(2);
-    expect(result.months[0].label).toBe("July 2026");
-    expect(result.months[1].label).toBe("August 2026");
+    expect(result.months[0].label).toBe("Julio 2026");
+    expect(result.months[1].label).toBe("Agosto 2026");
 
     expect(result.months[0].biggestTransaction).toMatchObject({ name: "July Big", amount: 1000 });
     expect(result.months[0].biggestCategory).toMatchObject({ name: "Food", total: 1000, pctOfWindowTotal: 25 });
@@ -411,7 +419,7 @@ describe("computeMonthlyChampions", () => {
 
   it("returns null champions for a month with no bills, without breaking other months", () => {
     const transactions = [tx({ amount: 1000, date: new Date(2026, 7, 5), category: CAT_FOOD })];
-    const result = computeMonthlyChampions(transactions, new Date(2026, 7, 20), 2);
+    const result = computeMonthlyChampions(text, transactions, new Date(2026, 7, 20), 2);
     expect(result.months[0].biggestTransaction).toBeNull();
     expect(result.months[0].total).toBe(0);
     expect(result.months[1].biggestTransaction).toMatchObject({ amount: 1000 });
@@ -430,9 +438,9 @@ describe("computeMonthlyChampionsForRange", () => {
       tx({ amount: 100, date: new Date(2026, 5, 15), category: CAT_FOOD }), // June - outside range
       tx({ amount: 500, date: new Date(2026, 6, 10), category: CAT_FOOD }), // July - inside range
     ];
-    const result = computeMonthlyChampionsForRange(transactions, range, today);
+    const result = computeMonthlyChampionsForRange(text, transactions, range, today);
     expect(result.months).toHaveLength(3); // Jul, Aug, Sep
-    expect(result.months[0].label).toBe("July 2026");
+    expect(result.months[0].label).toBe("Julio 2026");
     expect(result.months[0].total).toBe(500);
     expect(result.windowTotal).toBe(500);
   });
@@ -441,14 +449,14 @@ describe("computeMonthlyChampionsForRange", () => {
     const range = { start: new Date(2026, 0, 1), end: new Date(2026, 11, 31, 23, 59, 59, 999) };
     const today = new Date(2026, 2, 15); // March 15 - only Jan/Feb/Mar have happened
     const transactions = [tx({ amount: 100, date: new Date(2026, 1, 5), category: CAT_FOOD })];
-    const result = computeMonthlyChampionsForRange(transactions, range, today);
+    const result = computeMonthlyChampionsForRange(text, transactions, range, today);
     expect(result.months).toHaveLength(3); // Jan, Feb, Mar - not all 12
   });
 
   it("returns an empty window when the range hasn't started yet", () => {
     const range = { start: new Date(2027, 0, 1), end: new Date(2027, 11, 31, 23, 59, 59, 999) };
     const today = new Date(2026, 5, 1);
-    const result = computeMonthlyChampionsForRange([], range, today);
+    const result = computeMonthlyChampionsForRange(text, [], range, today);
     expect(result.months).toEqual([]);
   });
 });
@@ -457,16 +465,16 @@ describe("findPeakMonth", () => {
   it("picks the month with the highest total, ignoring months with no spend", () => {
     const monthlyChampions = {
       months: [
-        { label: "July 2026", range: { start: new Date(2026, 6, 1) }, total: 500 },
-        { label: "August 2026", range: { start: new Date(2026, 7, 1) }, total: 0 },
-        { label: "September 2026", range: { start: new Date(2026, 8, 1) }, total: 1200 },
+        { label: "Julio 2026", range: { start: new Date(2026, 6, 1) }, total: 500 },
+        { label: "Agosto 2026", range: { start: new Date(2026, 7, 1) }, total: 0 },
+        { label: "Septiembre 2026", range: { start: new Date(2026, 8, 1) }, total: 1200 },
       ],
     };
-    expect(findPeakMonth(monthlyChampions).label).toBe("September 2026");
+    expect(findPeakMonth(monthlyChampions).label).toBe("Septiembre 2026");
   });
 
   it("returns null when every month has zero spend", () => {
-    const monthlyChampions = { months: [{ label: "July 2026", range: { start: new Date(2026, 6, 1) }, total: 0 }] };
+    const monthlyChampions = { months: [{ label: "Julio 2026", range: { start: new Date(2026, 6, 1) }, total: 0 }] };
     expect(findPeakMonth(monthlyChampions)).toBeNull();
   });
 });
@@ -475,26 +483,26 @@ describe("computeQuarterTotals / findPeakQuarter", () => {
   it("buckets months into real calendar quarters and finds the busiest one", () => {
     const monthlyChampions = {
       months: [
-        { label: "January 2026", range: { start: new Date(2026, 0, 1) }, total: 100 },
-        { label: "April 2026", range: { start: new Date(2026, 3, 1) }, total: 900 },
-        { label: "May 2026", range: { start: new Date(2026, 4, 1) }, total: 300 },
+        { label: "Enero 2026", range: { start: new Date(2026, 0, 1) }, total: 100 },
+        { label: "Abril 2026", range: { start: new Date(2026, 3, 1) }, total: 900 },
+        { label: "Mayo 2026", range: { start: new Date(2026, 4, 1) }, total: 300 },
       ],
     };
-    const quarters = computeQuarterTotals(monthlyChampions);
+    const quarters = computeQuarterTotals(text, monthlyChampions);
     expect(quarters).toEqual([
-      { label: "Q1 2026", year: 2026, quarter: 1, total: 100, months: [{ label: "January 2026", total: 100 }] },
+      { label: "T1 2026", year: 2026, quarter: 1, total: 100, months: [{ label: "Enero 2026", total: 100 }] },
       {
-        label: "Q2 2026",
+        label: "T2 2026",
         year: 2026,
         quarter: 2,
         total: 1200,
         months: [
-          { label: "April 2026", total: 900 },
-          { label: "May 2026", total: 300 },
+          { label: "Abril 2026", total: 900 },
+          { label: "Mayo 2026", total: 300 },
         ],
       },
     ]);
-    expect(findPeakQuarter(quarters).label).toBe("Q2 2026");
+    expect(findPeakQuarter(quarters).label).toBe("T2 2026");
   });
 });
 
@@ -506,41 +514,41 @@ describe("computeSpendingPace", () => {
       tx({ amount: 40, date: new Date(2026, 6, 10), category: CAT_FOOD }), // last month, day 10
       tx({ amount: 60, date: new Date(2026, 5, 10), category: CAT_FOOD }), // 2 months ago, day 10
     ];
-    const pace = computeSpendingPace(transactions, new Date(2026, 7, 15), true, 2, new Date(2026, 7, 15));
+    const pace = computeSpendingPace(text, transactions, new Date(2026, 7, 15), true, 2, new Date(2026, 7, 15));
     expect(pace.spentSoFar).toBe(100);
     expect(pace.avgPaceForSameDay).toBe(50);
     expect(pace.deltaPct).toBe(100);
     expect(pace.dayOfMonth).toBe(15);
     expect(pace.monthlyDetail).toHaveLength(2);
-    expect(pace.monthlyDetail[pace.monthlyDetail.length - 1]).toMatchObject({ label: "July 2026", throughDay: 15, amount: 40 });
+    expect(pace.monthlyDetail[pace.monthlyDetail.length - 1]).toMatchObject({ label: "Julio 2026", throughDay: 15, amount: 40 });
   });
 
   it("caps the comparison day for a shorter prior month", () => {
     const transactions = [tx({ amount: 30, date: new Date(2026, 1, 28), category: CAT_FOOD })]; // Feb 2026, last day
-    const pace = computeSpendingPace(transactions, new Date(2026, 2, 31), true, 1, new Date(2026, 2, 31));
+    const pace = computeSpendingPace(text, transactions, new Date(2026, 2, 31), true, 1, new Date(2026, 2, 31));
     expect(pace.avgPaceForSameDay).toBe(30);
   });
 
   it("uses the actual current day when the reference month is the real current month", () => {
     const today = new Date(2026, 7, 15);
     const transactions = [tx({ amount: 100, date: new Date(2026, 7, 10), category: CAT_FOOD })];
-    const pace = computeSpendingPace(transactions, new Date(2026, 7, 1), true, 1, today);
+    const pace = computeSpendingPace(text, transactions, new Date(2026, 7, 1), true, 1, today);
     expect(pace.dayOfMonth).toBe(15);
   });
 
   it("uses the reference month's last day (a full-month comparison) when it's a past, elapsed month", () => {
     const today = new Date(2026, 7, 15); // viewing/today is August, reference is July (past)
     const transactions = [tx({ amount: 100, date: new Date(2026, 6, 20), category: CAT_FOOD })];
-    const pace = computeSpendingPace(transactions, new Date(2026, 6, 1), true, 1, today);
+    const pace = computeSpendingPace(text, transactions, new Date(2026, 6, 1), true, 1, today);
     expect(pace.dayOfMonth).toBe(31);
     expect(pace.spentSoFar).toBe(100);
   });
 });
 
 describe("computeSpendingByWeekday", () => {
-  // August 2026: Mon/Sat/Sun occur 5x, Tue/Wed/Thu/Fri occur 4x.
+  // Agosto 2026: Mon/Sat/Sun occur 5x, Tue/Wed/Thu/Fri occur 4x.
   it("counts how many of each weekday occurred in the month", () => {
-    const result = computeSpendingByWeekday([], new Date(2026, 7, 15));
+    const result = computeSpendingByWeekday(text, [], new Date(2026, 7, 15));
     expect(result.days[0]).toMatchObject({ dayName: "Lunes", occurrences: 5 }); // Monday
     expect(result.days[1]).toMatchObject({ dayName: "Martes", occurrences: 4 }); // Tuesday
     expect(result.days[5]).toMatchObject({ dayName: "Sábado", occurrences: 5 });
@@ -553,7 +561,7 @@ describe("computeSpendingByWeekday", () => {
       tx({ amount: 100, date: new Date(2026, 7, 12) }), // Wednesday
       tx({ amount: 100, date: new Date(2026, 7, 19) }), // Wednesday
     ];
-    const result = computeSpendingByWeekday(transactions, new Date(2026, 7, 15));
+    const result = computeSpendingByWeekday(text, transactions, new Date(2026, 7, 15));
     expect(result.insight).toContain("miércoles");
   });
 
@@ -562,18 +570,18 @@ describe("computeSpendingByWeekday", () => {
       tx({ amount: 200, date: new Date(2026, 7, 1) }), // Saturday
       tx({ amount: 200, date: new Date(2026, 7, 2) }), // Sunday
     ];
-    const result = computeSpendingByWeekday(transactions, new Date(2026, 7, 15));
+    const result = computeSpendingByWeekday(text, transactions, new Date(2026, 7, 15));
     expect(result.insight).toBe("Sueles gastar más los fines de semana este mes.");
   });
 
   it("reports no clear pattern when spend is roughly even across the week", () => {
     const transactions = [1, 2, 3, 4, 5, 6, 7].map((d) => tx({ amount: 100, date: new Date(2026, 7, d) }));
-    const result = computeSpendingByWeekday(transactions, new Date(2026, 7, 15));
+    const result = computeSpendingByWeekday(text, transactions, new Date(2026, 7, 15));
     expect(result.insight).toBe("Sin un patrón claro por día de la semana este mes.");
   });
 
   it("reports no spend when the month is empty", () => {
-    const result = computeSpendingByWeekday([], new Date(2026, 7, 15));
+    const result = computeSpendingByWeekday(text, [], new Date(2026, 7, 15));
     expect(result.insight).toBe("Sin gastos este mes para detectar un patrón.");
   });
 
@@ -582,7 +590,7 @@ describe("computeSpendingByWeekday", () => {
       tx({ amount: 100, date: new Date(2026, 7, 5) }), // Aug 5 -> week 1 (days 1-7)
       tx({ amount: 300, date: new Date(2026, 7, 20) }), // Aug 20 -> week 3 (days 15-21)
     ];
-    const result = computeSpendingByWeekday(transactions, new Date(2026, 7, 15));
+    const result = computeSpendingByWeekday(text, transactions, new Date(2026, 7, 15));
 
     expect(result.dailyBreakdown).toHaveLength(31);
     expect(result.dailyBreakdown[4]).toMatchObject({ dayOfMonth: 5, dayName: "Miércoles", total: 100, count: 1 });
@@ -607,20 +615,20 @@ describe("generateInsights", () => {
 
   it("emits a warning for a budget currently over its limit, carrying the row as structured data", () => {
     const row = { category: "Gym", limit: 1000, spent: 1200, pct: 120, streakMonths: 0, status: "over" };
-    const insights = generateInsights({ ...baseFacts, budgetRows: [row] });
+    const insights = generateInsights(text, { ...baseFacts, budgetRows: [row] });
     expect(insights[0]).toMatchObject({ tone: "warning", title: "Gym superó su presupuesto", type: "budget", data: row });
   });
 
   it("emits a category anomaly insight when provided, carrying structured data (not a baked string)", () => {
     const anomaly = { name: "Restaurant", current: 4586, average: 3320, changePct: 38 };
-    const insights = generateInsights({ ...baseFacts, categoryAnomaly: anomaly });
+    const insights = generateInsights(text, { ...baseFacts, categoryAnomaly: anomaly });
     const insight = insights.find((i) => i.title.includes("Restaurant"));
     expect(insight).toMatchObject({ type: "category_anomaly", data: anomaly });
     expect(insight.detail).toBeUndefined();
   });
 
   it("emits a new-category insight", () => {
-    const insights = generateInsights({
+    const insights = generateInsights(text, {
       ...baseFacts,
       topCategoriesBills: [{ name: "Pets", current: 850, previous: 0, changePct: null, isNew: true }],
     });
@@ -628,7 +636,7 @@ describe("generateInsights", () => {
   });
 
   it("emits a new-subscription insight", () => {
-    const insights = generateInsights({
+    const insights = generateInsights(text, {
       ...baseFacts,
       subscriptions: [{ name: "SHAPR3D", categoryName: "E-accounts", amount: 654, isNew: true }],
     });
@@ -636,13 +644,13 @@ describe("generateInsights", () => {
   });
 
   it("emits a streak insight only at 2+ months", () => {
-    const oneMonth = generateInsights({
+    const oneMonth = generateInsights(text, {
       ...baseFacts,
       budgetRows: [{ category: "Transport", limit: 100, spent: 50, pct: 50, streakMonths: 1, status: "ok" }],
     });
     expect(oneMonth.some((i) => i.title.includes("Racha"))).toBe(false);
 
-    const twoMonths = generateInsights({
+    const twoMonths = generateInsights(text, {
       ...baseFacts,
       budgetRows: [{ category: "Transport", limit: 100, spent: 50, pct: 50, streakMonths: 2, status: "ok" }],
     });
@@ -650,17 +658,17 @@ describe("generateInsights", () => {
   });
 
   it("flags the best savings rate when current is the max of the history", () => {
-    const insights = generateInsights({ ...baseFacts, savingsHistory: [0.8, 0.5, 0.4] });
+    const insights = generateInsights(text, { ...baseFacts, savingsHistory: [0.8, 0.5, 0.4] });
     expect(insights.some((i) => i.title.includes("Mejor tasa"))).toBe(true);
   });
 
   it("flags the worst savings rate when current is the min of the history", () => {
-    const insights = generateInsights({ ...baseFacts, savingsHistory: [0.1, 0.5, 0.4] });
+    const insights = generateInsights(text, { ...baseFacts, savingsHistory: [0.1, 0.5, 0.4] });
     expect(insights.some((i) => i.title.includes("más baja"))).toBe(true);
   });
 
   it("caps at 5 insights, warnings first", () => {
-    const insights = generateInsights({
+    const insights = generateInsights(text, {
       budgetRows: [
         { category: "Gym", limit: 100, spent: 200, pct: 200, streakMonths: 0, status: "over" },
       ],
@@ -693,7 +701,7 @@ describe("buildWalletAnalyzerSnapshot", () => {
         history: [],
       },
     ];
-    const snapshot = buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: new Date(2026, 7, 20) });
+    const snapshot = buildWalletAnalyzerSnapshot({ text, transactions, budgets, referenceDate: new Date(2026, 7, 20) });
 
     expect(snapshot.currentTotals.income).toBe(5000);
     expect(snapshot.topCategoriesBills[0].name).toBe("Food");
@@ -705,16 +713,16 @@ describe("buildWalletAnalyzerSnapshot", () => {
 
 describe("getSnapshotLookbackStart", () => {
   it("returns the 1st of the month 11 months before the reference date (a 12-month window inclusive of the reference month)", () => {
-    const start = getSnapshotLookbackStart(new Date(2026, 7, 20)); // August 2026
+    const start = getSnapshotLookbackStart(new Date(2026, 7, 20)); // Agosto 2026
     expect(start.getFullYear()).toBe(2025);
     expect(start.getMonth()).toBe(8); // September (0-indexed) - Sep 2025..Aug 2026 = 12 months
     expect(start.getDate()).toBe(1);
   });
 
   it("rolls the year back correctly near a year boundary", () => {
-    const start = getSnapshotLookbackStart(new Date(2026, 1, 10)); // February 2026
+    const start = getSnapshotLookbackStart(new Date(2026, 1, 10)); // Febrero 2026
     expect(start.getFullYear()).toBe(2025);
-    expect(start.getMonth()).toBe(2); // March 2025
+    expect(start.getMonth()).toBe(2); // Marzo 2025
   });
 });
 
@@ -742,7 +750,7 @@ describe("buildCuratedWalletSummary", () => {
         history: [],
       },
     ];
-    const snapshot = buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: new Date(2026, 7, 20) });
+    const snapshot = buildWalletAnalyzerSnapshot({ text, transactions, budgets, referenceDate: new Date(2026, 7, 20) });
     const curated = buildCuratedWalletSummary(snapshot);
 
     expect(curated.budgetRows).toHaveLength(snapshot.budgetRows.length);
@@ -779,21 +787,21 @@ describe("buildCuratedWalletSummary", () => {
 describe("buildMonthComparison", () => {
   it("compares two non-adjacent months directly, not just consecutive ones", () => {
     const transactions = [
-      // January 2026
+      // Enero 2026
       tx({ amount: 1000, date: new Date(2026, 0, 5), category: CAT_FOOD, name: "Groceries" }),
-      // March 2026 - one month skipped (February) in between
+      // Marzo 2026 - one month skipped (February) in between
       tx({ amount: 300, date: new Date(2026, 2, 5), category: CAT_FOOD, name: "Groceries" }),
       tx({ amount: 3000, date: new Date(2026, 2, 1), isBill: false, name: "Salary" }),
     ];
 
-    const comparison = buildMonthComparison({
+    const comparison = buildMonthComparison({ text,
       transactions,
       monthADate: new Date(2026, 0, 15), // January
       monthBDate: new Date(2026, 2, 15), // March
     });
 
-    expect(comparison.monthA.label).toBe("January 2026");
-    expect(comparison.monthB.label).toBe("March 2026");
+    expect(comparison.monthA.label).toBe("Enero 2026");
+    expect(comparison.monthB.label).toBe("Marzo 2026");
     expect(comparison.monthA.totals.expense).toBe(1000);
     expect(comparison.monthB.totals.expense).toBe(300);
     expect(comparison.monthB.totals.income).toBe(3000);
@@ -805,7 +813,7 @@ describe("buildMonthComparison", () => {
 
   it("handles a month with zero activity on either side without throwing", () => {
     const transactions = [tx({ amount: 500, date: new Date(2026, 5, 1), category: CAT_FOOD })];
-    const comparison = buildMonthComparison({
+    const comparison = buildMonthComparison({ text,
       transactions,
       monthADate: new Date(2026, 5, 1),
       monthBDate: new Date(2025, 0, 1),
@@ -831,11 +839,11 @@ describe("buildBudgetPeriodChanges", () => {
 
   it("sums actual/goal across each range and reports compliance per period", () => {
     const transactions = [
-      // Q1 2026 - Jan/Feb/Mar, each under the 1000 monthly goal
+      // T1 2026 - Jan/Feb/Mar, each under the 1000 monthly goal
       tx({ amount: 500, date: new Date(2026, 0, 10), category: CAT_FOOD }),
       tx({ amount: 500, date: new Date(2026, 1, 10), category: CAT_FOOD }),
       tx({ amount: 500, date: new Date(2026, 2, 10), category: CAT_FOOD }),
-      // Q1 2025 (comparison period) - Feb exceeds the goal
+      // T1 2025 (comparison period) - Feb exceeds the goal
       tx({ amount: 400, date: new Date(2025, 0, 10), category: CAT_FOOD }),
       tx({ amount: 1500, date: new Date(2025, 1, 10), category: CAT_FOOD }),
       tx({ amount: 400, date: new Date(2025, 2, 10), category: CAT_FOOD }),
@@ -843,7 +851,7 @@ describe("buildBudgetPeriodChanges", () => {
     const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) };
     const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 2, 31, 23, 59, 59, 999) };
 
-    const [row] = buildBudgetPeriodChanges([monthlyBudget()], transactions, rangeA, rangeB);
+    const [row] = buildBudgetPeriodChanges(text, [monthlyBudget()], transactions, rangeA, rangeB);
 
     expect(row.category).toBe("Food");
     expect(row.periodA).toMatchObject({ actual: 1500, goal: 3000, monthsTracked: 3, monthsMet: 3 });
@@ -859,7 +867,7 @@ describe("buildBudgetPeriodChanges", () => {
     const rangeA = { start: new Date(2026, 5, 1), end: new Date(2026, 5, 30, 23, 59, 59, 999) };
     const rangeB = { start: new Date(2099, 0, 1), end: new Date(2099, 11, 31, 23, 59, 59, 999) };
 
-    const [row] = buildBudgetPeriodChanges([budget], transactions, rangeA, rangeB);
+    const [row] = buildBudgetPeriodChanges(text, [budget], transactions, rangeA, rangeB);
     expect(row.periodA).not.toBeNull();
     expect(row.periodB).toBeNull();
   });
@@ -876,17 +884,17 @@ describe("buildPeriodComparison", () => {
     const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) };
     const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 2, 31, 23, 59, 59, 999) };
 
-    const comparison = buildPeriodComparison({
+    const comparison = buildPeriodComparison({ text,
       transactions,
       budgets: [],
       rangeA,
       rangeB,
-      labelA: "Q1 2026",
-      labelB: "Q1 2025",
+      labelA: "T1 2026",
+      labelB: "T1 2025",
     });
 
-    expect(comparison.periodA.label).toBe("Q1 2026");
-    expect(comparison.periodB.label).toBe("Q1 2025");
+    expect(comparison.periodA.label).toBe("T1 2026");
+    expect(comparison.periodB.label).toBe("T1 2025");
     expect(comparison.periodA.totals.expense).toBe(1500);
     expect(comparison.periodA.totals.income).toBe(4000);
     expect(comparison.periodB.totals.expense).toBe(300);
@@ -911,13 +919,13 @@ describe("buildPeriodComparison", () => {
     const rangeA = { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31, 23, 59, 59, 999) };
     const rangeB = { start: new Date(2025, 0, 1), end: new Date(2025, 0, 31, 23, 59, 59, 999) };
 
-    const comparison = buildPeriodComparison({
+    const comparison = buildPeriodComparison({ text,
       transactions,
       budgets: [budget],
       rangeA,
       rangeB,
-      labelA: "January 2026",
-      labelB: "January 2025",
+      labelA: "Enero 2026",
+      labelB: "Enero 2025",
     });
 
     expect(comparison.budgetChanges).toHaveLength(1);
@@ -956,7 +964,7 @@ describe("computeTrendForRange", () => {
       tx({ amount: 100, date: new Date(2026, 7, 15), category: CAT_FOOD }), // inside Q3
       tx({ amount: 50, date: new Date(2026, 3, 15), category: CAT_FOOD }), // ~1 quarter before Q3
     ];
-    const trend = computeTrendForRange(transactions, q3, 2);
+    const trend = computeTrendForRange(text, transactions, q3, 2);
     expect(trend).toHaveLength(2);
     expect(trend[1].expense).toBe(100); // Q3 itself, last
     expect(trend[0].expense).toBeGreaterThanOrEqual(0);
@@ -965,12 +973,12 @@ describe("computeTrendForRange", () => {
 
 describe("computeSpendingPaceForRange", () => {
   it("compares spend-so-far against the same elapsed-day mark in preceding periods", () => {
-    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) }; // Q1 2026, closed
+    const range = { start: new Date(2026, 0, 1), end: new Date(2026, 2, 31, 23, 59, 59, 999) }; // T1 2026, closed
     const transactions = [
       tx({ amount: 100, date: new Date(2026, 0, 10), category: CAT_FOOD }),
       tx({ amount: 40, date: new Date(2025, 9, 10), category: CAT_FOOD }), // same elapsed-day mark, preceding period
     ];
-    const pace = computeSpendingPaceForRange(transactions, range, true, 1, new Date(2027, 0, 1));
+    const pace = computeSpendingPaceForRange(text, transactions, range, true, 1, new Date(2027, 0, 1));
     expect(pace.spentSoFar).toBe(100);
     expect(pace.avgPaceForSameDay).toBe(40);
     expect(pace.periodWidthDays).toBe(90);
@@ -984,14 +992,14 @@ describe("findBiggestSpendPatternsForRange", () => {
       tx({ amount: 5000, date: new Date(2026, 1, 5), category: CAT_HEALTH, name: "Surgery" }),
       tx({ amount: 100, date: new Date(2026, 1, 6), category: CAT_FOOD }),
     ];
-    const patterns = findBiggestSpendPatternsForRange(transactions, range);
+    const patterns = findBiggestSpendPatternsForRange(text, transactions, range);
     expect(patterns.biggestTransaction.name).toBe("Surgery");
     expect(patterns.biggestCategory.name).toBe("Health");
     expect(patterns.lookbackRange).toEqual(range);
   });
 
   it("returns null when there are no bills in range", () => {
-    expect(findBiggestSpendPatternsForRange([], { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) })).toBeNull();
+    expect(findBiggestSpendPatternsForRange(text, [], { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) })).toBeNull();
   });
 });
 
@@ -1002,7 +1010,7 @@ describe("computeCategoryHistoryAverageForRange", () => {
       tx({ amount: 300, date: new Date(2026, 3, 15), category: CAT_FOOD }), // Q2 (preceding)
       tx({ amount: 900, date: new Date(2026, 7, 15), category: CAT_FOOD }), // inside Q3 itself - excluded
     ];
-    const { average, monthsOfHistory } = computeCategoryHistoryAverageForRange(transactions, "Food", true, range, 1);
+    const { average, monthsOfHistory } = computeCategoryHistoryAverageForRange(text, transactions, "Food", true, range, 1);
     expect(average).toBe(300);
     expect(monthsOfHistory).toBe(1);
   });
@@ -1015,7 +1023,7 @@ describe("computeSpendingByWeekdayForRange", () => {
       tx({ amount: 100, date: new Date(2026, 0, 5), category: CAT_FOOD }),
       tx({ amount: 200, date: new Date(2026, 2, 20), category: CAT_FOOD }),
     ];
-    const result = computeSpendingByWeekdayForRange(transactions, range);
+    const result = computeSpendingByWeekdayForRange(text, transactions, range);
     const totalAcrossDays = result.days.reduce((a, d) => a + d.total, 0);
     expect(totalAcrossDays).toBe(300);
     expect(result.weeks.length).toBeGreaterThan(4); // spans ~13 weeks, not ~4
@@ -1030,7 +1038,7 @@ describe("buildPeriodSnapshot", () => {
       tx({ amount: 3000, date: new Date(2026, 8, 1), isBill: false, name: "Salary" }),
       tx({ amount: 400, date: new Date(2026, 4, 5), category: CAT_FOOD }), // Q2, the preceding period
     ];
-    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range, periodsBack: 2 });
+    const snapshot = buildPeriodSnapshot({ text, transactions, budgets: [], range, periodsBack: 2 });
     expect(snapshot.currentTotals.expense).toBe(1000);
     expect(snapshot.currentTotals.income).toBe(3000);
     expect(snapshot.previousTotals.expense).toBe(400);
@@ -1060,7 +1068,7 @@ describe("buildPeriodSnapshot", () => {
       tx({ amount: 500, date: new Date(2026, 8, 10), category: CAT_FOOD, name: "Netflix" }),
       tx({ amount: 500, date: new Date(2026, 7, 10), category: CAT_FOOD, name: "Netflix" }),
     ];
-    const snapshot = buildPeriodSnapshot({ transactions, budgets: [budget], range, periodsBack: 2, today });
+    const snapshot = buildPeriodSnapshot({ text, transactions, budgets: [budget], range, periodsBack: 2, today });
     const [row] = snapshot.budgetRows;
     expect(row.spent).toBeGreaterThan(0); // not 0/0 from a future "last" month
     expect(snapshot.subscriptions.length).toBeGreaterThan(0); // Netflix detected
@@ -1072,7 +1080,7 @@ describe("buildPeriodSnapshot", () => {
     // No periodsBack override - if the default still blindly used 6, this
     // would ask for 6 preceding YEARS; asserting it doesn't throw and
     // produces a small (not 6-long) trend confirms the scaled-down default.
-    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range: yearRange });
+    const snapshot = buildPeriodSnapshot({ text, transactions, budgets: [], range: yearRange });
     expect(snapshot.trend.length).toBeLessThan(6);
     expect(snapshot.trend.length).toBeGreaterThanOrEqual(2);
   });
@@ -1092,9 +1100,9 @@ describe("buildPeriodSnapshot", () => {
       tx({ amount: 5000, date: new Date(2026, 6, 10), category: CAT_FOOD }), // Jul - the peak
       tx({ amount: 200, date: new Date(2026, 7, 10), category: CAT_FOOD }), // Aug
     ];
-    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range: yearRange, today });
+    const snapshot = buildPeriodSnapshot({ text, transactions, budgets: [], range: yearRange, today });
     expect(snapshot.monthlyChampions.months).toHaveLength(9); // Jan-Sep, clamped to today
-    expect(findPeakMonth(snapshot.monthlyChampions).label).toBe("July 2026");
+    expect(findPeakMonth(snapshot.monthlyChampions).label).toBe("Julio 2026");
     const types = snapshot.insights.map((i) => i.type);
     expect(types).toContain("peak_month");
     expect(types).toContain("peak_quarter");
@@ -1119,10 +1127,10 @@ describe("buildCuratedPeriodSummary", () => {
     const transactions = [
       tx({ amount: 500, date: new Date(2026, 1, 5), category: CAT_FOOD, name: "Groceries" }),
     ];
-    const snapshot = buildPeriodSnapshot({ transactions, budgets: [], range, periodsBack: 2 });
+    const snapshot = buildPeriodSnapshot({ text, transactions, budgets: [], range, periodsBack: 2 });
     const curated = buildCuratedPeriodSummary(snapshot);
     expect(curated.budgetRows.every((b) => !("monthlySeries" in b))).toBe(true);
-    expect(curated.monthlyChampions.months[1]).toMatchObject({ label: "February 2026", total: 500, topCategory: { name: "Food", total: 500 } });
+    expect(curated.monthlyChampions.months[1]).toMatchObject({ label: "Febrero 2026", total: 500, topCategory: { name: "Food", total: 500 } });
     expect(curated.monthlyChampions.months[1].biggestTransaction).toBeUndefined();
     expect(curated.currentRange).toEqual(range);
   });

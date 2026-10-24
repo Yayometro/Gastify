@@ -12,7 +12,7 @@ import type { WalletData } from "@/lib/features/walletSlice";
 import type { WalletAnalyzerSnapshotData } from "./WalletAnalyzerView";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 const EMPTY_ARRAY: never[] = [];
 
@@ -35,6 +35,7 @@ export interface WalletAnalyzerTeaserProps {
 // with, so it just always follows the parent - one atomic, prop-driven
 // piece instead of owning its own navigation state.
 function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProps): React.JSX.Element | null {
+  const text = useWalletText();
   const { APP_INFO } = useInfo();
   const t = useT();
   const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
@@ -44,7 +45,7 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
 
   const today = useMemo(() => new Date(), []);
   const snapshot = useMemo<WalletAnalyzerSnapshotData>(
-    () => buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: timePeriodFromFather?.[0] ? new Date(timePeriodFromFather[0]) : today }),
+    () => buildWalletAnalyzerSnapshot({ text,  transactions, budgets, referenceDate: timePeriodFromFather?.[0] ? new Date(timePeriodFromFather[0]) : today }),
     [transactions, budgets, timePeriodFromFather, today]
   );
 

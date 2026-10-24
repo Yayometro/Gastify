@@ -2,6 +2,7 @@ import type projections from "../es/projections";
 
 // English for the "projections" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof projections, string> = {
+  "projections.unexpectedRow": "Unexpected/Other",
   "projections.error.buffers": "Unexpected buffers updated",
   "projections.balance.enterFirst": "Enter a balance first",
   "projections.balance.saved": "Balance saved for this month",

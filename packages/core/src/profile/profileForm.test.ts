@@ -8,8 +8,8 @@ describe("validateProfile", () => {
     expect(validateProfile({ fullName: "Ada", phone: "+52 (55) 1234-5678" })).toEqual({});
   });
   it("asks for the name and rejects phones of the wrong length", () => {
-    expect(validateProfile({ fullName: "  ", phone: "" }).fullName).toBe("Escribe tu nombre.");
-    expect(validateProfile({ fullName: "x".repeat(81), phone: "" }).fullName).toContain("80");
+    expect(validateProfile({ fullName: "  ", phone: "" }).fullName).toBe("profile.error.nameRequired");
+    expect(validateProfile({ fullName: "x".repeat(81), phone: "" }).fullName).toBe("profile.error.nameTooLong");
     expect(validateProfile({ fullName: "Ada", phone: "123" }).phone).toBeTruthy();
     expect(validateProfile({ fullName: "Ada", phone: "1".repeat(16) }).phone).toBeTruthy();
   });

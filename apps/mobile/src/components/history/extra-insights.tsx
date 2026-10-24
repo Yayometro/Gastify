@@ -11,19 +11,20 @@ import type { TransactionData } from '@gastify/core/features/transacctionsSlice'
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { computeMonthlyChampions, detectSubscriptions, findBiggestSpendPatterns } from '@gastify/core/transformers/walletAnalyzer';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 export function HistoryExtraInsights({ movements, currency, end, compareEnd }: { movements: TransactionData[]; currency: string; end: Date; compareEnd?: Date }) {
+  const text = useWalletText();
   const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const anchor = useMemo(() => end < new Date() ? end : new Date(), [end]);
-  const patterns = useMemo(() => findBiggestSpendPatterns(movements, anchor, 12), [movements, anchor]);
+  const patterns = useMemo(() => findBiggestSpendPatterns(text, movements, anchor, 12), [movements, anchor]);
   // With a comparison, the same 12-month reading is made ending at the compared period, to put beside the first.
   const compareAnchor = useMemo(() => (compareEnd ? (compareEnd < new Date() ? compareEnd : new Date()) : null), [compareEnd]);
-  const comparePatterns = useMemo(() => (compareAnchor ? findBiggestSpendPatterns(movements, compareAnchor, 12) : null), [movements, compareAnchor]);
-  const champions = useMemo(() => computeMonthlyChampions(movements, anchor, 12), [movements, anchor]);
-  const subscriptions = useMemo(() => detectSubscriptions(movements, anchor, 3, 6), [movements, anchor]);
+  const comparePatterns = useMemo(() => (compareAnchor ? findBiggestSpendPatterns(text, movements, compareAnchor, 12) : null), [movements, compareAnchor]);
+  const champions = useMemo(() => computeMonthlyChampions(text, movements, anchor, 12), [movements, anchor]);
+  const subscriptions = useMemo(() => detectSubscriptions(text, movements, anchor, 3, 6), [movements, anchor]);
   const [kind, setKind] = useState<ChampionKind | null>(null);
   const [analysis, setAnalysis] = useState(false);
   const [openSubscription, setOpenSubscription] = useState<string | null>(null);

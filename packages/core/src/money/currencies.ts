@@ -1,6 +1,8 @@
 // Shared currency metadata and minor-unit helpers. No Mongoose, no secrets -
 // safe to import from both client and server code.
 
+import { INTL_TAG, type Locale } from "../i18n/locales";
+
 export const SUPPORTED_CURRENCIES: string[] = ["MXN", "USD", "EUR", "JPY"];
 
 export type SupportedCurrency = "MXN" | "USD" | "EUR" | "JPY";
@@ -9,7 +11,6 @@ export interface CurrencyMeta {
   code: SupportedCurrency;
   minorUnits: number;
   locale: string;
-  label: string;
   symbol: string;
 }
 
@@ -39,11 +40,22 @@ export interface TransactionWithMoney {
 }
 
 export const CURRENCY_META: Record<string, CurrencyMeta> = {
-  MXN: { code: "MXN", minorUnits: 2, locale: "es-MX", label: "Mexican peso", symbol: "$" },
-  USD: { code: "USD", minorUnits: 2, locale: "en-US", label: "US dollar", symbol: "$" },
-  EUR: { code: "EUR", minorUnits: 2, locale: "de-DE", label: "Euro", symbol: "€" },
-  JPY: { code: "JPY", minorUnits: 0, locale: "ja-JP", label: "Japanese yen", symbol: "¥" },
+  MXN: { code: "MXN", minorUnits: 2, locale: "es-MX", symbol: "$" },
+  USD: { code: "USD", minorUnits: 2, locale: "en-US", symbol: "$" },
+  EUR: { code: "EUR", minorUnits: 2, locale: "de-DE", symbol: "€" },
+  JPY: { code: "JPY", minorUnits: 0, locale: "ja-JP", symbol: "¥" },
 };
+
+// The currency's name in the person's language ("peso mexicano" / "Mexican peso"), from Intl.
+const currencyNames = new Map<string, Intl.DisplayNames>();
+export function currencyName(code: string, locale: Locale): string {
+  let names = currencyNames.get(locale);
+  if (!names) {
+    names = new Intl.DisplayNames(INTL_TAG[locale], { type: "currency" });
+    currencyNames.set(locale, names);
+  }
+  return names.of(code) ?? code;
+}
 
 export function isSupportedCurrency(currency: unknown): currency is SupportedCurrency {
   return typeof currency === "string" && SUPPORTED_CURRENCIES.includes(currency);

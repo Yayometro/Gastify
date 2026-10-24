@@ -1,5 +1,10 @@
 // Texts of the "movements" namespace. Spanish is the source text.
 const movements = {
+  "movements.duplicate.name": "Nombre",
+  "movements.duplicate.date": "Fecha",
+  "movements.duplicate.amount": "Monto",
+  "movements.duplicate.category": "Categoría",
+  "movements.duplicate.subcategory": "Subcategoría",
   "movements.range.month": "Por mes",
   "movements.range.last7": "7 días",
   "movements.range.last30": "30 días",
