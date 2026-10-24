@@ -83,7 +83,7 @@ function DeleteAccountPanel(): React.JSX.Element {
         confirmMail,
       });
       if (!res.ok) {
-        if (redirectIfStepUpRequired({ code: res.code })) return;
+        if (redirectIfStepUpRequired({ code: res.code }, t("auth.stepUp"))) return;
         const extra =
           typeof res.attemptsLeft === "number"
             ? ` Te quedan ${res.attemptsLeft} intento(s).`

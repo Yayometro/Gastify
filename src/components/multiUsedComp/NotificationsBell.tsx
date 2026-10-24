@@ -107,7 +107,7 @@ function NotificationsBell(): React.JSX.Element {
                               <p className="text-sm font-bold text-white">{alert.title}</p>
                               <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-purple-100/90">{alert.message}</p>
                             </div>
-                            <button type="button" aria-label={`Quitar el aviso de ${alert.title}`} onClick={(event) => { event.stopPropagation(); remove(alert.key); }} className="shrink-0 rounded-full p-1 text-purple-100 transition-transform hover:scale-125 hover:text-white">
+                            <button type="button" aria-label={t("shared.dismissAlert", { p1: alert.title })} onClick={(event) => { event.stopPropagation(); remove(alert.key); }} className="shrink-0 rounded-full p-1 text-purple-100 transition-transform hover:scale-125 hover:text-white">
                               <CategoIcon type={"MdClose"} siz={16} />
                             </button>
                           </div>

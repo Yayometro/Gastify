@@ -73,7 +73,7 @@ export async function POST(
       icon,
       currency,
     } = (await request.json()) as UpdateBudgetRequestBody;
-    if (!id) throw new Error(`No ID  was provided to update budget 🤕`);
+    if (!id) throw new Error(t("errors.api.noIdUpdateBudget"));
     // Security fix: this used to look up the Budget by id alone, with zero
     // ownership check - this endpoint isn't covered by middleware.ts's
     // matcher, so any caller could edit any other user's budget. Now the
@@ -88,7 +88,7 @@ export async function POST(
     // FIND WALLET and UPDATE
     const updateBudget = await Budget.findOne({ _id: id, wallet: userFound.wallet });
     //IF ERROR
-    if (!updateBudget) throw new Error(`No Budget was identified to update 🤕`);
+    if (!updateBudget) throw new Error(t("errors.api.budgetNotIdentifiedUpdate"));
     // VERSION HISTORY if goalAmount/savingAmount is actually changing
     const amountIsChanging =
       (goalAmount !== undefined && Number(goalAmount) !== Number(updateBudget.goalAmount)) ||
@@ -156,7 +156,7 @@ export async function POST(
       { path: "linkedTags", strictPopulate: false },
     ]);
     return NextResponse.json({
-      message: `${savedBudget.name} was updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: savedBudget.name }),
       data: savedBudget,
       status: 201,
       ok: true,

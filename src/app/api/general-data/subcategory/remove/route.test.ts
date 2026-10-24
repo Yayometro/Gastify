@@ -36,7 +36,7 @@ describe("POST /api/general-data/subcategory/remove", () => {
   // failed with "Cannot read properties of null" instead of its own message.
   it("when nothing was removed it fails with the intended message, not a TypeError", async () => {
     subDelete.mockReturnValue({ lean: async () => null });
-    await expect(POST(req("missing"))).rejects.toThrow("SubCategory not removed");
+    await expect(POST(req("missing"))).rejects.toThrow("No se pudo borrar la subcategoría");
     await expect(POST(req("missing"))).rejects.not.toThrow(/Cannot read properties/);
   });
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/i18n/client";
 import React from "react";
 import { Tooltip } from "antd";
 import { formatMoneyMinor } from "@gastify/core/money/currencies";
@@ -24,11 +25,12 @@ export interface AmountEquivalentPreviewProps {
 // the /fx/quote response shape ({amountMinor, currency, rate, source,
 // effectiveDate, estimated, stale}) or null/undefined to render nothing.
 function AmountEquivalentPreview({ quote }: AmountEquivalentPreviewProps): React.JSX.Element | null {
+  const t = useT();
   if (!quote) return null;
 
   return (
     <Tooltip
-      title={`Estimated at ${quote.rate} (${quote.source}${quote.stale ? ", stale" : ""}) on ${new Date(quote.effectiveDate).toLocaleDateString()}. Not a manual override.`}
+      title={t("shared.estimatedAt", { p1: quote.rate, p2: quote.source, p3: quote.stale ? t("shared.staleSuffix") : "", p4: new Date(quote.effectiveDate).toLocaleDateString() })}
     >
       <p className="text-[11px] text-gf-text-muted -mt-1 cursor-default">
         ≈ {formatMoneyMinor(quote.amountMinor, quote.currency, { showCode: false })} {quote.currency}

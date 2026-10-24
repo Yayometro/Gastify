@@ -157,9 +157,7 @@ export async function POST(
 
       if (nextAccountCurrency !== currentAccountCurrency) {
         if (!currencyStrategy) {
-          throw new Error(
-            `Changing to an Account in a different currency (${currentAccountCurrency} -> ${nextAccountCurrency}) requires an explicit choice: convert, reinterpret, or manual.`
-          );
+          throw new Error(t("errors.api.currencyChoiceRequired", { p1: currentAccountCurrency, p2: nextAccountCurrency }));
         }
         if (currencyStrategy === "reinterpret") {
           // Keep the same number, just relabel the currency - resolvedAmount
@@ -180,13 +178,11 @@ export async function POST(
             date: findTrans.date,
           });
           if (!quote.available) {
-            throw new Error(
-              `Exchange-rate estimate unavailable to convert ${currentAccountCurrency} -> ${nextAccountCurrency}. Try again in a moment.`
-            );
+            throw new Error(t("errors.api.exchangeRateUnavailable", { p1: currentAccountCurrency, p2: nextAccountCurrency }));
           }
           resolvedAmount = minorToMajor(quote.amountMinor, nextAccountCurrency);
         } else {
-          throw new Error(`Unknown currencyStrategy: ${currencyStrategy}`);
+          throw new Error(t("errors.api.unknownCurrencyStrategy", { p1: currencyStrategy }));
         }
       }
     }
@@ -373,9 +369,7 @@ export async function POST(
       walletPrimaryCurrency
     );
     return NextResponse.json({
-      message: `${
-        updatedTrans.name ? updatedTrans.name : "Transacion"
-      } was updated successfully 😎`,
+      message: t("errors.api.updatedMany", { p1: updatedTrans.name ? updatedTrans.name : "Transacion" }),
       data: transactionWithDisplayMoney,
       status: 201,
       ok: true,

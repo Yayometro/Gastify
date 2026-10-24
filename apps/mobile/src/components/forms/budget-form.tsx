@@ -70,7 +70,7 @@ export function BudgetForm({
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.moneda.de.la.meta")}</Text>
         <ChipPicker items={ACCOUNT_CURRENCIES.map((code) => ({ id: code, label: code }))} value={values.currency} onChange={(code) => set('currency', code)} moreAfter={99} />
-        <TextField label={`Meta (${values.currency})`} value={values.goalAmount} onChangeText={(text) => set('goalAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
+        <TextField label={t("mobile.forms.goalLabel", { p1: values.currency })} value={values.goalAmount} onChangeText={(text) => set('goalAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
         {error(errors.goalAmount)}
       </View>
 
@@ -96,7 +96,7 @@ export function BudgetForm({
           </View>
           {values.linkedAccountIds.length === 0 && (
             <View className="gap-2">
-              <TextField label={`Ahorrado hasta ahora (${values.currency})`} value={values.savingAmount} onChangeText={(text) => set('savingAmount', text)} placeholder="0.00" keyboardType="numbers-and-punctuation" />
+              <TextField label={t("mobile.forms.savedSoFar", { p1: values.currency })} value={values.savingAmount} onChangeText={(text) => set('savingAmount', text)} placeholder="0.00" keyboardType="numbers-and-punctuation" />
               {error(errors.savingAmount)}
             </View>
           )}

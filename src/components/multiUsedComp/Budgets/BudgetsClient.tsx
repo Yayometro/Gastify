@@ -275,7 +275,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
       if (failed) throw new Error(failed.message || "Could not link all movements");
       results.forEach((result) => result.data && dispatch(updateTransaction(result.data)));
       const count = (group.movements || []).length;
-      runNotify("ok", `${count} movement${count === 1 ? "" : "s"} added to ${project.name}`);
+      runNotify("ok", t("budgets.movementsAdded", { count, p1: count, p2: project.name }));
     } catch (error: unknown) {
       const err = error as { message?: string };
       runNotify("error", err?.message || String(error));

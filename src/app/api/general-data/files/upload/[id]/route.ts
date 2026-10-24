@@ -143,6 +143,7 @@ async function resolveTags(rawTags: unknown, userId: unknown, walletId: unknown)
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UploadResponse>> {
+  const t = await serverT(["errors"]);
   const tr = await serverT(["errors"]);
   let tmpFilePath: string | null = null;
   try {
@@ -179,7 +180,7 @@ export async function POST(
         ok: false,
         versionMismatch: true,
         currentVersion: TEMPLATE_VERSION,
-        message: `Outdated template (v${fileVersion || "unknown"}). Please download the latest template (v${TEMPLATE_VERSION}) and try again.`,
+        message: t("errors.api.outdatedTemplateDownload", { p1: String(fileVersion || t("errors.api.unknown")), p2: TEMPLATE_VERSION }),
       }, { status: 400 });
     }
 
@@ -361,7 +362,7 @@ export async function POST(
     if (transactions.length === 0) {
       return NextResponse.json({
         ok: false,
-        message: `No valid transactions found in the file. ${skipped.length > 0 ? `Skipped rows: ${skipped.map((s) => `row ${s.row} (${s.reason})`).join(", ")}` : ""}`,
+        message: t("errors.api.noValidTransactions", { p1: skipped.length > 0 ? t("errors.api.skippedRows", { p1: skipped.map((s) => t("errors.api.rowReason", { p1: s.row, p2: s.reason })).join(", ") }) : "" }),
       }, { status: 400 });
     }
 
@@ -388,7 +389,7 @@ export async function POST(
 
     return NextResponse.json({
       data: transactionsWithDisplayMoney,
-      message: `File saved${skipped.length > 0 ? ` (${skipped.length} rows skipped)` : ""}`,
+      message: skipped.length > 0 ? t("errors.api.fileSavedSkipped", { p1: skipped.length }) : t("errors.api.fileSaved"),
       skipped,
       status: 201,
       ok: true,
@@ -397,7 +398,7 @@ export async function POST(
     console.error("Upload error:", e);
     return NextResponse.json({
       ok: false,
-      message: (e as Error)?.message || "Unexpected error processing the file",
+      message: (e as Error)?.message || t("errors.api.unexpectedFileError"),
     }, { status: 500 });
   } finally {
     if (tmpFilePath) await unlink(tmpFilePath).catch(() => {});

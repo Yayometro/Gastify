@@ -47,6 +47,6 @@ describe("POST income-sources/remove", () => {
   });
 
   it("the error says 'remove' (bug 49)", async () => {
-    await expect(POST(req({}))).rejects.toThrow("remove the income source");
+    await expect(POST(req({}))).rejects.toThrow("eliminar la fuente de ingreso");
   });
 });

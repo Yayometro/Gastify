@@ -103,7 +103,7 @@ export function SummaryWidget({
         <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{level === 1 ? 'Todas las categorías' : `Volver a ${chosen.name}`}</Text>
       </Pressable>
       {level === 1 && (
-        <Pressable accessibilityRole="button" accessibilityLabel={`Ver las transacciones de ${chosen.name}`} onPress={() => setPath((current) => ({ path: [...current.path, ALL_MOVEMENTS] }))} className="flex-row items-center gap-1 py-1">
+        <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.home.seeTransactionsOf", { p1: chosen.name })} onPress={() => setPath((current) => ({ path: [...current.path, ALL_MOVEMENTS] }))} className="flex-row items-center gap-1 py-1">
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.transacciones")}</Text>
           <Ionicons name="chevron-forward" size={18} color={colors.accent} />
         </Pressable>
@@ -154,7 +154,7 @@ export function SummaryWidget({
   );
   // The big sheet: the filters, the same chart as the card (it drills down the same way) and every category, each row can be opened.
   const sheet = (
-    <DetailSheet tall visible={detailOpen} onClose={() => setDetailOpen(false)} title={t("mobile.resumen.de.transacciones")} subtitle={`${allRows.length} ${allRows.length === 1 ? 'categoría' : 'categorías'} · ${kind === 'spending' ? 'gastos' : 'ingresos'}`}>
+    <DetailSheet tall visible={detailOpen} onClose={() => setDetailOpen(false)} title={t("mobile.resumen.de.transacciones")} subtitle={t("mobile.home.categoryCountSubtitle", { count: allRows.length, p1: allRows.length, p2: kind === 'spending' ? t("mobile.home.spendingWord") : t("mobile.home.incomeWord") })}>
       {filters}
       {chartPicker}
       {totalText}

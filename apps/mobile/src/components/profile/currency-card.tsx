@@ -27,7 +27,7 @@ export function CurrencyCard() {
 
   const change = (next: string) => {
     if (!walletId || next === current || busy) return;
-    Alert.alert(t("mobile.cambiar.la.moneda.principal"), `Tus totales y reportes se mostrarán en ${next}. El saldo de cada cuenta se queda en su propia moneda.`, [
+    Alert.alert(t("mobile.cambiar.la.moneda.principal"), t("mobile.profile.currencyChange", { p1: next }), [
       { text: t("mobile.cancelar"), style: 'cancel' },
       {
         text: t("mobile.cambiar"),

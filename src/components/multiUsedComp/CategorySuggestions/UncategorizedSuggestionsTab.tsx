@@ -63,7 +63,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestio
         applications,
       })) as ApplyApiResponse;
       if (res.ok) {
-        runNotify("ok", `${res.data?.length} transaction(s) categorized 🏷️`);
+        runNotify("ok", t("categories.categorizedCount", { p1: res.data?.length }));
         const appliedIds = new Set(applications.map((a) => String(a.transactionId)));
         setSuggestions((prev) => prev.filter((s) => !appliedIds.has(String(s.transaction._id))));
         onApplied?.(res.data);

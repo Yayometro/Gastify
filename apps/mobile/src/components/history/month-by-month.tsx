@@ -85,7 +85,7 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
             <Pressable
               key={`${month.label}-${index}`}
               accessibilityRole="button"
-              accessibilityLabel={`${labelAt(start, index, month.label)}: ingresos ${money(month.incomes)}, gastos ${money(month.spending)}${other && compareStart ? `; comparado con ${labelAt(compareStart, index, other.label)}` : ''}`}
+              accessibilityLabel={t("mobile.history.monthAccessibility", { p1: labelAt(start, index, month.label), p2: money(month.incomes), p3: money(month.spending), p4: other && compareStart ? t("mobile.history.comparedWith", { p1: labelAt(compareStart, index, other.label) }) : "" })}
               onPress={() => setOpen(index)}
               className="flex-1 items-center justify-end gap-1">
               <View className="flex-row items-end gap-0.5">

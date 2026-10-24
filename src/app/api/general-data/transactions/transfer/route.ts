@@ -13,6 +13,7 @@ import { buildSameCurrencyReportingMoney } from "@/lib/money/transactionMoney";
 import { convert } from "@/lib/money/server/fxRateService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { serverT } from "@/i18n/server";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -62,7 +63,8 @@ async function buildLegReporting(
   accountCurrency: string,
   accountAmountMinor: number,
   walletPrimaryCurrency: string,
-  date: Date
+  date: Date,
+  t: TranslateFn
 ): Promise<IReportingMoney> {
   if (accountCurrency === walletPrimaryCurrency) {
     return buildSameCurrencyReportingMoney({
@@ -84,9 +86,7 @@ async function buildLegReporting(
     estimated?: boolean;
   };
   if (!quote.available) {
-    throw new Error(
-      `Exchange-rate estimate unavailable for ${accountCurrency} -> ${walletPrimaryCurrency}. Try again in a moment.`
-    );
+    throw new Error(t("errors.api.exchangeRateUnavailable", { p1: accountCurrency, p2: walletPrimaryCurrency }));
   }
   return {
     amountMinor: quote.amountMinor as number,
@@ -192,8 +192,8 @@ export async function POST(
           });
 
     const [sourceReporting, destinationReporting] = await Promise.all([
-      buildLegReporting(sourceCurrency, validSourceAmountMinor, walletPrimaryCurrency, parsedDate),
-      buildLegReporting(destinationCurrency, validDestinationAmountMinor, walletPrimaryCurrency, parsedDate),
+      buildLegReporting(sourceCurrency, validSourceAmountMinor, walletPrimaryCurrency, parsedDate, t),
+      buildLegReporting(destinationCurrency, validDestinationAmountMinor, walletPrimaryCurrency, parsedDate, t),
     ]);
 
     const session = await mongoose.startSession();
@@ -260,7 +260,7 @@ export async function POST(
     );
 
     return NextResponse.json({
-      message: `${legName} recorded successfully`,
+      message: t("errors.api.legRecorded", { p1: legName }),
       data: { outgoing: outgoingWithDisplayMoney, incoming: incomingWithDisplayMoney, transferGroupId, effectiveRate },
       status: 201,
       ok: true,
@@ -268,7 +268,7 @@ export async function POST(
   } catch (e) {
     console.log(e);
     return NextResponse.json(
-      { ok: false, message: (e as Error)?.message || "Unexpected error" },
+      { ok: false, message: (e as Error)?.message || t("errors.api.unexpectedError") },
       { status: 400 }
     );
   }

@@ -87,7 +87,7 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
         </>
       ) : (
         <>
-          <TextField label={`Escribe tu correo (${email}) para confirmar`} value={confirmMail} onChangeText={setConfirmMail} keyboardType="email-address" autoComplete="email" />
+          <TextField label={t("mobile.profile.typeMailToConfirm", { p1: email })} value={confirmMail} onChangeText={setConfirmMail} keyboardType="email-address" autoComplete="email" />
           <TextField
             label={method === 'backup' ? 'Código de respaldo' : 'Código de tu app autenticadora'}
             value={code}

@@ -22,8 +22,7 @@ import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 const EMPTY: never[] = [];
 // The map opens first on the web; the ring goes last.
-const CHART_IDS = ["map", "bubbles", "ring"] as const;
-type ChartId = (typeof CHART_IDS)[number];
+type ChartId = "map" | "bubbles" | "ring";
 // The three charts, named in the person's language.
 const chartsFor = (t: TranslateFn) =>
   [

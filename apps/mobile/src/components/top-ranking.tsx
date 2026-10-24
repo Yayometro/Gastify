@@ -103,7 +103,7 @@ export function TopRanking({
   const sizeOptions = TOP_SIZES.map((n) => ({ value: String(n) as `${TopSize}`, label: String(n) }));
 
   return (
-    <Card title={`Top ${size}`} info={info ?? { title: `Top ${size}`, text: t("mobile.las.categorias.o.transacciones.con") }}>
+    <Card title={t("mobile.topLabel", { p1: size })} info={info ?? { title: t("mobile.topLabel", { p1: size }), text: t("mobile.las.categorias.o.transacciones.con") }}>
       <CompactTimeFilter preset={preset} onPreset={(value) => { if (value !== 'dashboard') setPreset(value); }} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} periodSelect={showComparison} extra={showComparison ? (
         <>
         <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">

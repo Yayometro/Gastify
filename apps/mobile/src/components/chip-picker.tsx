@@ -41,7 +41,7 @@ function ChipsRow({
         {hasMore && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Ver todos: ${title}`}
+            accessibilityLabel={t("mobile.chips.seeAll", { p1: title })}
             onPress={() => setOpen(true)}
             className="flex-row items-center gap-1.5 rounded-full border px-3 py-2"
             style={{ borderColor: colors.accent, backgroundColor: colors.accentSoft }}>

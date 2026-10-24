@@ -109,6 +109,7 @@ export interface ReadFileCompProps {
 }
 
 function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
+  const t = useT();
   const { APP_INFO } = useInfo();
   const tr = useT();
   const [isExcel, setIsExcel] = useState<boolean>(true);
@@ -189,7 +190,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
         if (!res?.ok) {
           setUploadStatus("error");
           if (res?.versionMismatch) {
-            runNotify("error", `Your template is outdated. Please click "Download format" to get the latest template and try again 📥`);
+            runNotify("error", t("movements.templateOutdated"));
           } else {
             runNotify("error", res?.message || "Something went wrong, please try again 🤕");
           }
@@ -197,7 +198,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
         }
         setUploadStatus("done");
         const created = res.data?.length ?? 0;
-        runNotify("ok", `${created} transactions have been processed and created from the file 😎`);
+        runNotify("ok", t("movements.importProcessed", { p1: created }));
         if (created > 0 && res.data) {
           reduxDispatch(addNewTransacctions(res.data));
           fetchSuggestionsFor(
@@ -280,7 +281,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       if (res?.ok !== false) {
         reduxDispatch(removeManyTransactions(idsToDelete));
         setDedupResult({ removed: idsToDelete.length, scanned: dedupPreview?.scanned });
-        runNotify("ok", `Removed ${idsToDelete.length} duplicate transaction(s) 🧹`);
+        runNotify("ok", t("movements.dedupRemoved", { p1: idsToDelete.length }));
       } else {
         runNotify("error", res?.message || "Could not delete transactions 🤕");
       }
@@ -316,7 +317,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       };
       if (res.ok && res.data) {
         reduxDispatch(updateManyTransactions(res.data));
-        runNotify("ok", `${res.data.length} transaction(s) categorized 🏷️`);
+        runNotify("ok", t("categories.categorizedCount", { p1: res.data.length }));
         return true;
       }
       runNotify("error", res?.message || "Could not apply suggestions 🤕");

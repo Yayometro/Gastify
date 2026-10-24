@@ -77,7 +77,7 @@ export async function POST(
     const populatedSubCategory = await SubCategory.findById(saveSub._id)
       .populate("fatherCategory");
     return NextResponse.json({
-      message: `${populatedSubCategory.name} was updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: populatedSubCategory.name }),
       data: populatedSubCategory,
       ok: true,
       status: 201,

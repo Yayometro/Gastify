@@ -84,7 +84,7 @@ describe("speech-add authentication and scoping", () => {
           lang: "English",
         })
       )
-    ).rejects.toThrow(/No session/);
+    ).rejects.toThrow(/No hay sesión activa/);
   });
 
   it("derives user and wallet from the session rather than untrusted caller user ID", async () => {
@@ -111,7 +111,7 @@ describe("speech-add phrase parsing and extraction", () => {
           lang: "English",
         })
       )
-    ).rejects.toThrow(/Title of transaction data is missing/);
+    ).rejects.toThrow(/Falta el nombre del movimiento/);
   });
 
   it("throws if amount is missing from speech text", async () => {
@@ -122,7 +122,7 @@ describe("speech-add phrase parsing and extraction", () => {
           lang: "English",
         })
       )
-    ).rejects.toThrow(/Amount of transaction data is missing/);
+    ).rejects.toThrow(/Falta el monto del movimiento/);
   });
 
   it("parses an English speech transaction with title, amount, category and account", async () => {

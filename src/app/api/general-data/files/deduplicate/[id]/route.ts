@@ -102,6 +102,7 @@ function nativeMoneyOf(transaction: unknown) {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<DedupResponse>> {
+  const t = await serverT(["errors"]);
   const tr = await serverT(["errors"]);
   let tmpFilePath: string | null = null;
   try {
@@ -140,7 +141,7 @@ export async function POST(
       return NextResponse.json({
         ok: false,
         versionMismatch: true,
-        message: `Outdated template (v${fileVersion || "unknown"}). Please use the latest template (v${TEMPLATE_VERSION}).`,
+        message: t("errors.api.outdatedTemplate", { p1: String(fileVersion || t("errors.api.unknown")), p2: TEMPLATE_VERSION }),
       }, { status: 400 });
     }
 
@@ -244,7 +245,7 @@ export async function POST(
         scanned: excelRows.length,
         toDelete: dedup(previewToDelete),
         toKeep: dedup(previewToKeep),
-        message: `Preview ready: ${dedup(previewToDelete).length} transaction(s) would be removed across ${excelRows.length} rows scanned.`,
+        message: t("errors.api.previewReady", { p1: dedup(previewToDelete).length, p2: excelRows.length }),
       });
     }
 
@@ -282,7 +283,7 @@ export async function POST(
     });
   } catch (e) {
     console.error("Deduplicate error:", e);
-    return NextResponse.json({ ok: false, message: (e as Error)?.message || "Unexpected error" }, { status: 500 });
+    return NextResponse.json({ ok: false, message: (e as Error)?.message || t("errors.api.unexpectedError") }, { status: 500 });
   } finally {
     if (tmpFilePath) await unlink(tmpFilePath).catch(() => {});
   }

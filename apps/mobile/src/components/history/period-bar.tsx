@@ -27,7 +27,7 @@ export function PeriodBar({ preset, range, onPreset, onShift, canGoForward }: { 
           <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.periodo.anterior")} onPress={() => onShift(-1)} hitSlop={8} className="h-12 w-12 items-center justify-center rounded-full">
             <Ionicons name="chevron-back" size={26} color={colors.text} />
           </Pressable>
-          <Pressable accessibilityRole="button" accessibilityLabel={`${label}. Elegir otro periodo`} onPress={() => setOpen(true)} hitSlop={8} className="items-center">
+          <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.periodPick", { p1: label })} onPress={() => setOpen(true)} hitSlop={8} className="items-center">
             <View className="flex-row items-center gap-1.5">
               <Text className="font-inter-semibold text-lg text-gf-text">{preset === 'custom' ? t('movements.range.fallback') : label}</Text>
               <Ionicons name="caret-down" size={13} color={colors.text} />

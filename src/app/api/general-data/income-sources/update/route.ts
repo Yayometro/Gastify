@@ -47,7 +47,7 @@ export async function POST(
     const { id, name, amount, currency, recurrence, anchorDate, active } =
       ((await request.json()) || {}) as UpdateIncomeSourceRequestBody;
     // NO ID FILTER
-    if (!id) throw new Error(`No ID was provided to update income source 🤕`);
+    if (!id) throw new Error(t("errors.api.noIdUpdateIncome"));
 
     // Security fix: this route previously lacked session verification and
     // performed IncomeSource.findById(id) directly with zero ownership check (IDOR).
@@ -65,7 +65,7 @@ export async function POST(
     });
     //IF ERROR
     if (!updateIncomeSource)
-      throw new Error(`No Income Source was identified to update 🤕`);
+      throw new Error(t("errors.api.incomeNotIdentifiedUpdate"));
     // VERSION HISTORY if amount/recurrence is actually changing
     // `amount` was tested for truthiness, so a change TO 0 was read as "not sent"
     // and neither saved nor recorded in the history (bugs 42 and 43).
@@ -102,7 +102,7 @@ export async function POST(
     //IF ERROR
     if (!savedIncomeSource) throw new Error(t("errors.updated.income.source.was.not"));
     return NextResponse.json({
-      message: `${savedIncomeSource.name} was updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: savedIncomeSource.name }),
       data: savedIncomeSource,
       status: 200, // matches the real HTTP status (it said 201 while answering 200, bug 44)
       ok: true,

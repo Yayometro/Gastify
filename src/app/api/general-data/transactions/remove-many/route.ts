@@ -75,7 +75,7 @@ export async function POST(
         t("errors.something.went.wrong.trying.to")
       );
     return NextResponse.json({
-      message: `"${result.deletedCount}" transactions removed successfully`,
+      message: t("errors.api.transactionsRemoved", { p1: result.deletedCount }),
       deletedCount: result.deletedCount,
       status: 200,
       ok: true,
@@ -83,7 +83,7 @@ export async function POST(
   } catch (e) {
     console.log(e);
     return NextResponse.json({
-      error: (e as Error)?.message || "Unexpected error",
+      error: (e as Error)?.message || t("errors.api.unexpectedError"),
       status: 500,
       ok: false,
     });

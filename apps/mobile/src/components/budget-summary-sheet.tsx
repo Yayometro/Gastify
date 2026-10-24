@@ -108,7 +108,7 @@ export function BudgetSummarySheet({
                   <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.otras.categorias.sin.presupuesto")}</Text>
                   {groups.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.no.hay.movimientos.sin.presupuesto")}</Text>}
                   {groups.map((group) => (
-                    <Pressable key={group.key} accessibilityRole="button" accessibilityLabel={`Ver movimientos sin presupuesto de ${group.name}`} onPress={() => setSelectedGroup(group.key)} className="flex-row items-center gap-3">
+                    <Pressable key={group.key} accessibilityRole="button" accessibilityLabel={t("mobile.budgets.noBudgetMovesOf", { p1: group.name })} onPress={() => setSelectedGroup(group.key)} className="flex-row items-center gap-3">
                       <CategoryBadge icon={group.icon} color={group.color} size={34} />
                       <View className="flex-1">
                         <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{group.name}</Text>

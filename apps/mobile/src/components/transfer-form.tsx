@@ -65,12 +65,12 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
         {errors.destinationAccountId && <Text className="font-inter text-sm text-red-500">{t(errors.destinationAccountId)}</Text>}
       </View>
       <View className="gap-2">
-        <TextField label={`Monto que sale${source ? ` (${source})` : ''}`} value={values.sourceAmount} onChangeText={(text) => set('sourceAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
+        <TextField label={source ? t("mobile.transfer.sourceAmountWith", { p1: source }) : t("mobile.transfer.sourceAmount")} value={values.sourceAmount} onChangeText={(text) => set('sourceAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
         {errors.sourceAmount && <Text className="font-inter text-sm text-red-500">{t(errors.sourceAmount)}</Text>}
       </View>
       {crossCurrency && (
         <View className="gap-2">
-          <TextField label={`Monto que llega${destination ? ` (${destination})` : ''}`} value={values.destinationAmount} onChangeText={(text) => set('destinationAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
+          <TextField label={destination ? t("mobile.transfer.destAmountWith", { p1: destination }) : t("mobile.transfer.destAmount")} value={values.destinationAmount} onChangeText={(text) => set('destinationAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
           {errors.destinationAmount && <Text className="font-inter text-sm text-red-500">{t(errors.destinationAmount)}</Text>}
         </View>
       )}

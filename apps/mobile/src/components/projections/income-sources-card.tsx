@@ -103,7 +103,7 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
       ) : (
         <View className="gap-3">
           <TextField label={tr("mobile.nombre")} value={name} onChangeText={setName} placeholder={tr("mobile.sueldo")} maxLength={60} autoCapitalize="sentences" />
-          <TextField label={`Monto mensual aproximado (${code})`} value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
+          <TextField label={t("mobile.projections.monthlyApprox", { p1: code })} value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
           <View className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{tr("mobile.moneda")}</Text>
             <ChipPicker items={SUPPORTED_CURRENCIES.map((c) => ({ id: c, label: c }))} value={code} onChange={setCode} moreAfter={99} />

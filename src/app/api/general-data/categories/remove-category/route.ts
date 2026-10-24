@@ -42,7 +42,7 @@ export async function POST(
     if (!removedCatego) throw new Error(t("errors.no.category.removed"));
     //
     return NextResponse.json({
-      message: `${removedCatego.name} was removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: removedCatego.name }),
       data: {
         categoRemoved: removedCatego,
       },

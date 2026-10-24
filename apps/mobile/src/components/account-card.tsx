@@ -53,7 +53,7 @@ export function AccountCard({
   const money = (value: number) => formatMoneyMajor(value, code, { showCode: false });
 
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`Cuenta ${account.name}`} onPress={onPress} disabled={!onPress} style={{ width: width ?? '100%' }}>
+    <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.accounts.accountLabel", { p1: account.name ?? "" })} onPress={onPress} disabled={!onPress} style={{ width: width ?? '100%' }}>
       <LinearGradient
         colors={stops as [string, string, ...string[]]}
         start={{ x: 0, y: 0 }}

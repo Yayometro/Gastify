@@ -39,14 +39,14 @@ beforeEach(() => {
 describe("remove-transaction/[id] route", () => {
   it("throws error when context or params is missing", async () => {
     await expect(POST(mockRequest(), undefined)).rejects.toThrow(
-      /No params ID send to work on POST UPDATE TRANSACTION/
+      /No se envió el ID para actualizar/
     );
   });
 
   it("throws error when id is empty or invalid", async () => {
     await expect(
       POST(mockRequest(), { params: { id: "" } })
-    ).rejects.toThrow(/No params ID send to work on POST UPDATE TRANSACTION/);
+    ).rejects.toThrow(/No se envió el ID para actualizar/);
   });
 
   it("throws error when no session exists", async () => {
@@ -54,7 +54,7 @@ describe("remove-transaction/[id] route", () => {
 
     await expect(
       POST(mockRequest(), { params: { id: "trans-1" } })
-    ).rejects.toThrow(/No session/);
+    ).rejects.toThrow(/No hay sesión activa/);
 
     expect(Transaction.findOneAndDelete).not.toHaveBeenCalled();
   });
@@ -66,7 +66,7 @@ describe("remove-transaction/[id] route", () => {
 
     await expect(
       POST(mockRequest(), { params: { id: "trans-1" } })
-    ).rejects.toThrow(/User not found on REMOVE TRANSACTION/);
+    ).rejects.toThrow(/No encontramos tu usuario/);
 
     expect(Transaction.findOneAndDelete).not.toHaveBeenCalled();
   });
@@ -81,7 +81,7 @@ describe("remove-transaction/[id] route", () => {
     });
     expect(data.ok).toBe(true);
     expect(data.status).toBe(201);
-    expect(data.message).toBe("Transaction Grocery Store was removed 🤓");
+    expect(data.message).toBe("La transacción Grocery Store se eliminó 🤓");
     expect(data.data._id).toBe("trans-1");
   });
 
@@ -104,6 +104,6 @@ describe("remove-transaction/[id] route", () => {
 
     await expect(
       POST(mockRequest(), { params: { id: "trans-nonexistent" } })
-    ).rejects.toThrow(/Transaction could not be removed ❌/);
+    ).rejects.toThrow(/No se pudo borrar el movimiento/);
   });
 });

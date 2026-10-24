@@ -158,7 +158,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
         if (userInfo.password !== userInfo.passwordConfirm) {
           runNotify(
             "error",
-            `Password don't match, review both inputs and try again ❌`
+            t("profile.pwdMismatch")
           );
           setUserInfo({ ...userInfo, password: null, passwordConfirm: null });
           setIsLoading(false);
@@ -169,7 +169,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
         ) {
           runNotify(
             "error",
-            `Password should have at least 8 characters of length ❌`
+            t("profile.pwdMin8")
           );
           setUserInfo({ ...userInfo, password: null, passwordConfirm: null });
           setIsLoading(false);
@@ -180,7 +180,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
         ) {
           runNotify(
             "error",
-            `Password should have at least one capital letter "A,B,C... etc" ❌`
+            t("profile.pwdUpper")
           );
           setUserInfo({ ...userInfo, password: null, passwordConfirm: null });
           setIsLoading(false);
@@ -191,7 +191,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
         ) {
           runNotify(
             "error",
-            `Password should have at at least one special character "!@#$%^&*(),.?":_{}|<>" ❌`
+            t("profile.pwdSpecial")
           );
           setUserInfo({ ...userInfo, password: null, passwordConfirm: null });
           setIsLoading(false);
@@ -225,7 +225,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
       {!userData ? (
         <div className="flex justify-center items-center content-wallet-glass rounded-2xl h-screen">
           <TypedEmptyModule
-            emMessage={`Ups! No user data please refresh de page or try again later... 🤕`}
+            emMessage={t("profile.noUserData")}
           />
         </div>
       ) : (
@@ -254,7 +254,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                   ? userData.image
                   : "/img/profile/user-non-profile.jpg"
               }
-              alt={`${userData?.fullName} profile account`}
+              alt={t("navbar.profileAlt", { p1: userData?.fullName })}
               width={150}
               height={150}
             />

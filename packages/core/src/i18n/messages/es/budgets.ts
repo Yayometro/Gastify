@@ -1,5 +1,12 @@
 // Texts of the "budgets" namespace. Spanish is the source text.
 const budgets = {
+  "budgets.estimatedMonths_one": "{p1} de estos meses es anterior a la meta más antigua conocida de este presupuesto, así que se compara contra esa meta como estimado, no como un dato histórico verificado.",
+  "budgets.estimatedMonths_other": "{p1} de estos meses son anteriores a la meta más antigua conocida de este presupuesto, así que se comparan contra esa meta como estimado, no como un dato histórico verificado.",
+  "budgets.movementsAdded_one": "{p1} movimiento agregado a {p2}",
+  "budgets.movementsAdded_other": "{p1} movimientos agregados a {p2}",
+  "budgets.noSaving": "No se encontró ningún ahorro. Recarga o crea un presupuesto nuevo 🤓",
+  "budgets.noBudget": "No se encontró ningún presupuesto. Recarga o crea uno nuevo 🤓",
+  "budgets.addToBudget": "Agregar {p1} a un presupuesto existente",
   "budgets.kind.spending": "Gasto",
   "budgets.kind.saving": "Ahorro",
   "budgets.kind.project": "Proyecto",

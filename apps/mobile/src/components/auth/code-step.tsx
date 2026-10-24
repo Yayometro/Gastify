@@ -45,7 +45,7 @@ export function CodeStep({ onVerified, onGiveUp }: { onVerified: () => void; onG
         onGiveUp();
         return;
       }
-      setError(`Código incorrecto. Te quedan ${MAX_ATTEMPTS - next} intento(s).`);
+      setError(t("mobile.auth.wrongCode", { p1: MAX_ATTEMPTS - next }));
     } catch {
       setError(t("mobile.no.pudimos.conectar.con.el"));
     } finally {

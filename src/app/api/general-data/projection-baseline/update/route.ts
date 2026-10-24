@@ -74,21 +74,19 @@ export async function POST(
     const { kind, entryId, effectiveFrom, effectiveTo, amount, currency } = body;
 
     if (!effectiveFrom || !kind)
-      throw new Error(
-        `No mail/kind/effectiveFrom was provided to update the projection baseline 🤕`
-      );
+      throw new Error(t("errors.api.baselineUpdateNoParams"));
     if (kind !== "income" && kind !== "expense")
-      throw new Error(`kind must be "income" or "expense" 🤕`);
+      throw new Error(t("errors.api.kindInvalid"));
     if (currency && !SUPPORTED_CURRENCIES.includes(currency))
-      throw new Error(`Unsupported currency: ${currency} 🤕`);
+      throw new Error(t("errors.api.unsupportedCurrencyEmoji", { p1: currency }));
     // Unparseable dates used to slip through (every comparison with an Invalid Date is false)
     // and were saved as Invalid Date (bug 77).
     if (Number.isNaN(new Date(effectiveFrom).getTime()))
-      throw new Error(`effectiveFrom is not a valid date 🤕`);
+      throw new Error(t("errors.api.effectiveFromInvalid"));
     if (effectiveTo && Number.isNaN(new Date(effectiveTo).getTime()))
-      throw new Error(`effectiveTo is not a valid date 🤕`);
+      throw new Error(t("errors.api.effectiveToInvalid"));
     if (effectiveTo && new Date(effectiveTo) <= new Date(effectiveFrom))
-      throw new Error(`effectiveTo must be after effectiveFrom 🤕`);
+      throw new Error(t("errors.api.effectiveToAfter"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
@@ -143,9 +141,7 @@ export async function POST(
         baseline[field] as Array<{ _id?: unknown }>
       ).find((entry) => String(entry._id) === String(entryId));
       if (!existing)
-        throw new Error(
-          `No ${kind} baseline entry was found with that id to edit 🤕`
-        );
+        throw new Error(t("errors.api.baselineEntryNotFound", { p1: kind }));
       Object.assign(existing, newValues);
     } else {
       (
@@ -163,7 +159,7 @@ export async function POST(
     if (!savedBaseline)
       throw new Error(t("errors.projection.baseline.was.not.saved"));
     return NextResponse.json({
-      message: `Projection Baseline was updated successfully 🤓`,
+      message: t("errors.api.baselineUpdated"),
       data: savedBaseline,
       status: 201,
       ok: true,

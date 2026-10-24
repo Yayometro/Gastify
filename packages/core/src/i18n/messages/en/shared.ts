@@ -2,6 +2,13 @@ import type shared from "../es/shared";
 
 // English for the "shared" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof shared, string> = {
+  "shared.staleSuffix": ", stale",
+  "shared.languageLabel": "Language",
+  "shared.estimatedAt": "Estimated at {p1} ({p2}{p3}) on {p4}. Not a manual override.",
+  "shared.timeRange.prevMonth": "Go to previous month: {p1}",
+  "shared.timeRange.nextMonth": "Go to next month: {p1}",
+  "shared.infoLabel": "What is {p1}",
+  "shared.dismissAlert": "Dismiss the alert: {p1}",
   "shared.stepUp.failed3": "We could not verify your identity after 3 attempts. For security, we signed you out.",
   "shared.passkey.registered": "Passkey registered 🤓",
   "shared.password.wrong": "Wrong password 🤕",

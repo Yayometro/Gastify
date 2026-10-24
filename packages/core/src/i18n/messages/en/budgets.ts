@@ -2,6 +2,13 @@ import type budgets from "../es/budgets";
 
 // English for the "budgets" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof budgets, string> = {
+  "budgets.estimatedMonths_one": "{p1} of these months predates this budget's earliest known goal, so it is compared against that goal as an estimate, not a verified historical figure.",
+  "budgets.estimatedMonths_other": "{p1} of these months predate this budget's earliest known goal, so they are compared against that goal as an estimate, not a verified historical figure.",
+  "budgets.movementsAdded_one": "{p1} movement added to {p2}",
+  "budgets.movementsAdded_other": "{p1} movements added to {p2}",
+  "budgets.noSaving": "No saving found. Please refresh or create a new budget 🤓",
+  "budgets.noBudget": "No budget found. Please refresh or create a new budget 🤓",
+  "budgets.addToBudget": "Add {p1} to an existing budget",
   "budgets.kind.spending": "Spending",
   "budgets.kind.saving": "Saving",
   "budgets.kind.project": "Project",

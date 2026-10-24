@@ -100,7 +100,7 @@ export default function AccountsScreen() {
             ))}
           {total.missingCurrencies.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
-              {`Sin tipo de cambio para ${total.missingCurrencies.join(', ')}: esas cuentas no suman en el total.`}
+              {t("mobile.accounts.noRateTotal", { p1: total.missingCurrencies.join(', ') })}
             </Text>
           )}
         </Card>

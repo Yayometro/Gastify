@@ -197,16 +197,16 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
   const snapshot = useMemo(() => {
     if (!range || transactions.length < 1) return null;
-    return buildPeriodSnapshot({ text,  transactions, budgets, range, topN });
-  }, [range, transactions, budgets, topN]);
+    return buildPeriodSnapshot({ text, transactions, budgets, range, topN });
+  }, [range, transactions, budgets, topN, text]);
 
   const comparison = useMemo(() => {
     if (!compareEnabled) return null;
     if (!range || !comparePeriod?.[0] || !comparePeriod?.[1]) return null;
     if (transactions.length < 1) return null;
     const rangeB = { start: comparePeriod[0], end: comparePeriod[1] };
-    return buildPeriodComparison({ text,  transactions, budgets, rangeA: range, rangeB, labelA, labelB: labelB || "", topN });
-  }, [compareEnabled, range, comparePeriod, transactions, budgets, labelA, labelB, topN]);
+    return buildPeriodComparison({ text, transactions, budgets, rangeA: range, rangeB, labelA, labelB: labelB || "", topN });
+  }, [compareEnabled, range, comparePeriod, transactions, budgets, labelA, labelB, topN, text]);
 
   function openCategoryModal(
     item: { name: string; icon?: string; color?: string; current?: number; amount?: number },

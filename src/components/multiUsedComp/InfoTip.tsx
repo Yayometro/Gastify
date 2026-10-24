@@ -42,12 +42,13 @@ export function InfoWindow({ info, onClose, body }: { info: InfoText; onClose: (
 // The "?" that explains a window or a section: the same explanation the app shows, in a window of its own.
 // It may sit inside a card that opens something when pressed: the tip and its window never reach that card.
 export function InfoTip({ info, className = "" }: { info: InfoText; className?: string }): React.JSX.Element {
+  const t = useT();
   const [open, setOpen] = useState<boolean>(false);
   return (
     <>
       <button
         type="button"
-        aria-label={`Qué es ${info.title}`}
+        aria-label={t("shared.infoLabel", { p1: info.title })}
         onClick={(event) => {
           event.stopPropagation();
           setOpen(true);

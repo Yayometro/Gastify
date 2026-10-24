@@ -115,7 +115,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                   <h1 className="text-2xl font-thin py-2">{t("categories.list.yours")}</h1>
                   {categoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No categories to show. Ad a new category or try again later... 🤕`}
+                      emMessage={t("categories.emptyCategories")}
                     />
                   ) : (
                     <CategoryList clCategories={filteredCategoriesData} clUser={userData}/>
@@ -125,7 +125,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                   <h1 className="text-2xl font-thin py-2">{t("categories.list.yoursSub")}</h1>
                   {subCategoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No subcategory to show. Ad a new subcategory or try again later... 🤕`}
+                      emMessage={t("categories.emptySubcategories")}
                     />
                   ) : (
                     <SubCategoryList sclSubCategory={filteredSubCategoriesData} clUser={userData} sclCategories={categoriesData} />
@@ -137,7 +137,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                   </h1>
                   {defCategoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No categories to show. Ad a new category or try again later... 🤕`}
+                      emMessage={t("categories.emptyCategories")}
                     />
                   ) : (
                     <CategoryList clCategories={filteredDefCategoriesData} clUser={userData}/>
@@ -149,7 +149,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                   </h1>
                   {defSubCategoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No subcategory to show. Ad a new subcategory or try again later... 🤕`}
+                      emMessage={t("categories.emptySubcategories")}
                     />
                   ) : (
                     <SubCategoryList sclSubCategory={filteredDefSubCategoriesData} clUser={userData} sclCategories={categoriesData} />

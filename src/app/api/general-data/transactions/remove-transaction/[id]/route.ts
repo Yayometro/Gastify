@@ -57,7 +57,7 @@ export async function POST(
     if (!removedTrans) throw new Error(t("errors.transaction.could.not.be.removed"));
     console.log(removedTrans);
     return NextResponse.json({
-      message: `Transaction ${removedTrans.name} was removed 🤓`,
+      message: t("errors.api.transactionRemoved", { p1: removedTrans.name }),
       data: removedTrans,
       status: 201,
       ok: true,

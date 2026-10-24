@@ -44,7 +44,7 @@ export async function POST(
     });
     if (!removedTag) throw new Error(t("errors.no.tag.was.removed"));
     return NextResponse.json({
-      message: `${removedTag.name} was removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: removedTag.name }),
       data: removedTag,
       ok: true,
       status: 201,

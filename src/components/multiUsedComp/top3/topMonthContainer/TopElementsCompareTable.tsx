@@ -116,6 +116,7 @@ function CompareSection({ title, rows, mode, labelLeft, labelRight, onOpenItem }
 // the exact same row components (and detail modal) as the single-period
 // view above, just laid out two-up per month instead of one column.
 function TopElementsCompareTable({ transactionRows, categoryRows, labelLeft, labelRight, elementsToDisplay }: TopElementsCompareTableProps): React.JSX.Element {
+  const t = useT();
   const { close, handleClose, renderModal, modalContent } = useModal();
   function onOpenItem(item: unknown) {
     renderModal(<ModalContentTopMonthItem item={item as ModalContentTopMonthItemItem} close={handleClose} />);
@@ -123,7 +124,7 @@ function TopElementsCompareTable({ transactionRows, categoryRows, labelLeft, lab
   return (
     <div className="w-full flex flex-col items-start">
       <CompareSection
-        title={`Top ${elementsToDisplay} Transactions comparative`}
+        title={t("analyzer.topTransactionsCompare", { p1: elementsToDisplay })}
         rows={transactionRows}
         mode="transaction"
         labelLeft={labelLeft}
@@ -131,7 +132,7 @@ function TopElementsCompareTable({ transactionRows, categoryRows, labelLeft, lab
         onOpenItem={onOpenItem}
       />
       <CompareSection
-        title={`Top ${elementsToDisplay} Categories comparative`}
+        title={t("analyzer.topCategoriesCompare", { p1: elementsToDisplay })}
         rows={categoryRows}
         mode="category"
         labelLeft={labelLeft}

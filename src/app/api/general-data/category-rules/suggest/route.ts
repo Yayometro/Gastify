@@ -54,6 +54,7 @@ export type SuggestResponse = SuggestSuccessResponse;
 export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<SuggestResponse>> {
+  const t = await serverT(["errors"]);
   const tr = await serverT(["errors"]);
   try {
     if (!request)
@@ -133,7 +134,7 @@ export async function POST(
       .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
     return NextResponse.json({
-      message: `${suggestions.length} suggestion(s) found`,
+      message: t("errors.api.suggestionsFound", { p1: suggestions.length }),
       data: suggestions,
       status: 201,
       ok: true,

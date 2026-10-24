@@ -117,6 +117,7 @@ function SideColumn({ title, colorClass, children, maxH = "max-h-[55vh]", header
 }
 
 function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming }: DedupPreviewModalProps): React.JSX.Element | React.ReactPortal {
+  const t = useT();
   const tr = useT();
   const { toDelete = [], toKeep = [], scanned = 0 } = preview;
 
@@ -189,7 +190,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
           <div className="flex gap-4 items-start">
             {/* Left — will be kept */}
             <SideColumn
-              title={`Will be kept (${toKeep.length})`}
+              title={t("movements.dedupKept", { p1: toKeep.length })}
               colorClass="text-green-400"
             >
               {toKeep.length === 0
@@ -207,7 +208,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
 
             {/* Right — will be deleted */}
             <SideColumn
-              title={`Will be deleted (${effective.length} of ${toDelete.length}${skipped > 0 ? `, ${skipped} skipped` : ""})`}
+              title={t("movements.dedupDeleted", { p1: effective.length, p2: toDelete.length, p3: skipped > 0 ? t("movements.dedupSkipped", { p1: skipped }) : "" })}
               colorClass="text-red-500"
               headerRight={
                 toDelete.length > 0 ? (

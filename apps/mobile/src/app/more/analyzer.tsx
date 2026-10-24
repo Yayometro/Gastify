@@ -63,7 +63,7 @@ export default function AnalyzerScreen() {
   const projection = useAnalyzerProjection(month, transactions, budgets, currency);
 
   const snapshot = useMemo<WalletAnalyzerSnapshotData>(
-    () => buildWalletAnalyzerSnapshot({ text,  transactions, budgets, referenceDate: month, topN: Number(topN) }),
+    () => buildWalletAnalyzerSnapshot({ text, transactions, budgets, referenceDate: month, topN: Number(topN) }),
     [transactions, budgets, month, topN]
   );
   const { currentTotals: now_, previousTotals: before, trend, topCategoriesBills, topCategoriesBillsPrevious, topTransactionsBills, monthlyAverages, pace, subscriptions } = snapshot;
@@ -160,7 +160,7 @@ export default function AnalyzerScreen() {
             <Pressable
               key={item.label}
               accessibilityRole="button"
-              accessibilityLabel={`${item.label}: ingresos ${money(item.income)}, gastos ${money(item.expense)}`}
+              accessibilityLabel={t("mobile.analyzer.incomeExpenseLabel", { p1: item.label, p2: money(item.income), p3: money(item.expense) })}
               onPress={() => { const before_ = trend[trend.indexOf(item) - 1]; setDetail({ kind: 'month', label: item.label, income: item.income, expense: item.expense, count: item.transactionCount, previous: before_ ? { label: before_.label, income: before_.income, expense: before_.expense, count: before_.transactionCount } : null }); }}
               className="flex-1 items-center justify-end gap-1"
               style={{ height: barArea + 70 }}>
@@ -209,7 +209,7 @@ export default function AnalyzerScreen() {
             <Pressable
               key={item.label}
               accessibilityRole="button"
-              accessibilityLabel={`${item.label}: ingresos ${money(item.income)}, gastos ${money(item.expense)}`}
+              accessibilityLabel={t("mobile.analyzer.incomeExpenseLabel", { p1: item.label, p2: money(item.income), p3: money(item.expense) })}
               onPress={() => { const before_ = trend[trend.indexOf(item) - 1]; setDetail({ kind: 'month', label: item.label, income: item.income, expense: item.expense, count: item.transactionCount, previous: before_ ? { label: before_.label, income: before_.income, expense: before_.expense, count: before_.transactionCount } : null }); }}
               className="flex-1 items-center justify-end gap-1"
               style={{ height: barArea + 70 }}>
@@ -252,8 +252,8 @@ export default function AnalyzerScreen() {
 
 
 
-      <Card title={`Top ${topN}`} info={APP_INFO.analyzer(topN)}>
-        <ChipPicker items={TOP_SIZES.map((n) => ({ id: n, label: `Top ${n}` }))} value={topN} onChange={(id) => setTopN(id as (typeof TOP_SIZES)[number])} moreAfter={99} />
+      <Card title={t("mobile.topLabel", { p1: topN })} info={APP_INFO.analyzer(topN)}>
+        <ChipPicker items={TOP_SIZES.map((n) => ({ id: n, label: t("mobile.topLabel", { p1: n }) }))} value={topN} onChange={(id) => setTopN(id as (typeof TOP_SIZES)[number])} moreAfter={99} />
         {wide ? (
           <>
             <View className="flex-row items-start gap-6">

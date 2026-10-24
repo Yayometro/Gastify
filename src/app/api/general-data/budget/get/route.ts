@@ -103,7 +103,7 @@ export async function POST(
     // console.log(findBudgets)
     if (!findBudgets) throw new Error(t("errors.updated.budget.was.not.saved"));
     return NextResponse.json({
-      message: `Budgest were found successfully 🤓`,
+      message: t("errors.api.budgetsFound"),
       data: findBudgets,
       status: 201,
       ok: true,

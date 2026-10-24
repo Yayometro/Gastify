@@ -72,7 +72,7 @@ export function AccountForm({
         {!currencyLocked && <ChipPicker items={ACCOUNT_CURRENCIES.map((code) => ({ id: code, label: code }))} value={currency} onChange={setCurrency} moreAfter={99} />}
       </View>
       <View className="gap-2">
-        <TextField label={`Saldo (${currency})`} value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="numbers-and-punctuation" />
+        <TextField label={t("mobile.forms.balanceLabel", { p1: currency })} value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="numbers-and-punctuation" />
         {errors.amount && <Text className="font-inter text-sm text-red-500">{t(errors.amount)}</Text>}
       </View>
       <View className="gap-2">

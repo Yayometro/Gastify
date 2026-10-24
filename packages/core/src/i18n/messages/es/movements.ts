@@ -1,5 +1,14 @@
 // Texts of the "movements" namespace. Spanish is the source text.
 const movements = {
+  "movements.dedupDeleted": "Se eliminarán ({p1} de {p2}{p3})",
+  "movements.dedupSkipped": ", {p1} omitidas",
+  "movements.dedupKept": "Se conservará ({p1})",
+  "movements.exportedJson": "Se exportaron {p1} movimientos en JSON 📦",
+  "movements.exportedExcel": "Se exportaron {p1} movimientos en Excel 📊",
+  "movements.quickEditResult": "{p1} cambiadas, {p2} necesitan otra cuenta",
+  "movements.templateOutdated": "Tu plantilla está desactualizada. Haz clic en \"Descargar formato\" para obtener la más reciente e inténtalo de nuevo 📥",
+  "movements.importProcessed": "Se procesaron y crearon {p1} movimientos desde el archivo 😎",
+  "movements.dedupRemoved": "Se eliminaron {p1} transacción(es) duplicada(s) 🧹",
   "movements.duplicate.name": "Nombre",
   "movements.duplicate.date": "Fecha",
   "movements.duplicate.amount": "Monto",

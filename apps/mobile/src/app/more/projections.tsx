@@ -150,7 +150,7 @@ export default function ProjectionsScreen() {
   const appRefresh = useRefreshAppData();
 
   return (
-    <Screen title={t("mobile.proyecciones")} subtitle={`Moneda principal: ${currency} · Año ${year}`} backLabel="Más" onBack={() => router.back()} refreshing={appRefresh.refreshing} onRefresh={() => { appRefresh.refresh(); reload(); }}>
+    <Screen title={t("mobile.proyecciones")} subtitle={t("mobile.projections.subtitle", { p1: currency, p2: year })} backLabel="Más" onBack={() => router.back()} refreshing={appRefresh.refreshing} onRefresh={() => { appRefresh.refresh(); reload(); }}>
       <View className="flex-row justify-between">
         <Pressable accessibilityRole="button" onPress={() => setYear((y) => y - 1)} hitSlop={8}>
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ano.anterior")}</Text>
@@ -167,7 +167,7 @@ export default function ProjectionsScreen() {
         <Card style={{ backgroundColor: dark ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title={t("mobile.mes.a.mes")} info={APP_INFO.mes_a_mes}>
           {inputs.missing.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
-              {`Todavía no hay tipo de cambio para ${inputs.missing.join(', ')}: esas cifras se muestran sin convertir.`}
+              {t("mobile.projections.noRate", { p1: inputs.missing.join(', ') })}
             </Text>
           )}
           <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.montos.en.p1", { p1: currency })}</Text>
@@ -179,7 +179,7 @@ export default function ProjectionsScreen() {
             const balanceText = (entry: { balance?: number | null; estimatedBalance?: number | null } | undefined) =>
               typeof entry?.balance === 'number' ? money(entry.balance) : typeof entry?.estimatedBalance === 'number' ? `≈ ${money(entry.estimatedBalance)}` : '—';
             return (
-              <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={`Abrir ${row.monthName}`} onPress={() => setOpenMonth(index)} className="gap-1 rounded-xl px-3 py-3" style={zebra(index, dark)}>
+              <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={t("mobile.openLabel", { p1: row.monthName })} onPress={() => setOpenMonth(index)} className="gap-1 rounded-xl px-3 py-3" style={zebra(index, dark)}>
                 <View className="flex-row items-center justify-between">
                   <Text className={`font-inter-semibold ${T('text-base', 'text-3xl')} capitalize text-gf-text`}>{monthName(index, locale) ?? row.monthName}</Text>
                   <Text className={`font-inter-medium ${T('text-xs', 'text-lg')}`} style={{ color: row.type === 'estimate' ? colors.accent : colors.textSecondary }}>{TYPE_LABEL[row.type]}</Text>

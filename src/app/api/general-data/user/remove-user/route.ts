@@ -194,7 +194,7 @@ export async function POST(
     const deletedUser: IUser = removedUser;
     return NextResponse.json<RemoveUserSuccessResponse>({
       data: toPublicUser(deletedUser) as PublicUser<IUser>,
-      message: `${deletedUser.fullName || "Your account"} removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: deletedUser.fullName || t("errors.api.yourAccount") }),
       status: 201,
       ok: true,
     });

@@ -118,7 +118,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
               occurrences: getExpectedOccurrencesInMonth(s, start, end),
             }));
     return { bucketBreakdown, incomeOccurrences, incomeCurrencyBreakdown, expenseCurrencyBreakdown };
-  }, [selectedRow, monthRanges, transacciones, budgetsConverted, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency]);
+  }, [selectedRow, monthRanges, transacciones, budgetsConverted, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency, t]);
 
   const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }: SaveBuffersPayload): Promise<void> => {
     const res = await toFetch.post("general-data/projections/update", {

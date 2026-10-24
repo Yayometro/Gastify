@@ -95,7 +95,7 @@ export function OwnPeriodCategories({
       <CompactTimeFilter preset={own} onPreset={setOwn} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard periodSelect />
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
       {rows.slice(0, 12).map((row: CompareRow) => (
-        <Pressable key={row.name} accessibilityRole="button" accessibilityLabel={`Ver movimientos de ${row.name}`} onPress={() => setSelectedCategory(row.name)} className="gap-1.5">
+        <Pressable key={row.name} accessibilityRole="button" accessibilityLabel={t("mobile.history.seeMovementsOf", { p1: row.name })} onPress={() => setSelectedCategory(row.name)} className="gap-1.5">
           <View className="flex-row items-center gap-3">
             <CategoryBadge icon={row.icon} color={row.color} size={34} />
             <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.name}</Text>
@@ -109,7 +109,7 @@ export function OwnPeriodCategories({
         </Pressable>
       ))}
       {comparing && compareSummary ? (
-      <DetailSheet tall visible={selectedRow !== undefined} onClose={() => setSelectedCategory(null)} title={selectedRow?.name ?? ''} subtitle={`${selectedMovements.length} movimientos · ${formatMoneyMajor(selectedRow?.a ?? 0, currency)}`}>
+      <DetailSheet tall visible={selectedRow !== undefined} onClose={() => setSelectedCategory(null)} title={selectedRow?.name ?? ''} subtitle={t("mobile.history.movementsCount", { p1: selectedMovements.length, p2: formatMoneyMajor(selectedRow?.a ?? 0, currency) })}>
         <View className="flex-row gap-2">
           <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'desc' }} onPress={() => setOrder('desc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'desc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">{t("mobile.mayor.primero")}</Text></Pressable>
           <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'asc' }} onPress={() => setOrder('asc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'asc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">{t("mobile.menor.primero")}</Text></Pressable>

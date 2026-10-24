@@ -61,7 +61,7 @@ export async function POST(
       .populate("fatherCategory");
     if (!saveSub) throw new Error(t("errors.new.sub.category.not.saved"));
     return NextResponse.json({
-      message: `${saveSub.name} was created successfully 🤓`,
+      message: t("errors.api.created", { p1: saveSub.name }),
       data: populatedSubCategory,
       ok: true,
       status: 201,

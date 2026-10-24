@@ -10,7 +10,7 @@ import { useT } from "@/i18n/client";
 export function NoTwoFactorScreen({ email, onRetry }: { email: string; onRetry: () => void }) {
   const t = useT();
   return (
-    <AuthLayout title={t("mobile.falta.un.paso")} subtitle={`Entraste como ${email}.`}>
+    <AuthLayout title={t("mobile.falta.un.paso")} subtitle={t("mobile.auth.signedInAs", { p1: email })}>
       <Text className="font-inter text-base text-gf-text">
         {t("mobile.para.proteger.tus.movimientos.gastify")}
       </Text>

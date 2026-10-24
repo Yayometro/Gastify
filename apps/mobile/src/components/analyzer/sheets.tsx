@@ -89,7 +89,7 @@ export function InsightSheet({ insight, currency, onClose }: { insight: WalletAn
     }
     case 'peak_month_vs_previous':
       explanation = <Explain>{t("mobile.comparacion.entre.el.mes.de")}</Explain>;
-      rows = [<Row key="a" label={`Este periodo — ${d.current?.label}`} right={money(d.current?.total ?? 0)} />, <Row key="b" label={`Periodo anterior — ${d.previous?.label}`} right={money(d.previous?.total ?? 0)} />];
+      rows = [<Row key="a" label={t("analyzer.currentPeriodLabel", { p1: d.current?.label })} right={money(d.current?.total ?? 0)} />, <Row key="b" label={t("analyzer.previousPeriodLabel", { p1: d.previous?.label })} right={money(d.previous?.total ?? 0)} />];
       break;
     case 'peak_quarter':
       explanation = <Explain>{t("mobile.de.todos.los.trimestres.dentro", { p1: d.peakQuarter?.label })}</Explain>;
@@ -97,7 +97,7 @@ export function InsightSheet({ insight, currency, onClose }: { insight: WalletAn
       break;
     case 'spending_pace':
       explanation = <Explain>{t("mobile.compara.cuanto.llevas.gastado.este", { p1: d.dayOfMonth, p2: d.monthlyDetail?.length || 6 })}</Explain>;
-      rows = [...(d.monthlyDetail ?? []).map((m: D) => <Row key={m.label} label={`${m.label} (día ${m.throughDay})`} right={money(m.amount)} />), <Row key="now" label={`Este mes (día ${d.dayOfMonth})`} right={money(d.spentSoFar)} bold />];
+      rows = [...(d.monthlyDetail ?? []).map((m: D) => <Row key={m.label} label={t("analyzer.dayLabel", { p1: m.label, p2: m.throughDay })} right={money(m.amount)} />), <Row key="now" label={t("analyzer.thisMonthDay", { p1: d.dayOfMonth })} right={money(d.spentSoFar)} bold />];
       break;
     default:
       explanation = <Explain>{t("mobile.esta.senal.se.calcula.con")}</Explain>;

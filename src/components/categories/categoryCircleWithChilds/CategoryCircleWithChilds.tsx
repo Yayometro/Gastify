@@ -42,7 +42,7 @@ function CategoryCircleWithChilds<T = unknown>({
       >
         <UniversalCategoIcon type={icon} />
         <h1>{name}</h1>
-        <Tooltip title={`Select the title of the father as well if you want to select the father and not the sub-category childs`}>
+        <Tooltip title={t("categories.tipFather")}>
           <FaRegQuestionCircle size={25}/>
         </Tooltip>
       </span>

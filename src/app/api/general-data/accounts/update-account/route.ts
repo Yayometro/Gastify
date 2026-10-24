@@ -60,44 +60,42 @@ export async function POST(
       wallet: userFound.wallet,
     });
     //IF ERROR
-    if (!findAccount) throw new Error(`No Account: ${name} was identified`);
+    if (!findAccount) throw new Error(t("errors.api.accountNotIdentified", { p1: name }));
 
     // Account currency cannot be changed once Transactions are linked to
     // it in this first implementation - the user must create a
     // correctly denominated Account instead.
     if (currency && currency !== findAccount.currency) {
       if (!SUPPORTED_CURRENCIES.includes(currency)) {
-        throw new Error(`Unsupported currency: ${currency}`);
+        throw new Error(t("errors.api.unsupportedCurrency", { p1: currency }));
       }
       const linkedTransactionsCount = await Transaction.countDocuments({
         account: accountId,
       });
       if (linkedTransactionsCount > 0) {
-        throw new Error(
-          `Cannot change currency: ${linkedTransactionsCount} transaction(s) are already linked to this account. Create a new account in the target currency instead.`
-        );
+        throw new Error(t("errors.api.cannotChangeCurrency", { p1: linkedTransactionsCount }));
       }
       findAccount.currency = currency;
     }
 
     // Bank and card/account number: only touched when the body mentions them (null clears them).
     if ("bankId" in body) {
-      if (body.bankId && !bankById(body.bankId)) throw new Error(`Unknown bank: ${body.bankId}`);
+      if (body.bankId && !bankById(body.bankId)) throw new Error(t("errors.api.unknownBank", { p1: body.bankId }));
       findAccount.bankId = body.bankId || null;
     }
     if ("cardNumber" in body) {
       const card = normalizeCardNumber(body.cardNumber);
-      if (!card.ok) throw new Error(card.message || "Invalid card number");
+      if (!card.ok) throw new Error(card.message ? t(card.message) : t("errors.api.invalidCardNumber"));
       findAccount.cardNumber = card.value;
     }
 
     // The card's look: only touched when the body mentions it, and only the values the lists allow.
     if ("cardColor" in body) {
-      if (!isCardColor(body.cardColor)) throw new Error(`Unknown card color: ${body.cardColor}`);
+      if (!isCardColor(body.cardColor)) throw new Error(t("errors.api.unknownCardColor", { p1: body.cardColor }));
       findAccount.cardColor = body.cardColor;
     }
     if ("cardPattern" in body) {
-      if (!isCardPattern(body.cardPattern)) throw new Error(`Unknown card pattern: ${body.cardPattern}`);
+      if (!isCardPattern(body.cardPattern)) throw new Error(t("errors.api.unknownCardPattern", { p1: body.cardPattern }));
       findAccount.cardPattern = body.cardPattern;
     }
 
@@ -117,10 +115,10 @@ export async function POST(
     const savedAccount = await findAccount.save();
     //IF ERROR
     if (!findAccount)
-      throw new Error(`No Account: ${findAccount.name} was saved`);
+      throw new Error(t("errors.api.accountNotSaved", { p1: findAccount.name }));
 
     return NextResponse.json({
-      message: `${savedAccount.name} updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: savedAccount.name }),
       data: savedAccount,
       status: 201,
       ok: true,

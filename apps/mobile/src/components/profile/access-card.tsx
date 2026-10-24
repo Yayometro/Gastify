@@ -37,7 +37,7 @@ export function AccessCard({ email }: { email: string }) {
     const problem = validateEmailAddress(newEmail, email);
     setEmailError(problem);
     if (problem) return;
-    Alert.alert(t("mobile.cambiar.tu.correo"), `Vas a entrar con ${newEmail.trim()}. Cerraremos tu sesión para que vuelvas a entrar con el correo nuevo.`, [
+    Alert.alert(t("mobile.cambiar.tu.correo"), t("mobile.profile.signInNewMail", { p1: newEmail.trim() }), [
       { text: t("mobile.cancelar"), style: 'cancel' },
       {
         text: t("mobile.cambiar"),

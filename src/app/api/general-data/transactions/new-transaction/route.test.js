@@ -75,7 +75,7 @@ describe("new-transaction authentication and scoping", () => {
 
     await expect(
       POST(mockRequest({ name: "Coffee", amount: 100, isBill: true }))
-    ).rejects.toThrow(/No session/);
+    ).rejects.toThrow(/No hay sesión activa/);
   });
 
   it("derives user and wallet from the session rather than untrusted caller input", async () => {

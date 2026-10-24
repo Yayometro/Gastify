@@ -178,7 +178,7 @@ export function BulkEditSheet({
       visible
       onClose={onClose}
       title={TITLES[field]}
-      subtitle={`${count} ${count === 1 ? 'movimiento seleccionado' : 'movimientos seleccionados'}`}
+      subtitle={t("mobile.movements.bulkSelected", { count, p1: count })}
       info={
         field === 'general'
           ? { title: t("mobile.edicion.general"), text: t("mobile.edita.todos.los.campos.a") }

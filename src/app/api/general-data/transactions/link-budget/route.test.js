@@ -43,7 +43,7 @@ beforeEach(() => {
 
 describe("link-budget route", () => {
   it("throws when transactionId is not provided", async () => {
-    await expect(POST(mockRequest({}))).rejects.toThrow(/Transaction id is required/);
+    await expect(POST(mockRequest({}))).rejects.toThrow(/Se necesita el ID del movimiento/);
   });
 
   it("throws when no session exists", async () => {
@@ -51,7 +51,7 @@ describe("link-budget route", () => {
 
     await expect(
       POST(mockRequest({ transactionId: "trans-1" }))
-    ).rejects.toThrow(/No session/);
+    ).rejects.toThrow(/No hay sesión activa/);
 
     expect(Transaction.findOne).not.toHaveBeenCalled();
   });
@@ -61,7 +61,7 @@ describe("link-budget route", () => {
 
     await expect(
       POST(mockRequest({ transactionId: "trans-1" }))
-    ).rejects.toThrow(/Transaction was not found/);
+    ).rejects.toThrow(/No encontramos el movimiento/);
 
     expect(Transaction.findOne).toHaveBeenCalledWith({
       _id: "trans-1",
@@ -146,7 +146,7 @@ describe("link-budget route", () => {
 
     await expect(
       POST(mockRequest({ transactionId: "trans-1", budgetId: "budget-1" }))
-    ).rejects.toThrow(/Project budget was not found/);
+    ).rejects.toThrow(/No encontramos el presupuesto/);
 
     expect(mockTrans.save).not.toHaveBeenCalled();
   });

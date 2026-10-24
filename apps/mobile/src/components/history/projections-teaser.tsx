@@ -127,7 +127,7 @@ export function ProjectionsTeaser() {
           <Pressable accessibilityRole="button" onPress={() => setShowDetail(true)} className="items-center rounded-full border border-gf-border py-2.5">
             <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.ver.proyectado.contra.real")}</Text>
           </Pressable>
-          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title={t("mobile.proyectado.contra.real")} subtitle={`Meses cerrados de ${year}`} info={APP_INFO.c_mo_leer_esta_tabla}>
+          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title={t("mobile.proyectado.contra.real")} subtitle={t("mobile.history.closedMonthsOf", { p1: year })} info={APP_INFO.c_mo_leer_esta_tabla}>
             <AccuracyBody rows={accuracy as never[]} currency={currency} />
           </DetailSheet>
         </>

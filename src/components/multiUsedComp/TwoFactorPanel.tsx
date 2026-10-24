@@ -120,7 +120,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { data, error } = await authClient.twoFactor.enable({ method: "totp", password: currentPassword || undefined });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
         if (error.code === "INVALID_PASSWORD") {
           // Only a real wrong-password attempt gets a toast - the very
           // first, password-less try failing this way just means the
@@ -172,7 +172,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.twoFactor.disable({ password: currentPassword || undefined });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
         if (error.code === "INVALID_PASSWORD") {
           if (currentPassword) runNotify("error", t("shared.password.wrong"));
           setSetupStep("password-disable");
@@ -202,7 +202,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { data, error } = await authClient.twoFactor.generateBackupCodes({ password: currentPassword || undefined });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
         if (error.code === "INVALID_PASSWORD") {
           if (currentPassword) runNotify("error", t("shared.password.wrong"));
           setSetupStep("password-regenerate");

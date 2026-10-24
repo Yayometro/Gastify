@@ -53,7 +53,7 @@ export async function POST(
     }).lean();
     if (!findIncomeSources) throw new Error(t("errors.income.sources.were.not.found"));
     return NextResponse.json({
-      message: `Income Sources were found successfully 🤓`,
+      message: t("errors.api.incomeSourcesFound"),
       data: findIncomeSources,
       status: 201,
       ok: true,

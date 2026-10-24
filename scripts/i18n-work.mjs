@@ -257,8 +257,10 @@ function plan(namespace, files) {
   const entries = [];
   for (const source of sources) {
     const existing = known.get(source);
-    entries.push(existing ?? { key: slugKey(namespace, source, used), source, es: "", en: "" });
+    entries.push(existing ?? { key: slugKey(namespace, source, used), source, es: source, en: "" });
   }
+  // The texts rewritten before are not in these files any more, but their keys are still in use: they stay.
+  for (const entry of previous.entries) if (!sources.has(entry.source)) entries.push(entry);
   writeFileSync(todoFile, JSON.stringify({ namespace, entries }, null, 2) + "\n", "utf8");
   const pending = entries.filter((entry) => !entry.es || !entry.en).length;
   console.log(`${namespace}: ${entries.length} textos distintos en ${files.length} archivo(s). Pendientes de traducir: ${pending}. → ${path.relative(ROOT, todoFile)}`);
@@ -295,6 +297,17 @@ function registerNamespace(namespace) {
     src = src.slice(0, end) + line + "\n" + src.slice(end);
   }
   writeFileSync(file, src, "utf8");
+}
+
+// The entries of a catalog file already written (Spanish or English), so a new round adds to it and does not drop keys.
+function readCatalogEntries(lang, namespace) {
+  const file = path.join(CATALOGS, lang, `${namespace}.ts`);
+  if (!existsSync(file)) return {};
+  const text = readFileSync(file, "utf8");
+  const head = /const \w+(?:: [^=]+)? = \{/.exec(text);
+  const end = text.lastIndexOf("}", text.indexOf("export default"));
+  if (!head || end < 0) throw new Error(`No puedo leer ${path.relative(ROOT, file)}`);
+  return new Function(`return {${text.slice(head.index + head[0].length, end)}};`)();
 }
 
 function apply(namespace, files) {
@@ -393,8 +406,8 @@ function apply(namespace, files) {
   }
 
   // The catalogs, from the todo file: the same keys in Spanish and English.
-  const es = {};
-  const en = {};
+  const es = { ...readCatalogEntries("es", namespace) };
+  const en = { ...readCatalogEntries("en", namespace) };
   for (const entry of todo.entries) {
     es[entry.key] = entry.es;
     en[entry.key] = entry.en;

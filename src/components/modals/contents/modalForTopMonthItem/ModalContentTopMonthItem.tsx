@@ -117,6 +117,7 @@ interface ItemWithCategory extends TransactionData {
 }
 
 function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthItemProps) {
+  const t = useT();
   const tr = useT();
   const dispatch = useDispatch<AppDispatch>();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
@@ -324,9 +325,9 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 colore="#fff"
               />
             </span>
-            <Tooltip title={`${item?.name || item?.type || "No name..."} Detail`} placement="bottom">
+            <Tooltip title={t("analyzer.topItemDetail", { p1: item?.name || item?.type || t("analyzer.noName") })} placement="bottom">
               <h1 className="truncate max-w-[65%]">
-                {tr("dashboard.detail", { p1: item?.name || item?.type || "No name..." })}
+                {tr("dashboard.detail", { p1: item?.name || item?.type || t("analyzer.noName") })}
               </h1>
             </Tooltip>
           </span>

@@ -60,9 +60,9 @@ export async function POST(
       }
     }
     const saveCatego = await findCatego.save();
-    if (!saveCatego) throw new Error(`${saveCatego.name} not saved 🤕`);
+    if (!saveCatego) throw new Error(t("errors.api.categoryNotSaved", { p1: saveCatego.name }));
     return NextResponse.json({
-      message: `${saveCatego.name} was created successfully 🤓`,
+      message: t("errors.api.created", { p1: saveCatego.name }),
       data: saveCatego,
       ok: true,
       status: 201,

@@ -128,6 +128,8 @@ function scanFile(file, area, rel) {
   const add = (kind, node, value) => {
     const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
     hits.push({ kind, line, sample: value.replace(/\s+/g, " ").trim().slice(0, 100) });
+    // I18N_DETAIL=1 lists every hit (file, line, kind, text): the work list of the next round.
+    if (process.env.I18N_DETAIL) console.log(`${file.split("/Gastify/").pop()}:${line} [${kind}] ${hits[hits.length - 1].sample}`);
   };
   const isApi = rel.startsWith("src/app/api/");
 

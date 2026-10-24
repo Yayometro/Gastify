@@ -167,7 +167,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
           if (!formCategory.fatherCategory) {
             runNotify(
               "warning",
-              `You must select a "father" category if you are going to create a sub category, please select one... 🚨`
+              t("categories.mustSelectFather")
             );
             setIsLoading(false);
             return null;
@@ -179,7 +179,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
           ) {
             runNotify(
               "warning",
-              `You must select a icon for this category/sub-category... 🚨`
+              t("categories.mustSelectIcon")
             );
             setIsLoading(false);
             return null;
@@ -284,7 +284,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
           dispatchEcm(removeOneCategory(res.data.categoRemoved._id));
           runNotify(
             "ok",
-            `"${res.data.categoRemoved.name.toUpperCase()}" was removed successfully 🤓`
+            t("categories.removed", { p1: res.data.categoRemoved.name.toUpperCase() })
           );
         } else { // SUBCATEGORIES
           dispatchEcm(removeSubCategory(res.data._id));

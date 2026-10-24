@@ -2,6 +2,12 @@ import type profile from "../es/profile";
 
 // English for the "profile" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof profile, string> = {
+  "profile.pwdMismatch": "Passwords don't match, review both fields and try again ❌",
+  "profile.pwdMin8": "Password should have at least 8 characters ❌",
+  "profile.pwdUpper": "Password should have at least one capital letter \"A,B,C... etc\" ❌",
+  "profile.pwdSpecial": "Password should have at least one special character \"!@#$%^&*(),.?\":_{}|<>\" ❌",
+  "profile.noUserData": "Oops! No user data. Please refresh the page or try again later... 🤕",
+  "profile.primaryCurrencyChanged": "Primary currency changed to {p1} 🤓",
   "profile.error.nameRequired": "Enter your name.",
   "profile.error.nameTooLong": "Maximum {p1} characters.",
   "profile.error.phone": "Enter a phone number of 7 to 15 digits.",

@@ -49,7 +49,7 @@ describe("update-account currency-change restriction", () => {
 
     await expect(
       POST(mockRequest({ accountId: "acc1", currency: "USD" }))
-    ).rejects.toThrow(/Cannot change currency/);
+    ).rejects.toThrow(/No se puede cambiar la moneda/);
 
     expect(account.save).not.toHaveBeenCalled();
     expect(account.currency).toBe("MXN");
@@ -85,7 +85,7 @@ describe("update-account currency-change restriction", () => {
 
     await expect(
       POST(mockRequest({ accountId: "acc1", currency: "GBP" }))
-    ).rejects.toThrow(/Unsupported currency/);
+    ).rejects.toThrow(/Moneda no soportada/);
 
     expect(account.save).not.toHaveBeenCalled();
   });

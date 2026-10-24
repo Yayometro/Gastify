@@ -44,7 +44,7 @@ export function ExportSheet({
               <Pressable
                 key={format.value}
                 accessibilityRole="button"
-                accessibilityLabel={`Exportar como ${format.label}`}
+                accessibilityLabel={t("mobile.exportAs", { p1: format.label })}
                 disabled={busy}
                 onPress={() => onPick(format.value)}
                 className="flex-row items-center gap-3 py-3"

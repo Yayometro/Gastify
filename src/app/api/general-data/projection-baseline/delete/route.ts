@@ -67,11 +67,9 @@ export async function POST(
     const { kind, entryId } = body;
 
     if (!entryId || !kind)
-      throw new Error(
-        `No mail/kind/entryId was provided to delete a projection baseline entry 🤕`
-      );
+      throw new Error(t("errors.api.baselineDeleteNoParams"));
     if (kind !== "income" && kind !== "expense")
-      throw new Error(`kind must be "income" or "expense" 🤕`);
+      throw new Error(t("errors.api.kindInvalid"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
@@ -99,7 +97,7 @@ export async function POST(
     if (!savedBaseline)
       throw new Error(t("errors.projection.baseline.was.not.saved"));
     return NextResponse.json({
-      message: `Projection Baseline entry was removed 🤓`,
+      message: t("errors.api.baselineEntryRemoved"),
       data: savedBaseline,
       status: 201,
       ok: true,

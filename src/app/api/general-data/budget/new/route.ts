@@ -113,7 +113,7 @@ export async function POST(
       newBudget.categories = categories;
     }
     //IF ERROR
-    if (!newBudget) throw new Error(`No Budget was identified 🤕`);
+    if (!newBudget) throw new Error(t("errors.api.budgetNotIdentified"));
     // SAVE
     const savedBudget = await newBudget.save();
     //IF ERROR
@@ -127,7 +127,7 @@ export async function POST(
       { path: "linkedTags", strictPopulate: false },
     ]);
     return NextResponse.json({
-      message: `${savedBudget.name} was created successfully 🤓`,
+      message: t("errors.api.created", { p1: savedBudget.name }),
       data: savedBudget,
       status: 201,
       ok: true,

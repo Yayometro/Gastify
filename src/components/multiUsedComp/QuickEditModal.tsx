@@ -170,7 +170,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
       if (field === "currency" && response.skipped && response.skipped.length > 0) {
         setBlocked(response.skipped);
         setValue((v) => ({ ...v, destinationAccount: "" }));
-        runNotify("error", `${response.data?.length ?? 0} changed, ${response.skipped.length} need another account`);
+        runNotify("error", t("movements.quickEditResult", { p1: response.data?.length ?? 0, p2: response.skipped.length }));
         setIsLoading(false);
         return;
       }

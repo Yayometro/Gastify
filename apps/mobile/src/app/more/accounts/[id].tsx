@@ -90,7 +90,7 @@ export default function EditAccountScreen() {
   return (
     <Screen
       title={account.name || 'Cuenta'}
-      subtitle={`Moneda: ${account.currency || 'MXN'}`}
+      subtitle={t("mobile.accounts.currencySubtitle", { p1: account.currency || 'MXN' })}
       backLabel={returnTo ? 'Inicio' : 'Cuentas'}
       onBack={back}
       headerAction={
@@ -127,7 +127,7 @@ export default function EditAccountScreen() {
 
       <SummaryWidget summary={summary} movements={inPeriod} allMovements={mine} currency={primary} />
 
-      <Card title={`Movimientos de ${period.label}`} info={APP_INFO.movimientos_de_la_cuenta}>
+      <Card title={t("mobile.accounts.movementsOf", { p1: period.label })} info={APP_INFO.movimientos_de_la_cuenta}>
         <View className="flex-row justify-between">
           <Text className="font-inter text-base text-gf-text-muted">{t("mobile.entro")}</Text>
           <Text className="font-inter-semibold text-base" style={{ color: colors.income }}>+{formatMoneyMajor(totals.incomes, primary)}</Text>

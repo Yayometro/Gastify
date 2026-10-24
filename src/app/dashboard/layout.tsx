@@ -9,6 +9,12 @@ import AllDataProvider from "@/components/Providers/AllDataProvider";
 import ToolsFab from "@/components/multiUsedComp/ToolsFab";
 import IdleStepUpGuard from "@/components/multiUsedComp/IdleStepUpGuard";
 import HistoryLoadingPill from "@/components/multiUsedComp/loaders/HistoryLoadingPill";
+import { I18nProvider } from "@/i18n/client";
+import { currentLocale, messagesFor } from "@/i18n/server";
+import { NAMESPACES } from "@gastify/core/i18n/catalogs";
+
+// Every text the wallet's screens show: all the namespaces except the landing's and the phone's.
+const WALLET_NAMESPACES = NAMESPACES.filter((namespace) => namespace !== "inicio" && namespace !== "mobile");
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -39,7 +45,12 @@ async function DashboardLayout({
     redirect("/verify-2fa");
   }
 
+  // The language of the wallet and its texts: the screens below read them with useT() and useInfo().
+  const locale = await currentLocale();
+  const messages = await messagesFor(locale, WALLET_NAMESPACES);
+
   return (
+    <I18nProvider locale={locale} messages={messages}>
     <AllDataProvider>
     <IdleStepUpGuard />
     <HistoryLoadingPill />
@@ -52,6 +63,7 @@ async function DashboardLayout({
         <ToolsFab mail={sesion.user.email} />
     </div>
     </AllDataProvider>
+    </I18nProvider>
   );
 }
 

@@ -43,7 +43,7 @@ export function PasskeysCard() {
   }, [load]);
 
   const remove = (passkey: Passkey) =>
-    Alert.alert(t("mobile.quitar.este.passkey"), `Ya no podrás entrar con «${passkey.name || 'este passkey'}».`, [
+    Alert.alert(t("mobile.quitar.este.passkey"), t("mobile.profile.passkeyRemoved", { p1: passkey.name || 'este passkey' }), [
       { text: t("mobile.cancelar"), style: 'cancel' },
       {
         text: t("mobile.quitar"),

@@ -21,7 +21,7 @@ export function InfoTip({ info }: { info: InfoText }) {
 
   return (
     <>
-      <Pressable accessibilityRole="button" accessibilityLabel={`Qué es ${info.title}`} onPress={() => setOpen(true)} hitSlop={10}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.infoLabel", { p1: info.title })} onPress={() => setOpen(true)} hitSlop={10}>
         <Ionicons name="help-circle-outline" size={22} color={colors.textSecondary} />
       </Pressable>
       <BottomSheet visible={open} onClose={() => setOpen(false)} maxHeight="88%">

@@ -34,7 +34,7 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
         !clCategories ? (
           <div className="w-full h-full flex justify-center items-center">
             <EmptyModule
-              emMessage={`No categories to display. Please create a new one or refresh the page and try later... 🤕`}
+              emMessage={t("categories.emptyList2")}
             />
           </div>
         ) : clCategories.length <= 0 ? (
@@ -55,9 +55,7 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
                   if (category.isDefaultCatego) {
                     runNotify(
                       "warning",
-                      `"${
-                        category?.name || "This"
-                      }" is a default category and can't be modified in any way 🚨`
+                      t("categories.defaultCategory", { p1: category?.name || t("categories.thisOne") })
                     );
                   } else {
                     setOnEdition(`edition`);

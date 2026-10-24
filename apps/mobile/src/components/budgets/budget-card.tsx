@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/client";
 import { router } from 'expo-router';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 
@@ -18,6 +19,7 @@ export type BudgetRow = { budget: ConvertedBudget<BudgetData>; spent: number; go
 // One budget as a card: its icon and name, the mood face on the right, the bar against its limit and how much is left.
 // The Budgets screen and the dashboard use this same card.
 export function BudgetCard({ row, currency, saving }: { row: BudgetRow; currency: string; saving: boolean }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const { budget, spent, goal, ratio } = row;
@@ -37,7 +39,7 @@ export function BudgetCard({ row, currency, saving }: { row: BudgetRow; currency
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Abrir ${budget.name || 'presupuesto'}`}
+      accessibilityLabel={t("mobile.openLabel", { p1: budget.name || 'presupuesto' })}
       onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })}>
       <Card>
         <View className="flex-row items-center gap-3">

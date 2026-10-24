@@ -109,7 +109,7 @@ export async function POST(
     });
 
     return NextResponse.json({
-      message: `${name || "Transaction"} was created successfully`,
+      message: t("errors.api.createdPlain", { p1: name || t("errors.api.transactionFallback") }),
       data: transaction,
       status: 201,
       ok: true,

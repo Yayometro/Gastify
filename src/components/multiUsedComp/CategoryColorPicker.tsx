@@ -33,7 +33,7 @@ function CategoryColorPicker({ value, onChange }: CategoryColorPickerProps): Rea
       <button
         key={color}
         type="button"
-        aria-label={`Color ${color}`}
+        aria-label={t("categories.colorLabel", { p1: color })}
         aria-pressed={selected}
         title={color}
         onClick={() => pick(color)}

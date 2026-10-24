@@ -146,7 +146,7 @@ export function SummaryCarousel(props: Props) {
         </Pressable>
         <View className="flex-row items-center gap-2">
           {[0, 1, 2].map((index) => (
-            <Pressable key={index} accessibilityRole="button" accessibilityLabel={`Ver ${names[index]}`} accessibilityState={{ selected: page === index }} onPress={() => goToPage(index)} hitSlop={8} style={{ width: page === index ? 18 : 8, height: 8, borderRadius: 4, backgroundColor: page === index ? colors.accent : colors.border }} />
+            <Pressable key={index} accessibilityRole="button" accessibilityLabel={t("mobile.home.seeNamed", { p1: names[index] })} accessibilityState={{ selected: page === index }} onPress={() => goToPage(index)} hitSlop={8} style={{ width: page === index ? 18 : 8, height: 8, borderRadius: 4, backgroundColor: page === index ? colors.accent : colors.border }} />
           ))}
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.tarjeta.siguiente")} accessibilityState={{ disabled: page === 2 }} disabled={page === 2} onPress={() => goToPage(page + 1)} hitSlop={10} style={{ opacity: page === 2 ? 0.35 : 1 }}>

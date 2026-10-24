@@ -54,7 +54,7 @@ export async function POST(
     const update = await updatedTag.save();
     if (!update) throw new Error(t("errors.no.new.tag.was.saved"));
     return NextResponse.json({
-      message: `${update.name} was updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: update.name }),
       data: update,
       ok: true,
       status: 201,

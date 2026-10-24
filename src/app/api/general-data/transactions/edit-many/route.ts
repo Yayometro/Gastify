@@ -132,13 +132,11 @@ export async function POST(
 
       for (const transId of transactions) {
         const t = await Transaction.findOne({ _id: transId, wallet: userWallet }).lean();
-        if (!t) throw new Error(`Transaction ${transId} not found`);
+        if (!t) throw new Error(tr("errors.api.transactionNotFound", { p1: transId }));
         const w = await getWalletCached(t.wallet);
         const tCurrency = t.money?.account?.currency || w?.primaryCurrency || "MXN";
         if (tCurrency !== destCurrency) {
-          throw new Error(
-            `Bulk account reassignment blocked: destination Account is ${destCurrency} but at least one selected Transaction is ${tCurrency}. Reassign mismatched-currency transactions individually instead.`
-          );
+          throw new Error(tr("errors.api.bulkReassignBlocked", { p1: destCurrency, p2: tCurrency }));
         }
       }
     }
@@ -149,7 +147,7 @@ export async function POST(
 
     for (const transId of transactions) {
       const transaction = await Transaction.findOne({ _id: transId, wallet: userWallet });
-      if (!transaction) throw new Error(`Transaction ${transId} not found`);
+      if (!transaction) throw new Error(tr("errors.api.transactionNotFound", { p1: transId }));
 
       const parentWallet = await getWalletCached(transaction.wallet);
       const currentAccountCurrency = transaction.money?.account?.currency || parentWallet?.primaryCurrency || "MXN";
@@ -165,12 +163,12 @@ export async function POST(
         const destination = accountTouched && account ? await Account.findOne({ _id: account, wallet: userWallet }).lean() : null;
         const ownAccount = transaction.account ? await Account.findOne({ _id: transaction.account, wallet: userWallet }).lean() : null;
         const plan = planCurrencyChange(
-          [{ id: String(transaction._id), name: transaction.name || "Movimiento", accountCurrency: ownAccount?.currency ?? null }],
+          [{ id: String(transaction._id), name: transaction.name || tr("errors.api.movement"), accountCurrency: ownAccount?.currency ?? null }],
           targetCurrency,
           destination ? { id: String(destination._id), currency: destination.currency || "MXN" } : null
         );
         if (plan.blocked.length > 0) {
-          skipped.push({ id: String(transaction._id), name: transaction.name || "Movimiento", accountCurrency: plan.blocked[0].accountCurrency, reason: plan.blocked[0].reason });
+          skipped.push({ id: String(transaction._id), name: transaction.name || tr("errors.api.movement"), accountCurrency: plan.blocked[0].accountCurrency, reason: plan.blocked[0].reason });
           continue;
         }
         const fromCurrency = currentAccountCurrency;
@@ -180,7 +178,7 @@ export async function POST(
             : Number(transaction.amount) || 0;
           const converted = await convert({ amountMinor: majorToMinor(currentAmount, fromCurrency), fromCurrency, toCurrency: targetCurrency, date: transaction.date });
           if (!converted.available) {
-            skipped.push({ id: String(transaction._id), name: transaction.name || "Movimiento", accountCurrency: fromCurrency, reason: "No hay tipo de cambio para la fecha de este movimiento." });
+            skipped.push({ id: String(transaction._id), name: transaction.name || tr("errors.api.movement"), accountCurrency: fromCurrency, reason: "No hay tipo de cambio para la fecha de este movimiento." });
             continue;
           }
           const newAmount = minorToMajor(converted.amountMinor, targetCurrency);
@@ -284,7 +282,7 @@ export async function POST(
     }
 
     return NextResponse.json({
-      message: `${savedTrans.length} transaction(s) updated successfully 😎`,
+      message: tr("errors.api.transactionsUpdated", { p1: savedTrans.length }),
       data: savedTrans,
       skipped,
       status: 201,
@@ -293,7 +291,7 @@ export async function POST(
   } catch (e) {
     console.error("edit-many error:", e);
     return NextResponse.json(
-      { ok: false, message: (e as Error)?.message || "Unexpected error" },
+      { ok: false, message: (e as Error)?.message || tr("errors.api.unexpectedError") },
       { status: 500 }
     );
   }

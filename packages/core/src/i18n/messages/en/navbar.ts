@@ -2,6 +2,7 @@ import type navbar from "../es/navbar";
 
 // English for the "navbar" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof navbar, string> = {
+  "navbar.profileAlt": "{p1} profile account",
   "navbar.profile": "Profile",
   "navbar.movements": "Transactions",
   "navbar.wallet": "Wallet",

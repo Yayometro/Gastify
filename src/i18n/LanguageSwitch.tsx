@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { LOCALE_COOKIE, LOCALES, type Locale } from "@gastify/core/i18n/locales";
-import { useLocale } from "@/i18n/client";
+import { useLocale, useT } from "@/i18n/client";
 
 // The language names are written in their own language, so each one is readable from anywhere.
 const NAMES: Record<Locale, string> = { es: "Español", en: "English" };
@@ -12,6 +12,7 @@ const NAMES: Record<Locale, string> = { es: "Español", en: "English" };
 // texts of the new language.
 export default function LanguageSwitch({ className = "" }: { className?: string }): React.JSX.Element {
   const router = useRouter();
+  const t = useT();
   const current = useLocale();
   const choose = (locale: Locale) => {
     if (locale === current) return;
@@ -19,7 +20,7 @@ export default function LanguageSwitch({ className = "" }: { className?: string 
     router.refresh();
   };
   return (
-    <div className={`inline-flex items-center gap-1 rounded-full gf-glass-inset p-1 ${className}`} role="group" aria-label="Idioma / Language">
+    <div className={`inline-flex items-center gap-1 rounded-full gf-glass-inset p-1 ${className}`} role="group" aria-label={t("shared.languageLabel")}>
       {LOCALES.map((locale) => (
         <button
           key={locale}

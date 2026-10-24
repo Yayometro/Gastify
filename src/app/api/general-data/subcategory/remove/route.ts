@@ -42,7 +42,7 @@ export async function POST(
     // instead of the intended message)
     if (!removeSub) throw new Error(t("errors.subcategory.not.removed"));
     return NextResponse.json({
-      message: `${removeSub.name || "Sub-Category"} was removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: removeSub.name || t("errors.api.subcategoryFallback") }),
       data: removeSub,
       ok: true,
       status: 201,

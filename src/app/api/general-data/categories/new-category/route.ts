@@ -61,7 +61,7 @@ export async function POST(
     const saveCatego = await newCategory.save();
     if (!saveCatego) throw new Error(t("errors.new.category.not.saved"));
     return NextResponse.json({
-      message: `${saveCatego.name} was created successfully 🤓`,
+      message: t("errors.api.created", { p1: saveCatego.name }),
       data: saveCatego,
       ok: true,
       status: 201,

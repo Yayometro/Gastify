@@ -85,7 +85,7 @@ export async function POST(
     }
 
     return NextResponse.json({
-      message: `${legs.length} linked transaction(s) removed`,
+      message: t("errors.api.linkedRemoved", { p1: legs.length }),
       data: { transferGroupId, deletedIds: legs.map((l) => l._id) },
       status: 200,
       ok: true,
@@ -93,7 +93,7 @@ export async function POST(
   } catch (e) {
     console.log(e);
     return NextResponse.json(
-      { ok: false, message: (e as Error)?.message || "Unexpected error" },
+      { ok: false, message: (e as Error)?.message || t("errors.api.unexpectedError") },
       { status: 400 }
     );
   }

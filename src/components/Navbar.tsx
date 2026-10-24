@@ -70,7 +70,7 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             <Image
               className="rounded-full border-[1px] border-purple-500 m-auto w-[60px]  sm:w-[40px]"
               src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
-              alt={`${ccUser?.fullName} profile account`}
+              alt={t("navbar.profileAlt", { p1: ccUser?.fullName })}
               width={50}
               height={50}
             />
@@ -192,7 +192,7 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             <Image
               className="rounded-full border-[1px] border-purple-500 m-auto w-[30px]  sm:w-[40px]"
               src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
-              alt={`${ccUser?.fullName} profile account`}
+              alt={t("navbar.profileAlt", { p1: ccUser?.fullName })}
               width={50}
               height={50}
             />

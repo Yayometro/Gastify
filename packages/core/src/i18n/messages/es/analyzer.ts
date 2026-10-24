@@ -1,5 +1,13 @@
 // Texts of the "analyzer" namespace. Spanish is the source text.
 const analyzer = {
+  "analyzer.noName": "Sin nombre",
+  "analyzer.topItemDetail": "Detalle de {p1}",
+  "analyzer.topTransactionsCompare": "Comparativo de las {p1} transacciones principales",
+  "analyzer.topCategoriesCompare": "Comparativo de las {p1} categorías principales",
+  "analyzer.currentPeriodLabel": "Este periodo — {p1}",
+  "analyzer.previousPeriodLabel": "Periodo anterior — {p1}",
+  "analyzer.dayLabel": "{p1} (día {p2})",
+  "analyzer.thisMonthDay": "Este mes (día {p1})",
   "analyzer.fallback.transaction": "Transacción",
   "analyzer.fallback.subscription": "Suscripción",
   "analyzer.weekday.0": "Lunes",

@@ -158,8 +158,8 @@ function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): Re
   }, [timePeriodFromFather]);
 
   const snapshot = useMemo(
-    () => buildWalletAnalyzerSnapshot({ text,  transactions, budgets, referenceDate: referenceMonth, topN }),
-    [transactions, budgets, referenceMonth, topN]
+    () => buildWalletAnalyzerSnapshot({ text, transactions, budgets, referenceDate: referenceMonth, topN }),
+    [transactions, budgets, referenceMonth, topN, text]
   );
 
   const fxExposure = useAccountsFxExposure(accounts, walletPrimaryCurrency, referenceMonth);

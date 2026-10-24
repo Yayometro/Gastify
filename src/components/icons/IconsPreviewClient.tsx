@@ -46,7 +46,7 @@ export default function IconsPreviewClient(): React.JSX.Element {
     result.push({ title: t("shared.icons.onlyDefaults"), names: extra });
     result.push({ title: t("shared.icons.brandLogos"), names: BRANDS });
     return result;
-  }, []);
+  }, [t]);
   const needle = filter.trim().toLowerCase();
 
   return (

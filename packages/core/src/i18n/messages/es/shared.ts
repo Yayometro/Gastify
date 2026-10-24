@@ -1,5 +1,12 @@
 // Texts of the "shared" namespace. Spanish is the source text.
 const shared = {
+  "shared.staleSuffix": ", desactualizado",
+  "shared.languageLabel": "Idioma",
+  "shared.estimatedAt": "Estimado a {p1} ({p2}{p3}) el {p4}. No es un ajuste manual.",
+  "shared.timeRange.prevMonth": "Ir al mes anterior: {p1}",
+  "shared.timeRange.nextMonth": "Ir al mes siguiente: {p1}",
+  "shared.infoLabel": "Qué es {p1}",
+  "shared.dismissAlert": "Quitar el aviso de {p1}",
   "shared.stepUp.failed3": "No pudimos verificar tu identidad después de 3 intentos. Por seguridad cerramos tu sesión.",
   "shared.passkey.registered": "Passkey registrado 🤓",
   "shared.password.wrong": "Contraseña incorrecta 🤕",

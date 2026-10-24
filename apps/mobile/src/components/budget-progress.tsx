@@ -47,7 +47,7 @@ export function BudgetProgress({
 
   return (
     <View className="gap-1.5">
-      <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={{ height: TIP, justifyContent: 'center' }} accessibilityLabel={`${percent}% ${saving ? 'de la meta' : 'del límite'}`}>
+      <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={{ height: TIP, justifyContent: 'center' }} accessibilityLabel={t("mobile.budgets.progressLabel", { p1: percent, p2: saving ? t("mobile.budgets.ofGoal") : t("mobile.budgets.ofLimit") })}>
         <View style={{ height: 20, borderRadius: 10, overflow: 'hidden', backgroundColor: colors.border }}>
           <LinearGradient colors={[`${color}88`, color]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: '100%', width: `${fill * 100}%`, borderRadius: 10 }} />
         </View>

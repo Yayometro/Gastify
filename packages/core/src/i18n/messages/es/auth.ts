@@ -1,5 +1,6 @@
 // Texts of the "auth" namespace. Spanish is the source text.
 const auth = {
+  "auth.stepUp": "Por seguridad, confirma tu identidad otra vez para continuar 🔒",
   "auth.error.identityNotVerified": "No pudimos verificar tu identidad, así que cerramos tu sesión por seguridad. Inicia sesión de nuevo.",
   "auth.error.codeAttemptsExceeded": "No pudimos verificar tu código después de 3 intentos. Intenta iniciar sesión de nuevo.",
   "auth.setup.working": "Estamos preparando todo para ti",

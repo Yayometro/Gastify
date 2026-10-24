@@ -99,7 +99,7 @@ export async function POST(
     // SAVE
     const savedIncomeSource = await newIncomeSource.save();
     return NextResponse.json({
-      message: `${savedIncomeSource.name || "Income source"} was created successfully 🤓`,
+      message: t("errors.api.created", { p1: savedIncomeSource.name || t("errors.api.incomeSourceFallback") }),
       data: savedIncomeSource,
       status: 201,
       ok: true,

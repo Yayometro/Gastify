@@ -131,7 +131,7 @@ export async function POST(
   } catch (e) {
     console.log(e);
     return NextResponse.json(
-      { ok: false, message: (e as Error)?.message || "Unexpected error" },
+      { ok: false, message: (e as Error)?.message || t("errors.api.unexpectedError") },
       { status: 400 }
     );
   }

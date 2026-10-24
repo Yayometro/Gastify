@@ -44,7 +44,7 @@ function PrimaryCurrencySelector({ pcsWallet }: PrimaryCurrencySelectorProps): R
       });
       if (res.ok) {
         dispatch(updateWallet(res.data));
-        runNotify("ok", `Primary currency changed to ${nextCurrency} 🤓`);
+        runNotify("ok", t("profile.primaryCurrencyChanged", { p1: nextCurrency }));
       } else {
         runNotify("error", res.message || "Could not change primary currency");
       }

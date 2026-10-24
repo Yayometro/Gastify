@@ -66,7 +66,7 @@ export function ApiTokensCard() {
   };
 
   const revoke = (token: Token) =>
-    Alert.alert(t("mobile.revocar.este.token"), `«${token.name}» deja de funcionar al instante. No se puede deshacer.`, [
+    Alert.alert(t("mobile.revocar.este.token"), t("mobile.profile.tokenRevoke", { p1: token.name }), [
       { text: t("mobile.cancelar"), style: 'cancel' },
       {
         text: t("mobile.revocar"),

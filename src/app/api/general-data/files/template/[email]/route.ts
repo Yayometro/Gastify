@@ -109,7 +109,7 @@ export async function GET(
           allowBlank: true,
           showErrorMessage: true,
           errorTitle: "Invalid Currency",
-          error: `Please select one of: ${SUPPORTED_CURRENCIES.join(", ")}`,
+          error: t("errors.api.selectOneOf", { p1: SUPPORTED_CURRENCIES.join(", ") }),
           formula1: `_data!$E$1:$E$${SUPPORTED_CURRENCIES.length}`,
         });
       });

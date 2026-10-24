@@ -333,7 +333,7 @@ export function UnbudgetedSpendingModal({
                                         }))
                                       }
                                       className="min-w-0 flex-1 rounded-full border border-purple-200 bg-gf-surface px-3 text-xs"
-                                      aria-label={`Add ${group.name} to an existing budget`}
+                                      aria-label={t("budgets.addToBudget", { p1: group.name })}
                                     >
                                       <option value="">{t("budgets.addToExisting")}</option>
                                       {spendingBudgets.map((budget) => (

@@ -64,7 +64,7 @@ export function CompactTimeFilter({
         <View className="flex-row items-center gap-2">
           <View className="min-w-0 flex-1">
             <GlassSurface radius={26} style={{ minHeight: 52 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel={`${activeLabel}. Elegir otro periodo`} onPress={() => setPickerOpen(true)} className="flex-row items-center justify-center gap-1.5 px-4" style={{ minHeight: 52 }}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.periodPick", { p1: activeLabel ?? "" })} onPress={() => setPickerOpen(true)} className="flex-row items-center justify-center gap-1.5 px-4" style={{ minHeight: 52 }}>
                 <Text className="font-inter-semibold text-base text-gf-text">{activeLabel}</Text>
                 <Ionicons name="caret-down" size={12} color={colors.text} />
               </Pressable>

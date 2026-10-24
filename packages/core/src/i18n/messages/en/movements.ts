@@ -2,6 +2,15 @@ import type movements from "../es/movements";
 
 // English for the "movements" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof movements, string> = {
+  "movements.dedupDeleted": "Will be deleted ({p1} of {p2}{p3})",
+  "movements.dedupSkipped": ", {p1} skipped",
+  "movements.dedupKept": "Will be kept ({p1})",
+  "movements.exportedJson": "Exported {p1} transactions as JSON 📦",
+  "movements.exportedExcel": "Exported {p1} transactions as Excel 📊",
+  "movements.quickEditResult": "{p1} changed, {p2} need another account",
+  "movements.templateOutdated": "Your template is outdated. Please click \"Download format\" to get the latest template and try again 📥",
+  "movements.importProcessed": "{p1} transactions have been processed and created from the file 😎",
+  "movements.dedupRemoved": "Removed {p1} duplicate transaction(s) 🧹",
   "movements.duplicate.name": "Name",
   "movements.duplicate.date": "Date",
   "movements.duplicate.amount": "Amount",

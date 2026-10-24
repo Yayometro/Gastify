@@ -19,7 +19,7 @@ function CategoriesModalList({ onSelect, onlyFathers = false }: CategoriesModalL
     <>
       {!categories || categories.length <= 0 ? (
         <div className="w-full h-full flex justify-center items-center">
-          <EmptyModule emMessage={`No categories to display 🤔`} />
+          <EmptyModule emMessage={t("categories.emptyList")} />
         </div>
       ) : (
         <>

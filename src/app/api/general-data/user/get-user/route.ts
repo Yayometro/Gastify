@@ -37,7 +37,7 @@ export async function POST(
     if (!userFounded)
       throw new Error(t("errors.user.not.found.review.the"));
     return NextResponse.json({
-      message: `User founded`,
+      message: t("errors.api.userFound"),
       data: toPublicUser(userFounded),
       status: 201,
       ok: true,

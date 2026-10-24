@@ -75,7 +75,7 @@ export async function POST(
     );
     //IF ERROR
     if (!findWallet)
-      throw new Error(`No Wallet was identified to update 🤕`);
+      throw new Error(t("errors.api.walletNotIdentified"));
     //UPDATE WALLET
     findWallet.name = !name ? findWallet.name : name;
     // `??` (not a truthiness test): 0 and false are real values that must be
@@ -90,7 +90,7 @@ export async function POST(
     // reinterprets already-stored native Account/Transaction money.
     if (primaryCurrency && primaryCurrency !== findWallet.primaryCurrency) {
       if (!SUPPORTED_CURRENCIES.includes(primaryCurrency)) {
-        throw new Error(`Unsupported currency: ${primaryCurrency}`);
+        throw new Error(t("errors.api.unsupportedCurrency", { p1: primaryCurrency }));
       }
       findWallet.primaryCurrency = primaryCurrency;
       findWallet.currencyUpdatedAt = new Date();
@@ -101,7 +101,7 @@ export async function POST(
     //IF ERROR
     if (!updatedWallet) throw new Error(t("errors.wallet.was.not.updated"));
     return NextResponse.json({
-      message: `${updatedWallet.name} was updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: updatedWallet.name }),
       data: updatedWallet,
       status: 201,
       ok: true,

@@ -54,7 +54,7 @@ function LoginComponent(): React.JSX.Element {
     if (noticesShown.current) return;
     noticesShown.current = true;
     if (email) {
-      runNotify("ok", `${email} was created successfully 🤓`);
+      runNotify("ok", t("errors.api.created", { p1: email }));
     }
     if (searchParamas && searchParamas.get("securityCheckFailed")) {
       runNotify("error", t("auth.error.identityNotVerified"));

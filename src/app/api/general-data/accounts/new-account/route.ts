@@ -68,12 +68,12 @@ export async function POST(
       resolvedCurrency = parentWallet?.primaryCurrency || "MXN";
     }
     if (!SUPPORTED_CURRENCIES.includes(resolvedCurrency)) {
-      throw new Error(`Unsupported currency: ${resolvedCurrency}`);
+      throw new Error(t("errors.api.unsupportedCurrency", { p1: resolvedCurrency }));
     }
     // Optional bank and card/account number: validated here, not trusted from the client.
-    if (bankId && !bankById(bankId)) throw new Error(`Unknown bank: ${bankId}`);
+    if (bankId && !bankById(bankId)) throw new Error(t("errors.api.unknownBank", { p1: bankId }));
     const card = normalizeCardNumber(cardNumber);
-    if (!card.ok) throw new Error(card.message || "Invalid card number");
+    if (!card.ok) throw new Error(card.message ? t(card.message) : t("errors.api.invalidCardNumber"));
     const resolvedAmount = !amount ? 0 : amount;
     //
     const newAccount = new Account({
@@ -90,10 +90,10 @@ export async function POST(
     });
     const savedAccount = await newAccount.save();
     if (!savedAccount)
-      throw new Error(`No Account: ${newAccount.name} was saved`);
+      throw new Error(t("errors.api.accountNotSaved", { p1: newAccount.name }));
 
     return NextResponse.json({
-      message: `${newAccount.name} created successfully 🤓`,
+      message: t("errors.api.created", { p1: newAccount.name }),
       data: savedAccount,
       status: 201,
       ok: true,

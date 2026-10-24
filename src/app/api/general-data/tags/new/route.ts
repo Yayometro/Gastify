@@ -49,7 +49,7 @@ export async function POST(
     const savedTag = await newTag.save();
     if (!savedTag) throw new Error(t("errors.no.new.tag.was.saved"));
     return NextResponse.json({
-      message: `${savedTag.name} was created successfully 🤓`,
+      message: t("errors.api.created", { p1: savedTag.name }),
       data: savedTag,
       ok: true,
       status: 201,

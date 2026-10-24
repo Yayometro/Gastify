@@ -118,7 +118,7 @@ export async function POST(
       .lean();
 
     return NextResponse.json({
-      message: `${populated.length} transaction(s) categorized`,
+      message: t("errors.api.transactionsCategorized", { p1: populated.length }),
       data: populated,
       status: 201,
       ok: true,

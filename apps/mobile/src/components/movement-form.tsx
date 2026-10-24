@@ -166,7 +166,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
 
       <View className="gap-2">
         <TextField
-          label={`Monto (${accountCurrency})`}
+          label={t("mobile.forms.amountLabel", { p1: accountCurrency })}
           value={values.amount}
           onChangeText={(text) => {
             setAmountTouched(true);
@@ -196,7 +196,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
             <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.moneda.del.cobro")}</Text>
             <ChipPicker items={currencyItems} value={values.merchantCurrency} onChange={(code) => set('merchantCurrency', code)} moreAfter={99} />
             <TextField
-              label={`Lo que cobró el comercio (${values.merchantCurrency})`}
+              label={t("mobile.forms.merchantCharged", { p1: values.merchantCurrency })}
               value={values.merchantAmount}
               onChangeText={(text) => set('merchantAmount', text.replace(/[^0-9.,]/g, ''))}
               placeholder="0.00"

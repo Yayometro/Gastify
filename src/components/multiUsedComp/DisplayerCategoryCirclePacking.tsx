@@ -79,9 +79,7 @@ function DisplayerCategoryCirclePacking({
             dccoBills.length <= 0 ? (
               <div className="w-full py-[20px]">
               <EmptyModule
-                emMessage={`Ups... Nothing here 🤔.
-                If this module is empty maybe the is not data in general or there is no data in this time-period.
-                Try with a time-period older, like 3 months or 6 months to check.`}
+                emMessage={t("categories.nothingHere")}
               />
             </div>
             ) : (
@@ -96,9 +94,7 @@ function DisplayerCategoryCirclePacking({
             dccpIncomes.length <= 0 ? (
               <div className="w-full py-[20px]">
               <EmptyModule
-                emMessage={`Ups... Nothing here 🤔.
-                If this module is empty maybe the is not data in general or there is no data in this time-period.
-                Try with a time-period older, like 3 months or 6 months to check.`}
+                emMessage={t("categories.nothingHere")}
               />
             </div>
             ) : (

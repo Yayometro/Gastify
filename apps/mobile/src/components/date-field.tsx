@@ -48,7 +48,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
       <Text className="font-inter-medium text-sm text-gf-text-muted">{label}</Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${label}: ${longDate(date, locale)}. Cambiar fecha`}
+        accessibilityLabel={t("mobile.dateChange", { p1: label, p2: longDate(date, locale) })}
         onPress={open}
         className="h-[52px] flex-row items-center justify-between rounded-full border border-gf-border bg-gf-surface px-5">
         <Text className="font-inter text-base text-gf-text">{longDate(date, locale)}</Text>

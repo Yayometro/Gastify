@@ -37,9 +37,7 @@ export async function POST(
     if (!request) throw new Error(t("errors.no.data.in.request.on.9"));
     const { id } = (await request.json()) as RemoveBudgetRequestBody;
     if (!id)
-      throw new Error(
-        `No ID was provided to remove the budget 🤕`
-      );
+      throw new Error(t("errors.api.noIdRemoveBudget"));
     // Security fix: this used to look up the Budget by id alone, with zero
     // ownership check - this endpoint isn't covered by middleware.ts's
     // matcher, so any caller could archive (and unlink the transactions of)
@@ -69,7 +67,7 @@ export async function POST(
     }
     console.log(removedBudget);
     return NextResponse.json({
-      message: `Budget ${removedBudget?.name} was removed 🤓`,
+      message: t("errors.api.budgetRemoved", { p1: removedBudget?.name }),
       data: removedBudget,
       status: 201,
       ok: true,

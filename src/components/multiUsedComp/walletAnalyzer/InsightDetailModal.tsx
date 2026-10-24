@@ -256,8 +256,8 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
       </p>
     );
     rows = [
-      <MonthRow key="current" label={`Este periodo — ${d.current.label}`} right={formatMoneyMajor(d.current.total, walletPrimaryCurrency)} />,
-      <MonthRow key="previous" label={`Periodo anterior — ${d.previous.label}`} right={formatMoneyMajor(d.previous.total, walletPrimaryCurrency)} />,
+      <MonthRow key="current" label={t("analyzer.currentPeriodLabel", { p1: d.current.label })} right={formatMoneyMajor(d.current.total, walletPrimaryCurrency)} />,
+      <MonthRow key="previous" label={t("analyzer.previousPeriodLabel", { p1: d.previous.label })} right={formatMoneyMajor(d.previous.total, walletPrimaryCurrency)} />,
     ];
   } else if (type === "peak_quarter") {
     const d = data as PeakQuarterInsightDetailData;
@@ -277,9 +277,9 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     );
     rows = [
       ...(d.monthlyDetail || []).map((m) => (
-        <MonthRow key={m.label} label={`${m.label} (día ${m.throughDay})`} right={formatMoneyMajor(m.amount, walletPrimaryCurrency)} />
+        <MonthRow key={m.label} label={t("analyzer.dayLabel", { p1: m.label, p2: m.throughDay })} right={formatMoneyMajor(m.amount, walletPrimaryCurrency)} />
       )),
-      <MonthRow key="current" label={`Este mes (día ${d.dayOfMonth})`} right={formatMoneyMajor(d.spentSoFar, walletPrimaryCurrency)} />,
+      <MonthRow key="current" label={t("analyzer.thisMonthDay", { p1: d.dayOfMonth })} right={formatMoneyMajor(d.spentSoFar, walletPrimaryCurrency)} />,
     ];
   }
 

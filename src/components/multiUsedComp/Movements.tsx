@@ -186,6 +186,7 @@ export interface MovementsProps {
 const today = new Date();
 
 function MovementsContent({ timePeriodFromFather, mail, embedded = false }: MovementsProps): React.JSX.Element {
+  const t = useT();
   const { APP_INFO } = useInfo();
   const tr = useT();
   const defaultPeriod: [Date, Date] | (Date | string | number)[] = timePeriodFromFather || [
@@ -459,7 +460,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        runNotify("ok", `Exported ${ids.length} transactions as JSON 📦`);
+        runNotify("ok", t("movements.exportedJson", { p1: ids.length }));
       } else {
         const response = await fetch(
           toFetch.getFullPath(`general-data/files/export/${userEmail}`),
@@ -482,7 +483,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        runNotify("ok", `Exported ${ids.length} transactions as Excel 📊`);
+        runNotify("ok", t("movements.exportedExcel", { p1: ids.length }));
       }
       setExportModalOpen(false);
       setExportOpen(false);

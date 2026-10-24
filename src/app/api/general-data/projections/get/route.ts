@@ -59,7 +59,7 @@ export async function POST(
       : (rawBody as GetProjectionSettingsRequestBody);
     const { year } = body;
     if (!year)
-      throw new Error(`No mail/year was provided to get projection settings 🤕`);
+      throw new Error(t("errors.api.projectionsGetNoMail"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
@@ -73,7 +73,7 @@ export async function POST(
     }).lean();
 
     return NextResponse.json({
-      message: `Projection Settings were looked up successfully 🤓`,
+      message: t("errors.api.projectionsFound"),
       data: settings || null,
       status: 201,
       ok: true,

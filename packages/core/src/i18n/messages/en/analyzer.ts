@@ -2,6 +2,14 @@ import type analyzer from "../es/analyzer";
 
 // English for the "analyzer" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof analyzer, string> = {
+  "analyzer.noName": "No name",
+  "analyzer.topItemDetail": "{p1} detail",
+  "analyzer.topTransactionsCompare": "Top {p1} transactions comparison",
+  "analyzer.topCategoriesCompare": "Top {p1} categories comparison",
+  "analyzer.currentPeriodLabel": "This period — {p1}",
+  "analyzer.previousPeriodLabel": "Previous period — {p1}",
+  "analyzer.dayLabel": "{p1} (day {p2})",
+  "analyzer.thisMonthDay": "This month (day {p1})",
   "analyzer.fallback.transaction": "Transaction",
   "analyzer.fallback.subscription": "Subscription",
   "analyzer.weekday.0": "Monday",

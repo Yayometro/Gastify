@@ -75,9 +75,7 @@ function BudgetHistoricalComparativeRow({
               {monthsEstimated > 0 && (
                 <span
                   className="text-gf-text-muted cursor-help"
-                  title={`${monthsEstimated} of these month${
-                    monthsEstimated === 1 ? "" : "s"
-                  } predate this budget's earliest known goal, so they're compared against that earliest goal as an estimate, not a verified historical figure.`}
+                  title={t("budgets.estimatedMonths", { count: monthsEstimated, p1: monthsEstimated })}
                 >
                   {t("budgets.estimatedTag", { p1: monthsEstimated })}
                 </span>

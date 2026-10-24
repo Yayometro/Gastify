@@ -80,7 +80,7 @@ describe("update-transaction authentication and scoping", () => {
 
     await expect(
       POST(mockRequest({ name: "New name" }), { params: { id: "t1" } })
-    ).rejects.toThrow(/No session/);
+    ).rejects.toThrow(/No hay sesión activa/);
 
     expect(Transaction.findOne).not.toHaveBeenCalled();
   });
@@ -108,7 +108,7 @@ describe("update-transaction account currency-change strategy", () => {
 
     await expect(
       POST(mockRequest({ account: "acc-usd" }), { params: { id: "t1" } })
-    ).rejects.toThrow(/requires an explicit choice/);
+    ).rejects.toThrow(/requiere elegir/);
 
     expect(findTrans.save).not.toHaveBeenCalled();
   });
@@ -152,7 +152,7 @@ describe("update-transaction account currency-change strategy", () => {
 
     await expect(
       POST(mockRequest({ account: "acc-usd", currencyStrategy: "manual" }), { params: { id: "t1" } })
-    ).rejects.toThrow(/requires an explicit amount/);
+    ).rejects.toThrow(/La conversión manual requiere/);
   });
 
   it("throws (never fakes a rate) when convert is unavailable", async () => {
@@ -164,7 +164,7 @@ describe("update-transaction account currency-change strategy", () => {
 
     await expect(
       POST(mockRequest({ account: "acc-usd", currencyStrategy: "convert" }), { params: { id: "t1" } })
-    ).rejects.toThrow(/Exchange-rate estimate unavailable/);
+    ).rejects.toThrow(/No hay un tipo de cambio disponible/);
   });
 
   it("does not require a strategy when the new Account has the same currency", async () => {

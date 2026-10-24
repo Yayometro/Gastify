@@ -2,6 +2,21 @@ import type categories from "../es/categories";
 
 // English for the "categories" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof categories, string> = {
+  "categories.defaultCategory": "\"{p1}\" is a default category and can't be modified in any way 🚨",
+  "categories.defaultSubCategory": "\"{p1}\" is a default SubCategory and can't be modified in any way 🚨",
+  "categories.thisOne": "This",
+  "categories.emptyList": "No categories to display 🤔",
+  "categories.tipFather": "Select the title of the father as well if you want to select the father and not the sub-category childs",
+  "categories.emptyCategories": "Oops! No categories to show. Add a new category or try again later... 🤕",
+  "categories.emptySubcategories": "Oops! No subcategories to show. Add a new subcategory or try again later... 🤕",
+  "categories.colorLabel": "Color {p1}",
+  "categories.emptyList2": "No categories to display. Please create a new one or refresh the page and try later... 🤕",
+  "categories.categorizedCount": "{p1} transaction(s) categorized 🏷️",
+  "categories.nothingHere": "Oops... nothing here 🤔. If this module is empty, maybe there is no data at all or none in this time period. Try an older time period, like 3 or 6 months, to check.",
+  "categories.mustSelectFather": "You must select a \"father\" category if you are going to create a sub category, please select one... 🚨",
+  "categories.mustSelectIcon": "You must select an icon for this category/sub-category... 🚨",
+  "categories.removed": "\"{p1}\" was removed successfully 🤓",
+  "categories.emptySubcategoriesList": "No subcategories to display. Please create a new one or refresh the page and try later... 🤕",
   "categories.error": "Something went wrong, please try again later 🤕",
   "categories.form.name": "Name",
   "categories.form.categoryName": "Category name",

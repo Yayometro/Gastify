@@ -1,5 +1,6 @@
 // Texts of the "navbar" namespace. Spanish is the source text.
 const navbar = {
+  "navbar.profileAlt": "Cuenta de perfil de {p1}",
   "navbar.profile": "Perfil",
   "navbar.movements": "Movimientos",
   "navbar.wallet": "Cartera",

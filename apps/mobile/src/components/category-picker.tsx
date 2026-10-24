@@ -169,7 +169,7 @@ export function CategoryPicker({
         {chosenLabel && chosenEntry && (
           <Chip label={chosenLabel} selected icon={chosenEntry.icon} color={chosenEntry.color} onPress={() => onChange({ categoryId: '', subCategoryId: '' })} />
         )}
-        <Chip label={`Ver todas (${categories.length})`} icon="search" onPress={() => setOpen(true)} />
+        <Chip label={t("mobile.categories.seeAll", { p1: categories.length })} icon="search" onPress={() => setOpen(true)} />
       </ScrollView>
 
       <BottomSheet visible={open} onClose={close} maxHeight="88%" fill>

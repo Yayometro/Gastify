@@ -196,7 +196,7 @@ function BudgetCont({
       ) : savings.length <= 0 ? (
         <div className="w-full py-6">
           <EmptyModule
-            emMessage={`No saving found. Please refresh or create a new budget 🤓`}
+            emMessage={t("budgets.noSaving")}
           />
         </div>
       ) : (
@@ -220,7 +220,7 @@ function BudgetCont({
       ) : budgets.length <= 0 && bills.length <= 0 ? (
         <div className="w-full py-6">
           <EmptyModule
-            emMessage={`No budget found. Please refresh or create a new budget 🤓`}
+            emMessage={t("budgets.noBudget")}
           />
         </div>
       ) : (

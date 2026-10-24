@@ -87,7 +87,7 @@ export async function POST(
     const { year, monthBuffer, monthBalance } = body;
     if (!year)
       throw new Error(
-        `No mail/year was provided to update projection settings 🤕`
+        t("errors.api.projectionsUpdateNoMail")
       );
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
@@ -199,7 +199,7 @@ export async function POST(
     if (!savedSettings)
       throw new Error(t("errors.projection.settings.were.not.saved"));
     return NextResponse.json({
-      message: `Projection Settings were updated successfully 🤓`,
+      message: t("errors.api.projectionsUpdated"),
       data: savedSettings,
       status: 201,
       ok: true,

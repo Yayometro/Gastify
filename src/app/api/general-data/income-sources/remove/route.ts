@@ -51,7 +51,7 @@ export async function POST(
 
     // NO ID FILTER
     if (!id)
-      throw new Error(`No ID was provided to remove the income source 🤕`);
+      throw new Error(t("errors.api.noIdRemoveIncome"));
 
     // Security fix (#42): this route previously lacked session verification
     // and performed IncomeSource.findById(id) directly with zero ownership check (IDOR).
@@ -83,7 +83,7 @@ export async function POST(
     });
     await removedIncomeSource.save();
     return NextResponse.json({
-      message: `Income Source ${removedIncomeSource?.name} was removed 🤓`,
+      message: t("errors.api.incomeSourceRemoved", { p1: removedIncomeSource?.name }),
       data: removedIncomeSource,
       status: 200, // it said 201 while answering 200 (bug 48)
       ok: true,

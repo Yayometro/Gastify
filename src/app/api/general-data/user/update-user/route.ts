@@ -114,7 +114,7 @@ export async function POST(
       throw new Error(t("errors.user.not.found.review.the"));
     }
     return NextResponse.json({
-      message: `User ${userFounded?.fullName || ""} was updated 🤓`,
+      message: t("errors.api.userUpdated", { p1: userFounded?.fullName || "" }),
       data: toPublicUser(userUpdated),
       status: 201,
       ok: true,

@@ -44,7 +44,7 @@ function PasskeysPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.passkey.addPasskey({ name: newPasskeyName.trim() });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
         runNotify("error", error.message || "Could not register that passkey 🤕");
         return;
       }
@@ -62,7 +62,7 @@ function PasskeysPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.passkey.deletePasskey({ id });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
         runNotify("error", error.message || "Could not remove that passkey 🤕");
         return;
       }

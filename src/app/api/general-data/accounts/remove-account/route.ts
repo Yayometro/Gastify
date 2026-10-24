@@ -43,10 +43,10 @@ export async function POST(
     });
     //IF ERROR
     if (!removedAccount)
-      throw new Error(`No Account was identified to be removed`);
+      throw new Error(t("errors.api.accountNotIdentifiedRemove"));
 
     return NextResponse.json({
-      message: `${removedAccount.name} removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: removedAccount.name }),
       data: removedAccount,
       status: 201,
       ok: true,

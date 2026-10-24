@@ -40,7 +40,7 @@ export function MonthSwitcher({
         className="h-11 w-11 items-center justify-center rounded-full">
         <Ionicons name="chevron-back" size={22} color={iconColor} />
       </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${monthTitle(value, locale)}. Elegir otro mes`} onPress={() => setPickerOpen(true)} hitSlop={8} className="flex-row items-center gap-1">
+      <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.monthPick", { p1: monthTitle(value, locale) })} onPress={() => setPickerOpen(true)} hitSlop={8} className="flex-row items-center gap-1">
         <Text className="font-inter-semibold text-base text-gf-text">{monthTitle(value, locale)}</Text>
         <Ionicons name="caret-down" size={12} color={iconColor} />
       </Pressable>

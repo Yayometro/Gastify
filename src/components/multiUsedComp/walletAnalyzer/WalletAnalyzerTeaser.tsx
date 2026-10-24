@@ -45,8 +45,8 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
 
   const today = useMemo(() => new Date(), []);
   const snapshot = useMemo<WalletAnalyzerSnapshotData>(
-    () => buildWalletAnalyzerSnapshot({ text,  transactions, budgets, referenceDate: timePeriodFromFather?.[0] ? new Date(timePeriodFromFather[0]) : today }),
-    [transactions, budgets, timePeriodFromFather, today]
+    () => buildWalletAnalyzerSnapshot({ text, transactions, budgets, referenceDate: timePeriodFromFather?.[0] ? new Date(timePeriodFromFather[0]) : today }),
+    [transactions, budgets, timePeriodFromFather, today, text]
   );
 
   if (transactions.length === 0) return null;

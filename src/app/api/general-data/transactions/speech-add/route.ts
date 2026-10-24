@@ -278,9 +278,7 @@ export async function POST(
       walletPrimaryCurrency
     );
     return NextResponse.json({
-      message: `${
-        savedTransacction.name || "Transaction"
-      } using voice was created successfully 😎`,
+      message: t("errors.api.createdByVoice", { p1: savedTransacction.name || t("errors.api.transactionFallback") }),
       data: transactionWithDisplayMoney,
       status: 201,
       ok: true,

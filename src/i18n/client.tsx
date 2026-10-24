@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { createTranslator, type Dict, type TranslateFn } from "@gastify/core/i18n/translate";
 import { DEFAULT_LOCALE, type Locale } from "@gastify/core/i18n/locales";
-import { SPANISH_INFO, type InfoData } from "@gastify/core/info/catalog";
+import { SPANISH_INFO, infoFor, type InfoData } from "@gastify/core/info/catalog";
 import type { WalletText } from "@gastify/core/transformers/walletAnalyzer";
 
 interface I18nValue {
@@ -16,8 +16,8 @@ const I18nContext = createContext<I18nValue | null>(null);
 
 // The language of the page: the server reads the person's choice (cookie, or the browser's language) and passes in the texts
 // of the namespaces that page shows, and the explanations ("?") of that language. Everything below calls useT() and useInfo().
-export function I18nProvider({ locale, messages, info, children }: { locale: Locale; messages: Dict; info: InfoData; children: React.ReactNode }): React.JSX.Element {
-  const value = useMemo<I18nValue>(() => ({ locale, t: createTranslator(locale, messages), info }), [locale, messages, info]);
+export function I18nProvider({ locale, messages, children }: { locale: Locale; messages: Dict; children: React.ReactNode }): React.JSX.Element {
+  const value = useMemo<I18nValue>(() => ({ locale, t: createTranslator(locale, messages), info: infoFor(locale) }), [locale, messages]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 

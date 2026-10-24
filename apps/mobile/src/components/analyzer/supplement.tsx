@@ -136,7 +136,7 @@ export function AnalyzerBiggest({ snapshot, currency }: { snapshot: WalletAnalyz
   if (!patterns) return null;
   const tile = { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border } as const;
   return (
-    <Card title={`Grandes gastos · últimos ${patterns.monthsBack ?? 12} meses`} info={APP_INFO.grandes_gastos}>
+    <Card title={t("mobile.analyzer.biggestTitle", { p1: patterns.monthsBack ?? 12 })} info={APP_INFO.grandes_gastos}>
       <Pressable accessibilityRole="button" onPress={() => setKind('transaction')} className="gap-1 rounded-2xl p-3" style={tile}>
         <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.transaccion.mas.grande.toca.para")}</Text>
         <Text className="font-inter-semibold text-base text-gf-text">{patterns.biggestTransaction.name}</Text>

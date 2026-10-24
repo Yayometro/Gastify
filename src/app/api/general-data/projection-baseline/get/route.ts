@@ -63,7 +63,7 @@ export async function POST(
     // Not every wallet has one yet - null is a valid, expected result.
     const baseline = await ProjectionBaseline.findOne({ wallet: walletId }).lean();
     return NextResponse.json({
-      message: `Projection Baseline was found successfully 🤓`,
+      message: t("errors.api.baselineFound"),
       data: baseline || null,
       status: 201,
       ok: true,

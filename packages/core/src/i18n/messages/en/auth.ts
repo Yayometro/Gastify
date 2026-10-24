@@ -2,6 +2,7 @@ import type auth from "../es/auth";
 
 // English for the "auth" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof auth, string> = {
+  "auth.stepUp": "For your security, confirm your identity again to continue 🔒",
   "auth.error.identityNotVerified": "We could not verify your identity, so we signed you out for security. Please sign in again.",
   "auth.error.codeAttemptsExceeded": "We could not verify your code after 3 attempts. Try signing in again.",
   "auth.setup.working": "We are working to set everything up for you",

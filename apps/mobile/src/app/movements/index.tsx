@@ -318,7 +318,7 @@ export default function MovementsScreen() {
 
       {selectionMode && (
         <Card
-          title={`${selected.length} ${selected.length === 1 ? 'seleccionado' : 'seleccionados'}`}
+          title={t("mobile.movements.selectedCount", { count: selected.length, p1: selected.length })}
           info={APP_INFO.seleccionar_movimientos}>
           <View className="flex-row items-center justify-between gap-3">
             <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.salir.de.la.seleccion")} onPress={() => { setSelectionMode(false); setSelected([]); }} className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5" style={{ borderWidth: 1, borderColor: colors.accent }}>

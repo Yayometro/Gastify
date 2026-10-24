@@ -36,7 +36,7 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryL
         !sclSubCategory ? (
           <div className="w-full h-full flex justify-center items-center">
             <EmptyModule
-              emMessage={`No subcategories to display. Please create a new one or refresh the page and try later... 🤕`}
+              emMessage={t("categories.emptySubcategoriesList")}
             />
           </div>
         ) : sclSubCategory.length <= 0 ? (
@@ -61,9 +61,7 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryL
                   if (subCategory.isDefaultSubCatego) {
                     runNotify(
                       "warning",
-                      `"${
-                        subCategory?.name || "This"
-                      }" is a default SubCategory and can't be modified in any way 🚨`
+                      t("categories.defaultSubCategory", { p1: subCategory?.name || t("categories.thisOne") })
                     );
                   } else {
                     setOnEdition(`edition`);

@@ -7,10 +7,11 @@ import { COLOR_GRID, normalizeHex } from '@gastify/core/colors/palette';
 import { useT } from "@/i18n/client";
 
 function Swatch({ color, selected, onPress, size = 34 }: { color: string; selected: boolean; onPress: () => void; size?: number }) {
+  const t = useT();
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityLabel={`Color ${color}`}
+      accessibilityLabel={t("mobile.colorLabel", { p1: color })}
       accessibilityState={{ selected }}
       onPress={onPress}
       className="items-center justify-center rounded-full"
