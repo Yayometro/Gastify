@@ -12,6 +12,7 @@ import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import BudgetHistoricalComparativeRow from "./BudgetHistoricalComparativeRow";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
 import type { TimePeriodOption } from "@/hooks/usePeriodComparison";
+import { useT } from "@/i18n/client";
 
 export interface HistoricalBudgetsComparativeViewProps {
   rows: BudgetHistoricalComparativeRowData[];
@@ -34,20 +35,22 @@ function HistoricalBudgetsComparativeView({
   walletPrimaryCurrency,
   onOpenDetail,
 }: HistoricalBudgetsComparativeViewProps): React.JSX.Element {
+  const tr = useT();
+  const t = useT();
   return (
     <div className="w-full h-full">
-      <div className="flex items-center gap-2"><h1 className="text-3xl text-purple-300">Budgets comparative</h1><InfoTip info={APP_INFO.presupuestos_del_periodo} /></div>
+      <div className="flex items-center gap-2"><h1 className="text-3xl text-purple-300">{t("budgets.comparative.title")}</h1><InfoTip info={APP_INFO.presupuestos_del_periodo} /></div>
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs">
-          From:{" "}
+          {tr("budgets.from")}{" "}
           <b>
             {!timePeriod[0] ? "No time selected" : getDateInYearMonthDay(timePeriod[0])}
           </b>{" "}
-          to :{" "}
+          {tr("budgets.to")}{" "}
           <b>{!timePeriod[1] ? "No time selected" : getDateInYearMonthDay(timePeriod[1])}</b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-          <Tooltip title="See how your spending budgets performed month by month across this range - which ones you usually meet, which ones you usually exceed 🤓">
+          <Tooltip title={t("budgets.comparative.help")}>
             <div className="text-gf-text w-[10px]">
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
             </div>
@@ -65,7 +68,7 @@ function HistoricalBudgetsComparativeView({
       {isLoading ? (
         <Skeleton active className="py-3" />
       ) : rows.length === 0 ? (
-        <EmptyModule emMessage="No spending budgets tracked in this range 🤔" />
+        <EmptyModule emMessage={t("budgets.comparative.none")} />
       ) : (
         <div className="flex flex-col gap-2 mt-3">
           {rows.map((row) => (

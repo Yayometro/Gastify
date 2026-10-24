@@ -24,6 +24,7 @@ import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 import CurrencyBreakdownChips from "@/components/multiUsedComp/CurrencyBreakdownChips";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
+import { useT } from "@/i18n/client";
 
 // Unmigrated JS components typed bridges
 interface CurrencyBreakdownChipsProps {
@@ -131,6 +132,7 @@ function BudgetDetailModal({
   onClose,
   onEdit,
 }: BudgetDetailModalProps): React.JSX.Element | null {
+  const tr = useT();
   const dispatch = useDispatch<AppDispatch>();
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const { total: linkedAccountsTotal, breakdown: linkedAccountsBreakdown } = useLinkedAccountsTotal(
@@ -263,7 +265,7 @@ function BudgetDetailModal({
       // defaults to 2000 and used to open BEHIND it, invisible and unclickable,
       // so deleting from here could never be confirmed.
       zIndex: 10000,
-      title: "Delete this movement?",
+      title: tr("budgets.movement.confirmQuestion"),
       content: "Are you sure you want to remove this transaction?",
       okText: "Yes, delete",
       okType: "danger",
@@ -279,9 +281,9 @@ function BudgetDetailModal({
           );
           if (res.ok) {
             dispatch(removeOneTransacction(id));
-            runNotify("ok", "Movement deleted successfully!");
+            runNotify("ok", tr("budgets.movement.deleted"));
           } else {
-            runNotify("error", "Error removing transaction.");
+            runNotify("error", tr("budgets.movement.deleteError"));
           }
         } catch (e: unknown) {
           runNotify("error", String(e));
@@ -312,7 +314,7 @@ function BudgetDetailModal({
                     {budget.name || "Unnamed Budget"}
                   </h2>
                   <p className="text-xs text-gf-text-muted mt-0.5">
-                    {isSaving ? "Savings goal" : "Spending budget"} ({budget.period || "monthly"}) • {budgetCurrency} based
+                    {tr("budgets.budgetSubtitle", { p1: isSaving ? "Savings goal" : "Spending budget", p2: budget.period || "monthly", p3: budgetCurrency })}
                   </p>
                 </div>
                 <Tooltip title={emojiTooltip} placement="left">
@@ -365,7 +367,7 @@ function BudgetDetailModal({
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-semibold text-purple-300">
-                    {pctNum}% of {isSaving ? "goal" : "limit"}
+                    {tr("budgets.percentOf", { p1: pctNum, p2: isSaving ? "goal" : "limit" })}
                   </span>
                   <span className="font-bold text-gf-text-muted">{remainingText}</span>
                 </div>
@@ -375,7 +377,7 @@ function BudgetDetailModal({
               {categoryBreakdown.length > 0 && (
                 <div className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
                   <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-3">
-                    Spending Distribution by Category
+                    {tr("budgets.chart.spendingByCategory")}
                     <InfoTip info={APP_INFO.distribuci_n_del_gasto} />
                   </h3>
                   {/* Stacked bar */}
@@ -426,7 +428,7 @@ function BudgetDetailModal({
               {/* Detailed Movements List (Movements.jsx transaction component style) */}
               <div>
                 <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-2">
-                  Detailed Movements ({matchingTransactions.length})
+                  {tr("budgets.movement.detailed", { p1: matchingTransactions.length })}
                 </h3>
 
                 {/* Linked accounts banner for savings */}
@@ -435,7 +437,7 @@ function BudgetDetailModal({
                     <div className="flex items-center gap-2">
                       <span className="text-base">🔗</span>
                       <span>
-                        Linked to {budget.linkedAccounts.length} account{budget.linkedAccounts.length !== 1 ? "s" : ""}:{" "}
+                        {tr("budgets.linkedTo")} {budget.linkedAccounts.length} {tr("budgets.account")}{budget.linkedAccounts.length !== 1 ? "s" : ""}:{" "}
                         <strong>
                           {budget.linkedAccounts
                             .map((a) => `${a.name || "Account"} (${formatMoneyMajor(a.amount || 0, a.currency || walletPrimaryCurrency, { showCode: true })})`)
@@ -453,7 +455,7 @@ function BudgetDetailModal({
                     <div className="flex items-center gap-2">
                       <span className="text-base">📌</span>
                       <span>
-                        Manual saving progress set:
+                        {tr("budgets.saving.manualSet")}
                       </span>
                     </div>
                     <span className="font-bold text-blue-200">{usdFormatChanger(budget.savingAmount)}</span>
@@ -484,31 +486,31 @@ function BudgetDetailModal({
                           <div className="flex flex-col truncate">
                             <div className="font-medium text-xs text-gf-text truncate">
                               {!movement.name ? (
-                                <span className="italic text-gf-text-muted">No name. Asign one...</span>
+                                <span className="italic text-gf-text-muted">{tr("budgets.noName")}</span>
                               ) : (
                                 <span>{movement.name}</span>
                               )}
                             </div>
                             <div className="text-[10px] text-gf-text-muted flex items-center gap-2 flex-wrap mt-0.5">
                               <span>
-                                <strong className="text-gf-text-muted font-light">Cat: </strong>
+                                <strong className="text-gf-text-muted font-light">{tr("budgets.movement.cat")} </strong>
                                 {movement.category?.name || "—"}
                               </span>
                               {movement.subCategory?.name && (
                                 <span>
-                                  <strong className="text-gf-text-muted font-light">Sub: </strong>
+                                  <strong className="text-gf-text-muted font-light">{tr("budgets.movement.sub")} </strong>
                                   {movement.subCategory.name}
                                 </span>
                               )}
                               <span>
-                                <strong className="text-gf-text-muted font-light">Acc: </strong>
+                                <strong className="text-gf-text-muted font-light">{tr("budgets.movement.acc")} </strong>
                                 {movement.account?.name || "—"}
                               </span>
                             </div>
                             <div className="flex flex-wrap gap-1 items-center justify-start text-[10px] text-gf-text-muted mt-1">
-                              <span className="font-light">Tags:</span>
+                              <span className="font-light">{tr("budgets.movement.tags")}</span>
                               {!movement.tags || movement.tags.length === 0 ? (
-                                <span>No tags...</span>
+                                <span>{tr("budgets.movement.noTags")}</span>
                               ) : (
                                 movement.tags.map((tag) => (
                                   <Tag tag={tag} key={tag._id} size={8} />
@@ -544,7 +546,7 @@ function BudgetDetailModal({
                               type="button"
                               onClick={() => handleRemoveTrans(movement._id)}
                               className="text-gf-text-muted hover:text-red-400 transition-colors p-1 cursor-pointer"
-                              title="Delete transaction"
+                              title={tr("budgets.transaction.delete")}
                             >
                               <CategoIcon type="MdDelete" />
                             </button>
@@ -552,7 +554,7 @@ function BudgetDetailModal({
                               type="button"
                               onClick={() => setEditingTrans(movement)}
                               className="text-gf-text-muted hover:text-purple-600 transition-colors p-1 cursor-pointer"
-                              title="Edit transaction"
+                              title={tr("budgets.transaction.edit")}
                             >
                               <CategoIcon type="MdOutlineCreate" />
                             </button>
@@ -563,7 +565,7 @@ function BudgetDetailModal({
                   </div>
                 ) : (
                   <div className="py-4">
-                    <EmptyModule emMessage="No movements found for this budget in the selected time period 🤓" />
+                    <EmptyModule emMessage={tr("budgets.movement.none")} />
                   </div>
                 )}
               </div>
@@ -579,7 +581,7 @@ function BudgetDetailModal({
                   className="w-full py-3 px-4 gf-glass-button text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
                 >
                   <UniversalCategoIcon type="md/MdEdit" siz={18} />
-                  <span>Edit Budget ✏️</span>
+                  <span>{tr("budgets.edit")}</span>
                 </button>
               </div>
             </div>

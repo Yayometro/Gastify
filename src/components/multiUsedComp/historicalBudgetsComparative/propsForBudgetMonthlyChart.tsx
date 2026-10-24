@@ -1,3 +1,4 @@
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 import React from "react";
 import { getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
@@ -24,6 +25,7 @@ export interface BudgetMonthlyChartProps {
 }
 
 export interface GeneratePropForBudgetMonthlyChartParams {
+  t: TranslateFn;
   monthlySeries: MonthlyBudgetSeriesItem[];
   walletPrimaryCurrency?: string;
 }
@@ -37,6 +39,7 @@ export interface GeneratePropForBudgetMonthlyChartParams {
 export function generatePropForBudgetMonthlyChart({
   monthlySeries,
   walletPrimaryCurrency = "MXN",
+  t,
 }: GeneratePropForBudgetMonthlyChartParams): BudgetMonthlyChartProps {
   const data: BudgetMonthlyChartDatum[] = monthlySeries.flatMap((m) => {
     const ratio = m.goal > 0 ? m.actual / m.goal : m.actual > 0 ? 1.5 : 0;
@@ -70,8 +73,8 @@ export function generatePropForBudgetMonthlyChart({
       label: false,
       height: 170,
       legend: [
-        { id: "Actual", label: "Actual", color: "#94A3B8" },
-        { id: "Goal", label: "Goal", color: GOAL_COLOR },
+        { id: "Actual", label: t("budgets.comparative.actual"), color: "#94A3B8" },
+        { id: "Goal", label: t("budgets.comparative.goal"), color: GOAL_COLOR },
       ],
       valueFormat: (value) => formatMoneyMajor(value, walletPrimaryCurrency),
       renderTooltip: ({ title, items }) => {
@@ -85,11 +88,11 @@ export function generatePropForBudgetMonthlyChart({
           >
             <h1 className="text-sm text-center font-bold">{String(title)}</h1>
             <div className="w-full flex items-center justify-between gap-3 text-xs">
-              <span className="text-gf-text-muted">Actual:</span>
+              <span className="text-gf-text-muted">{t("budgets.actualLabel")}</span>
               <b>{formatMoneyMajor(actual?.value ?? monthData?.actual ?? 0, walletPrimaryCurrency)}</b>
             </div>
             <div className="w-full flex items-center justify-between gap-3 text-xs">
-              <span className="text-gf-text-muted">Goal:</span>
+              <span className="text-gf-text-muted">{t("budgets.goalLabel")}</span>
               <b>{formatMoneyMajor(goal?.value ?? monthData?.goal ?? 0, walletPrimaryCurrency)}</b>
             </div>
             {monthData && (

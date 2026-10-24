@@ -43,6 +43,7 @@ export interface MovementRowProps {
 }
 
 function MovementRow({ movement, onEdit, onDelete }: MovementRowProps): React.JSX.Element {
+  const t = useT();
   return (
     <div className="flex items-center justify-between gap-3 gf-glass-row rounded-2xl px-3 py-2">
       <div className="min-w-0 flex-1">
@@ -62,7 +63,7 @@ function MovementRow({ movement, onEdit, onDelete }: MovementRowProps): React.JS
           type="button"
           onClick={() => onEdit(movement)}
           className="p-1 text-gf-text-muted hover:text-purple-600"
-          title="Edit movement"
+          title={t("budgets.movement.edit")}
         >
           <CategoIcon type="MdOutlineCreate" siz={15} />
         </button>
@@ -70,7 +71,7 @@ function MovementRow({ movement, onEdit, onDelete }: MovementRowProps): React.JS
           type="button"
           onClick={() => onDelete(movement._id)}
           className="p-1 text-gf-text-muted hover:text-red-400"
-          title="Delete movement"
+          title={t("budgets.movement.delete")}
         >
           <CategoIcon type="MdDelete" siz={15} />
         </button>
@@ -139,6 +140,7 @@ export function UnbudgetedSpendingCard({ coverage: coverageProp, onClick, compac
 }
 
 import type { BudgetData } from "@/lib/features/budgetSlice";
+import { useT } from "@/i18n/client";
 
 export interface UnbudgetedSpendingModalProps {
   coverage: BudgetCoverageResult;
@@ -165,6 +167,7 @@ export function UnbudgetedSpendingModal({
   onCreateProject,
   onAddToProject,
 }: UnbudgetedSpendingModalProps): React.JSX.Element {
+  const t = useT();
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [selectedBudgets, setSelectedBudgets] = useState<{ [key: string]: string }>({});
   const [selectedProjects, setSelectedProjects] = useState<{ [key: string]: string }>({});
@@ -192,7 +195,7 @@ export function UnbudgetedSpendingModal({
       const res = await toFetch.post(`general-data/transactions/remove-transaction/${deletingMovementId}`);
       if (!res.ok) throw new Error(res.message || "Could not delete movement");
       dispatch(removeOneTransacction(deletingMovementId));
-      runNotify("ok", "Movement deleted successfully!");
+      runNotify("ok", t("budgets.movement.deleted"));
       setDeletingMovementId(null);
     } catch (error) {
       runNotify("error", String(error));
@@ -212,24 +215,24 @@ export function UnbudgetedSpendingModal({
                 type="button"
                 onClick={onClose}
                 className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"
-                title="Close"
+                title={t("budgets.close")}
               >
                 <CategoIcon type="MdClose" siz={18} />
               </button>
-              <p className="text-2xl font-bold">Unbudgeted spending</p>
+              <p className="text-2xl font-bold">{t("budgets.unbudgeted.title")}</p>
               <p className="text-xs text-purple-100 mt-1">{rangeLabel}</p>
             </div>
 
             <div className="rounded-t-[38px] px-5 sm:px-7 py-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-3 mb-5">
                 <div className="gf-glass-warning rounded-2xl p-3">
-                  <p className="text-[10px] uppercase tracking-wide text-amber-300">Outside budgets</p>
+                  <p className="text-[10px] uppercase tracking-wide text-amber-300">{t("budgets.unbudgeted.outside")}</p>
                   <p className="text-xl font-bold text-amber-300">
                     {usdFormatChanger(coverage.unbudgetedSpent)}
                   </p>
                 </div>
                 <div className="gf-glass-row rounded-2xl p-3">
-                  <p className="text-[10px] uppercase tracking-wide gf-text-muted-glass">Share of spending</p>
+                  <p className="text-[10px] uppercase tracking-wide gf-text-muted-glass">{t("budgets.unbudgeted.share")}</p>
                   <p className="text-xl font-bold text-purple-200">
                     {Math.round(coverage.unbudgetedPercentage)}%
                   </p>
@@ -237,13 +240,13 @@ export function UnbudgetedSpendingModal({
               </div>
 
               <p className="text-xs gf-text-muted-glass mb-4">
-                These movements are not covered by any active spending budget. Open a category to review its movements or include it in your plan.
+                {t("budgets.unbudgeted.help")}
               </p>
 
               {coverage.groups.length === 0 ? (
                 <div className="gf-glass-success rounded-2xl p-5 text-center text-emerald-300">
-                  <p className="font-bold">Everything is covered 🎉</p>
-                  <p className="text-xs mt-1">No unbudgeted movements were found in this period.</p>
+                  <p className="font-bold">{t("budgets.unbudgeted.covered")}</p>
+                  <p className="text-xs mt-1">{t("budgets.unbudgeted.none")}</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
@@ -295,20 +298,20 @@ export function UnbudgetedSpendingModal({
                             </div>
 
                             <div className="bg-gf-accent-soft-bg border border-gf-border rounded-2xl p-3 mb-3">
-                              <p className="text-xs font-bold text-purple-300 mb-1">Treat these expenses as part of a project</p>
-                              <p className="text-[10px] text-gf-text-muted mb-2">Projects group specific movements, independently of their categories or purchase dates.</p>
+                              <p className="text-xs font-bold text-purple-300 mb-1">{t("budgets.project.treatTitle")}</p>
+                              <p className="text-[10px] text-gf-text-muted mb-2">{t("budgets.project.groupHelp")}</p>
                               <div className="flex flex-col sm:flex-row gap-2">
-                                <button type="button" onClick={() => onCreateProject(group)} className="rounded-full gf-glass-button text-white text-xs font-bold px-4 py-2 shrink-0">Create project</button>
+                                <button type="button" onClick={() => onCreateProject(group)} className="rounded-full gf-glass-button text-white text-xs font-bold px-4 py-2 shrink-0">{t("budgets.project.create")}</button>
                                 {projectBudgets.length > 0 && <div className="flex flex-1 gap-2 min-w-0">
-                                  <select value={selectedProjectId} onChange={(event) => setSelectedProjects((current) => ({ ...current, [group.key]: event.target.value }))} className="min-w-0 flex-1 rounded-full border border-purple-200 bg-gf-surface px-3 text-xs"><option value="">Add to project…</option>{projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}</select>
-                                  <button type="button" disabled={!selectedProjectId} onClick={() => { const selected = projectBudgets.find((project) => String(project._id) === String(selectedProjectId)); if (selected) onAddToProject(group, selected); }} className="rounded-full border border-purple-300 text-purple-300 text-xs font-bold px-3 py-2 disabled:opacity-40">Add</button>
+                                  <select value={selectedProjectId} onChange={(event) => setSelectedProjects((current) => ({ ...current, [group.key]: event.target.value }))} className="min-w-0 flex-1 rounded-full border border-purple-200 bg-gf-surface px-3 text-xs"><option value="">{t("budgets.project.addTo")}</option>{projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}</select>
+                                  <button type="button" disabled={!selectedProjectId} onClick={() => { const selected = projectBudgets.find((project) => String(project._id) === String(selectedProjectId)); if (selected) onAddToProject(group, selected); }} className="rounded-full border border-purple-300 text-purple-300 text-xs font-bold px-3 py-2 disabled:opacity-40">{t("budgets.add")}</button>
                                 </div>}
                               </div>
                             </div>
 
                             {group.type === "uncategorized" ? (
                               <div className="bg-amber-500/15 text-amber-400 rounded-xl p-3 text-xs">
-                                Review these movements and assign a category before creating a budget.
+                                {t("budgets.unbudgeted.assignFirst")}
                               </div>
                             ) : (
                               <div className="flex flex-col sm:flex-row gap-2">
@@ -317,7 +320,7 @@ export function UnbudgetedSpendingModal({
                                   onClick={() => onCreateBudget(group)}
                                   className="rounded-full gf-glass-button text-white text-xs font-bold px-4 py-2 shrink-0"
                                 >
-                                  Create new budget
+                                  {t("budgets.create")}
                                 </button>
                                 {spendingBudgets.length > 0 && (
                                   <div className="flex flex-1 gap-2 min-w-0">
@@ -332,7 +335,7 @@ export function UnbudgetedSpendingModal({
                                       className="min-w-0 flex-1 rounded-full border border-purple-200 bg-gf-surface px-3 text-xs"
                                       aria-label={`Add ${group.name} to an existing budget`}
                                     >
-                                      <option value="">Add to existing…</option>
+                                      <option value="">{t("budgets.addToExisting")}</option>
                                       {spendingBudgets.map((budget) => (
                                         <option key={budget._id} value={budget._id}>{budget.name}</option>
                                       ))}
@@ -349,7 +352,7 @@ export function UnbudgetedSpendingModal({
                                         }}
                                         className="rounded-full border border-purple-300 text-purple-300 text-xs font-bold px-3 py-2 disabled:opacity-40"
                                       >
-                                        Add
+                                        {t("budgets.add")}
                                       </button>
                                     </Tooltip>
                                   </div>
@@ -371,7 +374,7 @@ export function UnbudgetedSpendingModal({
                     onClick={() => setShowCatalog((current) => !current)}
                     className="w-full flex items-center justify-between text-xs font-bold text-purple-300"
                   >
-                    <span>Other categories without a budget ({uncoveredCatalogCategories.length})</span>
+                    <span>{t("budgets.unbudgeted.otherCategories", { p1: uncoveredCatalogCategories.length })}</span>
                     <UniversalCategoIcon type={showCatalog ? "md/MdExpandLess" : "md/MdExpandMore"} siz={18} />
                   </button>
                   {showCatalog && (
@@ -420,9 +423,9 @@ export function UnbudgetedSpendingModal({
         cancelText="Cancel"
         okButtonProps={{ className: "gf-glass-button-danger !border-0 !text-white" }}
         cancelButtonProps={{ className: "gf-glass-button-neutral !border-0 !text-gf-text" }}
-        title={<span className="text-red-400 font-semibold flex items-center gap-1">⚠️ Delete this movement?</span>}
+        title={<span className="text-red-400 font-semibold flex items-center gap-1">{t("budgets.movement.confirmTitle")}</span>}
       >
-        <p className="text-gf-text-muted text-sm">This removes the transaction permanently.</p>
+        <p className="text-gf-text-muted text-sm">{t("budgets.movement.confirmText")}</p>
       </Modal>
     </>
   );

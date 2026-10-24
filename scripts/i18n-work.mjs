@@ -196,7 +196,8 @@ function collect(file, rel) {
         const siblings = node.parent.children.filter((child) => !(ts.isJsxText(child) && child.getText(sf).trim() === ""));
         const lead = raw.length - raw.trimStart().length;
         const start = node.getStart(sf) + lead;
-        push({ kind: "jsx-text", start, end: start + raw.trim().length, source: value, pure: siblings.length === 1, component: componentOf(node) });
+        // A text next to an element is still a whole fragment ("You already spent"): it is translated as its own message.
+        push({ kind: "jsx-text", start, end: start + raw.trim().length, source: value, pure: true, component: componentOf(node) });
       }
     } else if (ts.isJsxAttribute(node) && ts.isIdentifier(node.name) && TEXT_ATTRS.has(node.name.text) && node.initializer) {
       const init = node.initializer;
@@ -350,6 +351,8 @@ function apply(namespace, files) {
       const node = components.get(name);
       if (!node) continue;
       const body = node.body;
+      // A component that already has its translator (an earlier run) gets nothing new.
+      if (body.getText(reparsed).includes(`const ${fn} = useT()`) || body.getText(reparsed).includes(`const ${fn} = await serverT(`)) continue;
       const firstStatement = body.statements[0];
       const indent = firstStatement ? " ".repeat(reparsed.getLineAndCharacterOfPosition(firstStatement.getStart(reparsed)).character) : "  ";
       const line = client
@@ -403,9 +406,19 @@ function apply(namespace, files) {
   console.log(`${namespace}: ${rewritten} textos reescritos · ${manual.length} para revisar a mano → ${path.relative(ROOT, manualFile)}`);
 }
 
-const [command, namespace, ...files] = process.argv.slice(2);
+// `--zone <name>` takes the files of a zone from .mds/i18n-work/zones.json (the inventory's zones).
+const [command, namespace, ...rest] = process.argv.slice(2);
+let files = rest;
+if (rest[0] === "--zone") {
+  const zones = readJson(path.join(WORK, "zones.json"), {});
+  if (!zones[rest[1]]) {
+    console.error(`No existe la zona "${rest[1]}". Zonas: ${Object.keys(zones).join(", ")}`);
+    process.exit(1);
+  }
+  files = zones[rest[1]].files;
+}
 if (!command || !namespace) {
-  console.error("Uso: node scripts/i18n-work.mjs plan|apply <namespace> <archivo...>");
+  console.error("Uso: node scripts/i18n-work.mjs plan|apply <namespace> <archivo...>  |  --zone <zona>");
   process.exit(1);
 }
 if (command === "plan") plan(namespace, files);

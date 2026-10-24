@@ -4,6 +4,7 @@ import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
+import { useT } from "@/i18n/client";
 
 export interface BudgetHistoricalDetailModalProps {
   row: BudgetHistoricalComparativeRowData;
@@ -23,6 +24,7 @@ function BudgetHistoricalDetailModal({
   walletPrimaryCurrency = "MXN",
   close,
 }: BudgetHistoricalDetailModalProps): React.JSX.Element {
+  const t = useT();
   const { budget, monthlySeries, monthsTracked, monthsMet } = row;
 
   return (
@@ -30,18 +32,17 @@ function BudgetHistoricalDetailModal({
       <header className="w-full text-white px-6 py-4">
         <p className="text-lg">{budget.name || "Unnamed budget"}</p>
         <p className="text-xs text-white/80">
-          {monthlySeries[0]?.label} - {monthlySeries[monthlySeries.length - 1]?.label} ·{" "}
-          {monthsMet} of {monthsTracked} months met
+          {t("budgets.monthsMet", { p1: monthlySeries[0]?.label, p2: monthlySeries[monthlySeries.length - 1]?.label, p3: monthsMet, p4: monthsTracked })}
         </p>
       </header>
       <div className="w-full flex-1 overflow-y-auto px-6 py-5">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-[11px] text-gf-text-muted">
-              <th className="text-left font-normal pb-2">Month</th>
-              <th className="text-right font-normal pb-2">Actual</th>
-              <th className="text-right font-normal pb-2">Goal</th>
-              <th className="text-right font-normal pb-2">Result</th>
+              <th className="text-left font-normal pb-2">{t("budgets.comparative.month")}</th>
+              <th className="text-right font-normal pb-2">{t("budgets.comparative.actual")}</th>
+              <th className="text-right font-normal pb-2">{t("budgets.comparative.goal")}</th>
+              <th className="text-right font-normal pb-2">{t("budgets.comparative.result")}</th>
             </tr>
           </thead>
           <tbody>
@@ -52,7 +53,7 @@ function BudgetHistoricalDetailModal({
                   {m.estimated && (
                     <span
                       className="text-gf-text-muted cursor-help"
-                      title="Predates this budget's earliest known goal - compared against that earliest goal as an estimate."
+                      title={t("budgets.comparative.estimateNote")}
                     >
                       *
                     </span>
@@ -69,7 +70,7 @@ function BudgetHistoricalDetailModal({
         </table>
         {monthlySeries.some((m) => m.estimated) && (
           <p className="text-[10px] text-gf-text-muted mt-3">
-            * Estimated - predates this budget&apos;s earliest known goal, compared against that earliest goal.
+            {t("budgets.comparative.estimateFootnote")}
           </p>
         )}
       </div>

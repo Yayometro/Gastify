@@ -5,6 +5,7 @@ import UniversalCategoIcon from "../UniversalCategoIcon";
 import ComparativeColumnChart from "@/components/multiUsedComp/chartsComponents/comparativeColumnChart/ComparativeColumnChart";
 import { generatePropForBudgetMonthlyChart } from "./propsForBudgetMonthlyChart";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
+import { useT } from "@/i18n/client";
 
 export interface BudgetCategoryLike {
   color?: string | null;
@@ -32,6 +33,8 @@ function BudgetHistoricalComparativeRow({
   walletPrimaryCurrency,
   onOpenDetail,
 }: BudgetHistoricalComparativeRowProps): React.JSX.Element {
+  const tr = useT();
+  const t = useT();
   const { budget, monthlySeries, monthsTracked, monthsMet, monthsEstimated, complianceRate } = row;
   // No month tracked yet (complianceRate null) is "no data", not 0% in red.
   const hasRate = complianceRate !== null && complianceRate !== undefined;
@@ -41,7 +44,7 @@ function BudgetHistoricalComparativeRow({
   let defaultCate = budget.category as BudgetCategoryLike | null | undefined;
   if (budget.subCategory) defaultCate = budget.subCategory as BudgetCategoryLike | null | undefined;
 
-  const chartProps = generatePropForBudgetMonthlyChart({ monthlySeries, walletPrimaryCurrency });
+  const chartProps = generatePropForBudgetMonthlyChart({ monthlySeries, walletPrimaryCurrency, t });
 
   return (
     <div
@@ -68,7 +71,7 @@ function BudgetHistoricalComparativeRow({
           <div className="flex flex-col">
             <p className="text-purple-300 hover:underline">{budget.name || "Unnamed budget"}</p>
             <p className="text-[10px] text-gf-text-muted">
-              {monthsMet} of {monthsTracked} months met
+              {monthsMet} {tr("budgets.of")} {monthsTracked} {tr("budgets.monthsMetWord")}
               {monthsEstimated > 0 && (
                 <span
                   className="text-gf-text-muted cursor-help"
@@ -76,8 +79,7 @@ function BudgetHistoricalComparativeRow({
                     monthsEstimated === 1 ? "" : "s"
                   } predate this budget's earliest known goal, so they're compared against that earliest goal as an estimate, not a verified historical figure.`}
                 >
-                  {" "}
-                  · {monthsEstimated} estimated
+                  {t("budgets.estimatedTag", { p1: monthsEstimated })}
                 </span>
               )}
             </p>

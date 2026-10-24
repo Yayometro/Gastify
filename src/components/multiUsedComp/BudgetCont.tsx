@@ -20,6 +20,7 @@ import { UnbudgetedSpendingCard } from "./Budgets/UnbudgetedSpending";
 import { useRouter } from "next/navigation";
 import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 import { RootState, AppDispatch } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 export interface BudgetContProps {
   bWallet?: unknown;
@@ -33,6 +34,7 @@ const initialToday = new Date();
 function BudgetCont({
   bcSession,
 }: BudgetContProps): React.JSX.Element {
+  const t = useT();
   const router = useRouter();
   const [startDate, setStartDate] = useState(new Date(initialToday.getFullYear(), initialToday.getMonth(), 1));
   const [endDate, setEndDate] = useState(getLastDayOfMonth(initialToday.getFullYear(), initialToday.getMonth()));
@@ -140,7 +142,7 @@ function BudgetCont({
     <div className="budget-cont gf-glass-card py-4 px-2 w-full max-w-[1200px] mx-auto rounded-[32px]">
       <div className="wallet-budget-Content">
         <h1 className="wallet-budget-title text-2xl text-center font-bold">
-          Wallet Budgets
+          {t("budgets.walletTitle")}
         </h1>
       </div>
       <div className="filters flex items-center justify-center gap-2 flex-wrap my-2">
@@ -150,14 +152,14 @@ function BudgetCont({
           styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
         />
         <TimeRange rpDate={handleRangeDate} rpResponse={""} />
-        <Tooltip title="Click to return time to current month 🤓">
+        <Tooltip title={t("budgets.period.backToNow")}>
           <button
             type="button"
             onClick={handleResetFilters}
             className="flex items-center gap-1 gf-glass-card hover:brightness-110 text-purple-100 rounded-full px-3 py-1 text-xs font-medium transition-[filter] cursor-pointer"
           >
             <UniversalCategoIcon type="md/MdRefresh" siz={15} />
-            <span>Reset</span>
+            <span>{t("budgets.reset")}</span>
           </button>
         </Tooltip>
       </div>
@@ -168,7 +170,7 @@ function BudgetCont({
             isBudget ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Budgets
+          {t("budgets.title")}
         </div>
         <div
           onClick={() => handleTab("")}
@@ -176,9 +178,9 @@ function BudgetCont({
             !isBudget ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Savings
+          {t("budgets.savings")}
         </div>
-        <Tooltip title="Filter by time to see your current progress in a specific time period. As well as change between tabs to see progress in Budgets or Savings. 🤓">
+        <Tooltip title={t("budgets.walletHelp")}>
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}
@@ -199,7 +201,7 @@ function BudgetCont({
         </div>
       ) : (
         <div className={`savings-cont ${!isBudget ? "" : "hidden"}`}>
-          <p className="text-xl font-norma text-center">Savings</p>
+          <p className="text-xl font-norma text-center">{t("budgets.savings")}</p>
           <div className="ind-budget-cont-slide flex flex-col gap-2 max-h-[700px] overflow-y-auto pb-2 px-1">
             {savings.map((saving, index) => (
               <BudgetBarRow
@@ -223,7 +225,7 @@ function BudgetCont({
         </div>
       ) : (
         <div className={`individual-budget-cont ${!isBudget ? "hidden" : ""}`}>
-          <p className="text-xl font-norma text-center">Budget Bills</p>
+          <p className="text-xl font-norma text-center">{t("budgets.billsTitle")}</p>
           <div className="ind-budget-cont-slide flex flex-col gap-2 max-h-[700px] overflow-y-auto pb-2 px-1">
             {budgets.map((budget, index) => (
               <BudgetBarRow
@@ -238,7 +240,7 @@ function BudgetCont({
               compact
               onClick={() => router.push("/dashboard/budgets")}
             />
-            {projects.length > 0 && <><p className="text-lg text-purple-300 text-center mt-4">Projects</p>{projects.map((project) => {
+            {projects.length > 0 && <><p className="text-lg text-purple-300 text-center mt-4">{t("budgets.projects")}</p>{projects.map((project) => {
               const actual = bcTrans.filter((transaction) => getExplicitBudgetId(transaction) === String(project._id) && transaction.isBill && !transaction.isIncome).reduce((sum, transaction) => sum + (Number(transaction.amount) || 0), 0);
               return <BudgetBarRow key={`project-${project._id}`} budget={project} actual={actual} onClick={openDetail} />;
             })}</>}
