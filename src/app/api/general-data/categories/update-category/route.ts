@@ -4,6 +4,7 @@ import Category, { type ICategory } from "@/model/Category";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
+import { serverT } from "@/i18n/server";
 
 export interface UpdateCategoryRequestBody {
   id?: string;
@@ -26,8 +27,9 @@ export type UpdateCategoryResponse = UpdateCategorySuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UpdateCategoryResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     const { id, name, icon, color, accounts } =
       (await request.json()) as UpdateCategoryRequestBody;
     // Security fix: this used to look up the Category by id alone, with
@@ -37,15 +39,15 @@ export async function POST(
     // wallet (session-derived), so an id belonging to someone else's
     // category fails the same "not found" check as a bogus id.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on UPDATE CATEGORY");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.update.3"));
     const findCatego = await Category.findOne({
       _id: id,
       wallet: userFound.wallet,
     });
-    if (!findCatego) throw new Error("No category found to UPDATE");
+    if (!findCatego) throw new Error(t("errors.no.category.found.to.update"));
     // UPDATE
     findCatego.name = !name ? findCatego.name : name;
     findCatego.icon = !icon ? findCatego.icon : icon;

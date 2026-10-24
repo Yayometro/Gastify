@@ -4,6 +4,7 @@ import SubCategory, { type ISubCategory } from "@/model/SubCategory";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
+import { serverT } from "@/i18n/server";
 
 export interface RemoveSubCategorySuccessResponse {
   message: string;
@@ -17,8 +18,9 @@ export type RemoveSubCategoryResponse = RemoveSubCategorySuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveSubCategoryResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     const id = (await request.json()) as string;
     // Security fix: this used to delete the SubCategory by id alone,
     // with zero ownership check - this endpoint isn't covered by
@@ -26,10 +28,10 @@ export async function POST(
     // user's sub-category. Now deletion is scoped to the caller's own
     // wallet (session-derived).
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on REMOVE SUB-CATEGORY");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.remove.6"));
     const removeSub = await SubCategory.findOneAndDelete({
       _id: id,
       wallet: userFound.wallet,
@@ -38,7 +40,7 @@ export async function POST(
     //UPDATE
     // (this used to read removeSub.name while removeSub was null: a TypeError
     // instead of the intended message)
-    if (!removeSub) throw new Error("SubCategory not removed 🤕");
+    if (!removeSub) throw new Error(t("errors.subcategory.not.removed"));
     return NextResponse.json({
       message: `${removeSub.name || "Sub-Category"} was removed successfully 🤓`,
       data: removeSub,

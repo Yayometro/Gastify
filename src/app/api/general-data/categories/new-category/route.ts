@@ -4,6 +4,7 @@ import Category, { type ICategory } from "@/model/Category";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
+import { serverT } from "@/i18n/server";
 
 export interface NewCategoryRequestBody {
   name?: string;
@@ -25,8 +26,9 @@ export type NewCategoryResponse = NewCategorySuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<NewCategoryResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     const { name, icon, color, accounts } =
       (await request.json()) as NewCategoryRequestBody;
     // Security fix: this used to trust whatever user/wallet the client
@@ -36,10 +38,10 @@ export async function POST(
     // session instead. The only real call site (EditCategoryModal.jsx)
     // already sends the caller's own ids anyway.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on NEW CATEGORY");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.new.3"));
     const user = userFound._id;
     const wallet = userFound.wallet;
     const newCategory = new Category({
@@ -57,7 +59,7 @@ export async function POST(
       }
     }
     const saveCatego = await newCategory.save();
-    if (!saveCatego) throw new Error("New category not saved 🤕");
+    if (!saveCatego) throw new Error(t("errors.new.category.not.saved"));
     return NextResponse.json({
       message: `${saveCatego.name} was created successfully 🤓`,
       data: saveCatego,

@@ -12,6 +12,7 @@ import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadServ
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { createServerTimer } from "@/lib/perf/serverTiming";
 import { buildDateWindowFilter } from "@gastify/core/transactions/historyWindowQuery";
+import { serverT } from "@/i18n/server";
 
 export interface GetTransactionsSuccessResponse {
   data: unknown;
@@ -34,9 +35,10 @@ const POPULATE_FIELDS = {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<GetTransactionsResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No request received from get-all in Transactions");
+      throw new Error(t("errors.no.request.received.from.get"));
 
     // Security fix: this route previously lacked session verification and trusted
     // whatever userMail was sent in the request body (IDOR), returning another
@@ -45,7 +47,7 @@ export async function POST(
     const timer = createServerTimer();
     const totalStart = performance.now();
     const sesion = await timer.time("session", () => getVerifiedSession(request.headers));
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     // Optional date window, so the client can ask for the recent months first and
     // the rest of the history afterwards (the body used to be just the email).
@@ -57,7 +59,7 @@ export async function POST(
     // User find
     const userFound = await timer.time("user", () => User.findOne({ mail: sesion.user.email }).lean());
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
     // Structural typing with unknown avoids any while resolving TS2349 union incompatibility on unmigrated Wallet.js
@@ -104,7 +106,7 @@ export async function POST(
       .lean())) as unknown[];
     if (!movementsFounded)
       throw new Error(
-        "No movements found, review the user and wallet id on get-all/transactions in POST"
+        t("errors.no.movements.found.review.the")
       );
     const withDisplayMoney = await timer.time("display-money", () =>
       attachDisplayMoneyToList(movementsFounded, parentWallet?.primaryCurrency || "MXN")
@@ -112,7 +114,7 @@ export async function POST(
     const serializeStart = performance.now();
     const responseBody = JSON.stringify({
       data: withDisplayMoney,
-      message: "Transactions founded",
+      message: t("errors.transactions.founded"),
       status: 201,
       ok: true,
     });

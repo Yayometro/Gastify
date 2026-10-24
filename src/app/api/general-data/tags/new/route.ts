@@ -3,6 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import Tag, { type ITag } from "@/model/Tag";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface NewTagRequestBody {
   name?: string | null;
@@ -23,8 +24,9 @@ export type NewTagResponse = NewTagSuccessResponse;
 export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<NewTagResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW TAG");
+    if (!request) throw new Error(t("errors.no.request.received.from.new.2"));
     const { name, color } = (await request.json()) as NewTagRequestBody;
 
     // Security fix: this route previously lacked session verification and trusted
@@ -32,11 +34,11 @@ export async function POST(
     // attached to arbitrary users/wallets. We now verify the caller's session via
     // auth.api.getSession and derive user and wallet directly from the authenticated user.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on NEW TAG");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.new.7"));
 
     const newTag = new Tag({
       user: userFound._id,
@@ -45,7 +47,7 @@ export async function POST(
       color: !color ? null : color,
     });
     const savedTag = await newTag.save();
-    if (!savedTag) throw new Error("No new Tag was saved 🤕");
+    if (!savedTag) throw new Error(t("errors.no.new.tag.was.saved"));
     return NextResponse.json({
       message: `${savedTag.name} was created successfully 🤓`,
       data: savedTag,

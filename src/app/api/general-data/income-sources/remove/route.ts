@@ -5,6 +5,7 @@ import IncomeSource, { type IIncomeSource } from "@/model/IncomeSource";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -41,9 +42,10 @@ export async function GET(): Promise<NextResponse<RemoveIncomeSourceGetResponse>
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveIncomeSourcePostResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on REMOVE INCOME SOURCE POST");
+      throw new Error(t("errors.no.data.in.request.on.15"));
     const { id } = ((await request.json()) ||
       {}) as RemoveIncomeSourceRequestBody;
 
@@ -57,12 +59,12 @@ export async function POST(
     // We now verify the caller's session via auth.api.getSession, find the
     // session user in the database, and scope the query to the user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found...");
+    if (!userFound) throw new Error(t("errors.user.not.found.2"));
 
     // SOFT DELETE: keep the document so past months in Projections can still read its history
     const removedIncomeSource = await IncomeSource.findOne({
@@ -71,7 +73,7 @@ export async function POST(
     });
     //IF ERROR
     if (!removedIncomeSource)
-      throw new Error("Income Source was not removed, verify data ❌");
+      throw new Error(t("errors.income.source.was.not.removed"));
     removedIncomeSource.archived = true;
     removedIncomeSource.active = false;
     // Close EVERY open history entry, not just the first one found (bug 50).

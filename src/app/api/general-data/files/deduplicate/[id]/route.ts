@@ -17,6 +17,7 @@ import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
 import { SUPPORTED_CURRENCIES, majorToMinor, getTransactionNativeMoney } from "@gastify/core/money/currencies";
 import { buildLegacyMoney } from "@/lib/money/transactionMoney";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface DedupPreviewResponse {
   ok: true;
@@ -101,6 +102,7 @@ function nativeMoneyOf(transaction: unknown) {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<DedupResponse>> {
+  const tr = await serverT(["errors"]);
   let tmpFilePath: string | null = null;
   try {
     // Security fix: this route previously lacked session authentication and trusted
@@ -108,14 +110,14 @@ export async function POST(
     // We now derive user identity strictly from auth.api.getSession, ignoring params.id,
     // and scope queries and deletions to the session user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(tr("errors.no.session"));
 
     const data = await request.formData();
     const file = data.get("file") as File | null;
     const deleteAll = data.get("deleteAll") === "true";
     const preview = data.get("preview") === "true";
     if (!file) {
-      return NextResponse.json({ ok: false, message: "No file received" }, { status: 400 });
+      return NextResponse.json({ ok: false, message: tr("errors.no.file.received") }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -145,7 +147,7 @@ export async function POST(
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound) {
-      return NextResponse.json({ ok: false, message: "User not found" }, { status: 404 });
+      return NextResponse.json({ ok: false, message: tr("errors.user.not.found") }, { status: 404 });
     }
     const parentWallet = await Wallet.findById(userFound.wallet).lean();
     const walletPrimaryCurrency = parentWallet?.primaryCurrency || "MXN";
@@ -184,7 +186,7 @@ export async function POST(
     }
 
     if (excelRows.length === 0) {
-      return NextResponse.json({ ok: false, message: "No valid rows found in the file" }, { status: 400 });
+      return NextResponse.json({ ok: false, message: tr("errors.no.valid.rows.found.in") }, { status: 400 });
     }
 
     const POPULATE_OPTIONS = [

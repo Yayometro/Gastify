@@ -12,6 +12,7 @@ import Wallet from "@/model/Wallet";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -37,8 +38,9 @@ export type SpeechAddResponse = SpeechAddSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<SpeechAddResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on GENERAL-DATA POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on"));
     const transObj = ((await request.json()) || {}) as SpeechAddRequestBody;
     console.log(transObj);
 
@@ -47,7 +49,7 @@ export async function POST(
     // in another user's wallet. We now verify the session via auth.api.getSession,
     // find the authenticated user by email, and derive user and wallet directly from the session.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     //Variables
     // Title extraction regex
@@ -88,11 +90,11 @@ export async function POST(
     //Validating escential data
     if (!titleMatch) {
       console.log(titleMatch);
-      throw new Error("Title of transaction data is missing and is required");
+      throw new Error(t("errors.title.of.transaction.data.is"));
     }
     if (!amountMatch) {
       console.log(amountMatch);
-      throw new Error("Amount of transaction data is missing and is required");
+      throw new Error(t("errors.amount.of.transaction.data.is"));
     }
 
     interface ExtractedTransaction {
@@ -169,7 +171,7 @@ export async function POST(
     await dbConnection();
     const findUser = await User.findOne({ mail: sesion.user.email }).lean();
     if (!findUser)
-      throw new Error("No User ID found to create a new Transaction");
+      throw new Error(t("errors.no.user.id.found.to"));
     console.log(findUser);
     const newTransaction = new Transaction({
       user: findUser._id,
@@ -221,7 +223,7 @@ export async function POST(
       .findById(findUser.wallet)
       .lean()) as { primaryCurrency?: string } | null;
     if (!parentWallet)
-      throw new Error("No Wallet found to create a new Transaction");
+      throw new Error(t("errors.no.wallet.found.to.create"));
     // .lean() never applies schema defaults - a real Wallet/Account document
     // that predates the multi-currency migration has no primaryCurrency/
     // currency field in its stored BSON at all.
@@ -252,7 +254,7 @@ export async function POST(
     const savedTransacction = await newTransaction.save();
     if (!savedTransacction)
       throw new Error(
-        "NEW TRANSACTIONS could not be saved on Speach New Transaction Post"
+        t("errors.new.transactions.could.not.be.2")
       );
     console.log(savedTransacction);
     const finalTransaction = await Transaction.findById(savedTransacction._id)
@@ -270,7 +272,7 @@ export async function POST(
       })
       .lean();
     if (!finalTransaction)
-      throw new Error("NEW TRANSACTIONS could not be loaded on POST");
+      throw new Error(t("errors.new.transactions.could.not.be.3"));
     const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
       [finalTransaction],
       walletPrimaryCurrency

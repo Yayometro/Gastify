@@ -8,6 +8,7 @@ import ProjectionBaseline, {
 } from "@/model/ProjectionBaseline";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 const deleteProjectionBaselineBodySchema = z
   .object({
@@ -44,9 +45,10 @@ export async function GET(): Promise<
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<DeleteProjectionBaselineResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on DELETE PROJECTION BASELINE POST");
+      throw new Error(t("errors.no.data.in.request.on.12"));
 
     // Security fix: this used to trust whatever mail the client sent in the
     // body, letting any caller (this endpoint isn't covered by middleware.ts's
@@ -55,7 +57,7 @@ export async function POST(
     // We now verify the caller's session via auth.api.getSession and derive the user
     // from sesion.user.email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     const rawBody = (await request.json()) || {};
     const parsed = deleteProjectionBaselineBodySchema.safeParse(rawBody);
@@ -74,13 +76,13 @@ export async function POST(
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const walletId = userFound.wallet;
 
     const baseline = await ProjectionBaseline.findOne({ wallet: walletId });
     if (!baseline)
       throw new Error(
-        "Projection Baseline was not found to delete an entry from 🤕"
+        t("errors.projection.baseline.was.not.found")
       );
     const field = kind === "income" ? "incomeHistory" : "expenseHistory";
     baseline[field] = (
@@ -95,7 +97,7 @@ export async function POST(
     const savedBaseline = await baseline.save();
 
     if (!savedBaseline)
-      throw new Error("Projection Baseline was not saved 🤕");
+      throw new Error(t("errors.projection.baseline.was.not.saved"));
     return NextResponse.json({
       message: `Projection Baseline entry was removed 🤓`,
       data: savedBaseline,

@@ -4,6 +4,7 @@ import User, { type IUser } from "@/model/User";
 import { auth } from "@/lib/auth/betterAuth";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
+import { serverT } from "@/i18n/server";
 // export async function POST(request){
 //     try{
 
@@ -36,9 +37,10 @@ export interface UpdateUserSuccessResponse {
 export type UpdateUserResponse = UpdateUserSuccessResponse;
 
 export async function GET(): Promise<NextResponse<UpdateUserGetResponse>> {
+  const t = await serverT(["errors"]);
   try {
     return NextResponse.json({
-      message: "Data founded",
+      message: t("errors.data.founded"),
       status: 201,
       ok: true,
     });
@@ -51,8 +53,9 @@ export async function GET(): Promise<NextResponse<UpdateUserGetResponse>> {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UpdateUserResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on GENERAL-DATA POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on"));
     const dataRequest: UpdateUserRequestBody = await request.json();
     let parsedPhone: number | undefined;
     // The phone number is personal data: it is deliberately never logged here.
@@ -73,11 +76,11 @@ export async function POST(
     // own email is a legitimate feature) - only the lookup of WHICH user
     // to update no longer trusts the client.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFounded = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFounded)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
 
     // Credential logins are checked against the `account` collection now
     // (see src/lib/auth/betterAuth.js), not `User.password` - writing a
@@ -108,7 +111,7 @@ export async function POST(
     );
 
     if (!userUpdated) {
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     }
     return NextResponse.json({
       message: `User ${userFounded?.fullName || ""} was updated 🤓`,

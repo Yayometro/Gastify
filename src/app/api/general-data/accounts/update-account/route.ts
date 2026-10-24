@@ -7,6 +7,7 @@ import { SUPPORTED_CURRENCIES, majorToMinor } from "@gastify/core/money/currenci
 import { bankById, normalizeCardNumber } from "@gastify/core/banks/banks";
 import { isCardColor, isCardPattern } from "@gastify/core/accounts/cardStyle";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface UpdateAccountRequestBody {
   accountId?: string;
@@ -33,8 +34,9 @@ export type UpdateAccountResponse = UpdateAccountSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UpdateAccountResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on UPDATE-ACCOUNT POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.5"));
     const body = (await request.json()) as UpdateAccountRequestBody;
     const { accountId, name, amount, accountType, currency } = body;
     // Security fix: this route had zero ownership/session check at all -
@@ -48,10 +50,10 @@ export async function POST(
     // instead of silently updating it. The only real call site
     // (EditAccountModal.jsx) always edits the caller's own account.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on UPDATE-ACCOUNT POST");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.update.2"));
     // FIND ACCOUNT
     const findAccount = await Account.findOne({
       _id: accountId,

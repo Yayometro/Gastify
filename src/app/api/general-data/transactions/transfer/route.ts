@@ -12,6 +12,7 @@ import { deriveEffectiveRate } from "@gastify/core/money/conversion";
 import { buildSameCurrencyReportingMoney } from "@/lib/money/transactionMoney";
 import { convert } from "@/lib/money/server/fxRateService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -100,8 +101,9 @@ async function buildLegReporting(
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<TransferTransactionResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on TRANSFER POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.2"));
     const body = ((await request.json()) || {}) as TransferTransactionRequestBody;
     const {
       name,
@@ -119,16 +121,16 @@ export async function POST(
     // auth.api.getSession, find the session user in the database, and derive
     // user and wallet directly from the session.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     if (!sourceAccountId || !destinationAccountId)
-      throw new Error("Both source and destination Accounts are required");
+      throw new Error(t("errors.both.source.and.destination.accounts"));
     if (String(sourceAccountId) === String(destinationAccountId))
-      throw new Error("Source and destination Accounts must be different");
+      throw new Error(t("errors.source.and.destination.accounts.must"));
     if (!Number.isInteger(sourceAmountMinor) || (sourceAmountMinor as number) <= 0)
-      throw new Error("sourceAmountMinor must be a positive integer");
+      throw new Error(t("errors.sourceamountminor.must.be.a.positive"));
     if (!Number.isInteger(destinationAmountMinor) || (destinationAmountMinor as number) <= 0)
-      throw new Error("destinationAmountMinor must be a positive integer");
+      throw new Error(t("errors.destinationamountminor.must.be.a.positive"));
 
     const validSourceAmountMinor = sourceAmountMinor as number;
     const validDestinationAmountMinor = destinationAmountMinor as number;
@@ -137,7 +139,7 @@ export async function POST(
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on TRANSFER TRANSACTION");
+      throw new Error(t("errors.user.not.found.on.transfer"));
 
     const [sourceAccount, destinationAccount, parentWallet] = await Promise.all([
       Account.findById(sourceAccountId).lean(),
@@ -153,12 +155,12 @@ export async function POST(
         .lean(),
     ]);
     if (!sourceAccount || String(sourceAccount.user) !== String(userFound._id) || String(sourceAccount.wallet) !== String(userFound.wallet)) {
-      throw new Error("Source Account not found or does not belong to this user/Wallet");
+      throw new Error(t("errors.source.account.not.found.or"));
     }
     if (!destinationAccount || String(destinationAccount.user) !== String(userFound._id) || String(destinationAccount.wallet) !== String(userFound.wallet)) {
-      throw new Error("Destination Account not found or does not belong to this user/Wallet");
+      throw new Error(t("errors.destination.account.not.found.or"));
     }
-    if (!parentWallet) throw new Error("Wallet not found for transfer/exchange");
+    if (!parentWallet) throw new Error(t("errors.wallet.not.found.for.transfer"));
 
     // .lean() never applies schema defaults - a real Account/Wallet document
     // that predates the multi-currency migration has no currency/
@@ -170,7 +172,7 @@ export async function POST(
     const resolvedKind = kind === "exchange" ? "exchange" : "transfer";
     if (resolvedKind === "transfer" && sourceCurrency !== destinationCurrency) {
       throw new Error(
-        "A transfer requires both Accounts to share the same currency - use an exchange for cross-currency moves"
+        t("errors.a.transfer.requires.both.accounts")
       );
     }
 

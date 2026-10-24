@@ -16,6 +16,7 @@ import { planCurrencyChange } from "@gastify/core/money/currencyChange";
 import { convert } from "@/lib/money/server/fxRateService";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoney } from "@/lib/money/server/transactionReadService";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -57,8 +58,9 @@ export type EditManyTransactionsResponse =
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<EditManyTransactionsResponse>> {
+  const tr = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on Update Many Trans");
+    if (!request) throw new Error(tr("errors.no.data.in.request.on.3"));
     const body = ((await request.json()) || {}) as EditManyTransactionsRequestBody;
     const {
       transactions,
@@ -83,18 +85,18 @@ export async function POST(
     // session user in the database, and scope transaction and account lookups to the
     // user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(tr("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on EDIT MANY TRANSACTIONS");
+      throw new Error(tr("errors.user.not.found.on.edit"));
 
     const userWallet = userFound.wallet;
 
     if (!transactions || transactions.length === 0)
-      throw new Error("No transaction IDs passed to edit-many");
+      throw new Error(tr("errors.no.transaction.ids.passed.to"));
 
     // If no fields array provided fall back to updating all truthy values (legacy behaviour)
     const targeted = Array.isArray(fields) && fields.length > 0;
@@ -125,7 +127,7 @@ export async function POST(
     // this up front so the action either fully applies or is fully blocked.
     if (shouldUpdate("account") && account) {
       const destinationAccount = await Account.findOne({ _id: account, wallet: userWallet }).lean();
-      if (!destinationAccount) throw new Error("Destination account not found for bulk account reassignment");
+      if (!destinationAccount) throw new Error(tr("errors.destination.account.not.found.for"));
       const destCurrency = destinationAccount.currency || "MXN";
 
       for (const transId of transactions) {

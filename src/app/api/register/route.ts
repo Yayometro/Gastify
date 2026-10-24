@@ -3,6 +3,7 @@ import dbConnection from "../dbConnection";
 import { auth } from "@/lib/auth/betterAuth";
 
 import User from "@/model/User";
+import { serverT } from "@/i18n/server";
 
 export interface RegisterBody {
   fullName: string;
@@ -35,6 +36,7 @@ export type RegisterResponse = RegisterSuccessResponse | RegisterErrorResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RegisterResponse>> {
+  const t = await serverT(["errors"]);
   try {
     await dbConnection();
     const dataFront: RegisterBody = await request.json();
@@ -55,7 +57,7 @@ export async function POST(
         image: dataFront.image || undefined,
       },
     });
-    if (!user) throw new Error("No USER was saved creating a NEW USER ❌");
+    if (!user) throw new Error(t("errors.no.user.was.saved.creating"));
 
     return NextResponse.json({
       data: user,

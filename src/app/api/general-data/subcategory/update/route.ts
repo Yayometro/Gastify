@@ -6,6 +6,7 @@ import Transaction from "@/model/Transaction";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
+import { serverT } from "@/i18n/server";
 
 export interface UpdateSubCategoryRequestBody {
   id?: string;
@@ -28,8 +29,9 @@ export type UpdateSubCategoryResponse = UpdateSubCategorySuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UpdateSubCategoryResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     const { id, name, icon, color, fatherCategory } =
       (await request.json()) as UpdateSubCategoryRequestBody;
     // Security fix: this used to look up the SubCategory by id alone, with
@@ -40,13 +42,13 @@ export async function POST(
     // transactions). Now the lookup is scoped to the caller's own wallet
     // (session-derived).
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on UPDATE SUB-CATEGORY");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.update.5"));
     const findSub = await SubCategory.findOne({ _id: id, wallet: userFound.wallet });
     //UPDATE
-    if (!findSub) throw new Error("No SubCategory was found 🤕");
+    if (!findSub) throw new Error(t("errors.no.subcategory.was.found"));
     const previousFatherCategory = findSub.fatherCategory;
     findSub.name = !name ? findSub.name : name;
     findSub.icon = !icon ? findSub.icon : icon;
@@ -55,7 +57,7 @@ export async function POST(
       ? findSub.fatherCategory
       : fatherCategory;
     const saveSub = await findSub.save();
-    if (!saveSub) throw new Error("Sub-category not updated 🤕");
+    if (!saveSub) throw new Error(t("errors.sub.category.not.updated"));
     const fatherCategoryChanged =
       fatherCategory && String(previousFatherCategory) !== String(fatherCategory);
     if (fatherCategoryChanged) {

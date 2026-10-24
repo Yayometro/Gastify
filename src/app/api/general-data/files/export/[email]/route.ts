@@ -12,6 +12,7 @@ import { getTransactionNativeMoney } from "@gastify/core/money/currencies";
 import { buildLegacyMoney } from "@/lib/money/transactionMoney";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import dayjs from "dayjs";
+import { serverT } from "@/i18n/server";
 
 export interface ExportTransactionsRequestBody {
   transactionIds?: string[];
@@ -25,10 +26,11 @@ export interface ExportErrorResponse {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<ExportErrorResponse> | NextResponse | Response> {
+  const tr = await serverT(["errors"]);
   try {
     const { transactionIds } = (await request.json()) as ExportTransactionsRequestBody;
     if (!transactionIds?.length) {
-      return NextResponse.json({ ok: false, message: "No transactions to export" }, { status: 400 });
+      return NextResponse.json({ ok: false, message: tr("errors.no.transactions.to.export") }, { status: 400 });
     }
 
     // Security fix: this route previously lacked session authentication and trusted
@@ -36,11 +38,11 @@ export async function POST(
     // We now verify auth.api.getSession, resolve user identity exclusively from the session,
     // and query transactions scoped to user._id.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(tr("errors.no.session"));
 
     await dbConnection();
     const user = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!user) return NextResponse.json({ ok: false, message: "User not found" }, { status: 404 });
+    if (!user) return NextResponse.json({ ok: false, message: tr("errors.user.not.found") }, { status: 404 });
 
     const transactions = await Transaction.find({
       _id: { $in: transactionIds },

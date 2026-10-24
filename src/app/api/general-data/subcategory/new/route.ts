@@ -5,6 +5,7 @@ import "@/model/Category";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
+import { serverT } from "@/i18n/server";
 
 export interface NewSubCategoryRequestBody {
   name?: string;
@@ -26,12 +27,13 @@ export type NewSubCategoryResponse = NewSubCategorySuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<NewSubCategoryResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     const { name, icon, color, fatherCategory } =
       (await request.json()) as NewSubCategoryRequestBody;
     if (!fatherCategory)
-      throw new Error("No FATHER category received for NEW SUB-CATEGORY");
+      throw new Error(t("errors.no.father.category.received.for"));
     // Security fix: this used to trust whatever user/wallet the client sent
     // in the body, letting any caller (this endpoint isn't covered by
     // middleware.ts's matcher) plant a sub-category inside ANY OTHER user's
@@ -39,10 +41,10 @@ export async function POST(
     // instead. The only real call site (EditCategoryModal.jsx) already
     // sends the caller's own ids anyway.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on NEW SUB-CATEGORY");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.new.5"));
     const user = userFound._id;
     const wallet = userFound.wallet;
     const newSubCategory = new SubCategory({
@@ -57,7 +59,7 @@ export async function POST(
     const saveSub = await newSubCategory.save();
     const populatedSubCategory = await SubCategory.findById(saveSub._id)
       .populate("fatherCategory");
-    if (!saveSub) throw new Error("New sub-category not saved 🤕");
+    if (!saveSub) throw new Error(t("errors.new.sub.category.not.saved"));
     return NextResponse.json({
       message: `${saveSub.name} was created successfully 🤓`,
       data: populatedSubCategory,

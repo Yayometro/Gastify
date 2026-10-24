@@ -17,6 +17,7 @@ import { convert } from "@/lib/money/server/fxRateService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { assertOwnedOrDefault } from "@/lib/auth/ownership";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -59,8 +60,9 @@ export async function POST(
   request: NextRequest | Request,
   context: { params: Promise<{ id?: string }> }
 ): Promise<NextResponse<UpdateTransactionResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on GENERAL-DATA POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on"));
     const {
       name,
       amount,
@@ -81,11 +83,11 @@ export async function POST(
 
     // Validators
     if (!context || !context.params)
-      throw new Error("No params ID send to work on POST UPDATE TRANSACTION");
+      throw new Error(t("errors.no.params.id.send.to"));
     const resolvedParams = await context.params;
     const id = resolvedParams?.id;
     if (!id)
-      throw new Error("No params ID send to work on POST UPDATE TRANSACTION");
+      throw new Error(t("errors.no.params.id.send.to"));
 
     // Security fix: this route previously lacked session verification and
     // performed Transaction.findById(params.id) directly with zero ownership check.
@@ -93,12 +95,12 @@ export async function POST(
     // session user in the database, and scope the transaction lookup to the
     // user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on UPDATE TRANSACTION");
+      throw new Error(t("errors.user.not.found.on.update"));
 
     const findTrans = await Transaction.findOne({
       _id: id,
@@ -106,7 +108,7 @@ export async function POST(
     });
 
     if (!findTrans)
-      throw new Error("No Transactions found work on POST UPDATE TRANSACTION");
+      throw new Error(t("errors.no.transactions.found.work.on"));
 
     // Structural typing with unknown avoids any while resolving TS2349 union incompatibility on unmigrated Wallet.js
     const parentWallet = (await (
@@ -118,7 +120,7 @@ export async function POST(
     )
       .findById(findTrans.wallet)
       .lean()) as { primaryCurrency?: string } | null;
-    if (!parentWallet) throw new Error("No Wallet found for this Transaction");
+    if (!parentWallet) throw new Error(t("errors.no.wallet.found.for.this"));
     // .lean() never applies schema defaults - a real Wallet/Account document
     // that predates the multi-currency migration has no primaryCurrency/
     // currency field in its stored BSON at all.
@@ -165,7 +167,7 @@ export async function POST(
         } else if (currencyStrategy === "manual") {
           if (!amountProvided)
             throw new Error(
-              "The manual currency strategy requires an explicit amount in the new Account's currency"
+              t("errors.the.manual.currency.strategy.requires")
             );
         } else if (currencyStrategy === "convert") {
           const sourceMinor =
@@ -284,7 +286,7 @@ export async function POST(
           (linkedBudget.budgetType ||
             (linkedBudget.isSaving ? "saving" : "spending")) !== "project"
         ) {
-          throw new Error("Project budget was not found for this transaction");
+          throw new Error(t("errors.project.budget.was.not.found"));
         }
         findTrans.budget = linkedBudget._id as mongoose.Types.ObjectId;
       }
@@ -329,7 +331,7 @@ export async function POST(
             wallet: findTrans.wallet,
           });
           if (!newTag)
-            throw new Error("No tag created on UPDATED TRANSACTION POST");
+            throw new Error(t("errors.no.tag.created.on.updated"));
           newTags.push(newTag._id as mongoose.Types.ObjectId);
           await newTag.save();
         } else {
@@ -343,7 +345,7 @@ export async function POST(
     const updatedTrans = await findTrans.save();
 
     if (!updatedTrans)
-      throw new Error("NEW TRANSACTIONS could not be saved on POST");
+      throw new Error(t("errors.new.transactions.could.not.be"));
     const transToSend = await Transaction.findById(updatedTrans._id)
       .populate({
         path: "tags",
@@ -364,7 +366,7 @@ export async function POST(
 
     if (!transToSend)
       throw new Error(
-        "Updated transaction -transToSend- could not be loaded to send"
+        t("errors.updated.transaction.transtosend.could.not")
       );
     const [transactionWithDisplayMoney] = await attachDisplayMoneyToList(
       [transToSend],

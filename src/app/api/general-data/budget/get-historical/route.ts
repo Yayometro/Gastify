@@ -5,6 +5,7 @@ import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import "@/model/Category";
 import "@/model/SubCategory";
+import { serverT } from "@/i18n/server";
 
 export interface GetHistoricalBudgetsSuccessResponse {
   message: string;
@@ -23,8 +24,9 @@ export type GetHistoricalBudgetsResponse = GetHistoricalBudgetsSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<GetHistoricalBudgetsResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on BUDGET GET-HISTORICAL POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.10"));
     // Security fix: this used to trust whatever mail the client sent in the
     // body, letting any caller (this endpoint isn't covered by
     // middleware.ts's matcher) read another user's historical budgets - an
@@ -33,11 +35,11 @@ export async function POST(
     // (HistoricalBudgetsComparative.jsx, HistoricalWalletAnalyzer.jsx)
     // always send their own session's email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on BUDGET GET-HISTORICAL POST");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.budget"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
 
@@ -52,7 +54,7 @@ export async function POST(
       .populate({ path: "categories.subCategory", strictPopulate: false });
 
     return NextResponse.json({
-      message: "Historical budgets found successfully",
+      message: t("errors.historical.budgets.found.successfully"),
       data: findBudgets,
       status: 200,
       ok: true,

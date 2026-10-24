@@ -10,6 +10,7 @@ import User from "@/model/User";
 import Wallet from "@/model/Wallet";
 import { majorToMinor } from "@gastify/core/money/currencies";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 const monthBufferSchema = z
   .object({
@@ -64,9 +65,10 @@ export async function GET(): Promise<
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UpdateProjectionSettingsResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on UPDATE PROJECTION SETTINGS POST");
+      throw new Error(t("errors.no.data.in.request.on.23"));
     // Security fix: this used to trust whatever mail the client sent in the
     // body, letting any caller (this endpoint isn't covered by middleware.ts's
     // matcher) update another user's projection settings (monthly buffers and balances) -
@@ -75,7 +77,7 @@ export async function POST(
     // We now verify the caller's session via auth.api.getSession and derive the user
     // from sesion.user.email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     const rawBody = (await request.json()) || {};
     const parsed = updateProjectionSettingsBodySchema.safeParse(rawBody);
@@ -90,7 +92,7 @@ export async function POST(
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
     const parentWallet = (await (
@@ -195,7 +197,7 @@ export async function POST(
     const savedSettings = await settings.save();
 
     if (!savedSettings)
-      throw new Error("Projection Settings were not saved 🤕");
+      throw new Error(t("errors.projection.settings.were.not.saved"));
     return NextResponse.json({
       message: `Projection Settings were updated successfully 🤓`,
       data: savedSettings,

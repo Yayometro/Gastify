@@ -4,6 +4,7 @@ import dbConnection from "@/app/api/dbConnection";
 import "@/model/FxRateSnapshot";
 import { SUPPORTED_CURRENCIES, assertSupportedCurrency } from "@gastify/core/money/currencies";
 import { convert } from "@/lib/money/server/fxRateService";
+import { serverT } from "@/i18n/server";
 
 const fxQuoteRequestSchema = z
   .object({
@@ -60,8 +61,9 @@ const MIN_DATE = new Date("1999-01-01"); // ECB EUR reference series starts 1999
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<FxQuotePostResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on FX QUOTE POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.27"));
     const rawBody = (await request.json()) || {};
     const parsed = fxQuoteRequestSchema.safeParse(rawBody);
     const body: Partial<FxQuoteRequestBody> = parsed.success
@@ -70,7 +72,7 @@ export async function POST(
     const { amountMinor, fromCurrency, toCurrency, date } = body;
 
     if (!Number.isInteger(amountMinor) || Math.abs(amountMinor as number) > MAX_AMOUNT_MINOR) {
-      throw new Error("amountMinor must be a bounded integer");
+      throw new Error(t("errors.amountminor.must.be.a.bounded"));
     }
     assertSupportedCurrency(fromCurrency as string);
     assertSupportedCurrency(toCurrency as string);
@@ -79,7 +81,7 @@ export async function POST(
     if (date !== undefined) {
       parsedDate = new Date(date);
       if (Number.isNaN(parsedDate.getTime()) || parsedDate < MIN_DATE || parsedDate > new Date()) {
-        throw new Error("date must be a valid, non-future ISO date");
+        throw new Error(t("errors.date.must.be.a.valid"));
       }
     }
 
@@ -105,7 +107,7 @@ export async function POST(
       return NextResponse.json(
         {
           ok: false,
-          message: "Exchange-rate estimate unavailable",
+          message: t("errors.exchange.rate.estimate.unavailable"),
           data: null,
         },
         { status: 503 }
@@ -114,7 +116,7 @@ export async function POST(
 
     return NextResponse.json({
       ok: true,
-      message: "FX quote resolved",
+      message: t("errors.fx.quote.resolved"),
       data: {
         amountMinor: result.amountMinor as number,
         currency: result.currency as string,

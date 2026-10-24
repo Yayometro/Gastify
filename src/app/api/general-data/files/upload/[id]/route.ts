@@ -15,6 +15,7 @@ import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface SkippedRow {
   row: number;
@@ -142,18 +143,19 @@ async function resolveTags(rawTags: unknown, userId: unknown, walletId: unknown)
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UploadResponse>> {
+  const tr = await serverT(["errors"]);
   let tmpFilePath: string | null = null;
   try {
     // Security fix: this route previously lacked session authentication and trusted
     // params.id from the URL to identify the target user account (IDOR).
     // We now derive user identity strictly from auth.api.getSession, ignoring params.id.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(tr("errors.no.session"));
 
     const data = await request.formData();
     const file = data.get("file") as File | null;
     if (!file) {
-      return NextResponse.json({ ok: false, message: "No file received" }, { status: 400 });
+      return NextResponse.json({ ok: false, message: tr("errors.no.file.received") }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -186,7 +188,7 @@ export async function POST(
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound) {
-      return NextResponse.json({ ok: false, message: "User not found" }, { status: 404 });
+      return NextResponse.json({ ok: false, message: tr("errors.user.not.found") }, { status: 404 });
     }
     const parentWallet = await Wallet.findById(userFound.wallet).lean();
     const walletPrimaryCurrency = parentWallet?.primaryCurrency || "MXN";

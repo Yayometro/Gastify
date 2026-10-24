@@ -5,6 +5,7 @@ import Transaction from "@/model/Transaction";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
+import { serverT } from "@/i18n/server";
 
 export interface RemoveBudgetGetStatusResponse {
   mes: string;
@@ -31,8 +32,9 @@ export async function GET(): Promise<NextResponse<RemoveBudgetGetStatusResponse>
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveBudgetResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on NEW BUDGET POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.9"));
     const { id } = (await request.json()) as RemoveBudgetRequestBody;
     if (!id)
       throw new Error(
@@ -44,14 +46,14 @@ export async function POST(
     // any other user's budget. Now the lookup is scoped to the caller's own
     // wallet (session-derived).
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on REMOVE BUDGET");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.remove.5"));
     // SOFT DELETE: keep the document so past months in Projections can still read its history
     const removedBudget = await Budget.findOne({ _id: id, wallet: userFound.wallet });
     //IF ERROR
-    if (!removedBudget) throw new Error("Budget was not removed, verify data ❌");
+    if (!removedBudget) throw new Error(t("errors.budget.was.not.removed.verify"));
     removedBudget.archived = true;
     const openEntry = removedBudget.history?.find((h) => !h.effectiveTo);
     if (openEntry) openEntry.effectiveTo = new Date();

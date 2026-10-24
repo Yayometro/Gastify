@@ -5,6 +5,7 @@ import dbConnection from "@/app/api/dbConnection";
 import Transaction from "@/model/Transaction";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -42,12 +43,13 @@ export type RemoveTransferResponse =
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveTransferResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on TRANSFER REMOVE POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.4"));
     const body = ((await request.json()) || {}) as RemoveTransferRequestBody;
     const { transferGroupId } = body;
     if (!transferGroupId)
-      throw new Error("transferGroupId is required to remove a transfer/exchange");
+      throw new Error(t("errors.transfergroupid.is.required.to.remove"));
 
     // Security fix: this route previously lacked session verification and
     // performed Transaction.find/deleteMany({ transferGroupId }) directly with zero ownership check (IDOR).
@@ -55,20 +57,20 @@ export async function POST(
     // session user in the database, and scope the search and deletion query
     // to the user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on TRANSFER REMOVE");
+      throw new Error(t("errors.user.not.found.on.transfer.2"));
 
     const legs = await Transaction.find({
       transferGroupId,
       wallet: userFound.wallet,
     }).lean();
     if (legs.length === 0)
-      throw new Error("No transfer/exchange found for this transferGroupId");
+      throw new Error(t("errors.no.transfer.exchange.found.for"));
 
     const session = await mongoose.startSession();
     try {

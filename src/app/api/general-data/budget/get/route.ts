@@ -7,6 +7,7 @@ import "@/model/Category";
 import "@/model/SubCategory";
 import "@/model/Account";
 import "@/model/Tag";
+import { serverT } from "@/i18n/server";
 
 export interface GetBudgetStatusResponse {
   mes: string;
@@ -28,8 +29,9 @@ export async function GET(): Promise<NextResponse<GetBudgetStatusResponse>> {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<GetBudgetResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on NEW BUDGET POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.9"));
     // Security fix: this used to trust whatever mail the client sent in the
     // body (confusingly named `id`), letting any caller (this endpoint
     // isn't covered by middleware.ts's matcher) read another user's
@@ -38,12 +40,12 @@ export async function POST(
     // call site (budgetSlice.ts's fetchBudget) always sends its own
     // session's email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     // User find
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
 
@@ -99,7 +101,7 @@ export async function POST(
         strictPopulate: false,
       });
     // console.log(findBudgets)
-    if (!findBudgets) throw new Error("Updated Budget was not saved 🤕");
+    if (!findBudgets) throw new Error(t("errors.updated.budget.was.not.saved"));
     return NextResponse.json({
       message: `Budgest were found successfully 🤓`,
       data: findBudgets,

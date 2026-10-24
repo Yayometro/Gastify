@@ -5,6 +5,7 @@ import IncomeSource, { type IIncomeSource } from "@/model/IncomeSource";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { isSupportedCurrency, majorToMinor } from "@gastify/core/money/currencies";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -46,9 +47,10 @@ export async function GET(): Promise<NextResponse<NewIncomeSourceGetResponse>> {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<NewIncomeSourcePostResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on NEW INCOME SOURCE POST");
+      throw new Error(t("errors.no.data.in.request.on.17"));
     const { name, amount, currency, recurrence, anchorDate } =
       ((await request.json()) || {}) as CreateIncomeSourceRequestBody;
 
@@ -59,13 +61,13 @@ export async function POST(
     // session user in the database, and derive user and wallet directly
     // from the authenticated session.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on NEW INCOME SOURCE");
+      throw new Error(t("errors.user.not.found.on.new.6"));
 
     const now = new Date();
     // Multi-currency money (minor units + currency) for the source and its first

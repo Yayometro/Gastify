@@ -29,7 +29,7 @@ const TEXT_ATTRS = new Set([
   "accessibilityLabel", "accessibilityHint",
 ]);
 // Object keys that hold text in the component code (options lists, steps, notices).
-const TEXT_PROPS = new Set(["title", "label", "message", "text", "description", "placeholder", "tooltip", "subtitle", "hint"]);
+const TEXT_PROPS = new Set(["title", "label", "message", "text", "description", "placeholder", "tooltip", "subtitle", "hint", "error", "copy", "caption"]);
 const NOTIFY_CALL = /^(runNotify|notify|toast|showError|showToast|setError|setMessage|showMessage)$/i;
 const HOOK_HINT = /\buse(State|Effect|Selector|Dispatch|Context|Memo|Callback|Ref|Router|Reducer|LayoutEffect)\b/;
 
@@ -211,6 +211,9 @@ function collect(file, rel) {
     } else if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) && TEXT_PROPS.has(node.name.text)) {
       const literal = ts.isStringLiteral(node.initializer) ? node.initializer : null;
       if (literal && looksLikeText(literal.text)) push({ kind: "prop", start: literal.getStart(sf), end: literal.getEnd(), source: literal.text, pure: true, component: componentOf(node) });
+    } else if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "Error" && node.arguments && ts.isStringLiteral(node.arguments[0]) && looksLikeText(node.arguments[0].text)) {
+      const arg = node.arguments[0];
+      push({ kind: "code-string", start: arg.getStart(sf), end: arg.getEnd(), source: arg.text, pure: true, component: componentOf(node) });
     } else if (ts.isCallExpression(node)) {
       const callee = node.expression;
       const name = ts.isIdentifier(callee) ? callee.text : ts.isPropertyAccessExpression(callee) ? callee.name.text : "";
@@ -376,7 +379,7 @@ function apply(namespace, files) {
 
     // 3) The import, after the last import (or after "use client" when there is none).
     const importLine = clientMode ? HOOK_IMPORT : 'import { serverT } from "@/i18n/server";';
-    if (clientMode && !isUseClient(reparsed)) out = '"use client";\n' + out;
+    if (clientMode && rel.startsWith("src/") && !isUseClient(reparsed)) out = '"use client";\n' + out;
     if (!out.includes(importLine)) {
       const check = ts.createSourceFile(abs, out, ts.ScriptTarget.Latest, true, abs.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
       const imports = check.statements.filter((statement) => ts.isImportDeclaration(statement));
@@ -414,11 +417,13 @@ const [command, namespace, ...rest] = process.argv.slice(2);
 let files = rest;
 if (rest[0] === "--zone") {
   const zones = readJson(path.join(WORK, "zones.json"), {});
-  if (!zones[rest[1]]) {
-    console.error(`No existe la zona "${rest[1]}". Zonas: ${Object.keys(zones).join(", ")}`);
+  const name = rest[1];
+  const picked = name.endsWith("*") ? Object.keys(zones).filter((z) => z.startsWith(name.slice(0, -1))) : [name];
+  if (picked.length === 0 || picked.some((z) => !zones[z])) {
+    console.error(`No existe la zona "${name}". Zonas: ${Object.keys(zones).join(", ")}`);
     process.exit(1);
   }
-  files = zones[rest[1]].files;
+  files = [...new Set(picked.flatMap((z) => zones[z].files))];
 }
 if (!command || !namespace) {
   console.error("Uso: node scripts/i18n-work.mjs plan|apply <namespace> <archivo...>  |  --zone <zona>");

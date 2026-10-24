@@ -6,6 +6,7 @@ import dbConnection from "@/app/api/dbConnection";
 import { SUPPORTED_CURRENCIES, majorToMinor } from "@gastify/core/money/currencies";
 import { bankById, normalizeCardNumber } from "@gastify/core/banks/banks";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface NewAccountRequestBody {
   name?: string;
@@ -29,8 +30,9 @@ export type NewAccountResponse = NewAccountSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<NewAccountResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on NEW-ACCOUNT POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.6"));
     const { name, amount, accountType, currency, bankId, cardNumber } =
       (await request.json()) as NewAccountRequestBody;
     // Security fix: this route had zero session check - it created the
@@ -42,10 +44,10 @@ export async function POST(
     // trusted from the body. The only real call site
     // (EditAccountModal.jsx) always sends the caller's own ids anyway.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on NEW-ACCOUNT POST");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.new.2"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
     //
