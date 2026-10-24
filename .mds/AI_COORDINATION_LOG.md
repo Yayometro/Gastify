@@ -1569,3 +1569,9 @@ When taking over this task, Claude should perform the following steps:
 - **Verificación:** `git diff --check`, TypeScript (`npx tsc --noEmit --incremental false`), ESLint de los tres componentes TSX modificados y Vitest (70 archivos, 543 pruebas) pasan. `npm run build` termina correctamente; muestra avisos existentes de API de compresión de `jose` en Edge Runtime y dependencias de hooks en pantallas ajenas a la portada.
 - **Aislamiento:** el worktree `pagina-home` permanece separado del checkout móvil. Los scripts locales de demo/TOTP y `.env.marketing-demo.local` se excluyen del release.
 - **Estado al registrar:** `origin/main` sigue en `2f88942c6409512bb9b3c1b3b0c289a53e8fd698`; todavía no se creó commit, no se subió la rama ni se integró. El preview de `localhost:3002` se conserva.
+
+### Entry #59 - Codex - 2026-10-23 - Pulido móvil de la portada y separación de controles (`codex/home-mobile-polish`)
+- **Portada en móvil:** se ocultan únicamente en pantallas de hasta 640 px la descripción secundaria y el bloque de beneficios, se compacta el encabezado/CTA y se reduce el espacio antes de los controles y el render. Las tres diapositivas de portada se ven completas en viewports 390×844 y 430×932.
+- **Carruseles 02 y 03:** los controles reciben separación explícita y una capa visual superior al render; en las diapositivas revisadas de «Cómo funciona» y «Herramientas» hay 19 px de separación entre el render y las flechas, sin superposición.
+- **Verificación:** revisión del iPhone duplicado y de Chrome con viewport móvil; `scrollWidth` no excede el viewport; consola sin errores. `git diff --check`, TypeScript (`npx tsc --noEmit --incremental false`), ESLint de los componentes de Home y Vitest (70 archivos, 543 pruebas) pasan.
+- **Preview:** `http://127.0.0.1:3003/` en el worktree aislado. El checkout principal `mobile-phase-9-paridad` no se tocó. Cambios aún locales: sin commit, push, merge ni deployment.
