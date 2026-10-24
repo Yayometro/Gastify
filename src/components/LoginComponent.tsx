@@ -8,6 +8,7 @@ import { signInWithPasskeyOnce } from "@/lib/auth/passkeyCeremony";
 import Link from "next/link";
 import runNotify from "@/helpers/gastifyNotifier";
 import useHydrated from "@/hooks/useHydrated";
+import { useT } from "@/i18n/client";
 
 
 const MAX_TWO_FACTOR_ATTEMPTS = 3;
@@ -18,6 +19,7 @@ interface LoginFormState {
 }
 
 function LoginComponent(): React.JSX.Element {
+  const t = useT();
   const [formData, setFormData] = useState<LoginFormState>({
     mail: "",
     password: "",
@@ -55,7 +57,7 @@ function LoginComponent(): React.JSX.Element {
       runNotify("ok", `${email} was created successfully 🤓`);
     }
     if (searchParamas && searchParamas.get("securityCheckFailed")) {
-      runNotify("error", "No pudimos verificar tu identidad, así que cerramos tu sesión por seguridad. Inicia sesión de nuevo.");
+      runNotify("error", t("auth.error.identityNotVerified"));
     }
   }, []);
 
@@ -146,7 +148,7 @@ function LoginComponent(): React.JSX.Element {
         setTwoFactorAttempts(nextAttempts);
         setTwoFactorCode("");
         if (nextAttempts >= MAX_TWO_FACTOR_ATTEMPTS) {
-          runNotify("error", "No pudimos verificar tu código después de 3 intentos. Intenta iniciar sesión de nuevo.");
+          runNotify("error", t("auth.error.codeAttemptsExceeded"));
           setPendingTwoFactor(false);
           setLoading(false);
           return;
@@ -170,9 +172,9 @@ function LoginComponent(): React.JSX.Element {
           <div className="w-full h-full flex flex-col justify-center items-center gf-loading-overlay z-50 absolute top-0 left-0 rounded-2xl text-center p-4 gap-4">
             <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
             <p className=" text-xl text-purple-200">
-              We are working to set everything up for you
+              {t("auth.setup.working")}
             </p>
-            <p className=" text-xl text-purple-200">Please wait a moment 🤓</p>
+            <p className=" text-xl text-purple-200">{t("auth.setup.wait")}</p>
           </div>
         )}
       </div>
@@ -190,7 +192,7 @@ function LoginComponent(): React.JSX.Element {
         // they actually log in makes the redirect read as the deliberate
         // next step it is, not a failure.
         <div className="w-[85%] mx-auto mb-3 rounded-2xl border border-green-400/40 bg-green-500/10 text-green-200 text-sm text-center px-4 py-3">
-          ¡Tu cuenta se creó correctamente! Inicia sesión para continuar.
+          {t("auth.account.created")}
         </div>
       )}
       <div className="form-container w-full rounded-t-[100px] h-full m-auto">
@@ -200,12 +202,12 @@ function LoginComponent(): React.JSX.Element {
             onSubmit={handleTwoFactorSubmit}
           >
             <p className="text-gf-text-muted text-sm w-[80%]">
-              Esta cuenta tiene verificación en dos pasos activada. Ingresa el código de tu app autenticadora.
+              {t("auth.twoFactor.prompt")}
             </p>
             <input
               type="text"
               inputMode="numeric"
-              placeholder="Código de 6 dígitos"
+              placeholder={t("auth.twoFactor.codeLabel")}
               value={twoFactorCode}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTwoFactorCode(e.target.value)}
               className="form-control text-center"
@@ -213,7 +215,7 @@ function LoginComponent(): React.JSX.Element {
               required
             />
             <button type="submit" className="social-btn-lf gf-glass-button">
-              Verificar
+              {t("auth.verify")}
             </button>
             <button
               type="button"
@@ -224,7 +226,7 @@ function LoginComponent(): React.JSX.Element {
                 setTwoFactorAttempts(0);
               }}
             >
-              Cancelar
+              {t("auth.cancel")}
             </button>
           </form>
         ) : (
@@ -234,7 +236,7 @@ function LoginComponent(): React.JSX.Element {
         >
           <div className="w-full flex flex-col justify-center items-center gap-1">
             <label htmlFor="email" className="">
-              Email address
+              {t("auth.email.label")}
             </label>
             <input
               name="mail"
@@ -253,12 +255,12 @@ function LoginComponent(): React.JSX.Element {
               id="emailHelp"
               className="form-text-never w-[90%] font-light text-xs text-gf-text-muted"
             >
-              We will never share your email with anyone else.
+              {t("auth.email.privacy")}
             </div>
           </div>
           <div className="w-full flex flex-col justify-center items-center gap-1">
             <label htmlFor="password" className="form-label">
-              Password
+              {t("auth.password.label")}
             </label>
             <input
               name="password"
@@ -285,7 +287,7 @@ function LoginComponent(): React.JSX.Element {
               id="passwordHelp"
               className="form-text-never w-[90%] font-light text-xs text-gf-text-muted"
             >
-              We will never share your password with anyone else.
+              {t("auth.password.privacy")}
             </div>
           </div>
           {errorForm && (
@@ -294,7 +296,7 @@ function LoginComponent(): React.JSX.Element {
             </div>
           )}
           <button type="submit" className="social-btn-lf gf-glass-button" disabled={!hydrated}>
-            Submit
+            {t("auth.submit")}
           </button>
           <div className="divider border-t-2 border-gf-border w-[70%] mt-5"></div>
           <div className="bts-fast w-[100%] pt-5  flex flex-col gap-8 justify-center items-center">
@@ -302,17 +304,17 @@ function LoginComponent(): React.JSX.Element {
               <div className="sblf-icon-cont">
                 <FcGoogle size={25} />
               </div>
-              <p>Google </p>
+              <p>{t("auth.google")} </p>
             </div>
             <div className="social-btn-lf gf-glass-button" onClick={passkeySignIn}>
               <div className="sblf-icon-cont">
                 <FaKey size={22} />
               </div>
-              <p>Sign in with a passkey</p>
+              <p>{t("auth.passkey.signIn")}</p>
             </div>
             <div className="text-purple-300 w-[90%] text-xs hover:underline">
               <Link href="/register">
-                <p className="">You do not have an account? - Click here</p>
+                <p className="">{t("auth.noAccount")}</p>
               </Link>
             </div>
           </div>

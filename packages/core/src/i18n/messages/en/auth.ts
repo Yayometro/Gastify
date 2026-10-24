@@ -1,0 +1,44 @@
+import type auth from "../es/auth";
+
+// English for the "auth" namespace. Same keys as the Spanish catalog.
+const en: Record<keyof typeof auth, string> = {
+  "auth.error.identityNotVerified": "We could not verify your identity, so we signed you out for security. Please sign in again.",
+  "auth.error.codeAttemptsExceeded": "We could not verify your code after 3 attempts. Try signing in again.",
+  "auth.setup.working": "We are working to set everything up for you",
+  "auth.setup.wait": "Please wait a moment 🤓",
+  "auth.account.created": "Your account was created! Sign in to continue.",
+  "auth.twoFactor.prompt": "This account has two-step verification turned on. Enter the code from your authenticator app.",
+  "auth.twoFactor.codeLabel": "6-digit code",
+  "auth.verify": "Verify",
+  "auth.cancel": "Cancel",
+  "auth.email.label": "Email address",
+  "auth.email.privacy": "We will never share your email with anyone else.",
+  "auth.password.label": "Password",
+  "auth.password.privacy": "We will never share your password with anyone else.",
+  "auth.submit": "Submit",
+  "auth.google": "Google",
+  "auth.passkey.signIn": "Sign in with a passkey",
+  "auth.noAccount": "You do not have an account? - Click here",
+  "auth.dashboard.building": "We are building up your dashboard and data",
+  "auth.register.submit": "Register",
+  "auth.fullName.label": "Full name or nickname",
+  "auth.fullName.hint": "Type your full name or alias.",
+  "auth.password.ruleLength": "The password must have at least 8 characters.",
+  "auth.password.ruleUppercase": "The password must have at least one capital letter.",
+  "auth.terms.agree": "I agree to terms and conditions",
+  "auth.haveAccount": "You have an account already? - Login here",
+  "auth.passkey.added": "Passkey added 🤓",
+  "auth.passkey.removed": "Passkey removed 🤓",
+  "auth.passkey.removedNote": "Removed from Gastify. Your device or password manager may still keep its own copy - delete it there too if you don't want it anymore.",
+  "auth.passkeys.title": "Passkeys",
+  "auth.passkey.explain": "Sign in with Face ID, Touch ID, Windows Hello, or a security key instead of your password - Gastify never sees or stores the biometric/PIN itself, only proof it unlocked your device.",
+  "auth.loading": "Loading…",
+  "auth.passkey.none": "No passkeys yet.",
+  "auth.passkey.addedBadge": "Added",
+  "auth.passkey.nameLabel": "Name",
+  "auth.passkey.namePlaceholder": "e.g. My iPhone",
+  "auth.passkey.addedOn": "Added {date}",
+  "auth.passkey.unnamed": "Unnamed passkey"
+};
+
+export default en;

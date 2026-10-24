@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth/authClient";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import useHydrated from "@/hooks/useHydrated";
+import { useT } from "@/i18n/client";
 
 interface RegisterFormData {
   fullName: string;
@@ -32,6 +33,7 @@ interface RegisterApiResponse {
 }
 
 export default function RegisterComp(): React.JSX.Element {
+  const t = useT();
   const [formData, setFormData] = useState<RegisterFormData>({
     fullName: "",
     mail: "",
@@ -144,15 +146,15 @@ export default function RegisterComp(): React.JSX.Element {
               !loading ? ('') : (
                 <div className="w-full h-full flex flex-col justify-center items-center gf-loading-overlay z-50 absolute top-0 left-0 rounded-2xl text-center p-4 gap-4">
                   <l-quantum size="150" speed="3.1" color="purple"></l-quantum>
-                  <p className=" text-xl text-purple-200">We are building up your dashboard and data</p>
-                  <p className=" text-xl text-purple-200">Please wait a moment 🤓</p>
+                  <p className=" text-xl text-purple-200">{t("auth.dashboard.building")}</p>
+                  <p className=" text-xl text-purple-200">{t("auth.setup.wait")}</p>
                 </div>
               )
             }
       </div>
       <div className="py-5">
         <h1 className="text-center text-white text-2xl font-normal">
-          Register
+          {t("auth.register.submit")}
         </h1>
       </div>
       <div className="form-container w-full rounded-t-[100px] h-full m-auto">
@@ -162,7 +164,7 @@ export default function RegisterComp(): React.JSX.Element {
         >
           <div className="w-full flex flex-col justify-center items-center gap-1">
             <label htmlFor="fullName" className="">
-              Fullname or nickname
+              {t("auth.fullName.label")}
             </label>
             <input
               name="fullName"
@@ -170,7 +172,7 @@ export default function RegisterComp(): React.JSX.Element {
               className="form-control"
               id="nameForm"
               aria-describedby="nameH"
-              placeholder="Type your full name or alias."
+              placeholder={t("auth.fullName.hint")}
               value={formData.fullName}
               onChange={handleChange}
               disabled={!hydrated}
@@ -181,7 +183,7 @@ export default function RegisterComp(): React.JSX.Element {
 
           <div className="w-full flex flex-col justify-center items-center gap-1">
             <label htmlFor="email" className="">
-              Email address
+              {t("auth.email.label")}
             </label>
             <input
               name="mail"
@@ -199,12 +201,12 @@ export default function RegisterComp(): React.JSX.Element {
               id="emailHelp"
               className="form-text-never w-[90%] font-light text-[10px] text-gf-text-muted"
             >
-              We will never share your email with anyone else.
+              {t("auth.email.privacy")}
             </div>
           </div>
           <div className="w-full flex flex-col justify-center items-center gap-1">
             <label htmlFor="password" className="form-label">
-              Password
+              {t("auth.password.label")}
             </label>
             <input
               name="password"
@@ -220,10 +222,10 @@ export default function RegisterComp(): React.JSX.Element {
               style={{ color: "red", fontSize: "8px", textAlign: "center" }}
             >
               <p className={validationMessages.passLength}>
-                The password must have at least 8 characters.
+                {t("auth.password.ruleLength")}
               </p>
               <p className={validationMessages.passCapital}>
-                The password must have at least one capital letter.
+                {t("auth.password.ruleUppercase")}
               </p>
               <p className={validationMessages.passSpecial}>{passString}</p>
             </div>
@@ -231,7 +233,7 @@ export default function RegisterComp(): React.JSX.Element {
               id="emailHelp"
               className="form-text-never w-[90%] font-light text-[10px] text-gf-text-muted"
             >
-              We will never share your email with anyone else.
+              {t("auth.email.privacy")}
             </div>
             <div className="form-check w-full flex flex-row gap-1 justify-center items-center">
               <div className="">
@@ -246,7 +248,7 @@ export default function RegisterComp(): React.JSX.Element {
                 />
               </div>
               <div className="form-text-never w-fit font-light text-[12px] text-gf-text-muted">
-                <p className="w-fit">I agree to terms and conditions</p>
+                <p className="w-fit">{t("auth.terms.agree")}</p>
               </div>
             </div>
               {formData.formError && (
@@ -256,7 +258,7 @@ export default function RegisterComp(): React.JSX.Element {
               )}
           </div>
           <button type="submit" className="social-btn-lf gf-glass-button" disabled={!hydrated}>
-            Submit
+            {t("auth.submit")}
           </button>
           <div className="divider border-t-2 border-gf-border w-[70%] mt-5"></div>
           <div className="bts-fast w-[100%] pt-5  flex flex-col gap-8 justify-center items-center">
@@ -264,11 +266,11 @@ export default function RegisterComp(): React.JSX.Element {
               <div className="sblf-icon-cont">
                 <FcGoogle size={25} />
               </div>
-              <p>Google </p>
+              <p>{t("auth.google")} </p>
             </div>
             <div className="text-purple-300 w-[90%] text-xs hover:underline pb-[30px]">
               <Link href="/login">
-                <p>You have an account already? - Login here</p>
+                <p>{t("auth.haveAccount")}</p>
               </Link>
             </div>
           </div>

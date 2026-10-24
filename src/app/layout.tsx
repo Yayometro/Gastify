@@ -4,6 +4,8 @@ import "./globals.css";
 import ReduxProvider from "@/lib/ReduxProvider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import ThemeProvider from "./ThemeProvider";
+import { I18nProvider } from "@/i18n/client";
+import { currentLocale, messagesFor } from "@/i18n/server";
 // import AllDataProvider from "@/components/Providers/AllDataProvider";
 import React from "react";
 
@@ -23,9 +25,13 @@ export interface RootLayoutProps {
   children: React.ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  // The language of this request, and the texts every page shares (the navigation, the common words). Each screen loads its
+  // own namespace on top of these (see its layout).
+  const locale = await currentLocale();
+  const messages = await messagesFor(locale, ["common", "navbar", "auth"]);
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         {/* Shaves the DNS/TLS handshake off the Google sign-in redirect -
             the browser opens the connection to Google's own domain ahead
@@ -40,11 +46,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body className={inter.className}>
         <AntdRegistry>
-          <ThemeProvider>
-            <ReduxProvider>
-              <main>{children}</main>
-            </ReduxProvider>
-          </ThemeProvider>
+          <I18nProvider locale={locale} messages={messages}>
+            <ThemeProvider>
+              <ReduxProvider>
+                <main>{children}</main>
+              </ReduxProvider>
+            </ThemeProvider>
+          </I18nProvider>
         </AntdRegistry>
       </body>
     </html>
