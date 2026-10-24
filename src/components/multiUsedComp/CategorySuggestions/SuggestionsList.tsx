@@ -13,6 +13,7 @@ import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { removeOneTransacction } from "@/lib/features/transacctionsSlice";
+import { useT } from "@/i18n/client";
 
 export interface SuggestionCategoryRef {
   _id?: string;
@@ -187,6 +188,7 @@ interface FetcherDeleteResponse {
 }
 
 function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel, confirming, cancelLabel = "Skip" }: SuggestionsListProps): React.JSX.Element {
+  const t = useT();
   const [items, setItems] = useState<CategorySuggestionEntry[]>(initialSuggestions);
   const [deselected, setDeselected] = useState<Set<string>>(new Set());
   const [editingTrans, setEditingTrans] = useState<EditSingleTransItem | null>(null);
@@ -221,7 +223,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
 
   const handleDelete = (transactionId?: string) => {
     Modal.confirm({
-      title: "Delete this movement?",
+      title: t("movements.delete.confirm"),
       content: "Are you sure you want to remove this transaction?",
       okText: "Yes, delete",
       okType: "danger",
@@ -234,9 +236,9 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
             `general-data/transactions/remove-transaction/${transactionId}`
           )) as FetcherDeleteResponse;
           if (res.ok) {
-            runNotify("ok", "Movement deleted successfully!");
+            runNotify("ok", t("movements.delete.done"));
           } else {
-            runNotify("error", "Error removing transaction.");
+            runNotify("error", t("movements.delete.error"));
           }
         } catch (e) {
           runNotify("error", String(e));
@@ -264,7 +266,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
   };
 
   if (items.length === 0) {
-    return <p className="text-sm text-gf-text-muted text-center py-6">Nothing left to review here.</p>;
+    return <p className="text-sm text-gf-text-muted text-center py-6">{t("movements.dup.nothingLeft")}</p>;
   }
 
   return (

@@ -11,6 +11,7 @@ import ReadFileComp from "./ReadFileComp";
 import ImportFromExcelButton from "./ImportFromExcelButton";
 import CategorySuggestionsSection from "./CategorySuggestions/CategorySuggestionsSection";
 import type { AppDispatch, RootState } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 // Typed bridges for unmigrated child JSX components
 const TypedMovements = Movements as React.ComponentType<{
@@ -51,6 +52,7 @@ export interface MovementsClientProps {
 }
 
 function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element {
+  const t = useT();
   // Redux
   const dispatch = useDispatch<AppDispatch>();
   const ccUser = useSelector((state: RootState) => state.userReducer);
@@ -103,7 +105,7 @@ function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element
         <div className="content-profile-cont w-full content-wallet-glass text-center items-center mt-[10px] rounded-t-[100px] rounded-b-2xl px-2 pt-3 pb-[80px] min-h-[calc(100dvh-20px)]">
           <div className="cc-categoryList-cont w-full flex flex-col justify-center items-center">
             <h1 className="text-3xl min-[text-[45px]]: py-2">
-              Movements details
+              {t("movements.title")}
             </h1>
           </div>
           <div

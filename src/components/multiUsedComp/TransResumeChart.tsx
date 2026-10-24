@@ -8,6 +8,7 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import { percentOf } from "@gastify/core/format/percent";
+import { useT } from "@/i18n/client";
 
 export interface TransCategoryRef {
   _id?: string;
@@ -49,6 +50,7 @@ export interface TransResumeChartProps {
 }
 
 function TransResumeChart({ trchTransactions, trchIsBill, trchFill }: TransResumeChartProps): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const [dataCat, setDataCat] = useState<SunburstNode>({});
   const [drilldownData, setDrilldownData] = useState<SunburstNode | null>(null);
@@ -186,7 +188,7 @@ const resetDrilldown = () => {
       {!trchFill && (
         <div className="trch-Content-title pt-5 flex justify-center items-center gap-3">
           <h1 className="wallet-budget-title text-2xl text-center font-bold">
-            Category {trchIsBill ? "Bills" : "Incomes"} Details
+            {t("movements.resume.categoryDetailsP", { p1: trchIsBill ? "Bills" : "Incomes" })}
           </h1>
           {resetButton}
         </div>
@@ -262,11 +264,11 @@ const resetDrilldown = () => {
                         {formatMoneyMajor(totalValueOn, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
-                        <p className="font-semibold">Amount:</p>
+                        <p className="font-semibold">{t("movements.resume.amount")}</p>
                         {formatMoneyMajor(dataa.value, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
-                        <p className="font-semibold">Percentage:</p>
+                        <p className="font-semibold">{t("movements.resume.percentage")}</p>
                         {percentOf(dataa.value, totalValueOn)}%
                       </div>
                     </div>

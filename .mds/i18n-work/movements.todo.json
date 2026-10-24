@@ -1,0 +1,1967 @@
+{
+  "namespace": "movements",
+  "entries": [
+    {
+      "key": "movements.removeItems.error",
+      "source": "Something went wrong removing your items, verify your request and try again 🤕",
+      "es": "Algo salió mal al borrar tus elementos. Revisa tu solicitud e inténtalo de nuevo 🤕",
+      "en": "Something went wrong removing your items, verify your request and try again 🤕"
+    },
+    {
+      "key": "movements.selection.needTwo",
+      "source": "No items selected to removed, please select at least two",
+      "es": "No hay elementos seleccionados para borrar; selecciona al menos dos",
+      "en": "No items selected to remove, please select at least two"
+    },
+    {
+      "key": "movements.transfer.legNote",
+      "source": "This is one leg of a transfer/exchange and can't be edited directly - delete it (both linked legs are removed together) and create a new transfer instead.",
+      "es": "Esta es una parte de una transferencia o cambio de divisas y no se puede editar directamente: bórrala (se borran juntas las dos partes vinculadas) y crea una transferencia nueva.",
+      "en": "This is one leg of a transfer/exchange and can't be edited directly - delete it (both linked legs are removed together) and create a new transfer instead."
+    },
+    {
+      "key": "movements.selection.noneToRemove",
+      "source": "No transaction selected to remove",
+      "es": "No hay movimientos seleccionados para borrar",
+      "en": "No transaction selected to remove"
+    },
+    {
+      "key": "movements.export.title",
+      "source": "Export",
+      "es": "Exportar",
+      "en": "Export"
+    },
+    {
+      "key": "movements.word.transaction",
+      "source": "transaction",
+      "es": "transacción",
+      "en": "transaction"
+    },
+    {
+      "key": "movements.export.activeFilters",
+      "source": "Active filters",
+      "es": "Filtros activos",
+      "en": "Active filters"
+    },
+    {
+      "key": "movements.export.format",
+      "source": "Format:",
+      "es": "Formato:",
+      "en": "Format:"
+    },
+    {
+      "key": "movements.export.excel",
+      "source": "Excel (.xlsx) — re-importable",
+      "es": "Excel (.xlsx) — se puede volver a importar",
+      "en": "Excel (.xlsx) — re-importable"
+    },
+    {
+      "key": "movements.export.json",
+      "source": "JSON — full populated data",
+      "es": "JSON — todos los datos completos",
+      "en": "JSON — full populated data"
+    },
+    {
+      "key": "movements.delete.titleOne",
+      "source": "⚠️ Delete transaction",
+      "es": "⚠️ Borrar movimiento",
+      "en": "⚠️ Delete transaction"
+    },
+    {
+      "key": "movements.delete.titleMany",
+      "source": "⚠️ Delete {p1}transactions",
+      "es": "⚠️ Borrar {p1} movimientos",
+      "en": "⚠️ Delete {p1} transactions"
+    },
+    {
+      "key": "movements.delete.sure",
+      "source": "Are you sure you want to permanently delete",
+      "es": "¿Seguro que quieres borrar para siempre",
+      "en": "Are you sure you want to permanently delete"
+    },
+    {
+      "key": "movements.delete.irreversible",
+      "source": "This action cannot be undone.",
+      "es": "Esta acción no se puede deshacer.",
+      "en": "This action cannot be undone."
+    },
+    {
+      "key": "movements.dup.compareTitle",
+      "source": "Duplicate Comparison Detail",
+      "es": "Detalle de la comparación de duplicados",
+      "en": "Duplicate Comparison Detail"
+    },
+    {
+      "key": "movements.cancel",
+      "source": "Cancel",
+      "es": "Cancelar",
+      "en": "Cancel"
+    },
+    {
+      "key": "movements.delete.elements",
+      "source": "Delete {p1}elements",
+      "es": "Borrar {p1} elementos",
+      "en": "Delete {p1} elements"
+    },
+    {
+      "key": "movements.dup.mode",
+      "source": "Mode:",
+      "es": "Modo:",
+      "en": "Mode:"
+    },
+    {
+      "key": "movements.dup.reviewNote",
+      "source": ". Review what will be kept vs deleted before proceeding.",
+      "es": ". Revisa qué se conserva y qué se borra antes de continuar.",
+      "en": ". Review what will be kept vs deleted before proceeding."
+    },
+    {
+      "key": "movements.details.title",
+      "source": "Transactions details",
+      "es": "Detalle de movimientos",
+      "en": "Transactions details"
+    },
+    {
+      "key": "movements.details.howTo",
+      "source": "Cómo usar Transactions details",
+      "es": "Cómo usar Detalle de movimientos",
+      "en": "How to use Transactions details"
+    },
+    {
+      "key": "movements.from",
+      "source": "From:",
+      "es": "Desde:",
+      "en": "From:"
+    },
+    {
+      "key": "movements.to",
+      "source": "to:",
+      "es": "hasta:",
+      "en": "to:"
+    },
+    {
+      "key": "movements.select.label",
+      "source": "Select {p1}",
+      "es": "Seleccionar {p1}",
+      "en": "Select {p1}"
+    },
+    {
+      "key": "movements.filter.dateTip",
+      "source": "Filter by date using a preset range or a specific range 🤓",
+      "es": "Filtra por fecha con un rango predefinido o con un rango específico 🤓",
+      "en": "Filter by date using a preset range or a specific range 🤓"
+    },
+    {
+      "key": "movements.type.all",
+      "source": "All transactions",
+      "es": "Todos los movimientos",
+      "en": "All transactions"
+    },
+    {
+      "key": "movements.type.incomes",
+      "source": "All incomes",
+      "es": "Todos los ingresos",
+      "en": "All incomes"
+    },
+    {
+      "key": "movements.type.bills",
+      "source": "All bills",
+      "es": "Todos los gastos",
+      "en": "All bills"
+    },
+    {
+      "key": "movements.readable.all",
+      "source": "All",
+      "es": "Todos",
+      "en": "All"
+    },
+    {
+      "key": "movements.readable.yes",
+      "source": "Readable",
+      "es": "Legibles",
+      "en": "Readable"
+    },
+    {
+      "key": "movements.readable.no",
+      "source": "Not readable",
+      "es": "No legibles",
+      "en": "Not readable"
+    },
+    {
+      "key": "movements.amount.modeTip",
+      "source": "Primary amount compares against your Wallet's primary currency. Native amount compares against each transaction's own Account currency.",
+      "es": "El monto Primary se compara con la moneda principal de tu cartera. El monto Native se compara con la moneda de la cuenta de cada movimiento.",
+      "en": "Primary amount compares against your Wallet's primary currency. Native amount compares against each transaction's own Account currency."
+    },
+    {
+      "key": "movements.amount.primary",
+      "source": "Primary",
+      "es": "Principal",
+      "en": "Primary"
+    },
+    {
+      "key": "movements.amount.native",
+      "source": "Native",
+      "es": "Nativo",
+      "en": "Native"
+    },
+    {
+      "key": "movements.amount.exact",
+      "source": "Exact amount",
+      "es": "Monto exacto",
+      "en": "Exact amount"
+    },
+    {
+      "key": "movements.filter.categoryTip",
+      "source": "Filter by Category or SubCategory — pick either one 🤓",
+      "es": "Filtra por categoría o subcategoría: elige una de las dos 🤓",
+      "en": "Filter by Category or SubCategory — pick either one 🤓"
+    },
+    {
+      "key": "movements.filter.clearCategory",
+      "source": "Clear category filter",
+      "es": "Quitar el filtro de categoría",
+      "en": "Clear category filter"
+    },
+    {
+      "key": "movements.dup.findTip",
+      "source": "Find transactions that look like duplicates based on chosen criteria",
+      "es": "Busca movimientos que parezcan duplicados según los criterios que elijas",
+      "en": "Find transactions that look like duplicates based on chosen criteria"
+    },
+    {
+      "key": "movements.dup.find",
+      "source": "Find duplicates{p1}",
+      "es": "Buscar duplicados{p1}",
+      "en": "Find duplicates{p1}"
+    },
+    {
+      "key": "movements.export.tip",
+      "source": "Export the currently filtered transactions as Excel (re-importable) or JSON",
+      "es": "Exporta los movimientos filtrados actuales en Excel (se puede volver a importar) o JSON",
+      "en": "Export the currently filtered transactions as Excel (re-importable) or JSON"
+    },
+    {
+      "key": "movements.export.button",
+      "source": "Export data",
+      "es": "Exportar datos",
+      "en": "Export data"
+    },
+    {
+      "key": "movements.filters.clear",
+      "source": "Clear filters",
+      "es": "Quitar filtros",
+      "en": "Clear filters"
+    },
+    {
+      "key": "movements.dup.criteria",
+      "source": "Match criteria — a duplicate is found when ALL checked fields are identical:",
+      "es": "Criterios de coincidencia: un duplicado aparece cuando TODOS los campos marcados son idénticos:",
+      "en": "Match criteria — a duplicate is found when ALL checked fields are identical:"
+    },
+    {
+      "key": "movements.dup.title",
+      "source": "Find Duplicates",
+      "es": "Buscar duplicados",
+      "en": "Find Duplicates"
+    },
+    {
+      "key": "movements.dup.scans",
+      "source": "scans transactions within the",
+      "es": "revisa los movimientos dentro del",
+      "en": "scans transactions within the"
+    },
+    {
+      "key": "movements.dup.range",
+      "source": "currently selected time range",
+      "es": "periodo seleccionado actualmente",
+      "en": "currently selected time range"
+    },
+    {
+      "key": "movements.dup.groups",
+      "source": "and groups those that match the checked fields.",
+      "es": "y agrupa los que coinciden en los campos marcados.",
+      "en": "and groups those that match the checked fields."
+    },
+    {
+      "key": "movements.dup.dateTolerance",
+      "source": "Date tolerance",
+      "es": "Tolerancia de fecha",
+      "en": "Date tolerance"
+    },
+    {
+      "key": "movements.dup.dateToleranceHelp",
+      "source": "— how many days apart two transactions can be and still count as duplicates.",
+      "es": "— cuántos días pueden separar dos movimientos y seguir contando como duplicados.",
+      "en": "— how many days apart two transactions can be and still count as duplicates."
+    },
+    {
+      "key": "movements.dup.amountTolerance",
+      "source": "Amount tolerance",
+      "es": "Tolerancia de monto",
+      "en": "Amount tolerance"
+    },
+    {
+      "key": "movements.dup.amountToleranceHelp",
+      "source": "— max difference in amount (e.g. $0.99 catches bank rounding).",
+      "es": "— diferencia máxima de monto (por ejemplo $0.99 atrapa el redondeo del banco).",
+      "en": "— max difference in amount (e.g. $0.99 catches bank rounding)."
+    },
+    {
+      "key": "movements.dup.search",
+      "source": "Search duplicates",
+      "es": "Buscar duplicados",
+      "en": "Search duplicates"
+    },
+    {
+      "key": "movements.dup.searchHelp",
+      "source": "— runs the scan with your chosen criteria.",
+      "es": "— hace la búsqueda con los criterios que elegiste.",
+      "en": "— runs the scan with your chosen criteria."
+    },
+    {
+      "key": "movements.dup.refresh",
+      "source": "Refresh defaults",
+      "es": "Restablecer valores",
+      "en": "Refresh defaults"
+    },
+    {
+      "key": "movements.dup.refreshHelp",
+      "source": "— resets to Name + Date + Amount, exact match.",
+      "es": "— vuelve a Nombre + Fecha + Monto, coincidencia exacta.",
+      "en": "— resets to Name + Date + Amount, exact match."
+    },
+    {
+      "key": "movements.dup.selectPossible",
+      "source": "Select possible duplicates",
+      "es": "Seleccionar posibles duplicados",
+      "en": "Select possible duplicates"
+    },
+    {
+      "key": "movements.dup.selectPossibleHelp",
+      "source": "— pre-selects all extras, keeps one original per group.",
+      "es": "— marca de antemano todos los sobrantes y conserva un original por grupo.",
+      "en": "— pre-selects all extras, keeps one original per group."
+    },
+    {
+      "key": "movements.dup.deleteSelected",
+      "source": "Delete X selected",
+      "es": "Borrar X seleccionados",
+      "en": "Delete X selected"
+    },
+    {
+      "key": "movements.dup.deleteSelectedHelp",
+      "source": "— removes selected transactions permanently.",
+      "es": "— borra para siempre los movimientos seleccionados.",
+      "en": "— removes selected transactions permanently."
+    },
+    {
+      "key": "movements.columns.name",
+      "source": "Name",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "movements.columns.date",
+      "source": "Date",
+      "es": "Fecha",
+      "en": "Date"
+    },
+    {
+      "key": "movements.columns.amount",
+      "source": "Amount",
+      "es": "Monto",
+      "en": "Amount"
+    },
+    {
+      "key": "movements.columns.category",
+      "source": "Category",
+      "es": "Categoría",
+      "en": "Category"
+    },
+    {
+      "key": "movements.columns.subcategory",
+      "source": "Subcategory",
+      "es": "Subcategoría",
+      "en": "Subcategory"
+    },
+    {
+      "key": "movements.dup.dateToleranceTip",
+      "source": "Allow this many days of difference between dates to still count as duplicates",
+      "es": "Permite esta cantidad de días de diferencia entre fechas y aun así contar como duplicados",
+      "en": "Allow this many days of difference between dates to still count as duplicates"
+    },
+    {
+      "key": "movements.dup.tolerance.exact",
+      "source": "Exact (same day)",
+      "es": "Exacta (mismo día)",
+      "en": "Exact (same day)"
+    },
+    {
+      "key": "movements.dup.tolerance.d1",
+      "source": "±1 day",
+      "es": "±1 día",
+      "en": "±1 day"
+    },
+    {
+      "key": "movements.dup.tolerance.d3",
+      "source": "±3 days",
+      "es": "±3 días",
+      "en": "±3 days"
+    },
+    {
+      "key": "movements.dup.tolerance.d7",
+      "source": "±7 days",
+      "es": "±7 días",
+      "en": "±7 days"
+    },
+    {
+      "key": "movements.dup.tolerance.d30",
+      "source": "±30 days",
+      "es": "±30 días",
+      "en": "±30 days"
+    },
+    {
+      "key": "movements.dup.amountTip",
+      "source": "Allow this amount difference (in your currency) between two transactions to still count as duplicates",
+      "es": "Permite esta diferencia de monto (en tu moneda) entre dos movimientos y aun así contarlos como duplicados",
+      "en": "Allow this amount difference (in your currency) between two transactions to still count as duplicates"
+    },
+    {
+      "key": "movements.dup.refreshTip",
+      "source": "Reset to default criteria (Name + Date + Amount, exact match) and re-run the search",
+      "es": "Vuelve a los criterios por defecto (Nombre + Fecha + Monto, coincidencia exacta) y repite la búsqueda",
+      "en": "Reset to default criteria (Name + Date + Amount, exact match) and re-run the search"
+    },
+    {
+      "key": "movements.dup.exit",
+      "source": "Exit duplicate view",
+      "es": "Salir de la vista de duplicados",
+      "en": "Exit duplicate view"
+    },
+    {
+      "key": "movements.selection.clearPrefix",
+      "source": "Clear selection (",
+      "es": "Quitar selección (",
+      "en": "Clear selection ("
+    },
+    {
+      "key": "movements.dup.compareDetail",
+      "source": "Comparison in detail (",
+      "es": "Comparación a detalle (",
+      "en": "Comparison in detail ("
+    },
+    {
+      "key": "movements.delete.button",
+      "source": "Delete",
+      "es": "Borrar",
+      "en": "Delete"
+    },
+    {
+      "key": "movements.selected",
+      "source": "selected",
+      "es": "seleccionados",
+      "en": "selected"
+    },
+    {
+      "key": "movements.export.chooseFormat",
+      "source": "Choose export format —",
+      "es": "Elige el formato de exportación —",
+      "en": "Choose export format —"
+    },
+    {
+      "key": "movements.export.countFilters",
+      "source": "{p1}transaction{p2}with current filters",
+      "es": "{p1} transacción{p2} con los filtros actuales",
+      "en": "{p1} transaction{p2} with current filters"
+    },
+    {
+      "key": "movements.export.excelLabel",
+      "source": "Excel",
+      "es": "Excel",
+      "en": "Excel"
+    },
+    {
+      "key": "movements.export.reimport",
+      "source": "Re-importable format",
+      "es": "Formato para volver a importar",
+      "en": "Re-importable format"
+    },
+    {
+      "key": "movements.export.xlsx",
+      "source": "(.xlsx)",
+      "es": "(.xlsx)",
+      "en": "(.xlsx)"
+    },
+    {
+      "key": "movements.export.jsonLabel",
+      "source": "JSON",
+      "es": "JSON",
+      "en": "JSON"
+    },
+    {
+      "key": "movements.export.fullData",
+      "source": "Full data with all",
+      "es": "Datos completos con todos los",
+      "en": "Full data with all"
+    },
+    {
+      "key": "movements.export.populated",
+      "source": "populated fields",
+      "es": "campos llenos",
+      "en": "populated fields"
+    },
+    {
+      "key": "movements.search.placeholder",
+      "source": "Search by name, category, subcategory or tag...",
+      "es": "Busca por nombre, categoría, subcategoría o etiqueta…",
+      "en": "Search by name, category, subcategory or tag..."
+    },
+    {
+      "key": "movements.count",
+      "source": "{p1}transaction{p2}",
+      "es": "{p1} transacción{p2}",
+      "en": "{p1} transaction{p2}"
+    },
+    {
+      "key": "movements.totals.bills",
+      "source": "BILLS:",
+      "es": "GASTOS:",
+      "en": "BILLS:"
+    },
+    {
+      "key": "movements.totals.incomes",
+      "source": "INCOMES:",
+      "es": "INGRESOS:",
+      "en": "INCOMES:"
+    },
+    {
+      "key": "movements.select.off",
+      "source": "Off",
+      "es": "Apagado",
+      "en": "Off"
+    },
+    {
+      "key": "movements.select.all",
+      "source": "Select All",
+      "es": "Seleccionar todo",
+      "en": "Select All"
+    },
+    {
+      "key": "movements.select.none",
+      "source": "Deselect All",
+      "es": "Quitar selección de todo",
+      "en": "Deselect All"
+    },
+    {
+      "key": "movements.select.selectedCount",
+      "source": "{p1}selected",
+      "es": "{p1} seleccionados",
+      "en": "{p1} selected"
+    },
+    {
+      "key": "movements.select.help",
+      "source": "Select transactions then use the action buttons below to edit a specific field for all of them at once, or delete them all.",
+      "es": "Selecciona movimientos y usa los botones de abajo para editar un campo de todos a la vez, o para borrarlos todos.",
+      "en": "Select transactions then use the action buttons below to edit a specific field for all of them at once, or delete them all."
+    },
+    {
+      "key": "movements.bulk.rename",
+      "source": "Rename",
+      "es": "Renombrar",
+      "en": "Rename"
+    },
+    {
+      "key": "movements.bulk.type",
+      "source": "Type",
+      "es": "Tipo",
+      "en": "Type"
+    },
+    {
+      "key": "movements.bulk.account",
+      "source": "Account",
+      "es": "Cuenta",
+      "en": "Account"
+    },
+    {
+      "key": "movements.bulk.currency",
+      "source": "Currency",
+      "es": "Moneda",
+      "en": "Currency"
+    },
+    {
+      "key": "movements.bulk.general",
+      "source": "Edit all fields at once — anything you fill in will overwrite all selected transactions",
+      "es": "Editar todos los campos a la vez: lo que llenes sobrescribe a todos los movimientos seleccionados",
+      "en": "Edit all fields at once — anything you fill in will overwrite all selected transactions"
+    },
+    {
+      "key": "movements.bulk.generalEdit",
+      "source": "General edit",
+      "es": "Edición general",
+      "en": "General edit"
+    },
+    {
+      "key": "movements.search.clear",
+      "source": "Clear search",
+      "es": "Limpiar búsqueda",
+      "en": "Clear search"
+    },
+    {
+      "key": "movements.row.merchant",
+      "source": "Merchant: {p1}",
+      "es": "Comercio: {p1}",
+      "en": "Merchant: {p1}"
+    },
+    {
+      "key": "movements.row.account",
+      "source": "Account: {p1}",
+      "es": "Cuenta: {p1}",
+      "en": "Account: {p1}"
+    },
+    {
+      "key": "movements.row.reported",
+      "source": "Reported ({p1}): {p2}",
+      "es": "Reportado ({p1}): {p2}",
+      "en": "Reported ({p1}): {p2}"
+    },
+    {
+      "key": "movements.row.rate",
+      "source": "Rate: {p1}({p2})",
+      "es": "Tipo de cambio: {p1} ({p2})",
+      "en": "Rate: {p1}({p2})"
+    },
+    {
+      "key": "movements.row.rateUnavailable",
+      "source": "Exchange-rate estimate unavailable",
+      "es": "Estimado de tipo de cambio no disponible",
+      "en": "Exchange-rate estimate unavailable"
+    },
+    {
+      "key": "movements.row.noName",
+      "source": "No name. Asign one...",
+      "es": "Sin nombre. Asígnale uno…",
+      "en": "No name. Asign one..."
+    },
+    {
+      "key": "movements.row.categoryLabel",
+      "source": "Categoría:",
+      "es": "Categoría:",
+      "en": "Category:"
+    },
+    {
+      "key": "movements.row.subcategoryLabel",
+      "source": "Subcategoría:",
+      "es": "Subcategoría:",
+      "en": "Subcategory:"
+    },
+    {
+      "key": "movements.row.accountLabel",
+      "source": "Cuenta:",
+      "es": "Cuenta:",
+      "en": "Account:"
+    },
+    {
+      "key": "movements.row.tagsLabel",
+      "source": "Tags:",
+      "es": "Etiquetas:",
+      "en": "Tags:"
+    },
+    {
+      "key": "movements.row.noTags",
+      "source": "No tags...",
+      "es": "Sin etiquetas…",
+      "en": "No tags..."
+    },
+    {
+      "key": "movements.row.fx",
+      "source": "FX",
+      "es": "FX",
+      "en": "FX"
+    },
+    {
+      "key": "movements.guide.intro",
+      "source": "Cómo usar la lista de movimientos: qué es, para qué sirve, cómo usarla y cada filtro, capa por capa.",
+      "es": "Cómo usar la lista de movimientos: qué es, para qué sirve, cómo usarla y cada filtro, capa por capa.",
+      "en": "How to use the transactions list: what it is, what it is for, how to use it, and every filter, layer by layer."
+    },
+    {
+      "key": "movements.guide.what",
+      "source": "Qué es",
+      "es": "Qué es",
+      "en": "What it is"
+    },
+    {
+      "key": "movements.guide.whatText",
+      "source": "La lista de todos tus movimientos del periodo que eliges. Cada fila es un gasto o un ingreso. Aquí los buscas, los filtras, los editas, los borras y los exportas.",
+      "es": "La lista de todos tus movimientos del periodo que eliges. Cada fila es un gasto o un ingreso. Aquí los buscas, los filtras, los editas, los borras y los exportas.",
+      "en": "The list of all your transactions for the period you choose. Each row is an expense or an income. Here you search, filter, edit, delete and export them."
+    },
+    {
+      "key": "movements.guide.purpose",
+      "source": "Para qué sirve",
+      "es": "Para qué sirve",
+      "en": "What it is for"
+    },
+    {
+      "key": "movements.guide.purpose1",
+      "source": "Revisar que cada movimiento tenga bien su nombre, monto, cuenta, categoría y etiquetas.",
+      "es": "Revisar que cada movimiento tenga bien su nombre, monto, cuenta, categoría y etiquetas.",
+      "en": "Check that each transaction has the right name, amount, account, category and tags."
+    },
+    {
+      "key": "movements.guide.purpose2",
+      "source": "Corregir uno o varios movimientos a la vez.",
+      "es": "Corregir uno o varios movimientos a la vez.",
+      "en": "Fix one or several transactions at once."
+    },
+    {
+      "key": "movements.guide.purpose3",
+      "source": "Encontrar movimientos repetidos y borrarlos de una vez.",
+      "es": "Encontrar movimientos repetidos y borrarlos de una vez.",
+      "en": "Find repeated transactions and delete them in one go."
+    },
+    {
+      "key": "movements.guide.purpose4",
+      "source": "Sacar un archivo (Excel o JSON) de lo que estás viendo.",
+      "es": "Sacar un archivo (Excel o JSON) de lo que estás viendo.",
+      "en": "Export a file (Excel or JSON) of what you are looking at."
+    },
+    {
+      "key": "movements.guide.howTo",
+      "source": "Cómo usarlo",
+      "es": "Cómo usarlo",
+      "en": "How to use it"
+    },
+    {
+      "key": "movements.guide.step1",
+      "source": "Elige el periodo con los controles de fecha: un rango ya armado o uno personalizado.",
+      "es": "Elige el periodo con los controles de fecha: un rango ya armado o uno personalizado.",
+      "en": "Choose the period with the date controls: a preset range or a custom one."
+    },
+    {
+      "key": "movements.guide.step2",
+      "source": "Acota la lista con los filtros de la barra. Todos se combinan: se aplican juntos.",
+      "es": "Acota la lista con los filtros de la barra. Todos se combinan: se aplican juntos.",
+      "en": "Narrow the list with the filters in the bar. They all combine: they apply together."
+    },
+    {
+      "key": "movements.guide.step3",
+      "source": "Escribe en el buscador para encontrar por nombre, categoría, subcategoría o etiqueta.",
+      "es": "Escribe en el buscador para encontrar por nombre, categoría, subcategoría o etiqueta.",
+      "en": "Type in the search box to find by name, category, subcategory or tag."
+    },
+    {
+      "key": "movements.guide.step4",
+      "source": "En cada fila, el lápiz edita el movimiento y el bote lo borra.",
+      "es": "En cada fila, el lápiz edita el movimiento y el bote lo borra.",
+      "en": "On each row, the pencil edits the transaction and the bin deletes it."
+    },
+    {
+      "key": "movements.guide.step5",
+      "source": "Si necesitas trabajar con varios, activa Select y toca los que quieras.",
+      "es": "Si necesitas trabajar con varios, activa Select y toca los que quieras.",
+      "en": "If you need to work with several, turn on Select and tap the ones you want."
+    },
+    {
+      "key": "movements.guide.step6",
+      "source": "Exporta lo que ves con Export data.",
+      "es": "Exporta lo que ves con Export data.",
+      "en": "Export what you see with Export data."
+    },
+    {
+      "key": "movements.guide.filters",
+      "source": "Filtros, capa por capa",
+      "es": "Filtros, capa por capa",
+      "en": "Filters, layer by layer"
+    },
+    {
+      "key": "movements.guide.layer1",
+      "source": "Capa 1 · Encabezado",
+      "es": "Capa 1 · Encabezado",
+      "en": "Layer 1 · Header"
+    },
+    {
+      "key": "movements.guide.layer1Help",
+      "source": "Abre esta guía.",
+      "es": "Abre esta guía.",
+      "en": "Opens this guide."
+    },
+    {
+      "key": "movements.guide.layer1Period",
+      "source": "Muestra el periodo activo. No se edita aquí: cámbialo con los controles de la barra.",
+      "es": "Muestra el periodo activo. No se edita aquí: cámbialo con los controles de la barra.",
+      "en": "Shows the active period. It is not edited here: change it with the controls in the bar."
+    },
+    {
+      "key": "movements.guide.layer2",
+      "source": "Capa 2 · Barra de controles, de izquierda a derecha",
+      "es": "Capa 2 · Barra de controles, de izquierda a derecha",
+      "en": "Layer 2 · Control bar, from left to right"
+    },
+    {
+      "key": "movements.guide.select",
+      "source": "Activa el modo selección. Con él encendido, tocar una fila la marca, y aparecen acciones para editar o borrar varias a la vez. Tocarlo otra vez lo apaga y limpia la selección.",
+      "es": "Activa el modo selección. Con él encendido, tocar una fila la marca, y aparecen acciones para editar o borrar varias a la vez. Tocarlo otra vez lo apaga y limpia la selección.",
+      "en": "Turns on selection mode. While it is on, tapping a row marks it, and actions appear to edit or delete several at once. Tapping it again turns it off and clears the selection."
+    },
+    {
+      "key": "movements.guide.preset",
+      "source": "Elige un rango ya armado, como un mes o los últimos meses.",
+      "es": "Elige un rango ya armado, como un mes o los últimos meses.",
+      "en": "Choose a preset range, such as a month or the last few months."
+    },
+    {
+      "key": "movements.guide.custom",
+      "source": "Elige la fecha de inicio y la de fin del periodo que quieres ver.",
+      "es": "Elige la fecha de inicio y la de fin del periodo que quieres ver.",
+      "en": "Choose the start and end date of the period you want to see."
+    },
+    {
+      "key": "movements.guide.type",
+      "source": "Muestra todos los movimientos, solo ingresos o solo gastos.",
+      "es": "Muestra todos los movimientos, solo ingresos o solo gastos.",
+      "en": "Shows all transactions, only incomes or only bills."
+    },
+    {
+      "key": "movements.guide.readable",
+      "source": "Filtra por la marca de legibilidad de cada movimiento, que puedes cambiar al editarlo. Readable muestra los marcados; Not readable, los que no lo están.",
+      "es": "Filtra por la marca de legibilidad de cada movimiento, que puedes cambiar al editarlo. Readable muestra los marcados; Not readable, los que no lo están.",
+      "en": "Filters by each transaction's readable mark, which you can change when editing it. Readable shows the marked ones; Not readable, the rest."
+    },
+    {
+      "key": "movements.guide.amount",
+      "source": "Escribe un monto y muestra solo los movimientos con ese monto. Primary lo compara con la moneda principal de tu wallet. Native lo compara con la moneda de la cuenta de cada movimiento, y aparece otro menú para elegir la moneda. La × borra el monto.",
+      "es": "Escribe un monto y muestra solo los movimientos con ese monto. Primary lo compara con la moneda principal de tu wallet. Native lo compara con la moneda de la cuenta de cada movimiento, y aparece otro menú para elegir la moneda. La × borra el monto.",
+      "en": "Type an amount and it shows only the transactions with that amount. Primary compares it with your wallet's primary currency. Native compares it with the currency of each transaction's account, and another menu appears to choose the currency. The × clears the amount."
+    },
+    {
+      "key": "movements.guide.category",
+      "source": "Abre el selector. Eliges una categoría o una subcategoría, pero no las dos. La × al lado quita ese filtro.",
+      "es": "Abre el selector. Eliges una categoría o una subcategoría, pero no las dos. La × al lado quita ese filtro.",
+      "en": "Opens the picker. You choose a category or a subcategory, not both. The × next to it removes that filter."
+    },
+    {
+      "key": "movements.guide.duplicates",
+      "source": "Abre el buscador de duplicados. Marcas los criterios con los que dos movimientos cuentan como iguales (nombre, fecha, monto, categoría y subcategoría) y, si quieres, una tolerancia en días y en monto. Search duplicates los busca; Refresh defaults vuelve a Nombre + Fecha + Monto exactos; Exit duplicate view sale de esa vista. Cuando encuentra repetidos, puedes borrarlos todos de una vez.",
+      "es": "Abre el buscador de duplicados. Marcas los criterios con los que dos movimientos cuentan como iguales (nombre, fecha, monto, categoría y subcategoría) y, si quieres, una tolerancia en días y en monto. Search duplicates los busca; Refresh defaults vuelve a Nombre + Fecha + Monto exactos; Exit duplicate view sale de esa vista. Cuando encuentra repetidos, puedes borrarlos todos de una vez.",
+      "en": "Opens the duplicate finder. You mark the criteria by which two transactions count as equal (name, date, amount, category and subcategory) and, if you like, a tolerance in days and amount. Search duplicates looks for them; Refresh defaults goes back to exact Name + Date + Amount; Exit duplicate view leaves that view. When it finds repeats, you can delete them all at once."
+    },
+    {
+      "key": "movements.guide.export",
+      "source": "Elige Excel (.xlsx, se puede volver a importar) o JSON (todos los datos completos) de lo que está filtrado ahora.",
+      "es": "Elige Excel (.xlsx, se puede volver a importar) o JSON (todos los datos completos) de lo que está filtrado ahora.",
+      "en": "Choose Excel (.xlsx, can be imported again) or JSON (all the full data) for what is currently filtered."
+    },
+    {
+      "key": "movements.guide.clear",
+      "source": "Quita todos los filtros, incluidos el buscador y el monto exacto.",
+      "es": "Quita todos los filtros, incluidos el buscador y el monto exacto.",
+      "en": "Removes all filters, including the search and the exact amount."
+    },
+    {
+      "key": "movements.guide.layer3",
+      "source": "Capa 3 · Buscador",
+      "es": "Capa 3 · Buscador",
+      "en": "Layer 3 · Search"
+    },
+    {
+      "key": "movements.guide.search",
+      "source": "Busca mientras escribes. La × de la derecha lo vacía.",
+      "es": "Busca mientras escribes. La × de la derecha lo vacía.",
+      "en": "Searches as you type. The × on the right empties it."
+    },
+    {
+      "key": "movements.guide.layer4",
+      "source": "Capa 4 · Lista de movimientos",
+      "es": "Capa 4 · Lista de movimientos",
+      "en": "Layer 4 · Transactions list"
+    },
+    {
+      "key": "movements.guide.row",
+      "source": "Un movimiento. El lápiz lo edita, el bote lo borra. Con Select encendido, tocar la fila la marca.",
+      "es": "Un movimiento. El lápiz lo edita, el bote lo borra. Con Select encendido, tocar la fila la marca.",
+      "en": "One transaction. The pencil edits it, the bin deletes it. With Select on, tapping the row marks it."
+    },
+    {
+      "key": "movements.currencyChange.convert",
+      "source": "Convert",
+      "es": "Convertir",
+      "en": "Convert"
+    },
+    {
+      "key": "movements.currencyChange.convertHelp",
+      "source": "Recalculate the amount to preserve the same reported value.",
+      "es": "Recalcula el monto para conservar el mismo valor reportado.",
+      "en": "Recalculate the amount to preserve the same reported value."
+    },
+    {
+      "key": "movements.currencyChange.keepNumber",
+      "source": "Keep number",
+      "es": "Conservar el número",
+      "en": "Keep number"
+    },
+    {
+      "key": "movements.currencyChange.keepHelp",
+      "source": "Keep the same number, just relabel the currency.",
+      "es": "Conserva el mismo número y solo cambia la moneda.",
+      "en": "Keep the same number, just relabel the currency."
+    },
+    {
+      "key": "movements.currencyChange.manual",
+      "source": "Enter manually",
+      "es": "Escribir a mano",
+      "en": "Enter manually"
+    },
+    {
+      "key": "movements.currencyChange.manualHelp",
+      "source": "Type the exact amount in the new currency.",
+      "es": "Escribe el monto exacto en la nueva moneda.",
+      "en": "Type the exact amount in the new currency."
+    },
+    {
+      "key": "movements.currencyChange.choose",
+      "source": "Choose how to handle the currency change before saving",
+      "es": "Elige cómo manejar el cambio de moneda antes de guardar",
+      "en": "Choose how to handle the currency change before saving"
+    },
+    {
+      "key": "movements.edit.title",
+      "source": "Edit Transaction ✏️",
+      "es": "Editar movimiento ✏️",
+      "en": "Edit Transaction ✏️"
+    },
+    {
+      "key": "movements.edit.name",
+      "source": "Transaction name",
+      "es": "Nombre del movimiento",
+      "en": "Transaction name"
+    },
+    {
+      "key": "movements.edit.amount",
+      "source": "Amount ({p1})",
+      "es": "Monto ({p1})",
+      "en": "Amount ({p1})"
+    },
+    {
+      "key": "movements.edit.wrongAmount",
+      "source": "Doesn't look right? Correct it",
+      "es": "¿No se ve bien? Corrígelo",
+      "en": "Doesn't look right? Correct it"
+    },
+    {
+      "key": "movements.edit.exactAmount",
+      "source": "Exact reported amount ({p1})",
+      "es": "Monto exacto reportado ({p1})",
+      "en": "Exact reported amount ({p1})"
+    },
+    {
+      "key": "movements.edit.isIncome",
+      "source": "Is Income:",
+      "es": "¿Es ingreso?:",
+      "en": "Is Income:"
+    },
+    {
+      "key": "movements.edit.isBill",
+      "source": "Is Bill:",
+      "es": "¿Es gasto?:",
+      "en": "Is bill:"
+    },
+    {
+      "key": "movements.edit.isReadable",
+      "source": "Is Readable:",
+      "es": "¿Es legible?:",
+      "en": "Is readable:"
+    },
+    {
+      "key": "movements.edit.tags",
+      "source": "Tags",
+      "es": "Etiquetas",
+      "en": "Tags"
+    },
+    {
+      "key": "movements.edit.tagsHint",
+      "source": "Tags (separated by comma)",
+      "es": "Etiquetas (separadas por comas)",
+      "en": "Tags (separated by comma)"
+    },
+    {
+      "key": "movements.edit.noAccount",
+      "source": "No account",
+      "es": "Sin cuenta",
+      "en": "No account"
+    },
+    {
+      "key": "movements.edit.accountCurrency",
+      "source": "This account is in {p1}, different from {p2}. Choose how to handle it:",
+      "es": "Esta cuenta está en {p1}, distinta de {p2}. Elige cómo manejarlo:",
+      "en": "This account is in {p1}, different from {p2}. Choose how to handle it:"
+    },
+    {
+      "key": "movements.edit.project",
+      "source": "Project (optional)",
+      "es": "Proyecto (opcional)",
+      "en": "Project (optional)"
+    },
+    {
+      "key": "movements.edit.noProject",
+      "source": "No project",
+      "es": "Sin proyecto",
+      "en": "No project"
+    },
+    {
+      "key": "movements.import.uploading",
+      "source": "Uploading file...",
+      "es": "Subiendo archivo…",
+      "en": "Uploading file…"
+    },
+    {
+      "key": "movements.import.reading",
+      "source": "Reading and creating transactions...",
+      "es": "Leyendo y creando movimientos…",
+      "en": "Reading and creating transactions…"
+    },
+    {
+      "key": "movements.import.done",
+      "source": "Done!",
+      "es": "¡Listo!",
+      "en": "Done!"
+    },
+    {
+      "key": "movements.import.error",
+      "source": "Something went wrong",
+      "es": "Algo salió mal",
+      "en": "Something went wrong"
+    },
+    {
+      "key": "movements.import.templateError",
+      "source": "Could not download template, please try again 🤕",
+      "es": "No se pudo descargar la plantilla, inténtalo de nuevo 🤕",
+      "en": "Could not download template, please try again 🤕"
+    },
+    {
+      "key": "movements.dup.failed",
+      "source": "Deduplication failed, please try again 🤕",
+      "es": "Falló la deduplicación, inténtalo de nuevo 🤕",
+      "en": "Deduplication failed, please try again 🤕"
+    },
+    {
+      "key": "movements.delete.failed",
+      "source": "Could not delete transactions 🤕",
+      "es": "No se pudieron borrar los movimientos 🤕",
+      "en": "Could not delete transactions 🤕"
+    },
+    {
+      "key": "movements.categorizer.applyFailed",
+      "source": "Could not apply suggestions 🤕",
+      "es": "No se pudieron aplicar las sugerencias 🤕",
+      "en": "Could not apply suggestions 🤕"
+    },
+    {
+      "key": "movements.import.title",
+      "source": "Import from Excel",
+      "es": "Importar desde Excel",
+      "en": "Import from Excel"
+    },
+    {
+      "key": "movements.import.intro",
+      "source": "Download the Gastify template, fill it with your transactions (date, concept, amount, currency, type) and upload it here. Categories, tags, accounts and account currencies are auto-resolved from your existing ones.",
+      "es": "Descarga la plantilla de Gastify, llénala con tus movimientos (fecha, concepto, monto, moneda, tipo) y súbela aquí. Las categorías, etiquetas, cuentas y monedas de cuenta se resuelven solas con las que ya tienes.",
+      "en": "Download the Gastify template, fill it with your transactions (date, concept, amount, currency, type) and upload it here. Categories, tags, accounts and account currencies are auto-resolved from your existing ones."
+    },
+    {
+      "key": "movements.import.readyTitle",
+      "source": "Ready to use in your dashboard",
+      "es": "Listo para usar en tu panel",
+      "en": "Ready to use in your dashboard"
+    },
+    {
+      "key": "movements.import.dismiss",
+      "source": "Dismiss",
+      "es": "Descartar",
+      "en": "Dismiss"
+    },
+    {
+      "key": "movements.dup.intro1",
+      "source": "Upload the same Excel you already imported. Transactions that share the exact",
+      "es": "Sube el mismo Excel que ya importaste. Los movimientos que comparten exactamente la",
+      "en": "Upload the same Excel you already imported. Transactions that share the exact"
+    },
+    {
+      "key": "movements.dup.word.date",
+      "source": "date",
+      "es": "fecha",
+      "en": "date"
+    },
+    {
+      "key": "movements.dup.word.name",
+      "source": "name",
+      "es": "nombre",
+      "en": "name"
+    },
+    {
+      "key": "movements.dup.word.amount",
+      "source": "amount",
+      "es": "monto",
+      "en": "amount"
+    },
+    {
+      "key": "movements.dup.word.and",
+      "source": "and",
+      "es": "y",
+      "en": "and"
+    },
+    {
+      "key": "movements.dup.word.currency",
+      "source": "currency",
+      "es": "moneda",
+      "en": "currency"
+    },
+    {
+      "key": "movements.dup.intro2",
+      "source": "will be processed according to the mode below.",
+      "es": "se procesarán según el modo de abajo.",
+      "en": "will be processed according to the mode below."
+    },
+    {
+      "key": "movements.dup.keepOne",
+      "source": "Keep one original",
+      "es": "Conservar un original",
+      "en": "Keep one original"
+    },
+    {
+      "key": "movements.dup.deleteAll",
+      "source": "Delete all matches",
+      "es": "Borrar todas las coincidencias",
+      "en": "Delete all matches"
+    },
+    {
+      "key": "movements.dup.removed",
+      "source": "Removed {p1}duplicate{p2}",
+      "es": "Se quitaron {p1} duplicado{p2}",
+      "en": "Removed {p1} duplicate{p2}"
+    },
+    {
+      "key": "movements.dup.rowsScanned",
+      "source": "{p1}rows scanned",
+      "es": "{p1} filas revisadas",
+      "en": "{p1} rows scanned"
+    },
+    {
+      "key": "movements.dup.noneIn",
+      "source": "No duplicates found in {p1}rows",
+      "es": "No se encontraron duplicados en {p1} filas",
+      "en": "No duplicates found in {p1} rows"
+    },
+    {
+      "key": "movements.bulk.editTitle",
+      "source": "Edit {p1}Transactions 🪄",
+      "es": "Editar {p1} movimientos 🪄",
+      "en": "Edit {p1} transactions 🪄"
+    },
+    {
+      "key": "movements.bulk.warn",
+      "source": "⚠️ Everything you fill in here will overwrite",
+      "es": "⚠️ Todo lo que llenes aquí sobrescribirá",
+      "en": "⚠️ Everything you fill in here will overwrite"
+    },
+    {
+      "key": "movements.bulk.warnAll",
+      "source": "all {p1}selected transactions",
+      "es": "todos los {p1} movimientos seleccionados",
+      "en": "all {p1} selected transactions"
+    },
+    {
+      "key": "movements.bulk.warnBlank",
+      "source": ". Fields you leave blank will keep their original values.",
+      "es": ". Los campos que dejes vacíos conservarán su valor original.",
+      "en": ". Fields you leave blank will keep their original values."
+    },
+    {
+      "key": "movements.bulk.blank",
+      "source": "Leave blank to keep original",
+      "es": "Déjalo vacío para conservar el original",
+      "en": "Leave blank to keep original"
+    },
+    {
+      "key": "movements.bulk.keepAccount",
+      "source": "Keep current account",
+      "es": "Conservar la cuenta actual",
+      "en": "Keep current account"
+    },
+    {
+      "key": "movements.new.project",
+      "source": "Proyecto (opcional)",
+      "es": "Proyecto (opcional)",
+      "en": "Project (optional)"
+    },
+    {
+      "key": "movements.new.noProject",
+      "source": "Sin proyecto",
+      "es": "Sin proyecto",
+      "en": "No project"
+    },
+    {
+      "key": "movements.new.title",
+      "source": "Nueva transacción",
+      "es": "Nuevo movimiento",
+      "en": "New transaction"
+    },
+    {
+      "key": "movements.new.name",
+      "source": "Nombre (opcional)",
+      "es": "Nombre (opcional)",
+      "en": "Name (optional)"
+    },
+    {
+      "key": "movements.new.nameHelp",
+      "source": "Si lo dejas vacío usamos la categoría",
+      "es": "Si lo dejas vacío usamos la categoría",
+      "en": "If you leave it empty we use the category"
+    },
+    {
+      "key": "movements.new.amount",
+      "source": "Monto ({p1})",
+      "es": "Monto ({p1})",
+      "en": "Amount ({p1})"
+    },
+    {
+      "key": "movements.new.type",
+      "source": "Tipo",
+      "es": "Tipo",
+      "en": "Type"
+    },
+    {
+      "key": "movements.new.typeLabel",
+      "source": "Tipo de movimiento",
+      "es": "Tipo de movimiento",
+      "en": "Transaction type"
+    },
+    {
+      "key": "movements.new.bill",
+      "source": "Gasto",
+      "es": "Gasto",
+      "en": "Expense"
+    },
+    {
+      "key": "movements.new.income",
+      "source": "Ingreso",
+      "es": "Ingreso",
+      "en": "Income"
+    },
+    {
+      "key": "movements.new.date",
+      "source": "Fecha",
+      "es": "Fecha",
+      "en": "Date"
+    },
+    {
+      "key": "movements.new.category",
+      "source": "Categoría",
+      "es": "Categoría",
+      "en": "Category"
+    },
+    {
+      "key": "movements.new.tags",
+      "source": "Etiquetas (separadas por comas)",
+      "es": "Etiquetas (separadas por comas)",
+      "en": "Tags (separated by commas)"
+    },
+    {
+      "key": "movements.new.tagsPlaceholder",
+      "source": "viaje, trabajo",
+      "es": "viaje, trabajo",
+      "en": "trip, work"
+    },
+    {
+      "key": "movements.new.account",
+      "source": "Cuenta",
+      "es": "Cuenta",
+      "en": "Account"
+    },
+    {
+      "key": "movements.new.noAccount",
+      "source": "Sin cuenta",
+      "es": "Sin cuenta",
+      "en": "No account"
+    },
+    {
+      "key": "movements.new.createAccountFirst",
+      "source": "Primero crea una cuenta",
+      "es": "Primero crea una cuenta",
+      "en": "Create an account first"
+    },
+    {
+      "key": "movements.new.clear",
+      "source": "Limpiar formulario",
+      "es": "Limpiar formulario",
+      "en": "Clear form"
+    },
+    {
+      "key": "movements.transfer.bothAccounts",
+      "source": "Select both a source and destination account",
+      "es": "Selecciona la cuenta de origen y la de destino",
+      "en": "Select both a source and destination account"
+    },
+    {
+      "key": "movements.transfer.different",
+      "source": "Source and destination accounts must be different",
+      "es": "La cuenta de origen y la de destino deben ser distintas",
+      "en": "Source and destination accounts must be different"
+    },
+    {
+      "key": "movements.transfer.profileLoading",
+      "source": "Your profile is still loading, try again in a moment",
+      "es": "Tu perfil todavía se está cargando; inténtalo en un momento",
+      "en": "Your profile is still loading, try again in a moment"
+    },
+    {
+      "key": "movements.transfer.name",
+      "source": "Name (optional)",
+      "es": "Nombre (opcional)",
+      "en": "Name (optional)"
+    },
+    {
+      "key": "movements.transfer.from",
+      "source": "From account",
+      "es": "Cuenta de origen",
+      "en": "From account"
+    },
+    {
+      "key": "movements.transfer.selectAccount",
+      "source": "Select account",
+      "es": "Elige una cuenta",
+      "en": "Select account"
+    },
+    {
+      "key": "movements.transfer.to",
+      "source": "To account",
+      "es": "Cuenta de destino",
+      "en": "To account"
+    },
+    {
+      "key": "movements.transfer.receivedPrefix",
+      "source": "Amount received (",
+      "es": "Monto recibido (",
+      "en": "Amount received ("
+    },
+    {
+      "key": "movements.transfer.estimate",
+      "source": "Pre-filled from a live exchange-rate estimate - overwrite it with the exact amount your bank actually gave you.",
+      "es": "Llenado con un estimado del tipo de cambio en vivo: reemplázalo con el monto exacto que te dio tu banco.",
+      "en": "Pre-filled from a live exchange-rate estimate - overwrite it with the exact amount your bank actually gave you."
+    },
+    {
+      "key": "movements.transfer.received",
+      "source": "Amount received",
+      "es": "Monto recibido",
+      "en": "Amount received"
+    },
+    {
+      "key": "movements.transfer.clear",
+      "source": "Clear Form",
+      "es": "Limpiar formulario",
+      "en": "Clear Form"
+    },
+    {
+      "key": "movements.bulk.changeNameHelp",
+      "source": "Change the name for all selected transactions.",
+      "es": "Cambia el nombre de todos los movimientos seleccionados.",
+      "en": "Change the name for all selected transactions."
+    },
+    {
+      "key": "movements.bulk.changeDate",
+      "source": "Change date",
+      "es": "Cambiar fecha",
+      "en": "Change date"
+    },
+    {
+      "key": "movements.bulk.changeDateHelp",
+      "source": "Set a new date for all selected transactions.",
+      "es": "Pon una fecha nueva a todos los movimientos seleccionados.",
+      "en": "Set a new date for all selected transactions."
+    },
+    {
+      "key": "movements.bulk.changeType",
+      "source": "Change type",
+      "es": "Cambiar tipo",
+      "en": "Change type"
+    },
+    {
+      "key": "movements.bulk.changeTypeHelp",
+      "source": "Set Bill or Income for all selected transactions.",
+      "es": "Marca como gasto o ingreso a todos los movimientos seleccionados.",
+      "en": "Set Bill or Income for all selected transactions."
+    },
+    {
+      "key": "movements.bulk.changeCategory",
+      "source": "Change category",
+      "es": "Cambiar categoría",
+      "en": "Change category"
+    },
+    {
+      "key": "movements.bulk.changeCategoryHelp",
+      "source": "Assign a category (and subcategory) to all selected transactions.",
+      "es": "Asigna una categoría (y subcategoría) a todos los movimientos seleccionados.",
+      "en": "Assign a category (and subcategory) to all selected transactions."
+    },
+    {
+      "key": "movements.bulk.changeAccount",
+      "source": "Change account",
+      "es": "Cambiar cuenta",
+      "en": "Change account"
+    },
+    {
+      "key": "movements.bulk.changeAccountHelp",
+      "source": "Assign an account to all selected transactions.",
+      "es": "Asigna una cuenta a todos los movimientos seleccionados.",
+      "en": "Assign an account to all selected transactions."
+    },
+    {
+      "key": "movements.bulk.changeTags",
+      "source": "Change tags",
+      "es": "Cambiar etiquetas",
+      "en": "Change tags"
+    },
+    {
+      "key": "movements.bulk.changeTagsHelp",
+      "source": "Set tags (separated by comma) for all selected transactions.",
+      "es": "Pon etiquetas (separadas por comas) a todos los movimientos seleccionados.",
+      "en": "Set tags (separated by comma) for all selected transactions."
+    },
+    {
+      "key": "movements.bulk.changeCurrency",
+      "source": "Change currency",
+      "es": "Cambiar moneda",
+      "en": "Change currency"
+    },
+    {
+      "key": "movements.bulk.changeCurrencyHelp",
+      "source": "Convert the selected transactions to another currency, with the rate of each date. Each one needs an account in that currency (or none).",
+      "es": "Convierte los movimientos seleccionados a otra moneda, con el tipo de cambio de cada fecha. Cada uno necesita una cuenta en esa moneda (o ninguna).",
+      "en": "Convert the selected transactions to another currency, with the rate of each date. Each one needs an account in that currency (or none)."
+    },
+    {
+      "key": "movements.bulk.nameEmpty",
+      "source": "Name cannot be empty",
+      "es": "El nombre no puede estar vacío",
+      "en": "Name cannot be empty"
+    },
+    {
+      "key": "movements.bulk.chooseCurrency",
+      "source": "Choose the new currency",
+      "es": "Elige la nueva moneda",
+      "en": "Choose the new currency"
+    },
+    {
+      "key": "movements.bulk.newName",
+      "source": "New name for all selected transactions",
+      "es": "Nuevo nombre para todos los movimientos seleccionados",
+      "en": "New name for all selected transactions"
+    },
+    {
+      "key": "movements.bulk.income",
+      "source": "Income",
+      "es": "Ingreso",
+      "en": "Income"
+    },
+    {
+      "key": "movements.bulk.bill",
+      "source": "Bill / Expense",
+      "es": "Gasto",
+      "en": "Bill / Expense"
+    },
+    {
+      "key": "movements.bulk.chooseCurrency2",
+      "source": "Choose a currency",
+      "es": "Elige una moneda",
+      "en": "Choose a currency"
+    },
+    {
+      "key": "movements.bulk.cantChange",
+      "source": "{p1}can't change with their current account:",
+      "es": "{p1} no se pueden cambiar con su cuenta actual:",
+      "en": "{p1} can't change with their current account:"
+    },
+    {
+      "key": "movements.bulk.chooseAccountIn",
+      "source": "Choose an account in {p1}",
+      "es": "Elige una cuenta en {p1}",
+      "en": "Choose an account in {p1}"
+    },
+    {
+      "key": "movements.bulk.tagsHint",
+      "source": "Tags separated by comma (e.g. food, vacation, monthly)",
+      "es": "Etiquetas separadas por comas (por ejemplo: comida, vacaciones, mensual)",
+      "en": "Tags separated by commas (e.g. food, vacation, monthly)"
+    },
+    {
+      "key": "movements.bulk.affects",
+      "source": "Affects {p1}transaction{p2}— only this field will change, everything else stays the same.",
+      "es": "Afecta a {p1} movimiento{p2}: solo cambiará este campo, lo demás queda igual.",
+      "en": "Affects {p1} transaction{p2}— only this field will change, everything else stays the same."
+    },
+    {
+      "key": "movements.bulk.clear",
+      "source": "Clear",
+      "es": "Limpiar",
+      "en": "Clear"
+    },
+    {
+      "key": "movements.bulk.selected",
+      "source": "Selected:",
+      "es": "Seleccionados:",
+      "en": "Selected:"
+    },
+    {
+      "key": "movements.bulk.typeValue",
+      "source": "Type: {p1}",
+      "es": "Tipo: {p1}",
+      "en": "Type: {p1}"
+    },
+    {
+      "key": "movements.bulk.valueValue",
+      "source": "Value: {p1}",
+      "es": "Valor: {p1}",
+      "en": "Value: {p1}"
+    },
+    {
+      "key": "movements.compare.incomes",
+      "source": "Total incomes:",
+      "es": "Ingresos totales:",
+      "en": "Total incomes:"
+    },
+    {
+      "key": "movements.compare.bills",
+      "source": "Total bills:",
+      "es": "Gastos totales:",
+      "en": "Total bills:"
+    },
+    {
+      "key": "movements.compare.balance",
+      "source": "Balance (Incomes - Bills):",
+      "es": "Balance (ingresos - gastos):",
+      "en": "Balance (Incomes - Bills):"
+    },
+    {
+      "key": "movements.compare.incomeLabel",
+      "source": "Income:",
+      "es": "Ingreso:",
+      "en": "Income:"
+    },
+    {
+      "key": "movements.compare.billsLabel",
+      "source": "Bills:",
+      "es": "Gastos:",
+      "en": "Bills:"
+    },
+    {
+      "key": "movements.compare.balanceLabel",
+      "source": "Balance:",
+      "es": "Balance:",
+      "en": "Balance:"
+    },
+    {
+      "key": "movements.compare.vs",
+      "source": "VS",
+      "es": "VS",
+      "en": "VS"
+    },
+    {
+      "key": "movements.compare.topTransactions",
+      "source": "Top {p1}Transactions",
+      "es": "Top {p1} movimientos",
+      "en": "Top {p1} transactions"
+    },
+    {
+      "key": "movements.compare.topCategories",
+      "source": "Top {p1}Categories",
+      "es": "Top {p1} categorías",
+      "en": "Top {p1} categories"
+    },
+    {
+      "key": "movements.compare.noPairs",
+      "source": "No duplicate pairs to compare",
+      "es": "No hay pares duplicados para comparar",
+      "en": "No duplicate pairs to compare"
+    },
+    {
+      "key": "movements.dup.checked",
+      "source": "Checked items",
+      "es": "Elementos marcados",
+      "en": "Checked items"
+    },
+    {
+      "key": "movements.dup.willDelete",
+      "source": "will be permanently deleted when you confirm. Uncheck any duplicate you want to keep, or check an original if you want to delete it too.",
+      "es": "se borrarán para siempre al confirmar. Desmarca cualquier duplicado que quieras conservar, o marca un original si también quieres borrarlo.",
+      "en": "will be permanently deleted when you confirm. Uncheck any duplicate you want to keep, or check an original if you want to delete it too."
+    },
+    {
+      "key": "movements.dup.original",
+      "source": "ORIGINAL (TO KEEP)",
+      "es": "ORIGINAL (SE CONSERVA)",
+      "en": "ORIGINAL (TO KEEP)"
+    },
+    {
+      "key": "movements.dup.duplicate",
+      "source": "DUPLICATE (TO DELETE)",
+      "es": "DUPLICADO (SE BORRA)",
+      "en": "DUPLICATE (TO DELETE)"
+    },
+    {
+      "key": "movements.dup.checkOriginal",
+      "source": "Check to also delete this original transaction",
+      "es": "Marca para borrar también este original",
+      "en": "Check to also delete this original transaction"
+    },
+    {
+      "key": "movements.dup.uncheckKeep",
+      "source": "Uncheck to keep this transaction instead of deleting it",
+      "es": "Desmarca para conservar este movimiento en vez de borrarlo",
+      "en": "Uncheck to keep this transaction instead of deleting it"
+    },
+    {
+      "key": "movements.resume.title",
+      "source": "Transactions Resume",
+      "es": "Resumen de movimientos",
+      "en": "Transactions Resume"
+    },
+    {
+      "key": "movements.filter.dateTip2",
+      "source": "Filter by date using a preset range or selecting a specific range 🤓",
+      "es": "Filtra por fecha con un rango predefinido o eligiendo un rango específico 🤓",
+      "en": "Filter by date using a preset range or selecting a specific range 🤓"
+    },
+    {
+      "key": "movements.resume.bills",
+      "source": "Bills Resume",
+      "es": "Resumen de gastos",
+      "en": "Bills Resume"
+    },
+    {
+      "key": "movements.resume.incomes",
+      "source": "Income Resume",
+      "es": "Resumen de ingresos",
+      "en": "Income Resume"
+    },
+    {
+      "key": "movements.resume.noBills",
+      "source": "Ups... Nothing here 🤔. No bills found for this time period. Try a wider range like Last 6 months or All 2025.",
+      "es": "Vaya… no hay nada aquí 🤔. No encontramos gastos en este periodo. Prueba un rango más amplio, como los últimos 6 meses o todo 2025.",
+      "en": "Ups... Nothing here 🤔. No bills found for this time period. Try a wider range like Last 6 months or All 2025."
+    },
+    {
+      "key": "movements.resume.noIncomes",
+      "source": "Ups... Nothing here 🤔. No incomes found for this time period. Try a wider range like Last 6 months or All 2025.",
+      "es": "Vaya… no hay nada aquí 🤔. No encontramos ingresos en este periodo. Prueba un rango más amplio, como los últimos 6 meses o todo 2025.",
+      "en": "Ups... Nothing here 🤔. No incomes found for this time period. Try a wider range like Last 6 months or All 2025."
+    },
+    {
+      "key": "movements.resume.categoryDetails",
+      "source": "Category Details",
+      "es": "Detalle por categoría",
+      "en": "Category Details"
+    },
+    {
+      "key": "movements.chart.treemap",
+      "source": "Treemap",
+      "es": "Mapa",
+      "en": "Treemap"
+    },
+    {
+      "key": "movements.chart.bubble",
+      "source": "Bubble",
+      "es": "Burbujas",
+      "en": "Bubble"
+    },
+    {
+      "key": "movements.chart.nested",
+      "source": "Nested Pie",
+      "es": "Anillo",
+      "en": "Nested Pie"
+    },
+    {
+      "key": "movements.chart.help",
+      "source": "Select the kind of chart you want to display to see the detailed categories movements 🤓",
+      "es": "Elige el tipo de gráfica que quieres ver para revisar los movimientos por categoría 🤓",
+      "en": "Select the kind of chart you want to display to see the detailed categories movements 🤓"
+    },
+    {
+      "key": "movements.categorizer.title",
+      "source": "Transaction Categorizer",
+      "es": "Categorizador de movimientos",
+      "en": "Transaction Categorizer"
+    },
+    {
+      "key": "movements.categorizer.checking",
+      "source": "Checking for suggestions...",
+      "es": "Buscando sugerencias…",
+      "en": "Checking for suggestions..."
+    },
+    {
+      "key": "movements.categorizer.none",
+      "source": "No suggestions right now — you're all caught up! 🎉",
+      "es": "No hay sugerencias por ahora: ¡todo al día! 🎉",
+      "en": "No suggestions right now — you're all caught up! 🎉"
+    },
+    {
+      "key": "movements.categorizer.count",
+      "source": "💡 {p1}transaction{p2}have a suggested category",
+      "es": "💡 {p1} movimiento{p2} con una categoría sugerida",
+      "en": "💡 {p1} transaction{p2}have a suggested category"
+    },
+    {
+      "key": "movements.categorizer.review",
+      "source": "Review suggestions",
+      "es": "Revisar sugerencias",
+      "en": "Review suggestions"
+    },
+    {
+      "key": "movements.categorizer.scanning",
+      "source": "Scanning uncategorized transactions...",
+      "es": "Revisando movimientos sin categoría…",
+      "en": "Scanning uncategorized transactions..."
+    },
+    {
+      "key": "movements.categorizer.matched",
+      "source": "{p1}uncategorized transaction{p2}matched a rule · uncheck any to skip",
+      "es": "{p1} movimiento{p2} sin categoría coincidió con una regla · desmarca los que quieras omitir",
+      "en": "{p1} uncategorized transaction{p2}matched a rule · uncheck any to skip"
+    },
+    {
+      "key": "movements.import.tooltip",
+      "source": "Upload an Excel file (.xlsx) and its transactions are imported into your wallet.",
+      "es": "Sube un archivo de Excel (.xlsx) y sus movimientos se importan a tu cartera.",
+      "en": "Upload an Excel file (.xlsx) and its transactions are imported into your wallet."
+    },
+    {
+      "key": "movements.close",
+      "source": "Cerrar",
+      "es": "Cerrar",
+      "en": "Close"
+    },
+    {
+      "key": "movements.resume.categoryDetailsP",
+      "source": "Category {p1}Details",
+      "es": "Detalle de {p1} por categoría",
+      "en": "Category {p1} details"
+    },
+    {
+      "key": "movements.resume.amount",
+      "source": "Amount:",
+      "es": "Monto:",
+      "en": "Amount:"
+    },
+    {
+      "key": "movements.resume.percentage",
+      "source": "Percentage:",
+      "es": "Porcentaje:",
+      "en": "Percentage:"
+    },
+    {
+      "key": "movements.delete.confirm",
+      "source": "Delete this movement?",
+      "es": "¿Borrar este movimiento?",
+      "en": "Delete this movement?"
+    },
+    {
+      "key": "movements.delete.done",
+      "source": "Movement deleted successfully!",
+      "es": "¡Movimiento borrado correctamente!",
+      "en": "Movement deleted successfully!"
+    },
+    {
+      "key": "movements.delete.error",
+      "source": "Error removing transaction.",
+      "es": "No se pudo borrar el movimiento.",
+      "en": "Error removing transaction."
+    },
+    {
+      "key": "movements.dup.nothingLeft",
+      "source": "Nothing left to review here.",
+      "es": "No queda nada por revisar aquí.",
+      "en": "Nothing left to review here."
+    },
+    {
+      "key": "movements.categorizer.suggestions",
+      "source": "Category suggestions",
+      "es": "Sugerencias de categoría",
+      "en": "Category suggestions"
+    },
+    {
+      "key": "movements.top.byMonth",
+      "source": "Top {p1}elements by month",
+      "es": "Top {p1} elementos por mes",
+      "en": "Top {p1} elements by month"
+    },
+    {
+      "key": "movements.top.tabHelp",
+      "source": "Select the tab that you want to see 😎",
+      "es": "Elige la pestaña que quieres ver 😎",
+      "en": "Select the tab that you want to see 😎"
+    },
+    {
+      "key": "movements.latest.title",
+      "source": "Últimos movimientos",
+      "es": "Últimos movimientos",
+      "en": "Latest transactions"
+    },
+    {
+      "key": "movements.latest.all",
+      "source": "Ver todos →",
+      "es": "Ver todos →",
+      "en": "See all →"
+    },
+    {
+      "key": "movements.latest.none",
+      "source": "Todavía no tienes movimientos.",
+      "es": "Todavía no tienes movimientos.",
+      "en": "You have no transactions yet."
+    },
+    {
+      "key": "movements.details.bills",
+      "source": "Bills Details",
+      "es": "Detalle de gastos",
+      "en": "Bills details"
+    },
+    {
+      "key": "movements.details.incomes",
+      "source": "Income details",
+      "es": "Detalle de ingresos",
+      "en": "Income details"
+    },
+    {
+      "key": "movements.details.needleTip",
+      "source": "The needle indicator shows your actual state regarding your budget or saving 🤓",
+      "es": "La aguja muestra tu estado real frente a tu presupuesto o ahorro 🤓",
+      "en": "The needle indicator shows your actual state regarding your budget or saving 🤓"
+    },
+    {
+      "key": "movements.help.transaction",
+      "source": "Transacción",
+      "es": "Movimiento",
+      "en": "Transaction"
+    },
+    {
+      "key": "movements.help.transactionText",
+      "source": "Una transacción es dinero que entra (ingreso) o sale (gasto) de una de tus cuentas. Elige cuál es con el interruptor del formulario.",
+      "es": "Una transacción es dinero que entra (ingreso) o sale (gasto) de una de tus cuentas. Elige cuál es con el interruptor del formulario.",
+      "en": "A transaction is money that comes in (income) or goes out (expense) of one of your accounts. Pick which one with the switch in the form."
+    },
+    {
+      "key": "movements.help.importTitle",
+      "source": "Importar desde Excel",
+      "es": "Importar desde Excel",
+      "en": "Import from Excel"
+    },
+    {
+      "key": "movements.help.importText",
+      "source": "Sube la plantilla de Gastify llena de movimientos. Los movimientos se crean al instante.",
+      "es": "Sube la plantilla de Gastify llena de movimientos. Los movimientos se crean al instante.",
+      "en": "Upload the filled Gastify template. The transactions are created at once."
+    },
+    {
+      "key": "movements.help.how",
+      "source": "Cómo",
+      "es": "Cómo",
+      "en": "How"
+    },
+    {
+      "key": "movements.help.example",
+      "source": "Una fila: 18/10/2026, Café, 65, MXN, Gasto. Se crea un gasto de $65 con esa fecha.",
+      "es": "Una fila: 18/10/2026, Café, 65, MXN, Gasto. Se crea un gasto de $65 con esa fecha.",
+      "en": "One row: 18/10/2026, Coffee, 65, MXN, Expense. An expense of $65 is created with that date."
+    },
+    {
+      "key": "movements.help.transfer",
+      "source": "Transferir",
+      "es": "Transferir",
+      "en": "Transfer"
+    },
+    {
+      "key": "movements.help.budget",
+      "source": "Presupuesto",
+      "es": "Presupuesto",
+      "en": "Budget"
+    },
+    {
+      "key": "movements.help.saving",
+      "source": "Ahorro",
+      "es": "Ahorro",
+      "en": "Saving"
+    },
+    {
+      "key": "movements.help.project",
+      "source": "Proyecto",
+      "es": "Proyecto",
+      "en": "Project"
+    },
+    {
+      "key": "movements.help.create",
+      "source": "Crear",
+      "es": "Crear",
+      "en": "Create"
+    },
+    {
+      "key": "movements.title",
+      "source": "Movements details",
+      "es": "Detalle de movimientos",
+      "en": "Transactions details"
+    },
+    {
+      "key": "movements.uncategorized",
+      "source": "Uncategorized",
+      "es": "Sin categoría",
+      "en": "Uncategorized"
+    },
+    {
+      "key": "movements.categorizer.tooltip",
+      "source": "Scans your uncategorized transactions and suggests a category based on your saved rules (merchant name, amount). Nothing changes until you review and apply.",
+      "es": "Revisa tus movimientos sin categoría y sugiere una según tus reglas guardadas (nombre del comercio, monto). No cambia nada hasta que lo revises y lo apliques.",
+      "en": "Scans your uncategorized transactions and suggests a category based on your saved rules (merchant name, amount). Nothing changes until you review and apply."
+    },
+    {
+      "key": "movements.tools",
+      "source": "Tools",
+      "es": "Herramientas",
+      "en": "Tools"
+    },
+    {
+      "key": "movements.help.step1",
+      "source": "Descarga la plantilla con el botón de esta sección.",
+      "es": "Descarga la plantilla con el botón de esta sección.",
+      "en": "Download the template with the button in this section."
+    },
+    {
+      "key": "movements.help.step2",
+      "source": "Llénala con una fila por movimiento: fecha, concepto, monto, divisa y tipo.",
+      "es": "Llénala con una fila por movimiento: fecha, concepto, monto, divisa y tipo.",
+      "en": "Fill it with one row per transaction: date, concept, amount, currency and type."
+    },
+    {
+      "key": "movements.help.step3",
+      "source": "Súbela aquí: los movimientos se crean de una vez.",
+      "es": "Súbela aquí: los movimientos se crean de una vez.",
+      "en": "Upload it here: the transactions are created at once."
+    },
+    {
+      "key": "movements.option.transaction",
+      "source": "Transacción",
+      "es": "Transacción",
+      "en": "Transaction"
+    },
+    {
+      "key": "movements.option.transactionSummary",
+      "source": "Elige si es un ingreso o un gasto con el interruptor del formulario.",
+      "es": "Elige si es un ingreso o un gasto con el interruptor del formulario.",
+      "en": "Pick whether it is an income or an expense with the switch in the form."
+    },
+    {
+      "key": "movements.option.excelSummary",
+      "source": "Sube la plantilla de Gastify llena.",
+      "es": "Sube la plantilla de Gastify llena.",
+      "en": "Upload the filled Gastify template."
+    }
+  ]
+}

@@ -23,6 +23,7 @@ import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEq
 import AmountEquivalentPreview from "./AmountEquivalentPreview";
 import ChargedElsewhereSection from "./ChargedElsewhereSection";
 import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 export interface AddTransactionCompProps {
   initialBudgetId?: string;
@@ -96,6 +97,7 @@ export interface CategorySelection {
 
 
 function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCreated, inline = false }: AddTransactionCompProps): React.JSX.Element {
+  const tr = useT();
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
   const [transactionInfo, setTransactionInfo] = useState<TransactionFormState>({
@@ -303,7 +305,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
 
   const projectSelector = (
     <>
-      <p className="label-tfp">Proyecto (opcional)</p>
+      <p className="label-tfp">{tr("movements.new.project")}</p>
       <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
         <select
           className="bg-transparent appearance-none w-full pr-4"
@@ -311,7 +313,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
           value={transactionInfo.budget || ""}
           onChange={handleChange}
         >
-          <option value="">Sin proyecto</option>
+          <option value="">{tr("movements.new.noProject")}</option>
           {projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}
         </select>
       </div>
@@ -336,18 +338,18 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
           >
             {!inline && (
               <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
-                Nueva transacción
+                {tr("movements.new.title")}
               </h1>
             )}
-            <p className="label-tfp ">Nombre (opcional)</p>
+            <p className="label-tfp ">{tr("movements.new.name")}</p>
             <input
               type="text"
               name="name"
               value={transactionInfo.name}
               onChange={handleChange}
-              placeholder="Si lo dejas vacío usamos la categoría"
+              placeholder={tr("movements.new.nameHelp")}
             />
-            <p className="label-tfp ">Monto ({accountCurrency})</p>
+            <p className="label-tfp ">{tr("movements.new.amount", { p1: accountCurrency })}</p>
             <input
               type="number"
               name="amount"
@@ -365,11 +367,11 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
               onMerchantCurrencyChange={setMerchantCurrency}
               quoting={merchantQuoting}
             />
-            <p className="label-tfp ">Tipo</p>
-            <div className="flex w-full gap-2" role="group" aria-label="Tipo de movimiento">
+            <p className="label-tfp ">{tr("movements.new.type")}</p>
+            <div className="flex w-full gap-2" role="group" aria-label={tr("movements.new.typeLabel")}>
               {[
-                { income: false, label: "Gasto" },
-                { income: true, label: "Ingreso" },
+                { income: false, label: tr("movements.new.bill") },
+                { income: true, label: tr("movements.new.income") },
               ].map((option) => {
                 const selected = transactionInfo.isIncome === option.income;
                 return (
@@ -387,7 +389,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
                 );
               })}
             </div>
-            <p className="label-tfp ">Fecha</p>
+            <p className="label-tfp ">{tr("movements.new.date")}</p>
             <div className="date-container w-full h-[100px] ">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoContainer components={["MobileDateTimePicker"]}>
@@ -419,7 +421,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
                 </DemoContainer>
               </LocalizationProvider>
             </div>
-            <p className="label-tfp ">Categoría</p>
+            <p className="label-tfp ">{tr("movements.new.category")}</p>
               <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
               {isCategoryPickerOpen && (
                 <ModalCategoryContent
@@ -428,15 +430,15 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
                   getSelected={handleCategory}
                 />
               )}
-            <p className="label-tfp ">Etiquetas (separadas por comas)</p>
+            <p className="label-tfp ">{tr("movements.new.tags")}</p>
             <input
               type="text"
               name="tags"
               value={transactionInfo.tags || ""}
               onChange={handleChange}
-              placeholder="viaje, trabajo"
+              placeholder={tr("movements.new.tagsPlaceholder")}
             />
-            <p className="label-tfp ">Cuenta</p>
+            <p className="label-tfp ">{tr("movements.new.account")}</p>
             <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center">
               <select
                 className=" bg-transparent appearance-none w-full pr-4"
@@ -444,7 +446,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
                 value={transactionInfo?.account || ""}
                 onChange={handleDefAccount}
               >
-                <option value="">Sin cuenta</option>
+                <option value="">{tr("movements.new.noAccount")}</option>
                 {accounts && accounts.length > 0 ? (
                   accounts.map((acc) => (
                     <option value={acc._id} key={`option-acc-${acc._id}`}>
@@ -452,7 +454,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
                     </option>
                   ))
                 ) : (
-                  <option value="" disabled>Primero crea una cuenta</option>
+                  <option value="" disabled>{tr("movements.new.createAccountFirst")}</option>
                 )}
               </select>
             </div>
@@ -468,7 +470,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
               className="clearForm w-full p-2 gf-glass-button-neutral text-red-300 text-center rounded-full cursor-pointer mb-4"
               onClick={clearForm}
             >
-              Limpiar formulario
+              {tr("movements.new.clear")}
             </button>
           </form>
       </div>

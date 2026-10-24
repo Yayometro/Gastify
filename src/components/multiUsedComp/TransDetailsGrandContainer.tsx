@@ -17,6 +17,7 @@ import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { useT } from "@/i18n/client";
 
 // Typed bridges for unmigrated child components
 interface DisplayerCategoryTreemapProps {
@@ -45,6 +46,7 @@ export interface TransDetailsGrandContainerProps {
 const today = new Date();
 
 function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandContainerProps): React.JSX.Element {
+  const tr = useT();
   // "treemap" is the default view - it's the easiest to read at a glance,
   // Bubble and Nested Pie stay available as alternate ways to look at the
   // same category/subcategory breakdown.
@@ -89,19 +91,19 @@ function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandC
     <div className="tdgc-cont gf-glass-card w-full h-full rounded-[32px] p-4">
       <div className="flex items-center justify-center gap-1.5 pt-5">
         <h1 className="text-2xl text-center font-semibold">
-          Category Details
+          {tr("movements.resume.categoryDetails")}
         </h1>
         <InfoTip info={APP_INFO.detalle_de_la_categor_a} />
       </div>
       <div className="filters flex flex-col justify-center items-center pt-2">
         <span className="text-xs">
-          From:{" "}
+          {tr("movements.from")}{" "}
           <b>{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : "No time selected"}</b>
-          {" "}to:{" "}
+          {" "}{tr("movements.to")}{" "}
           <b>{timePeriod[1] ? getDateInYearMonthDay(timePeriod[1]) : "No time selected"}</b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-          <Tooltip title="Filter by date using a preset range or selecting a specific range 🤓">
+          <Tooltip title={tr("movements.filter.dateTip2")}>
             <div className="text-gf-text w-[10px]">
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
             </div>
@@ -122,7 +124,7 @@ function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandC
             activeTab === "treemap" ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Treemap
+          {tr("movements.chart.treemap")}
         </div>
         <div
           onClick={() => setActiveTab("bubble")}
@@ -130,7 +132,7 @@ function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandC
             activeTab === "bubble" ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Bubble
+          {tr("movements.chart.bubble")}
         </div>
         <div
           onClick={() => setActiveTab("nestedPie")}
@@ -138,9 +140,9 @@ function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandC
             activeTab === "nestedPie" ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Nested Pie
+          {tr("movements.chart.nested")}
         </div>
-        <Tooltip title="Select the kind of chart you want to display to see the detailed categories movements 🤓">
+        <Tooltip title={tr("movements.chart.help")}>
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}

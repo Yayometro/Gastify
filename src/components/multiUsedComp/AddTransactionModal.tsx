@@ -1,4 +1,5 @@
 "use client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -27,6 +28,7 @@ import EditAccountModal from "./EditAccountModal";
 import TransferExchangeModal from "./TransferExchangeModal";
 import BudgetEditModal from "./Budgets/BudgetEditModal";
 import { InfoTip } from "./InfoTip";
+import { useT } from "@/i18n/client";
 
 export interface AddTransactionModalProps {
   close?: React.MouseEventHandler<HTMLElement> | (() => void);
@@ -35,43 +37,44 @@ export interface AddTransactionModalProps {
 type Option = { id: "excel" | CreateKind; label: string; icon: React.ReactNode; info: InfoText; summary: string };
 
 // A transaction is an income or an expense: the same explanation, under one name.
-const TRANSACTION_INFO: InfoText = {
+const transactionInfo = (t: TranslateFn): InfoText => ({
   ...CREATE_KIND_INFO.expense,
-  title: "Transacción",
-  text: "Una transacción es dinero que entra (ingreso) o sale (gasto) de una de tus cuentas. Elige cuál es con el interruptor del formulario.",
-};
+  title: t("movements.help.transaction"),
+  text: t("movements.help.transactionText"),
+});
 
 // The Excel import has its own explanation: the same template the app downloads, filled and uploaded.
-const EXCEL_INFO: InfoText = {
-  title: "Importar desde Excel",
-  text: "Sube la plantilla de Gastify llena de movimientos. Los movimientos se crean al instante.",
+const excelInfo = (t: TranslateFn): InfoText => ({
+  title: t("movements.help.importTitle"),
+  text: t("movements.help.importText"),
   sections: [
     {
-      label: "Cómo",
+      label: t("movements.help.how"),
       blocks: [
-        { kind: "bullets", items: ["Descarga la plantilla con el botón de esta sección.", "Llénala con una fila por movimiento: fecha, concepto, monto, divisa y tipo.", "Súbela aquí: los movimientos se crean de una vez."] },
-        { kind: "example", text: "Una fila: 18/10/2026, Café, 65, MXN, Gasto. Se crea un gasto de $65 con esa fecha." },
+        { kind: "bullets", items: [t("movements.help.step1"), t("movements.help.step2"), t("movements.help.step3")] },
+        { kind: "example", text: t("movements.help.example") },
       ],
     },
   ],
-};
+});
 
 // The options of the "+", in the order of the app's hub. Each one opens its own form on the right.
-const OPTIONS: Option[] = [
+const optionsFor = (t: TranslateFn): Option[] => [
   // One form for both: a switch in it chooses whether it is an income or an expense.
-  { id: "expense", label: "Transacción", icon: <IoArrowDownCircleOutline size={20} />, info: TRANSACTION_INFO, summary: "Elige si es un ingreso o un gasto con el interruptor del formulario." },
-  { id: "transfer", label: "Transferir", icon: <IoSwapHorizontalOutline size={20} />, info: CREATE_KIND_INFO.transfer, summary: CREATE_KIND_SUMMARY.transfer },
-  { id: "account", label: "Cuenta", icon: <IoWalletOutline size={20} />, info: CREATE_KIND_INFO.account, summary: CREATE_KIND_SUMMARY.account },
-  { id: "category", label: "Categoría", icon: <IoPricetagOutline size={20} />, info: CREATE_KIND_INFO.category, summary: CREATE_KIND_SUMMARY.category },
-  { id: "budget", label: "Presupuesto", icon: <IoPieChartOutline size={20} />, info: CREATE_KIND_INFO.budget, summary: CREATE_KIND_SUMMARY.budget },
-  { id: "saving", label: "Ahorro", icon: <IoCashOutline size={20} />, info: CREATE_KIND_INFO.saving, summary: CREATE_KIND_SUMMARY.saving },
-  { id: "project", label: "Proyecto", icon: <IoAirplaneOutline size={20} />, info: CREATE_KIND_INFO.project, summary: CREATE_KIND_SUMMARY.project },
-  { id: "excel", label: "Importar desde Excel", icon: <IoDocumentAttachOutline size={20} />, info: EXCEL_INFO, summary: "Sube la plantilla de Gastify llena." },
+  { id: "expense", label: t("movements.option.transaction"), icon: <IoArrowDownCircleOutline size={20} />, info: transactionInfo(t), summary: t("movements.option.transactionSummary") },
+  { id: "transfer", label: t("movements.help.transfer"), icon: <IoSwapHorizontalOutline size={20} />, info: CREATE_KIND_INFO.transfer, summary: CREATE_KIND_SUMMARY.transfer },
+  { id: "account", label: t("movements.new.account"), icon: <IoWalletOutline size={20} />, info: CREATE_KIND_INFO.account, summary: CREATE_KIND_SUMMARY.account },
+  { id: "category", label: t("movements.new.category"), icon: <IoPricetagOutline size={20} />, info: CREATE_KIND_INFO.category, summary: CREATE_KIND_SUMMARY.category },
+  { id: "budget", label: t("movements.help.budget"), icon: <IoPieChartOutline size={20} />, info: CREATE_KIND_INFO.budget, summary: CREATE_KIND_SUMMARY.budget },
+  { id: "saving", label: t("movements.help.saving"), icon: <IoCashOutline size={20} />, info: CREATE_KIND_INFO.saving, summary: CREATE_KIND_SUMMARY.saving },
+  { id: "project", label: t("movements.help.project"), icon: <IoAirplaneOutline size={20} />, info: CREATE_KIND_INFO.project, summary: CREATE_KIND_SUMMARY.project },
+  { id: "excel", label: t("movements.help.importTitle"), icon: <IoDocumentAttachOutline size={20} />, info: excelInfo(t), summary: t("movements.option.excelSummary") },
 ];
 
 // The "+" of the web: one window to create anything, as the app's "+" does. On a wide screen the options are a column at
 // the left and the form is at the right; on a narrow one the options are a row that scrolls sideways above the form.
 function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Element | null {
+  const t = useT();
   const [active, setActive] = useState<Option["id"]>("expense");
   // Bumped after a save: the form starts again, empty, for the next thing.
   const [round, setRound] = useState<number>(0);
@@ -87,7 +90,8 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
   }, []);
   if (!mounted) return null;
 
-  const option = OPTIONS.find((item) => item.id === active) ?? OPTIONS[0];
+  const options = optionsFor(t);
+  const option = options.find((item) => item.id === active) ?? options[0];
   const again = () => setRound((value) => value + 1);
 
   const form = () => {
@@ -116,16 +120,16 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
     <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/50 backdrop-blur-md p-3" onClick={(event) => { if (event.target === event.currentTarget && close) (close as () => void)(); }}>
       <div className="content gf-glass-violet relative z-[10002] flex h-[92vh] w-[96vw] flex-col overflow-hidden rounded-3xl md:h-[min(860px,90vh)] md:w-[min(1180px,94vw)]">
         <div className="flex items-center gap-3 px-6 pb-2 pt-5 pr-16">
-          <h1 className="text-2xl font-bold text-white">Crear</h1>
+          <h1 className="text-2xl font-bold text-white">{t("movements.help.create")}</h1>
           <InfoTip info={CREATE_SCREEN_INFO} />
         </div>
-        <button type="button" aria-label="Cerrar" onClick={close as () => void} className="absolute right-4 top-4 z-[100] rounded-full gf-glass-card p-1.5 text-purple-100 transition-colors hover:text-white">
+        <button type="button" aria-label={t("movements.close")} onClick={close as () => void} className="absolute right-4 top-4 z-[100] rounded-full gf-glass-card p-1.5 text-purple-100 transition-colors hover:text-white">
           <CategoIcon type={"MdClose"} siz={20} />
         </button>
 
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
           <nav className="flex shrink-0 gap-2 overflow-x-auto border-b border-white/10 p-3 md:w-64 md:flex-col md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r">
-            {OPTIONS.map((item) => {
+            {options.map((item) => {
               const selected = item.id === active;
               return (
                 <button

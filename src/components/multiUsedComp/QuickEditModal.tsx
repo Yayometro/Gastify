@@ -1,4 +1,5 @@
 "use client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 import React, { useState, useContext } from "react";
 import { Modal, Switch, ConfigProvider, Space } from "antd";
@@ -20,6 +21,7 @@ import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategor
 import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import { ACCOUNT_CURRENCIES } from "@gastify/core/accounts/accountForm";
+import { useT } from "@/i18n/client";
 
 const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.ComponentType<{
   onClose?: () => void;
@@ -31,15 +33,15 @@ export interface FieldMetaItem {
   description: string;
 }
 
-export const FIELD_META: Record<string, FieldMetaItem> = {
-  name:     { label: "Rename",        description: "Change the name for all selected transactions." },
-  date:     { label: "Change date",   description: "Set a new date for all selected transactions." },
-  type:     { label: "Change type",   description: "Set Bill or Income for all selected transactions." },
-  category: { label: "Change category", description: "Assign a category (and subcategory) to all selected transactions." },
-  account:  { label: "Change account", description: "Assign an account to all selected transactions." },
-  tags:     { label: "Change tags",    description: "Set tags (separated by comma) for all selected transactions." },
-  currency: { label: "Change currency", description: "Convert the selected transactions to another currency, with the rate of each date. Each one needs an account in that currency (or none)." },
-};
+export const fieldMeta = (t: TranslateFn): Record<string, FieldMetaItem> => ({
+  name: { label: t("movements.bulk.rename"), description: t("movements.bulk.changeNameHelp") },
+  date: { label: t("movements.bulk.changeDate"), description: t("movements.bulk.changeDateHelp") },
+  type: { label: t("movements.bulk.changeType"), description: t("movements.bulk.changeTypeHelp") },
+  category: { label: t("movements.bulk.changeCategory"), description: t("movements.bulk.changeCategoryHelp") },
+  account: { label: t("movements.bulk.changeAccount"), description: t("movements.bulk.changeAccountHelp") },
+  tags: { label: t("movements.bulk.changeTags"), description: t("movements.bulk.changeTagsHelp") },
+  currency: { label: t("movements.bulk.changeCurrency"), description: t("movements.bulk.changeCurrencyHelp") },
+});
 
 export type QuickEditField = "name" | "date" | "type" | "category" | "account" | "tags" | string;
 
@@ -97,6 +99,8 @@ export interface QuickEditModalProps {
 }
 
 function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): React.JSX.Element {
+  const t = useT();
+  const tr = useT();
   const toFetch = fetcher();
   const dispatch = useDispatch<AppDispatch>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -138,7 +142,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
     let payload: Record<string, unknown> = { transactions: transIds };
 
     if (field === "name") {
-      if (!value.name.trim()) { runNotify("error", "Name cannot be empty"); setIsLoading(false); return; }
+      if (!value.name.trim()) { runNotify("error", tr("movements.bulk.nameEmpty")); setIsLoading(false); return; }
       payload = { ...payload, fields: ["name"], name: value.name.trim() };
     } else if (field === "date") {
       payload = { ...payload, fields: ["date"], date: value.date };
@@ -149,7 +153,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
     } else if (field === "account") {
       payload = { ...payload, fields: ["account"], account: value.account || null };
     } else if (field === "currency") {
-      if (!value.currency) { runNotify("error", "Choose the new currency"); setIsLoading(false); return; }
+      if (!value.currency) { runNotify("error", tr("movements.bulk.chooseCurrency")); setIsLoading(false); return; }
       // Only the movements that could not move are sent again, with the account the person chose for them.
       const ids = blocked.length > 0 ? blocked.map((item) => item.id) : transIds;
       payload = { transactions: ids, fields: value.destinationAccount ? ["currency", "account"] : ["currency"], currency: value.currency, account: value.destinationAccount || undefined };
@@ -186,7 +190,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
     }
   };
 
-  const meta = FIELD_META[field];
+  const meta = fieldMeta(t)[field];
 
   const renderInput = (): React.ReactNode => {
     if (field === "name") return (
@@ -195,7 +199,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
         type="text"
         value={value.name}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue((v) => ({ ...v, name: e.target.value }))}
-        placeholder="New name for all selected transactions"
+        placeholder={tr("movements.bulk.newName")}
         className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
       />
     );
@@ -235,14 +239,14 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
               checked={value.isIncome}
               onChange={(checked: boolean) => setValue((v) => ({ ...v, isIncome: checked, isBill: !checked }))}
             />
-            <span className="text-sm text-gf-text-muted">Income</span>
+            <span className="text-sm text-gf-text-muted">{tr("movements.bulk.income")}</span>
           </div>
           <div className="flex items-center gap-3">
             <Switch
               checked={value.isBill}
               onChange={(checked: boolean) => setValue((v) => ({ ...v, isBill: checked, isIncome: !checked }))}
             />
-            <span className="text-sm text-gf-text-muted">Bill / Expense</span>
+            <span className="text-sm text-gf-text-muted">{tr("movements.bulk.bill")}</span>
           </div>
         </Space>
       </ConfigProvider>
@@ -271,7 +275,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
         value={value.account || ""}
         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setValue((v) => ({ ...v, account: e.target.value || null }))}
       >
-        <option value="">No account</option>
+        <option value="">{tr("movements.edit.noAccount")}</option>
         {accounts?.map((acc) => (
           <option key={acc._id} value={acc._id}>{acc.name}</option>
         ))}
@@ -287,14 +291,14 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
             value={value.currency}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setValue((v) => ({ ...v, currency: e.target.value, destinationAccount: "" })); setBlocked([]); }}
           >
-            <option value="">Choose a currency</option>
+            <option value="">{tr("movements.bulk.chooseCurrency2")}</option>
             {ACCOUNT_CURRENCIES.map((code) => (
               <option key={code} value={code}>{code}</option>
             ))}
           </select>
           {blocked.length > 0 && (
             <div className="flex flex-col gap-2 rounded-xl border border-gf-border p-3 text-xs">
-              <p className="font-semibold">{blocked.length} can&apos;t change with their current account:</p>
+              <p className="font-semibold">{tr("movements.bulk.cantChange", { p1: blocked.length })}</p>
               {blocked.map((item) => (
                 <p key={item.id} className="text-gf-text-muted">• {item.name}: {item.reason}</p>
               ))}
@@ -303,7 +307,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
                 value={value.destinationAccount}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setValue((v) => ({ ...v, destinationAccount: e.target.value }))}
               >
-                <option value="">Choose an account in {value.currency}</option>
+                <option value="">{tr("movements.bulk.chooseAccountIn", { p1: value.currency })}</option>
                 {currencyAccounts.map((acc) => (
                   <option key={acc._id} value={acc._id}>{acc.name}</option>
                 ))}
@@ -320,7 +324,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
         type="text"
         value={value.tags || ""}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue((v) => ({ ...v, tags: e.target.value }))}
-        placeholder="Tags separated by comma (e.g. food, vacation, monthly)"
+        placeholder={tr("movements.bulk.tagsHint")}
         className="w-full border border-gf-border rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
       />
     );
@@ -348,7 +352,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
         <div className="flex flex-col gap-0.5">
           <span className="text-base font-semibold">{meta?.label}</span>
           <span className="text-xs font-normal text-gf-text-muted">
-            Affects {transIds.length} transaction{transIds.length !== 1 ? "s" : ""} — only this field will change, everything else stays the same.
+            {tr("movements.bulk.affects", { p1: transIds.length, p2: transIds.length !== 1 ? "s" : "" })}
           </span>
         </div>
       }

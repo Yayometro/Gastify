@@ -4,6 +4,7 @@ import { Skeleton } from "antd";
 import TabsToggler, { TabsTogglerComponentItem } from "../TabsToggler";
 import PeriodFiltersWithCompare from "../../periodFiltersWithCompare/PeriodFiltersWithCompare";
 import { APP_INFO } from "@gastify/core/info/appInfo";
+import { useT } from "@/i18n/client";
 
 // Typed bridge for unmigrated child JSX component
 interface PeriodFiltersWithCompareProps {
@@ -59,6 +60,7 @@ function TabsTogglerMontlyView({
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
 }: TabsTogglerMontlyViewProps): React.JSX.Element {
+  const t = useT();
   return (
     <div className="w-full h-full">
       <TypedPeriodFiltersWithCompare
@@ -80,7 +82,7 @@ function TabsTogglerMontlyView({
         <TabsToggler
           tabs={tabs || ["Comparative", "Bills", "Incomes"]}
           compontentsArray={components}
-          tooltip={"Select the tab that you want to see 😎"}
+          tooltip={t("movements.top.tabHelp")}
           tabInfo={{ comparative: APP_INFO.detalle_del_mes(Boolean(compareEnabled)) }}
         />
       )}

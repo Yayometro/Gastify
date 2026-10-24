@@ -3,6 +3,7 @@ import TransResumeChart from "./TransResumeChart";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { useT } from "@/i18n/client";
 
 // Typed bridge for unmigrated child component
 interface TransResumeChartProps {
@@ -23,6 +24,7 @@ export interface TransactionsResumeContProps {
 }
 
 function TransactionsResumeCont({ trcIncomes, trcBills, bill, fill }: TransactionsResumeContProps): React.JSX.Element {
+  const t = useT();
   const [ownBill, setOwnBill] = useState<boolean>(true);
   const isBillTab = bill ?? ownBill;
   const handleTab = (budType: string) => {
@@ -42,7 +44,7 @@ function TransactionsResumeCont({ trcIncomes, trcBills, bill, fill }: Transactio
             isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Bills Details
+          {t("movements.details.bills")}
         </div>
         <div
           onClick={() => handleTab("")}
@@ -50,9 +52,9 @@ function TransactionsResumeCont({ trcIncomes, trcBills, bill, fill }: Transactio
             !isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Income details
+          {t("movements.details.incomes")}
         </div>
-        <Tooltip title="The needle indicator shows your actual state regarding your budget or saving 🤓">
+        <Tooltip title={t("movements.details.needleTip")}>
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}

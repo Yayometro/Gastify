@@ -6,6 +6,7 @@ import SuggestionsList, {
   type CategorySuggestionEntry,
   type CategorySuggestionApplication,
 } from "@/components/multiUsedComp/CategorySuggestions/SuggestionsList";
+import { useT } from "@/i18n/client";
 
 export interface CategorySuggestionsModalProps<
   T = CategorySuggestionEntry,
@@ -26,13 +27,14 @@ function CategorySuggestionsModal<
   onCancel,
   confirming,
 }: CategorySuggestionsModalProps<T, A>): React.JSX.Element {
+  const t = useT();
   return createPortal(
     <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
       <div className="bg-gf-surface rounded-3xl shadow-2xl w-full max-w-[560px] sm:max-w-[780px] mx-2 sm:mx-4 flex flex-col gap-5 p-4 sm:p-7 max-h-[90vh] overflow-y-auto">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gf-text">Category suggestions</h2>
+          <h2 className="text-xl font-semibold text-gf-text">{t("movements.categorizer.suggestions")}</h2>
           <p className="text-xs text-gf-text-muted mt-1">
-            {suggestions.length} uncategorized transaction{suggestions.length !== 1 ? "s" : ""} matched a rule · uncheck any to skip
+            {t("movements.categorizer.matched", { p1: suggestions.length, p2: suggestions.length !== 1 ? "s" : "" })}
           </p>
         </div>
 

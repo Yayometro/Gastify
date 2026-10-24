@@ -58,6 +58,7 @@ import DuplicateComparisonTable from "./DuplicateComparisonTable";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import MovementsGuideModal from "./MovementsGuideModal";
+import { useT } from "@/i18n/client";
 
 const TypedEditMultipleTransModal = EditMultipleTransModal as React.ComponentType<{
   hidden?: React.ReactNode[];
@@ -183,6 +184,7 @@ export interface MovementsProps {
 const today = new Date();
 
 function MovementsContent({ timePeriodFromFather, mail, embedded = false }: MovementsProps): React.JSX.Element {
+  const tr = useT();
   const defaultPeriod: [Date, Date] | (Date | string | number)[] = timePeriodFromFather || [
     new Date(today.getFullYear(), today.getMonth(), 1),
     new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59),
@@ -541,7 +543,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         setIsRemoveModal(false);
         setConfirmLoading(false);
       } else {
-        runNotify("error", "Something went wrong removing your items, verify your request and try again 🤕");
+        runNotify("error", tr("movements.removeItems.error"));
         setIsRemoveModal(false);
         setConfirmLoading(false);
       }
@@ -556,7 +558,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   const handleRemoveManyTransactions = async (transs: string[]): Promise<void> => {
     try {
       if (transs.length === 0) {
-        runNotify("error", "No items selected to removed, please select at least two");
+        runNotify("error", tr("movements.selection.needTwo"));
         return;
       }
       if (transs.length >= 15) {
@@ -581,7 +583,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         setConfirmLoading(false);
         if (dupMode) { setDupMode(false); setDupFinderOpen(false); }
       } else {
-        runNotify("error", "Something went wrong removing your items, verify your request and try again 🤕");
+        runNotify("error", tr("movements.removeItems.error"));
         setIsRemoveModalMany(false);
         setConfirmLoading(false);
       }
@@ -599,7 +601,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
       // opening the normal expense/income form (plan section 13).
       runNotify(
         "info",
-        "This is one leg of a transfer/exchange and can't be edited directly - delete it (both linked legs are removed together) and create a new transfer instead."
+        tr("movements.transfer.legNote")
       );
       return;
     }
@@ -674,7 +676,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
       if (transRemovableId) {
         await handleTransactionRemove(transRemovableId);
       } else {
-        runNotify("warning", "No transaction selected to remove");
+        runNotify("warning", tr("movements.selection.noneToRemove"));
       }
     }
   };
@@ -703,7 +705,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         title={
           <span className="font-semibold flex items-center gap-2">
             <MdOutlineFileDownload size={18} className="text-purple-500" />
-            Export {allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""}
+            {tr("movements.export.title")} {allMovements.length} {tr("movements.word.transaction")}{allMovements.length !== 1 ? "s" : ""}
           </span>
         }
         open={exportModalOpen}
@@ -718,17 +720,17 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
       >
         <div className="flex flex-col gap-3 py-1">
           <div className="bg-gf-surface-2 rounded-xl px-4 py-3 flex flex-col gap-1">
-            <p className="text-xs font-semibold text-gf-text-muted mb-1">Active filters</p>
+            <p className="text-xs font-semibold text-gf-text-muted mb-1">{tr("movements.export.activeFilters")}</p>
             {buildFilterSummary().map((line, i) => (
               <p key={i} className="text-xs text-gf-text-muted">• {line}</p>
             ))}
           </div>
           <div className="flex items-center gap-2 text-xs text-gf-text-muted">
-            <span>Format:</span>
+            <span>{tr("movements.export.format")}</span>
             <span className="font-semibold text-purple-600 flex items-center gap-1">
               {exportFormat === "excel"
-                ? <><PiMicrosoftExcelLogoFill size={14} className="text-green-400" /> Excel (.xlsx) — re-importable</>
-                : <><VscJson size={14} className="text-amber-500" /> JSON — full populated data</>
+                ? <><PiMicrosoftExcelLogoFill size={14} className="text-green-400" /> {tr("movements.export.excel")}</>
+                : <><VscJson size={14} className="text-amber-500" /> {tr("movements.export.json")}</>
               }
             </span>
           </div>
@@ -750,7 +752,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         )}
         <Modal
           className="gf-antd-modal-glass"
-          title={<span className="text-red-500 font-semibold flex items-center gap-1">⚠️ Delete transaction</span>}
+          title={<span className="text-red-500 font-semibold flex items-center gap-1">{tr("movements.delete.titleOne")}</span>}
           open={isRemoveModal}
           onOk={() => handleOkRemove()}
           onCancel={() => handleCancel()}
@@ -775,7 +777,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
 
         <Modal
           className="gf-antd-modal-glass"
-          title={<span className="text-red-500 font-semibold flex items-center gap-1">⚠️ Delete {selectedTrans.length > 0 ? selectedTrans.length : ""} transactions</span>}
+          title={<span className="text-red-500 font-semibold flex items-center gap-1">{tr("movements.delete.titleMany", { p1: selectedTrans.length > 0 ? selectedTrans.length : "" })}</span>}
           open={isRemoveModalMany}
           onOk={() => handleOkRemove("many")}
           onCancel={() => handleCancel("many")}
@@ -792,9 +794,9 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
           cancelButtonProps={{ className: "gf-glass-button-neutral !border-0 !text-gf-text" }}
         >
           <p className="text-gf-text-muted text-sm mb-2">
-            Are you sure you want to permanently delete{" "}
+            {tr("movements.delete.sure")}{" "}
             <b>{selectedTrans.length > 0 ? `${selectedTrans.length} transactions` : "these items"}</b>?{" "}
-            This action cannot be undone.
+            {tr("movements.delete.irreversible")}
           </p>
           {dupMode ? (
             <TypedDuplicateComparisonTable
@@ -816,7 +818,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
           title={
             <div className="flex items-center gap-2 text-purple-300 font-semibold text-base">
               <UniversalCategoIcon type="md/MdOutlineCompare" siz={18} />
-              Duplicate Comparison Detail
+              {tr("movements.dup.compareTitle")}
             </div>
           }
           open={dupCompareModalOpen}
@@ -824,7 +826,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
           width={750}
           footer={[
             <Button key="cancel" onClick={() => setDupCompareModalOpen(false)}>
-              Cancel
+              {tr("movements.cancel")}
             </Button>,
             <Button
               key="delete"
@@ -837,13 +839,12 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
               }}
               disabled={selectedTrans.length === 0}
             >
-              Delete {selectedTrans.length} elements
+              {tr("movements.delete.elements", { p1: selectedTrans.length })}
             </Button>,
           ]}
         >
           <p className="text-xs text-gf-text-muted mb-3">
-            Mode: <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>.
-            Review what will be kept vs deleted before proceeding.
+            {tr("movements.dup.mode")} <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>{tr("movements.dup.reviewNote")}
           </p>
           <TypedDuplicateComparisonTable
             pairs={getDuplicatePairs(allMovements, selectedTrans, dupCriteria, dupDateTolerance, dupAmountTolerance)}
@@ -863,12 +864,12 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
             <div className="movement-content">
               <div className="flex items-center justify-center gap-2">
                 <h1 className="movement-title text-2xl text-center font-bold">
-                  Transactions details
+                  {tr("movements.details.title")}
                 </h1>
                 <button
                   type="button"
                   onClick={() => setGuideOpen(true)}
-                  aria-label="Cómo usar Transactions details"
+                  aria-label={tr("movements.details.howTo")}
                   className="text-gf-text-muted hover:text-purple-300 transition-colors cursor-pointer"
                 >
                   <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
@@ -877,9 +878,9 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
             </div>
             <div className="header-filters">
               <span className="text-xs flex justify-center">
-                From:{" "}
+                {tr("movements.from")}{" "}
                 <b className="mx-1">{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : "—"}</b>
-                to:{" "}
+                {tr("movements.to")}{" "}
                 <b className="mx-1">{timePeriod[1] ? getDateInYearMonthDay(timePeriod[1]) : "—"}</b>
               </span>
               <div className="filters flex items-center justify-center gap-2 flex-wrap">
@@ -889,11 +890,11 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                   }`}
                   onClick={handeTransSelection}
                 >
-                  <p className="pr-2">Select {isSelectionMode ? "ON" : ""}</p>
+                  <p className="pr-2">{tr("movements.select.label", { p1: isSelectionMode ? "ON" : "" })}</p>
                   <InfoTip info={APP_INFO.seleccionar_movimientos} />
                   <HiMiniCursorArrowRipple size={15} />
                 </div>
-                <Tooltip title="Filter by date using a preset range or a specific range 🤓">
+                <Tooltip title={tr("movements.filter.dateTip")}>
                   <div className="text-gf-text w-[10px]">
                     <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
                   </div>
@@ -912,9 +913,9 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     value={trastType}
                     onChange={handleTransType}
                   >
-                    <option value={"all"}>All transactions</option>
-                    <option value={"incomes"}>All incomes</option>
-                    <option value={"bills"}>All bills</option>
+                    <option value={"all"}>{tr("movements.type.all")}</option>
+                    <option value={"incomes"}>{tr("movements.type.incomes")}</option>
+                    <option value={"bills"}>{tr("movements.type.bills")}</option>
                   </select>
                   <div className="filterIconContainer absolute right-[8px] pointer-events-none">
                     <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
@@ -927,23 +928,23 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     value={readable}
                     onChange={handleReadable}
                   >
-                    <option value={"all"}>All</option>
-                    <option value={"true"}>Readable</option>
-                    <option value={"false"}>Not readable</option>
+                    <option value={"all"}>{tr("movements.readable.all")}</option>
+                    <option value={"true"}>{tr("movements.readable.yes")}</option>
+                    <option value={"false"}>{tr("movements.readable.no")}</option>
                   </select>
                   <div className="filterIconContainer absolute right-[8px] pointer-events-none">
                     <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
                   </div>
                 </div>
                 <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center sm:font-base sm:font-extralight relative pulse-animation-short">
-                  <Tooltip title="Primary amount compares against your Wallet's primary currency. Native amount compares against each transaction's own Account currency.">
+                  <Tooltip title={tr("movements.amount.modeTip")}>
                     <select
                       className="gf-glass-card rounded-2xl px-1 py-0.5 outline-none border-0"
                       value={exactAmountMode}
                       onChange={(e) => setExactAmountMode(e.target.value)}
                     >
-                      <option value="primary">Primary</option>
-                      <option value="native">Native</option>
+                      <option value="primary">{tr("movements.amount.primary")}</option>
+                      <option value="native">{tr("movements.amount.native")}</option>
                     </select>
                   </Tooltip>
                   {exactAmountMode === "native" && (
@@ -960,7 +961,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                   <input
                     type="number"
                     step="0.01"
-                    placeholder="Exact amount"
+                    placeholder={tr("movements.amount.exact")}
                     value={exactAmountFilter}
                     onChange={(e) => setExactAmountFilter(e.target.value)}
                     className="gf-glass-inset rounded-2xl px-2 py-0.5 w-[110px] outline-none border-0 focus:ring-1 focus:ring-purple-400 transition-colors"
@@ -975,7 +976,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                   )}
                 </div>
                 <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center relative pulse-animation-short">
-                  <Tooltip title="Filter by Category or SubCategory — pick either one 🤓">
+                  <Tooltip title={tr("movements.filter.categoryTip")}>
                     <div className="text-gf-text-muted hover:text-purple-600 transition-colors cursor-help">
                       <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
                     </div>
@@ -996,35 +997,35 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     <button
                       onClick={handleClearCategoryFilter}
                       className="text-gf-text-muted hover:text-gf-text-muted transition-colors ml-1"
-                      title="Clear category filter"
+                      title={tr("movements.filter.clearCategory")}
                     >
                       <UniversalCategoIcon type="md/MdClose" siz={13} />
                     </button>
                   )}
                 </div>
-                <Tooltip title="Find transactions that look like duplicates based on chosen criteria">
+                <Tooltip title={tr("movements.dup.findTip")}>
                   <div
                     className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter] ${dupMode ? "text-orange-500 font-medium" : ""}`}
                     onClick={() => setDupFinderOpen(!dupFinderOpen)}
                   >
                     <MdOutlineFindInPage size={15} />
-                    <p>Find duplicates{dupMode ? ` (${dupCount})` : ""}</p>
+                    <p>{tr("movements.dup.find", { p1: dupMode ? ` (${dupCount})` : "" })}</p>
                   </div>
                 </Tooltip>
-                <Tooltip title="Export the currently filtered transactions as Excel (re-importable) or JSON">
+                <Tooltip title={tr("movements.export.tip")}>
                   <div
                     className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter] ${exportOpen ? "text-purple-500 font-medium" : ""}`}
                     onClick={() => setExportOpen(!exportOpen)}
                   >
                     <MdOutlineFileDownload size={15} />
-                    <p>Export data</p>
+                    <p>{tr("movements.export.button")}</p>
                   </div>
                 </Tooltip>
                 <div
                   className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter]"
                   onClick={handleCleanFilter}
                 >
-                  <p className="pr-2">Clear filters</p>
+                  <p className="pr-2">{tr("movements.filters.clear")}</p>
                   <UniversalCategoIcon type={"ai/AiOutlineClear"} siz={13} />
                 </div>
               </div>
@@ -1035,17 +1036,17 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
               <div className="bg-gf-surface border border-gf-border rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <p className="text-[11px] font-medium text-gf-text-muted">
-                    Match criteria — a duplicate is found when ALL checked fields are identical:
+                    {tr("movements.dup.criteria")}
                   </p>
                   <Tooltip title={
                     <div className="text-xs flex flex-col gap-1">
-                      <p><b>Find Duplicates</b> scans transactions within the <b>currently selected time range</b> and groups those that match the checked fields.</p>
-                      <p><b>Date tolerance</b> — how many days apart two transactions can be and still count as duplicates.</p>
-                      <p><b>Amount tolerance</b> — max difference in amount (e.g. $0.99 catches bank rounding).</p>
-                      <p><b>Search duplicates</b> — runs the scan with your chosen criteria.</p>
-                      <p><b>Refresh defaults</b> — resets to Name + Date + Amount, exact match.</p>
-                      <p><b>Select possible duplicates</b> — pre-selects all extras, keeps one original per group.</p>
-                      <p><b>Delete X selected</b> — removes selected transactions permanently.</p>
+                      <p><b>{tr("movements.dup.title")}</b> {tr("movements.dup.scans")} <b>{tr("movements.dup.range")}</b> {tr("movements.dup.groups")}</p>
+                      <p><b>{tr("movements.dup.dateTolerance")}</b> {tr("movements.dup.dateToleranceHelp")}</p>
+                      <p><b>{tr("movements.dup.amountTolerance")}</b> {tr("movements.dup.amountToleranceHelp")}</p>
+                      <p><b>{tr("movements.dup.search")}</b> {tr("movements.dup.searchHelp")}</p>
+                      <p><b>{tr("movements.dup.refresh")}</b> {tr("movements.dup.refreshHelp")}</p>
+                      <p><b>{tr("movements.dup.selectPossible")}</b> {tr("movements.dup.selectPossibleHelp")}</p>
+                      <p><b>{tr("movements.dup.deleteSelected")}</b> {tr("movements.dup.deleteSelectedHelp")}</p>
                     </div>
                   }>
                     <div className="cursor-pointer text-gf-text-muted hover:text-gf-text-muted">
@@ -1057,11 +1058,11 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                 {/* Checkboxes */}
                 <div className="flex flex-wrap gap-3">
                   {[
-                    { key: "name",        label: "Name" },
-                    { key: "date",        label: "Date" },
-                    { key: "amount",      label: "Amount" },
-                    { key: "category",    label: "Category" },
-                    { key: "subcategory", label: "Subcategory" },
+                    { key: "name",        label: tr("movements.columns.name") },
+                    { key: "date",        label: tr("movements.columns.date") },
+                    { key: "amount",      label: tr("movements.columns.amount") },
+                    { key: "category",    label: tr("movements.columns.category") },
+                    { key: "subcategory", label: tr("movements.columns.subcategory") },
                   ].map(({ key, label }) => (
                     <label key={key} className="flex items-center gap-1 cursor-pointer text-[11px] text-gf-text-muted select-none">
                       <input
@@ -1078,24 +1079,24 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                 {/* Tolerance controls */}
                 <div className="flex flex-wrap gap-4 items-center border-t border-gf-border pt-2">
                   <div className="flex items-center gap-2">
-                    <Tooltip title="Allow this many days of difference between dates to still count as duplicates">
-                      <label className="text-[11px] text-gf-text-muted select-none cursor-help">Date tolerance</label>
+                    <Tooltip title={tr("movements.dup.dateToleranceTip")}>
+                      <label className="text-[11px] text-gf-text-muted select-none cursor-help">{tr("movements.dup.dateTolerance")}</label>
                     </Tooltip>
                     <select
                       value={dupDateTolerance}
                       onChange={(e) => setDupDateTolerance(Number(e.target.value))}
                       className="text-[11px] bg-gf-surface border border-gf-border rounded-lg px-2 py-0.5 outline-none focus:border-purple-400"
                     >
-                      <option value={0}>Exact (same day)</option>
-                      <option value={1}>±1 day</option>
-                      <option value={3}>±3 days</option>
-                      <option value={7}>±7 days</option>
-                      <option value={30}>±30 days</option>
+                      <option value={0}>{tr("movements.dup.tolerance.exact")}</option>
+                      <option value={1}>{tr("movements.dup.tolerance.d1")}</option>
+                      <option value={3}>{tr("movements.dup.tolerance.d3")}</option>
+                      <option value={7}>{tr("movements.dup.tolerance.d7")}</option>
+                      <option value={30}>{tr("movements.dup.tolerance.d30")}</option>
                     </select>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Tooltip title="Allow this amount difference (in your currency) between two transactions to still count as duplicates">
-                      <label className="text-[11px] text-gf-text-muted select-none cursor-help">Amount tolerance</label>
+                    <Tooltip title={tr("movements.dup.amountTip")}>
+                      <label className="text-[11px] text-gf-text-muted select-none cursor-help">{tr("movements.dup.amountTolerance")}</label>
                     </Tooltip>
                     <input
                       type="number"
@@ -1121,9 +1122,9 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                         }}
                         className="text-[11px] bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-500 shadow-sm transition-colors font-medium"
                       >
-                        Search duplicates
+                        {tr("movements.dup.search")}
                       </button>
-                      <Tooltip title="Reset to default criteria (Name + Date + Amount, exact match) and re-run the search">
+                      <Tooltip title={tr("movements.dup.refreshTip")}>
                         <button
                           onClick={() => {
                             setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
@@ -1134,7 +1135,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                           className="text-[11px] text-gf-text-muted hover:text-purple-600 border border-gf-border px-2.5 py-1 rounded-full transition-colors flex items-center gap-1"
                         >
                           <UniversalCategoIcon type={"md/MdRefresh"} siz={14} />
-                          Refresh defaults
+                          {tr("movements.dup.refresh")}
                         </button>
                       </Tooltip>
                     </div>
@@ -1154,7 +1155,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                         }}
                         className="text-[11px] text-orange-400 border border-orange-300 px-3 py-1 rounded-full hover:bg-orange-500/15 transition-colors font-medium"
                       >
-                        Exit duplicate view
+                        {tr("movements.dup.exit")}
                       </button>
                     )}
                   </div>
@@ -1185,7 +1186,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                             className="text-[11px] text-purple-300 bg-gf-accent-soft-bg border border-purple-300 px-3 py-1 rounded-full hover:bg-gf-accent-soft-bg transition-colors flex items-center gap-1 font-medium"
                           >
                             <HiMiniCursorArrowRipple size={12} />
-                            Select possible duplicates
+                            {tr("movements.dup.selectPossible")}
                           </button>
 
                           {selectedTrans.length > 0 && (
@@ -1200,7 +1201,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                               className="text-[11px] text-gf-text-muted bg-gf-surface-2 border border-gf-border px-2.5 py-1 rounded-full hover:bg-gf-surface-2 transition-colors flex items-center gap-1 font-medium"
                             >
                               <UniversalCategoIcon type="md/MdClear" siz={13} />
-                              Clear selection ({selectedTrans.length})
+                              {tr("movements.selection.clearPrefix")}{selectedTrans.length})
                             </button>
                           )}
 
@@ -1233,7 +1234,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                               className="text-[11px] text-amber-400 bg-amber-500/15 border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-500/15 transition-colors flex items-center gap-1 font-semibold shadow-sm"
                             >
                               <UniversalCategoIcon type="md/MdOutlineCompare" siz={13} />
-                              Comparison in detail ({selectedTrans.length})
+                              {tr("movements.dup.compareDetail")}{selectedTrans.length})
                             </button>
                           </div>
                         )}
@@ -1247,7 +1248,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                             className="text-[11px] text-white bg-red-600 border border-red-600 px-3.5 py-1 rounded-full hover:bg-red-500 transition-colors flex items-center gap-1.5 font-semibold shadow-sm"
                           >
                             <UniversalCategoIcon type={"md/MdDelete"} siz={13} />
-                            Delete {selectedTrans.length} selected
+                            {tr("movements.delete.button")} {selectedTrans.length} {tr("movements.selected")}
                           </button>
                         </div>
                       )}
@@ -1268,7 +1269,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
             {exportOpen && (
               <div className="bg-gf-surface border border-gf-border rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-3">
                 <p className="text-[11px] font-medium text-gf-text-muted">
-                  Choose export format — <span className="text-gf-text-muted font-normal">{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""} with current filters</span>
+                  {tr("movements.export.chooseFormat")} <span className="text-gf-text-muted font-normal">{tr("movements.export.countFilters", { p1: allMovements.length, p2: allMovements.length !== 1 ? "s" : "" })}</span>
                 </p>
                 <div className="flex gap-3">
                   <button
@@ -1276,16 +1277,16 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-gf-text-muted hover:border-purple-400 hover:text-purple-600 hover:bg-gf-accent-soft-bg transition-colors"
                   >
                     <PiMicrosoftExcelLogoFill size={22} className="text-green-400" />
-                    <span className="font-medium">Excel</span>
-                    <span className="text-gf-text-muted text-[10px] text-center leading-tight">Re-importable format<br/>(.xlsx)</span>
+                    <span className="font-medium">{tr("movements.export.excelLabel")}</span>
+                    <span className="text-gf-text-muted text-[10px] text-center leading-tight">{tr("movements.export.reimport")}<br/>{tr("movements.export.xlsx")}</span>
                   </button>
                   <button
                     onClick={() => { setExportFormat("json"); setExportModalOpen(true); }}
                     className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-gf-text-muted hover:border-purple-400 hover:text-purple-600 hover:bg-gf-accent-soft-bg transition-colors"
                   >
                     <VscJson size={22} className="text-amber-500" />
-                    <span className="font-medium">JSON</span>
-                    <span className="text-gf-text-muted text-[10px] text-center leading-tight">Full data with all<br/>populated fields</span>
+                    <span className="font-medium">{tr("movements.export.jsonLabel")}</span>
+                    <span className="text-gf-text-muted text-[10px] text-center leading-tight">{tr("movements.export.fullData")}<br/>{tr("movements.export.populated")}</span>
                   </button>
                 </div>
               </div>
@@ -1298,7 +1299,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
               />
               <input
                 type="text"
-                placeholder="Search by name, category, subcategory or tag..."
+                placeholder={tr("movements.search.placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-8 pr-8 py-1.5 text-[11px] gf-glass-inset rounded-2xl outline-none border-0 focus:ring-1 focus:ring-purple-400 transition-colors"
@@ -1314,20 +1315,20 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
             </div>
             <div className="flex flex-row justify-between items-center first-line:font-semibold">
               <div className="flex gap-1">
-                <div>Category</div>
-                <div>Name</div>
+                <div>{tr("movements.columns.category")}</div>
+                <div>{tr("movements.columns.name")}</div>
               </div>
-              <div>Amount</div>
+              <div>{tr("movements.columns.amount")}</div>
             </div>
 
             {/* Computed Bills (Red) & Incomes (Green) Summary Bar according to applied filters */}
             <div className="flex flex-wrap items-center justify-between gap-2 py-1.5 px-3 bg-gf-surface-2/90 border border-gf-border rounded-xl text-xs my-1 shadow-2xs">
               <div className="flex items-center gap-1.5 text-gf-text-muted font-medium">
-                <span>{allMovements.length} transaction{allMovements.length !== 1 ? "s" : ""}</span>
+                <span>{tr("movements.count", { p1: allMovements.length, p2: allMovements.length !== 1 ? "s" : "" })}</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1 text-red-400 font-semibold bg-red-500/15 px-2.5 py-0.5 rounded-full border border-red-200">
-                  <span className="text-[10px] font-bold tracking-wide">BILLS:</span>
+                  <span className="text-[10px] font-bold tracking-wide">{tr("movements.totals.bills")}</span>
                   {Object.keys(billsByCurrency).length === 0 ? (
                     <span>-{formatMoneyMinor(0, "MXN")}</span>
                   ) : (
@@ -1340,7 +1341,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                   )}
                 </div>
                 <div className="flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  <span className="text-[10px] font-bold tracking-wide">INCOMES:</span>
+                  <span className="text-[10px] font-bold tracking-wide">{tr("movements.totals.incomes")}</span>
                   {Object.keys(incomesByCurrency).length === 0 ? (
                     <span>+{formatMoneyMinor(0, "MXN")}</span>
                   ) : (
@@ -1364,12 +1365,12 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                   >
                     <HiMiniCursorArrowRipple size={18} />
                     <div className="w-fit flex items-center border-2 border-white rounded-full px-1">
-                      <p className="pr-1 text-[11px]">Off</p>
+                      <p className="pr-1 text-[11px]">{tr("movements.select.off")}</p>
                     </div>
                   </div>
                   <div className="flex gap-2 items-center">
                     <div className="text-white flex gap-1 items-center cursor-pointer" onClick={handleSelectedAll}>
-                      <p className="text-[11px]">Select All</p>
+                      <p className="text-[11px]">{tr("movements.select.all")}</p>
                       <IoCheckmarkDoneCircleOutline size={15} />
                     </div>
                     {selectedTrans.length > 0 && (
@@ -1383,12 +1384,12 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                           setSelectedTrans([]);
                         }}
                       >
-                        <p className="text-[11px]">Deselect All</p>
+                        <p className="text-[11px]">{tr("movements.select.none")}</p>
                         <PiExcludeSquareDuotone size={15} />
                       </div>
                     )}
-                    <p className="text-[11px] text-gf-text-muted">{selectedTrans.length} selected</p>
-                    <Tooltip title="Select transactions then use the action buttons below to edit a specific field for all of them at once, or delete them all.">
+                    <p className="text-[11px] text-gf-text-muted">{tr("movements.select.selectedCount", { p1: selectedTrans.length })}</p>
+                    <Tooltip title={tr("movements.select.help")}>
                       <div className="flex items-center"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} /></div>
                     </Tooltip>
                   </div>
@@ -1402,12 +1403,12 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                 {selectedTrans.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 border-t border-gf-border pt-1.5">
                     {[
-                      { field: "name",     icon: <MdOutlineDriveFileRenameOutline size={13} />, label: "Rename" },
-                      { field: "date",     icon: <MdOutlineCalendarMonth size={13} />,           label: "Date" },
-                      { field: "type",     icon: <MdOutlineSwapVert size={13} />,                label: "Type" },
-                      { field: "category", icon: <MdOutlineCategory size={13} />,               label: "Category" },
-                      { field: "account",  icon: <MdOutlineAccountBalance size={13} />,          label: "Account" },
-                      { field: "currency", icon: <MdOutlineCurrencyExchange size={13} />,       label: "Currency" },
+                      { field: "name",     icon: <MdOutlineDriveFileRenameOutline size={13} />, label: tr("movements.bulk.rename") },
+                      { field: "date",     icon: <MdOutlineCalendarMonth size={13} />,           label: tr("movements.columns.date") },
+                      { field: "type",     icon: <MdOutlineSwapVert size={13} />,                label: tr("movements.bulk.type") },
+                      { field: "category", icon: <MdOutlineCategory size={13} />,               label: tr("movements.columns.category") },
+                      { field: "account",  icon: <MdOutlineAccountBalance size={13} />,          label: tr("movements.bulk.account") },
+                      { field: "currency", icon: <MdOutlineCurrencyExchange size={13} />,       label: tr("movements.bulk.currency") },
                     ].map(({ field, icon, label }) => (
                       <button
                         key={field}
@@ -1417,12 +1418,12 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                         {icon}{label}
                       </button>
                     ))}
-                    <Tooltip title="Edit all fields at once — anything you fill in will overwrite all selected transactions">
+                    <Tooltip title={tr("movements.bulk.general")}>
                       <button
                         onClick={() => handleMultiTransEdit(selectedTrans)}
                         className="flex items-center gap-1 text-[11px] text-gf-text-muted border border-gf-border px-2 py-0.5 rounded-full hover:bg-gf-surface-2 transition-colors"
                       >
-                        <MdOutlineSettings size={13} />General edit
+                        <MdOutlineSettings size={13} />{tr("movements.bulk.generalEdit")}
                       </button>
                     </Tooltip>
                   </div>
@@ -1448,12 +1449,12 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                 </p>
                 {dupMode && (
                   <button onClick={() => { setDupMode(false); setDupFinderOpen(false); }} className="text-xs text-orange-500 hover:underline">
-                    Exit duplicate view
+                    {tr("movements.dup.exit")}
                   </button>
                 )}
                 {!dupMode && searchQuery && (
                   <button onClick={() => setSearchQuery("")} className="text-xs text-purple-500 hover:underline">
-                    Clear search
+                    {tr("movements.search.clear")}
                   </button>
                 )}
               </div>
@@ -1470,16 +1471,16 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                 : formatMoneyMajor(movement.amount, wallet?.primaryCurrency || "MXN");
               const fxTooltipTitle = hasFxDetail ? (
                 <div className="flex flex-col gap-0.5 text-[11px]">
-                  {merchant && <div>Merchant: {formatMoneyMinor(merchant.amountMinor, merchant.currency)}</div>}
-                  {native && <div>Account: {formatMoneyMinor(native.amountMinor, native.currency)}</div>}
+                  {merchant && <div>{tr("movements.row.merchant", { p1: formatMoneyMinor(merchant.amountMinor, merchant.currency) })}</div>}
+                  {native && <div>{tr("movements.row.account", { p1: formatMoneyMinor(native.amountMinor, native.currency) })}</div>}
                   {primary ? (
                     <>
-                      <div>Reported ({primary.currency}): {formatMoneyMinor(primary.amountMinor, primary.currency)}</div>
-                      <div>Rate: {primary.rate} ({primary.source})</div>
+                      <div>{tr("movements.row.reported", { p1: primary.currency, p2: formatMoneyMinor(primary.amountMinor, primary.currency) })}</div>
+                      <div>{tr("movements.row.rate", { p1: primary.rate, p2: primary.source })}</div>
                       <div>{new Date(primary.effectiveDate).toLocaleDateString()} — {primary.estimated ? "estimated" : "exact"}{primary.stale ? ", stale" : ""}</div>
                     </>
                   ) : (
-                    <div>Exchange-rate estimate unavailable</div>
+                    <div>{tr("movements.row.rateUnavailable")}</div>
                   )}
                 </div>
               ) : null;
@@ -1512,7 +1513,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     <div className="center-cont flex flex-col">
                       <div className="tra-text font-medium">
                         {!movement.name ? (
-                          <p className="tra-nameless">No name. Asign one...</p>
+                          <p className="tra-nameless">{tr("movements.row.noName")}</p>
                         ) : (
                           <div className="tra-center-cont">
                             <p className="tra-name text-start">{movement?.name}</p>
@@ -1520,16 +1521,16 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                         )}
                       </div>
                       <div className="tra-acount-cont text-[10px] font-normal flex items-center gap-2 flex-wrap">
-                        <p><span className="text-gf-text-muted font-light">Categoría: </span><span className="text-gf-text-muted">{movement.category?.name || "—"}</span></p>
+                        <p><span className="text-gf-text-muted font-light">{tr("movements.row.categoryLabel")} </span><span className="text-gf-text-muted">{movement.category?.name || "—"}</span></p>
                         {movement.subCategory?.name && (
-                          <p><span className="text-gf-text-muted font-light">Subcategoría: </span><span className="text-gf-text-muted">{movement.subCategory.name}</span></p>
+                          <p><span className="text-gf-text-muted font-light">{tr("movements.row.subcategoryLabel")} </span><span className="text-gf-text-muted">{movement.subCategory.name}</span></p>
                         )}
-                        <p><span className="text-gf-text-muted font-light">Cuenta: </span><span className="text-gf-text-muted">{movement.account?.name || "—"}</span></p>
+                        <p><span className="text-gf-text-muted font-light">{tr("movements.row.accountLabel")} </span><span className="text-gf-text-muted">{movement.account?.name || "—"}</span></p>
                       </div>
                       <div className="tra-tag-cont flex flex-wrap gap-1 items-center justify-start text-[10px] font-thin">
-                        <p className="font-light">Tags: </p>
+                        <p className="font-light">{tr("movements.row.tagsLabel")} </p>
                         {!movement.tags ? (
-                          <p>No tags...</p>
+                          <p>{tr("movements.row.noTags")}</p>
                         ) : (
                           movement.tags.map((tag) => (
                             <Tag tag={tag} key={tag._id} size={8} />
@@ -1553,7 +1554,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                           {hasFxDetail && (
                             <Tooltip title={fxTooltipTitle}>
                               <span className="ml-1 text-[9px] font-bold text-purple-500 border border-purple-300 rounded px-1 cursor-default">
-                                FX
+                                {tr("movements.row.fx")}
                               </span>
                             </Tooltip>
                           )}

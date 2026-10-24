@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/client";
 
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -104,6 +105,7 @@ const TypedTabsTogglerMontlyView = TabsTogglerMontlyView as unknown as React.Com
 function TabsTogglerMontlyController({
   periodState,
 }: TabsTogglerMontlyControllerProps): React.JSX.Element {
+  const t = useT();
   const [data, setData] = useState<unknown[][]>([]);
   const [, setLoading] = useState<boolean>(false);
   const [totalAmount, setTotalAmount] = useState<number[]>([]);
@@ -289,6 +291,7 @@ function TabsTogglerMontlyController({
     {
       tab: "comparative",
       props: generatePropForChartColAntTogglerTabs({
+        t,
         data,
         clickedItems,
         setClickedItems,
@@ -304,6 +307,7 @@ function TabsTogglerMontlyController({
     components.push({
       tab: "compare periods",
       props: generatePropForChartColAntPeriodCompare({
+        t,
         compareData: compareChartData.chartData,
         totals: compareChartData.totals,
         labelA: compareChartData.labelA,

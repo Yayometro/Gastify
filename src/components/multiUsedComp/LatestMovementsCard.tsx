@@ -9,12 +9,14 @@ import { InfoTip } from "./InfoTip";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@gastify/core/transformers/transactionsChange";
+import { useT } from "@/i18n/client";
 
 const EMPTY: never[] = [];
 const COUNT = 5;
 
 // The latest movements of the whole account, whatever period the page shows: the card of the app's home, on the web.
 function LatestMovementsCard(): React.JSX.Element {
+  const t = useT();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
   const primary = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const latest = useMemo(
@@ -29,15 +31,15 @@ function LatestMovementsCard(): React.JSX.Element {
     <section className="gf-glass-card w-full rounded-[32px] border border-gf-border p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-[15px] font-extrabold text-gf-text">Últimos movimientos</h2>
+          <h2 className="text-[15px] font-extrabold text-gf-text">{t("movements.latest.title")}</h2>
           <InfoTip info={APP_INFO.ltimos_movimientos_2} />
         </div>
         <Link href="/dashboard/movements" className="text-sm font-bold text-purple-300 transition-colors hover:text-white">
-          Ver todos →
+          {t("movements.latest.all")}
         </Link>
       </div>
       {latest.length === 0 ? (
-        <p className="text-sm text-gf-text-muted">Todavía no tienes movimientos.</p>
+        <p className="text-sm text-gf-text-muted">{t("movements.latest.none")}</p>
       ) : (
         <ul className="flex flex-col">
           {latest.map((transaction) => {

@@ -7,6 +7,7 @@ import { getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsCha
 import { formatMoneyMajor, formatMoneyMinor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 import { percentOf } from "@gastify/core/format/percent";
+import { useT } from "@/i18n/client";
 
 export interface TabsTransCategoryRef {
   _id?: string;
@@ -39,6 +40,7 @@ export interface TabsTransProps {
 }
 
 function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
+  const t = useT();
   const [newData, setNewData] = useState<TabsTransItem[]>([]);
   // Categories hidden by clicking their legend dot. Kept as native amount-0
   // in the chart data (rather than filtered out) so the axis/legend don't
@@ -219,11 +221,11 @@ function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
                     {formatMoneyMajor(visibleTotal, walletPrimaryCurrency, { showCode: false })}
                   </div>
                   <div className="flex gap-2 underline">
-                    <p className="font-semibold">Amount:</p>
+                    <p className="font-semibold">{t("movements.resume.amount")}</p>
                     {dataa.formattedValue}
                   </div>
                   <div className="flex gap-2">
-                    <p className="font-semibold">Percentage:</p>
+                    <p className="font-semibold">{t("movements.resume.percentage")}</p>
                     {percentOf(dataa.value, visibleTotal)}%
                   </div>
                 </div>

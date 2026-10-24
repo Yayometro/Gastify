@@ -17,6 +17,7 @@ import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { useT } from "@/i18n/client";
 
 const today = new Date();
 
@@ -26,6 +27,7 @@ export interface ResumeTabsTransProps {
 }
 
 function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProps): React.JSX.Element {
+  const tr = useT();
   const [isBillTab, setIsBillTab] = useState(true);
   const [allBills, setAllBills] = useState<TransactionData[]>([]);
   const [allIncomes, setAllIncomes] = useState<TransactionData[]>([]);
@@ -82,19 +84,19 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
     <div className="rtt-cont gf-glass-card w-full h-full rounded-[32px] p-4">
       <div className="flex items-center justify-center gap-1.5 pt-3">
         <h1 className="text-2xl text-center font-semibold">
-          Transactions Resume
+          {tr("movements.resume.title")}
         </h1>
         <InfoTip info={APP_INFO.resumen_de_transacciones} />
       </div>
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs">
-          From:{" "}
+          {tr("movements.from")}{" "}
           <b>{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : "No time selected"}</b>
-          {" "}to:{" "}
+          {" "}{tr("movements.to")}{" "}
           <b>{timePeriod[1] ? getDateInYearMonthDay(timePeriod[1]) : "No time selected"}</b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-          <Tooltip title="Filter by date using a preset range or selecting a specific range 🤓">
+          <Tooltip title={tr("movements.filter.dateTip2")}>
             <div className="text-gf-text w-[10px]">
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
             </div>
@@ -115,7 +117,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
             isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Bills Resume
+          {tr("movements.resume.bills")}
         </div>
         <div
           onClick={() => handleTab("")}
@@ -123,7 +125,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
             !isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Income Resume
+          {tr("movements.resume.incomes")}
         </div>
       </div>
       <div className="rtt-content-cont mt-3">
@@ -131,7 +133,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
           {allBills.length <= 0 ? (
             <div className="w-full py-[20px]">
               <EmptyModule
-                emMessage="Ups... Nothing here 🤔. No bills found for this time period. Try a wider range like Last 6 months or All 2025."
+                emMessage={tr("movements.resume.noBills")}
               />
             </div>
           ) : (
@@ -142,7 +144,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
           {allIncomes.length <= 0 ? (
             <div className="w-full py-[20px]">
               <EmptyModule
-                emMessage="Ups... Nothing here 🤔. No incomes found for this time period. Try a wider range like Last 6 months or All 2025."
+                emMessage={tr("movements.resume.noIncomes")}
               />
             </div>
           ) : (
