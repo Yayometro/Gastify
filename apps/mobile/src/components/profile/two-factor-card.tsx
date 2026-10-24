@@ -9,6 +9,7 @@ import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 type Setup = { uri: string; secret: string; codes: string[] };
 
@@ -16,6 +17,7 @@ type Setup = { uri: string; secret: string; codes: string[] };
 // turn it off, or make new backup codes. The password is asked for when the account has one (an account that
 // signs in only with Google leaves it empty).
 export function TwoFactorCard() {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const toast = useToast();
@@ -61,10 +63,10 @@ export function TwoFactorCard() {
     });
 
   const turnOff = () =>
-    Alert.alert('Desactivar la verificación en dos pasos', 'Tu cuenta quedará protegida solo por tu contraseña o tu passkey.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.desactivar.la.verificacion.en.dos"), t("mobile.tu.cuenta.quedara.protegida.solo"), [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Desactivar',
+        text: t("mobile.desactivar"),
         style: 'destructive',
         onPress: () =>
           run(async () => {
@@ -89,7 +91,7 @@ export function TwoFactorCard() {
 
   return (
     <Card
-      title="Verificación en dos pasos"
+      title={t("mobile.verificacion.en.dos.pasos")}
       info={APP_INFO.verificaci_n_en_dos_pasos}>
       <Text className="font-inter text-sm" style={{ color: enabled ? colors.income : colors.textSecondary }}>
         {enabled ? 'Activada con app autenticadora' : 'Desactivada. Actívala para proteger tu cuenta.'}
@@ -97,41 +99,41 @@ export function TwoFactorCard() {
 
       {setup && (
         <View className="gap-3">
-          <Text className="font-inter text-sm text-gf-text-muted">1. Agrega esta clave en tu app autenticadora (Google Authenticator, Authy, 1Password...):</Text>
+          <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.1.agrega.esta.clave.en")}</Text>
           <Text selectable className="font-inter-semibold text-base text-gf-text">{setup.secret || setup.uri}</Text>
-          <Pressable accessibilityRole="button" onPress={() => Linking.openURL(setup.uri).catch(() => setError('No encontramos una app autenticadora instalada.'))} className="items-center rounded-full border border-gf-border py-2.5">
-            <Text className="font-inter-semibold text-sm text-gf-text">Abrir en mi app autenticadora</Text>
+          <Pressable accessibilityRole="button" onPress={() => Linking.openURL(setup.uri).catch(() => setError(t("mobile.no.encontramos.una.app.autenticadora")))} className="items-center rounded-full border border-gf-border py-2.5">
+            <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.abrir.en.mi.app.autenticadora")}</Text>
           </Pressable>
-          <Text className="font-inter text-sm text-gf-text-muted">2. Escribe el código de 6 dígitos que muestra la app para confirmar:</Text>
-          <TextField label="Código" value={code} onChangeText={setCode} keyboardType="number-pad" maxLength={6} placeholder="6 dígitos" />
-          <GradientButton label="Confirmar y activar" onPress={confirmCode} loading={busy} disabled={busy || code.trim().length !== 6} />
+          <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.2.escribe.el.codigo.de")}</Text>
+          <TextField label={t("mobile.codigo")} value={code} onChangeText={setCode} keyboardType="number-pad" maxLength={6} placeholder={t("mobile.6.digitos")} />
+          <GradientButton label={t("mobile.confirmar.y.activar")} onPress={confirmCode} loading={busy} disabled={busy || code.trim().length !== 6} />
         </View>
       )}
 
       {shownCodes && shownCodes.length > 0 && (
         <View className="gap-2 rounded-2xl border border-gf-border p-3">
-          <Text className="font-inter-semibold text-sm text-gf-text">Códigos de respaldo (cada uno sirve una vez)</Text>
+          <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.codigos.de.respaldo.cada.uno")}</Text>
           <Text selectable className="font-inter text-sm text-gf-text">{shownCodes.join('   ')}</Text>
           <Pressable accessibilityRole="button" onPress={() => Share.share({ message: shownCodes.join('\n') })}>
-            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Compartir o guardar</Text>
+            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.compartir.o.guardar")}</Text>
           </Pressable>
         </View>
       )}
 
       {!setup && (
         <>
-          <TextField label="Contraseña actual (si tu cuenta tiene)" value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" />
+          <TextField label={t("mobile.contrasena.actual.si.tu.cuenta")} value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" />
           {enabled ? (
             <View className="gap-2">
               <Pressable accessibilityRole="button" onPress={newCodes} disabled={busy} className="items-center rounded-full border border-gf-border py-2.5">
-                <Text className="font-inter-semibold text-sm text-gf-text">Generar códigos de respaldo nuevos</Text>
+                <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.generar.codigos.de.respaldo.nuevos")}</Text>
               </Pressable>
               <Pressable accessibilityRole="button" onPress={turnOff} disabled={busy} className="items-center py-2">
-                <Text className="font-inter-semibold text-sm text-red-500">Desactivar</Text>
+                <Text className="font-inter-semibold text-sm text-red-500">{t("mobile.desactivar")}</Text>
               </Pressable>
             </View>
           ) : (
-            <GradientButton label="Activar" onPress={start} loading={busy} disabled={busy} />
+            <GradientButton label={t("mobile.activar")} onPress={start} loading={busy} disabled={busy} />
           )}
         </>
       )}

@@ -12,6 +12,7 @@ import { messageOf } from '@/lib/write';
 import { ACCOUNT_CURRENCIES } from '@gastify/core/accounts/accountForm';
 import { BUDGET_PERIODS, buildBudgetBody, validateBudget, type BudgetErrors, type BudgetKind, type BudgetValues } from '@gastify/core/budgets/budgetForm';
 import { idOf } from '@gastify/core/categories/categoryForm';
+import { useT } from "@/i18n/client";
 
 const TITLE: Record<BudgetKind, string> = { spending: 'presupuesto', saving: 'meta de ahorro', project: 'proyecto' };
 
@@ -30,6 +31,7 @@ export function BudgetForm({
   onDelete?: () => void;
   id?: string;
 }) {
+  const t = useT();
   const { accounts, categories } = useCatalog();
   const [values, setValues] = useState<BudgetValues>(initial);
   const [errors, setErrors] = useState<BudgetErrors>({});
@@ -61,12 +63,12 @@ export function BudgetForm({
   return (
     <View className="gap-4">
       <View className="gap-2">
-        <TextField label="Nombre" value={values.name} onChangeText={(text) => set('name', text)} placeholder={values.kind === 'project' ? 'Viaje a Oaxaca' : values.kind === 'saving' ? 'Fondo de emergencia' : 'Comida'} maxLength={60} autoCapitalize="sentences" />
+        <TextField label={t("mobile.nombre")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={values.kind === 'project' ? 'Viaje a Oaxaca' : values.kind === 'saving' ? 'Fondo de emergencia' : 'Comida'} maxLength={60} autoCapitalize="sentences" />
         {error(errors.name)}
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Moneda de la meta</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.moneda.de.la.meta")}</Text>
         <ChipPicker items={ACCOUNT_CURRENCIES.map((code) => ({ id: code, label: code }))} value={values.currency} onChange={(code) => set('currency', code)} moreAfter={99} />
         <TextField label={`Meta (${values.currency})`} value={values.goalAmount} onChangeText={(text) => set('goalAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
         {error(errors.goalAmount)}
@@ -75,12 +77,12 @@ export function BudgetForm({
       {values.kind === 'spending' && (
         <>
           <View className="gap-2">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Periodo</Text>
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.periodo")}</Text>
             <ChipPicker items={BUDGET_PERIODS.map((period) => ({ id: period.value, label: period.label }))} value={values.period} onChange={(value) => set('period', value)} moreAfter={99} />
           </View>
           <View className="gap-2">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Categorías que cubre</Text>
-            <MultiChipPicker items={categoryItems} values={values.categoryIds} onToggle={(itemId) => toggle('categoryIds', itemId)} title="Categorías del presupuesto" />
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categorias.que.cubre")}</Text>
+            <MultiChipPicker items={categoryItems} values={values.categoryIds} onToggle={(itemId) => toggle('categoryIds', itemId)} title={t("mobile.categorias.del.presupuesto")} />
             {error(errors.categoryIds)}
           </View>
         </>
@@ -89,8 +91,8 @@ export function BudgetForm({
       {values.kind === 'saving' && (
         <>
           <View className="gap-2">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Cuentas que lo alimentan (opcional)</Text>
-            <MultiChipPicker items={accountItems} values={values.linkedAccountIds} onToggle={(itemId) => toggle('linkedAccountIds', itemId)} title="Cuentas ligadas" emptyText="Todavía no tienes cuentas." />
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.cuentas.que.lo.alimentan.opcional")}</Text>
+            <MultiChipPicker items={accountItems} values={values.linkedAccountIds} onToggle={(itemId) => toggle('linkedAccountIds', itemId)} title={t("mobile.cuentas.ligadas")} emptyText="Todavía no tienes cuentas." />
           </View>
           {values.linkedAccountIds.length === 0 && (
             <View className="gap-2">
@@ -103,13 +105,13 @@ export function BudgetForm({
 
       {values.kind === 'project' && (
         <>
-          <DateField label="Empieza" value={values.startDate} onChange={(day) => set('startDate', day)} />
+          <DateField label={t("mobile.empieza")} value={values.startDate} onChange={(day) => set('startDate', day)} />
           <View className="gap-2">
-            <DateField label="Termina" value={values.endDate} onChange={(day) => set('endDate', day)} />
+            <DateField label={t("mobile.termina")} value={values.endDate} onChange={(day) => set('endDate', day)} />
             {error(errors.endDate)}
           </View>
           <View className="gap-2">
-            <Text className="font-inter-semibold text-base text-gf-text">Ícono</Text>
+            <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.icono")}</Text>
             <IconPicker value={values.icon} onChange={(icon) => set('icon', icon)} />
           </View>
         </>
@@ -119,7 +121,7 @@ export function BudgetForm({
       <GradientButton label={submitLabel} onPress={save} loading={saving} disabled={saving} />
       {onDelete && (
         <Pressable accessibilityRole="button" disabled={saving} onPress={onDelete} className="items-center py-2">
-          <Text className="font-inter-semibold text-base text-red-500">Borrar {TITLE[values.kind]}</Text>
+          <Text className="font-inter-semibold text-base text-red-500">{t("mobile.borrar.p1", { p1: TITLE[values.kind] })}</Text>
         </Pressable>
       )}
     </View>

@@ -23,6 +23,7 @@ import { COMPARE_PRESETS, compareRange, historyRange, type ComparePreset, type H
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { filterBillsOrIncomes, getPrimaryAmount, orderByHighestValue, reduceTransCategoriesSliced } from '@gastify/core/transformers/transactionsChange';
+import { useT } from "@/i18n/client";
 
 // The web's "Top" sizes (the switch 3 / 6 / 12 / 24).
 export const TOP_SIZES = [3, 6, 12, 24] as const;
@@ -45,6 +46,7 @@ export function TopRanking({
   returnTo?: string;
   showComparison?: boolean;
 }) {
+  const t = useT();
   const [preset, setPreset] = useState<HistoryPreset>(defaultPreset);
   const [size, setSize] = useState<TopSize>(6);
   const [kind, setKind] = useState<'bills' | 'incomes'>('bills');
@@ -100,40 +102,40 @@ export function TopRanking({
   const sizeOptions = TOP_SIZES.map((n) => ({ value: String(n) as `${TopSize}`, label: String(n) }));
 
   return (
-    <Card title={`Top ${size}`} info={info ?? { title: `Top ${size}`, text: 'Las categorías o transacciones con mayor gasto o ingreso del periodo. Cambia el número de elementos, el tipo y la agrupación; las flechas eligen otro mes y Más filtros abre los demás periodos. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo.' }}>
+    <Card title={`Top ${size}`} info={info ?? { title: `Top ${size}`, text: t("mobile.las.categorias.o.transacciones.con") }}>
       <CompactTimeFilter preset={preset} onPreset={(value) => { if (value !== 'dashboard') setPreset(value); }} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} periodSelect={showComparison} extra={showComparison ? (
         <>
         <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
           <View className="flex-1">
-            <Text className="font-inter-medium text-base text-gf-text">Comparar con otro periodo</Text>
-            <Text className="font-inter text-xs text-gf-text-muted">Elige abajo contra qué tramo comparar; su Top aparece debajo del actual.</Text>
+            <Text className="font-inter-medium text-base text-gf-text">{t("mobile.comparar.con.otro.periodo")}</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.elige.abajo.contra.que.tramo")}</Text>
           </View>
-          <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel="Comparar con otro periodo" />
+          <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel={t("mobile.comparar.con.otro.periodo")} />
         </View>
         {compareOn && (
           <View className="gap-3">
             <ChipPicker items={COMPARE_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={comparePreset} onChange={(id) => setComparePreset(id as ComparePreset)} moreAfter={99} />
             {comparePreset === 'custom' && (
               <View className="gap-3">
-                <DateField label="Comparar desde" value={compareFrom} onChange={setCompareFrom} />
-                <DateField label="Comparar hasta" value={compareTo} onChange={setCompareTo} />
+                <DateField label={t("mobile.comparar.desde")} value={compareFrom} onChange={setCompareFrom} />
+                <DateField label={t("mobile.comparar.hasta")} value={compareTo} onChange={setCompareTo} />
               </View>
             )}
-            <Text className="font-inter text-xs text-gf-text-muted">Se compara con {rangeLabelEs(previousRange.start, previousRange.end)}.</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.se.compara.con.p1", { p1: rangeLabelEs(previousRange.start, previousRange.end) })}</Text>
           </View>
         )}
         </>
       ) : undefined} />
       <Segmented options={sizeOptions} value={String(size) as `${TopSize}`} onChange={(next) => setSize(Number(next) as TopSize)} />
-      <Segmented options={[{ value: 'bills', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
-      {(!tablet || byMonth) && <Segmented options={[{ value: 'categories', label: 'Por categoría' }, { value: 'movements', label: 'Movimientos' }]} value={by} onChange={setBy} />}
+      <Segmented options={[{ value: 'bills', label: t("mobile.gastos") }, { value: 'incomes', label: t("mobile.ingresos") }]} value={kind} onChange={setKind} />
+      {(!tablet || byMonth) && <Segmented options={[{ value: 'categories', label: t("mobile.por.categoria") }, { value: 'movements', label: t("mobile.movimientos") }]} value={by} onChange={setBy} />}
       {!byMonth && (
         <>
-      {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
+      {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
       {tablet ? (
         <View className="flex-row items-start gap-6">
           <View className="flex-1 gap-1">
-            <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">Categorías</Text>
+            <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">{t("mobile.categorias")}</Text>
       {categories.map((row, index) => (
             <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
             <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
@@ -146,7 +148,7 @@ export function TopRanking({
           ))}
           </View>
           <View className="flex-1 gap-1">
-            <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">Movimientos</Text>
+            <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">{t("mobile.movimientos")}</Text>
       {biggest.map((movement, index) => (
             <RankedRow key={String(movement._id)} rank={index + 1} last={index === biggest.length - 1}>
             <MovementRow
@@ -191,7 +193,7 @@ export function TopRanking({
           {byMonth.map((column) => (
             <View key={column.key} className="flex-1 gap-1">
               <Text className="pb-1 font-inter-semibold text-base text-gf-text">{column.title}</Text>
-              {column.categories.length === 0 && column.biggest.length === 0 && <Text className="font-inter text-xs text-gf-text-muted">Sin movimientos.</Text>}
+              {column.categories.length === 0 && column.biggest.length === 0 && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.sin.movimientos")}</Text>}
               {by === 'categories'
                 ? column.categories.map((row, index) => (
                     <RankedRow key={row.type} rank={index + 1} last={index === column.categories.length - 1}>
@@ -213,8 +215,8 @@ export function TopRanking({
       )}
       {showComparison && compareOn && (
         <View className="gap-2 border-t border-gf-border pt-3">
-          <Text className="font-inter-semibold text-sm text-gf-text">Periodo anterior · {rangeLabelEs(previousRange.start, previousRange.end)}</Text>
-          {previousList.length === 0 && <Text className="font-inter text-xs text-gf-text-muted">Sin movimientos para comparar.</Text>}
+          <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.periodo.anterior.p1", { p1: rangeLabelEs(previousRange.start, previousRange.end) })}</Text>
+          {previousList.length === 0 && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.sin.movimientos.para.comparar")}</Text>}
           {by === 'categories' ? previousCategories.map((row, index) => (
             <RankedRow key={row.type} rank={index + 1} last={index === previousCategories.length - 1}>
             <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: true })} className="flex-row items-center gap-3 py-1">

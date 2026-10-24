@@ -19,10 +19,12 @@ import { isBeforeCutoff, movementTime } from '@gastify/core/transactions/history
 import { movementKind } from '@gastify/core/transactions/monthSummary';
 import { removeOneTransacction } from '@gastify/core/features/transacctionsSlice';
 import { useState } from 'react';
+import { useT } from "@/i18n/client";
 
 // One movement, edited with the same form as Agregar. Transfers cannot be edited field by field
 // (both sides are kept together), so they can only be deleted here.
 export default function MovementDetailScreen() {
+  const t = useT();
   const { id: rawId, returnTo: rawReturn } = useLocalSearchParams<{ id: string; returnTo?: string }>();
   const returnTo = returnParam(rawReturn);
   const id = String(rawId ?? '');
@@ -40,8 +42,8 @@ export default function MovementDetailScreen() {
 
   if (!movement) {
     return (
-      <Screen title="Movimiento" backLabel={backLabel} onBack={back}>
-        <Text className="font-inter text-base text-gf-text-muted">No encontramos este movimiento. Puede que ya se haya borrado.</Text>
+      <Screen title={t("mobile.movimiento")} backLabel={backLabel} onBack={back}>
+        <Text className="font-inter text-base text-gf-text-muted">{t("mobile.no.encontramos.este.movimiento.puede")}</Text>
       </Screen>
     );
   }
@@ -50,10 +52,10 @@ export default function MovementDetailScreen() {
   const time = movementTime(movement);
 
   const remove = () => {
-    Alert.alert('Borrar este movimiento', 'No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.borrar.este.movimiento"), t("mobile.no.se.puede.deshacer"), [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: t("mobile.borrar"),
         style: 'destructive',
         onPress: async () => {
           setBusy(true);
@@ -84,15 +86,15 @@ export default function MovementDetailScreen() {
   // The tags as chips (the form below keeps them editable as text).
   const tagList = tagNames(movement.tags);
   return (
-    <Screen title="Movimiento" subtitle={movement.name || undefined} backLabel={backLabel} onBack={back}>
+    <Screen title={t("mobile.movimiento")} subtitle={movement.name || undefined} backLabel={backLabel} onBack={back}>
       {kind === 'transfer' ? (
-        <Card title="Transferencia">
+        <Card title={t("mobile.transferencia")}>
           <Text className="font-inter text-base text-gf-text-muted">
-            Las transferencias se guardan como dos movimientos ligados. Para corregirla, bórrala y créala de nuevo.
+            {t("mobile.las.transferencias.se.guardan.como")}
           </Text>
           {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
           <Pressable accessibilityRole="button" disabled={busy} onPress={remove} className="items-center py-2">
-            <Text className="font-inter-semibold text-base text-red-500">Borrar transferencia</Text>
+            <Text className="font-inter-semibold text-base text-red-500">{t("mobile.borrar.transferencia")}</Text>
           </Pressable>
         </Card>
       ) : (
@@ -123,9 +125,10 @@ export default function MovementDetailScreen() {
 
 // The tags of a movement as chips: the accent color on a soft fill, so they read in both themes.
 function TagChips({ tags }: { tags: string[] }) {
+  const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
-    <Card title="Etiquetas">
+    <Card title={t("mobile.etiquetas")}>
       <View className="flex-row flex-wrap gap-2">
         {tags.map((tag) => (
           <View key={tag} className="rounded-full px-3 py-1" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>

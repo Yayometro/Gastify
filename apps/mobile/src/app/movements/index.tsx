@@ -57,6 +57,8 @@ import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange'
 import { getDuplicates, getDuplicatesToDelete } from '@gastify/core/transformers/transactionDuplicates';
 import { DUPLICATE_DEFAULTS, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 type DaySection = { key: string; title: string; data: TransactionData[] };
 
@@ -64,17 +66,18 @@ type DaySection = { key: string; title: string; data: TransactionData[] };
 // Every movement of the chosen period, newest first and grouped by day, with the web's filters and
 // duplicate finder. Tapping one opens it; a long press selects several to delete them or to give them the
 // same category. The months before the recent cutoff may still be loading (phased history): the notice says so.
-const BULK_ACTIONS: { field: BulkField; label: string; icon: ComponentProps<typeof Ionicons>['name'] }[] = [
-  { field: 'name', label: 'Nombre', icon: 'create-outline' },
-  { field: 'date', label: 'Fecha', icon: 'calendar-outline' },
-  { field: 'type', label: 'Tipo', icon: 'swap-vertical-outline' },
-  { field: 'category', label: 'Categoría', icon: 'pricetag-outline' },
-  { field: 'account', label: 'Cuenta', icon: 'card-outline' },
-  { field: 'currency', label: 'Divisa', icon: 'cash-outline' },
-  { field: 'general', label: 'Edición general', icon: 'settings-outline' },
-];
+const BULK_ACTIONS = (t: TranslateFn): { field: BulkField; label: string; icon: ComponentProps<typeof Ionicons>['name'] }[] => ([
+  { field: 'name', label: t("mobile.nombre"), icon: 'create-outline' },
+  { field: 'date', label: t("mobile.fecha"), icon: 'calendar-outline' },
+  { field: 'type', label: t("mobile.tipo"), icon: 'swap-vertical-outline' },
+  { field: 'category', label: t("mobile.categoria"), icon: 'pricetag-outline' },
+  { field: 'account', label: t("mobile.cuenta"), icon: 'card-outline' },
+  { field: 'currency', label: t("mobile.divisa"), icon: 'cash-outline' },
+  { field: 'general', label: t("mobile.edicion.general"), icon: 'settings-outline' },
+]);
 
 export default function MovementsScreen() {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
@@ -171,10 +174,10 @@ export default function MovementsScreen() {
 
   const removeSelected = () => {
     const count = selected.length;
-    Alert.alert(count === 1 ? 'Borrar este movimiento' : `Borrar ${count} movimientos`, 'No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(count === 1 ? 'Borrar este movimiento' : `Borrar ${count} movimientos`, t("mobile.no.se.puede.deshacer"), [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: t("mobile.borrar"),
         style: 'destructive',
         onPress: async () => {
           setBusy(true);
@@ -239,20 +242,20 @@ export default function MovementsScreen() {
         </Pressable>
       )}
       <View className="flex-row items-end justify-between gap-3">
-        <Text className="font-inter-bold text-4xl text-gf-text">Movimientos</Text>
+        <Text className="font-inter-bold text-4xl text-gf-text">{t("mobile.movimientos")}</Text>
         <Pressable accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8} className="pb-2">
-          <Text className="font-inter-semibold text-sm" style={{ color: items.length ? colors.accent : colors.textSecondary }}>Exportar</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: items.length ? colors.accent : colors.textSecondary }}>{t("mobile.exportar")}</Text>
         </Pressable>
       </View>
 
       <View className="flex-row gap-3">
         <Pressable accessibilityRole="button" onPress={() => router.push('/movements/import')} className="flex-1 flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
           <Ionicons name="document-attach-outline" size={18} color={colors.accent} />
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Importar de Excel</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.importar.de.excel")}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => setToolsOpen(true)} className="flex-1 flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
           <Ionicons name="sparkles" size={18} color={colors.accent} />
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Categorizar</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.categorizar")}</Text>
         </Pressable>
       </View>
 
@@ -261,8 +264,8 @@ export default function MovementsScreen() {
       {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
       {preset === 'custom' && (
         <View className="gap-3">
-          <DateField label="Desde" value={customFrom} onChange={setCustomFrom} />
-          <DateField label="Hasta" value={customTo} onChange={setCustomTo} />
+          <DateField label={t("mobile.desde")} value={customFrom} onChange={setCustomFrom} />
+          <DateField label={t("mobile.hasta")} value={customTo} onChange={setCustomTo} />
         </View>
       )}
 
@@ -275,7 +278,7 @@ export default function MovementsScreen() {
           style={glassFill(scheme === 'dark', colors.backgroundElement)}>
           <View className="flex-row items-center gap-2">
             <Ionicons name="options-outline" size={20} color={colors.accent} />
-            <Text className="font-inter-semibold text-base text-gf-text">Filtros{active > 0 ? ` (${active})` : ''}</Text>
+            <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.filtros.p1", { p1: active > 0 ? ` (${active})` : '' })}</Text>
           </View>
           <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSecondary} />
         </Pressable>
@@ -316,24 +319,24 @@ export default function MovementsScreen() {
           title={`${selected.length} ${selected.length === 1 ? 'seleccionado' : 'seleccionados'}`}
           info={APP_INFO.seleccionar_movimientos}>
           <View className="flex-row items-center justify-between gap-3">
-            <Pressable accessibilityRole="button" accessibilityLabel="Salir de la selección" onPress={() => { setSelectionMode(false); setSelected([]); }} className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5" style={{ borderWidth: 1, borderColor: colors.accent }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.salir.de.la.seleccion")} onPress={() => { setSelectionMode(false); setSelected([]); }} className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5" style={{ borderWidth: 1, borderColor: colors.accent }}>
               <Ionicons name="close-circle-outline" size={16} color={colors.accent} />
-              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Off</Text>
+              <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.off")}</Text>
             </Pressable>
             <View className="flex-row items-center gap-4">
               <Pressable accessibilityRole="button" onPress={() => setSelected(items.map((movement) => String(movement._id)))}>
-                <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Todos</Text>
+                <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.todos")}</Text>
               </Pressable>
               {selected.length > 0 && (
                 <Pressable accessibilityRole="button" onPress={() => setSelected([])}>
-                  <Text className="font-inter-semibold text-sm text-gf-text-muted">Ninguno</Text>
+                  <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.ninguno")}</Text>
                 </Pressable>
               )}
             </View>
           </View>
           {selected.length > 0 && (
             <View className="flex-row flex-wrap gap-2">
-              {BULK_ACTIONS.map(({ field, label, icon }) => (
+              {BULK_ACTIONS(t).map(({ field, label, icon }) => (
                 <Pressable key={field} accessibilityRole="button" disabled={busy} onPress={() => setBulkField(field)} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.accentSoft }}>
                   <Ionicons name={icon} size={14} color={colors.accent} />
                   <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{label}</Text>
@@ -341,7 +344,7 @@ export default function MovementsScreen() {
               ))}
               <Pressable accessibilityRole="button" disabled={busy} onPress={removeSelected} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ borderWidth: 1, borderColor: colors.border }}>
                 <Ionicons name="trash-outline" size={14} color="#f43f5e" />
-                <Text className="font-inter-semibold text-xs text-red-500">Borrar</Text>
+                <Text className="font-inter-semibold text-xs text-red-500">{t("mobile.borrar")}</Text>
               </Pressable>
             </View>
           )}
@@ -364,15 +367,15 @@ export default function MovementsScreen() {
         <Card>
           <View className="flex-row items-center gap-3">
             <ActivityIndicator color={colors.accent} />
-            <Text className="flex-1 font-inter text-sm text-gf-text-muted">Cargando movimientos más antiguos… Las cifras de este periodo pueden crecer.</Text>
+            <Text className="flex-1 font-inter text-sm text-gf-text-muted">{t("mobile.cargando.movimientos.mas.antiguos.las")}</Text>
           </View>
         </Card>
       )}
       {olderFailed && (
         <Card>
-          <Text className="font-inter text-sm text-red-500">No pudimos cargar los movimientos más antiguos.</Text>
+          <Text className="font-inter text-sm text-red-500">{t("mobile.no.pudimos.cargar.los.movimientos")}</Text>
           <Pressable accessibilityRole="button" onPress={() => dispatch(fetchTransHistory())} hitSlop={8}>
-            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Reintentar</Text>
+            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.reintentar")}</Text>
           </Pressable>
         </Card>
       )}

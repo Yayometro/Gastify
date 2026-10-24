@@ -7,6 +7,7 @@ import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { esMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 export type AccuracyRow = {
   monthName: string;
@@ -34,6 +35,7 @@ export const ACCURACY_HELP = [
 // difference, laid out as a small table (rows: income and spending; columns: projected, real, difference). A positive
 // income difference is good news and a positive expense difference is bad news, so the colors are mirrored.
 export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
+  const t = useT();
   const big = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -59,30 +61,31 @@ export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyR
 
   return (
     <>
-      {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no hay referencias guardadas para comparar meses cerrados de este año.</Text>}
+      {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.no.hay.referencias.guardadas")}</Text>}
       {rows.map((row, rowIndex) => (
         <Pressable key={row.monthName} accessibilityRole="button" onPress={() => onMonthPress?.(row.monthName)} className="rounded-xl px-3 py-3" style={zebra(rowIndex, scheme === 'dark')}>
           <Text className="font-inter-semibold text-base text-gf-text">{esMonthLabel(row.monthName)}</Text>
           <View className="flex-row items-center gap-2 pt-1">
             <Text className="w-14" />
-            <Text className={`flex-1 text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>Proyectado</Text>
-            <Text className={`flex-1 text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>Real</Text>
-            <Text className={`flex-[1.2] text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>Desajuste</Text>
+            <Text className={`flex-1 text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>{t("mobile.proyectado")}</Text>
+            <Text className={`flex-1 text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>{t("mobile.real.2")}</Text>
+            <Text className={`flex-[1.2] text-right font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>{t("mobile.desajuste")}</Text>
           </View>
           {line('Ingreso', row.projectedIncome, row.actualIncome, row.varianceIncome, true, colors.income)}
           {line('Gasto', row.projectedExpense, row.actualExpense, row.varianceExpense, false, colors.expense)}
         </Pressable>
       ))}
-      <Text className="font-inter text-sm text-gf-text-muted">Solo se muestran meses cerrados con un historial de proyección registrado.</Text>
+      <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.solo.se.muestran.meses.cerrados")}</Text>
     </>
   );
 }
 
 export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
+  const t = useT();
   const scheme = useColorScheme();
   if (rows.length === 0) return null;
   return (
-    <Card style={{ backgroundColor: scheme === 'dark' ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title="Precisión de tus proyecciones" info={APP_INFO.c_mo_leer_esta_tabla_2}>
+    <Card style={{ backgroundColor: scheme === 'dark' ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title={t("mobile.precision.de.tus.proyecciones")} info={APP_INFO.c_mo_leer_esta_tabla_2}>
       <AccuracyBody rows={rows} currency={currency} onMonthPress={onMonthPress} />
     </Card>
   );

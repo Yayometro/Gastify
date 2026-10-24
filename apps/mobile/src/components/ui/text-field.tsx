@@ -2,10 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, Text, TextInput, type TextInputProps, useColorScheme, View } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { useT } from "@/i18n/client";
 
 // A labelled text input in the Gastify style. With `onClear`, a small × appears at the right while the
 // field has text, so one tap empties it (the search boxes use this).
 export function TextField({ label, onClear, ...inputProps }: TextInputProps & { label: string; onClear?: () => void }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const hasText = typeof inputProps.value === 'string' && inputProps.value.length > 0;
@@ -26,7 +28,7 @@ export function TextField({ label, onClear, ...inputProps }: TextInputProps & { 
         {showClear && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Borrar texto"
+            accessibilityLabel={t("mobile.borrar.texto")}
             onPress={onClear}
             hitSlop={10}
             style={{ position: 'absolute', top: 0, bottom: 0, right: 12, justifyContent: 'center' }}>

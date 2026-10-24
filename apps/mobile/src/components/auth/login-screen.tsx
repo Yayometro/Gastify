@@ -10,6 +10,7 @@ import { OutlineButton } from '@/components/ui/outline-button';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
 import { passkeyFailureMessage, signInWithDevicePasskey, usePasskeyAvailable } from '@/passkey';
+import { useT } from "@/i18n/client";
 
 type SignInError = { status?: number; code?: string; message?: string };
 
@@ -26,6 +27,7 @@ function messageFor(error: SignInError): string {
 // the other ways in. When any of them succeeds the session store updates by itself and AuthGate
 // swaps this screen for the app (or for the second-factor screen, for Google).
 export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void }) {
+  const t = useT();
   const scheme = useColorScheme();
   const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
   const passkeyAvailable = usePasskeyAvailable();
@@ -55,7 +57,7 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
       // Signed in without a second-factor challenge: AuthGate decides what that account sees.
       onSessionChanged();
     } catch {
-      setError('No pudimos conectar con el servidor. Revisa tu conexión.');
+      setError(t("mobile.no.pudimos.conectar.con.el"));
     } finally {
       setLoading(false);
     }
@@ -69,12 +71,12 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
     try {
       const { error: googleError } = await authClient.signIn.social({ provider: 'google', callbackURL: '/' });
       if (googleError) {
-        setError('No pudimos iniciar sesión con Google. Intenta de nuevo.');
+        setError(t("mobile.no.pudimos.iniciar.sesion.con"));
         return;
       }
       onSessionChanged();
     } catch {
-      setError('No pudimos conectar con Google. Revisa tu conexión.');
+      setError(t("mobile.no.pudimos.conectar.con.google"));
     } finally {
       setGoogleLoading(false);
     }
@@ -94,13 +96,13 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
 
   if (step === 'code') {
     return (
-      <AuthLayout title="Verificación" subtitle="Tu cuenta tiene verificación en dos pasos activada.">
+      <AuthLayout title={t("mobile.verificacion")} subtitle={t("mobile.tu.cuenta.tiene.verificacion.en")}>
         <CodeStep
           onVerified={onSessionChanged}
           onGiveUp={() => {
             setStep('password');
             setPassword('');
-            setError('No pudimos verificar tu identidad después de 3 intentos. Vuelve a iniciar sesión.');
+            setError(t("mobile.no.pudimos.verificar.tu.identidad"));
           }}
         />
         <Pressable
@@ -109,23 +111,23 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
             setStep('password');
             setPassword('');
           }}>
-          <Text className="text-center font-inter text-sm text-gf-text-muted">Cancelar</Text>
+          <Text className="text-center font-inter text-sm text-gf-text-muted">{t("mobile.cancelar")}</Text>
         </Pressable>
       </AuthLayout>
     );
   }
 
   return (
-    <AuthLayout title="Gastify" subtitle="Inicia sesión para ver tus movimientos.">
+    <AuthLayout title={t("mobile.gastify")} subtitle={t("mobile.inicia.sesion.para.ver.tus")}>
       <OutlineButton
-        label="Continuar con Google"
+        label={t("mobile.continuar.con.google")}
         icon={<AntDesign name="google" size={20} color={iconColor} />}
         onPress={signInWithGoogle}
         loading={googleLoading}
       />
       {passkeyAvailable && (
         <OutlineButton
-          label="Entrar con passkey"
+          label={t("mobile.entrar.con.passkey")}
           icon={<Ionicons name="finger-print" size={22} color={iconColor} />}
           onPress={signInWithPasskey}
           loading={passkeyLoading}
@@ -133,11 +135,11 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
       )}
       <View className="flex-row items-center gap-3">
         <View className="h-px flex-1 bg-gf-border" />
-        <Text className="font-inter text-xs text-gf-text-muted">o con tu correo</Text>
+        <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.o.con.tu.correo")}</Text>
         <View className="h-px flex-1 bg-gf-border" />
       </View>
       <TextField
-        label="Correo"
+        label={t("mobile.correo")}
         value={email}
         onChangeText={setEmail}
         placeholder="tu@correo.com"
@@ -146,17 +148,17 @@ export function LoginScreen({ onSessionChanged }: { onSessionChanged: () => void
         textContentType="emailAddress"
       />
       <TextField
-        label="Contraseña"
+        label={t("mobile.contrasena")}
         value={password}
         onChangeText={setPassword}
-        placeholder="Tu contraseña"
+        placeholder={t("mobile.tu.contrasena")}
         secureTextEntry
         autoComplete="current-password"
         textContentType="password"
         onSubmitEditing={signIn}
       />
       <FormError message={error} />
-      <GradientButton label="Entrar" onPress={signIn} loading={loading} disabled={!email.trim() || !password} />
+      <GradientButton label={t("mobile.entrar")} onPress={signIn} loading={loading} disabled={!email.trim() || !password} />
     </AuthLayout>
   );
 }

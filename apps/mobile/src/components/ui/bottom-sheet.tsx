@@ -6,12 +6,14 @@ import { BlurView } from 'expo-blur';
 
 import { AmbientBackground } from '@/components/ambient-background';
 import { Colors } from '@/constants/theme';
+import { useT } from "@/i18n/client";
 
 // The one window every pop-up uses: a card that opens in the middle of the screen (it grows from a little smaller) on the
 // phone and the iPad alike, sized by what it holds (or by its `maxHeight`). A tap on the dark backdrop outside the card
 // closes it, as does the "×" of each window; the back gesture of Android closes it too. The hairline border drawn over
 // everything keeps the rounded edge one uniform color.
 export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dismissible = true, wideWidth = 640, ambient = true, fill = false }: { visible: boolean; onClose: () => void; children: ReactNode; maxHeight?: DimensionValue; dismissible?: boolean; wideWidth?: number; ambient?: boolean; fill?: boolean }) {
+  const t = useT();
   const dark = useColorScheme() === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];
   const { width, height: screenHeight } = useWindowDimensions();
@@ -61,7 +63,7 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
     <Modal visible={mounted} transparent animationType="none" onRequestClose={dismissible ? onClose : undefined} statusBarTranslucent>
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: wide ? 0 : 16, paddingBottom: keyboard }}>
         <Animated.View style={[StyleSheet.absoluteFill, { opacity: fade }]}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" disabled={!dismissible} onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
+          <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} disabled={!dismissible} onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
         </Animated.View>
         <Animated.View style={{ width: wide ? wideWidth : '100%', maxHeight, transform: [{ scale: grow.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }], opacity: grow }}>
           <View style={[radius, { overflow: 'hidden', maxHeight: maxPx, height: fill ? maxPx : undefined, backgroundColor: dark ? 'transparent' : colors.background }]}>

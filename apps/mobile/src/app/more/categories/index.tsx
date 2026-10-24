@@ -14,10 +14,12 @@ import { idOf, subCategoriesOf } from '@gastify/core/categories/categoryForm';
 import type { CategoryData } from '@gastify/core/features/categoriesSlice';
 import type { SubCategoryData } from '@gastify/core/features/subCategorySlice';
 import { normalizeText } from '@gastify/core/search/normalizeText';
+import { useT } from "@/i18n/client";
 
 // The person's own categories (tap to edit them and their sub-categories) and the defaults that come with
 // every account, which can be read but not changed. The search box looks at category and sub-category names.
 export default function CategoriesScreen() {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const categories = useSelector((state: RootState) => state.categoriesReducer.data);
@@ -53,18 +55,18 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <Screen title="Categorías" backLabel="Más" onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
-      <TextField label="" value={query} onChangeText={setQuery} placeholder="Buscar categoría o subcategoría" autoCorrect={false} />
+    <Screen title={t("mobile.categorias")} backLabel="Más" onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
+      <TextField label="" value={query} onChangeText={setQuery} placeholder={t("mobile.buscar.categoria.o.subcategoria")} autoCorrect={false} />
       <Pressable accessibilityRole="button" onPress={() => router.push('/more/categories/new')} className="items-center rounded-3xl bg-gf-surface p-4">
         <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
-          Nueva categoría
+          {t("mobile.nueva.categoria")}
         </Text>
       </Pressable>
 
       {searching && (
         <>
-          <Card title="Categorías">
-            {own.length + defaults.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Ninguna categoría coincide.</Text>}
+          <Card title={t("mobile.categorias")}>
+            {own.length + defaults.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.ninguna.categoria.coincide")}</Text>}
             {[...own, ...defaults].map((category) => (
               <Pressable
                 key={idOf(category)}
@@ -77,8 +79,8 @@ export default function CategoriesScreen() {
               </Pressable>
             ))}
           </Card>
-          <Card title="Subcategorías">
-            {matchingSubs.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Ninguna subcategoría coincide.</Text>}
+          <Card title={t("mobile.subcategorias")}>
+            {matchingSubs.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.ninguna.subcategoria.coincide")}</Text>}
             {matchingSubs.map((sub) => (
               <Pressable
                 key={idOf(sub)}
@@ -99,7 +101,7 @@ export default function CategoriesScreen() {
 
       {!searching && (
       <>
-      <Card title="Tus categorías">
+      <Card title={t("mobile.tus.categorias")}>
         {own.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{query ? 'Ninguna coincide.' : 'Todavía no creaste ninguna.'}</Text>}
         {own.map((category) => {
           const id = idOf(category);
@@ -120,8 +122,8 @@ export default function CategoriesScreen() {
         })}
       </Card>
 
-      <Card title="Predeterminadas">
-        {defaults.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Ninguna coincide.</Text>}
+      <Card title={t("mobile.predeterminadas")}>
+        {defaults.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.ninguna.coincide")}</Text>}
         {defaults.map((category) => (
           <View key={idOf(category)} className="flex-row items-center gap-3 py-1.5">
             <CategoryBadge icon={category.icon} color={category.color} size={40} />

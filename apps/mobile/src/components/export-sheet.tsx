@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
 import { EXPORT_FORMATS, type ExportFormat } from '@/lib/export-file';
+import { useT } from "@/i18n/client";
 
 // A bottom sheet to choose the file format of an export (the web offers Excel; the phone also CSV and JSON).
 export function ExportSheet({
@@ -20,6 +21,7 @@ export function ExportSheet({
   onPick: (format: ExportFormat) => void;
   onClose: () => void;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
@@ -28,15 +30,15 @@ export function ExportSheet({
         <SafeAreaView edges={['bottom']}>
           <View className="gap-1 px-6 pb-6 pt-5">
             <View className="flex-row items-center justify-between gap-3">
-              <Text className="flex-1 font-inter-bold text-xl text-gf-text">Exportar movimientos</Text>
+              <Text className="flex-1 font-inter-bold text-xl text-gf-text">{t("mobile.exportar.movimientos")}</Text>
               {!busy && (
-                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={onClose} hitSlop={10}>
                   <Ionicons name="close" size={24} color={colors.text} />
                 </Pressable>
               )}
             </View>
             <Text className="pb-2 font-inter text-sm text-gf-text-muted">
-              {count === 1 ? '1 movimiento' : `${count} movimientos`} del periodo y los filtros que ves. Elige el formato.
+              {t("mobile.p1.del.periodo.y.los", { p1: count === 1 ? '1 movimiento' : `${count} movimientos` })}
             </Text>
             {EXPORT_FORMATS.map((format) => (
               <Pressable
@@ -58,11 +60,11 @@ export function ExportSheet({
             {busy ? (
               <View className="flex-row items-center justify-center gap-2 pt-2">
                 <ActivityIndicator color={colors.accent} />
-                <Text className="font-inter text-sm text-gf-text-muted">Preparando el archivo…</Text>
+                <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.preparando.el.archivo")}</Text>
               </View>
             ) : (
               <Pressable accessibilityRole="button" onPress={onClose} className="items-center pt-3" hitSlop={8}>
-                <Text className="font-inter-semibold text-base" style={{ color: colors.textSecondary }}>Cancelar</Text>
+                <Text className="font-inter-semibold text-base" style={{ color: colors.textSecondary }}>{t("mobile.cancelar")}</Text>
               </Pressable>
             )}
           </View>

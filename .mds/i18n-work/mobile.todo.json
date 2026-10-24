@@ -1,0 +1,3665 @@
+{
+  "namespace": "mobile",
+  "entries": [
+    {
+      "key": "mobile.ingresos",
+      "source": "Ingresos",
+      "es": "Ingresos",
+      "en": "Income"
+    },
+    {
+      "key": "mobile.gastos",
+      "source": "Gastos",
+      "es": "Gastos",
+      "en": "Bills"
+    },
+    {
+      "key": "mobile.balance",
+      "source": "Balance",
+      "es": "Balance",
+      "en": "Balance"
+    },
+    {
+      "key": "mobile.ahorro",
+      "source": "Ahorro",
+      "es": "Ahorro",
+      "en": "Savings"
+    },
+    {
+      "key": "mobile.movimientos",
+      "source": "Movimientos",
+      "es": "Movimientos",
+      "en": "Transactions"
+    },
+    {
+      "key": "mobile.analizador.de.cartera",
+      "source": "Analizador de cartera",
+      "es": "Analizador de cartera",
+      "en": "Wallet Analyzer"
+    },
+    {
+      "key": "mobile.tus.numeros.del.mes.a",
+      "source": "Tus números del mes, a fondo",
+      "es": "Tus números del mes, a fondo",
+      "en": "Your month's numbers, in depth"
+    },
+    {
+      "key": "mobile.vs.el.mes.anterior",
+      "source": "VS el mes anterior",
+      "es": "VS el mes anterior",
+      "en": "vs. the previous month"
+    },
+    {
+      "key": "mobile.antes",
+      "source": "Antes",
+      "es": "Antes",
+      "en": "Before"
+    },
+    {
+      "key": "mobile.ahora",
+      "source": "Ahora",
+      "es": "Ahora",
+      "en": "Now"
+    },
+    {
+      "key": "mobile.cambio",
+      "source": "Cambio",
+      "es": "Cambio",
+      "en": "Change"
+    },
+    {
+      "key": "mobile.compara.el.mes.elegido.con",
+      "source": "Compara el mes elegido con el mes de antes: lo verde mejoró, lo rojo empeoró y lo naranja se mantuvo.",
+      "es": "Compara el mes elegido con el mes de antes: lo verde mejoró, lo rojo empeoró y lo naranja se mantuvo.",
+      "en": "Compares the chosen month with the month before: green improved, red got worse and orange stayed the same."
+    },
+    {
+      "key": "mobile.promedio.mensual",
+      "source": "Promedio mensual",
+      "es": "Promedio mensual",
+      "en": "Monthly average"
+    },
+    {
+      "key": "mobile.mes.por.mes",
+      "source": "Mes por mes",
+      "es": "Mes por mes",
+      "en": "Month by month"
+    },
+    {
+      "key": "mobile.tendencia.de.6.meses",
+      "source": "Tendencia de 6 meses",
+      "es": "Tendencia de 6 meses",
+      "en": "6-month trend"
+    },
+    {
+      "key": "mobile.categorias.mes.anterior",
+      "source": "Categorías · mes anterior",
+      "es": "Categorías · mes anterior",
+      "en": "Categories · previous month"
+    },
+    {
+      "key": "mobile.sin.gastos.el.mes.anterior",
+      "source": "Sin gastos el mes anterior.",
+      "es": "Sin gastos el mes anterior.",
+      "en": "No bills last month."
+    },
+    {
+      "key": "mobile.categorias.mes.elegido",
+      "source": "Categorías · mes elegido",
+      "es": "Categorías · mes elegido",
+      "en": "Categories · chosen month"
+    },
+    {
+      "key": "mobile.sin.gastos.en.este.mes",
+      "source": "Sin gastos en este mes.",
+      "es": "Sin gastos en este mes.",
+      "en": "No bills this month."
+    },
+    {
+      "key": "mobile.movimientos.mes.anterior",
+      "source": "Movimientos · mes anterior",
+      "es": "Movimientos · mes anterior",
+      "en": "Transactions · previous month"
+    },
+    {
+      "key": "mobile.movimientos.mes.elegido",
+      "source": "Movimientos · mes elegido",
+      "es": "Movimientos · mes elegido",
+      "en": "Transactions · chosen month"
+    },
+    {
+      "key": "mobile.pagos.recurrentes",
+      "source": "Pagos recurrentes",
+      "es": "Pagos recurrentes",
+      "en": "Recurring payments"
+    },
+    {
+      "key": "mobile.ritmo.de.gasto",
+      "source": "Ritmo de gasto",
+      "es": "Ritmo de gasto",
+      "en": "Spending pace"
+    },
+    {
+      "key": "mobile.ver.mas",
+      "source": "Ver más",
+      "es": "Ver más",
+      "en": "See more"
+    },
+    {
+      "key": "mobile.al.dia.p1.lo.normal",
+      "source": "Al día {p1}; lo normal a esta altura es {p2}{p3}.",
+      "es": "Al día {p1}; lo normal a esta altura es {p2}{p3}.",
+      "en": "As of day {p1}; normally at this point it is {p2}{p3}."
+    },
+    {
+      "key": "mobile.detalle.del.mes",
+      "source": "Detalle del mes",
+      "es": "Detalle del mes",
+      "en": "Month detail"
+    },
+    {
+      "key": "mobile.ingresos.y.gastos.son.la",
+      "source": "Ingresos y gastos son la suma de los movimientos del mes; balance = ingresos − gastos. El % es el cambio contra el mes anterior de la tendencia: (mes − anterior) ÷ anterior. ▲ subió, ▼ bajó y ▬ casi no cambió (menos de 0.5%). Verde = buena noticia (más ingresos o balance, menos gastos), rojo = mala, naranja = sin cambio.",
+      "es": "Ingresos y gastos son la suma de los movimientos del mes; balance = ingresos − gastos. El % es el cambio contra el mes anterior de la tendencia: (mes − anterior) ÷ anterior. ▲ subió, ▼ bajó y ▬ casi no cambió (menos de 0.5%). Verde = buena noticia (más ingresos o balance, menos gastos), rojo = mala, naranja = sin cambio.",
+      "en": "Income and bills are the sum of the month's transactions; balance = income − bills. The % is the change against the previous month of the trend: (month − previous) ÷ previous. ▲ went up, ▼ went down and ▬ barely changed (less than 0.5%). Green = good news (more income or balance, fewer bills), red = bad, orange = no change."
+    },
+    {
+      "key": "mobile.p1.movimientos.en.el.mes",
+      "source": "{p1}movimientos en el mes{p2}",
+      "es": "{p1} movimientos en el mes{p2}",
+      "en": "{p1} transactions in the month{p2}"
+    },
+    {
+      "key": "mobile.antes.p1",
+      "source": "antes {p1}",
+      "es": "antes {p1}",
+      "en": "before {p1}"
+    },
+    {
+      "key": "mobile.balance.ingresos.gastos.del.mes",
+      "source": "Balance = ingresos − gastos del mes. La flecha compara cada cifra con el mes anterior: ▲ subió, ▼ bajó, ▬ casi no cambió. Verde es buena noticia (más ingresos o balance, menos gastos), rojo mala y naranja sin cambio.",
+      "es": "Balance = ingresos − gastos del mes. La flecha compara cada cifra con el mes anterior: ▲ subió, ▼ bajó, ▬ casi no cambió. Verde es buena noticia (más ingresos o balance, menos gastos), rojo mala y naranja sin cambio.",
+      "en": "Balance = income − bills for the month. The arrow compares each figure with the previous month: ▲ went up, ▼ went down, ▬ barely changed. Green is good news (more income or balance, fewer bills), red bad and orange no change."
+    },
+    {
+      "key": "mobile.ingresos.p1.al.mes",
+      "source": "Ingresos: {p1}al mes",
+      "es": "Ingresos: {p1} al mes",
+      "en": "Income: {p1} a month"
+    },
+    {
+      "key": "mobile.gastos.p1.al.mes",
+      "source": "Gastos: {p1}al mes",
+      "es": "Gastos: {p1} al mes",
+      "en": "Bills: {p1} a month"
+    },
+    {
+      "key": "mobile.movimientos.p1.al.mes",
+      "source": "Movimientos: {p1}al mes",
+      "es": "Movimientos: {p1} al mes",
+      "en": "Transactions: {p1} a month"
+    },
+    {
+      "key": "mobile.promedio.de.p1.meses.los",
+      "source": "Promedio de {p1}meses (los de la tendencia, contando el mes elegido): la suma de cada columna ÷ {p2}.",
+      "es": "Promedio de {p1} meses (los de la tendencia, contando el mes elegido): la suma de cada columna ÷ {p2}.",
+      "en": "Average of {p1} months (the trend months, counting the chosen month): the sum of each column ÷ {p2}."
+    },
+    {
+      "key": "mobile.al.dia.p1.sueles.llevar",
+      "source": "Al día {p1}sueles llevar {p2}({p3}).",
+      "es": "Al día {p1} sueles llevar {p2} ({p3}).",
+      "en": "As of day {p1} you usually have {p2} ({p3})."
+    },
+    {
+      "key": "mobile.p1.hasta.el.dia.p2",
+      "source": "{p1}· hasta el día {p2}",
+      "es": "{p1} · hasta el día {p2}",
+      "en": "{p1} · up to day {p2}"
+    },
+    {
+      "key": "mobile.nuevo.este.mes",
+      "source": "Nuevo este mes",
+      "es": "Nuevo este mes",
+      "en": "New this month"
+    },
+    {
+      "key": "mobile.posible.duplicado.en.el.mes",
+      "source": "Posible duplicado en el mes",
+      "es": "Posible duplicado en el mes",
+      "en": "Possible duplicate this month"
+    },
+    {
+      "key": "mobile.categoria",
+      "source": "Categoría",
+      "es": "Categoría",
+      "en": "Category"
+    },
+    {
+      "key": "mobile.esta.categoria.no.se.puede",
+      "source": "Esta categoría no se puede editar: o no es tuya, o ya no existe.",
+      "es": "Esta categoría no se puede editar: o no es tuya, o ya no existe.",
+      "en": "This category can't be edited: it isn't yours, or it no longer exists."
+    },
+    {
+      "key": "mobile.borrar.esta.categoria",
+      "source": "Borrar esta categoría",
+      "es": "Borrar esta categoría",
+      "en": "Delete this category"
+    },
+    {
+      "key": "mobile.sus.movimientos.quedan.sin.categoria",
+      "source": "Sus movimientos quedan sin categoría. No se puede deshacer.",
+      "es": "Sus movimientos quedan sin categoría. No se puede deshacer.",
+      "en": "Its transactions will have no category. This cannot be undone."
+    },
+    {
+      "key": "mobile.cancelar",
+      "source": "Cancelar",
+      "es": "Cancelar",
+      "en": "Cancel"
+    },
+    {
+      "key": "mobile.borrar",
+      "source": "Borrar",
+      "es": "Borrar",
+      "en": "Delete"
+    },
+    {
+      "key": "mobile.borrar.esta.subcategoria",
+      "source": "Borrar esta subcategoría",
+      "es": "Borrar esta subcategoría",
+      "en": "Delete this subcategory"
+    },
+    {
+      "key": "mobile.no.se.puede.deshacer",
+      "source": "No se puede deshacer.",
+      "es": "No se puede deshacer.",
+      "en": "This cannot be undone."
+    },
+    {
+      "key": "mobile.subcategorias",
+      "source": "Subcategorías",
+      "es": "Subcategorías",
+      "en": "Subcategories"
+    },
+    {
+      "key": "mobile.todavia.no.tiene.subcategorias",
+      "source": "Todavía no tiene subcategorías.",
+      "es": "Todavía no tiene subcategorías.",
+      "en": "It has no subcategories yet."
+    },
+    {
+      "key": "mobile.editar",
+      "source": "Editar",
+      "es": "Editar",
+      "en": "Edit"
+    },
+    {
+      "key": "mobile.restaurantes",
+      "source": "Restaurantes",
+      "es": "Restaurantes",
+      "en": "Restaurants"
+    },
+    {
+      "key": "mobile.categoria.a.la.que.pertenece",
+      "source": "Categoría a la que pertenece",
+      "es": "Categoría a la que pertenece",
+      "en": "Category it belongs to"
+    },
+    {
+      "key": "mobile.categorias",
+      "source": "Categorías",
+      "es": "Categorías",
+      "en": "Categories"
+    },
+    {
+      "key": "mobile.color",
+      "source": "Color",
+      "es": "Color",
+      "en": "Color"
+    },
+    {
+      "key": "mobile.icono",
+      "source": "Ícono",
+      "es": "Ícono",
+      "en": "Icon"
+    },
+    {
+      "key": "mobile.agregar.subcategoria",
+      "source": "Agregar subcategoría",
+      "es": "Agregar subcategoría",
+      "en": "Add subcategory"
+    },
+    {
+      "key": "mobile.borrar.categoria",
+      "source": "Borrar categoría",
+      "es": "Borrar categoría",
+      "en": "Delete category"
+    },
+    {
+      "key": "mobile.lo.que.conservaste",
+      "source": "Lo que conservaste",
+      "es": "Lo que conservaste",
+      "en": "What you kept"
+    },
+    {
+      "key": "mobile.gasto.promedio.por.mes",
+      "source": "Gasto promedio por mes",
+      "es": "Gasto promedio por mes",
+      "en": "Average spending per month"
+    },
+    {
+      "key": "mobile.lo.que.mas.pesa",
+      "source": "Lo que más pesa",
+      "es": "Lo que más pesa",
+      "en": "What weighs most"
+    },
+    {
+      "key": "mobile.gasto.mas.grande",
+      "source": "Gasto más grande",
+      "es": "Gasto más grande",
+      "en": "Largest expense"
+    },
+    {
+      "key": "mobile.historial",
+      "source": "Historial",
+      "es": "Historial",
+      "en": "History"
+    },
+    {
+      "key": "mobile.periodo",
+      "source": "Periodo",
+      "es": "Periodo",
+      "en": "Period"
+    },
+    {
+      "key": "mobile.desde",
+      "source": "Desde",
+      "es": "Desde",
+      "en": "From"
+    },
+    {
+      "key": "mobile.hasta",
+      "source": "Hasta",
+      "es": "Hasta",
+      "en": "To"
+    },
+    {
+      "key": "mobile.comparar.con.otro.periodo",
+      "source": "Comparar con otro periodo",
+      "es": "Comparar con otro periodo",
+      "en": "Compare with another period"
+    },
+    {
+      "key": "mobile.comparar.desde",
+      "source": "Comparar desde",
+      "es": "Comparar desde",
+      "en": "Compare from"
+    },
+    {
+      "key": "mobile.comparar.hasta",
+      "source": "Comparar hasta",
+      "es": "Comparar hasta",
+      "en": "Compare to"
+    },
+    {
+      "key": "mobile.se.compara.con.p1",
+      "source": "Se compara con {p1}.",
+      "es": "Se compara con {p1}.",
+      "en": "Compared with {p1}."
+    },
+    {
+      "key": "mobile.todavia.llegan.movimientos.antiguos.las",
+      "source": "Todavía llegan movimientos antiguos; las cifras de periodos viejos pueden crecer.",
+      "es": "Todavía llegan movimientos antiguos; las cifras de periodos viejos pueden crecer.",
+      "en": "Older transactions are still arriving; the figures for old periods may grow."
+    },
+    {
+      "key": "mobile.resumen",
+      "source": "Resumen",
+      "es": "Resumen",
+      "en": "Summary"
+    },
+    {
+      "key": "mobile.comparado",
+      "source": "Comparado",
+      "es": "Comparado",
+      "en": "Compared"
+    },
+    {
+      "key": "mobile.datos.del.periodo",
+      "source": "Datos del periodo",
+      "es": "Datos del periodo",
+      "en": "Period data"
+    },
+    {
+      "key": "mobile.vs.p1.comparado",
+      "source": "vs {p1}(comparado)",
+      "es": "vs {p1} (comparado)",
+      "en": "vs {p1} (compared)"
+    },
+    {
+      "key": "mobile.gastos.por.categoria",
+      "source": "Gastos por categoría",
+      "es": "Gastos por categoría",
+      "en": "Bills by category"
+    },
+    {
+      "key": "mobile.ingresos.por.categoria",
+      "source": "Ingresos por categoría",
+      "es": "Ingresos por categoría",
+      "en": "Income by category"
+    },
+    {
+      "key": "mobile.cuenta",
+      "source": "Cuenta",
+      "es": "Cuenta",
+      "en": "Account"
+    },
+    {
+      "key": "mobile.no.encontramos.esta.cuenta",
+      "source": "No encontramos esta cuenta.",
+      "es": "No encontramos esta cuenta.",
+      "en": "We couldn't find this account."
+    },
+    {
+      "key": "mobile.borrar.esta.cuenta",
+      "source": "Borrar esta cuenta",
+      "es": "Borrar esta cuenta",
+      "en": "Delete this account"
+    },
+    {
+      "key": "mobile.se.borra.la.cuenta.sus",
+      "source": "Se borra la cuenta. Sus movimientos siguen en tu historial. No se puede deshacer.",
+      "es": "Se borra la cuenta. Sus movimientos siguen en tu historial. No se puede deshacer.",
+      "en": "The account is deleted. Its transactions stay in your history. This cannot be undone."
+    },
+    {
+      "key": "mobile.editar.cuenta",
+      "source": "Editar cuenta",
+      "es": "Editar cuenta",
+      "en": "Edit account"
+    },
+    {
+      "key": "mobile.entro",
+      "source": "Entró",
+      "es": "Entró",
+      "en": "In"
+    },
+    {
+      "key": "mobile.salio",
+      "source": "Salió",
+      "es": "Salió",
+      "en": "Out"
+    },
+    {
+      "key": "mobile.sin.movimientos.en.este.periodo",
+      "source": "Sin movimientos en este periodo.",
+      "es": "Sin movimientos en este periodo.",
+      "en": "No transactions in this period."
+    },
+    {
+      "key": "mobile.ver.todos.los.movimientos.de",
+      "source": "Ver todos los movimientos de esta cuenta ›",
+      "es": "Ver todos los movimientos de esta cuenta ›",
+      "en": "See all transactions of this account ›"
+    },
+    {
+      "key": "mobile.borrar.cuenta",
+      "source": "Borrar cuenta",
+      "es": "Borrar cuenta",
+      "en": "Delete account"
+    },
+    {
+      "key": "mobile.perfil",
+      "source": "Perfil",
+      "es": "Perfil",
+      "en": "Profile"
+    },
+    {
+      "key": "mobile.tu.foto.de.perfil",
+      "source": "Tu foto de perfil",
+      "es": "Tu foto de perfil",
+      "en": "Your profile photo"
+    },
+    {
+      "key": "mobile.tus.iniciales",
+      "source": "Tus iniciales",
+      "es": "Tus iniciales",
+      "en": "Your initials"
+    },
+    {
+      "key": "mobile.tus.datos",
+      "source": "Tus datos",
+      "es": "Tus datos",
+      "en": "Your details"
+    },
+    {
+      "key": "mobile.nombre",
+      "source": "Nombre",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "mobile.telefono.opcional",
+      "source": "Teléfono (opcional)",
+      "es": "Teléfono (opcional)",
+      "en": "Phone (optional)"
+    },
+    {
+      "key": "mobile.guardar.cambios",
+      "source": "Guardar cambios",
+      "es": "Guardar cambios",
+      "en": "Save changes"
+    },
+    {
+      "key": "mobile.correo",
+      "source": "Correo",
+      "es": "Correo",
+      "en": "Email"
+    },
+    {
+      "key": "mobile.moneda.principal",
+      "source": "Moneda principal",
+      "es": "Moneda principal",
+      "en": "Primary currency"
+    },
+    {
+      "key": "mobile.miembro.desde",
+      "source": "Miembro desde",
+      "es": "Miembro desde",
+      "en": "Member since"
+    },
+    {
+      "key": "mobile.la.foto.de.perfil.se",
+      "source": "La foto de perfil se cambia desde Gastify en la web.",
+      "es": "La foto de perfil se cambia desde Gastify en la web.",
+      "en": "The profile photo is changed from Gastify on the web."
+    },
+    {
+      "key": "mobile.cerrar.sesion",
+      "source": "Cerrar sesión",
+      "es": "Cerrar sesión",
+      "en": "Sign out"
+    },
+    {
+      "key": "mobile.proyecciones",
+      "source": "Proyecciones",
+      "es": "Proyecciones",
+      "en": "Projections"
+    },
+    {
+      "key": "mobile.ano.anterior",
+      "source": "‹ Año anterior",
+      "es": "‹ Año anterior",
+      "en": "‹ Previous year"
+    },
+    {
+      "key": "mobile.ano.siguiente",
+      "source": "Año siguiente ›",
+      "es": "Año siguiente ›",
+      "en": "Next year ›"
+    },
+    {
+      "key": "mobile.mes.a.mes",
+      "source": "Mes a mes",
+      "es": "Mes a mes",
+      "en": "Month by month"
+    },
+    {
+      "key": "mobile.montos.en.p1",
+      "source": "Montos en {p1}.",
+      "es": "Montos en {p1}.",
+      "en": "Amounts in {p1}."
+    },
+    {
+      "key": "mobile.neto",
+      "source": "Neto",
+      "es": "Neto",
+      "en": "Net"
+    },
+    {
+      "key": "mobile.los.meses.reales.muestran.lo",
+      "source": "Los meses reales muestran lo que ya ocurrió; los estimados, lo que se proyecta. Toca un mes para abrirlo.",
+      "es": "Los meses reales muestran lo que ya ocurrió; los estimados, lo que se proyecta. Toca un mes para abrirlo.",
+      "en": "Actual months show what already happened; estimated ones, what is projected. Tap a month to open it."
+    },
+    {
+      "key": "mobile.proximamente",
+      "source": "Próximamente",
+      "es": "Próximamente",
+      "en": "Coming soon"
+    },
+    {
+      "key": "mobile.mas",
+      "source": "Más",
+      "es": "Más",
+      "en": "More"
+    },
+    {
+      "key": "mobile.tus.cuentas.categorias.y.perfil",
+      "source": "Tus cuentas, categorías y perfil.",
+      "es": "Tus cuentas, categorías y perfil.",
+      "en": "Your accounts, categories and profile."
+    },
+    {
+      "key": "mobile.notificaciones",
+      "source": "Notificaciones",
+      "es": "Notificaciones",
+      "en": "Notifications"
+    },
+    {
+      "key": "mobile.cuentas",
+      "source": "Cuentas",
+      "es": "Cuentas",
+      "en": "Accounts"
+    },
+    {
+      "key": "mobile.buscar.categoria.o.subcategoria",
+      "source": "Buscar categoría o subcategoría",
+      "es": "Buscar categoría o subcategoría",
+      "en": "Search category or subcategory"
+    },
+    {
+      "key": "mobile.nueva.categoria",
+      "source": "Nueva categoría",
+      "es": "Nueva categoría",
+      "en": "New category"
+    },
+    {
+      "key": "mobile.ninguna.categoria.coincide",
+      "source": "Ninguna categoría coincide.",
+      "es": "Ninguna categoría coincide.",
+      "en": "No category matches."
+    },
+    {
+      "key": "mobile.ninguna.subcategoria.coincide",
+      "source": "Ninguna subcategoría coincide.",
+      "es": "Ninguna subcategoría coincide.",
+      "en": "No subcategory matches."
+    },
+    {
+      "key": "mobile.tus.categorias",
+      "source": "Tus categorías",
+      "es": "Tus categorías",
+      "en": "Your categories"
+    },
+    {
+      "key": "mobile.predeterminadas",
+      "source": "Predeterminadas",
+      "es": "Predeterminadas",
+      "en": "Default"
+    },
+    {
+      "key": "mobile.ninguna.coincide",
+      "source": "Ninguna coincide.",
+      "es": "Ninguna coincide.",
+      "en": "None matches."
+    },
+    {
+      "key": "mobile.nueva.cuenta",
+      "source": "Nueva cuenta",
+      "es": "Nueva cuenta",
+      "en": "New account"
+    },
+    {
+      "key": "mobile.no.pudimos.cargar.tus.cuentas",
+      "source": "No pudimos cargar tus cuentas.",
+      "es": "No pudimos cargar tus cuentas.",
+      "en": "We couldn't load your accounts."
+    },
+    {
+      "key": "mobile.todavia.no.tienes.cuentas.crea",
+      "source": "Todavía no tienes cuentas. Crea la primera con «Nueva cuenta».",
+      "es": "Todavía no tienes cuentas. Crea la primera con «Nueva cuenta».",
+      "en": "You have no accounts yet. Create your first one with “New account”."
+    },
+    {
+      "key": "mobile.total",
+      "source": "Total",
+      "es": "Total",
+      "en": "Total"
+    },
+    {
+      "key": "mobile.saldo.en.p1",
+      "source": "Saldo en {p1}",
+      "es": "Saldo en {p1}",
+      "en": "Balance in {p1}"
+    },
+    {
+      "key": "mobile.subir.cuenta",
+      "source": "Subir cuenta",
+      "es": "Subir cuenta",
+      "en": "Move account up"
+    },
+    {
+      "key": "mobile.bajar.cuenta",
+      "source": "Bajar cuenta",
+      "es": "Bajar cuenta",
+      "en": "Move account down"
+    },
+    {
+      "key": "mobile.gasto",
+      "source": "Gasto",
+      "es": "Gasto",
+      "en": "Bill"
+    },
+    {
+      "key": "mobile.ingreso",
+      "source": "Ingreso",
+      "es": "Ingreso",
+      "en": "Income"
+    },
+    {
+      "key": "mobile.ninguno",
+      "source": "Ninguno",
+      "es": "Ninguno",
+      "en": "None"
+    },
+    {
+      "key": "mobile.nombre.opcional",
+      "source": "Nombre (opcional)",
+      "es": "Nombre (opcional)",
+      "en": "Name (optional)"
+    },
+    {
+      "key": "mobile.si.lo.dejas.vacio.usamos",
+      "source": "Si lo dejas vacío usamos la categoría",
+      "es": "Si lo dejas vacío usamos la categoría",
+      "en": "If you leave it empty we use the category"
+    },
+    {
+      "key": "mobile.p1.en.tu.moneda.principal",
+      "source": "≈ {p1}(en tu moneda principal)",
+      "es": "≈ {p1} (en tu moneda principal)",
+      "en": "≈ {p1} (in your primary currency)"
+    },
+    {
+      "key": "mobile.cobrado.en.otra.moneda",
+      "source": "Cobrado en otra moneda",
+      "es": "Cobrado en otra moneda",
+      "en": "Charged in another currency"
+    },
+    {
+      "key": "mobile.moneda.del.cobro",
+      "source": "Moneda del cobro",
+      "es": "Moneda del cobro",
+      "en": "Charge currency"
+    },
+    {
+      "key": "mobile.categoria.y.subcategoria",
+      "source": "Categoría y subcategoría",
+      "es": "Categoría y subcategoría",
+      "en": "Category and subcategory"
+    },
+    {
+      "key": "mobile.presupuesto.opcional",
+      "source": "Presupuesto (opcional)",
+      "es": "Presupuesto (opcional)",
+      "en": "Budget (optional)"
+    },
+    {
+      "key": "mobile.presupuestos",
+      "source": "Presupuestos",
+      "es": "Presupuestos",
+      "en": "Budgets"
+    },
+    {
+      "key": "mobile.fecha",
+      "source": "Fecha",
+      "es": "Fecha",
+      "en": "Date"
+    },
+    {
+      "key": "mobile.hoy",
+      "source": "Hoy",
+      "es": "Hoy",
+      "en": "Today"
+    },
+    {
+      "key": "mobile.ayer",
+      "source": "Ayer",
+      "es": "Ayer",
+      "en": "Yesterday"
+    },
+    {
+      "key": "mobile.etiquetas.separadas.por.comas",
+      "source": "Etiquetas (separadas por comas)",
+      "es": "Etiquetas (separadas por comas)",
+      "en": "Tags (separated by commas)"
+    },
+    {
+      "key": "mobile.viaje.trabajo",
+      "source": "viaje, trabajo",
+      "es": "viaje, trabajo",
+      "en": "trip, work"
+    },
+    {
+      "key": "mobile.borrar.movimiento",
+      "source": "Borrar movimiento",
+      "es": "Borrar movimiento",
+      "en": "Delete transaction"
+    },
+    {
+      "key": "mobile.volver.a.categorias.sin.presupuesto",
+      "source": "Volver a categorías sin presupuesto",
+      "es": "Volver a categorías sin presupuesto",
+      "en": "Back to categories without a budget"
+    },
+    {
+      "key": "mobile.cerrar",
+      "source": "Cerrar",
+      "es": "Cerrar",
+      "en": "Close"
+    },
+    {
+      "key": "mobile.todo.lo.que.gastaste.en",
+      "source": "Todo lo que gastaste en el periodo: dentro de presupuestos y sin presupuesto.",
+      "es": "Todo lo que gastaste en el periodo: dentro de presupuestos y sin presupuesto.",
+      "en": "Everything you spent in the period: inside budgets and outside budgets."
+    },
+    {
+      "key": "mobile.no.hay.presupuestos.de.gasto",
+      "source": "No hay presupuestos de gasto en este periodo.",
+      "es": "No hay presupuestos de gasto en este periodo.",
+      "en": "There are no spending budgets in this period."
+    },
+    {
+      "key": "mobile.p1.p2.en.esta.categoria",
+      "source": "{p1}{p2}en esta categoría.",
+      "es": "{p1}{p2} en esta categoría.",
+      "en": "{p1}{p2} in this category."
+    },
+    {
+      "key": "mobile.agregar.presupuesto.para.p1",
+      "source": "Agregar presupuesto para {p1}",
+      "es": "Agregar presupuesto para {p1}",
+      "en": "Add a budget for {p1}"
+    },
+    {
+      "key": "mobile.participacion.en.el.gasto.total",
+      "source": "Participación en el gasto total.",
+      "es": "Participación en el gasto total.",
+      "en": "Share of total spending."
+    },
+    {
+      "key": "mobile.estos.movimientos.no.estan.cubiertos",
+      "source": "Estos movimientos no están cubiertos por ningún presupuesto de gasto activo.",
+      "es": "Estos movimientos no están cubiertos por ningún presupuesto de gasto activo.",
+      "en": "These transactions aren't covered by any active spending budget."
+    },
+    {
+      "key": "mobile.agregar.presupuesto",
+      "source": "Agregar presupuesto",
+      "es": "Agregar presupuesto",
+      "en": "Add budget"
+    },
+    {
+      "key": "mobile.otras.categorias.sin.presupuesto",
+      "source": "Otras categorías sin presupuesto",
+      "es": "Otras categorías sin presupuesto",
+      "en": "Other categories without a budget"
+    },
+    {
+      "key": "mobile.no.hay.movimientos.sin.presupuesto",
+      "source": "No hay movimientos sin presupuesto.",
+      "es": "No hay movimientos sin presupuesto.",
+      "en": "There are no transactions outside budgets."
+    },
+    {
+      "key": "mobile.listo",
+      "source": "Listo",
+      "es": "Listo",
+      "en": "Done"
+    },
+    {
+      "key": "mobile.las.categorias.o.transacciones.con",
+      "source": "Las categorías o transacciones con mayor gasto o ingreso del periodo. Cambia el número de elementos, el tipo y la agrupación; las flechas eligen otro mes y Más filtros abre los demás periodos. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo.",
+      "es": "Las categorías o transacciones con mayor gasto o ingreso del periodo. Cambia el número de elementos, el tipo y la agrupación; las flechas eligen otro mes y Más filtros abre los demás periodos. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo.",
+      "en": "The categories or transactions with the most spending or income in the period. Change the number of items, the type and the grouping; the arrows choose another month, and More filters opens the other periods. Tap a category to see all its transactions, or a transaction to open it."
+    },
+    {
+      "key": "mobile.elige.abajo.contra.que.tramo",
+      "source": "Elige abajo contra qué tramo comparar; su Top aparece debajo del actual.",
+      "es": "Elige abajo contra qué tramo comparar; su Top aparece debajo del actual.",
+      "en": "Pick below which period to compare against; its Top appears below the current one."
+    },
+    {
+      "key": "mobile.por.categoria",
+      "source": "Por categoría",
+      "es": "Por categoría",
+      "en": "By category"
+    },
+    {
+      "key": "mobile.sin.movimientos",
+      "source": "Sin movimientos.",
+      "es": "Sin movimientos.",
+      "en": "No transactions."
+    },
+    {
+      "key": "mobile.periodo.anterior.p1",
+      "source": "Periodo anterior · {p1}",
+      "es": "Periodo anterior · {p1}",
+      "en": "Previous period · {p1}"
+    },
+    {
+      "key": "mobile.sin.movimientos.para.comparar",
+      "source": "Sin movimientos para comparar.",
+      "es": "Sin movimientos para comparar.",
+      "en": "No transactions to compare."
+    },
+    {
+      "key": "mobile.igual.que.arriba",
+      "source": "Igual que arriba",
+      "es": "Igual que arriba",
+      "en": "Same as above"
+    },
+    {
+      "key": "mobile.personalizado",
+      "source": "Personalizado",
+      "es": "Personalizado",
+      "en": "Custom"
+    },
+    {
+      "key": "mobile.periodo.activo.p1",
+      "source": "Periodo activo: {p1}",
+      "es": "Periodo activo: {p1}",
+      "en": "Active period: {p1}"
+    },
+    {
+      "key": "mobile.hacia",
+      "source": "Hacia",
+      "es": "Hacia",
+      "en": "To"
+    },
+    {
+      "key": "mobile.pago.de.tarjeta",
+      "source": "Pago de tarjeta",
+      "es": "Pago de tarjeta",
+      "en": "Card payment"
+    },
+    {
+      "key": "mobile.nada.coincide.con.p1",
+      "source": "Nada coincide con «{p1}».",
+      "es": "Nada coincide con «{p1}».",
+      "en": "Nothing matches “{p1}”."
+    },
+    {
+      "key": "mobile.indice.de.letras",
+      "source": "Índice de letras",
+      "es": "Índice de letras",
+      "en": "Letter index"
+    },
+    {
+      "key": "mobile.exportar.movimientos",
+      "source": "Exportar movimientos",
+      "es": "Exportar movimientos",
+      "en": "Export transactions"
+    },
+    {
+      "key": "mobile.p1.del.periodo.y.los",
+      "source": "{p1}del periodo y los filtros que ves. Elige el formato.",
+      "es": "{p1} del periodo y los filtros que ves. Elige el formato.",
+      "en": "{p1} for the period and the filters you see. Choose the format."
+    },
+    {
+      "key": "mobile.preparando.el.archivo",
+      "source": "Preparando el archivo…",
+      "es": "Preparando el archivo…",
+      "en": "Preparing the file…"
+    },
+    {
+      "key": "mobile.color.y.patron.de.la",
+      "source": "Color y patrón de la tarjeta",
+      "es": "Color y patrón de la tarjeta",
+      "en": "Card color and pattern"
+    },
+    {
+      "key": "mobile.elige.como.se.ve.esta",
+      "source": "Elige cómo se ve esta tarjeta. «Automática» es el color que la app le asigna a la cuenta. Los demás son colores fijos, agrupados por familia, y el texto de la tarjeta cambia solo para leerse bien: oscuro sobre los claros, claro sobre los oscuros. El patrón es el dibujo de fondo: círculos, puntos, rayas, cuadrícula, ondas o liso. Todo se guarda en la cuenta: lo verás igual en todos tus dispositivos y en la web.",
+      "es": "Elige cómo se ve esta tarjeta. «Automática» es el color que la app le asigna a la cuenta. Los demás son colores fijos, agrupados por familia, y el texto de la tarjeta cambia solo para leerse bien: oscuro sobre los claros, claro sobre los oscuros. El patrón es el dibujo de fondo: círculos, puntos, rayas, cuadrícula, ondas o liso. Todo se guarda en la cuenta: lo verás igual en todos tus dispositivos y en la web.",
+      "en": "Choose how this card looks. “Automatic” is the color the app gives the account. The others are fixed colors, grouped by family, and the card text changes on its own to stay readable: dark over light colors, light over dark ones. The pattern is the background drawing: circles, dots, stripes, grid, waves or plain. Everything is saved to the account: you'll see it the same on all your devices and on the web."
+    },
+    {
+      "key": "mobile.automatica",
+      "source": "Automática",
+      "es": "Automática",
+      "en": "Automatic"
+    },
+    {
+      "key": "mobile.color.y.patron",
+      "source": "Color y patrón",
+      "es": "Color y patrón",
+      "en": "Color and pattern"
+    },
+    {
+      "key": "mobile.patron",
+      "source": "Patrón",
+      "es": "Patrón",
+      "en": "Pattern"
+    },
+    {
+      "key": "mobile.los.de.siempre",
+      "source": "Los de siempre",
+      "es": "Los de siempre",
+      "en": "The classics"
+    },
+    {
+      "key": "mobile.mas.colores",
+      "source": "Más colores",
+      "es": "Más colores",
+      "en": "More colors"
+    },
+    {
+      "key": "mobile.color.exacto.hexadecimal",
+      "source": "Color exacto (hexadecimal)",
+      "es": "Color exacto (hexadecimal)",
+      "en": "Exact color (hex)"
+    },
+    {
+      "key": "mobile.usa.un.color.como.f57c00",
+      "source": "Usa un color como #F57C00 o F57C00.",
+      "es": "Usa un color como #F57C00 o F57C00.",
+      "en": "Use a color like #F57C00 or F57C00."
+    },
+    {
+      "key": "mobile.buscar.icono",
+      "source": "Buscar ícono",
+      "es": "Buscar ícono",
+      "en": "Search icon"
+    },
+    {
+      "key": "mobile.comida.casa.avion",
+      "source": "comida, casa, avión…",
+      "es": "comida, casa, avión…",
+      "en": "food, house, plane…"
+    },
+    {
+      "key": "mobile.no.pudimos.cargar.los.iconos",
+      "source": "No pudimos cargar los íconos. Revisa tu conexión.",
+      "es": "No pudimos cargar los íconos. Revisa tu conexión.",
+      "en": "We couldn't load the icons. Check your connection."
+    },
+    {
+      "key": "mobile.ningun.icono.coincide.con.la",
+      "source": "Ningún ícono coincide con la búsqueda.",
+      "es": "Ningún ícono coincide con la búsqueda.",
+      "en": "No icon matches the search."
+    },
+    {
+      "key": "mobile.mostrar.mas.p1.restantes",
+      "source": "Mostrar más ({p1}restantes)",
+      "es": "Mostrar más ({p1} restantes)",
+      "en": "Show more ({p1} left)"
+    },
+    {
+      "key": "mobile.elegir.mes",
+      "source": "Elegir mes",
+      "es": "Elegir mes",
+      "en": "Pick a month"
+    },
+    {
+      "key": "mobile.ano.anterior.2",
+      "source": "Año anterior",
+      "es": "Año anterior",
+      "en": "Previous year"
+    },
+    {
+      "key": "mobile.ano.siguiente.2",
+      "source": "Año siguiente",
+      "es": "Año siguiente",
+      "en": "Next year"
+    },
+    {
+      "key": "mobile.revisa.esto",
+      "source": "Revisa esto",
+      "es": "Revisa esto",
+      "en": "Check this"
+    },
+    {
+      "key": "mobile.aviso",
+      "source": "Aviso",
+      "es": "Aviso",
+      "en": "Notice"
+    },
+    {
+      "key": "mobile.felicidades",
+      "source": "¡Felicidades!",
+      "es": "¡Felicidades!",
+      "en": "Congratulations!"
+    },
+    {
+      "key": "mobile.aguas",
+      "source": "¡Aguas!",
+      "es": "¡Aguas!",
+      "en": "Watch out!"
+    },
+    {
+      "key": "mobile.se.esta.incendiando",
+      "source": "¡Se está incendiando!",
+      "es": "¡Se está incendiando!",
+      "en": "It's on fire!"
+    },
+    {
+      "key": "mobile.ver.mi.presupuesto",
+      "source": "Ver mi presupuesto",
+      "es": "Ver mi presupuesto",
+      "en": "See my budget"
+    },
+    {
+      "key": "mobile.buscar.banco",
+      "source": "Buscar banco",
+      "es": "Buscar banco",
+      "en": "Search bank"
+    },
+    {
+      "key": "mobile.por.ejemplo.nu.o.bbva",
+      "source": "Por ejemplo, Nu o BBVA",
+      "es": "Por ejemplo, Nu o BBVA",
+      "en": "For example, Nu or BBVA"
+    },
+    {
+      "key": "mobile.ningun.banco.coincide.con.p1",
+      "source": "Ningún banco coincide con «{p1}».",
+      "es": "Ningún banco coincide con «{p1}».",
+      "en": "No bank matches “{p1}”."
+    },
+    {
+      "key": "mobile.entendido",
+      "source": "Entendido",
+      "es": "Entendido",
+      "en": "Got it"
+    },
+    {
+      "key": "mobile.mes.anterior",
+      "source": "Mes anterior",
+      "es": "Mes anterior",
+      "en": "Previous month"
+    },
+    {
+      "key": "mobile.mes.siguiente",
+      "source": "Mes siguiente",
+      "es": "Mes siguiente",
+      "en": "Next month"
+    },
+    {
+      "key": "mobile.apariencia",
+      "source": "Apariencia",
+      "es": "Apariencia",
+      "en": "Appearance"
+    },
+    {
+      "key": "mobile.claro",
+      "source": "Claro",
+      "es": "Claro",
+      "en": "Light"
+    },
+    {
+      "key": "mobile.oscuro",
+      "source": "Oscuro",
+      "es": "Oscuro",
+      "en": "Dark"
+    },
+    {
+      "key": "mobile.automatico",
+      "source": "Automático",
+      "es": "Automático",
+      "en": "Automatic"
+    },
+    {
+      "key": "mobile.automatico.sigue.el.modo.de",
+      "source": "Automático sigue el modo de tu teléfono.",
+      "es": "Automático sigue el modo de tu teléfono.",
+      "en": "Automatic follows your phone's mode."
+    },
+    {
+      "key": "mobile.como.va.este.presupuesto",
+      "source": "Cómo va este presupuesto",
+      "es": "Cómo va este presupuesto",
+      "en": "How this budget is doing"
+    },
+    {
+      "key": "mobile.de.p1.p2",
+      "source": "de {p1}{p2}",
+      "es": "de {p1}{p2}",
+      "en": "of {p1}{p2}"
+    },
+    {
+      "key": "mobile.ver.todos.p1",
+      "source": "Ver todos ({p1})",
+      "es": "Ver todos ({p1})",
+      "en": "See all ({p1})"
+    },
+    {
+      "key": "mobile.wallet",
+      "source": "Wallet",
+      "es": "Cartera",
+      "en": "Wallet"
+    },
+    {
+      "key": "mobile.saltar.entre.fechas",
+      "source": "Saltar entre fechas",
+      "es": "Saltar entre fechas",
+      "en": "Jump between dates"
+    },
+    {
+      "key": "mobile.que.muestra",
+      "source": "Qué muestra",
+      "es": "Qué muestra",
+      "en": "What it shows"
+    },
+    {
+      "key": "mobile.como.se.calcula",
+      "source": "Cómo se calcula",
+      "es": "Cómo se calcula",
+      "en": "How it's calculated"
+    },
+    {
+      "key": "mobile.como.leerlo",
+      "source": "Cómo leerlo",
+      "es": "Cómo leerlo",
+      "en": "How to read it"
+    },
+    {
+      "key": "mobile.como.usarlo",
+      "source": "Cómo usarlo",
+      "es": "Cómo usarlo",
+      "en": "How to use it"
+    },
+    {
+      "key": "mobile.ejemplo",
+      "source": "Ejemplo",
+      "es": "Ejemplo",
+      "en": "Example"
+    },
+    {
+      "key": "mobile.desactivar.la.verificacion.en.dos",
+      "source": "Desactivar la verificación en dos pasos",
+      "es": "Desactivar la verificación en dos pasos",
+      "en": "Turn off two-step verification"
+    },
+    {
+      "key": "mobile.tu.cuenta.quedara.protegida.solo",
+      "source": "Tu cuenta quedará protegida solo por tu contraseña o tu passkey.",
+      "es": "Tu cuenta quedará protegida solo por tu contraseña o tu passkey.",
+      "en": "Your account will only be protected by your password or your passkey."
+    },
+    {
+      "key": "mobile.desactivar",
+      "source": "Desactivar",
+      "es": "Desactivar",
+      "en": "Turn off"
+    },
+    {
+      "key": "mobile.verificacion.en.dos.pasos",
+      "source": "Verificación en dos pasos",
+      "es": "Verificación en dos pasos",
+      "en": "Two-step verification"
+    },
+    {
+      "key": "mobile.1.agrega.esta.clave.en",
+      "source": "1. Agrega esta clave en tu app autenticadora (Google Authenticator, Authy, 1Password...):",
+      "es": "1. Agrega esta clave en tu app autenticadora (Google Authenticator, Authy, 1Password...):",
+      "en": "1. Add this key to your authenticator app (Google Authenticator, Authy, 1Password…):"
+    },
+    {
+      "key": "mobile.no.encontramos.una.app.autenticadora",
+      "source": "No encontramos una app autenticadora instalada.",
+      "es": "No encontramos una app autenticadora instalada.",
+      "en": "We couldn't find an authenticator app installed."
+    },
+    {
+      "key": "mobile.abrir.en.mi.app.autenticadora",
+      "source": "Abrir en mi app autenticadora",
+      "es": "Abrir en mi app autenticadora",
+      "en": "Open in my authenticator app"
+    },
+    {
+      "key": "mobile.2.escribe.el.codigo.de",
+      "source": "2. Escribe el código de 6 dígitos que muestra la app para confirmar:",
+      "es": "2. Escribe el código de 6 dígitos que muestra la app para confirmar:",
+      "en": "2. Type the 6-digit code the app shows to confirm:"
+    },
+    {
+      "key": "mobile.codigo",
+      "source": "Código",
+      "es": "Código",
+      "en": "Code"
+    },
+    {
+      "key": "mobile.6.digitos",
+      "source": "6 dígitos",
+      "es": "6 dígitos",
+      "en": "6 digits"
+    },
+    {
+      "key": "mobile.confirmar.y.activar",
+      "source": "Confirmar y activar",
+      "es": "Confirmar y activar",
+      "en": "Confirm and turn on"
+    },
+    {
+      "key": "mobile.codigos.de.respaldo.cada.uno",
+      "source": "Códigos de respaldo (cada uno sirve una vez)",
+      "es": "Códigos de respaldo (cada uno sirve una vez)",
+      "en": "Backup codes (each one works once)"
+    },
+    {
+      "key": "mobile.compartir.o.guardar",
+      "source": "Compartir o guardar",
+      "es": "Compartir o guardar",
+      "en": "Share or save"
+    },
+    {
+      "key": "mobile.contrasena.actual.si.tu.cuenta",
+      "source": "Contraseña actual (si tu cuenta tiene)",
+      "es": "Contraseña actual (si tu cuenta tiene)",
+      "en": "Current password (if your account has one)"
+    },
+    {
+      "key": "mobile.generar.codigos.de.respaldo.nuevos",
+      "source": "Generar códigos de respaldo nuevos",
+      "es": "Generar códigos de respaldo nuevos",
+      "en": "Generate new backup codes"
+    },
+    {
+      "key": "mobile.activar",
+      "source": "Activar",
+      "es": "Activar",
+      "en": "Turn on"
+    },
+    {
+      "key": "mobile.ponle.un.nombre.al.token",
+      "source": "Ponle un nombre al token (por ejemplo, el de la herramienta que lo usará).",
+      "es": "Ponle un nombre al token (por ejemplo, el de la herramienta que lo usará).",
+      "en": "Give the token a name (for example, the tool that will use it)."
+    },
+    {
+      "key": "mobile.revocar.este.token",
+      "source": "Revocar este token",
+      "es": "Revocar este token",
+      "en": "Revoke this token"
+    },
+    {
+      "key": "mobile.revocar",
+      "source": "Revocar",
+      "es": "Revocar",
+      "en": "Revoke"
+    },
+    {
+      "key": "mobile.tokens.de.acceso",
+      "source": "Tokens de acceso",
+      "es": "Tokens de acceso",
+      "en": "Access tokens"
+    },
+    {
+      "key": "mobile.no.tienes.tokens",
+      "source": "No tienes tokens.",
+      "es": "No tienes tokens.",
+      "en": "You have no tokens."
+    },
+    {
+      "key": "mobile.creado.p1.p2",
+      "source": "Creado {p1}{p2}",
+      "es": "Creado {p1}{p2}",
+      "en": "Created {p1}{p2}"
+    },
+    {
+      "key": "mobile.copialo.ahora.no.se.vuelve",
+      "source": "Cópialo ahora: no se vuelve a mostrar",
+      "es": "Cópialo ahora: no se vuelve a mostrar",
+      "en": "Copy it now: it won't be shown again"
+    },
+    {
+      "key": "mobile.ya.lo.guarde",
+      "source": "Ya lo guardé",
+      "es": "Ya lo guardé",
+      "en": "I saved it"
+    },
+    {
+      "key": "mobile.nombre.del.token.nuevo",
+      "source": "Nombre del token nuevo",
+      "es": "Nombre del token nuevo",
+      "en": "New token name"
+    },
+    {
+      "key": "mobile.mi.asistente",
+      "source": "Mi asistente",
+      "es": "Mi asistente",
+      "en": "My assistant"
+    },
+    {
+      "key": "mobile.crear.token",
+      "source": "Crear token",
+      "es": "Crear token",
+      "en": "Create token"
+    },
+    {
+      "key": "mobile.cambiar.tu.correo",
+      "source": "Cambiar tu correo",
+      "es": "Cambiar tu correo",
+      "en": "Change your email"
+    },
+    {
+      "key": "mobile.cambiar",
+      "source": "Cambiar",
+      "es": "Cambiar",
+      "en": "Change"
+    },
+    {
+      "key": "mobile.acceso",
+      "source": "Acceso",
+      "es": "Acceso",
+      "en": "Access"
+    },
+    {
+      "key": "mobile.cambiar.correo",
+      "source": "Cambiar correo",
+      "es": "Cambiar correo",
+      "en": "Change email"
+    },
+    {
+      "key": "mobile.correo.nuevo",
+      "source": "Correo nuevo",
+      "es": "Correo nuevo",
+      "en": "New email"
+    },
+    {
+      "key": "mobile.cambiar.contrasena",
+      "source": "Cambiar contraseña",
+      "es": "Cambiar contraseña",
+      "en": "Change password"
+    },
+    {
+      "key": "mobile.minimo.8.caracteres.una.mayuscula",
+      "source": "Mínimo 8 caracteres, una mayúscula y un carácter especial.",
+      "es": "Mínimo 8 caracteres, una mayúscula y un carácter especial.",
+      "en": "At least 8 characters, one capital letter and one special character."
+    },
+    {
+      "key": "mobile.contrasena.nueva",
+      "source": "Contraseña nueva",
+      "es": "Contraseña nueva",
+      "en": "New password"
+    },
+    {
+      "key": "mobile.repite.la.contrasena",
+      "source": "Repite la contraseña",
+      "es": "Repite la contraseña",
+      "en": "Repeat the password"
+    },
+    {
+      "key": "mobile.guardar.contrasena",
+      "source": "Guardar contraseña",
+      "es": "Guardar contraseña",
+      "en": "Save password"
+    },
+    {
+      "key": "mobile.no.pudimos.conectar.con.el",
+      "source": "No pudimos conectar con el servidor. Revisa tu conexión.",
+      "es": "No pudimos conectar con el servidor. Revisa tu conexión.",
+      "en": "We couldn't connect to the server. Check your connection."
+    },
+    {
+      "key": "mobile.eliminar.tu.cuenta",
+      "source": "Eliminar tu cuenta",
+      "es": "Eliminar tu cuenta",
+      "en": "Delete your account"
+    },
+    {
+      "key": "mobile.se.borran.tu.cuenta.y",
+      "source": "Se borran tu cuenta y todos tus datos: movimientos, cuentas, categorías, presupuestos y etiquetas. No se puede deshacer.",
+      "es": "Se borran tu cuenta y todos tus datos: movimientos, cuentas, categorías, presupuestos y etiquetas. No se puede deshacer.",
+      "en": "Your account and all your data are deleted: transactions, accounts, categories, budgets and tags. This cannot be undone."
+    },
+    {
+      "key": "mobile.eliminar.todo",
+      "source": "Eliminar todo",
+      "es": "Eliminar todo",
+      "en": "Delete everything"
+    },
+    {
+      "key": "mobile.eliminar.mi.cuenta",
+      "source": "Eliminar mi cuenta",
+      "es": "Eliminar mi cuenta",
+      "en": "Delete my account"
+    },
+    {
+      "key": "mobile.esto.borra.tu.cuenta.y",
+      "source": "Esto borra tu cuenta y TODOS tus datos (movimientos, cuentas, categorías, presupuestos, etiquetas, passkeys y la app autenticadora). No se puede deshacer.",
+      "es": "Esto borra tu cuenta y TODOS tus datos (movimientos, cuentas, categorías, presupuestos, etiquetas, passkeys y la app autenticadora). No se puede deshacer.",
+      "en": "This deletes your account and ALL your data (transactions, accounts, categories, budgets, tags, passkeys and the authenticator app). It cannot be undone."
+    },
+    {
+      "key": "mobile.para.eliminarla.primero.activa.la",
+      "source": "Para eliminarla, primero activa la verificación en dos pasos aquí arriba. Si tu cuenta usa solo un passkey, confirma tu identidad desde Gastify en la web (Perfil, «Eliminar mi cuenta»).",
+      "es": "Para eliminarla, primero activa la verificación en dos pasos aquí arriba. Si tu cuenta usa solo un passkey, confirma tu identidad desde Gastify en la web (Perfil, «Eliminar mi cuenta»).",
+      "en": "To delete it, first turn on two-step verification above. If your account uses only a passkey, confirm your identity from Gastify on the web (Profile, “Delete my account”)."
+    },
+    {
+      "key": "mobile.quitar.este.passkey",
+      "source": "Quitar este passkey",
+      "es": "Quitar este passkey",
+      "en": "Remove this passkey"
+    },
+    {
+      "key": "mobile.quitar",
+      "source": "Quitar",
+      "es": "Quitar",
+      "en": "Remove"
+    },
+    {
+      "key": "mobile.passkeys",
+      "source": "Passkeys",
+      "es": "Passkeys",
+      "en": "Passkeys"
+    },
+    {
+      "key": "mobile.todavia.no.tienes.passkeys",
+      "source": "Todavía no tienes passkeys.",
+      "es": "Todavía no tienes passkeys.",
+      "en": "You have no passkeys yet."
+    },
+    {
+      "key": "mobile.cambiar.la.moneda.principal",
+      "source": "Cambiar la moneda principal",
+      "es": "Cambiar la moneda principal",
+      "en": "Change the primary currency"
+    },
+    {
+      "key": "mobile.presupuesto.mensual.de.p1.para",
+      "source": "Presupuesto mensual de {p1}para {p2}. Racha actual: {p3}{p4}bajo presupuesto.",
+      "es": "Presupuesto mensual de {p1} para {p2}. Racha actual: {p3} {p4} bajo presupuesto.",
+      "en": "Monthly budget of {p1} for {p2}. Current streak: {p3} {p4} under budget."
+    },
+    {
+      "key": "mobile.promedio.de.los.ultimos.p1",
+      "source": "Promedio de los últimos {p1}meses (sin contar este mes): {p2}. Se necesitan al menos 3 meses de historial para calcularlo.",
+      "es": "Promedio de los últimos {p1} meses (sin contar este mes): {p2}. Se necesitan al menos 3 meses de historial para calcularlo.",
+      "en": "Average of the last {p1} months (not counting this month): {p2}. At least 3 months of history are needed to calculate it."
+    },
+    {
+      "key": "mobile.este.mes",
+      "source": "Este mes",
+      "es": "Este mes",
+      "en": "This month"
+    },
+    {
+      "key": "mobile.detectada.porque.el.mismo.nombre",
+      "source": "Detectada porque el mismo nombre se repite en al menos 2 de los últimos 3 meses con un monto que varía menos de 15% — categoría {p1}.",
+      "es": "Detectada porque el mismo nombre se repite en al menos 2 de los últimos 3 meses con un monto que varía menos de 15% — categoría {p1}.",
+      "en": "Detected because the same name repeats in at least 2 of the last 3 months with an amount that varies by less than 15% — category {p1}."
+    },
+    {
+      "key": "mobile.promedio.de.los.ultimos.p1.2",
+      "source": "Promedio de los últimos {p1}meses: {p2}de ingresos, {p3}de gastos y {p4}transacciones por mes.",
+      "es": "Promedio de los últimos {p1} meses: {p2} de ingresos, {p3} de gastos y {p4} transacciones por mes.",
+      "en": "Average of the last {p1} months: {p2} of income, {p3} of bills and {p4} transactions per month."
+    },
+    {
+      "key": "mobile.tasa.de.ahorro.balance.del",
+      "source": "Tasa de ahorro = balance del mes ÷ ingresos del mes.",
+      "es": "Tasa de ahorro = balance del mes ÷ ingresos del mes.",
+      "en": "Savings rate = the month's balance ÷ the month's income."
+    },
+    {
+      "key": "mobile.de.todos.los.meses.dentro",
+      "source": "De todos los meses dentro de este periodo, {p1}fue el que más gasto acumuló.",
+      "es": "De todos los meses dentro de este periodo, {p1} fue el que más gasto acumuló.",
+      "en": "Of all the months within this period, {p1} was the one that accumulated the most spending."
+    },
+    {
+      "key": "mobile.categoria.con.mas.gasto",
+      "source": "Categoría con más gasto",
+      "es": "Categoría con más gasto",
+      "en": "Category with the most spending"
+    },
+    {
+      "key": "mobile.transaccion.mas.grande",
+      "source": "Transacción más grande",
+      "es": "Transacción más grande",
+      "en": "Largest transaction"
+    },
+    {
+      "key": "mobile.comparacion.entre.el.mes.de",
+      "source": "Comparación entre el mes de mayor gasto de este periodo y el del periodo anterior equivalente.",
+      "es": "Comparación entre el mes de mayor gasto de este periodo y el del periodo anterior equivalente.",
+      "en": "Comparison between the month with the most spending in this period and the one in the equivalent previous period."
+    },
+    {
+      "key": "mobile.de.todos.los.trimestres.dentro",
+      "source": "De todos los trimestres dentro de este periodo, {p1}fue el que más gasto acumuló.",
+      "es": "De todos los trimestres dentro de este periodo, {p1} fue el que más gasto acumuló.",
+      "en": "Of all the quarters within this period, {p1} was the one that accumulated the most spending."
+    },
+    {
+      "key": "mobile.compara.cuanto.llevas.gastado.este",
+      "source": "Compara cuánto llevas gastado este mes (al día {p1}) contra cuánto habías gastado, para ese mismo día del mes, en cada uno de los últimos {p2}meses.",
+      "es": "Compara cuánto llevas gastado este mes (al día {p1}) contra cuánto habías gastado, para ese mismo día del mes, en cada uno de los últimos {p2} meses.",
+      "en": "Compares how much you have spent this month (as of day {p1}) with how much you had spent by that same day of the month in each of the last {p2} months."
+    },
+    {
+      "key": "mobile.esta.senal.se.calcula.con",
+      "source": "Esta señal se calcula con tus movimientos del periodo.",
+      "es": "Esta señal se calcula con tus movimientos del periodo.",
+      "en": "This signal is calculated from your transactions in the period."
+    },
+    {
+      "key": "mobile.todavia.no.hay.meses.suficientes",
+      "source": "Todavía no hay meses suficientes para mostrar.",
+      "es": "Todavía no hay meses suficientes para mostrar.",
+      "en": "There are not enough months to show yet."
+    },
+    {
+      "key": "mobile.abrir.el.presupuesto",
+      "source": "Abrir el presupuesto",
+      "es": "Abrir el presupuesto",
+      "en": "Open the budget"
+    },
+    {
+      "key": "mobile.p1.del.total.de.los",
+      "source": "{p1}% del total de los 12 meses",
+      "es": "{p1}% del total de los 12 meses",
+      "en": "{p1}% of the total for the 12 months"
+    },
+    {
+      "key": "mobile.no.hay.gastos.en.estos",
+      "source": "No hay gastos en estos meses.",
+      "es": "No hay gastos en estos meses.",
+      "en": "No bills in these months."
+    },
+    {
+      "key": "mobile.analisis.de.grandes.gastos",
+      "source": "Análisis de grandes gastos",
+      "es": "Análisis de grandes gastos",
+      "en": "Big expenses analysis"
+    },
+    {
+      "key": "mobile.patrones.por.dia.de.la",
+      "source": "Patrones por día de la semana",
+      "es": "Patrones por día de la semana",
+      "en": "Weekday patterns"
+    },
+    {
+      "key": "mobile.semana.con.mas.gasto",
+      "source": "Semana con más gasto",
+      "es": "Semana con más gasto",
+      "en": "Week with the most spending"
+    },
+    {
+      "key": "mobile.p1.transacciones",
+      "source": "{p1}transacciones",
+      "es": "{p1} transacciones",
+      "en": "{p1} transactions"
+    },
+    {
+      "key": "mobile.p1.se.suma.el.gasto",
+      "source": "{p1}Se suma el gasto de cada día de la semana a lo largo del mes y se divide entre cuántas veces cayó ese día. El promedio entre semana fue {p2}y el de fin de semana {p3}.",
+      "es": "{p1} Se suma el gasto de cada día de la semana a lo largo del mes y se divide entre cuántas veces cayó ese día. El promedio entre semana fue {p2} y el de fin de semana {p3}.",
+      "en": "{p1} The spending of each weekday is added up across the month and divided by how many times that day fell. The weekday average was {p2} and the weekend average {p3}."
+    },
+    {
+      "key": "mobile.detalle.dia.por.dia",
+      "source": "Detalle día por día",
+      "es": "Detalle día por día",
+      "en": "Day-by-day detail"
+    },
+    {
+      "key": "mobile.lo.mas.destacado.del.mes",
+      "source": "Lo más destacado del mes",
+      "es": "Lo más destacado del mes",
+      "en": "Highlights of the month"
+    },
+    {
+      "key": "mobile.sin.alertas.destacadas.este.mes",
+      "source": "Sin alertas destacadas este mes.",
+      "es": "Sin alertas destacadas este mes.",
+      "en": "No highlighted alerts this month."
+    },
+    {
+      "key": "mobile.proyeccion.del.mes",
+      "source": "Proyección del mes",
+      "es": "Proyección del mes",
+      "en": "Month projection"
+    },
+    {
+      "key": "mobile.ver.proyecciones",
+      "source": "Ver proyecciones",
+      "es": "Ver proyecciones",
+      "en": "See projections"
+    },
+    {
+      "key": "mobile.calculando.proyeccion",
+      "source": "Calculando proyección…",
+      "es": "Calculando proyección…",
+      "en": "Calculating projection…"
+    },
+    {
+      "key": "mobile.no.se.pudo.cargar.la",
+      "source": "No se pudo cargar la proyección.",
+      "es": "No se pudo cargar la proyección.",
+      "en": "The projection could not be loaded."
+    },
+    {
+      "key": "mobile.no.hay.una.referencia.guardada",
+      "source": "No hay una referencia guardada para comparar este mes cerrado, o el mes todavía no ha comenzado.",
+      "es": "No hay una referencia guardada para comparar este mes cerrado, o el mes todavía no ha comenzado.",
+      "en": "There is no saved reference to compare this closed month with, or the month has not started yet."
+    },
+    {
+      "key": "mobile.previsto.p1",
+      "source": "Previsto {p1}",
+      "es": "Previsto {p1}",
+      "en": "Projected {p1}"
+    },
+    {
+      "key": "mobile.real.p1",
+      "source": "Real {p1}",
+      "es": "Real {p1}",
+      "en": "Actual {p1}"
+    },
+    {
+      "key": "mobile.sin.tipo.de.cambio.para",
+      "source": "Sin tipo de cambio para {p1}; revisa los importes en Proyecciones.",
+      "es": "Sin tipo de cambio para {p1}; revisa los importes en Proyecciones.",
+      "en": "No exchange rate for {p1}; check the amounts in Projections."
+    },
+    {
+      "key": "mobile.presupuestos.cumplimiento.y.rachas",
+      "source": "Presupuestos · cumplimiento y rachas",
+      "es": "Presupuestos · cumplimiento y rachas",
+      "en": "Budgets · compliance and streaks"
+    },
+    {
+      "key": "mobile.no.tienes.presupuestos.de.gasto",
+      "source": "No tienes presupuestos de gasto configurados.",
+      "es": "No tienes presupuestos de gasto configurados.",
+      "en": "You have no spending budgets set up."
+    },
+    {
+      "key": "mobile.p1.de.p2",
+      "source": "{p1}de {p2}",
+      "es": "{p1} de {p2}",
+      "en": "{p1} of {p2}"
+    },
+    {
+      "key": "mobile.transaccion.mas.grande.toca.para",
+      "source": "Transacción más grande · toca para ver cada mes",
+      "es": "Transacción más grande · toca para ver cada mes",
+      "en": "Largest transaction · tap to see each month"
+    },
+    {
+      "key": "mobile.categoria.lider",
+      "source": "Categoría líder ›",
+      "es": "Categoría líder ›",
+      "en": "Leading category ›"
+    },
+    {
+      "key": "mobile.subcategoria.lider",
+      "source": "Subcategoría líder ›",
+      "es": "Subcategoría líder ›",
+      "en": "Leading subcategory ›"
+    },
+    {
+      "key": "mobile.la.categoria.lider.representa.p1",
+      "source": "La categoría líder representa {p1}% del gasto de este periodo.",
+      "es": "La categoría líder representa {p1}% del gasto de este periodo.",
+      "en": "The leading category is {p1}% of the spending in this period."
+    },
+    {
+      "key": "mobile.ver.mes.por.mes",
+      "source": "Ver mes por mes",
+      "es": "Ver mes por mes",
+      "en": "See month by month"
+    },
+    {
+      "key": "mobile.ver.analisis",
+      "source": "Ver análisis",
+      "es": "Ver análisis",
+      "en": "See analysis"
+    },
+    {
+      "key": "mobile.exposicion.multimoneda",
+      "source": "Exposición multimoneda",
+      "es": "Exposición multimoneda",
+      "en": "Multi-currency exposure"
+    },
+    {
+      "key": "mobile.consultando.tipos.de.cambio",
+      "source": "Consultando tipos de cambio…",
+      "es": "Consultando tipos de cambio…",
+      "en": "Checking exchange rates…"
+    },
+    {
+      "key": "mobile.no.hay.saldos.en.otra",
+      "source": "No hay saldos en otra moneda con una cotización disponible.",
+      "es": "No hay saldos en otra moneda con una cotización disponible.",
+      "en": "No balances in another currency with an available quote."
+    },
+    {
+      "key": "mobile.sin.cotizacion.para.p1.esos",
+      "source": "Sin cotización para {p1}; esos saldos no se convierten.",
+      "es": "Sin cotización para {p1}; esos saldos no se convierten.",
+      "en": "No quote for {p1}; those balances are not converted."
+    },
+    {
+      "key": "mobile.patron.por.dia.de.la",
+      "source": "Patrón por día de la semana",
+      "es": "Patrón por día de la semana",
+      "en": "Weekday pattern"
+    },
+    {
+      "key": "mobile.ver.detalle",
+      "source": "Ver detalle",
+      "es": "Ver detalle",
+      "en": "See detail"
+    },
+    {
+      "key": "mobile.elige.el.mes.en.que",
+      "source": "Elige el mes en que empieza.",
+      "es": "Elige el mes en que empieza.",
+      "en": "Pick the month it starts."
+    },
+    {
+      "key": "mobile.el.mes.final.tiene.que",
+      "source": "El mes final tiene que ser posterior al inicial.",
+      "es": "El mes final tiene que ser posterior al inicial.",
+      "en": "The end month must be after the start month."
+    },
+    {
+      "key": "mobile.escribe.un.monto",
+      "source": "Escribe un monto.",
+      "es": "Escribe un monto.",
+      "en": "Enter an amount."
+    },
+    {
+      "key": "mobile.borrar.esta.referencia",
+      "source": "Borrar esta referencia",
+      "es": "Borrar esta referencia",
+      "en": "Delete this reference"
+    },
+    {
+      "key": "mobile.las.proyecciones.dejan.de.usarla",
+      "source": "Las proyecciones dejan de usarla. No se puede deshacer.",
+      "es": "Las proyecciones dejan de usarla. No se puede deshacer.",
+      "en": "Projections stop using it. This cannot be undone."
+    },
+    {
+      "key": "mobile.referencias.historicas",
+      "source": "Referencias históricas",
+      "es": "Referencias históricas",
+      "en": "Historical references"
+    },
+    {
+      "key": "mobile.todavia.no.hay.referencias.de",
+      "source": "Todavía no hay referencias de {p1}s.",
+      "es": "Todavía no hay referencias de {p1}s.",
+      "en": "There are no {p1} references yet."
+    },
+    {
+      "key": "mobile.desde.p1.p2",
+      "source": "Desde {p1}{p2}",
+      "es": "Desde {p1}{p2}",
+      "en": "From {p1}{p2}"
+    },
+    {
+      "key": "mobile.p1.al.mes",
+      "source": "{p1}al mes",
+      "es": "{p1} al mes",
+      "en": "{p1} a month"
+    },
+    {
+      "key": "mobile.agregar.referencia.de.p1",
+      "source": "Agregar referencia de {p1}",
+      "es": "Agregar referencia de {p1}",
+      "en": "Add a {p1} reference"
+    },
+    {
+      "key": "mobile.desde.mes",
+      "source": "Desde (mes)",
+      "es": "Desde (mes)",
+      "en": "From (month)"
+    },
+    {
+      "key": "mobile.hasta.opcional",
+      "source": "Hasta (opcional)",
+      "es": "Hasta (opcional)",
+      "en": "To (optional)"
+    },
+    {
+      "key": "mobile.monto.mensual",
+      "source": "Monto mensual",
+      "es": "Monto mensual",
+      "en": "Monthly amount"
+    },
+    {
+      "key": "mobile.moneda",
+      "source": "Moneda",
+      "es": "Moneda",
+      "en": "Currency"
+    },
+    {
+      "key": "mobile.guardar.referencia",
+      "source": "Guardar referencia",
+      "es": "Guardar referencia",
+      "en": "Save reference"
+    },
+    {
+      "key": "mobile.mensual",
+      "source": "Mensual",
+      "es": "Mensual",
+      "en": "Monthly"
+    },
+    {
+      "key": "mobile.quincenal.dias.fijos",
+      "source": "Quincenal (días fijos)",
+      "es": "Quincenal (días fijos)",
+      "en": "Fortnightly (fixed days)"
+    },
+    {
+      "key": "mobile.cada.14.dias",
+      "source": "Cada 14 días",
+      "es": "Cada 14 días",
+      "en": "Every 14 days"
+    },
+    {
+      "key": "mobile.semanal",
+      "source": "Semanal",
+      "es": "Semanal",
+      "en": "Weekly"
+    },
+    {
+      "key": "mobile.escribe.un.nombre.para.la",
+      "source": "Escribe un nombre para la fuente de ingreso.",
+      "es": "Escribe un nombre para la fuente de ingreso.",
+      "en": "Enter a name for the income source."
+    },
+    {
+      "key": "mobile.escribe.un.monto.mayor.que",
+      "source": "Escribe un monto mayor que cero.",
+      "es": "Escribe un monto mayor que cero.",
+      "en": "Enter an amount greater than zero."
+    },
+    {
+      "key": "mobile.borrar.esta.fuente",
+      "source": "Borrar esta fuente",
+      "es": "Borrar esta fuente",
+      "en": "Delete this source"
+    },
+    {
+      "key": "mobile.deja.de.contar.en.las",
+      "source": "Deja de contar en las proyecciones. No se puede deshacer.",
+      "es": "Deja de contar en las proyecciones. No se puede deshacer.",
+      "en": "It stops counting in the projections. This cannot be undone."
+    },
+    {
+      "key": "mobile.fuentes.de.ingreso",
+      "source": "Fuentes de ingreso",
+      "es": "Fuentes de ingreso",
+      "en": "Income sources"
+    },
+    {
+      "key": "mobile.todavia.no.tienes.fuentes.de",
+      "source": "Todavía no tienes fuentes de ingreso.",
+      "es": "Todavía no tienes fuentes de ingreso.",
+      "en": "You have no income sources yet."
+    },
+    {
+      "key": "mobile.nueva.fuente.de.ingreso",
+      "source": "Nueva fuente de ingreso",
+      "es": "Nueva fuente de ingreso",
+      "en": "New income source"
+    },
+    {
+      "key": "mobile.sueldo",
+      "source": "Sueldo",
+      "es": "Sueldo",
+      "en": "Salary"
+    },
+    {
+      "key": "mobile.recurrencia",
+      "source": "Recurrencia",
+      "es": "Recurrencia",
+      "en": "Recurrence"
+    },
+    {
+      "key": "mobile.primer.pago",
+      "source": "Primer pago",
+      "es": "Primer pago",
+      "en": "First payment"
+    },
+    {
+      "key": "mobile.guardar.fuente",
+      "source": "Guardar fuente",
+      "es": "Guardar fuente",
+      "en": "Save source"
+    },
+    {
+      "key": "mobile.escribe.primero.un.saldo",
+      "source": "Escribe primero un saldo.",
+      "es": "Escribe primero un saldo.",
+      "en": "Enter a balance first."
+    },
+    {
+      "key": "mobile.sin.movimientos.este.mes",
+      "source": "Sin movimientos este mes.",
+      "es": "Sin movimientos este mes.",
+      "en": "No transactions this month."
+    },
+    {
+      "key": "mobile.se.muestran.los.primeros.80",
+      "source": "Se muestran los primeros 80; el resto está en Movimientos.",
+      "es": "Se muestran los primeros 80; el resto está en Movimientos.",
+      "en": "The first 80 are shown; the rest are in Transactions."
+    },
+    {
+      "key": "mobile.presupuestado.contra.real",
+      "source": "Presupuestado contra real",
+      "es": "Presupuestado contra real",
+      "en": "Budgeted vs. actual"
+    },
+    {
+      "key": "mobile.presupuestado",
+      "source": "● Presupuestado",
+      "es": "● Presupuestado",
+      "en": "● Budgeted"
+    },
+    {
+      "key": "mobile.real",
+      "source": "● Real",
+      "es": "● Real",
+      "en": "● Actual"
+    },
+    {
+      "key": "mobile.ingreso.esperado.este.mes",
+      "source": "Ingreso esperado este mes",
+      "es": "Ingreso esperado este mes",
+      "en": "Expected income this month"
+    },
+    {
+      "key": "mobile.saldo.real.de.este.mes",
+      "source": "Saldo real de este mes",
+      "es": "Saldo real de este mes",
+      "en": "This month's actual balance"
+    },
+    {
+      "key": "mobile.saldo.al.cierre.del.mes",
+      "source": "Saldo al cierre del mes",
+      "es": "Saldo al cierre del mes",
+      "en": "Balance at month end"
+    },
+    {
+      "key": "mobile.por.ejemplo.45000",
+      "source": "Por ejemplo, 45000",
+      "es": "Por ejemplo, 45000",
+      "en": "For example, 45000"
+    },
+    {
+      "key": "mobile.guardar.saldo",
+      "source": "Guardar saldo",
+      "es": "Guardar saldo",
+      "en": "Save balance"
+    },
+    {
+      "key": "mobile.topes.inesperados",
+      "source": "Topes inesperados",
+      "es": "Topes inesperados",
+      "en": "Unexpected limits"
+    },
+    {
+      "key": "mobile.tope.de.gasto.inesperado",
+      "source": "Tope de gasto inesperado",
+      "es": "Tope de gasto inesperado",
+      "en": "Unexpected spending limit"
+    },
+    {
+      "key": "mobile.monto",
+      "source": "Monto",
+      "es": "Monto",
+      "en": "Amount"
+    },
+    {
+      "key": "mobile.tope.de.ingreso.inesperado",
+      "source": "Tope de ingreso inesperado",
+      "es": "Tope de ingreso inesperado",
+      "en": "Unexpected income limit"
+    },
+    {
+      "key": "mobile.guardar.topes",
+      "source": "Guardar topes",
+      "es": "Guardar topes",
+      "en": "Save limits"
+    },
+    {
+      "key": "mobile.historial.de.esta.proyeccion.p1",
+      "source": "Historial de esta proyección ({p1})",
+      "es": "Historial de esta proyección ({p1})",
+      "en": "History of this projection ({p1})"
+    },
+    {
+      "key": "mobile.gasto.p1.ingreso.p2",
+      "source": "gasto: {p1}· ingreso: {p2}",
+      "es": "gasto: {p1} · ingreso: {p2}",
+      "en": "expense: {p1} · income: {p2}"
+    },
+    {
+      "key": "mobile.todavia.no.hay.referencias.guardadas",
+      "source": "Todavía no hay referencias guardadas para comparar meses cerrados de este año.",
+      "es": "Todavía no hay referencias guardadas para comparar meses cerrados de este año.",
+      "en": "There are no saved references yet to compare this year's closed months."
+    },
+    {
+      "key": "mobile.proyectado",
+      "source": "Proyectado",
+      "es": "Proyectado",
+      "en": "Projected"
+    },
+    {
+      "key": "mobile.real.2",
+      "source": "Real",
+      "es": "Real",
+      "en": "Actual"
+    },
+    {
+      "key": "mobile.desajuste",
+      "source": "Desajuste",
+      "es": "Desajuste",
+      "en": "Gap"
+    },
+    {
+      "key": "mobile.solo.se.muestran.meses.cerrados",
+      "source": "Solo se muestran meses cerrados con un historial de proyección registrado.",
+      "es": "Solo se muestran meses cerrados con un historial de proyección registrado.",
+      "en": "Only closed months with a recorded projection history are shown."
+    },
+    {
+      "key": "mobile.precision.de.tus.proyecciones",
+      "source": "Precisión de tus proyecciones",
+      "es": "Precisión de tus proyecciones",
+      "en": "Accuracy of your projections"
+    },
+    {
+      "key": "mobile.explore",
+      "source": "Explore",
+      "es": "Explorar",
+      "en": "Explore"
+    },
+    {
+      "key": "mobile.this.starter.app.includes.example",
+      "source": "This starter app includes example code to help you get started.",
+      "es": "Esta app de ejemplo incluye código de muestra para ayudarte a empezar.",
+      "en": "This starter app includes example code to help you get started."
+    },
+    {
+      "key": "mobile.expo.documentation",
+      "source": "Expo documentation",
+      "es": "Documentación de Expo",
+      "en": "Expo documentation"
+    },
+    {
+      "key": "mobile.file.based.routing",
+      "source": "File-based routing",
+      "es": "Rutas basadas en archivos",
+      "en": "File-based routing"
+    },
+    {
+      "key": "mobile.this.app.has.two.screens",
+      "source": "This app has two screens:",
+      "es": "Esta app tiene dos pantallas:",
+      "en": "This app has two screens:"
+    },
+    {
+      "key": "mobile.src.app.index.tsx",
+      "source": "src/app/index.tsx",
+      "es": "src/app/index.tsx",
+      "en": "src/app/index.tsx"
+    },
+    {
+      "key": "mobile.and",
+      "source": "and",
+      "es": "y",
+      "en": "and"
+    },
+    {
+      "key": "mobile.src.app.explore.tsx",
+      "source": "src/app/explore.tsx",
+      "es": "src/app/explore.tsx",
+      "en": "src/app/explore.tsx"
+    },
+    {
+      "key": "mobile.the.layout.file.in",
+      "source": "The layout file in",
+      "es": "El archivo de diseño en",
+      "en": "The layout file in"
+    },
+    {
+      "key": "mobile.src.app.layout.tsx",
+      "source": "src/app/_layout.tsx",
+      "es": "src/app/_layout.tsx",
+      "en": "src/app/_layout.tsx"
+    },
+    {
+      "key": "mobile.sets.up.the.tab.navigator",
+      "source": "sets up the tab navigator.",
+      "es": "configura la navegación por pestañas.",
+      "en": "sets up the tab navigator."
+    },
+    {
+      "key": "mobile.learn.more",
+      "source": "Learn more",
+      "es": "Saber más",
+      "en": "Learn more"
+    },
+    {
+      "key": "mobile.android.ios.and.web.support",
+      "source": "Android, iOS, and web support",
+      "es": "Compatibilidad con Android, iOS y web",
+      "en": "Android, iOS, and web support"
+    },
+    {
+      "key": "mobile.you.can.open.this.project",
+      "source": "You can open this project on Android, iOS, and the web. To open the web version, press",
+      "es": "Puedes abrir este proyecto en Android, iOS y la web. Para abrir la versión web, pulsa",
+      "en": "You can open this project on Android, iOS, and the web. To open the web version, press"
+    },
+    {
+      "key": "mobile.w",
+      "source": "w",
+      "es": "w",
+      "en": "w"
+    },
+    {
+      "key": "mobile.in.the.terminal.running.this",
+      "source": "in the terminal running this project.",
+      "es": "en la terminal donde corre este proyecto.",
+      "en": "in the terminal running this project."
+    },
+    {
+      "key": "mobile.images",
+      "source": "Images",
+      "es": "Imágenes",
+      "en": "Images"
+    },
+    {
+      "key": "mobile.for.static.images.you.can",
+      "source": "For static images, you can use the",
+      "es": "Para imágenes estáticas puedes usar los sufijos",
+      "en": "For static images, you can use the"
+    },
+    {
+      "key": "mobile.2x",
+      "source": "@2x",
+      "es": "@2x",
+      "en": "@2x"
+    },
+    {
+      "key": "mobile.3x",
+      "source": "@3x",
+      "es": "@3x",
+      "en": "@3x"
+    },
+    {
+      "key": "mobile.suffixes.to.provide.files.for",
+      "source": "suffixes to provide files for different screen densities.",
+      "es": "para ofrecer archivos de distintas densidades de pantalla.",
+      "en": "suffixes to provide files for different screen densities."
+    },
+    {
+      "key": "mobile.light.and.dark.mode.components",
+      "source": "Light and dark mode components",
+      "es": "Componentes en modo claro y oscuro",
+      "en": "Light and dark mode components"
+    },
+    {
+      "key": "mobile.this.template.has.light.and",
+      "source": "This template has light and dark mode support. The",
+      "es": "Esta plantilla soporta modo claro y oscuro. El",
+      "en": "This template has light and dark mode support. The"
+    },
+    {
+      "key": "mobile.usecolorscheme",
+      "source": "useColorScheme()",
+      "es": "useColorScheme()",
+      "en": "useColorScheme()"
+    },
+    {
+      "key": "mobile.hook.lets.you.inspect.what",
+      "source": "hook lets you inspect what the user's current color scheme is, and so you can adjust UI colors accordingly.",
+      "es": "hook te permite ver qué esquema de color usa la persona y ajustar los colores de la interfaz en consecuencia.",
+      "en": "hook lets you inspect what the user's current color scheme is, and so you can adjust UI colors accordingly."
+    },
+    {
+      "key": "mobile.animations",
+      "source": "Animations",
+      "es": "Animaciones",
+      "en": "Animations"
+    },
+    {
+      "key": "mobile.this.template.includes.an.example",
+      "source": "This template includes an example of an animated component. The",
+      "es": "Esta plantilla incluye un ejemplo de componente animado. El",
+      "en": "This template includes an example of an animated component. The"
+    },
+    {
+      "key": "mobile.src.components.ui.collapsible.tsx",
+      "source": "src/components/ui/collapsible.tsx",
+      "es": "src/components/ui/collapsible.tsx",
+      "en": "src/components/ui/collapsible.tsx"
+    },
+    {
+      "key": "mobile.component.uses.the.powerful",
+      "source": "component uses the powerful",
+      "es": "usa la potente",
+      "en": "component uses the powerful"
+    },
+    {
+      "key": "mobile.react.native.reanimated",
+      "source": "react-native-reanimated",
+      "es": "react-native-reanimated",
+      "en": "react-native-reanimated"
+    },
+    {
+      "key": "mobile.library.to.animate.opening.this",
+      "source": "library to animate opening this hint.",
+      "es": "para animar la apertura de esta pista.",
+      "en": "library to animate opening this hint."
+    },
+    {
+      "key": "mobile.no.pudimos.cargar.tus.movimientos",
+      "source": "No pudimos cargar tus movimientos. Desliza hacia abajo para intentarlo de nuevo.",
+      "es": "No pudimos cargar tus movimientos. Desliza hacia abajo para intentarlo de nuevo.",
+      "en": "We couldn't load your transactions. Pull down to try again."
+    },
+    {
+      "key": "mobile.ver.todas",
+      "source": "Ver todas",
+      "es": "Ver todas",
+      "en": "See all"
+    },
+    {
+      "key": "mobile.en.total.p1.p2",
+      "source": "En total {p1}{p2}",
+      "es": "En total {p1}{p2}",
+      "en": "In total {p1}{p2}"
+    },
+    {
+      "key": "mobile.todavia.no.tienes.cuentas",
+      "source": "Todavía no tienes cuentas.",
+      "es": "Todavía no tienes cuentas.",
+      "en": "You have no accounts yet."
+    },
+    {
+      "key": "mobile.ultimos.movimientos",
+      "source": "Últimos movimientos",
+      "es": "Últimos movimientos",
+      "en": "Latest transactions"
+    },
+    {
+      "key": "mobile.ver.todos",
+      "source": "Ver todos",
+      "es": "Ver todos",
+      "en": "See all"
+    },
+    {
+      "key": "mobile.todavia.no.tienes.movimientos",
+      "source": "Todavía no tienes movimientos.",
+      "es": "Todavía no tienes movimientos.",
+      "en": "You have no transactions yet."
+    },
+    {
+      "key": "mobile.cargando",
+      "source": "Cargando…",
+      "es": "Cargando…",
+      "en": "Loading…"
+    },
+    {
+      "key": "mobile.avisos.de.tus.presupuestos.ahorros",
+      "source": "Avisos de tus presupuestos, ahorros y proyectos de este mes.",
+      "es": "Avisos de tus presupuestos, ahorros y proyectos de este mes.",
+      "en": "Notices about your budgets, savings and projects this month."
+    },
+    {
+      "key": "mobile.limpiar.todas.las.notificaciones",
+      "source": "Limpiar todas las notificaciones",
+      "es": "Limpiar todas las notificaciones",
+      "en": "Clear all notifications"
+    },
+    {
+      "key": "mobile.limpiar.todas",
+      "source": "Limpiar todas",
+      "es": "Limpiar todas",
+      "en": "Clear all"
+    },
+    {
+      "key": "mobile.sin.avisos.por.ahora",
+      "source": "Sin avisos por ahora",
+      "es": "Sin avisos por ahora",
+      "en": "No notices for now"
+    },
+    {
+      "key": "mobile.cuando.un.presupuesto.o.una",
+      "source": "Cuando un presupuesto o una meta llegue a un punto importante, aparecerá aquí.",
+      "es": "Cuando un presupuesto o una meta llegue a un punto importante, aparecerá aquí.",
+      "en": "When a budget or goal reaches an important point, it will appear here."
+    },
+    {
+      "key": "mobile.transferir",
+      "source": "Transferir",
+      "es": "Transferir",
+      "en": "Transfer"
+    },
+    {
+      "key": "mobile.presupuesto",
+      "source": "Presupuesto",
+      "es": "Presupuesto",
+      "en": "Budget"
+    },
+    {
+      "key": "mobile.proyecto",
+      "source": "Proyecto",
+      "es": "Proyecto",
+      "en": "Project"
+    },
+    {
+      "key": "mobile.crear",
+      "source": "Crear",
+      "es": "Crear",
+      "en": "Create"
+    },
+    {
+      "key": "mobile.elige.que.quieres.agregar",
+      "source": "Elige qué quieres agregar.",
+      "es": "Elige qué quieres agregar.",
+      "en": "Choose what to add."
+    },
+    {
+      "key": "mobile.importar.desde.excel",
+      "source": "Importar desde Excel",
+      "es": "Importar desde Excel",
+      "en": "Import from Excel"
+    },
+    {
+      "key": "mobile.grandes.gastos.ultimos.12.meses",
+      "source": "Grandes gastos · últimos 12 meses",
+      "es": "Grandes gastos · últimos 12 meses",
+      "en": "Big expenses · last 12 months"
+    },
+    {
+      "key": "mobile.no.hay.gastos.registrados.en",
+      "source": "No hay gastos registrados en estos doce meses.",
+      "es": "No hay gastos registrados en estos doce meses.",
+      "en": "No bills recorded in these twelve months."
+    },
+    {
+      "key": "mobile.ver.la.transaccion.mas.grande",
+      "source": "Ver la transacción más grande de cada mes",
+      "es": "Ver la transacción más grande de cada mes",
+      "en": "See the largest transaction of each month"
+    },
+    {
+      "key": "mobile.mayor.transaccion.toca.para.ver",
+      "source": "Mayor transacción · toca para ver cada mes",
+      "es": "Mayor transacción · toca para ver cada mes",
+      "en": "Largest transaction · tap to see each month"
+    },
+    {
+      "key": "mobile.vs.p1",
+      "source": "vs {p1}",
+      "es": "vs {p1}",
+      "en": "vs {p1}"
+    },
+    {
+      "key": "mobile.ver.lideres.mes.por.mes",
+      "source": "Ver líderes mes por mes",
+      "es": "Ver líderes mes por mes",
+      "en": "See leaders month by month"
+    },
+    {
+      "key": "mobile.suscripciones.recurrentes",
+      "source": "Suscripciones recurrentes",
+      "es": "Suscripciones recurrentes",
+      "en": "Recurring subscriptions"
+    },
+    {
+      "key": "mobile.no.se.detectaron.pagos.recurrentes",
+      "source": "No se detectaron pagos recurrentes en este periodo.",
+      "es": "No se detectaron pagos recurrentes en este periodo.",
+      "en": "No recurring payments were detected in this period."
+    },
+    {
+      "key": "mobile.nuevo.en.este.periodo",
+      "source": "Nuevo en este periodo",
+      "es": "Nuevo en este periodo",
+      "en": "New in this period"
+    },
+    {
+      "key": "mobile.hay.un.posible.cargo.duplicado",
+      "source": "Hay un posible cargo duplicado en el mes.",
+      "es": "Hay un posible cargo duplicado en el mes.",
+      "en": "There is a possible duplicate charge this month."
+    },
+    {
+      "key": "mobile.presupuestos.del.periodo",
+      "source": "Presupuestos del periodo",
+      "es": "Presupuestos del periodo",
+      "en": "Budgets for the period"
+    },
+    {
+      "key": "mobile.gasto.del.periodo.p1.p2",
+      "source": "Gasto del periodo: {p1}{p2}",
+      "es": "Gasto del periodo: {p1}{p2}",
+      "en": "Spending for the period: {p1}{p2}"
+    },
+    {
+      "key": "mobile.periodo.comparado.p1.p2.meses",
+      "source": "Periodo comparado: {p1}/{p2}meses dentro del límite{p3}",
+      "es": "Periodo comparado: {p1}/{p2} meses dentro del límite{p3}",
+      "en": "Compared period: {p1}/{p2} months within the limit{p3}"
+    },
+    {
+      "key": "mobile.periodo.elegido",
+      "source": "Periodo elegido",
+      "es": "Periodo elegido",
+      "en": "Chosen period"
+    },
+    {
+      "key": "mobile.periodo.comparado",
+      "source": "Periodo comparado",
+      "es": "Periodo comparado",
+      "en": "Compared period"
+    },
+    {
+      "key": "mobile.actual.p1.comparado.p2",
+      "source": "Actual: {p1}· Comparado: {p2}",
+      "es": "Actual: {p1} · Comparado: {p2}",
+      "en": "Actual: {p1} · Compared: {p2}"
+    },
+    {
+      "key": "mobile.ingresos.2",
+      "source": "● Ingresos",
+      "es": "● Ingresos",
+      "en": "● Income"
+    },
+    {
+      "key": "mobile.gastos.2",
+      "source": "● Gastos",
+      "es": "● Gastos",
+      "en": "● Bills"
+    },
+    {
+      "key": "mobile.tenue.p1",
+      "source": "○ Tenue: {p1}",
+      "es": "○ Tenue: {p1}",
+      "en": "○ Faded: {p1}"
+    },
+    {
+      "key": "mobile.categoria.lider.2",
+      "source": "Categoría líder",
+      "es": "Categoría líder",
+      "en": "Leading category"
+    },
+    {
+      "key": "mobile.mayor.primero",
+      "source": "Mayor primero",
+      "es": "Mayor primero",
+      "en": "Highest first"
+    },
+    {
+      "key": "mobile.menor.primero",
+      "source": "Menor primero",
+      "es": "Menor primero",
+      "en": "Lowest first"
+    },
+    {
+      "key": "mobile.izquierda.el.periodo.elegido.derecha",
+      "source": "Izquierda: el periodo elegido. Derecha: el periodo con el que lo comparas.",
+      "es": "Izquierda: el periodo elegido. Derecha: el periodo con el que lo comparas.",
+      "en": "Left: the chosen period. Right: the period you compare it with."
+    },
+    {
+      "key": "mobile.calculando",
+      "source": "Calculando…",
+      "es": "Calculando…",
+      "en": "Calculating…"
+    },
+    {
+      "key": "mobile.neto.del.ano.p1",
+      "source": "Neto del año {p1}",
+      "es": "Neto del año {p1}",
+      "en": "Net for the year {p1}"
+    },
+    {
+      "key": "mobile.ver.el.detalle",
+      "source": "Ver el detalle ›",
+      "es": "Ver el detalle ›",
+      "en": "See the detail ›"
+    },
+    {
+      "key": "mobile.ver.proyectado.contra.real",
+      "source": "Ver proyectado contra real",
+      "es": "Ver proyectado contra real",
+      "en": "See projected vs. actual"
+    },
+    {
+      "key": "mobile.proyectado.contra.real",
+      "source": "Proyectado contra real",
+      "es": "Proyectado contra real",
+      "en": "Projected vs. actual"
+    },
+    {
+      "key": "mobile.periodo.anterior",
+      "source": "Periodo anterior",
+      "es": "Periodo anterior",
+      "en": "Previous period"
+    },
+    {
+      "key": "mobile.periodo.siguiente",
+      "source": "Periodo siguiente",
+      "es": "Periodo siguiente",
+      "en": "Next period"
+    },
+    {
+      "key": "mobile.en.total",
+      "source": "En total",
+      "es": "En total",
+      "en": "In total"
+    },
+    {
+      "key": "mobile.y.p1.cuentas.mas",
+      "source": "y {p1}cuentas más",
+      "es": "y {p1}cuentas más",
+      "en": "and {p1} more accounts"
+    },
+    {
+      "key": "mobile.tarjeta.anterior",
+      "source": "Tarjeta anterior",
+      "es": "Tarjeta anterior",
+      "en": "Previous card"
+    },
+    {
+      "key": "mobile.tarjeta.siguiente",
+      "source": "Tarjeta siguiente",
+      "es": "Tarjeta siguiente",
+      "en": "Next card"
+    },
+    {
+      "key": "mobile.contra.el.periodo.anterior",
+      "source": "Contra el periodo anterior",
+      "es": "Contra el periodo anterior",
+      "en": "Against the previous period"
+    },
+    {
+      "key": "mobile.mes.anterior.p1",
+      "source": "Mes anterior: {p1}",
+      "es": "Mes anterior: {p1}",
+      "en": "Previous month: {p1}"
+    },
+    {
+      "key": "mobile.actual.p1",
+      "source": "Actual: {p1}",
+      "es": "Actual: {p1}",
+      "en": "Actual: {p1}"
+    },
+    {
+      "key": "mobile.tus.cuentas",
+      "source": "Tus cuentas",
+      "es": "Tus cuentas",
+      "en": "Your accounts"
+    },
+    {
+      "key": "mobile.ingresos.3",
+      "source": "Ingresos:",
+      "es": "Ingresos:",
+      "en": "Income:"
+    },
+    {
+      "key": "mobile.gastos.3",
+      "source": "Gastos:",
+      "es": "Gastos:",
+      "en": "Bills:"
+    },
+    {
+      "key": "mobile.balance.2",
+      "source": "Balance:",
+      "es": "Balance:",
+      "en": "Balance:"
+    },
+    {
+      "key": "mobile.vs.mes.anterior",
+      "source": "Vs. mes anterior",
+      "es": "Vs. mes anterior",
+      "en": "Vs. previous month"
+    },
+    {
+      "key": "mobile.ver.transacciones",
+      "source": "Ver transacciones",
+      "es": "Ver transacciones",
+      "en": "See transactions"
+    },
+    {
+      "key": "mobile.anillo",
+      "source": "Anillo",
+      "es": "Anillo",
+      "en": "Ring"
+    },
+    {
+      "key": "mobile.burbujas",
+      "source": "Burbujas",
+      "es": "Burbujas",
+      "en": "Bubbles"
+    },
+    {
+      "key": "mobile.mapa",
+      "source": "Mapa",
+      "es": "Mapa",
+      "en": "Map"
+    },
+    {
+      "key": "mobile.ver.las.p1.p2",
+      "source": "Ver las {p1}{p2}›",
+      "es": "Ver las {p1}{p2}›",
+      "en": "See the {p1}{p2} ›"
+    },
+    {
+      "key": "mobile.resumen.de.transacciones",
+      "source": "Resumen de transacciones",
+      "es": "Resumen de transacciones",
+      "en": "Transactions summary"
+    },
+    {
+      "key": "mobile.sin.p1.en.este.periodo",
+      "source": "Sin {p1}en este periodo.",
+      "es": "Sin {p1}en este periodo.",
+      "en": "No {p1} in this period."
+    },
+    {
+      "key": "mobile.gasto.por.dia",
+      "source": "Gasto por día",
+      "es": "Gasto por día",
+      "en": "Spending per day"
+    },
+    {
+      "key": "mobile.al.ritmo.actual",
+      "source": "Al ritmo actual",
+      "es": "Al ritmo actual",
+      "en": "At the current pace"
+    },
+    {
+      "key": "mobile.lo.que.conservas",
+      "source": "Lo que conservas",
+      "es": "Lo que conservas",
+      "en": "What you keep"
+    },
+    {
+      "key": "mobile.gastos.vs.periodo.anterior",
+      "source": "Gastos vs periodo anterior",
+      "es": "Gastos vs periodo anterior",
+      "en": "Bills vs previous period"
+    },
+    {
+      "key": "mobile.ingresos.vs.periodo.anterior",
+      "source": "Ingresos vs periodo anterior",
+      "es": "Ingresos vs periodo anterior",
+      "en": "Income vs previous period"
+    },
+    {
+      "key": "mobile.gasto.promedio",
+      "source": "Gasto promedio",
+      "es": "Gasto promedio",
+      "en": "Average spending"
+    },
+    {
+      "key": "mobile.balance.del.periodo",
+      "source": "Balance del periodo",
+      "es": "Balance del periodo",
+      "en": "Period balance"
+    },
+    {
+      "key": "mobile.analisis.del.periodo",
+      "source": "Análisis del periodo",
+      "es": "Análisis del periodo",
+      "en": "Period analysis"
+    },
+    {
+      "key": "mobile.ver.analisis.completo",
+      "source": "Ver análisis completo",
+      "es": "Ver análisis completo",
+      "en": "See full analysis"
+    },
+    {
+      "key": "mobile.abrir.el.analizador.de.cartera",
+      "source": "Abrir el Analizador de cartera",
+      "es": "Abrir el Analizador de cartera",
+      "en": "Open the Wallet Analyzer"
+    },
+    {
+      "key": "mobile.todavia.no.tienes.presupuestos.de",
+      "source": "Todavía no tienes presupuestos de gasto.",
+      "es": "Todavía no tienes presupuestos de gasto.",
+      "en": "You have no spending budgets yet."
+    },
+    {
+      "key": "mobile.trans",
+      "source": "Trans.",
+      "es": "Trans.",
+      "en": "Trans."
+    },
+    {
+      "key": "mobile.los.mas.grandes",
+      "source": "Los más grandes",
+      "es": "Los más grandes",
+      "en": "The biggest ones"
+    },
+    {
+      "key": "mobile.no.encontramos.este.presupuesto.puede",
+      "source": "No encontramos este presupuesto. Puede que ya se haya borrado.",
+      "es": "No encontramos este presupuesto. Puede que ya se haya borrado.",
+      "en": "We couldn't find this budget. It may have been deleted."
+    },
+    {
+      "key": "mobile.borrar.este.presupuesto",
+      "source": "Borrar este presupuesto",
+      "es": "Borrar este presupuesto",
+      "en": "Delete this budget"
+    },
+    {
+      "key": "mobile.los.movimientos.ligados.se.conservan",
+      "source": "Los movimientos ligados se conservan, sin presupuesto. No se puede deshacer.",
+      "es": "Los movimientos ligados se conservan, sin presupuesto. No se puede deshacer.",
+      "en": "Linked transactions are kept, without a budget. This cannot be undone."
+    },
+    {
+      "key": "mobile.meta.alcanzada.felicidades",
+      "source": "¡Meta alcanzada! Felicidades.",
+      "es": "¡Meta alcanzada! Felicidades.",
+      "en": "Goal reached! Congratulations."
+    },
+    {
+      "key": "mobile.en.tus.cuentas.ligadas",
+      "source": "En tus cuentas ligadas",
+      "es": "En tus cuentas ligadas",
+      "en": "In your linked accounts"
+    },
+    {
+      "key": "mobile.distribucion.del.gasto.por.categoria",
+      "source": "Distribución del gasto por categoría",
+      "es": "Distribución del gasto por categoría",
+      "en": "Spending breakdown by category"
+    },
+    {
+      "key": "mobile.cuentas.ligadas",
+      "source": "Cuentas ligadas",
+      "es": "Cuentas ligadas",
+      "en": "Linked accounts"
+    },
+    {
+      "key": "mobile.esta.meta.no.tiene.cuentas",
+      "source": "Esta meta no tiene cuentas ligadas.",
+      "es": "Esta meta no tiene cuentas ligadas.",
+      "en": "This goal has no linked accounts."
+    },
+    {
+      "key": "mobile.vincular.existente",
+      "source": "Vincular existente",
+      "es": "Vincular existente",
+      "en": "Link existing"
+    },
+    {
+      "key": "mobile.crear.movimiento",
+      "source": "Crear movimiento",
+      "es": "Crear movimiento",
+      "en": "Create transaction"
+    },
+    {
+      "key": "mobile.todavia.no.hay.movimientos",
+      "source": "Todavía no hay movimientos.",
+      "es": "Todavía no hay movimientos.",
+      "en": "There are no transactions yet."
+    },
+    {
+      "key": "mobile.desvincular",
+      "source": "Desvincular",
+      "es": "Desvincular",
+      "en": "Unlink"
+    },
+    {
+      "key": "mobile.y.p1.mas.en.movimientos",
+      "source": "Y {p1}más en Movimientos.",
+      "es": "Y {p1}más en Movimientos.",
+      "en": "And {p1} more in Transactions."
+    },
+    {
+      "key": "mobile.vincular.un.movimiento",
+      "source": "Vincular un movimiento",
+      "es": "Vincular un movimiento",
+      "en": "Link a transaction"
+    },
+    {
+      "key": "mobile.no.pudimos.cargar.tus.presupuestos",
+      "source": "No pudimos cargar tus presupuestos.",
+      "es": "No pudimos cargar tus presupuestos.",
+      "en": "We couldn't load your budgets."
+    },
+    {
+      "key": "mobile.mes",
+      "source": "Mes",
+      "es": "Mes",
+      "en": "Month"
+    },
+    {
+      "key": "mobile.fecha.inicial",
+      "source": "Fecha inicial",
+      "es": "Fecha inicial",
+      "en": "Start date"
+    },
+    {
+      "key": "mobile.fecha.final",
+      "source": "Fecha final",
+      "es": "Fecha final",
+      "en": "End date"
+    },
+    {
+      "key": "mobile.gasto.total",
+      "source": "Gasto total",
+      "es": "Gasto total",
+      "en": "Total spending"
+    },
+    {
+      "key": "mobile.toca.para.ver.el.detalle",
+      "source": "Toca para ver el detalle",
+      "es": "Toca para ver el detalle",
+      "en": "Tap to see the detail"
+    },
+    {
+      "key": "mobile.sin.presupuesto",
+      "source": "Sin presupuesto",
+      "es": "Sin presupuesto",
+      "en": "Without a budget"
+    },
+    {
+      "key": "mobile.p1.del.gasto",
+      "source": "{p1}% del gasto",
+      "es": "{p1}% del gasto",
+      "en": "{p1}% of spending"
+    },
+    {
+      "key": "mobile.ordenar.por",
+      "source": "Ordenar por",
+      "es": "Ordenar por",
+      "en": "Sort by"
+    },
+    {
+      "key": "mobile.ordenar.presupuestos",
+      "source": "Ordenar presupuestos",
+      "es": "Ordenar presupuestos",
+      "en": "Sort budgets"
+    },
+    {
+      "key": "mobile.no.tienes.presupuestos.de.gasto.2",
+      "source": "No tienes presupuestos de gasto activos.",
+      "es": "No tienes presupuestos de gasto activos.",
+      "en": "You have no active spending budgets."
+    },
+    {
+      "key": "mobile.proyectos",
+      "source": "Proyectos",
+      "es": "Proyectos",
+      "en": "Projects"
+    },
+    {
+      "key": "mobile.tipo",
+      "source": "Tipo",
+      "es": "Tipo",
+      "en": "Type"
+    },
+    {
+      "key": "mobile.divisa",
+      "source": "Divisa",
+      "es": "Divisa",
+      "en": "Currency"
+    },
+    {
+      "key": "mobile.edicion.general",
+      "source": "Edición general",
+      "es": "Edición general",
+      "en": "General edit"
+    },
+    {
+      "key": "mobile.exportar",
+      "source": "Exportar",
+      "es": "Exportar",
+      "en": "Export"
+    },
+    {
+      "key": "mobile.importar.de.excel",
+      "source": "Importar de Excel",
+      "es": "Importar de Excel",
+      "en": "Import from Excel"
+    },
+    {
+      "key": "mobile.categorizar",
+      "source": "Categorizar",
+      "es": "Categorizar",
+      "en": "Categorize"
+    },
+    {
+      "key": "mobile.filtros.p1",
+      "source": "Filtros{p1}",
+      "es": "Filtros{p1}",
+      "en": "Filters{p1}"
+    },
+    {
+      "key": "mobile.salir.de.la.seleccion",
+      "source": "Salir de la selección",
+      "es": "Salir de la selección",
+      "en": "Leave selection"
+    },
+    {
+      "key": "mobile.off",
+      "source": "Off",
+      "es": "Apagado",
+      "en": "Off"
+    },
+    {
+      "key": "mobile.todos",
+      "source": "Todos",
+      "es": "Todos",
+      "en": "All"
+    },
+    {
+      "key": "mobile.cargando.movimientos.mas.antiguos.las",
+      "source": "Cargando movimientos más antiguos… Las cifras de este periodo pueden crecer.",
+      "es": "Cargando movimientos más antiguos… Las cifras de este periodo pueden crecer.",
+      "en": "Loading older transactions… The figures for this period may grow."
+    },
+    {
+      "key": "mobile.no.pudimos.cargar.los.movimientos",
+      "source": "No pudimos cargar los movimientos más antiguos.",
+      "es": "No pudimos cargar los movimientos más antiguos.",
+      "en": "We couldn't load the older transactions."
+    },
+    {
+      "key": "mobile.reintentar",
+      "source": "Reintentar",
+      "es": "Reintentar",
+      "en": "Try again"
+    },
+    {
+      "key": "mobile.movimiento",
+      "source": "Movimiento",
+      "es": "Movimiento",
+      "en": "Transaction"
+    },
+    {
+      "key": "mobile.no.encontramos.este.movimiento.puede",
+      "source": "No encontramos este movimiento. Puede que ya se haya borrado.",
+      "es": "No encontramos este movimiento. Puede que ya se haya borrado.",
+      "en": "We couldn't find this transaction. It may have been deleted."
+    },
+    {
+      "key": "mobile.borrar.este.movimiento",
+      "source": "Borrar este movimiento",
+      "es": "Borrar este movimiento",
+      "en": "Delete this transaction"
+    },
+    {
+      "key": "mobile.transferencia",
+      "source": "Transferencia",
+      "es": "Transferencia",
+      "en": "Transfer"
+    },
+    {
+      "key": "mobile.las.transferencias.se.guardan.como",
+      "source": "Las transferencias se guardan como dos movimientos ligados. Para corregirla, bórrala y créala de nuevo.",
+      "es": "Las transferencias se guardan como dos movimientos ligados. Para corregirla, bórrala y créala de nuevo.",
+      "en": "Transfers are saved as two linked transactions. To fix it, delete it and create it again."
+    },
+    {
+      "key": "mobile.borrar.transferencia",
+      "source": "Borrar transferencia",
+      "es": "Borrar transferencia",
+      "en": "Delete transfer"
+    },
+    {
+      "key": "mobile.etiquetas",
+      "source": "Etiquetas",
+      "es": "Etiquetas",
+      "en": "Tags"
+    },
+    {
+      "key": "mobile.1.descarga.la.plantilla",
+      "source": "1. Descarga la plantilla",
+      "es": "1. Descarga la plantilla",
+      "en": "1. Download the template"
+    },
+    {
+      "key": "mobile.se.guarda.como.archivo.excel",
+      "source": "Se guarda como archivo Excel y se abre el menú para enviarla a tu computadora, a Archivos o a tu app de hojas de cálculo.",
+      "es": "Se guarda como archivo Excel y se abre el menú para enviarla a tu computadora, a Archivos o a tu app de hojas de cálculo.",
+      "en": "It's saved as an Excel file and the menu opens so you can send it to your computer, Files or your spreadsheet app."
+    },
+    {
+      "key": "mobile.descargar.plantilla",
+      "source": "Descargar plantilla",
+      "es": "Descargar plantilla",
+      "en": "Download template"
+    },
+    {
+      "key": "mobile.2.sube.tu.archivo",
+      "source": "2. Sube tu archivo",
+      "es": "2. Sube tu archivo",
+      "en": "2. Upload your file"
+    },
+    {
+      "key": "mobile.elige.el.archivo.xlsx.ya",
+      "source": "Elige el archivo .xlsx ya lleno. Los movimientos se crean al instante y puedes verlos en la lista.",
+      "es": "Elige el archivo .xlsx ya lleno. Los movimientos se crean al instante y puedes verlos en la lista.",
+      "en": "Pick the filled .xlsx file. The transactions are created at once and you can see them in the list."
+    },
+    {
+      "key": "mobile.p1.quedaron.sin.categoria.el",
+      "source": "{p1}quedaron sin categoría: el botón ✨ (Tools) los categoriza con tus reglas.",
+      "es": "{p1} quedaron sin categoría: el botón ✨ (Tools) los categoriza con tus reglas.",
+      "en": "{p1} have no category: the ✨ (Tools) button categorizes them with your rules."
+    },
+    {
+      "key": "mobile.legibles",
+      "source": "Legibles",
+      "es": "Legibles",
+      "en": "Readable"
+    },
+    {
+      "key": "mobile.no.legibles",
+      "source": "No legibles",
+      "es": "No legibles",
+      "en": "Not readable"
+    },
+    {
+      "key": "mobile.transferencias",
+      "source": "Transferencias",
+      "es": "Transferencias",
+      "en": "Transfers"
+    },
+    {
+      "key": "mobile.todas",
+      "source": "Todas",
+      "es": "Todas",
+      "en": "All"
+    },
+    {
+      "key": "mobile.filtros",
+      "source": "Filtros",
+      "es": "Filtros",
+      "en": "Filters"
+    },
+    {
+      "key": "mobile.buscar",
+      "source": "Buscar",
+      "es": "Buscar",
+      "en": "Search"
+    },
+    {
+      "key": "mobile.nombre.categoria.etiqueta",
+      "source": "Nombre, categoría, etiqueta…",
+      "es": "Nombre, categoría, etiqueta…",
+      "en": "Name, category, tag…"
+    },
+    {
+      "key": "mobile.legibilidad",
+      "source": "Legibilidad",
+      "es": "Legibilidad",
+      "en": "Readability"
+    },
+    {
+      "key": "mobile.monto.exacto",
+      "source": "Monto exacto",
+      "es": "Monto exacto",
+      "en": "Exact amount"
+    },
+    {
+      "key": "mobile.por.ejemplo.250.00",
+      "source": "Por ejemplo 250.00",
+      "es": "Por ejemplo 250.00",
+      "en": "For example 250.00"
+    },
+    {
+      "key": "mobile.en.mi.moneda.principal",
+      "source": "En mi moneda principal",
+      "es": "En mi moneda principal",
+      "en": "In my primary currency"
+    },
+    {
+      "key": "mobile.en.la.moneda.de.la",
+      "source": "En la moneda de la cuenta",
+      "es": "En la moneda de la cuenta",
+      "en": "In the account's currency"
+    },
+    {
+      "key": "mobile.buscar.posibles.duplicados",
+      "source": "Buscar posibles duplicados",
+      "es": "Buscar posibles duplicados",
+      "en": "Find possible duplicates"
+    },
+    {
+      "key": "mobile.buscar.duplicados",
+      "source": "Buscar duplicados",
+      "es": "Buscar duplicados",
+      "en": "Find duplicates"
+    },
+    {
+      "key": "mobile.limpiar.filtros",
+      "source": "Limpiar filtros",
+      "es": "Limpiar filtros",
+      "en": "Clear filters"
+    },
+    {
+      "key": "mobile.coincidencias",
+      "source": "Coincidencias",
+      "es": "Coincidencias",
+      "en": "Matches"
+    },
+    {
+      "key": "mobile.tolerancia.de.fecha.dias",
+      "source": "Tolerancia de fecha (días)",
+      "es": "Tolerancia de fecha (días)",
+      "en": "Date tolerance (days)"
+    },
+    {
+      "key": "mobile.tolerancia.de.monto",
+      "source": "Tolerancia de monto",
+      "es": "Tolerancia de monto",
+      "en": "Amount tolerance"
+    },
+    {
+      "key": "mobile.restablecer.valores",
+      "source": "Restablecer valores",
+      "es": "Restablecer valores",
+      "en": "Reset values"
+    },
+    {
+      "key": "mobile.seleccionar.los.repetidos.dejando.uno",
+      "source": "Seleccionar los repetidos (dejando uno de cada grupo)",
+      "es": "Seleccionar los repetidos (dejando uno de cada grupo)",
+      "en": "Select the repeats (keeping one from each group)"
+    },
+    {
+      "key": "mobile.elige.la.nueva.divisa",
+      "source": "Elige la nueva divisa.",
+      "es": "Elige la nueva divisa.",
+      "en": "Pick the new currency."
+    },
+    {
+      "key": "mobile.elige.la.cuenta.destino",
+      "source": "Elige la cuenta destino.",
+      "es": "Elige la cuenta destino.",
+      "en": "Pick the destination account."
+    },
+    {
+      "key": "mobile.edita.todos.los.campos.a",
+      "source": "Edita todos los campos a la vez. Lo que llenes se escribe en TODOS los movimientos seleccionados; lo que dejes en blanco se queda como estaba en cada uno.",
+      "es": "Edita todos los campos a la vez. Lo que llenes se escribe en TODOS los movimientos seleccionados; lo que dejes en blanco se queda como estaba en cada uno.",
+      "en": "Edit all fields at once. What you fill in is written to ALL the selected transactions; what you leave blank stays as it was in each one."
+    },
+    {
+      "key": "mobile.cambiar.la.divisa",
+      "source": "Cambiar la divisa",
+      "es": "Cambiar la divisa",
+      "en": "Change the currency"
+    },
+    {
+      "key": "mobile.convierte.el.monto.de.cada",
+      "source": "Convierte el monto de cada movimiento con el tipo de cambio de su fecha. Un movimiento solo cambia si su cuenta está en la nueva divisa (o si no tiene cuenta). Los que no pueden se quedan como estaban y se te dice por qué; puedes darles una cuenta de esa divisa en el mismo aviso.",
+      "es": "Convierte el monto de cada movimiento con el tipo de cambio de su fecha. Un movimiento solo cambia si su cuenta está en la nueva divisa (o si no tiene cuenta). Los que no pueden se quedan como estaban y se te dice por qué; puedes darles una cuenta de esa divisa en el mismo aviso.",
+      "en": "Converts each transaction's amount with the exchange rate of its date. A transaction only changes if its account is in the new currency (or it has no account). Those that can't stay as they were and you're told why; you can give them an account in that currency in the same notice."
+    },
+    {
+      "key": "mobile.si.lo.dejas.vacio.no",
+      "source": "Si lo dejas vacío, no cambia",
+      "es": "Si lo dejas vacío, no cambia",
+      "en": "If you leave it empty, it doesn't change"
+    },
+    {
+      "key": "mobile.monto.opcional",
+      "source": "Monto (opcional)",
+      "es": "Monto (opcional)",
+      "en": "Amount (optional)"
+    },
+    {
+      "key": "mobile.sin.cambio",
+      "source": "Sin cambio",
+      "es": "Sin cambio",
+      "en": "No change"
+    },
+    {
+      "key": "mobile.al.cambiar.la.categoria.la",
+      "source": "Al cambiar la categoría, la subcategoría se quita.",
+      "es": "Al cambiar la categoría, la subcategoría se quita.",
+      "en": "Changing the category removes the subcategory."
+    },
+    {
+      "key": "mobile.etiquetas.opcional.separadas.por.comas",
+      "source": "Etiquetas (opcional, separadas por comas)",
+      "es": "Etiquetas (opcional, separadas por comas)",
+      "en": "Tags (optional, separated by commas)"
+    },
+    {
+      "key": "mobile.nueva.divisa",
+      "source": "Nueva divisa",
+      "es": "Nueva divisa",
+      "en": "New currency"
+    },
+    {
+      "key": "mobile.p1.con.su.cuenta.actual",
+      "source": "{p1}con su cuenta actual:",
+      "es": "{p1} con su cuenta actual:",
+      "en": "{p1} with their current account:"
+    },
+    {
+      "key": "mobile.pasarlos.a.una.cuenta.en",
+      "source": "Pasarlos a una cuenta en {p1}",
+      "es": "Pasarlos a una cuenta en {p1}",
+      "en": "Move them to an account in {p1}"
+    },
+    {
+      "key": "mobile.se.aplica.a.los.p1",
+      "source": "Se aplica a los {p1}seleccionados.",
+      "es": "Se aplica a los {p1} seleccionados.",
+      "en": "Applies to the {p1} selected."
+    },
+    {
+      "key": "mobile.moneda.de.la.meta",
+      "source": "Moneda de la meta",
+      "es": "Moneda de la meta",
+      "en": "Goal currency"
+    },
+    {
+      "key": "mobile.categorias.que.cubre",
+      "source": "Categorías que cubre",
+      "es": "Categorías que cubre",
+      "en": "Categories it covers"
+    },
+    {
+      "key": "mobile.categorias.del.presupuesto",
+      "source": "Categorías del presupuesto",
+      "es": "Categorías del presupuesto",
+      "en": "Budget categories"
+    },
+    {
+      "key": "mobile.cuentas.que.lo.alimentan.opcional",
+      "source": "Cuentas que lo alimentan (opcional)",
+      "es": "Cuentas que lo alimentan (opcional)",
+      "en": "Accounts that feed it (optional)"
+    },
+    {
+      "key": "mobile.empieza",
+      "source": "Empieza",
+      "es": "Empieza",
+      "en": "Starts"
+    },
+    {
+      "key": "mobile.termina",
+      "source": "Termina",
+      "es": "Termina",
+      "en": "Ends"
+    },
+    {
+      "key": "mobile.borrar.p1",
+      "source": "Borrar {p1}",
+      "es": "Borrar {p1}",
+      "en": "Delete {p1}"
+    },
+    {
+      "key": "mobile.mascotas",
+      "source": "Mascotas",
+      "es": "Mascotas",
+      "en": "Pets"
+    },
+    {
+      "key": "mobile.crear.tambien.una.subcategoria",
+      "source": "Crear también una subcategoría",
+      "es": "Crear también una subcategoría",
+      "en": "Also create a subcategory"
+    },
+    {
+      "key": "mobile.nombre.de.la.subcategoria",
+      "source": "Nombre de la subcategoría",
+      "es": "Nombre de la subcategoría",
+      "en": "Subcategory name"
+    },
+    {
+      "key": "mobile.va.dentro.de",
+      "source": "Va dentro de",
+      "es": "Va dentro de",
+      "en": "Goes inside"
+    },
+    {
+      "key": "mobile.cuenta.nomina",
+      "source": "Cuenta nómina",
+      "es": "Cuenta nómina",
+      "en": "Payroll account"
+    },
+    {
+      "key": "mobile.banco.opcional",
+      "source": "Banco (opcional)",
+      "es": "Banco (opcional)",
+      "en": "Bank (optional)"
+    },
+    {
+      "key": "mobile.numero.de.tarjeta.o.de",
+      "source": "Número de tarjeta o de cuenta (opcional)",
+      "es": "Número de tarjeta o de cuenta (opcional)",
+      "en": "Card or account number (optional)"
+    },
+    {
+      "key": "mobile.solo.si.quieres.tenerlo.a",
+      "source": "Solo si quieres tenerlo a la mano",
+      "es": "Solo si quieres tenerlo a la mano",
+      "en": "Only if you want it handy"
+    },
+    {
+      "key": "mobile.es.opcional.nunca.pedimos.ni",
+      "source": "Es opcional. Nunca pedimos ni guardamos el CVV ni el NIP. Se muestra oculto en la tarjeta y lo ves con el ojito.",
+      "es": "Es opcional. Nunca pedimos ni guardamos el CVV ni el NIP. Se muestra oculto en la tarjeta y lo ves con el ojito.",
+      "en": "Optional. We never ask for or store the CVV or PIN. It is shown hidden on the card, and you see it with the eye icon."
+    },
+    {
+      "key": "mobile.no.pudimos.iniciar.sesion.con",
+      "source": "No pudimos iniciar sesión con Google. Intenta de nuevo.",
+      "es": "No pudimos iniciar sesión con Google. Intenta de nuevo.",
+      "en": "We couldn't sign in with Google. Try again."
+    },
+    {
+      "key": "mobile.no.pudimos.conectar.con.google",
+      "source": "No pudimos conectar con Google. Revisa tu conexión.",
+      "es": "No pudimos conectar con Google. Revisa tu conexión.",
+      "en": "We couldn't connect to Google. Check your connection."
+    },
+    {
+      "key": "mobile.verificacion",
+      "source": "Verificación",
+      "es": "Verificación",
+      "en": "Verification"
+    },
+    {
+      "key": "mobile.tu.cuenta.tiene.verificacion.en",
+      "source": "Tu cuenta tiene verificación en dos pasos activada.",
+      "es": "Tu cuenta tiene verificación en dos pasos activada.",
+      "en": "Your account has two-step verification turned on."
+    },
+    {
+      "key": "mobile.no.pudimos.verificar.tu.identidad",
+      "source": "No pudimos verificar tu identidad después de 3 intentos. Vuelve a iniciar sesión.",
+      "es": "No pudimos verificar tu identidad después de 3 intentos. Vuelve a iniciar sesión.",
+      "en": "We couldn't verify your identity after 3 attempts. Sign in again."
+    },
+    {
+      "key": "mobile.gastify",
+      "source": "Gastify",
+      "es": "Gastify",
+      "en": "Gastify"
+    },
+    {
+      "key": "mobile.inicia.sesion.para.ver.tus",
+      "source": "Inicia sesión para ver tus movimientos.",
+      "es": "Inicia sesión para ver tus movimientos.",
+      "en": "Sign in to see your transactions."
+    },
+    {
+      "key": "mobile.continuar.con.google",
+      "source": "Continuar con Google",
+      "es": "Continuar con Google",
+      "en": "Continue with Google"
+    },
+    {
+      "key": "mobile.entrar.con.passkey",
+      "source": "Entrar con passkey",
+      "es": "Entrar con passkey",
+      "en": "Sign in with a passkey"
+    },
+    {
+      "key": "mobile.o.con.tu.correo",
+      "source": "o con tu correo",
+      "es": "o con tu correo",
+      "en": "or with your email"
+    },
+    {
+      "key": "mobile.contrasena",
+      "source": "Contraseña",
+      "es": "Contraseña",
+      "en": "Password"
+    },
+    {
+      "key": "mobile.tu.contrasena",
+      "source": "Tu contraseña",
+      "es": "Tu contraseña",
+      "en": "Your password"
+    },
+    {
+      "key": "mobile.entrar",
+      "source": "Entrar",
+      "es": "Entrar",
+      "en": "Sign in"
+    },
+    {
+      "key": "mobile.falta.un.paso",
+      "source": "Falta un paso",
+      "es": "Falta un paso",
+      "en": "One step left"
+    },
+    {
+      "key": "mobile.para.proteger.tus.movimientos.gastify",
+      "source": "Para proteger tus movimientos, Gastify necesita que esta cuenta tenga la verificación en dos pasos activada. Actívala desde la web (Perfil) y después vuelve a entrar aquí.",
+      "es": "Para proteger tus movimientos, Gastify necesita que esta cuenta tenga la verificación en dos pasos activada. Actívala desde la web (Perfil) y después vuelve a entrar aquí.",
+      "en": "To protect your transactions, Gastify needs this account to have two-step verification turned on. Turn it on from the web (Profile) and then sign in here again."
+    },
+    {
+      "key": "mobile.ya.la.active.volver.a",
+      "source": "Ya la activé, volver a entrar",
+      "es": "Ya la activé, volver a entrar",
+      "en": "I turned it on, sign in again"
+    },
+    {
+      "key": "mobile.verifica.tu.identidad",
+      "source": "Verifica tu identidad",
+      "es": "Verifica tu identidad",
+      "en": "Verify your identity"
+    },
+    {
+      "key": "mobile.por.seguridad.confirma.que.eres",
+      "source": "Por seguridad, confirma que eres tú para seguir usando Gastify.",
+      "es": "Por seguridad, confirma que eres tú para seguir usando Gastify.",
+      "en": "For security, confirm it's you to keep using Gastify."
+    },
+    {
+      "key": "mobile.usar.mi.passkey",
+      "source": "Usar mi passkey",
+      "es": "Usar mi passkey",
+      "en": "Use my passkey"
+    },
+    {
+      "key": "mobile.esta.cuenta.solo.tiene.passkey",
+      "source": "Esta cuenta solo tiene passkey y esta versión de la app todavía no puede usarlo. Activa una app autenticadora desde la web (Perfil) para entrar aquí.",
+      "es": "Esta cuenta solo tiene passkey y esta versión de la app todavía no puede usarlo. Activa una app autenticadora desde la web (Perfil) para entrar aquí.",
+      "en": "This account only has a passkey, and this version of the app can't use it yet. Turn on an authenticator app from the web (Profile) to sign in here."
+    },
+    {
+      "key": "mobile.verificar",
+      "source": "Verificar",
+      "es": "Verificar",
+      "en": "Verify"
+    },
+    {
+      "key": "mobile.buscando.movimientos.sin.categoria",
+      "source": "Buscando movimientos sin categoría…",
+      "es": "Buscando movimientos sin categoría…",
+      "en": "Looking for transactions without a category…"
+    },
+    {
+      "key": "mobile.sin.sugerencias.por.ahora.estas",
+      "source": "Sin sugerencias por ahora: ¡estás al corriente! 🎉",
+      "es": "Sin sugerencias por ahora: ¡estás al corriente! 🎉",
+      "en": "No suggestions for now: you're all caught up! 🎉"
+    },
+    {
+      "key": "mobile.p1.p2.con.una.regla",
+      "source": "{p1}{p2}con una regla · desmarca los que quieras omitir",
+      "es": "{p1} {p2} con una regla · desmarca los que quieras omitir",
+      "en": "{p1} {p2} matched a rule · uncheck any to skip"
+    },
+    {
+      "key": "mobile.sin.categoria",
+      "source": "Sin categoría",
+      "es": "Sin categoría",
+      "en": "Uncategorized"
+    },
+    {
+      "key": "mobile.revisar",
+      "source": "revisar",
+      "es": "revisar",
+      "en": "review"
+    },
+    {
+      "key": "mobile.transaction.categorizer",
+      "source": "Transaction Categorizer",
+      "es": "Categorizador de movimientos",
+      "en": "Transaction Categorizer"
+    },
+    {
+      "key": "mobile.abrir.herramientas",
+      "source": "Abrir herramientas",
+      "es": "Abrir herramientas",
+      "en": "Open tools"
+    },
+    {
+      "key": "mobile.arrastralo.a.otro.borde.o",
+      "source": "Arrástralo a otro borde o esquina",
+      "es": "Arrástralo a otro borde o esquina",
+      "en": "Drag it to another edge or corner"
+    },
+    {
+      "key": "mobile.tools",
+      "source": "Tools",
+      "es": "Herramientas",
+      "en": "Tools"
+    },
+    {
+      "key": "mobile.cargando.2",
+      "source": "Cargando",
+      "es": "Cargando",
+      "en": "Loading"
+    },
+    {
+      "key": "mobile.borrar.texto",
+      "source": "Borrar texto",
+      "es": "Borrar texto",
+      "en": "Clear text"
+    },
+    {
+      "key": "mobile.idioma",
+      "source": "Idioma",
+      "es": "Idioma",
+      "en": "Language"
+    }
+  ]
+}

@@ -1,7 +1,9 @@
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 import type { ReactNode } from 'react';
 import { Text, View, useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { useT } from "@/i18n/client";
 
 // What a "?" sheet shows. A tooltip can bring hand-made `sections` (with tables, equations and legends) or just a `text`,
 // which is laid out by `autoSections`: the sentences are told apart into what the section shows, how it is calculated
@@ -41,7 +43,7 @@ function toEquationOrDefinition(clause: string): InfoBlock | null {
   return { kind: 'definition', term: left, text: right.charAt(0).toUpperCase() + right.slice(1) };
 }
 
-export function autoSections(text: string): InfoSection[] {
+export function autoSections(t: TranslateFn, text: string): InfoSection[] {
   const about: InfoBlock[] = [];
   const calc: InfoBlock[] = [];
   const read: InfoBlock[] = [];
@@ -70,10 +72,10 @@ export function autoSections(text: string): InfoSection[] {
   }
 
   const sections: InfoSection[] = [];
-  if (about.length) sections.push({ label: 'Qué muestra', blocks: about.length > 2 ? [{ kind: 'bullets', items: about.map((block) => (block as { text: string }).text) }] : about });
-  if (calc.length) sections.push({ label: 'Cómo se calcula', blocks: calc });
-  if (read.length) sections.push({ label: 'Cómo leerlo', blocks: read });
-  if (use.length) sections.push({ label: 'Cómo usarlo', blocks: [{ kind: 'bullets', items: use }] });
+  if (about.length) sections.push({ label: t("mobile.que.muestra"), blocks: about.length > 2 ? [{ kind: 'bullets', items: about.map((block) => (block as { text: string }).text) }] : about });
+  if (calc.length) sections.push({ label: t("mobile.como.se.calcula"), blocks: calc });
+  if (read.length) sections.push({ label: t("mobile.como.leerlo"), blocks: read });
+  if (use.length) sections.push({ label: t("mobile.como.usarlo"), blocks: [{ kind: 'bullets', items: use }] });
   return sections;
 }
 
@@ -141,6 +143,7 @@ function Table({ head, rows }: { head?: string[]; rows: string[][] }) {
 }
 
 function Block({ block }: { block: InfoBlock }) {
+  const t = useT();
   switch (block.kind) {
     case 'p':
       return <Rich text={block.text} />;
@@ -181,7 +184,7 @@ function Block({ block }: { block: InfoBlock }) {
     case 'example':
       return (
         <Box>
-          <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">Ejemplo</Text>
+          <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.ejemplo")}</Text>
           <Rich text={block.text} size="text-sm" muted={false} />
         </Box>
       );
@@ -189,7 +192,8 @@ function Block({ block }: { block: InfoBlock }) {
 }
 
 export function InfoContent({ text, sections }: { text: string; sections?: InfoSection[] }) {
-  const laid = sections ?? autoSections(text);
+  const t = useT();
+  const laid = sections ?? autoSections(t, text);
   if (laid.length === 0) return <Rich text={text} />;
   return (
     <View className="gap-5">

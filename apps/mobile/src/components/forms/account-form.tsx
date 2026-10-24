@@ -11,6 +11,7 @@ import { messageOf } from '@/lib/write';
 import { ACCOUNT_CURRENCIES, ACCOUNT_TYPES, validateAccount, type AccountErrors } from '@gastify/core/accounts/accountForm';
 import { bankCountryForCurrency, normalizeCardNumber } from '@gastify/core/banks/banks';
 import { parseSignedMoneyText } from '@gastify/core/transactions/movementForm';
+import { useT } from "@/i18n/client";
 
 export type AccountSubmit = { name: string; amount: number; accountType: string; currency: string; bankId: string | null; cardNumber: string | null };
 
@@ -27,6 +28,7 @@ export function AccountForm({
   currencyLocked?: boolean;
   onSubmit: (values: AccountSubmit) => Promise<void>;
 }) {
+  const t = useT();
   const [name, setName] = useState(initial?.name ?? '');
   const [accountType, setAccountType] = useState(initial?.accountType ?? 'debit');
   const [currency, setCurrency] = useState(initial?.currency ?? 'MXN');
@@ -58,11 +60,11 @@ export function AccountForm({
   return (
     <View className="gap-4">
       <View className="gap-2">
-        <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Cuenta nómina" maxLength={40} autoCapitalize="sentences" />
+        <TextField label={t("mobile.nombre")} value={name} onChangeText={setName} placeholder={t("mobile.cuenta.nomina")} maxLength={40} autoCapitalize="sentences" />
         {errors.name && <Text className="font-inter text-sm text-red-500">{errors.name}</Text>}
       </View>
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Tipo</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.tipo")}</Text>
         <ChipPicker items={ACCOUNT_TYPES.map((type) => ({ id: type.value, label: type.label }))} value={accountType} onChange={setAccountType} />
       </View>
       <View className="gap-2">
@@ -74,19 +76,19 @@ export function AccountForm({
         {errors.amount && <Text className="font-inter text-sm text-red-500">{errors.amount}</Text>}
       </View>
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Banco (opcional)</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.banco.opcional")}</Text>
         <BankPicker country={bankCountryForCurrency(currency)} value={bankId} onChange={setBankId} />
       </View>
       <View className="gap-2">
         <View className="flex-row items-end gap-2">
           <View className="flex-1">
-            <TextField label="Número de tarjeta o de cuenta (opcional)" value={cardNumber} onChangeText={(text) => setCardNumber(text.replace(/[^\d\s-]/g, ''))} placeholder="Solo si quieres tenerlo a la mano" keyboardType="number-pad" maxLength={23} secureTextEntry={!showNumber} />
+            <TextField label={t("mobile.numero.de.tarjeta.o.de")} value={cardNumber} onChangeText={(text) => setCardNumber(text.replace(/[^\d\s-]/g, ''))} placeholder={t("mobile.solo.si.quieres.tenerlo.a")} keyboardType="number-pad" maxLength={23} secureTextEntry={!showNumber} />
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={showNumber ? 'Ocultar el número' : 'Mostrar el número'} onPress={() => setShowNumber((value) => !value)} className="h-12 w-12 items-center justify-center rounded-2xl border border-gf-border" hitSlop={6}>
             <Ionicons name={showNumber ? 'eye-off-outline' : 'eye-outline'} size={22} color="#c084fc" />
           </Pressable>
         </View>
-        <Text className="font-inter text-xs text-gf-text-muted">Es opcional. Nunca pedimos ni guardamos el CVV ni el NIP. Se muestra oculto en la tarjeta y lo ves con el ojito.</Text>
+        <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.es.opcional.nunca.pedimos.ni")}</Text>
         {errors.cardNumber && <Text className="font-inter text-sm text-red-500">{errors.cardNumber}</Text>}
       </View>
       <FormError message={formError} />

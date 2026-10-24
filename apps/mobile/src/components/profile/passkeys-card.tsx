@@ -6,6 +6,7 @@ import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 type Passkey = { id: string; name?: string | null; createdAt?: string | Date | null; deviceType?: string | null };
 
@@ -14,6 +15,7 @@ const when = (value: Passkey['createdAt']) => (value ? new Date(value).toLocaleD
 // The passkeys of the account (the web's panel): which ones exist and a way to remove one. A passkey is added
 // from the web or from the installed app, because Expo Go has no passkey support.
 export function PasskeysCard() {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const toast = useToast();
@@ -40,10 +42,10 @@ export function PasskeysCard() {
   }, [load]);
 
   const remove = (passkey: Passkey) =>
-    Alert.alert('Quitar este passkey', `Ya no podrás entrar con «${passkey.name || 'este passkey'}».`, [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.quitar.este.passkey"), `Ya no podrás entrar con «${passkey.name || 'este passkey'}».`, [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Quitar',
+        text: t("mobile.quitar"),
         style: 'destructive',
         onPress: async () => {
           const { error: failure } = await authClient.$fetch('/passkey/delete-passkey', { method: 'POST', body: { id: passkey.id } });
@@ -58,10 +60,10 @@ export function PasskeysCard() {
     ]);
 
   return (
-    <Card title="Passkeys" info={APP_INFO.passkeys}>
+    <Card title={t("mobile.passkeys")} info={APP_INFO.passkeys}>
       {loading && <ActivityIndicator color={colors.accent} />}
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
-      {!loading && !error && passkeys.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes passkeys.</Text>}
+      {!loading && !error && passkeys.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.no.tienes.passkeys")}</Text>}
       {passkeys.map((passkey) => (
         <View key={passkey.id} className="flex-row items-center gap-3">
           <View className="flex-1">
@@ -69,7 +71,7 @@ export function PasskeysCard() {
             <Text className="font-inter text-xs text-gf-text-muted">{[passkey.deviceType, when(passkey.createdAt)].filter(Boolean).join(' · ')}</Text>
           </View>
           <Pressable accessibilityRole="button" onPress={() => remove(passkey)} hitSlop={8}>
-            <Text className="font-inter-medium text-sm text-red-500">Quitar</Text>
+            <Text className="font-inter-medium text-sm text-red-500">{t("mobile.quitar")}</Text>
           </Pressable>
         </View>
       ))}

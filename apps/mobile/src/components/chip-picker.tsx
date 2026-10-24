@@ -6,6 +6,7 @@ import { CategoryBadge } from '@/components/category-badge';
 import { PickerModal } from '@/components/picker-modal';
 import { glassFill } from '@/components/ui/glass-fill';
 import { Colors } from '@/constants/theme';
+import { useT } from "@/i18n/client";
 
 export type ChipItem = { id: string; label: string; icon?: string | null; color?: string | null; detail?: string };
 
@@ -27,6 +28,7 @@ function ChipsRow({
   emptyText = 'Todavía no hay opciones.',
   moreAfter = 4,
 }: Common & { isSelected: (id: string) => boolean; onPress: (id: string) => void; multiple: boolean }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [open, setOpen] = useState(false);
@@ -45,7 +47,7 @@ function ChipsRow({
             style={{ borderColor: colors.accent, backgroundColor: colors.accentSoft }}>
             <Ionicons name="search" size={16} color={colors.accent} />
             <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>
-              Ver todos ({items.length})
+              {t("mobile.ver.todos.p1", { p1: items.length })}
             </Text>
           </Pressable>
         )}

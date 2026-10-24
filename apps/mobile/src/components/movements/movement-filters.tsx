@@ -17,19 +17,21 @@ import { SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { DUPLICATE_CRITERIA_LABELS, toleranceFrom, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
 import { EMPTY_FILTERS, type MovementFilters, type ReadableFilter, type TypeFilter } from '@gastify/core/transactions/movementFilters';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
-const READABLE: { id: ReadableFilter; label: string }[] = [
-  { id: 'all', label: 'Todos' },
-  { id: 'readable', label: 'Legibles' },
-  { id: 'unreadable', label: 'No legibles' },
-];
+const READABLE = (t: TranslateFn): { id: ReadableFilter; label: string }[] => ([
+  { id: 'all', label: t("mobile.todos") },
+  { id: 'readable', label: t("mobile.legibles") },
+  { id: 'unreadable', label: t("mobile.no.legibles") },
+]);
 
-const TYPES: { id: TypeFilter; label: string }[] = [
-  { id: 'all', label: 'Todos' },
-  { id: 'income', label: 'Ingresos' },
-  { id: 'expense', label: 'Gastos' },
-  { id: 'transfer', label: 'Transferencias' },
-];
+const TYPES = (t: TranslateFn): { id: TypeFilter; label: string }[] => ([
+  { id: 'all', label: t("mobile.todos") },
+  { id: 'income', label: t("mobile.ingresos") },
+  { id: 'expense', label: t("mobile.gastos") },
+  { id: 'transfer', label: t("mobile.transferencias") },
+]);
 
 // The filters of the Movements list, like the web's: search, type, category, sub-category, account, exact
 // amount (in the main currency or the account's own) and the duplicate finder.
@@ -62,28 +64,29 @@ export function MovementFiltersPanel({
   onRunDuplicates: () => void;
   onResetDuplicates: () => void;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const set = <K extends keyof MovementFilters>(key: K, value: MovementFilters[K]) => onChange({ ...filters, [key]: value });
 
-  const accountItems: ChipItem[] = [{ id: '', label: 'Todas' }, ...accounts.map((a) => ({ id: idOf(a), label: `${a.name} · ${a.currency}` }))];
+  const accountItems: ChipItem[] = [{ id: '', label: t("mobile.todas") }, ...accounts.map((a) => ({ id: idOf(a), label: `${a.name} · ${a.currency}` }))];
 
   return (
-    <Card title="Filtros" info={APP_INFO.filtros}>
-      <TextField label="Buscar" value={filters.query} onChangeText={(text) => set('query', text)} onClear={() => set('query', '')} placeholder="Nombre, categoría, etiqueta…" autoCorrect={false} />
+    <Card title={t("mobile.filtros")} info={APP_INFO.filtros}>
+      <TextField label={t("mobile.buscar")} value={filters.query} onChangeText={(text) => set('query', text)} onClear={() => set('query', '')} placeholder={t("mobile.nombre.categoria.etiqueta")} autoCorrect={false} />
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Tipo</Text>
-        <ChipPicker items={TYPES} value={filters.type} onChange={(id) => set('type', id as TypeFilter)} moreAfter={99} />
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.tipo")}</Text>
+        <ChipPicker items={TYPES(t)} value={filters.type} onChange={(id) => set('type', id as TypeFilter)} moreAfter={99} />
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Legibilidad</Text>
-        <ChipPicker items={READABLE} value={filters.readable} onChange={(id) => set('readable', id as ReadableFilter)} moreAfter={99} />
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.legibilidad")}</Text>
+        <ChipPicker items={READABLE(t)} value={filters.readable} onChange={(id) => set('readable', id as ReadableFilter)} moreAfter={99} />
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Categoría y subcategoría</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categoria.y.subcategoria")}</Text>
         <CategoryPicker
           categories={categories}
           subCategories={subCategories}
@@ -93,18 +96,18 @@ export function MovementFiltersPanel({
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Cuenta</Text>
-        <ChipPicker items={accountItems} value={filters.accountId} onChange={(id) => set('accountId', id)} title="Cuentas" />
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.cuenta")}</Text>
+        <ChipPicker items={accountItems} value={filters.accountId} onChange={(id) => set('accountId', id)} title={t("mobile.cuentas")} />
       </View>
 
       <View className="gap-2">
-        <TextField label="Monto exacto" value={filters.exactAmount} onChangeText={(text) => set('exactAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="Por ejemplo 250.00" keyboardType="decimal-pad" />
+        <TextField label={t("mobile.monto.exacto")} value={filters.exactAmount} onChangeText={(text) => set('exactAmount', text.replace(/[^0-9.,]/g, ''))} placeholder={t("mobile.por.ejemplo.250.00")} keyboardType="decimal-pad" />
         {filters.exactAmount.trim() !== '' && (
           <>
             <ChipPicker
               items={[
-                { id: 'primary', label: 'En mi moneda principal' },
-                { id: 'native', label: 'En la moneda de la cuenta' },
+                { id: 'primary', label: t("mobile.en.mi.moneda.principal") },
+                { id: 'native', label: t("mobile.en.la.moneda.de.la") },
               ]}
               value={filters.exactMode}
               onChange={(id) => set('exactMode', id as 'primary' | 'native')}
@@ -119,8 +122,8 @@ export function MovementFiltersPanel({
 
       <View className="gap-3 border-t border-gf-border pt-3">
         <View className="flex-row items-center justify-between gap-3">
-          <Text className="flex-1 font-inter-medium text-base text-gf-text">Buscar posibles duplicados</Text>
-          <GfSwitch value={duplicatesOn} onValueChange={onDuplicatesChange} accessibilityLabel="Buscar duplicados" />
+          <Text className="flex-1 font-inter-medium text-base text-gf-text">{t("mobile.buscar.posibles.duplicados")}</Text>
+          <GfSwitch value={duplicatesOn} onValueChange={onDuplicatesChange} accessibilityLabel={t("mobile.buscar.duplicados")} />
         </View>
         {duplicatesOn && (
           <DuplicateSubfilters
@@ -136,7 +139,7 @@ export function MovementFiltersPanel({
       </View>
 
       <Pressable accessibilityRole="button" onPress={() => onChange({ ...EMPTY_FILTERS, exactCurrency: filters.exactCurrency })} className="items-center py-1">
-        <Text className="font-inter-semibold text-sm text-gf-text-muted">Limpiar filtros</Text>
+        <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.limpiar.filtros")}</Text>
       </Pressable>
     </Card>
   );
@@ -160,13 +163,14 @@ function DuplicateSubfilters({
   onSelect: () => void;
   accent: string;
 }) {
+  const t = useT();
   // The tolerance boxes keep what is typed ("0." while writing a decimal) and send the number upward.
   const [dateText, setDateText] = useState(String(draft.dateTolerance));
   const [amountText, setAmountText] = useState(String(draft.amountTolerance));
 
   return (
     <View className="gap-3">
-      <Text className="font-inter text-sm text-gf-text-muted">Coincidencias</Text>
+      <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.coincidencias")}</Text>
       <View className="flex-row flex-wrap gap-2">
         {DUPLICATE_CRITERIA_LABELS.map(({ key, label }) => {
           const on = draft.criteria[key];
@@ -188,7 +192,7 @@ function DuplicateSubfilters({
       <View className="flex-row gap-3">
         <View className="flex-1">
           <TextField
-            label="Tolerancia de fecha (días)"
+            label={t("mobile.tolerancia.de.fecha.dias")}
             value={dateText}
             onChangeText={(text) => {
               setDateText(text);
@@ -199,7 +203,7 @@ function DuplicateSubfilters({
         </View>
         <View className="flex-1">
           <TextField
-            label="Tolerancia de monto"
+            label={t("mobile.tolerancia.de.monto")}
             value={amountText}
             onChangeText={(text) => {
               setAmountText(text);
@@ -209,7 +213,7 @@ function DuplicateSubfilters({
           />
         </View>
       </View>
-      <GradientButton label="Buscar duplicados" onPress={onRun} />
+      <GradientButton label={t("mobile.buscar.duplicados")} onPress={onRun} />
       <Pressable
         accessibilityRole="button"
         onPress={() => {
@@ -218,14 +222,14 @@ function DuplicateSubfilters({
           onReset();
         }}
         className="items-center py-1">
-        <Text className="font-inter-semibold text-sm text-gf-text-muted">Restablecer valores</Text>
+        <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.restablecer.valores")}</Text>
       </Pressable>
       <Text className="font-inter text-sm text-gf-text-muted">
         {count === 0 ? 'No encontramos repetidos.' : `${count} movimientos se repiten.`}
       </Text>
       {count > 0 && (
         <Pressable accessibilityRole="button" onPress={onSelect}>
-          <Text className="font-inter-semibold text-sm" style={{ color: accent }}>Seleccionar los repetidos (dejando uno de cada grupo)</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: accent }}>{t("mobile.seleccionar.los.repetidos.dejando.uno")}</Text>
         </Pressable>
       )}
     </View>

@@ -9,19 +9,21 @@ import { Categorizer } from '@/components/tools/categorizer';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { SIDE_NAV_WIDTH } from '@/components/side-nav';
 import { BottomTabInset, Colors } from '@/constants/theme';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 type Tool = { id: string; label: string; title: string; about: string; render: () => React.JSX.Element };
 
 // Array-driven, like the web's: a new tool is one more entry here, and the tabs appear once there are two.
-const TOOLS: Tool[] = [
+const TOOLS = (t: TranslateFn): Tool[] => ([
   {
     id: 'uncategorized',
-    label: 'Sin categoría',
-    title: 'Transaction Categorizer',
+    label: t("mobile.sin.categoria"),
+    title: t("mobile.transaction.categorizer"),
     about: 'Busca tus movimientos sin categoría y sugiere una según las reglas que guardaste (nombre del comercio, monto). Nada cambia hasta que revises y apliques.',
     render: () => <Categorizer />,
   },
-];
+]);
 
 // The web's floating "Tools" button (the sparkles) and the sheet it opens. It floats above every screen and can be
 // dragged to any border: the left or right edge at any height, or the top or bottom edge at any place along it. Let go,
@@ -81,6 +83,7 @@ function readSpot(raw: string | null): Spot | null {
 }
 
 export function ToolsFab() {
+  const t = useT();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const wide = width >= 768;
@@ -166,8 +169,8 @@ export function ToolsFab() {
         {...responder.panHandlers}
         accessible
         accessibilityRole="button"
-        accessibilityLabel="Abrir herramientas"
-        accessibilityHint="Arrástralo a otro borde o esquina"
+        accessibilityLabel={t("mobile.abrir.herramientas")}
+        accessibilityHint={t("mobile.arrastralo.a.otro.borde.o")}
         style={[
           { position: 'absolute', left: 0, top: 0, width: SIZE, height: SIZE, zIndex: 50, transform: pos.getTranslateTransform() },
           Platform.select({ ios: { shadowColor: '#7e22ce', shadowOpacity: 0.5, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }, default: { elevation: 8 } }),
@@ -187,24 +190,25 @@ export function ToolsFab() {
 // The Tools sheet itself (the Transaction Categorizer and whatever tools come next). The floating button opens it, and so
 // does the visible "Categorizar" button of the Movements screen.
 export function ToolsSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
-  const [active, setActive] = useState(TOOLS[0].id);
-  const current = TOOLS.find((tool) => tool.id === active) ?? TOOLS[0];
+  const [active, setActive] = useState(TOOLS(t)[0].id);
+  const current = TOOLS(t).find((tool) => tool.id === active) ?? TOOLS(t)[0];
   return (
       <BottomSheet visible={visible} onClose={onClose} maxHeight="90%">
             <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
               <View className="items-center px-6 pb-2 pt-5">
-                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10} style={{ position: 'absolute', right: 20, top: 18 }}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={onClose} hitSlop={10} style={{ position: 'absolute', right: 20, top: 18 }}>
                   <Ionicons name="close" size={26} color={colors.text} />
                 </Pressable>
-                <Text className="font-inter-bold text-2xl text-gf-text">Tools</Text>
+                <Text className="font-inter-bold text-2xl text-gf-text">{t("mobile.tools")}</Text>
                 <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{current.title}</Text>
                 <Text className="pt-1 text-center font-inter text-xs text-gf-text-muted">{current.about}</Text>
               </View>
-              {TOOLS.length > 1 && (
+              {TOOLS(t).length > 1 && (
                 <View className="flex-row justify-center gap-2 pb-2">
-                  {TOOLS.map((tool) => (
+                  {TOOLS(t).map((tool) => (
                     <Pressable
                       key={tool.id}
                       accessibilityRole="button"

@@ -23,10 +23,12 @@ import { moveInList } from '@gastify/core/accounts/accountForm';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@/store';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 // Every account with its balance in its own currency and the total in the primary one. Tap one to
 // edit it; the arrows change the order the accounts are listed in (the web's order, saved on the server).
 export default function AccountsScreen() {
+  const t = useT();
   const tablet = useIsTablet();
   const dispatch = useDispatch<AppDispatch>();
   const scheme = useColorScheme();
@@ -70,28 +72,28 @@ export default function AccountsScreen() {
   };
 
   return (
-    <Screen title="Cuentas" backLabel="Más" onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
+    <Screen title={t("mobile.cuentas")} backLabel="Más" onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
       <Pressable accessibilityRole="button" onPress={() => router.push('/more/accounts/new')} className="items-center rounded-3xl bg-gf-surface p-4">
         <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
-          Nueva cuenta
+          {t("mobile.nueva.cuenta")}
         </Text>
       </Pressable>
 
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
-      {accountsState.status === 'failed' && <Text className="font-inter text-sm text-red-500">No pudimos cargar tus cuentas.</Text>}
+      {accountsState.status === 'failed' && <Text className="font-inter text-sm text-red-500">{t("mobile.no.pudimos.cargar.tus.cuentas")}</Text>}
       {loading && <SkeletonRows count={3} />}
       {!loading && accounts.length === 0 && accountsState.status !== 'failed' && (
-        <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes cuentas. Crea la primera con «Nueva cuenta».</Text>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.no.tienes.cuentas.crea")}</Text>
       )}
 
       {accounts.length > 0 && (
-        <Card title="Total" info={APP_INFO.total}>
+        <Card title={t("mobile.total")} info={APP_INFO.total}>
           <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(total.total, currency)}</Text>
           {Object.entries(byCurrency)
             .filter(([code]) => code !== currency)
             .map(([code, amount]) => (
               <View key={code} className={tablet ? 'flex-row items-center gap-4' : 'flex-row justify-between'}>
-                <Text className="font-inter text-sm text-gf-text-muted">Saldo en {code}</Text>
+                <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.saldo.en.p1", { p1: code })}</Text>
                 <Text className="font-inter-medium text-sm text-gf-text">{formatMoneyMajor(amount, code)}</Text>
               </View>
             ))}
@@ -117,10 +119,10 @@ export default function AccountsScreen() {
             />
           </View>
           <View className="gap-1">
-            <Pressable accessibilityRole="button" accessibilityLabel="Subir cuenta" disabled={index === 0} onPress={() => move(index, -1)} hitSlop={6}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.subir.cuenta")} disabled={index === 0} onPress={() => move(index, -1)} hitSlop={6}>
               <Text className="font-inter-bold text-base" style={{ color: index === 0 ? colors.border : colors.accent }}>▲</Text>
             </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel="Bajar cuenta" disabled={index === accounts.length - 1} onPress={() => move(index, 1)} hitSlop={6}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.bajar.cuenta")} disabled={index === accounts.length - 1} onPress={() => move(index, 1)} hitSlop={6}>
               <Text className="font-inter-bold text-base" style={{ color: index === accounts.length - 1 ? colors.border : colors.accent }}>▼</Text>
             </Pressable>
           </View>

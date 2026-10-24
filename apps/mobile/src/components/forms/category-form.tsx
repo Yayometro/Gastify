@@ -13,6 +13,7 @@ import { TextField } from '@/components/ui/text-field';
 import { messageOf } from '@/lib/write';
 import { CATEGORY_COLORS, idOf, validateCategoryName } from '@gastify/core/categories/categoryForm';
 import type { CategoryData } from '@gastify/core/features/categoriesSlice';
+import { useT } from "@/i18n/client";
 
 // `sub` is set when the form also creates a sub-category. Its parent is the new category (parentId null) or
 // one the person already has.
@@ -36,6 +37,7 @@ export function CategoryForm({
   allowSubcategory?: boolean;
   existing?: CategoryData[];
 }) {
+  const t = useT();
   const [withSub, setWithSub] = useState(false);
   const [subName, setSubName] = useState('');
   const [parent, setParent] = useState<string>(NEW_PARENT);
@@ -80,29 +82,29 @@ export function CategoryForm({
       <View className="flex-row items-end gap-3">
         <CategoryBadge icon={icon} color={color} size={56} />
         <View className="flex-1 gap-2">
-          <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Mascotas" maxLength={40} autoCapitalize="sentences" />
+          <TextField label={t("mobile.nombre")} value={name} onChangeText={setName} placeholder={t("mobile.mascotas")} maxLength={40} autoCapitalize="sentences" />
         </View>
       </View>
       {nameError && <Text className="font-inter text-sm text-red-500">{nameError}</Text>}
       <View className="gap-2">
-        <Text className="font-inter-semibold text-base text-gf-text">Color</Text>
+        <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.color")}</Text>
         <ColorPicker value={color} onChange={setColor} />
       </View>
       <View className="gap-2">
-        <Text className="font-inter-semibold text-base text-gf-text">Ícono</Text>
+        <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.icono")}</Text>
         <IconPicker value={icon} onChange={setIcon} />
       </View>
       {allowSubcategory && (
         <View className="gap-3 rounded-2xl border border-gf-border p-3">
           <View className="flex-row items-center justify-between gap-3">
-            <Text className="flex-1 font-inter-medium text-base text-gf-text">Crear también una subcategoría</Text>
-            <GfSwitch value={withSub} onValueChange={setWithSub} accessibilityLabel="Crear también una subcategoría" />
+            <Text className="flex-1 font-inter-medium text-base text-gf-text">{t("mobile.crear.tambien.una.subcategoria")}</Text>
+            <GfSwitch value={withSub} onValueChange={setWithSub} accessibilityLabel={t("mobile.crear.tambien.una.subcategoria")} />
           </View>
           {withSub && (
             <>
-              <TextField label="Nombre de la subcategoría" value={subName} onChangeText={setSubName} placeholder="Restaurantes" maxLength={40} autoCapitalize="sentences" />
+              <TextField label={t("mobile.nombre.de.la.subcategoria")} value={subName} onChangeText={setSubName} placeholder={t("mobile.restaurantes")} maxLength={40} autoCapitalize="sentences" />
               <View className="gap-2">
-                <Text className="font-inter-medium text-sm text-gf-text-muted">Va dentro de</Text>
+                <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.va.dentro.de")}</Text>
                 <ChipPicker items={parentItems} value={parent} onChange={setParent} moreAfter={99} />
               </View>
               {subError && <Text className="font-inter text-sm text-red-500">{subError}</Text>}

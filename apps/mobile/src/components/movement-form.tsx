@@ -28,11 +28,13 @@ import {
   type MovementType,
   type MovementValues,
 } from '@gastify/core/transactions/movementForm';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
-const TYPE_OPTIONS: { value: MovementType; label: string }[] = [
-  { value: 'expense', label: 'Gasto' },
-  { value: 'income', label: 'Ingreso' },
-];
+const TYPE_OPTIONS = (t: TranslateFn): { value: MovementType; label: string }[] => ([
+  { value: 'expense', label: t("mobile.gasto") },
+  { value: 'income', label: t("mobile.ingreso") },
+]);
 
 type FxAnswer = { ok?: boolean; data?: { amountMinor: number; stale?: boolean; effectiveDate?: string } };
 
@@ -51,6 +53,7 @@ export type MovementFormProps = {
 // account's currency (optionally also what the merchant charged in another currency, with the rate
 // suggested), account, category, sub-category, budget, date and tags.
 export function MovementForm({ initial, submitLabel, hideType = false, type: fixedType, onSubmit, onDelete }: MovementFormProps) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const primary = useSelector((state: RootState) => (state.walletReducer.data as { primaryCurrency?: string } | null)?.primaryCurrency || 'MXN');
@@ -126,7 +129,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
     detail: formatMoneyMajor(account.amount ?? 0, account.currency || primary),
   }));
   const budgetItems: ChipItem[] = [
-    { id: '', label: 'Ninguno' },
+    { id: '', label: t("mobile.ninguno") },
     ...budgets.filter((budget) => isSpendingBudget(budget) || isProjectBudget(budget)).map((budget) => ({ id: idOf(budget), label: budget.name || 'Presupuesto', icon: budget.icon })),
   ];
   const currencyItems: ChipItem[] = SUPPORTED_CURRENCIES.map((code) => ({ id: code, label: code }));
@@ -157,9 +160,9 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
 
   return (
     <View className="gap-4">
-      {!hideType && <Segmented options={TYPE_OPTIONS} value={type} onChange={(next) => set('type', next)} />}
+      {!hideType && <Segmented options={TYPE_OPTIONS(t)} value={type} onChange={(next) => set('type', next)} />}
 
-      <TextField label="Nombre (opcional)" value={values.name} onChangeText={(text) => set('name', text)} placeholder="Si lo dejas vacío usamos la categoría" maxLength={80} autoCapitalize="sentences" />
+      <TextField label={t("mobile.nombre.opcional")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={t("mobile.si.lo.dejas.vacio.usamos")} maxLength={80} autoCapitalize="sentences" />
 
       <View className="gap-2">
         <TextField
@@ -172,16 +175,16 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
           placeholder="0.00"
           keyboardType="decimal-pad"
         />
-        {equivalent && <Text className="font-inter text-sm text-gf-text-muted">≈ {equivalent} (en tu moneda principal)</Text>}
+        {equivalent && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.p1.en.tu.moneda.principal", { p1: equivalent })}</Text>}
         {errorText(errors.amount)}
       </View>
 
       <View className="gap-3">
         <View className="flex-row items-center justify-between gap-3">
-          <Text className="flex-1 font-inter-medium text-base text-gf-text">Cobrado en otra moneda</Text>
+          <Text className="flex-1 font-inter-medium text-base text-gf-text">{t("mobile.cobrado.en.otra.moneda")}</Text>
           <GfSwitch
             value={values.chargedElsewhere}
-            accessibilityLabel="Cobrado en otra moneda"
+            accessibilityLabel={t("mobile.cobrado.en.otra.moneda")}
             onValueChange={(on) => {
               set('chargedElsewhere', on);
               if (!on) setQuoteNote(null);
@@ -190,7 +193,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
         </View>
         {values.chargedElsewhere && (
           <View className="gap-3 rounded-2xl border border-gf-border p-3">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Moneda del cobro</Text>
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.moneda.del.cobro")}</Text>
             <ChipPicker items={currencyItems} value={values.merchantCurrency} onChange={(code) => set('merchantCurrency', code)} moreAfter={99} />
             <TextField
               label={`Lo que cobró el comercio (${values.merchantCurrency})`}
@@ -208,13 +211,13 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Cuenta</Text>
-        <ChipPicker items={accountItems} value={values.accountId} onChange={(id) => set('accountId', id)} title="Cuentas" emptyText="Primero crea una cuenta en Más › Cuentas." />
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.cuenta")}</Text>
+        <ChipPicker items={accountItems} value={values.accountId} onChange={(id) => set('accountId', id)} title={t("mobile.cuentas")} emptyText="Primero crea una cuenta en Más › Cuentas." />
         {errorText(errors.accountId)}
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Categoría y subcategoría</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categoria.y.subcategoria")}</Text>
         <CategoryPicker
           categories={categories}
           subCategories={subCategories}
@@ -226,16 +229,16 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
       </View>
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Presupuesto (opcional)</Text>
-        <ChipPicker items={budgetItems} value={values.budgetId} onChange={(id) => set('budgetId', id)} title="Presupuestos" />
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.presupuesto.opcional")}</Text>
+        <ChipPicker items={budgetItems} value={values.budgetId} onChange={(id) => set('budgetId', id)} title={t("mobile.presupuestos")} />
       </View>
 
       <View className="gap-2">
-        <DateField label="Fecha" value={values.date} onChange={(day) => set('date', day)} />
+        <DateField label={t("mobile.fecha")} value={values.date} onChange={(day) => set('date', day)} />
         <View className="flex-row gap-2">
           {[
-            { label: 'Hoy', offset: 0 },
-            { label: 'Ayer', offset: -1 },
+            { label: t("mobile.hoy"), offset: 0 },
+            { label: t("mobile.ayer"), offset: -1 },
           ].map((quick) => (
             <Pressable
               key={quick.label}
@@ -254,14 +257,14 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
         {errorText(errors.date)}
       </View>
 
-      <TextField label="Etiquetas (separadas por comas)" value={values.tags} onChangeText={(text) => set('tags', text)} placeholder="viaje, trabajo" autoCapitalize="none" />
+      <TextField label={t("mobile.etiquetas.separadas.por.comas")} value={values.tags} onChangeText={(text) => set('tags', text)} placeholder={t("mobile.viaje.trabajo")} autoCapitalize="none" />
 
       <FormError message={formError} />
       <GradientButton label={submitLabel} onPress={submit} loading={submitting} disabled={submitting} />
 
       {onDelete && (
         <Pressable accessibilityRole="button" onPress={onDelete} className="items-center py-2">
-          <Text className="font-inter-semibold text-base text-red-500">Borrar movimiento</Text>
+          <Text className="font-inter-semibold text-base text-red-500">{t("mobile.borrar.movimiento")}</Text>
         </Pressable>
       )}
     </View>

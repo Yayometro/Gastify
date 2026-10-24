@@ -34,6 +34,7 @@ import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -68,6 +69,7 @@ function NewButton({ label, kind }: { label: string; kind: 'spending' | 'saving'
 // the goal), saving (linked accounts or the saved amount) and projects (everything spent on them).
 // Tap one to see its movements and to edit it; the buttons create each kind.
 export default function BudgetsScreen() {
+  const t = useT();
   const budgetsState = useSelector((state: RootState) => state.budgetReducer);
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
   const accountsState = useSelector((state: RootState) => state.accountsReducer);
@@ -197,28 +199,28 @@ export default function BudgetsScreen() {
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
   return (
-    <Screen title="Presupuestos" subtitle={periodLabel} refreshing={refreshing} onRefresh={refresh}>
+    <Screen title={t("mobile.presupuestos")} subtitle={periodLabel} refreshing={refreshing} onRefresh={refresh}>
       {budgetsState.status === 'failed' && (
-        <Text className="font-inter text-sm text-red-500">No pudimos cargar tus presupuestos.</Text>
+        <Text className="font-inter text-sm text-red-500">{t("mobile.no.pudimos.cargar.tus.presupuestos")}</Text>
       )}
 
       <View className="flex-row gap-2">
-        <NewButton label="Presupuesto" kind="spending" />
-        <NewButton label="Ahorro" kind="saving" />
-        <NewButton label="Proyecto" kind="project" />
+        <NewButton label={t("mobile.presupuesto")} kind="spending" />
+        <NewButton label={t("mobile.ahorro")} kind="saving" />
+        <NewButton label={t("mobile.proyecto")} kind="project" />
       </View>
 
       {/* The period: arrows move by month, tapping the month picks any month; "Personalizado" takes a range. */}
       <View className="gap-3">
         {!custom && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
         <View className="flex-row gap-2">
-          <PeriodChip label="Mes" selected={!custom} onPress={() => setCustom(false)} />
-          <PeriodChip label="Personalizado" selected={custom} onPress={() => setCustom(true)} />
+          <PeriodChip label={t("mobile.mes")} selected={!custom} onPress={() => setCustom(false)} />
+          <PeriodChip label={t("mobile.personalizado")} selected={custom} onPress={() => setCustom(true)} />
         </View>
         {custom && (
           <View className="gap-3">
-            <DateField label="Fecha inicial" value={fromText} onChange={setFromText} />
-            <DateField label="Fecha final" value={toText} onChange={setToText} />
+            <DateField label={t("mobile.fecha.inicial")} value={fromText} onChange={setFromText} />
+            <DateField label={t("mobile.fecha.final")} value={toText} onChange={setToText} />
           </View>
         )}
       </View>
@@ -226,16 +228,16 @@ export default function BudgetsScreen() {
       {/* Two tiles, as the web's summary: the total spending and the part no budget covers. Each opens its detail. */}
       <View className="flex-row gap-3">
         <Pressable accessibilityRole="button" onPress={() => setSheet('total')} className="flex-1">
-          <Card title="Gasto total" style={{ minHeight: 160, flex: 1 }} info={APP_INFO.gasto_total}>
+          <Card title={t("mobile.gasto.total")} style={{ minHeight: 160, flex: 1 }} info={APP_INFO.gasto_total}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.totalSpent, currency)}</Text>
-            <Text className="font-inter text-xs text-gf-text-muted">Toca para ver el detalle</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.toca.para.ver.el.detalle")}</Text>
           </Card>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => setSheet('unbudgeted')} className="flex-1">
-          <Card title="Sin presupuesto" style={{ minHeight: 160, flex: 1 }} info={APP_INFO.sin_presupuesto}>
+          <Card title={t("mobile.sin.presupuesto")} style={{ minHeight: 160, flex: 1 }} info={APP_INFO.sin_presupuesto}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.unbudgetedSpent, currency)}</Text>
             <ProgressBar ratio={Math.min(1, coverage.unbudgetedPercentage / 100)} color={colors.accent} />
-            <Text className="font-inter text-xs text-gf-text-muted">{Math.round(coverage.unbudgetedPercentage)}% del gasto</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.p1.del.gasto", { p1: Math.round(coverage.unbudgetedPercentage) })}</Text>
           </Card>
         </Pressable>
       </View>
@@ -257,25 +259,25 @@ export default function BudgetsScreen() {
       />
 
       <Pressable accessibilityRole="button" onPress={() => setOrderOpen(true)} className="flex-row items-center justify-between rounded-full px-5 py-3" style={glassFill(scheme === 'dark', colors.backgroundElement)}>
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Ordenar por</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.ordenar.por")}</Text>
         <Text className="font-inter-semibold text-sm text-gf-text">{BUDGET_ORDERS.find((item) => item.id === order)?.label} ▾</Text>
       </Pressable>
-      <OptionSheet visible={orderOpen} title="Ordenar presupuestos" options={BUDGET_ORDERS} isSelected={(id) => id === order} onSelect={(id) => setOrder(id as BudgetOrder)} onClose={() => setOrderOpen(false)} />
+      <OptionSheet visible={orderOpen} title={t("mobile.ordenar.presupuestos")} options={BUDGET_ORDERS} isSelected={(id) => id === order} onSelect={(id) => setOrder(id as BudgetOrder)} onClose={() => setOrderOpen(false)} />
 
       {loading ? (
         <SkeletonRows count={4} />
       ) : (
         <>
-          <Text className="font-inter-semibold text-lg text-gf-text">Gastos</Text>
+          <Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.gastos")}</Text>
           {spendingRows.length === 0 ? (
-            <Muted>No tienes presupuestos de gasto activos.</Muted>
+            <Muted>{t("mobile.no.tienes.presupuestos.de.gasto.2")}</Muted>
           ) : (
             sortedSpending.map((row) => <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)
           )}
 
           {savingRows.length > 0 && (
             <>
-              <Text className="font-inter-semibold text-lg text-gf-text">Ahorro</Text>
+              <Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.ahorro")}</Text>
               {sortedSaving.map((row) => (
                 <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving />
               ))}
@@ -284,7 +286,7 @@ export default function BudgetsScreen() {
 
           {projectRows.length > 0 && (
             <>
-              <Text className="font-inter-semibold text-lg text-gf-text">Proyectos</Text>
+              <Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.proyectos")}</Text>
               {sortedProjects.map((row) => (
                 <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />
               ))}

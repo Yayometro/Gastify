@@ -2,12 +2,14 @@ import { useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Text, View, useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { useT } from "@/i18n/client";
 
 // A thin rail on the right edge of a long list: drag a finger along it to jump between its sections (the days of
 // the movements list). A bubble shows the section under the finger. The rail has one tick per section, thinned out
 // when there are too many to touch one by one.
 // `top` can be an animated value so the rail starts where the list starts and follows it up as the header scrolls away.
 export function DateRail({ labels, onJump, top = 90 }: { labels: string[]; onJump: (index: number) => void; top?: number | Animated.AnimatedInterpolation<number> }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [active, setActive] = useState<number | null>(null);
@@ -41,7 +43,7 @@ export function DateRail({ labels, onJump, top = 90 }: { labels: string[]; onJum
     <>
       <Animated.View
         {...handlers}
-        accessibilityLabel="Saltar entre fechas"
+        accessibilityLabel={t("mobile.saltar.entre.fechas")}
         onLayout={(event) => {
           height.current = event.nativeEvent.layout.height;
         }}

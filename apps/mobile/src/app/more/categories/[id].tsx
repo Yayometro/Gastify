@@ -19,12 +19,14 @@ import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch, RootState } from '@/store';
 import { idOf, subCategoriesOf, validateCategoryName } from '@gastify/core/categories/categoryForm';
+import { useT } from "@/i18n/client";
 
 type SubDraft = { id?: string; name: string; icon: string; color: string; parentId: string };
 
 // One of the person's categories: its own fields, its sub-categories (each with name, icon, color and the
 // category it hangs from) and deleting it. A category's movements are kept; they are left without it.
 export default function EditCategoryScreen() {
+  const t = useT();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = String(rawId ?? '');
   const dispatch = useDispatch<AppDispatch>();
@@ -44,17 +46,17 @@ export default function EditCategoryScreen() {
 
   if (!category) {
     return (
-      <Screen title="Categoría" backLabel="Categorías" onBack={back}>
-        <Text className="font-inter text-base text-gf-text-muted">Esta categoría no se puede editar: o no es tuya, o ya no existe.</Text>
+      <Screen title={t("mobile.categoria")} backLabel="Categorías" onBack={back}>
+        <Text className="font-inter text-base text-gf-text-muted">{t("mobile.esta.categoria.no.se.puede")}</Text>
       </Screen>
     );
   }
 
   const remove = () => {
-    Alert.alert('Borrar esta categoría', 'Sus movimientos quedan sin categoría. No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.borrar.esta.categoria"), t("mobile.sus.movimientos.quedan.sin.categoria"), [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: t("mobile.borrar"),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -104,10 +106,10 @@ export default function EditCategoryScreen() {
   };
 
   const removeSub = (subId: string) => {
-    Alert.alert('Borrar esta subcategoría', 'No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.borrar.esta.subcategoria"), t("mobile.no.se.puede.deshacer"), [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: t("mobile.borrar"),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -136,8 +138,8 @@ export default function EditCategoryScreen() {
         }}
       />
 
-      <Card title="Subcategorías">
-        {subs.length === 0 && !draft && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tiene subcategorías.</Text>}
+      <Card title={t("mobile.subcategorias")}>
+        {subs.length === 0 && !draft && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.no.tiene.subcategorias")}</Text>}
         {subs.map((sub) => {
           const subId = idOf(sub);
           if (draft?.id === subId) return null;
@@ -146,10 +148,10 @@ export default function EditCategoryScreen() {
               <CategoryBadge icon={sub.icon} color={sub.color} size={36} />
               <Text className="flex-1 font-inter-medium text-base text-gf-text">{sub.name || 'Subcategoría'}</Text>
               <Pressable accessibilityRole="button" onPress={() => startSub(sub)}>
-                <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Editar</Text>
+                <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.editar")}</Text>
               </Pressable>
               <Pressable accessibilityRole="button" onPress={() => removeSub(subId)}>
-                <Text className="font-inter-semibold text-sm text-red-500">Borrar</Text>
+                <Text className="font-inter-semibold text-sm text-red-500">{t("mobile.borrar")}</Text>
               </Pressable>
             </View>
           );
@@ -160,42 +162,42 @@ export default function EditCategoryScreen() {
             <View className="flex-row items-end gap-3">
               <CategoryBadge icon={draft.icon} color={draft.color} size={52} />
               <View className="flex-1">
-                <TextField label={draft.id ? 'Nombre' : 'Nueva subcategoría'} value={draft.name} onChangeText={(text) => setDraft({ ...draft, name: text })} placeholder="Restaurantes" maxLength={40} autoCapitalize="sentences" />
+                <TextField label={draft.id ? 'Nombre' : 'Nueva subcategoría'} value={draft.name} onChangeText={(text) => setDraft({ ...draft, name: text })} placeholder={t("mobile.restaurantes")} maxLength={40} autoCapitalize="sentences" />
               </View>
             </View>
             <View className="gap-2">
-              <Text className="font-inter-medium text-sm text-gf-text-muted">Categoría a la que pertenece</Text>
+              <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categoria.a.la.que.pertenece")}</Text>
               <ChipPicker
                 items={userCategories.map((item) => ({ id: idOf(item), label: item.name || 'Categoría', icon: item.icon, color: item.color }))}
                 value={draft.parentId}
                 onChange={(parentId) => setDraft({ ...draft, parentId })}
-                title="Categorías"
+                title={t("mobile.categorias")}
               />
             </View>
             {/* The color and the icon are always open, as in the category form: nothing to tap before choosing. */}
             <View className="gap-2">
-              <Text className="font-inter-semibold text-base text-gf-text">Color</Text>
+              <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.color")}</Text>
               <ColorPicker value={draft.color} onChange={(color) => setDraft({ ...draft, color })} />
             </View>
             <View className="gap-2">
-              <Text className="font-inter-semibold text-base text-gf-text">Ícono</Text>
+              <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.icono")}</Text>
               <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />
             </View>
             <FormError message={subError} />
             <GradientButton label={draft.id ? 'Guardar subcategoría' : 'Agregar subcategoría'} onPress={saveSub} loading={busy} disabled={busy} />
             <Pressable accessibilityRole="button" onPress={() => setDraft(null)} className="items-center py-1">
-              <Text className="font-inter-semibold text-sm text-gf-text-muted">Cancelar</Text>
+              <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.cancelar")}</Text>
             </Pressable>
           </View>
         ) : (
           <Pressable accessibilityRole="button" onPress={() => startSub()}>
-            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Agregar subcategoría</Text>
+            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.agregar.subcategoria")}</Text>
           </Pressable>
         )}
       </Card>
 
       <Pressable accessibilityRole="button" onPress={remove} className="items-center py-2">
-        <Text className="font-inter-semibold text-base text-red-500">Borrar categoría</Text>
+        <Text className="font-inter-semibold text-base text-red-500">{t("mobile.borrar.categoria")}</Text>
       </Pressable>
     </Screen>
   );

@@ -33,6 +33,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { isInRange, yearsWithMovements } from '@gastify/core/transactions/movementFilters';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -53,6 +54,7 @@ function LinkText({ label, onPress }: { label: string; onPress: () => void }) {
 // The phone's dashboard ("Wallet" on the web): the period, the accounts as cards, the totals, the summary
 // with its tabs, the biggest elements, the insights, the budgets and the latest movements.
 export default function HomeScreen() {
+  const t = useT();
   const { data: session } = authClient.useSession();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);
   const accountsState = useSelector((state: RootState) => state.accountsReducer);
@@ -90,7 +92,7 @@ export default function HomeScreen() {
       onRefresh={refresh}
       hero={<TabletWalletHeader name={session?.user.name ?? undefined} accounts={accounts} totals={summary.totals} previous={previous.totals} currency={currency} rangeText={`Del ${period.range.start.toLocaleDateString('es-MX')} al ${period.range.end.toLocaleDateString('es-MX')}.`} />}>
       {transactions.status === 'failed' && (
-        <Text className="font-inter text-sm text-red-500">No pudimos cargar tus movimientos. Desliza hacia abajo para intentarlo de nuevo.</Text>
+        <Text className="font-inter text-sm text-red-500">{t("mobile.no.pudimos.cargar.tus.movimientos")}</Text>
       )}
 
       <PeriodControls period={period} years={yearsWithMovements(transactions.data)} />
@@ -109,19 +111,18 @@ export default function HomeScreen() {
       {accounts.length > 0 && (
         <View className="gap-3">
           <View className="flex-row items-baseline justify-between">
-            <Pressable accessibilityRole="link" onPress={() => router.push('/more/accounts')} hitSlop={8}><Text className="font-inter-semibold text-lg text-gf-text">Cuentas</Text></Pressable>
-            <LinkText label="Ver todas" onPress={() => router.push('/more/accounts')} />
+            <Pressable accessibilityRole="link" onPress={() => router.push('/more/accounts')} hitSlop={8}><Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.cuentas")}</Text></Pressable>
+            <LinkText label={t("mobile.ver.todas")} onPress={() => router.push('/more/accounts')} />
           </View>
           <Text className="font-inter text-sm text-gf-text-muted">
-            En total {formatMoneyMajor(accountTotal.total, currency)}
-            {accountTotal.missingCurrencies.length > 0 ? ` (sin tipo de cambio para ${accountTotal.missingCurrencies.join(', ')})` : ''}
+            {t("mobile.en.total.p1.p2", { p1: formatMoneyMajor(accountTotal.total, currency), p2: accountTotal.missingCurrencies.length > 0 ? ` (sin tipo de cambio para ${accountTotal.missingCurrencies.join(', ')})` : '' })}
           </Text>
           <AccountsCarousel accounts={accounts} primary={currency} activity={activity} rates={rates} />
         </View>
       )}
       {accounts.length === 0 && accountsState.status !== 'failed' && (
-        <Card title="Cuentas" onTitlePress={() => router.push('/more/accounts')} info={APP_INFO.cuentas}>
-          {accountsState.status === 'loading' ? <SkeletonRows count={2} /> : <Muted>Todavía no tienes cuentas.</Muted>}
+        <Card title={t("mobile.cuentas")} onTitlePress={() => router.push('/more/accounts')} info={APP_INFO.cuentas}>
+          {accountsState.status === 'loading' ? <SkeletonRows count={2} /> : <Muted>{t("mobile.todavia.no.tienes.cuentas")}</Muted>}
         </Card>
       )}
 
@@ -137,11 +138,11 @@ export default function HomeScreen() {
               <BudgetsWidget />
             </View>
             <View style={{ flex: 1, height: budgetsHeight || undefined }}>
-      <Card style={{ flex: 1 }} title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={APP_INFO.ltimos_movimientos} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+      <Card style={{ flex: 1 }} title={t("mobile.ultimos.movimientos")} onTitlePress={() => router.navigate('/movements')} info={APP_INFO.ltimos_movimientos} action={<LinkText label={t("mobile.ver.todos")} onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
           <SkeletonRows count={4} />
         ) : latest.length === 0 ? (
-          <Muted>Todavía no tienes movimientos.</Muted>
+          <Muted>{t("mobile.todavia.no.tienes.movimientos")}</Muted>
         ) : (
           <ScrollView nestedScrollEnabled style={{ flex: 1 }} showsVerticalScrollIndicator={false}>{latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/' } })} />)}</ScrollView>
         )}
@@ -155,11 +156,11 @@ export default function HomeScreen() {
       <TopRanking movements={transactions.data} currency={currency} defaultPreset="thisMonth" />
       <BudgetsWidget />
 
-      <Card title="Últimos movimientos" onTitlePress={() => router.navigate('/movements')} info={APP_INFO.ltimos_movimientos_2} action={<LinkText label="Ver todos" onPress={() => router.navigate('/movements')} />}>
+      <Card title={t("mobile.ultimos.movimientos")} onTitlePress={() => router.navigate('/movements')} info={APP_INFO.ltimos_movimientos_2} action={<LinkText label={t("mobile.ver.todos")} onPress={() => router.navigate('/movements')} />}>
         {loadingMovements ? (
-          <Muted>Cargando…</Muted>
+          <Muted>{t("mobile.cargando")}</Muted>
         ) : latest.length === 0 ? (
-          <Muted>Todavía no tienes movimientos.</Muted>
+          <Muted>{t("mobile.todavia.no.tienes.movimientos")}</Muted>
         ) : (
           latest.map((movement) => <MovementRow key={String(movement._id)} movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/' } })} />)
         )}

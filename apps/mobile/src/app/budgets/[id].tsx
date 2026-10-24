@@ -31,10 +31,12 @@ import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurren
 import { getBudgetActualSpend, matchBillToBudget } from '@gastify/core/transformers/projectionsChange';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 // One budget: where it stands this month (or in total, for a project), the movements that count toward
 // it, and the same form that creates it to change it or delete it.
 export default function BudgetDetailScreen() {
+  const t = useT();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = String(rawId ?? '');
   const dispatch = useDispatch<AppDispatch>();
@@ -112,8 +114,8 @@ export default function BudgetDetailScreen() {
 
   if (!stored || !view) {
     return (
-      <Screen title="Presupuesto" backLabel="Presupuestos" onBack={back}>
-        <Text className="font-inter text-base text-gf-text-muted">No encontramos este presupuesto. Puede que ya se haya borrado.</Text>
+      <Screen title={t("mobile.presupuesto")} backLabel="Presupuestos" onBack={back}>
+        <Text className="font-inter text-base text-gf-text-muted">{t("mobile.no.encontramos.este.presupuesto.puede")}</Text>
       </Screen>
     );
   }
@@ -138,10 +140,10 @@ export default function BudgetDetailScreen() {
   };
 
   const remove = () => {
-    Alert.alert('Borrar este presupuesto', 'Los movimientos ligados se conservan, sin presupuesto. No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.borrar.este.presupuesto"), t("mobile.los.movimientos.ligados.se.conservan"), [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: t("mobile.borrar"),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -176,12 +178,12 @@ export default function BudgetDetailScreen() {
         {reached && (
           <View className="flex-row items-center gap-2 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.accentSoft }}>
             <Ionicons name="trophy" size={22} color="#f59e0b" />
-            <Text className="flex-1 font-inter-semibold text-base text-gf-text">¡Meta alcanzada! Felicidades.</Text>
+            <Text className="flex-1 font-inter-semibold text-base text-gf-text">{t("mobile.meta.alcanzada.felicidades")}</Text>
           </View>
         )}
         {saving && byCurrency.length > 0 && (
           <View className="gap-1 pt-1">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">En tus cuentas ligadas</Text>
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.en.tus.cuentas.ligadas")}</Text>
             {byCurrency.map((row) => (
               <View key={row.code} className="flex-row justify-between">
                 <Text className="font-inter text-sm text-gf-text-muted">{row.code}</Text>
@@ -193,8 +195,8 @@ export default function BudgetDetailScreen() {
       </Card>
 
       {!saving && distribution.length > 0 && (
-        <Card title="Distribución del gasto por categoría" info={APP_INFO.distribuci_n_del_gasto}>
-          <View className="flex-row overflow-hidden rounded-full" style={{ height: 14 }} accessibilityLabel="Distribución del gasto por categoría">
+        <Card title={t("mobile.distribucion.del.gasto.por.categoria")} info={APP_INFO.distribuci_n_del_gasto}>
+          <View className="flex-row overflow-hidden rounded-full" style={{ height: 14 }} accessibilityLabel={t("mobile.distribucion.del.gasto.por.categoria")}>
             {distribution.map((row) => <View key={row.key} style={{ flex: row.amount, backgroundColor: row.color }} />)}
           </View>
           {distribution.map((row) => (
@@ -209,8 +211,8 @@ export default function BudgetDetailScreen() {
       )}
 
       {saving && (
-        <Card title="Cuentas ligadas">
-          {linkedAccounts.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Esta meta no tiene cuentas ligadas.</Text>}
+        <Card title={t("mobile.cuentas.ligadas")}>
+          {linkedAccounts.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.esta.meta.no.tiene.cuentas")}</Text>}
           {linkedAccounts.map((account) => (
             <View key={idOf(account)} className="flex-row items-center justify-between gap-3">
               <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{account.name || 'Cuenta'}</Text>
@@ -225,30 +227,30 @@ export default function BudgetDetailScreen() {
           {project && (
             <View className="flex-row gap-2">
               <Pressable accessibilityRole="button" onPress={() => setLinkOpen(true)} className="flex-1 items-center rounded-full border border-gf-border py-2.5">
-                <Text className="font-inter-semibold text-sm text-gf-text">Vincular existente</Text>
+                <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.vincular.existente")}</Text>
               </Pressable>
               <Pressable accessibilityRole="button" onPress={() => router.push('/add')} className="flex-1 items-center rounded-full border border-gf-border py-2.5">
-                <Text className="font-inter-semibold text-sm text-gf-text">Crear movimiento</Text>
+                <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.crear.movimiento")}</Text>
               </Pressable>
             </View>
           )}
-          {related.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no hay movimientos.</Text>}
+          {related.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.no.hay.movimientos")}</Text>}
           {related.slice(0, 25).map((movement) => (
             <View key={String(movement._id)} className="gap-1">
               <MovementRow movement={movement} currency={currency} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: `/budgets/${id}` } })} />
               {project && (
                 <Pressable accessibilityRole="button" onPress={() => linkMovement(String(movement._id), null)} className="self-end px-2 pb-1">
-                  <Text className="font-inter-medium text-xs" style={{ color: colors.expense }}>Desvincular</Text>
+                  <Text className="font-inter-medium text-xs" style={{ color: colors.expense }}>{t("mobile.desvincular")}</Text>
                 </Pressable>
               )}
             </View>
           ))}
-          {related.length > 25 && <Text className="font-inter text-sm text-gf-text-muted">Y {related.length - 25} más en Movimientos.</Text>}
+          {related.length > 25 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.y.p1.mas.en.movimientos", { p1: related.length - 25 })}</Text>}
         </Card>
       )}
 
       <Card
-        title="Editar"
+        title={t("mobile.editar")}
         onHeaderPress={() => setEditOpen((open) => !open)}
         action={
           <Pressable accessibilityRole="button" accessibilityState={{ expanded: editOpen }} accessibilityLabel={editOpen ? 'Ocultar edición' : 'Mostrar edición'} onPress={() => setEditOpen((open) => !open)} hitSlop={10}>
@@ -275,7 +277,7 @@ export default function BudgetDetailScreen() {
       {project && (
         <PickerModal
           visible={linkOpen}
-          title="Vincular un movimiento"
+          title={t("mobile.vincular.un.movimiento")}
           searchPlaceholder="Buscar movimiento"
           items={linkable.map((tx) => ({ id: String(tx._id), label: tx.name || 'Movimiento', detail: `${formatMoneyMajor(getPrimaryAmount(tx), currency)} · ${new Date((tx.date ?? tx.createdAt) as string).toLocaleDateString('es-MX')}` }))}
           isSelected={() => false}

@@ -6,6 +6,7 @@ import { MonthGridModal } from '@/components/month-grid-modal';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { monthTitleEs } from '@gastify/core/format/spanishDates';
+import { useT } from "@/i18n/client";
 
 // Moves the month shown one step back or forward; tapping the month's name opens a picker for any month of
 // any year (the web does the same with its calendar). Months after `latest` are not offered. Every screen
@@ -19,6 +20,7 @@ export function MonthSwitcher({
   onChange: (month: Date) => void;
   latest: Date;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -31,7 +33,7 @@ export function MonthSwitcher({
     <View className="flex-row items-center justify-between px-2 py-1" style={{ minHeight: 52 }}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Mes anterior"
+        accessibilityLabel={t("mobile.mes.anterior")}
         onPress={() => shift(-1)}
         hitSlop={8}
         className="h-11 w-11 items-center justify-center rounded-full">
@@ -43,7 +45,7 @@ export function MonthSwitcher({
       </Pressable>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Mes siguiente"
+        accessibilityLabel={t("mobile.mes.siguiente")}
         accessibilityState={{ disabled: !canGoForward }}
         disabled={!canGoForward}
         onPress={() => shift(1)}

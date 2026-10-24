@@ -13,6 +13,7 @@ import { monthTitleEs } from '@gastify/core/format/spanishDates';
 import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Kind = 'income' | 'expense';
@@ -22,6 +23,7 @@ const KIND_LABEL: Record<Kind, string> = { income: 'Ingreso', expense: 'Gasto' }
 // The historical references: the amounts each month that the projections start from (real income and spending
 // of the past, or an estimate that holds for a while). Income and spending are kept apart, as on the web.
 export function HistoricalReferencesCard({ baseline, currency, onChanged }: { baseline: AnyRecord | null; currency: string; onChanged: () => void }) {
+  const tr = useT();
   const toast = useToast();
   const [kind, setKind] = useState<Kind>('income');
   const [open, setOpen] = useState(false);
@@ -42,10 +44,10 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
     setError(null);
     const value = Number(amount.replace(/,/g, ''));
     const start = parseDateText(from);
-    if (!start) return setError('Elige el mes en que empieza.');
+    if (!start) return setError(tr("mobile.elige.el.mes.en.que"));
     const end = to ? parseDateText(to) : null;
-    if (end && end <= start) return setError('El mes final tiene que ser posterior al inicial.');
-    if (!(value >= 0)) return setError('Escribe un monto.');
+    if (end && end <= start) return setError(tr("mobile.el.mes.final.tiene.que"));
+    if (!(value >= 0)) return setError(tr("mobile.escribe.un.monto"));
     setSaving(true);
     try {
       await sendWrite('general-data/projection-baseline/update', {
@@ -68,10 +70,10 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
   };
 
   const remove = (entry: AnyRecord) => {
-    Alert.alert('Borrar esta referencia', 'Las proyecciones dejan de usarla. No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(tr("mobile.borrar.esta.referencia"), tr("mobile.las.proyecciones.dejan.de.usarla"), [
+      { text: tr("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: tr("mobile.borrar"),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -90,49 +92,48 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
 
   return (
     <Card
-      title="Referencias históricas"
+      title={tr("mobile.referencias.historicas")}
       info={APP_INFO.referencias_hist_ricas}>
       <ChipPicker
-        items={[{ id: 'income', label: 'Ingresos' }, { id: 'expense', label: 'Gastos' }]}
+        items={[{ id: 'income', label: tr("mobile.ingresos") }, { id: 'expense', label: tr("mobile.gastos") }]}
         value={kind}
         onChange={(id) => setKind(id as Kind)}
         moreAfter={99}
       />
-      {entries.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no hay referencias de {KIND_LABEL[kind].toLowerCase()}s.</Text>}
+      {entries.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{tr("mobile.todavia.no.hay.referencias.de", { p1: KIND_LABEL[kind].toLowerCase() })}</Text>}
       {entries.map((entry) => (
         <View key={String(entry._id ?? entry.effectiveFrom)} className="flex-row items-center gap-3">
           <View className="flex-1">
             <Text className="font-inter-medium text-base text-gf-text">
-              Desde {label(entry.effectiveFrom)}
-              {entry.effectiveTo ? ` hasta ${label(entry.effectiveTo)}` : ' (en curso)'}
+              {tr("mobile.desde.p1.p2", { p1: label(entry.effectiveFrom), p2: entry.effectiveTo ? ` hasta ${label(entry.effectiveTo)}` : ' (en curso)' })}
             </Text>
             <Text className="font-inter text-sm text-gf-text-muted">
-              {formatMoneyMajor(Number(entry.amount) || 0, String(entry.currency ?? currency))} al mes
+              {tr("mobile.p1.al.mes", { p1: formatMoneyMajor(Number(entry.amount) || 0, String(entry.currency ?? currency)) })}
             </Text>
           </View>
           <Pressable accessibilityRole="button" onPress={() => remove(entry)} hitSlop={8}>
-            <Text className="font-inter-medium text-sm text-red-500">Borrar</Text>
+            <Text className="font-inter-medium text-sm text-red-500">{tr("mobile.borrar")}</Text>
           </Pressable>
         </View>
       ))}
 
       {!open ? (
         <Pressable accessibilityRole="button" onPress={() => setOpen(true)} className="items-center rounded-full border border-gf-border py-3">
-          <Text className="font-inter-semibold text-base text-gf-text">Agregar referencia de {KIND_LABEL[kind].toLowerCase()}</Text>
+          <Text className="font-inter-semibold text-base text-gf-text">{tr("mobile.agregar.referencia.de.p1", { p1: KIND_LABEL[kind].toLowerCase() })}</Text>
         </Pressable>
       ) : (
         <View className="gap-3">
-          <DateField label="Desde (mes)" value={from} onChange={setFrom} />
-          <DateField label="Hasta (opcional)" value={to} onChange={setTo} />
-          <TextField label="Monto mensual" value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
+          <DateField label={tr("mobile.desde.mes")} value={from} onChange={setFrom} />
+          <DateField label={tr("mobile.hasta.opcional")} value={to} onChange={setTo} />
+          <TextField label={tr("mobile.monto.mensual")} value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
           <View className="gap-2">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Moneda</Text>
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{tr("mobile.moneda")}</Text>
             <ChipPicker items={SUPPORTED_CURRENCIES.map((c) => ({ id: c, label: c }))} value={code} onChange={setCode} moreAfter={99} />
           </View>
           <FormError message={error} />
-          <GradientButton label="Guardar referencia" onPress={save} loading={saving} disabled={saving} />
+          <GradientButton label={tr("mobile.guardar.referencia")} onPress={save} loading={saving} disabled={saving} />
           <Pressable accessibilityRole="button" onPress={() => setOpen(false)} className="items-center py-1">
-            <Text className="font-inter-semibold text-sm text-gf-text-muted">Cancelar</Text>
+            <Text className="font-inter-semibold text-sm text-gf-text-muted">{tr("mobile.cancelar")}</Text>
           </Pressable>
         </View>
       )}

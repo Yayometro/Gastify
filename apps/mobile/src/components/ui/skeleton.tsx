@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, View, useColorScheme, type DimensionValue } from 'react-native';
+import { useT } from "@/i18n/client";
 
 // A placeholder block with a soft light sweeping across it, for what is still loading.
 export function SkeletonBlock({ width = '100%', height = 16, radius = 10 }: { width?: DimensionValue; height?: number; radius?: number }) {
@@ -26,8 +27,9 @@ export function SkeletonBlock({ width = '100%', height = 16, radius = 10 }: { wi
 
 // A few rows that look like movements (a round badge and two lines), while the list loads.
 export function SkeletonRows({ count = 4 }: { count?: number }) {
+  const t = useT();
   return (
-    <View className="gap-4" accessibilityLabel="Cargando" accessibilityRole="progressbar">
+    <View className="gap-4" accessibilityLabel={t("mobile.cargando.2")} accessibilityRole="progressbar">
       {Array.from({ length: count }, (_, index) => (
         <View key={index} className="flex-row items-center gap-3">
           <SkeletonBlock width={44} height={44} radius={22} />
@@ -44,8 +46,9 @@ export function SkeletonRows({ count = 4 }: { count?: number }) {
 
 // The look of a card while it loads: a title and a few lines.
 export function SkeletonCard({ lines = 3 }: { lines?: number }) {
+  const t = useT();
   return (
-    <View className="gap-3" accessibilityLabel="Cargando" accessibilityRole="progressbar">
+    <View className="gap-3" accessibilityLabel={t("mobile.cargando.2")} accessibilityRole="progressbar">
       <SkeletonBlock width="45%" height={18} />
       {Array.from({ length: lines }, (_, index) => <SkeletonBlock key={index} width={`${100 - index * 12}%`} height={14} />)}
     </View>

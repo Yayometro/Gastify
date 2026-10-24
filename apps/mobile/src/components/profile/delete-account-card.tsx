@@ -7,11 +7,13 @@ import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
 import { getApi } from '@gastify/core/api/client';
 import { deleteAccountErrorText, validateDeleteAccount, type RemoveUserAnswer, type SecondFactorMethod } from '@gastify/core/profile/deleteAccount';
+import { useT } from "@/i18n/client";
 
 // "Eliminar mi cuenta": irreversible, so it asks for the account e-mail again and a fresh code of the authenticator
 // app (or a backup code), exactly like the web (`general-data/user/remove-user`). An account that has only a passkey
 // has no code to type here, so that one step is done on the web.
 export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; twoFactorEnabled: boolean }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [confirmMail, setConfirmMail] = useState('');
   const [code, setCode] = useState('');
@@ -43,7 +45,7 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
         // The session was already deleted on the server; signing out only clears the stored cookie.
       }
     } catch {
-      setError('No pudimos conectar con el servidor. Revisa tu conexión.');
+      setError(t("mobile.no.pudimos.conectar.con.el"));
     } finally {
       setBusy(false);
     }
@@ -55,32 +57,32 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
       setError(problem);
       return;
     }
-    Alert.alert('Eliminar tu cuenta', 'Se borran tu cuenta y todos tus datos: movimientos, cuentas, categorías, presupuestos y etiquetas. No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Eliminar todo', style: 'destructive', onPress: send },
+    Alert.alert(t("mobile.eliminar.tu.cuenta"), t("mobile.se.borran.tu.cuenta.y"), [
+      { text: t("mobile.cancelar"), style: 'cancel' },
+      { text: t("mobile.eliminar.todo"), style: 'destructive', onPress: send },
     ]);
   };
 
   if (!open) {
     return (
       <Pressable accessibilityRole="button" onPress={() => setOpen(true)} className="items-center rounded-3xl border border-red-500/40 p-4">
-        <Text className="font-inter-semibold text-base text-red-500">Eliminar mi cuenta</Text>
+        <Text className="font-inter-semibold text-base text-red-500">{t("mobile.eliminar.mi.cuenta")}</Text>
       </Pressable>
     );
   }
 
   return (
-    <Card title="Eliminar mi cuenta">
+    <Card title={t("mobile.eliminar.mi.cuenta")}>
       <Text className="font-inter text-sm text-gf-text-muted">
-        Esto borra tu cuenta y TODOS tus datos (movimientos, cuentas, categorías, presupuestos, etiquetas, passkeys y la app autenticadora). No se puede deshacer.
+        {t("mobile.esto.borra.tu.cuenta.y")}
       </Text>
       {!twoFactorEnabled ? (
         <>
           <Text className="font-inter text-sm text-gf-text">
-            Para eliminarla, primero activa la verificación en dos pasos aquí arriba. Si tu cuenta usa solo un passkey, confirma tu identidad desde Gastify en la web (Perfil, «Eliminar mi cuenta»).
+            {t("mobile.para.eliminarla.primero.activa.la")}
           </Text>
           <Pressable accessibilityRole="button" onPress={close} hitSlop={8}>
-            <Text className="font-inter-medium text-sm text-gf-accent-soft-text">Cerrar</Text>
+            <Text className="font-inter-medium text-sm text-gf-accent-soft-text">{t("mobile.cerrar")}</Text>
           </Pressable>
         </>
       ) : (
@@ -108,7 +110,7 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
           </Pressable>
           <View className="flex-row gap-3">
             <Pressable accessibilityRole="button" onPress={close} disabled={busy} className="flex-1 items-center rounded-full border border-gf-border py-3">
-              <Text className="font-inter-semibold text-base text-gf-text">Cancelar</Text>
+              <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.cancelar")}</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"

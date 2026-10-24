@@ -12,6 +12,7 @@ import { ProgressBar } from '@/components/ui/progress-bar';
 import { Colors } from '@/constants/theme';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
+import { useT } from "@/i18n/client";
 
 export type BudgetLine = { key: string; name: string; icon?: string; color?: string; spent: number; goal: number };
 export type GroupLine = { key: string; categoryId?: string; name: string; icon?: string; color?: string; amount: number; count: number };
@@ -41,6 +42,7 @@ export function BudgetSummarySheet({
   uncoveredMovements: TransactionData[];
   onAddBudget: (categoryId?: string) => void;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const share = Math.max(0, Math.min(1, percentage / 100));
@@ -56,9 +58,9 @@ export function BudgetSummarySheet({
     <BottomSheet visible={kind !== null} onClose={close} maxHeight="86%">
           <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
             <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
-              {group && <Pressable accessibilityRole="button" accessibilityLabel="Volver a categorías sin presupuesto" onPress={() => setSelectedGroup(null)} hitSlop={10}><Ionicons name="arrow-back" size={24} color={colors.text} /></Pressable>}
+              {group && <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.volver.a.categorias.sin.presupuesto")} onPress={() => setSelectedGroup(null)} hitSlop={10}><Ionicons name="arrow-back" size={24} color={colors.text} /></Pressable>}
               <Text className="flex-1 font-inter-bold text-2xl text-gf-text">{group ? group.name : kind === 'unbudgeted' ? 'Sin presupuesto' : 'Gasto total'}</Text>
-              <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={close} hitSlop={10}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={close} hitSlop={10}>
                 <Ionicons name="close" size={26} color={colors.text} />
               </Pressable>
             </View>
@@ -66,8 +68,8 @@ export function BudgetSummarySheet({
               {kind === 'total' && (
                 <>
                   <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(total, currency)}</Text>
-                  <Text className="font-inter text-sm text-gf-text-muted">Todo lo que gastaste en el periodo: dentro de presupuestos y sin presupuesto.</Text>
-                  {budgets.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No hay presupuestos de gasto en este periodo.</Text>}
+                  <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todo.lo.que.gastaste.en")}</Text>
+                  {budgets.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.no.hay.presupuestos.de.gasto")}</Text>}
                   {budgets.map((line) => {
                     const ratio = line.goal > 0 ? line.spent / line.goal : 0;
                     return (
@@ -86,8 +88,8 @@ export function BudgetSummarySheet({
               {kind === 'unbudgeted' && group && (
                 <>
                   <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(group.amount, currency)}</Text>
-                  <Text className="font-inter text-sm text-gf-text-muted">{groupMovements.length} {groupMovements.length === 1 ? 'movimiento sin presupuesto' : 'movimientos sin presupuesto'} en esta categoría.</Text>
-                  {group.categoryId && <Pressable accessibilityRole="button" onPress={() => { close(); onAddBudget(group.categoryId); }} className="items-center rounded-full border border-gf-border py-3"><Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>Agregar presupuesto para {group.name}</Text></Pressable>}
+                  <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.p1.p2.en.esta.categoria", { p1: groupMovements.length, p2: groupMovements.length === 1 ? 'movimiento sin presupuesto' : 'movimientos sin presupuesto' })}</Text>
+                  {group.categoryId && <Pressable accessibilityRole="button" onPress={() => { close(); onAddBudget(group.categoryId); }} className="items-center rounded-full border border-gf-border py-3"><Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>{t("mobile.agregar.presupuesto.para.p1", { p1: group.name })}</Text></Pressable>}
                   {groupMovements.map((movement) => <MovementRow divider key={String(movement._id)} movement={movement} currency={currency} onPress={() => { close(); router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/budgets' } }); }} />)}
                 </>
               )}
@@ -98,13 +100,13 @@ export function BudgetSummarySheet({
                     <Text className="font-inter-semibold text-lg text-gf-text-muted">{Math.round(percentage)}%</Text>
                   </View>
                   <ProgressBar ratio={share} color={colors.accent} />
-                  <Text className="font-inter text-sm text-gf-text-muted">Participación en el gasto total.</Text>
-                  <Text className="font-inter text-sm text-gf-text-muted">Estos movimientos no están cubiertos por ningún presupuesto de gasto activo.</Text>
+                  <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.participacion.en.el.gasto.total")}</Text>
+                  <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.estos.movimientos.no.estan.cubiertos")}</Text>
                   <Pressable accessibilityRole="button" onPress={() => onAddBudget()} className="items-center rounded-full border border-gf-border py-3">
-                    <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>Agregar presupuesto</Text>
+                    <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>{t("mobile.agregar.presupuesto")}</Text>
                   </Pressable>
-                  <Text className="font-inter-semibold text-base text-gf-text">Otras categorías sin presupuesto</Text>
-                  {groups.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">No hay movimientos sin presupuesto.</Text>}
+                  <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.otras.categorias.sin.presupuesto")}</Text>
+                  {groups.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.no.hay.movimientos.sin.presupuesto")}</Text>}
                   {groups.map((group) => (
                     <Pressable key={group.key} accessibilityRole="button" accessibilityLabel={`Ver movimientos sin presupuesto de ${group.name}`} onPress={() => setSelectedGroup(group.key)} className="flex-row items-center gap-3">
                       <CategoryBadge icon={group.icon} color={group.color} size={34} />
@@ -116,7 +118,7 @@ export function BudgetSummarySheet({
                       <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
                     </Pressable>
                   ))}
-                  <GradientButton label="Listo" onPress={close} />
+                  <GradientButton label={t("mobile.listo")} onPress={close} />
                 </>
               )}
             </ScrollView>

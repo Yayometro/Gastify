@@ -7,6 +7,7 @@ import { HERO_INFO } from '@/lib/info-sections';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { MonthTotals } from '@gastify/core/transactions/monthSummary';
+import { useT } from "@/i18n/client";
 
 // The web's Wallet hero for wide screens: "<name> Wallet" in a thin large title and, under it, three panels side by
 // side: the accounts (biggest first), the period's summary and the comparison with the previous period. Same
@@ -39,6 +40,7 @@ function Row({ label, value, color }: { label: string; value: string; color: str
 }
 
 function DeltaRow({ label, current, previous, color, currency }: { label: string; current: number; previous: number; color: string; currency: string }) {
+  const t = useT();
   const dark = useColorScheme() === 'dark';
   const delta = current - previous;
   const pct = previous ? (delta / Math.abs(previous)) * 100 : null;
@@ -54,8 +56,8 @@ function DeltaRow({ label, current, previous, color, currency }: { label: string
         </Text>
       </View>
       <View className="flex-row items-center justify-between">
-        <Text className="font-inter text-sm text-gf-text-muted">Mes anterior: {money(previous)}</Text>
-        <Text className="font-inter text-sm text-gf-text-muted">Actual: {money(current)}</Text>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.mes.anterior.p1", { p1: money(previous) })}</Text>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.actual.p1", { p1: money(current) })}</Text>
       </View>
     </View>
   );
@@ -76,6 +78,7 @@ export function TabletWalletHeader({
   currency: string;
   rangeText: string;
 }) {
+  const t = useT();
   const dark = useColorScheme() === 'dark';
   const money = (value: number) => formatMoneyMajor(value, currency);
   const sorted = [...accounts].sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0));
@@ -86,9 +89,9 @@ export function TabletWalletHeader({
         <NotificationsBell size={44} />
       </View>
       <View className="flex-row items-stretch gap-4">
-        <Panel label="Tus cuentas" info={HERO_INFO.accounts}>
+        <Panel label={t("mobile.tus.cuentas")} info={HERO_INFO.accounts}>
           {sorted.length === 0 ? (
-            <Text className="font-inter text-xs text-gf-text-muted">Todavía no tienes cuentas.</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.todavia.no.tienes.cuentas")}</Text>
           ) : (
             sorted.map((account) => (
               <View key={String(account._id ?? account.name)} className="flex-row items-center justify-between gap-2 rounded-xl px-3 py-2.5" style={{ backgroundColor: dark ? 'rgba(0,0,0,0.15)' : 'rgba(27,16,61,0.05)' }}>
@@ -101,18 +104,18 @@ export function TabletWalletHeader({
             ))
           )}
         </Panel>
-        <Panel label="Resumen" info={HERO_INFO.summary}>
+        <Panel label={t("mobile.resumen")} info={HERO_INFO.summary}>
           <View className="flex-1 justify-end gap-2">
-            <Row label="Ingresos:" value={totals.incomes ? money(totals.incomes) : 'Sin monto…'} color={INCOME} />
-            <Row label="Gastos:" value={totals.spending ? money(totals.spending) : 'Sin monto…'} color={EXPENSE} />
-            <Row label="Balance:" value={totals.balance ? money(totals.balance) : 'Sin monto…'} color={BALANCE} />
+            <Row label={t("mobile.ingresos.3")} value={totals.incomes ? money(totals.incomes) : 'Sin monto…'} color={INCOME} />
+            <Row label={t("mobile.gastos.3")} value={totals.spending ? money(totals.spending) : 'Sin monto…'} color={EXPENSE} />
+            <Row label={t("mobile.balance.2")} value={totals.balance ? money(totals.balance) : 'Sin monto…'} color={BALANCE} />
             <Text className="pt-1 text-center font-inter text-xs text-gf-text-muted">{rangeText}</Text>
           </View>
         </Panel>
-        <Panel label="Vs. mes anterior" info={HERO_INFO.versus}>
-          <DeltaRow label="Ingresos" current={totals.incomes} previous={previous.incomes} color={INCOME} currency={currency} />
-          <DeltaRow label="Gastos" current={totals.spending} previous={previous.spending} color={EXPENSE} currency={currency} />
-          <DeltaRow label="Balance" current={totals.balance} previous={previous.balance} color={BALANCE} currency={currency} />
+        <Panel label={t("mobile.vs.mes.anterior")} info={HERO_INFO.versus}>
+          <DeltaRow label={t("mobile.ingresos")} current={totals.incomes} previous={previous.incomes} color={INCOME} currency={currency} />
+          <DeltaRow label={t("mobile.gastos")} current={totals.spending} previous={previous.spending} color={EXPENSE} currency={currency} />
+          <DeltaRow label={t("mobile.balance")} current={totals.balance} previous={previous.balance} color={BALANCE} currency={currency} />
         </Panel>
       </View>
     </View>

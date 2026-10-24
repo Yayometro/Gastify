@@ -8,6 +8,7 @@ import { CodeStep } from '@/components/auth/code-step';
 import { OutlineButton } from '@/components/ui/outline-button';
 import { Colors } from '@/constants/theme';
 import { passkeyFailureMessage, signInWithDevicePasskey, usePasskeyAvailable } from '@/passkey';
+import { useT } from "@/i18n/client";
 
 // An open session that is locked: it was just opened with Google (no second factor yet) or it has
 // been idle too long. Ask for the second factor, like the web's /verify-2fa does: the code of the
@@ -21,6 +22,7 @@ export function TwoFactorScreen({
   hasTwoFactor: boolean;
   hasPasskey: boolean;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
   const passkeyAvailable = usePasskeyAvailable();
@@ -44,10 +46,10 @@ export function TwoFactorScreen({
   };
 
   return (
-    <AuthLayout title="Verifica tu identidad" subtitle="Por seguridad, confirma que eres tú para seguir usando Gastify.">
+    <AuthLayout title={t("mobile.verifica.tu.identidad")} subtitle={t("mobile.por.seguridad.confirma.que.eres")}>
       {showPasskey && (
         <OutlineButton
-          label="Usar mi passkey"
+          label={t("mobile.usar.mi.passkey")}
           icon={<Ionicons name="finger-print" size={22} color={iconColor} />}
           onPress={unlockWithPasskey}
           loading={loading}
@@ -56,13 +58,12 @@ export function TwoFactorScreen({
       {hasTwoFactor && <CodeStep onVerified={onVerified} onGiveUp={() => {}} />}
       {stuck && (
         <Text className="font-inter text-base text-gf-text">
-          Esta cuenta solo tiene passkey y esta versión de la app todavía no puede usarlo. Activa una app
-          autenticadora desde la web (Perfil) para entrar aquí.
+          {t("mobile.esta.cuenta.solo.tiene.passkey")}
         </Text>
       )}
       <FormError message={error} />
       <Pressable accessibilityRole="button" onPress={() => authClient.signOut()}>
-        <Text className="text-center font-inter text-sm text-gf-text-muted">Cerrar sesión</Text>
+        <Text className="text-center font-inter text-sm text-gf-text-muted">{t("mobile.cerrar.sesion")}</Text>
       </Pressable>
     </AuthLayout>
   );

@@ -7,6 +7,7 @@ import { CategoryBadge } from '@/components/category-badge';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
 import { normalizeText } from '@gastify/core/search/normalizeText';
+import { useT } from "@/i18n/client";
 
 export type PickerItem = { id: string; label: string; detail?: string; icon?: string | null; color?: string | null };
 
@@ -32,6 +33,7 @@ export function PickerModal({
   multiple?: boolean;
   searchPlaceholder?: string;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];
@@ -57,10 +59,10 @@ export function PickerModal({
             <View className="flex-row items-center gap-4">
               {multiple && (
                 <Pressable accessibilityRole="button" onPress={close} hitSlop={10}>
-                  <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>Listo</Text>
+                  <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>{t("mobile.listo")}</Text>
                 </Pressable>
               )}
-              <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={close} hitSlop={10}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={close} hitSlop={10}>
                 <Ionicons name="close" size={26} color={colors.text} />
               </Pressable>
             </View>
@@ -74,7 +76,7 @@ export function PickerModal({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32 }}
             ItemSeparatorComponent={() => <View className="h-px bg-gf-border" />}
-            ListEmptyComponent={<Text className="pt-6 font-inter text-base text-gf-text-muted">Nada coincide con «{query}».</Text>}
+            ListEmptyComponent={<Text className="pt-6 font-inter text-base text-gf-text-muted">{t("mobile.nada.coincide.con.p1", { p1: query })}</Text>}
             renderItem={({ item }) => {
               const selected = isSelected(item.id);
               return (

@@ -10,6 +10,7 @@ import { GlassSurface } from '@/components/ui/glass';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { Colors } from '@/constants/theme';
 import { HISTORY_PRESETS, HISTORY_PRESETS_EXTENDED, type HistoryPreset } from '@gastify/core/history/periodComparison';
+import { useT } from "@/i18n/client";
 
 type Preset = 'dashboard' | HistoryPreset;
 
@@ -44,6 +45,7 @@ export function CompactTimeFilter({
   // Wide screens, History: instead of the month rail, one selector listing every period (last 3 months, quarters, halves...).
   periodSelect?: boolean;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [expanded, setExpanded] = useState(false);
@@ -51,9 +53,9 @@ export function CompactTimeFilter({
   const tabletWidth = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const selectMode = periodSelect && tabletWidth;
   const options = includeDashboard
-    ? [{ id: 'dashboard', label: 'Igual que arriba' }, { id: 'custom', label: 'Personalizado' }, ...HISTORY_PRESETS.filter((item) => item.value !== 'custom').map((item) => ({ id: item.value, label: item.label }))]
+    ? [{ id: 'dashboard', label: t("mobile.igual.que.arriba") }, { id: 'custom', label: t("mobile.personalizado") }, ...HISTORY_PRESETS.filter((item) => item.value !== 'custom').map((item) => ({ id: item.value, label: item.label }))]
     : HISTORY_PRESETS.map((item) => ({ id: item.value, label: item.label }));
-  const selectOptions = [...(includeDashboard ? [{ id: 'dashboard', label: 'Igual que arriba' }] : []), ...HISTORY_PRESETS_EXTENDED.map((item) => ({ id: item.value, label: item.label }))];
+  const selectOptions = [...(includeDashboard ? [{ id: 'dashboard', label: t("mobile.igual.que.arriba") }] : []), ...HISTORY_PRESETS_EXTENDED.map((item) => ({ id: item.value, label: item.label }))];
   const activeLabel = (selectMode ? selectOptions : options).find((item) => item.id === preset)?.label;
 
   if (selectMode) {
@@ -82,12 +84,12 @@ export function CompactTimeFilter({
         {preset === 'month' && <MonthSwitcher value={month} latest={latest} onChange={(next) => { onMonth(next); onPreset('month'); }} />}
         {preset === 'custom' && (
           <View className="gap-3">
-            <DateField label="Desde" value={customFrom} onChange={onCustomFrom} />
-            <DateField label="Hasta" value={customTo} onChange={onCustomTo} />
+            <DateField label={t("mobile.desde")} value={customFrom} onChange={onCustomFrom} />
+            <DateField label={t("mobile.hasta")} value={customTo} onChange={onCustomTo} />
           </View>
         )}
         {expanded && extra}
-        <OptionSheet visible={pickerOpen} title="Periodo" options={selectOptions} isSelected={(id) => id === preset} onSelect={(id) => onPreset(id as Preset)} onClose={() => setPickerOpen(false)} />
+        <OptionSheet visible={pickerOpen} title={t("mobile.periodo")} options={selectOptions} isSelected={(id) => id === preset} onSelect={(id) => onPreset(id as Preset)} onClose={() => setPickerOpen(false)} />
       </View>
     );
   }
@@ -108,14 +110,14 @@ export function CompactTimeFilter({
           <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? 'Menos filtros' : 'Más filtros'}</Text>
         </Pressable>
       </View>
-      {preset !== 'month' && <Text className="font-inter text-xs text-gf-text-muted">Periodo activo: {activeLabel}</Text>}
+      {preset !== 'month' && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.periodo.activo.p1", { p1: activeLabel ?? "" })}</Text>}
       {expanded && (
         <View className="gap-3">
           <ChipPicker items={options} value={preset} onChange={(id) => onPreset(id as Preset)} moreAfter={99} />
           {preset === 'custom' && (
             <View className="gap-3">
-              <DateField label="Desde" value={customFrom} onChange={onCustomFrom} />
-              <DateField label="Hasta" value={customTo} onChange={onCustomTo} />
+              <DateField label={t("mobile.desde")} value={customFrom} onChange={onCustomFrom} />
+              <DateField label={t("mobile.hasta")} value={customTo} onChange={onCustomTo} />
             </View>
           )}
           {extra}

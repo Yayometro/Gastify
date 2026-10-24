@@ -13,6 +13,7 @@ import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { getApi } from '@gastify/core/api/client';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { useT } from "@/i18n/client";
 
 type Ref = { _id?: string; name?: string; color?: string | null; icon?: string | null } | null | undefined;
 type Entry = {
@@ -23,6 +24,7 @@ type Entry = {
 // The Transaction Categorizer: it looks at the movements without a category and, from the rules saved before,
 // suggests one for each. Nothing changes until the person reviews them and applies the ones they keep.
 export function Categorizer({ onApplied }: { onApplied?: () => void }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const dispatch = useDispatch<AppDispatch>();
@@ -79,19 +81,19 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
     return (
       <View className="items-center gap-2 py-10">
         <ActivityIndicator color={colors.accent} />
-        <Text className="font-inter text-sm text-gf-text-muted">Buscando movimientos sin categoría…</Text>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.buscando.movimientos.sin.categoria")}</Text>
       </View>
     );
   }
   if (error) return <Text className="font-inter text-sm text-red-500">{error}</Text>;
   if (entries.length === 0) {
-    return <Text className="py-10 text-center font-inter text-base text-gf-text-muted">Sin sugerencias por ahora: ¡estás al corriente! 🎉</Text>;
+    return <Text className="py-10 text-center font-inter text-base text-gf-text-muted">{t("mobile.sin.sugerencias.por.ahora.estas")}</Text>;
   }
 
   return (
     <View className="gap-3">
       <Text className="text-center font-inter text-sm text-gf-text-muted">
-        {entries.length} {entries.length === 1 ? 'movimiento sin categoría coincide' : 'movimientos sin categoría coinciden'} con una regla · desmarca los que quieras omitir
+        {t("mobile.p1.p2.con.una.regla", { p1: entries.length, p2: entries.length === 1 ? 'movimiento sin categoría coincide' : 'movimientos sin categoría coinciden' })}
       </Text>
       {entries.map((entry) => {
         const id = String(entry.transaction._id);
@@ -114,11 +116,11 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
               <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(Math.abs(Number(entry.transaction.amount) || 0), currency)}</Text>
             </View>
             <View className="flex-row items-center gap-2 pl-8">
-              <Text className="font-inter text-sm text-gf-text-muted">Sin categoría</Text>
+              <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.categoria")}</Text>
               <Ionicons name="arrow-forward" size={14} color={colors.textSecondary} />
               <CategoryBadge icon={icon ?? undefined} color={color ?? undefined} size={24} />
               <Text className="flex-1 font-inter-semibold text-sm text-gf-text" numberOfLines={1}>{target}</Text>
-              {low && <Text className="font-inter-medium text-xs" style={{ color: '#d97706' }}>revisar</Text>}
+              {low && <Text className="font-inter-medium text-xs" style={{ color: '#d97706' }}>{t("mobile.revisar")}</Text>}
             </View>
           </Pressable>
         );

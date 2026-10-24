@@ -15,6 +15,8 @@ import { useThemeMode } from '@/hooks/use-theme-mode';
 import type { RootState } from '@/store';
 import type { UserData } from '@gastify/core/features/userSlice';
 import { initialsOf } from '@gastify/core/profile/profileForm';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 export const SIDE_NAV_WIDTH = 84;
 
@@ -25,20 +27,21 @@ const is = (path: string, prefix: string) => path === prefix || path.startsWith(
 // The web's left column on wide screens (iPad, landscape phones), in the web's own order: the profile on top,
 // Movimientos, Wallet, Presupuestos, Proyecciones, the "+" in the middle, Cuentas, Historial, Categorías, the
 // light / dark switch and sign out, spread over the whole height (the web's `justify-between`).
-const BEFORE_ADD: Item[] = [
-  { key: 'movements', label: 'Movimientos', href: '/movements', active: (p) => is(p, '/movements'), icon: (c) => NAV_ICON.movements(c, 26) },
-  { key: 'wallet', label: 'Wallet', href: '/', active: (p) => p === '/' || p === '/index', icon: (c) => NAV_ICON.wallet(c, 26) },
-  { key: 'budgets', label: 'Presupuestos', href: '/budgets', active: (p) => is(p, '/budgets'), icon: (c) => NAV_ICON.budgets(c, 26) },
-  { key: 'projections', label: 'Proyecciones', href: '/more/projections', active: (p) => is(p, '/more/projections'), icon: (c) => NAV_ICON.projections(c, 26) },
-  { key: 'analyzer', label: 'Analizador de cartera', href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => NAV_ICON.analyzer(c, 26) },
-];
-const AFTER_ADD: Item[] = [
-  { key: 'accounts', label: 'Cuentas', href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => NAV_ICON.accounts(c, 26) },
-  { key: 'history', label: 'Historial', href: '/more/history', active: (p) => is(p, '/more/history'), icon: (c) => NAV_ICON.history(c, 26) },
-  { key: 'categories', label: 'Categorías', href: '/more/categories', active: (p) => is(p, '/more/categories'), icon: (c) => NAV_ICON.categories(c, 26) },
-];
+const BEFORE_ADD = (t: TranslateFn): Item[] => ([
+  { key: 'movements', label: t("mobile.movimientos"), href: '/movements', active: (p) => is(p, '/movements'), icon: (c) => NAV_ICON.movements(c, 26) },
+  { key: 'wallet', label: t("mobile.wallet"), href: '/', active: (p) => p === '/' || p === '/index', icon: (c) => NAV_ICON.wallet(c, 26) },
+  { key: 'budgets', label: t("mobile.presupuestos"), href: '/budgets', active: (p) => is(p, '/budgets'), icon: (c) => NAV_ICON.budgets(c, 26) },
+  { key: 'projections', label: t("mobile.proyecciones"), href: '/more/projections', active: (p) => is(p, '/more/projections'), icon: (c) => NAV_ICON.projections(c, 26) },
+  { key: 'analyzer', label: t("mobile.analizador.de.cartera"), href: '/more/analyzer', active: (p) => is(p, '/more/analyzer'), icon: (c) => NAV_ICON.analyzer(c, 26) },
+]);
+const AFTER_ADD = (t: TranslateFn): Item[] => ([
+  { key: 'accounts', label: t("mobile.cuentas"), href: '/more/accounts', active: (p) => is(p, '/more/accounts'), icon: (c) => NAV_ICON.accounts(c, 26) },
+  { key: 'history', label: t("mobile.historial"), href: '/more/history', active: (p) => is(p, '/more/history'), icon: (c) => NAV_ICON.history(c, 26) },
+  { key: 'categories', label: t("mobile.categorias"), href: '/more/categories', active: (p) => is(p, '/more/categories'), icon: (c) => NAV_ICON.categories(c, 26) },
+]);
 
 export function SideNav() {
+  const t = useT();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
@@ -70,9 +73,9 @@ export function SideNav() {
       <View style={[styles.pill, styles.shadow]}>
       <GlassSurface variant="nav" radius={32} style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.inner}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Perfil" onPress={() => router.navigate('/more/profile')} style={[styles.profile, profileActive && (dark ? styles.activeDark : { backgroundColor: colors.accentSoft })]}>
+          <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.perfil")} onPress={() => router.navigate('/more/profile')} style={[styles.profile, profileActive && (dark ? styles.activeDark : { backgroundColor: colors.accentSoft })]}>
             {user?.image ? (
-              <Image source={{ uri: user.image }} alt="Tu foto de perfil" style={styles.avatar} contentFit="cover" />
+              <Image source={{ uri: user.image }} alt={t("mobile.tu.foto.de.perfil")} style={styles.avatar} contentFit="cover" />
             ) : (
               <View style={[styles.avatar, { backgroundColor: '#7e22ce', alignItems: 'center', justifyContent: 'center' }]}>
                 <Text className="font-inter-bold text-sm" style={{ color: '#ffffff' }}>{initialsOf(user?.fullName)}</Text>
@@ -80,7 +83,7 @@ export function SideNav() {
             )}
             <Text className="font-inter text-[10px] text-gf-text" numberOfLines={1} style={{ maxWidth: 64 }}>{user?.fullName?.split(' ')[0] ?? 'Perfil'}</Text>
           </Pressable>
-          {BEFORE_ADD.map(navItem)}
+          {BEFORE_ADD(t).map(navItem)}
           {iconButton('add', 'Agregar un movimiento', () => router.navigate('/add' as never), (
             <View style={styles.fabShadow}>
               <LinearGradient colors={dark ? ['#e879f9', '#a855f7', '#7e22ce'] : ['#e879f9', '#9333ea']} start={{ x: 0.2, y: 0 }} end={{ x: 0.6, y: 1 }} style={styles.fab}>
@@ -88,7 +91,7 @@ export function SideNav() {
               </LinearGradient>
             </View>
           ), is(pathname, '/add'))}
-          {AFTER_ADD.map(navItem)}
+          {AFTER_ADD(t).map(navItem)}
           {iconButton('theme', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro', () => setMode(dark ? 'light' : 'dark'), <Ionicons name={dark ? 'sunny-outline' : 'moon-outline'} size={26} color={colors.text} />)}
           {iconButton('notifications', 'Notificaciones', () => router.navigate('/notifications' as never), <NotificationsGlyph size={26} />, is(pathname, '/notifications'))}
         </ScrollView>

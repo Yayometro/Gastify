@@ -19,24 +19,27 @@ import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { CREATE_KIND_INFO, CREATE_KIND_SUMMARY, CREATE_SCREEN_INFO, type CreateKind } from '@/lib/create-info';
 import { emptyBudgetValues } from '@gastify/core/budgets/budgetForm';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 type Kind = CreateKind;
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const KINDS: { value: Kind; label: string; icon: IconName }[] = [
-  { value: 'expense', label: 'Gasto', icon: 'arrow-down-circle-outline' },
-  { value: 'income', label: 'Ingreso', icon: 'arrow-up-circle-outline' },
-  { value: 'transfer', label: 'Transferir', icon: 'swap-horizontal-outline' },
-  { value: 'account', label: 'Cuenta', icon: 'wallet-outline' },
-  { value: 'category', label: 'Categoría', icon: 'pricetag-outline' },
-  { value: 'budget', label: 'Presupuesto', icon: 'pie-chart-outline' },
-  { value: 'saving', label: 'Ahorro', icon: 'cash-outline' },
-  { value: 'project', label: 'Proyecto', icon: 'airplane-outline' },
-];
+const KINDS = (t: TranslateFn): { value: Kind; label: string; icon: IconName }[] => ([
+  { value: 'expense', label: t("mobile.gasto"), icon: 'arrow-down-circle-outline' },
+  { value: 'income', label: t("mobile.ingreso"), icon: 'arrow-up-circle-outline' },
+  { value: 'transfer', label: t("mobile.transferir"), icon: 'swap-horizontal-outline' },
+  { value: 'account', label: t("mobile.cuenta"), icon: 'wallet-outline' },
+  { value: 'category', label: t("mobile.categoria"), icon: 'pricetag-outline' },
+  { value: 'budget', label: t("mobile.presupuesto"), icon: 'pie-chart-outline' },
+  { value: 'saving', label: t("mobile.ahorro"), icon: 'cash-outline' },
+  { value: 'project', label: t("mobile.proyecto"), icon: 'airplane-outline' },
+]);
 
 // The "+" of the bottom bar: a quick way to create anything, not only movements. Pick what to create
 // and its form appears below; what is saved goes to the same API routes the web uses.
 export default function AddScreen() {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const scheme = useColorScheme();
@@ -115,14 +118,14 @@ export default function AddScreen() {
   };
 
   return (
-    <Screen title="Crear" subtitle="Elige qué quieres agregar." titleInfo={CREATE_SCREEN_INFO}>
+    <Screen title={t("mobile.crear")} subtitle={t("mobile.elige.que.quieres.agregar")} titleInfo={CREATE_SCREEN_INFO}>
       {/* The same import as in Movimientos and on the web's Crear button: the Excel template, filled and uploaded. */}
       <Pressable accessibilityRole="button" onPress={() => router.push('/movements/import')} className="flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
         <Ionicons name="document-attach-outline" size={18} color={colors.accent} />
-        <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Importar desde Excel</Text>
+        <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.importar.desde.excel")}</Text>
       </Pressable>
       <View className="flex-row flex-wrap gap-2">
-        {KINDS.map((item) => {
+        {KINDS(t).map((item) => {
           const selected = item.value === kind;
           return (
             <Pressable
@@ -144,7 +147,7 @@ export default function AddScreen() {
           );
         })}
       </View>
-      <Card title={KINDS.find((item) => item.value === kind)?.label ?? ''} info={CREATE_KIND_INFO[kind]}>
+      <Card title={KINDS(t).find((item) => item.value === kind)?.label ?? ''} info={CREATE_KIND_INFO[kind]}>
         <Text className="font-inter text-sm text-gf-text-muted">{CREATE_KIND_SUMMARY[kind]}</Text>
       </Card>
       <View>{form()}</View>

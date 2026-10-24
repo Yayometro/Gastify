@@ -14,10 +14,12 @@ import type { AppDispatch } from '@/store';
 import { updateUser, type UserData } from '@gastify/core/features/userSlice';
 import { validateEmailAddress, validateNewPassword } from '@gastify/core/profile/accessRules';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 // How the person signs in: the e-mail and the password, changed through the same route as the web's profile
 // (`general-data/user/update-user`). Changing the e-mail signs the person out, so they come back in with the new one.
 export function AccessCard({ email }: { email: string }) {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
@@ -34,10 +36,10 @@ export function AccessCard({ email }: { email: string }) {
     const problem = validateEmailAddress(newEmail, email);
     setEmailError(problem);
     if (problem) return;
-    Alert.alert('Cambiar tu correo', `Vas a entrar con ${newEmail.trim()}. Cerraremos tu sesión para que vuelvas a entrar con el correo nuevo.`, [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.cambiar.tu.correo"), `Vas a entrar con ${newEmail.trim()}. Cerraremos tu sesión para que vuelvas a entrar con el correo nuevo.`, [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Cambiar',
+        text: t("mobile.cambiar"),
         onPress: async () => {
           setEmailBusy(true);
           try {
@@ -74,19 +76,19 @@ export function AccessCard({ email }: { email: string }) {
   };
 
   return (
-    <Card title="Acceso" info={APP_INFO.acceso}>
+    <Card title={t("mobile.acceso")} info={APP_INFO.acceso}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: openForm === 'email' }} onPress={() => setOpenForm(openForm === 'email' ? null : 'email')} className="flex-row items-center justify-between py-1">
         <View className="flex-1">
-          <Text className="font-inter-semibold text-base text-gf-text">Cambiar correo</Text>
+          <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.cambiar.correo")}</Text>
           <Text className="font-inter text-sm text-gf-text-muted" numberOfLines={1}>{email}</Text>
         </View>
         <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{openForm === 'email' ? 'Cerrar' : 'Editar'}</Text></View>
       </Pressable>
       {openForm === 'email' && (
         <View className="gap-3">
-          <TextField label="Correo nuevo" value={newEmail} onChangeText={setNewEmail} keyboardType="email-address" autoComplete="email" placeholder="tu@correo.com" onClear={() => setNewEmail('')} />
+          <TextField label={t("mobile.correo.nuevo")} value={newEmail} onChangeText={setNewEmail} keyboardType="email-address" autoComplete="email" placeholder="tu@correo.com" onClear={() => setNewEmail('')} />
           <FormError message={emailError} />
-          <GradientButton label="Cambiar correo" onPress={changeEmail} loading={emailBusy} disabled={emailBusy || !newEmail.trim()} />
+          <GradientButton label={t("mobile.cambiar.correo")} onPress={changeEmail} loading={emailBusy} disabled={emailBusy || !newEmail.trim()} />
         </View>
       )}
 
@@ -94,17 +96,17 @@ export function AccessCard({ email }: { email: string }) {
 
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: openForm === 'password' }} onPress={() => setOpenForm(openForm === 'password' ? null : 'password')} className="flex-row items-center justify-between py-1">
         <View className="flex-1">
-          <Text className="font-inter-semibold text-base text-gf-text">Cambiar contraseña</Text>
-          <Text className="font-inter text-sm text-gf-text-muted">Mínimo 8 caracteres, una mayúscula y un carácter especial.</Text>
+          <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.cambiar.contrasena")}</Text>
+          <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.minimo.8.caracteres.una.mayuscula")}</Text>
         </View>
         <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{openForm === 'password' ? 'Cerrar' : 'Editar'}</Text></View>
       </Pressable>
       {openForm === 'password' && (
         <View className="gap-3">
-          <TextField label="Contraseña nueva" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" textContentType="newPassword" />
-          <TextField label="Repite la contraseña" value={confirm} onChangeText={setConfirm} secureTextEntry autoComplete="new-password" textContentType="newPassword" />
+          <TextField label={t("mobile.contrasena.nueva")} value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" textContentType="newPassword" />
+          <TextField label={t("mobile.repite.la.contrasena")} value={confirm} onChangeText={setConfirm} secureTextEntry autoComplete="new-password" textContentType="newPassword" />
           <FormError message={passwordError} />
-          <GradientButton label="Guardar contraseña" onPress={changePassword} loading={passwordBusy} disabled={passwordBusy || !password} />
+          <GradientButton label={t("mobile.guardar.contrasena")} onPress={changePassword} loading={passwordBusy} disabled={passwordBusy || !password} />
         </View>
       )}
     </Card>

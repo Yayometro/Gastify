@@ -27,11 +27,13 @@ import { summarizePeriod } from '@gastify/core/history/periodComparison';
 import { Colors } from '@/constants/theme';
 import { monthTotals, sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 // One account: its card (bank, name, currency, number), and the pencil on the card that opens the edition right under
 // it: the color and pattern, then the name, type and balance. The card already shows the bank and the number, so there
 // is no separate section for them.
 export default function EditAccountScreen() {
+  const t = useT();
   const { id: rawId, returnTo: rawReturn } = useLocalSearchParams<{ id: string; returnTo?: string }>();
   const id = String(rawId ?? '');
   // Opened from Inicio, the card goes back to Inicio itself (the tab that opened it), not to the screen before in this stack.
@@ -56,17 +58,17 @@ export default function EditAccountScreen() {
 
   if (!account) {
     return (
-      <Screen title="Cuenta" backLabel="Cuentas" onBack={back}>
-        <Text className="font-inter text-base text-gf-text-muted">No encontramos esta cuenta.</Text>
+      <Screen title={t("mobile.cuenta")} backLabel="Cuentas" onBack={back}>
+        <Text className="font-inter text-base text-gf-text-muted">{t("mobile.no.encontramos.esta.cuenta")}</Text>
       </Screen>
     );
   }
 
   const remove = () => {
-    Alert.alert('Borrar esta cuenta', 'Se borra la cuenta. Sus movimientos siguen en tu historial. No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.borrar.esta.cuenta"), t("mobile.se.borra.la.cuenta.sus"), [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: t("mobile.borrar"),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -89,7 +91,7 @@ export default function EditAccountScreen() {
       backLabel={returnTo ? 'Inicio' : 'Cuentas'}
       onBack={back}
       headerAction={
-        <Pressable accessibilityRole="button" accessibilityLabel="Editar cuenta" onPress={() => setEditOpen((open) => !open)} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ backgroundColor: colors.accentSoft }}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.editar.cuenta")} onPress={() => setEditOpen((open) => !open)} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ backgroundColor: colors.accentSoft }}>
           <Ionicons name={editOpen ? 'close' : 'pencil'} size={16} color={colors.accent} />
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{editOpen ? 'Cerrar' : 'Editar'}</Text>
         </Pressable>
@@ -100,7 +102,7 @@ export default function EditAccountScreen() {
         <RevealUnder>
           <View className="gap-4">
             <CardColorPicker account={account} />
-            <Card title="Editar cuenta">
+            <Card title={t("mobile.editar.cuenta")}>
               <AccountForm
                 key={id}
                 currencyLocked
@@ -124,26 +126,26 @@ export default function EditAccountScreen() {
 
       <Card title={`Movimientos de ${period.label}`} info={APP_INFO.movimientos_de_la_cuenta}>
         <View className="flex-row justify-between">
-          <Text className="font-inter text-base text-gf-text-muted">Entró</Text>
+          <Text className="font-inter text-base text-gf-text-muted">{t("mobile.entro")}</Text>
           <Text className="font-inter-semibold text-base" style={{ color: colors.income }}>+{formatMoneyMajor(totals.incomes, primary)}</Text>
         </View>
         <View className="flex-row justify-between">
-          <Text className="font-inter text-base text-gf-text-muted">Salió</Text>
+          <Text className="font-inter text-base text-gf-text-muted">{t("mobile.salio")}</Text>
           <Text className="font-inter-semibold text-base" style={{ color: colors.expense }}>-{formatMoneyMajor(totals.spending, primary)}</Text>
         </View>
         {inPeriod.slice(0, 5).map((movement) => (
           <MovementRow key={String(movement._id)} movement={movement} currency={primary} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: `/more/accounts/${id}` } })} />
         ))}
-        {inPeriod.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
+        {inPeriod.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
         {mine.length > 0 && (
           <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/movements', params: { accountId: id, returnTo: `/more/accounts/${id}` } })}>
-            <Text className="font-inter-semibold text-sm text-gf-text">Ver todos los movimientos de esta cuenta ›</Text>
+            <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.ver.todos.los.movimientos.de")}</Text>
           </Pressable>
         )}
       </Card>
 
       <Pressable accessibilityRole="button" onPress={remove} className="items-center py-2">
-        <Text className="font-inter-semibold text-base text-red-500">Borrar cuenta</Text>
+        <Text className="font-inter-semibold text-base text-red-500">{t("mobile.borrar.cuenta")}</Text>
       </Pressable>
     </Screen>
   );

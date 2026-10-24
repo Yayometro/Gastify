@@ -5,6 +5,7 @@ import { CategoryBadge } from '@/components/category-badge';
 import { Colors } from '@/constants/theme';
 import type { BreakdownSlice } from '@gastify/core/history/categoryBreakdown';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { useT } from "@/i18n/client";
 
 // The categories of a period as a table: numbered, a hairline between rows, the currency written once in the header
 // instead of on every row, and the share of the total in its own column.
@@ -30,6 +31,7 @@ export function CategoryTable({
   // What a row opens, written under its name with an arrow ("Ver subcategorías", "Ver transacciones"): the next level down.
   drillLabel?: string;
 }) {
+  const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const shown = limit ? rows.slice(0, limit) : rows;
   return (
@@ -38,7 +40,7 @@ export function CategoryTable({
         <Text className="w-6 text-center font-inter-semibold text-xs uppercase text-gf-text-muted">#</Text>
         <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted">{firstColumn}</Text>
         <Text className="w-12 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">%</Text>
-        <Text className="w-14 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Trans.</Text>
+        <Text className="w-14 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.trans")}</Text>
         <Text className="w-28 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{currency}</Text>
       </View>
       {shown.map((row, index) => (

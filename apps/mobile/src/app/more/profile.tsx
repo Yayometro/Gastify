@@ -9,6 +9,7 @@ import { FormError } from '@/components/auth/auth-layout';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { AppearanceCard } from '@/components/appearance-card';
+import { LanguageCard } from '@/components/profile/language-card';
 import { AccessCard } from '@/components/profile/access-card';
 import { CurrencyCard } from '@/components/profile/currency-card';
 import { ApiTokensCard } from '@/components/profile/api-tokens-card';
@@ -25,6 +26,7 @@ import type { UserData } from '@gastify/core/features/userSlice';
 import { updateUser } from '@gastify/core/features/userSlice';
 import { longDateEs } from '@gastify/core/format/spanishDates';
 import { PROFILE_NAME_MAX, buildProfileBody, initialsOf, profileToValues, validateProfile, type ProfileErrors } from '@gastify/core/profile/profileForm';
+import { useT } from "@/i18n/client";
 
 const AVATAR = 96;
 
@@ -40,6 +42,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 // The account: photo or initials, the data the web's profile shows and the two fields the phone can change
 // (name and phone), then how the person signs in (e-mail and password) right under it.
 export default function ProfileScreen() {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const { data: session } = authClient.useSession();
@@ -85,12 +88,12 @@ export default function ProfileScreen() {
   };
 
   return (
-    <Screen title="Perfil" backLabel="Más" onBack={() => router.back()}>
+    <Screen title={t("mobile.perfil")} backLabel="Más" onBack={() => router.back()}>
       <View className="items-center gap-3">
         {user?.image ? (
-          <Image source={{ uri: user.image }} style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2 }} contentFit="cover" alt="Tu foto de perfil" />
+          <Image source={{ uri: user.image }} style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2 }} contentFit="cover" alt={t("mobile.tu.foto.de.perfil")} />
         ) : (
-          <View style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2, backgroundColor: '#7e22ce', alignItems: 'center', justifyContent: 'center' }} accessibilityLabel="Tus iniciales">
+          <View style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2, backgroundColor: '#7e22ce', alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={t("mobile.tus.iniciales")}>
             <Text className="font-inter-bold text-3xl" style={{ color: '#ffffff' }}>{initialsOf(user?.fullName)}</Text>
           </View>
         )}
@@ -100,17 +103,17 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Card title="Tus datos">
+      <Card title={t("mobile.tus.datos")}>
         <View className="gap-2">
-          <TextField label="Nombre" value={fullName} onChangeText={setFullName} maxLength={PROFILE_NAME_MAX} autoCapitalize="words" textContentType="name" />
+          <TextField label={t("mobile.nombre")} value={fullName} onChangeText={setFullName} maxLength={PROFILE_NAME_MAX} autoCapitalize="words" textContentType="name" />
           {errors.fullName && <Text className="font-inter text-sm text-red-500">{errors.fullName}</Text>}
         </View>
         <View className="gap-2">
-          <TextField label="Teléfono (opcional)" value={phone} onChangeText={setPhone} keyboardType="phone-pad" textContentType="telephoneNumber" placeholder="55 1234 5678" />
+          <TextField label={t("mobile.telefono.opcional")} value={phone} onChangeText={setPhone} keyboardType="phone-pad" textContentType="telephoneNumber" placeholder="55 1234 5678" />
           {errors.phone && <Text className="font-inter text-sm text-red-500">{errors.phone}</Text>}
         </View>
         <FormError message={formError} />
-        <GradientButton label="Guardar cambios" onPress={save} loading={saving} disabled={saving || unchanged} />
+        <GradientButton label={t("mobile.guardar.cambios")} onPress={save} loading={saving} disabled={saving || unchanged} />
       </Card>
 
       <AccessCard email={email} />
@@ -119,24 +122,26 @@ export default function ProfileScreen() {
 
       <AppearanceCard />
 
-      <Card title="Cuenta">
-        <InfoRow label="Correo" value={email || '—'} />
-        <InfoRow label="Moneda principal" value={currency} />
-        {created && !Number.isNaN(created.getTime()) && <InfoRow label="Miembro desde" value={longDateEs(created)} />}
+      <LanguageCard />
+
+      <Card title={t("mobile.cuenta")}>
+        <InfoRow label={t("mobile.correo")} value={email || '—'} />
+        <InfoRow label={t("mobile.moneda.principal")} value={currency} />
+        {created && !Number.isNaN(created.getTime()) && <InfoRow label={t("mobile.miembro.desde")} value={longDateEs(created)} />}
       </Card>
 
       <TwoFactorCard />
       <PasskeysCard />
       <ApiTokensCard />
 
-      <Text className="font-inter text-sm text-gf-text-muted">La foto de perfil se cambia desde Gastify en la web.</Text>
+      <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.la.foto.de.perfil.se")}</Text>
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Cerrar sesión"
+        accessibilityLabel={t("mobile.cerrar.sesion")}
         onPress={() => authClient.signOut()}
         className="items-center rounded-3xl bg-gf-surface p-4">
-        <Text className="font-inter-semibold text-base text-red-500">Cerrar sesión</Text>
+        <Text className="font-inter-semibold text-base text-red-500">{t("mobile.cerrar.sesion")}</Text>
       </Pressable>
 
       <DeleteAccountCard email={email} twoFactorEnabled={Boolean((session?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled)} />

@@ -9,6 +9,7 @@ import { AppearanceCard } from '@/components/appearance-card';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { NAV_ICON } from '@/lib/nav-icons';
+import { useT } from "@/i18n/client";
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -26,6 +27,7 @@ function MenuRow({
   onPress?: () => void;
   soon?: boolean;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   return (
@@ -40,7 +42,7 @@ function MenuRow({
       <View style={{ width: 28, alignItems: 'center' }}>{glyph ? glyph(colors.text) : icon ? <Ionicons name={icon} size={22} color={colors.text} /> : null}</View>
       <Text className="flex-1 font-inter-medium text-base text-gf-text">{label}</Text>
       {soon ? (
-        <Text className="font-inter text-sm text-gf-text-muted">Próximamente</Text>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.proximamente")}</Text>
       ) : (
         <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
       )}
@@ -50,30 +52,31 @@ function MenuRow({
 
 // The sections that are not in the bottom bar: Cuentas, Categorías, Historial, Proyecciones and Perfil.
 export default function MoreScreen() {
+  const t = useT();
   return (
-    <Screen title="Más" subtitle="Tus cuentas, categorías y perfil.">
+    <Screen title={t("mobile.mas")} subtitle={t("mobile.tus.cuentas.categorias.y.perfil")}>
       <Card>
-        <MenuRow label="Notificaciones" icon="notifications-outline" onPress={() => router.push('/notifications')} />
+        <MenuRow label={t("mobile.notificaciones")} icon="notifications-outline" onPress={() => router.push('/notifications')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Cuentas" glyph={(c) => NAV_ICON.accounts(c)} onPress={() => router.push('/more/accounts')} />
+        <MenuRow label={t("mobile.cuentas")} glyph={(c) => NAV_ICON.accounts(c)} onPress={() => router.push('/more/accounts')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Categorías" glyph={(c) => NAV_ICON.categories(c)} onPress={() => router.push('/more/categories')} />
+        <MenuRow label={t("mobile.categorias")} glyph={(c) => NAV_ICON.categories(c)} onPress={() => router.push('/more/categories')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Analizador de cartera" glyph={(c) => NAV_ICON.analyzer(c)} onPress={() => router.push('/more/analyzer')} />
+        <MenuRow label={t("mobile.analizador.de.cartera")} glyph={(c) => NAV_ICON.analyzer(c)} onPress={() => router.push('/more/analyzer')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Historial" glyph={(c) => NAV_ICON.history(c)} onPress={() => router.push('/more/history')} />
+        <MenuRow label={t("mobile.historial")} glyph={(c) => NAV_ICON.history(c)} onPress={() => router.push('/more/history')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Proyecciones" glyph={(c) => NAV_ICON.projections(c)} onPress={() => router.push('/more/projections')} />
+        <MenuRow label={t("mobile.proyecciones")} glyph={(c) => NAV_ICON.projections(c)} onPress={() => router.push('/more/projections')} />
         <View className="h-px bg-gf-border" />
-        <MenuRow label="Perfil" icon="person-circle-outline" onPress={() => router.push('/more/profile')} />
+        <MenuRow label={t("mobile.perfil")} icon="person-circle-outline" onPress={() => router.push('/more/profile')} />
       </Card>
       <AppearanceCard />
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Cerrar sesión"
+        accessibilityLabel={t("mobile.cerrar.sesion")}
         onPress={() => authClient.signOut()}
         className="items-center rounded-3xl bg-gf-surface p-4">
-        <Text className="font-inter-semibold text-base text-red-500">Cerrar sesión</Text>
+        <Text className="font-inter-semibold text-base text-red-500">{t("mobile.cerrar.sesion")}</Text>
       </Pressable>
     </Screen>
   );

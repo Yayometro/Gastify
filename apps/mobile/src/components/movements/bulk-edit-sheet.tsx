@@ -11,6 +11,7 @@ import { Colors } from '@/constants/theme';
 import { messageOf, sendWrite, sendWriteAnswer } from '@/lib/write';
 import { ACCOUNT_CURRENCIES } from '@gastify/core/accounts/accountForm';
 import { dateText, movementInstant } from '@gastify/core/transactions/movementForm';
+import { useT } from "@/i18n/client";
 
 // One field of every selected movement at a time (rename, date, type, category, account, currency), or every field at
 // once ("edición general"). What a person leaves blank keeps each movement's own value.
@@ -46,6 +47,7 @@ export function BulkEditSheet({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const toast = useToast();
   const [name, setName] = useState('');
@@ -126,7 +128,7 @@ export function BulkEditSheet({
   const save = async () => {
     setError(null);
     if (field === 'currency') {
-      if (!currency) return setError('Elige la nueva divisa.');
+      if (!currency) return setError(t("mobile.elige.la.nueva.divisa"));
       setBusy(true);
       try {
         await changeCurrency(ids, null);
@@ -156,7 +158,7 @@ export function BulkEditSheet({
 
   // The blocked movements, moved to the account chosen here (the same currency as the change).
   const changeBlockedAccounts = async () => {
-    if (!destinationId) return setError('Elige la cuenta destino.');
+    if (!destinationId) return setError(t("mobile.elige.la.cuenta.destino"));
     setError(null);
     setBusy(true);
     try {
@@ -179,56 +181,56 @@ export function BulkEditSheet({
       subtitle={`${count} ${count === 1 ? 'movimiento seleccionado' : 'movimientos seleccionados'}`}
       info={
         field === 'general'
-          ? { title: 'Edición general', text: 'Edita todos los campos a la vez. Lo que llenes se escribe en TODOS los movimientos seleccionados; lo que dejes en blanco se queda como estaba en cada uno.' }
+          ? { title: t("mobile.edicion.general"), text: t("mobile.edita.todos.los.campos.a") }
           : field === 'currency'
-            ? { title: 'Cambiar la divisa', text: 'Convierte el monto de cada movimiento con el tipo de cambio de su fecha. Un movimiento solo cambia si su cuenta está en la nueva divisa (o si no tiene cuenta). Los que no pueden se quedan como estaban y se te dice por qué; puedes darles una cuenta de esa divisa en el mismo aviso.' }
+            ? { title: t("mobile.cambiar.la.divisa"), text: t("mobile.convierte.el.monto.de.cada") }
             : undefined
       }>
       {(field === 'name' || field === 'general') && (
-        <TextField label={field === 'general' ? 'Nombre (opcional)' : 'Nombre nuevo'} value={name} onChangeText={setName} maxLength={80} placeholder="Si lo dejas vacío, no cambia" />
+        <TextField label={field === 'general' ? 'Nombre (opcional)' : 'Nombre nuevo'} value={name} onChangeText={setName} maxLength={80} placeholder={t("mobile.si.lo.dejas.vacio.no")} />
       )}
       {field === 'general' && (
-        <TextField label="Monto (opcional)" value={amount} onChangeText={(text) => setAmount(text.replace(/[^0-9.,]/g, ''))} keyboardType="decimal-pad" placeholder="Sin cambio" />
+        <TextField label={t("mobile.monto.opcional")} value={amount} onChangeText={(text) => setAmount(text.replace(/[^0-9.,]/g, ''))} keyboardType="decimal-pad" placeholder={t("mobile.sin.cambio")} />
       )}
       {(field === 'date' || field === 'general') && <DateField label={field === 'general' ? 'Fecha (opcional)' : 'Fecha nueva'} value={date} onChange={setDate} />}
       {(field === 'type' || field === 'general') && (
         <View className="gap-2">
           <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? 'Tipo (opcional)' : 'Tipo'}</Text>
-          <ChipPicker items={[{ id: 'expense', label: 'Gasto' }, { id: 'income', label: 'Ingreso' }]} value={type} onChange={setType} />
+          <ChipPicker items={[{ id: 'expense', label: t("mobile.gasto") }, { id: 'income', label: t("mobile.ingreso") }]} value={type} onChange={setType} />
         </View>
       )}
       {(field === 'account' || field === 'general') && (
         <View className="gap-2">
           <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? 'Cuenta (opcional)' : 'Cuenta'}</Text>
-          <ChipPicker items={accounts} value={accountId} onChange={setAccountId} title="Cuentas" emptyText="Todavía no tienes cuentas." />
+          <ChipPicker items={accounts} value={accountId} onChange={setAccountId} title={t("mobile.cuentas")} emptyText="Todavía no tienes cuentas." />
         </View>
       )}
       {(field === 'category' || field === 'general') && (
         <View className="gap-2">
           <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? 'Categoría (opcional)' : 'Categoría'}</Text>
-          <ChipPicker items={categories} value={categoryId} onChange={setCategoryId} title="Categorías" emptyText="Todavía no tienes categorías." />
-          <Text className="font-inter text-xs text-gf-text-muted">Al cambiar la categoría, la subcategoría se quita.</Text>
+          <ChipPicker items={categories} value={categoryId} onChange={setCategoryId} title={t("mobile.categorias")} emptyText="Todavía no tienes categorías." />
+          <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.al.cambiar.la.categoria.la")}</Text>
         </View>
       )}
-      {field === 'general' && <TextField label="Etiquetas (opcional, separadas por comas)" value={tags} onChangeText={setTags} placeholder="viaje, trabajo" autoCapitalize="none" />}
+      {field === 'general' && <TextField label={t("mobile.etiquetas.opcional.separadas.por.comas")} value={tags} onChangeText={setTags} placeholder={t("mobile.viaje.trabajo")} autoCapitalize="none" />}
 
       {field === 'currency' && (
         <View className="gap-3">
           <View className="gap-2">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Nueva divisa</Text>
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.nueva.divisa")}</Text>
             <ChipPicker items={ACCOUNT_CURRENCIES.map((code) => ({ id: code, label: code }))} value={currency} onChange={(code) => { setCurrency(code); setBlocked([]); setDestinationId(''); }} moreAfter={99} />
           </View>
           {blocked.length > 0 && (
             <View className="gap-3 rounded-2xl border p-3" style={{ borderColor: colors.border }}>
               <Text className="font-inter-semibold text-sm text-gf-text">
-                {blocked.length === 1 ? '1 movimiento no se puede cambiar' : `${blocked.length} movimientos no se pueden cambiar`} con su cuenta actual:
+                {t("mobile.p1.con.su.cuenta.actual", { p1: blocked.length === 1 ? '1 movimiento no se puede cambiar' : `${blocked.length} movimientos no se pueden cambiar` })}
               </Text>
               {blocked.map((item) => (
                 <Text key={item.id} className="font-inter text-xs text-gf-text-muted">• {item.name}: {item.reason}</Text>
               ))}
               <View className="gap-2">
-                <Text className="font-inter-medium text-sm text-gf-text-muted">Pasarlos a una cuenta en {currency}</Text>
-                <ChipPicker items={currencyAccounts} value={destinationId} onChange={setDestinationId} title="Cuentas" emptyText={`No tienes cuentas en ${currency}.`} />
+                <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.pasarlos.a.una.cuenta.en", { p1: currency })}</Text>
+                <ChipPicker items={currencyAccounts} value={destinationId} onChange={setDestinationId} title={t("mobile.cuentas")} emptyText={`No tienes cuentas en ${currency}.`} />
               </View>
               <GradientButton label={busy ? 'Guardando…' : `Cambiar también su cuenta (${blocked.length})`} onPress={changeBlockedAccounts} loading={busy} disabled={busy || !destinationId} />
             </View>
@@ -238,7 +240,7 @@ export function BulkEditSheet({
 
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
       {blocked.length === 0 && button(field === 'general' ? 'Guardar en todos' : field === 'currency' ? 'Cambiar la divisa' : 'Guardar')}
-      <Text className="font-inter text-xs" style={{ color: colors.textSecondary }}>Se aplica a los {count} seleccionados.</Text>
+      <Text className="font-inter text-xs" style={{ color: colors.textSecondary }}>{t("mobile.se.aplica.a.los.p1", { p1: count })}</Text>
     </DetailSheet>
   );
 }

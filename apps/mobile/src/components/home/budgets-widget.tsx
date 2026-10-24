@@ -17,6 +17,7 @@ import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurren
 import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 // The most budgets the dashboard shows; the rest are one tap away on «Ver todos».
 export const MAX_DASHBOARD_BUDGETS = 10;
@@ -47,6 +48,7 @@ export function useDashboardBudgetRows() {
 }
 
 export function BudgetsWidget() {
+  const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const { rows, currency } = useDashboardBudgetRows();
   const shown = rows.slice(0, MAX_DASHBOARD_BUDGETS);
@@ -54,14 +56,14 @@ export function BudgetsWidget() {
     <View className="gap-3">
       <View className="flex-row items-center justify-between gap-3 px-1">
         <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8} className="flex-1">
-          <Text className="font-inter-semibold text-lg text-gf-text">Presupuestos</Text>
+          <Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.presupuestos")}</Text>
         </Pressable>
         <View className="flex-row items-center gap-3">
           <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{rows.length > shown.length ? `Ver todos (${rows.length})` : 'Ver todos'}</Text></Pressable>
           <InfoTip info={APP_INFO.presupuestos} />
         </View>
       </View>
-      {rows.length === 0 && <Card><Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes presupuestos de gasto.</Text></Card>}
+      {rows.length === 0 && <Card><Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.no.tienes.presupuestos.de")}</Text></Card>}
       {shown.map((row) => <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)}
     </View>
   );

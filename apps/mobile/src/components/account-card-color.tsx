@@ -16,11 +16,13 @@ import { accountGradient } from '@gastify/core/accounts/accountActivity';
 import { CARD_COLORS, CARD_PATTERNS, DEFAULT_CARD_COLOR, DEFAULT_CARD_PATTERN, type CardColorGroup } from '@gastify/core/accounts/cardStyle';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
-const INFO = {
-  title: 'Color y patrón de la tarjeta',
-  text: 'Elige cómo se ve esta tarjeta. «Automática» es el color que la app le asigna a la cuenta. Los demás son colores fijos, agrupados por familia, y el texto de la tarjeta cambia solo para leerse bien: oscuro sobre los claros, claro sobre los oscuros. El patrón es el dibujo de fondo: círculos, puntos, rayas, cuadrícula, ondas o liso. Todo se guarda en la cuenta: lo verás igual en todos tus dispositivos y en la web.',
-};
+const INFO = (t: TranslateFn) => ({
+  title: t("mobile.color.y.patron.de.la"),
+  text: t("mobile.elige.como.se.ve.esta"),
+});
 
 // The groups in the order they are listed.
 const GROUPS = Array.from(new Set(CARD_COLORS.map((option) => option.group))) as CardColorGroup[];
@@ -28,6 +30,7 @@ const GROUPS = Array.from(new Set(CARD_COLORS.map((option) => option.group))) as
 // The color and the pattern of one account's card. Each choice is saved on the account at once and redraws the card here
 // and everywhere it shows; if the save fails, the choice goes back and the reason is shown.
 export function CardColorPicker({ account }: { account: AccountData }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const dispatch = useDispatch<AppDispatch>();
@@ -60,7 +63,7 @@ export function CardColorPicker({ account }: { account: AccountData }) {
   const palette = cardPalette(color, [autoFrom, autoTo]);
   // The colors are a single row until the person asks for all of them: the families take a lot of room.
   const [expanded, setExpanded] = useState(false);
-  const everyColor = [{ id: DEFAULT_CARD_COLOR, label: 'Automática', stops: [autoFrom, autoTo] }, ...CARD_COLORS];
+  const everyColor = [{ id: DEFAULT_CARD_COLOR, label: t("mobile.automatica"), stops: [autoFrom, autoTo] }, ...CARD_COLORS];
   const toggle = (label: string, onPress: () => void) => (
     <Pressable accessibilityRole="button" onPress={onPress} className="items-center rounded-full py-2.5" style={{ backgroundColor: colors.accentSoft }}>
       <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{label}</Text>
@@ -68,7 +71,7 @@ export function CardColorPicker({ account }: { account: AccountData }) {
   );
 
   return (
-    <Card title="Color y patrón" info={INFO}>
+    <Card title={t("mobile.color.y.patron")} info={INFO(t)}>
       {!expanded ? (
         <View className="gap-3">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 2 }}>
@@ -85,7 +88,7 @@ export function CardColorPicker({ account }: { account: AccountData }) {
           <Text className="font-inter-medium text-xs uppercase text-gf-text-muted">{group}</Text>
           <View className="flex-row flex-wrap gap-2.5">
             {group === 'Neutros' && (
-              <Swatch selected={color === DEFAULT_CARD_COLOR} label="Automática" stops={[autoFrom, autoTo]} onPress={() => save({ cardColor: DEFAULT_CARD_COLOR })} accent={colors.accent} border={colors.border} text={colors.text} />
+              <Swatch selected={color === DEFAULT_CARD_COLOR} label={t("mobile.automatica")} stops={[autoFrom, autoTo]} onPress={() => save({ cardColor: DEFAULT_CARD_COLOR })} accent={colors.accent} border={colors.border} text={colors.text} />
             )}
             {CARD_COLORS.filter((option) => option.group === group).map((option) => (
               <Swatch key={option.id} selected={color === option.id} label={option.label} stops={option.stops} onPress={() => save({ cardColor: option.id })} accent={colors.accent} border={colors.border} text={colors.text} />
@@ -98,7 +101,7 @@ export function CardColorPicker({ account }: { account: AccountData }) {
       )}
 
       <View className="gap-2">
-        <Text className="font-inter-medium text-xs uppercase text-gf-text-muted">Patrón</Text>
+        <Text className="font-inter-medium text-xs uppercase text-gf-text-muted">{t("mobile.patron")}</Text>
         <View className="flex-row flex-wrap gap-2.5">
           {CARD_PATTERNS.map((option) => {
             const selected = pattern === option.id;

@@ -18,6 +18,7 @@ import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurren
 import { convertBaselineToPrimary, convertSourcesToPrimary, foreignCurrenciesOf } from '@gastify/core/transformers/projectionInputs';
 import { buildProjectionAccuracyReport, buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -25,6 +26,7 @@ type Answer = { ok?: boolean; data?: unknown };
 // The projections of a year inside History, with their own year filter: the net of each month (green when money is
 // left, red when it is not) and the year's total, with a link to the full table.
 export function ProjectionsTeaser() {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const currency = usePrimaryCurrency();
@@ -101,14 +103,14 @@ export function ProjectionsTeaser() {
   const years = [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1];
 
   return (
-    <Card title="Proyecciones" info={APP_INFO.proyecciones}>
+    <Card title={t("mobile.proyecciones")} info={APP_INFO.proyecciones}>
       <ChipPicker items={years.map((y) => ({ id: String(y), label: String(y) }))} value={String(year)} onChange={(id) => setYear(Number(id))} moreAfter={99} />
       {sources === null ? (
-        <Text className="font-inter text-sm text-gf-text-muted">Calculando…</Text>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.calculando")}</Text>
       ) : (
         <>
           <Text className="font-inter-bold text-2xl" style={{ color: total < 0 ? colors.expense : colors.income }}>{formatMoneyMajor(total, currency)}</Text>
-          <Text className="font-inter text-xs text-gf-text-muted">Neto del año {year}</Text>
+          <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.neto.del.ano.p1", { p1: year })}</Text>
           <View className="flex-row items-end gap-1" style={{ height: 70 }}>
             {nets.map((value, index) => (
               <View key={index} className="flex-1 items-center justify-end gap-1">
@@ -118,12 +120,12 @@ export function ProjectionsTeaser() {
             ))}
           </View>
           <Pressable accessibilityRole="button" onPress={() => router.push('/more/projections')} hitSlop={8}>
-            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver el detalle ›</Text>
+            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.el.detalle")}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={() => setShowDetail(true)} className="items-center rounded-full border border-gf-border py-2.5">
-            <Text className="font-inter-semibold text-sm text-gf-text">Ver proyectado contra real</Text>
+            <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.ver.proyectado.contra.real")}</Text>
           </Pressable>
-          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title="Proyectado contra real" subtitle={`Meses cerrados de ${year}`} info={APP_INFO.c_mo_leer_esta_tabla}>
+          <DetailSheet visible={showDetail} onClose={() => setShowDetail(false)} title={t("mobile.proyectado.contra.real")} subtitle={`Meses cerrados de ${year}`} info={APP_INFO.c_mo_leer_esta_tabla}>
             <AccuracyBody rows={accuracy as never[]} currency={currency} />
           </DetailSheet>
         </>

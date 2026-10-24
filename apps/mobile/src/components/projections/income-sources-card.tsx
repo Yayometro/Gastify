@@ -13,18 +13,22 @@ import { idOf } from '@gastify/core/categories/categoryForm';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 type AnyRecord = Record<string, unknown>;
 
-const RECURRENCE: { id: string; label: string }[] = [
-  { id: 'monthly', label: 'Mensual' },
-  { id: 'semimonthly', label: 'Quincenal (días fijos)' },
-  { id: 'biweekly', label: 'Cada 14 días' },
-  { id: 'weekly', label: 'Semanal' },
-];
+const RECURRENCE = (t: TranslateFn): { id: string; label: string }[] => ([
+  { id: 'monthly', label: t("mobile.mensual") },
+  { id: 'semimonthly', label: t("mobile.quincenal.dias.fijos") },
+  { id: 'biweekly', label: t("mobile.cada.14.dias") },
+  { id: 'weekly', label: t("mobile.semanal") },
+]);
 
 // Income sources: what comes in each period, as the web's panel. Listed, created and removed here.
 export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: AnyRecord[]; currency: string; onChanged: () => void }) {
+  const t = useT();
+  const tr = useT();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -38,8 +42,8 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
   const save = async () => {
     setError(null);
     const value = Number(amount.replace(/,/g, ''));
-    if (!name.trim()) return setError('Escribe un nombre para la fuente de ingreso.');
-    if (!(value > 0)) return setError('Escribe un monto mayor que cero.');
+    if (!name.trim()) return setError(tr("mobile.escribe.un.nombre.para.la"));
+    if (!(value > 0)) return setError(tr("mobile.escribe.un.monto.mayor.que"));
     setSaving(true);
     try {
       await sendWrite('general-data/income-sources/new', { name: name.trim(), amount: value, currency: code, recurrence, anchorDate: parseDateText(anchor) ?? new Date() });
@@ -56,10 +60,10 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
   };
 
   const remove = (source: AnyRecord) => {
-    Alert.alert('Borrar esta fuente', 'Deja de contar en las proyecciones. No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(tr("mobile.borrar.esta.fuente"), tr("mobile.deja.de.contar.en.las"), [
+      { text: tr("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Borrar',
+        text: tr("mobile.borrar"),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -75,43 +79,43 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
   };
 
   return (
-    <Card title="Fuentes de ingreso" info={APP_INFO.fuentes_de_ingreso}>
-      {sources.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Todavía no tienes fuentes de ingreso.</Text>}
+    <Card title={tr("mobile.fuentes.de.ingreso")} info={APP_INFO.fuentes_de_ingreso}>
+      {sources.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{tr("mobile.todavia.no.tienes.fuentes.de")}</Text>}
       {sources.map((source) => (
         <View key={idOf(source as never)} className="flex-row items-center gap-3">
           <View className="flex-1">
             <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{String(source.name ?? 'Fuente')}</Text>
             <Text className="font-inter text-sm text-gf-text-muted">
-              {formatMoneyMajor(Number(source.amount) || 0, String(source.currency ?? currency))} · {RECURRENCE.find((r) => r.id === source.recurrence)?.label ?? String(source.recurrence ?? '')}
+              {formatMoneyMajor(Number(source.amount) || 0, String(source.currency ?? currency))} · {RECURRENCE(t).find((r) => r.id === source.recurrence)?.label ?? String(source.recurrence ?? '')}
             </Text>
           </View>
           <Pressable accessibilityRole="button" onPress={() => remove(source)} hitSlop={8}>
-            <Text className="font-inter-medium text-sm text-red-500">Borrar</Text>
+            <Text className="font-inter-medium text-sm text-red-500">{tr("mobile.borrar")}</Text>
           </Pressable>
         </View>
       ))}
 
       {!open ? (
         <Pressable accessibilityRole="button" onPress={() => setOpen(true)} className="items-center rounded-full border border-gf-border py-3">
-          <Text className="font-inter-semibold text-base text-gf-text">Nueva fuente de ingreso</Text>
+          <Text className="font-inter-semibold text-base text-gf-text">{tr("mobile.nueva.fuente.de.ingreso")}</Text>
         </Pressable>
       ) : (
         <View className="gap-3">
-          <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Sueldo" maxLength={60} autoCapitalize="sentences" />
+          <TextField label={tr("mobile.nombre")} value={name} onChangeText={setName} placeholder={tr("mobile.sueldo")} maxLength={60} autoCapitalize="sentences" />
           <TextField label={`Monto mensual aproximado (${code})`} value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
           <View className="gap-2">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Moneda</Text>
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{tr("mobile.moneda")}</Text>
             <ChipPicker items={SUPPORTED_CURRENCIES.map((c) => ({ id: c, label: c }))} value={code} onChange={setCode} moreAfter={99} />
           </View>
           <View className="gap-2">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Recurrencia</Text>
-            <ChipPicker items={RECURRENCE} value={recurrence} onChange={setRecurrence} moreAfter={99} />
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{tr("mobile.recurrencia")}</Text>
+            <ChipPicker items={RECURRENCE(t)} value={recurrence} onChange={setRecurrence} moreAfter={99} />
           </View>
-          <DateField label="Primer pago" value={anchor} onChange={setAnchor} />
+          <DateField label={tr("mobile.primer.pago")} value={anchor} onChange={setAnchor} />
           <FormError message={error} />
-          <GradientButton label="Guardar fuente" onPress={save} loading={saving} disabled={saving} />
+          <GradientButton label={tr("mobile.guardar.fuente")} onPress={save} loading={saving} disabled={saving} />
           <Pressable accessibilityRole="button" onPress={() => setOpen(false)} className="items-center py-1">
-            <Text className="font-inter-semibold text-sm text-gf-text-muted">Cancelar</Text>
+            <Text className="font-inter-semibold text-sm text-gf-text-muted">{tr("mobile.cancelar")}</Text>
           </Pressable>
         </View>
       )}

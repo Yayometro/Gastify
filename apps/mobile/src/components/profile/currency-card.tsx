@@ -11,10 +11,12 @@ import type { AppDispatch, RootState } from '@/store';
 import { updateWallet } from '@gastify/core/features/walletSlice';
 import { CURRENCY_META, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 // The main currency, as the web's selector: every total and report is shown in it. It only changes how things are
 // presented: each account keeps its own balance in its own currency.
 export function CurrencyCard() {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const current = usePrimaryCurrency();
@@ -24,10 +26,10 @@ export function CurrencyCard() {
 
   const change = (next: string) => {
     if (!walletId || next === current || busy) return;
-    Alert.alert('Cambiar la moneda principal', `Tus totales y reportes se mostrarán en ${next}. El saldo de cada cuenta se queda en su propia moneda.`, [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t("mobile.cambiar.la.moneda.principal"), `Tus totales y reportes se mostrarán en ${next}. El saldo de cada cuenta se queda en su propia moneda.`, [
+      { text: t("mobile.cancelar"), style: 'cancel' },
       {
-        text: 'Cambiar',
+        text: t("mobile.cambiar"),
         onPress: async () => {
           setBusy(true);
           setError(null);
@@ -47,7 +49,7 @@ export function CurrencyCard() {
 
   return (
     <Card
-      title="Moneda principal"
+      title={t("mobile.moneda.principal")}
       info={APP_INFO.moneda_principal}>
       <ChipPicker items={SUPPORTED_CURRENCIES.map((code) => ({ id: code, label: `${code} (${CURRENCY_META[code].symbol})` }))} value={current} onChange={change} moreAfter={99} />
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}

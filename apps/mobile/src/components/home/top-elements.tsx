@@ -12,9 +12,11 @@ import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { filterBillsOrIncomes, getPrimaryAmount, orderByHighestValue, reduceTransCategoriesSliced } from '@gastify/core/transformers/transactionsChange';
 import type { MonthBounds } from '@gastify/core/transactions/monthSummary';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 // The biggest of the period, as the web's "Top" modules: gastos or ingresos, by category or one by one.
 export function TopElements({ movements, range, currency }: { movements: TransactionData[]; range: MonthBounds; currency: string }) {
+  const t = useT();
   const [kind, setKind] = useState<'bills' | 'incomes'>('bills');
   const [by, setBy] = useState<'categories' | 'movements'>('categories');
   const { bills, incomes } = filterBillsOrIncomes(movements.filter((movement) => isInRange(movement, range)));
@@ -23,10 +25,10 @@ export function TopElements({ movements, range, currency }: { movements: Transac
   const biggest = [...list].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, 5);
 
   return (
-    <Card title="Los más grandes" info={APP_INFO.los_m_s_grandes}>
-      <Segmented options={[{ value: 'bills', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
-      <Segmented options={[{ value: 'categories', label: 'Por categoría' }, { value: 'movements', label: 'Movimientos' }]} value={by} onChange={setBy} />
-      {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
+    <Card title={t("mobile.los.mas.grandes")} info={APP_INFO.los_m_s_grandes}>
+      <Segmented options={[{ value: 'bills', label: t("mobile.gastos") }, { value: 'incomes', label: t("mobile.ingresos") }]} value={kind} onChange={setKind} />
+      <Segmented options={[{ value: 'categories', label: t("mobile.por.categoria") }, { value: 'movements', label: t("mobile.movimientos") }]} value={by} onChange={setBy} />
+      {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
       {by === 'categories'
         ? categories.map((row) => (
             <View key={row.type} className="flex-row items-center gap-3">

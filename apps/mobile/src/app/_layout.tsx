@@ -11,6 +11,7 @@ import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
 import AppTabs from '@/components/app-tabs';
 import { AuthGate } from '@/components/auth/auth-gate';
 import { ToastProvider } from '@/components/toast';
+import { I18nProvider } from '@/i18n/client';
 import { Colors } from '@/constants/theme';
 import { applyThemeMode, loadThemeMode } from '@/lib/theme-mode';
 import { store } from '@/store';
@@ -50,6 +51,7 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
+      <I18nProvider>
       <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? DARK_BASE : colors.background }}>
         <AmbientBackground />
         <ThemeProvider value={theme}>
@@ -60,6 +62,7 @@ export default function RootLayout() {
           </ToastProvider>
         </ThemeProvider>
       </View>
+      </I18nProvider>
     </Provider>
   );
 }

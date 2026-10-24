@@ -8,10 +8,12 @@ import { GradientButton } from '@/components/ui/gradient-button';
 import { Colors } from '@/constants/theme';
 import { longDateEs } from '@gastify/core/format/spanishDates';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
+import { useT } from "@/i18n/client";
 
 // A date as a tappable field that opens the system calendar (the web opens one too). The value is the
 // local day as AAAA-MM-DD, the format the forms and core use.
 export function DateField({ label, value, onChange }: { label: string; value: string; onChange: (day: string) => void }) {
+  const t = useT();
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const wide = useWindowDimensions().width >= 768;
@@ -63,7 +65,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
                 gap: 12,
               }}>
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={keepAndClose} hitSlop={10}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={keepAndClose} hitSlop={10}>
                   <Ionicons name="close" size={24} color={dark ? '#ffffff' : '#1b103d'} />
                 </Pressable>
               </View>
@@ -80,7 +82,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
                 />
               </View>
               <GradientButton
-                label="Listo"
+                label={t("mobile.listo")}
                 onPress={() => {
                   onChange(dateText(draft));
                   setIosOpen(false);

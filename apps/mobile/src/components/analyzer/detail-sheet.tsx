@@ -6,10 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { InfoTip, type InfoText } from '@/components/info-tip';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
+import { useT } from "@/i18n/client";
 
 // The sheet every analyzer card opens (the web opens a modal for each one): a title, an optional line under it and
 // the detail.
 export function DetailSheet({ visible, title, subtitle, info, onClose, children, tall = false }: { visible: boolean; title: string; subtitle?: string; info?: InfoText; onClose: () => void; children: ReactNode; tall?: boolean }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   return (
@@ -23,7 +25,7 @@ export function DetailSheet({ visible, title, subtitle, info, onClose, children,
               </View>
               <View className="flex-row items-center gap-3">
                 {info ? <InfoTip info={info} /> : null}
-                <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={onClose} hitSlop={10}>
                   <Ionicons name="close" size={26} color={colors.text} />
                 </Pressable>
               </View>

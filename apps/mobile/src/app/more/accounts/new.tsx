@@ -7,12 +7,14 @@ import { useToast } from '@/components/toast';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
+import { useT } from "@/i18n/client";
 
 export default function NewAccountScreen() {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   return (
-    <Screen title="Nueva cuenta" backLabel="Cuentas" onBack={() => router.back()}>
+    <Screen title={t("mobile.nueva.cuenta")} backLabel="Cuentas" onBack={() => router.back()}>
       <AccountForm
         submitLabel="Crear cuenta"
         onSubmit={async (values) => {

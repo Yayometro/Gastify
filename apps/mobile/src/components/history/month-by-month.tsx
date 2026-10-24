@@ -13,6 +13,7 @@ import type { TransactionData } from '@gastify/core/features/transacctionsSlice'
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { topSpendingCategories } from '@gastify/core/transactions/monthSummary';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 const BAR_AREA = 150;
 const TABLET_BAR_AREA = 230;
@@ -21,6 +22,7 @@ const TABLET_BAR_AREA = 230;
 // figure written above it, the month's name below, and a tap opens that month in full. When another period is
 // compared, its months appear next to each one in a fainter tone.
 export function MonthByMonth({ summary, compareSummary, currency, movements }: { summary: PeriodSummary; compareSummary: PeriodSummary | null; currency: string; movements: TransactionData[] }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   // Its own time filter, like the category widgets: it follows the screen's period (and comparison) until another one is chosen.
@@ -64,9 +66,9 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
   }, [open, compareStart, previous, movements]);
 
   return (
-    <Card title="Mes a mes" info={APP_INFO.mes_a_mes_2}>
+    <Card title={t("mobile.mes.a.mes")} info={APP_INFO.mes_a_mes_2}>
       <CompactTimeFilter preset={own} onPreset={setOwn} month={ownMonth} onMonth={setOwnMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard periodSelect />
-      {compare && compareStart && <Text className="font-inter-semibold text-xs text-gf-text-muted">Actual: {labelAt(start, 0, months[0]?.label ?? '')} · Comparado: {labelAt(compareStart, 0, compare[0]?.label ?? '')}</Text>}
+      {compare && compareStart && <Text className="font-inter-semibold text-xs text-gf-text-muted">{t("mobile.actual.p1.comparado.p2", { p1: labelAt(start, 0, months[0]?.label ?? ''), p2: labelAt(compareStart, 0, compare[0]?.label ?? '') })}</Text>}
       <View className="flex-row items-end gap-1.5" style={{ height: barArea + 48 }}>
         {months.map((month, index) => {
           const other = compare?.[index];
@@ -95,9 +97,9 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
         })}
       </View>
       <View className="flex-row flex-wrap gap-x-4 gap-y-1">
-        <Text className="font-inter text-xs" style={{ color: colors.income }}>● Ingresos</Text>
-        <Text className="font-inter text-xs" style={{ color: colors.expense }}>● Gastos</Text>
-        {compare && <Text className="font-inter text-xs text-gf-text-muted">○ Tenue: {compareStart ? labelAt(compareStart, 0, compare[0]?.label ?? '') : 'periodo comparado'}</Text>}
+        <Text className="font-inter text-xs" style={{ color: colors.income }}>{t("mobile.ingresos.2")}</Text>
+        <Text className="font-inter text-xs" style={{ color: colors.expense }}>{t("mobile.gastos.2")}</Text>
+        {compare && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.tenue.p1", { p1: compareStart ? labelAt(compareStart, 0, compare[0]?.label ?? '') : 'periodo comparado' })}</Text>}
       </View>
 
       <DetailSheet
@@ -108,10 +110,10 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
         info={APP_INFO.detalle_del_mes(Boolean(previous))}>
         {current && (() => {
           const rowsData = [
-            { label: 'Ingresos', a: money(current.incomes), b: previous ? money(previous.incomes) : null, tone: colors.income },
-            { label: 'Gastos', a: money(current.spending), b: previous ? money(previous.spending) : null, tone: colors.expense },
-            { label: 'Balance', a: money(current.incomes - current.spending), b: previous ? money(previous.incomes - previous.spending) : null, tone: colors.text },
-            { label: 'Categoría líder', a: leader ? `${leader.name}\n${money(leader.value)}` : '—', b: previous ? (leaderPrev ? `${leaderPrev.name}\n${money(leaderPrev.value)}` : '—') : null, tone: colors.text },
+            { label: t("mobile.ingresos"), a: money(current.incomes), b: previous ? money(previous.incomes) : null, tone: colors.income },
+            { label: t("mobile.gastos"), a: money(current.spending), b: previous ? money(previous.spending) : null, tone: colors.expense },
+            { label: t("mobile.balance"), a: money(current.incomes - current.spending), b: previous ? money(previous.incomes - previous.spending) : null, tone: colors.text },
+            { label: t("mobile.categoria.lider.2"), a: leader ? `${leader.name}\n${money(leader.value)}` : '—', b: previous ? (leaderPrev ? `${leaderPrev.name}\n${money(leaderPrev.value)}` : '—') : null, tone: colors.text },
           ];
           return (
             <View>

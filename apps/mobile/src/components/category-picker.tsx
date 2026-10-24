@@ -10,6 +10,7 @@ import { idOf } from '@gastify/core/categories/categoryForm';
 import type { CategoryData } from '@gastify/core/features/categoriesSlice';
 import type { SubCategoryData } from '@gastify/core/features/subCategorySlice';
 import { normalizeText } from '@gastify/core/search/normalizeText';
+import { useT } from "@/i18n/client";
 
 export type CategoryChoice = { categoryId: string; subCategoryId: string };
 
@@ -48,6 +49,7 @@ export function CategoryPicker({
   onChange: (next: CategoryChoice) => void;
   allLabel?: string;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];
@@ -86,8 +88,8 @@ export function CategoryPicker({
     if (needle) {
       const cats = catEntries.filter((entry) => normalizeText(entry.label).includes(needle));
       const subs = subEntries.filter((entry) => normalizeText(`${entry.label} ${entry.parentLabel}`).includes(needle)).sort((a, b) => byName(a.label, b.label));
-      if (cats.length) flat.push({ key: 'h-cats', type: 'header', title: 'Categorías' }, ...cats.map((entry) => ({ key: `cat-${entry.id}`, type: 'cat' as const, entry })));
-      if (subs.length) flat.push({ key: 'h-subs', type: 'header', title: 'Subcategorías' }, ...subs.map((entry) => ({ key: `sub-${entry.id}`, type: 'sub' as const, entry })));
+      if (cats.length) flat.push({ key: 'h-cats', type: 'header', title: t("mobile.categorias") }, ...cats.map((entry) => ({ key: `cat-${entry.id}`, type: 'cat' as const, entry })));
+      if (subs.length) flat.push({ key: 'h-subs', type: 'header', title: t("mobile.subcategorias") }, ...subs.map((entry) => ({ key: `sub-${entry.id}`, type: 'sub' as const, entry })));
     } else {
       for (const category of catEntries) {
         const letter = letterOf(category.label);
@@ -174,13 +176,13 @@ export function CategoryPicker({
         <View style={{ flex: 1 }}>
           <View>
             <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
-              <Text className="font-inter-bold text-2xl text-gf-text">Categorías</Text>
-              <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={close} hitSlop={10}>
+              <Text className="font-inter-bold text-2xl text-gf-text">{t("mobile.categorias")}</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={close} hitSlop={10}>
                 <Ionicons name="close" size={26} color={colors.text} />
               </Pressable>
             </View>
             <View className="px-6 pb-2">
-              <TextField label="" value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder="Buscar categoría o subcategoría" autoCorrect={false} />
+              <TextField label="" value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder={t("mobile.buscar.categoria.o.subcategoria")} autoCorrect={false} />
             </View>
             <View style={{ flex: 1, flexDirection: 'row' }}>
               <FlatList<Row>
@@ -190,7 +192,7 @@ export function CategoryPicker({
                 keyboardShouldPersistTaps="handled"
                 getItemLayout={(_, index) => ({ length: heightOf(rows[index]), offset: offsets[index], index })}
                 contentContainerStyle={{ paddingLeft: 24, paddingRight: searching ? 24 : 8, paddingBottom: 32 }}
-                ListEmptyComponent={<Text className="pt-6 font-inter text-base text-gf-text-muted">Nada coincide con «{query}».</Text>}
+                ListEmptyComponent={<Text className="pt-6 font-inter text-base text-gf-text-muted">{t("mobile.nada.coincide.con.p1", { p1: query })}</Text>}
                 renderItem={({ item }) => {
                   if (item.type === 'header') {
                     return (
@@ -224,7 +226,7 @@ export function CategoryPicker({
                   onLayout={(event) => {
                     railHeight.current = event.nativeEvent.layout.height;
                   }}
-                  accessibilityLabel="Índice de letras"
+                  accessibilityLabel={t("mobile.indice.de.letras")}
                   style={{ width: 34, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}>
                   {LETTERS.map((letter) => (
                     <View key={letter} pointerEvents="none" style={{ alignItems: 'center' }}>

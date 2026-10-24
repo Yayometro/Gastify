@@ -18,6 +18,7 @@ import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getExpectedOccurrencesInMonth, getMonthBucketBreakdown, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
 import { filterBillsOrIncomes, getTransactionsFromTimeRange } from '@gastify/core/transformers/transactionsChange';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 type AnyRecord = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -52,6 +53,7 @@ export function ProjectionMonthSheet({
   onSaved: (settings: AnyRecord) => void;
   onClose: () => void;
 }) {
+  const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const money = (value: number) => formatMoneyMajor(value, currency);
   const buffers = ((settings?.monthlyBuffers as AnyRecord[] | undefined) ?? []).find((entry) => entry.month === monthIndex);
@@ -104,7 +106,7 @@ export function ProjectionMonthSheet({
   const save = async (kind: 'buffers' | 'balance') => {
     setMessage(null);
     if (kind === 'balance' && (balance.trim() === '' || !Number.isFinite(Number(balance)))) {
-      setMessage({ text: 'Escribe primero un saldo.', error: true });
+      setMessage({ text: t("mobile.escribe.primero.un.saldo"), error: true });
       return;
     }
     setBusy(kind);
@@ -147,11 +149,11 @@ export function ProjectionMonthSheet({
       )}
       {showMovements && (
         <View>
-          {monthTransactions.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos este mes.</Text>}
+          {monthTransactions.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.este.mes")}</Text>}
           {monthTransactions.slice(0, 80).map((tx) => (
             <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => { onClose(); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/projections' } }); }} />
           ))}
-          {monthTransactions.length > 80 && <Text className="pt-2 font-inter text-xs text-gf-text-muted">Se muestran los primeros 80; el resto está en Movimientos.</Text>}
+          {monthTransactions.length > 80 && <Text className="pt-2 font-inter text-xs text-gf-text-muted">{t("mobile.se.muestran.los.primeros.80")}</Text>}
         </View>
       )}
 
@@ -177,17 +179,17 @@ export function ProjectionMonthSheet({
       {chart.length > 0 && (
         <View className="gap-2">
           <View className="flex-row items-center justify-between">
-            <Text className="font-inter-semibold text-base text-gf-text">Presupuestado contra real</Text>
+            <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.presupuestado.contra.real")}</Text>
             <View className="flex-row gap-3">
-              <Text className="font-inter text-xs" style={{ color: '#a78bfa' }}>● Presupuestado</Text>
-              <Text className="font-inter text-xs" style={{ color: '#f87171' }}>● Real</Text>
+              <Text className="font-inter text-xs" style={{ color: '#a78bfa' }}>{t("mobile.presupuestado")}</Text>
+              <Text className="font-inter text-xs" style={{ color: '#f87171' }}>{t("mobile.real")}</Text>
             </View>
           </View>
           {chart.map((item) => (
             <View key={item.label} className="gap-1 border-t border-gf-border pt-2">
               <View className="flex-row justify-between gap-3">
                 <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{item.label === 'Unexpected/Other' ? 'Otros / inesperado' : item.label}</Text>
-                <Text className="font-inter text-xs text-gf-text-muted">{money(item.actual)} de {money(item.budgeted)}</Text>
+                <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.p1.de.p2", { p1: money(item.actual), p2: money(item.budgeted) })}</Text>
               </View>
               <View className="h-2 overflow-hidden rounded-full bg-gf-surface"><View style={{ width: `${(item.budgeted / maxBar) * 100}%`, height: '100%', backgroundColor: '#a78bfa' }} /></View>
               <View className="h-2 overflow-hidden rounded-full bg-gf-surface"><View style={{ width: `${(item.actual / maxBar) * 100}%`, height: '100%', backgroundColor: '#f87171' }} /></View>
@@ -198,7 +200,7 @@ export function ProjectionMonthSheet({
 
       {expected.length > 0 && (
         <View className="gap-1">
-          <Text className="font-inter-semibold text-base text-gf-text">Ingreso esperado este mes</Text>
+          <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.ingreso.esperado.este.mes")}</Text>
           {expected.map((item, index) => (
             <View key={index} className="flex-row justify-between gap-3 border-t border-gf-border py-2">
               <Text className="flex-1 font-inter text-sm text-gf-text">{item.name}</Text>
@@ -211,39 +213,39 @@ export function ProjectionMonthSheet({
       {row?.type === 'actual' && (
         <View className="gap-2 border-t border-gf-border pt-4">
           <View className="flex-row items-center gap-2">
-            <Text className="flex-1 font-inter-semibold text-base text-gf-text">Saldo real de este mes</Text>
+            <Text className="flex-1 font-inter-semibold text-base text-gf-text">{t("mobile.saldo.real.de.este.mes")}</Text>
             <InfoTip info={APP_INFO.saldo_real_del_mes} />
           </View>
-          <TextField label="Saldo al cierre del mes" value={balance} onChangeText={setBalance} keyboardType="decimal-pad" placeholder="Por ejemplo, 45000" />
-          <GradientButton label="Guardar saldo" onPress={() => save('balance')} loading={busy === 'balance'} disabled={busy !== null} />
+          <TextField label={t("mobile.saldo.al.cierre.del.mes")} value={balance} onChangeText={setBalance} keyboardType="decimal-pad" placeholder={t("mobile.por.ejemplo.45000")} />
+          <GradientButton label={t("mobile.guardar.saldo")} onPress={() => save('balance')} loading={busy === 'balance'} disabled={busy !== null} />
         </View>
       )}
 
       <View className="gap-3 border-t border-gf-border pt-4">
-        <Text className="font-inter-semibold text-base text-gf-text">Topes inesperados</Text>
+        <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.topes.inesperados")}</Text>
         <View className="gap-1">
           <View className="flex-row items-center gap-2">
-            <Text className="flex-1 font-inter-medium text-sm text-gf-text-muted">Tope de gasto inesperado</Text>
+            <Text className="flex-1 font-inter-medium text-sm text-gf-text-muted">{t("mobile.tope.de.gasto.inesperado")}</Text>
             <InfoTip info={APP_INFO.tope_de_gasto_inesperado} />
           </View>
-          <TextField label="Monto" value={expenseBuffer} onChangeText={setExpenseBuffer} keyboardType="decimal-pad" placeholder="0" />
+          <TextField label={t("mobile.monto")} value={expenseBuffer} onChangeText={setExpenseBuffer} keyboardType="decimal-pad" placeholder="0" />
         </View>
         <View className="gap-1">
           <View className="flex-row items-center gap-2">
-            <Text className="flex-1 font-inter-medium text-sm text-gf-text-muted">Tope de ingreso inesperado</Text>
+            <Text className="flex-1 font-inter-medium text-sm text-gf-text-muted">{t("mobile.tope.de.ingreso.inesperado")}</Text>
             <InfoTip info={APP_INFO.tope_de_ingreso_inesperado} />
           </View>
-          <TextField label="Monto" value={incomeBuffer} onChangeText={setIncomeBuffer} keyboardType="decimal-pad" placeholder="0" />
+          <TextField label={t("mobile.monto")} value={incomeBuffer} onChangeText={setIncomeBuffer} keyboardType="decimal-pad" placeholder="0" />
         </View>
-        <GradientButton label="Guardar topes" onPress={() => save('buffers')} loading={busy === 'buffers'} disabled={busy !== null} />
+        <GradientButton label={t("mobile.guardar.topes")} onPress={() => save('buffers')} loading={busy === 'buffers'} disabled={busy !== null} />
         {message && <Text className="font-inter text-sm" style={{ color: message.error ? colors.expense : colors.income }}>{message.text}</Text>}
         {revisions.length > 0 && (
           <View className="gap-1">
-            <Text className="font-inter-medium text-sm text-gf-text-muted">Historial de esta proyección ({revisions.length})</Text>
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.historial.de.esta.proyeccion.p1", { p1: revisions.length })}</Text>
             {revisions.map((revision, index) => (
               <View key={index} className="flex-row justify-between gap-3 rounded-xl px-3 py-1.5" style={{ backgroundColor: colors.accentSoft }}>
                 <Text className="font-inter text-xs text-gf-text-muted">{revisionTime(revision.updatedAt) ? new Date(revision.updatedAt).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</Text>
-                <Text className="font-inter text-xs text-gf-text-muted">gasto: {money(revision.unexpectedBuffer || 0)} · ingreso: {money(revision.unexpectedIncomeBuffer || 0)}</Text>
+                <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.gasto.p1.ingreso.p2", { p1: money(revision.unexpectedBuffer || 0), p2: money(revision.unexpectedIncomeBuffer || 0) })}</Text>
               </View>
             ))}
           </View>

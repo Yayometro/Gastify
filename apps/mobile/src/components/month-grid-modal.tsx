@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
 import { MONTHS_ES } from '@gastify/core/format/spanishDates';
+import { useT } from "@/i18n/client";
 
 // Picks a month of any year: the year moves with the arrows, the twelve months are a grid. Months after
 // `latest` are not offered. Used wherever a period is chosen by month (tap the month's name).
@@ -22,6 +23,7 @@ export function MonthGridModal({
   onPick: (month: Date) => void;
   onClose: () => void;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [year, setYear] = useState(value.getFullYear());
@@ -35,19 +37,19 @@ export function MonthGridModal({
     <BottomSheet visible={visible} onClose={onClose} maxHeight="82%">
         <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
           <View className="flex-row items-center justify-between px-6 pb-4 pt-4">
-            <Text className="font-inter-bold text-2xl text-gf-text">Elegir mes</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>
+            <Text className="font-inter-bold text-2xl text-gf-text">{t("mobile.elegir.mes")}</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={onClose} hitSlop={10}>
               <Ionicons name="close" size={28} color={colors.text} />
             </Pressable>
           </View>
           <View className="flex-row items-center justify-between px-6 pb-4">
-            <Pressable accessibilityRole="button" accessibilityLabel="Año anterior" onPress={() => setYear((y) => y - 1)} hitSlop={10}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.ano.anterior.2")} onPress={() => setYear((y) => y - 1)} hitSlop={10}>
               <Ionicons name="chevron-back" size={26} color={colors.text} />
             </Pressable>
             <Text className="font-inter-bold text-xl text-gf-text">{year}</Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Año siguiente"
+              accessibilityLabel={t("mobile.ano.siguiente.2")}
               accessibilityState={{ disabled: year >= latest.getFullYear() }}
               disabled={year >= latest.getFullYear()}
               onPress={() => setYear((y) => y + 1)}

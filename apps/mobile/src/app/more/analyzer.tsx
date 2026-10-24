@@ -24,6 +24,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { buildWalletAnalyzerSnapshot, type WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 type Detail =
   | { kind: 'month'; label: string; income: number; expense: number; count: number; previous: { label: string; income: number; expense: number; count: number } | null }
@@ -39,6 +40,7 @@ const pct = (value: number | null | undefined) => (value === null || value === u
 // The Wallet Analyzer on the phone: the same snapshot the web builds (totals against the previous month, a six-month
 // trend, averages, the biggest categories and movements, the spending pace), each card opening its detail.
 export default function AnalyzerScreen() {
+  const t = useT();
   const { month: monthParam } = useLocalSearchParams<{ month?: string }>();
   // A tablet turned sideways has room for two columns, as the web's wide layout does.
   const wide = useWindowDimensions().width >= WIDE_MIN_WIDTH;
@@ -72,11 +74,11 @@ export default function AnalyzerScreen() {
   const change = (current: number, previous: number) => (previous > 0 ? ((current - previous) / previous) * 100 : null);
 
   const rows: { label: string; current: string; previous: string; delta: number | null; invert?: boolean; points?: boolean }[] = [
-    { label: 'Ingresos', current: money(now_.income), previous: money(before.income), delta: change(now_.income, before.income) },
-    { label: 'Gastos', current: money(now_.expense), previous: money(before.expense), delta: change(now_.expense, before.expense), invert: true },
-    { label: 'Balance', current: money(now_.balance), previous: money(before.balance), delta: change(now_.balance, before.balance) },
-    { label: 'Ahorro', current: `${Math.round(now_.savingsRate * 100)}%`, previous: `${Math.round(before.savingsRate * 100)}%`, delta: (now_.savingsRate - before.savingsRate) * 100, points: true },
-    { label: 'Movimientos', current: String(now_.transactionCount), previous: String(before.transactionCount), delta: change(now_.transactionCount, before.transactionCount) },
+    { label: t("mobile.ingresos"), current: money(now_.income), previous: money(before.income), delta: change(now_.income, before.income) },
+    { label: t("mobile.gastos"), current: money(now_.expense), previous: money(before.expense), delta: change(now_.expense, before.expense), invert: true },
+    { label: t("mobile.balance"), current: money(now_.balance), previous: money(before.balance), delta: change(now_.balance, before.balance) },
+    { label: t("mobile.ahorro"), current: `${Math.round(now_.savingsRate * 100)}%`, previous: `${Math.round(before.savingsRate * 100)}%`, delta: (now_.savingsRate - before.savingsRate) * 100, points: true },
+    { label: t("mobile.movimientos"), current: String(now_.transactionCount), previous: String(before.transactionCount), delta: change(now_.transactionCount, before.transactionCount) },
   ];
 
   const categoryMovements = useMemo(() => {
@@ -86,7 +88,7 @@ export default function AnalyzerScreen() {
   }, [transactions, detail, snapshot.currentRange, snapshot.previousRange]);
 
   return (
-    <Screen title="Analizador de cartera" subtitle="Tus números del mes, a fondo" backLabel={monthParam ? 'Inicio' : 'Más'} onBack={() => router.back()}>
+    <Screen title={t("mobile.analizador.de.cartera")} subtitle={t("mobile.tus.numeros.del.mes.a")} backLabel={monthParam ? 'Inicio' : 'Más'} onBack={() => router.back()}>
       <MonthSwitcher value={month} onChange={setMonth} latest={now} />
       <AnalyzerHighlights snapshot={snapshot} currency={currency} />
       <AnalyzerProjection comparison={projection.comparison} loading={projection.loading} error={projection.error} missing={projection.missing} currency={currency} />
@@ -95,12 +97,12 @@ export default function AnalyzerScreen() {
         <>
           <View className="flex-row items-stretch gap-4">
             <PairedColumn>
-      <Card title="VS el mes anterior" info={APP_INFO.vs_el_mes_anterior}>
+      <Card title={t("mobile.vs.el.mes.anterior")} info={APP_INFO.vs_el_mes_anterior}>
         <View className="flex-row items-center gap-2 pb-1">
           <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
-          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Antes</Text>
-          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Ahora</Text>
-          <Text className="w-20 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Cambio</Text>
+          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.antes")}</Text>
+          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.ahora")}</Text>
+          <Text className="w-20 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.cambio")}</Text>
         </View>
         {rows.map((row) => (
           <View key={row.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
@@ -113,29 +115,29 @@ export default function AnalyzerScreen() {
             </View>
           </View>
         ))}
-        <Explain>Compara el mes elegido con el mes de antes: lo verde mejoró, lo rojo empeoró y lo naranja se mantuvo.</Explain>
+        <Explain>{t("mobile.compara.el.mes.elegido.con")}</Explain>
       </Card>
             </PairedColumn>
             <PairedColumn>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'averages' })}>
-        <Card title="Promedio mensual" info={APP_INFO.promedio_mensual(monthlyAverages.monthsCount)}>
+        <Card title={t("mobile.promedio.mensual")} info={APP_INFO.promedio_mensual(monthlyAverages.monthsCount)}>
           <View className="flex-row justify-between gap-3">
             <View className="flex-1">
-              <Text className="font-inter text-xs text-gf-text-muted">Ingresos</Text>
+              <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.ingresos")}</Text>
               <Text className="font-inter-bold text-base" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.income }}>{money(monthlyAverages.avgIncome)}</Text>
             </View>
             <View className="flex-1">
-              <Text className="font-inter text-xs text-gf-text-muted">Gastos</Text>
+              <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.gastos")}</Text>
               <Text className="font-inter-bold text-base" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(monthlyAverages.avgExpense)}</Text>
             </View>
             <View className="flex-1">
-              <Text className="font-inter text-xs text-gf-text-muted">Movimientos</Text>
+              <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.movimientos")}</Text>
               <Text className="font-inter-bold text-base text-gf-text">{Math.round(monthlyAverages.avgTransactionCount)}</Text>
             </View>
           </View>
           {wide && (
             <View>
-              <Text className="pb-1 font-inter-semibold text-xs uppercase text-gf-text-muted">Mes por mes</Text>
+              <Text className="pb-1 font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.mes.por.mes")}</Text>
               {trend.map((item) => (
                 <View key={item.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
                   <Text className="w-28 font-inter-medium text-sm text-gf-text">{esMonthLabel(item.label)}</Text>
@@ -150,7 +152,7 @@ export default function AnalyzerScreen() {
       </Pressable>
             </PairedColumn>
           </View>
-      <Card title="Tendencia de 6 meses" info={APP_INFO.tendencia}>
+      <Card title={t("mobile.tendencia.de.6.meses")} info={APP_INFO.tendencia}>
         <View className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
           {trend.map((item) => (
             <Pressable
@@ -179,12 +181,12 @@ export default function AnalyzerScreen() {
         </>
       ) : (
         <>
-      <Card title="VS el mes anterior" info={APP_INFO.vs_el_mes_anterior_2}>
+      <Card title={t("mobile.vs.el.mes.anterior")} info={APP_INFO.vs_el_mes_anterior_2}>
         <View className="flex-row items-center gap-2 pb-1">
           <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
-          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Antes</Text>
-          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Ahora</Text>
-          <Text className="w-20 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">Cambio</Text>
+          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.antes")}</Text>
+          <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.ahora")}</Text>
+          <Text className="w-20 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.cambio")}</Text>
         </View>
         {rows.map((row) => (
           <View key={row.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
@@ -197,9 +199,9 @@ export default function AnalyzerScreen() {
             </View>
           </View>
         ))}
-        <Explain>Compara el mes elegido con el mes de antes: lo verde mejoró, lo rojo empeoró y lo naranja se mantuvo.</Explain>
+        <Explain>{t("mobile.compara.el.mes.elegido.con")}</Explain>
       </Card>
-      <Card title="Tendencia de 6 meses" info={APP_INFO.tendencia_2}>
+      <Card title={t("mobile.tendencia.de.6.meses")} info={APP_INFO.tendencia_2}>
         <View className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
           {trend.map((item) => (
             <Pressable
@@ -226,18 +228,18 @@ export default function AnalyzerScreen() {
         </View>
       </Card>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'averages' })}>
-        <Card title="Promedio mensual" info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount)}>
+        <Card title={t("mobile.promedio.mensual")} info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount)}>
           <View className="flex-row justify-between gap-3">
             <View className="flex-1">
-              <Text className="font-inter text-xs text-gf-text-muted">Ingresos</Text>
+              <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.ingresos")}</Text>
               <Text className="font-inter-bold text-base" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.income }}>{money(monthlyAverages.avgIncome)}</Text>
             </View>
             <View className="flex-1">
-              <Text className="font-inter text-xs text-gf-text-muted">Gastos</Text>
+              <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.gastos")}</Text>
               <Text className="font-inter-bold text-base" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(monthlyAverages.avgExpense)}</Text>
             </View>
             <View className="flex-1">
-              <Text className="font-inter text-xs text-gf-text-muted">Movimientos</Text>
+              <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.movimientos")}</Text>
               <Text className="font-inter-bold text-base text-gf-text">{Math.round(monthlyAverages.avgTransactionCount)}</Text>
             </View>
           </View>
@@ -254,8 +256,8 @@ export default function AnalyzerScreen() {
           <>
             <View className="flex-row items-start gap-6">
               <View className="flex-1 gap-3">
-        <Text className="font-inter-semibold text-sm text-gf-text-muted">Categorías · mes anterior</Text>
-        {topCategoriesBillsPrevious.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos el mes anterior.</Text>}
+        <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.categorias.mes.anterior")}</Text>
+        {topCategoriesBillsPrevious.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.el.mes.anterior")}</Text>}
         {topCategoriesBillsPrevious.map((category, index, list) => (
           <RankedRow key={`${index}-${String(category.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={`previous-${category.name}`} accessibilityRole="button" onPress={() => setDetail({ kind: 'category', name: category.name, icon: category.icon, color: category.color, current: category.amount, previous: 0, changePct: null, period: 'previous' })} className="flex-row items-center gap-3">
@@ -267,8 +269,8 @@ export default function AnalyzerScreen() {
         ))}
               </View>
               <View className="flex-1 gap-3">
-        <Text className="font-inter-semibold text-sm text-gf-text-muted">Categorías · mes elegido</Text>
-        {topCategoriesBills.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos en este mes.</Text>}
+        <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.categorias.mes.elegido")}</Text>
+        {topCategoriesBills.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.en.este.mes")}</Text>}
         {topCategoriesBills.map((category, index, list) => (
           <RankedRow key={`${index}-${String(category.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable
@@ -291,8 +293,8 @@ export default function AnalyzerScreen() {
             </View>
             <View className="flex-row items-start gap-6">
               <View className="flex-1 gap-3">
-        <Text className="font-inter-semibold text-sm text-gf-text-muted">Movimientos · mes anterior</Text>
-        {topTransactionsBills.previous.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos el mes anterior.</Text>}
+        <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.movimientos.mes.anterior")}</Text>
+        {topTransactionsBills.previous.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.el.mes.anterior")}</Text>}
         {topTransactionsBills.previous.map((tx, index, list) => (
           <RankedRow key={`${index}-${String(tx.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={`previous-${String(tx._id ?? tx.name)}`} accessibilityRole="button" onPress={() => tx._id && router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } })} className="flex-row items-center gap-3">
@@ -304,8 +306,8 @@ export default function AnalyzerScreen() {
         ))}
               </View>
               <View className="flex-1 gap-3">
-        <Text className="font-inter-semibold text-sm text-gf-text-muted">Movimientos · mes elegido</Text>
-        {topTransactionsBills.current.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos en este mes.</Text>}
+        <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.movimientos.mes.elegido")}</Text>
+        {topTransactionsBills.current.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.en.este.mes")}</Text>}
         {topTransactionsBills.current.map((tx, index, list) => (
           <RankedRow key={`${index}-${String(tx.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={String(tx._id ?? tx.name)} accessibilityRole="button" onPress={() => tx._id && router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } })} className="flex-row items-center gap-3">
@@ -323,8 +325,8 @@ export default function AnalyzerScreen() {
           </>
         ) : (
           <>
-        <Text className="font-inter-semibold text-sm text-gf-text-muted">Categorías · mes anterior</Text>
-        {topCategoriesBillsPrevious.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos el mes anterior.</Text>}
+        <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.categorias.mes.anterior")}</Text>
+        {topCategoriesBillsPrevious.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.el.mes.anterior")}</Text>}
         {topCategoriesBillsPrevious.map((category, index, list) => (
           <RankedRow key={`${index}-${String(category.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={`previous-${category.name}`} accessibilityRole="button" onPress={() => setDetail({ kind: 'category', name: category.name, icon: category.icon, color: category.color, current: category.amount, previous: 0, changePct: null, period: 'previous' })} className="flex-row items-center gap-3">
@@ -334,8 +336,8 @@ export default function AnalyzerScreen() {
           </Pressable>
           </RankedRow>
         ))}
-        <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">Categorías · mes elegido</Text>
-        {topCategoriesBills.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos en este mes.</Text>}
+        <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">{t("mobile.categorias.mes.elegido")}</Text>
+        {topCategoriesBills.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.en.este.mes")}</Text>}
         {topCategoriesBills.map((category, index, list) => (
           <RankedRow key={`${index}-${String(category.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable
@@ -354,8 +356,8 @@ export default function AnalyzerScreen() {
           </Pressable>
           </RankedRow>
         ))}
-        <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">Movimientos · mes anterior</Text>
-        {topTransactionsBills.previous.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos el mes anterior.</Text>}
+        <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">{t("mobile.movimientos.mes.anterior")}</Text>
+        {topTransactionsBills.previous.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.el.mes.anterior")}</Text>}
         {topTransactionsBills.previous.map((tx, index, list) => (
           <RankedRow key={`${index}-${String(tx.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={`previous-${String(tx._id ?? tx.name)}`} accessibilityRole="button" onPress={() => tx._id && router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } })} className="flex-row items-center gap-3">
@@ -365,8 +367,8 @@ export default function AnalyzerScreen() {
           </Pressable>
           </RankedRow>
         ))}
-        <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">Movimientos · mes elegido</Text>
-        {topTransactionsBills.current.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin gastos en este mes.</Text>}
+        <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">{t("mobile.movimientos.mes.elegido")}</Text>
+        {topTransactionsBills.current.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.en.este.mes")}</Text>}
         {topTransactionsBills.current.map((tx, index, list) => (
           <RankedRow key={`${index}-${String(tx.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
           <Pressable key={String(tx._id ?? tx.name)} accessibilityRole="button" onPress={() => tx._id && router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/analyzer' } })} className="flex-row items-center gap-3">
@@ -388,7 +390,7 @@ export default function AnalyzerScreen() {
 
       {subscriptions.length > 0 && (
         <Pressable accessibilityRole="button" onPress={() => setDetail({ kind: 'subscriptions' })}>
-          <Card title="Pagos recurrentes" info={APP_INFO.pagos_recurrentes}>
+          <Card title={t("mobile.pagos.recurrentes")} info={APP_INFO.pagos_recurrentes}>
             {subscriptions.slice(0, 4).map((sub) => (
               <View key={sub.name} className="flex-row items-center gap-3">
                 <CategoryBadge icon={sub.icon} color={sub.color} size={30} />
@@ -408,11 +410,10 @@ export default function AnalyzerScreen() {
           </PairedColumn>
           <PairedColumn>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={APP_INFO.ritmo_de_gasto}>
+        <Card title={t("mobile.ritmo.de.gasto")} action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.mas")}</Text>} info={APP_INFO.ritmo_de_gasto}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
-            Al día {pace.dayOfMonth}; lo normal a esta altura es {money(pace.avgPaceForSameDay)}
-            {pace.deltaPct !== null ? ` (${pct(pace.deltaPct)})` : ''}.
+            {t("mobile.al.dia.p1.lo.normal", { p1: pace.dayOfMonth, p2: money(pace.avgPaceForSameDay), p3: pace.deltaPct !== null ? ` (${pct(pace.deltaPct)})` : '' })}
           </Text>
         </Card>
       </Pressable>
@@ -422,11 +423,10 @@ export default function AnalyzerScreen() {
         <>
       <AnalyzerFxExposure rows={fxExposure.rows} loading={fxExposure.loading} missing={fxExposure.missing} currency={currency} />
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title="Ritmo de gasto" action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver más</Text>} info={APP_INFO.ritmo_de_gasto_2}>
+        <Card title={t("mobile.ritmo.de.gasto")} action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.mas")}</Text>} info={APP_INFO.ritmo_de_gasto_2}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
-            Al día {pace.dayOfMonth}; lo normal a esta altura es {money(pace.avgPaceForSameDay)}
-            {pace.deltaPct !== null ? ` (${pct(pace.deltaPct)})` : ''}.
+            {t("mobile.al.dia.p1.lo.normal", { p1: pace.dayOfMonth, p2: money(pace.avgPaceForSameDay), p3: pace.deltaPct !== null ? ` (${pct(pace.deltaPct)})` : '' })}
           </Text>
         </Card>
       </Pressable>
@@ -447,7 +447,7 @@ export default function AnalyzerScreen() {
       <DetailSheet
         visible={detail !== null && detail.kind !== 'category'}
         onClose={() => setDetail(null)}
-        info={detail?.kind === 'month' ? { title: 'Detalle del mes', text: 'Ingresos y gastos son la suma de los movimientos del mes; balance = ingresos − gastos. El % es el cambio contra el mes anterior de la tendencia: (mes − anterior) ÷ anterior. ▲ subió, ▼ bajó y ▬ casi no cambió (menos de 0.5%). Verde = buena noticia (más ingresos o balance, menos gastos), rojo = mala, naranja = sin cambio.' } : detail?.kind === 'averages' ? { title: 'Promedio mensual', text: `Promedio de ${monthlyAverages.monthsCount} meses: la suma de ingresos, de gastos y de movimientos de los meses de la tabla ÷ ${monthlyAverages.monthsCount}. Es el mismo cálculo de la web.` } : undefined}
+        info={detail?.kind === 'month' ? { title: t("mobile.detalle.del.mes"), text: t("mobile.ingresos.y.gastos.son.la") } : detail?.kind === 'averages' ? { title: t("mobile.promedio.mensual"), text: `Promedio de ${monthlyAverages.monthsCount} meses: la suma de ingresos, de gastos y de movimientos de los meses de la tabla ÷ ${monthlyAverages.monthsCount}. Es el mismo cálculo de la web.` } : undefined}
         title={
           detail?.kind === 'month' ? esMonthLabel(detail.label)
           : detail?.kind === 'category' ? detail.name
@@ -461,13 +461,13 @@ export default function AnalyzerScreen() {
           const prevBalance = prev ? prev.income - prev.expense : null;
           const change_ = (current: number, before_: number | null) => (before_ === null || before_ === 0 ? null : ((current - before_) / Math.abs(before_)) * 100);
           const lines = [
-            { label: 'Ingresos', value: detail.income, before: prev?.income ?? null, invert: false, tone: colors.income },
-            { label: 'Gastos', value: detail.expense, before: prev?.expense ?? null, invert: true, tone: colors.expense },
-            { label: 'Balance', value: balance, before: prevBalance, invert: false, tone: balance >= 0 ? colors.income : colors.expense },
+            { label: t("mobile.ingresos"), value: detail.income, before: prev?.income ?? null, invert: false, tone: colors.income },
+            { label: t("mobile.gastos"), value: detail.expense, before: prev?.expense ?? null, invert: true, tone: colors.expense },
+            { label: t("mobile.balance"), value: balance, before: prevBalance, invert: false, tone: balance >= 0 ? colors.income : colors.expense },
           ];
           return (
             <>
-              <Text className="font-inter-medium text-sm text-gf-text-muted">{detail.count} movimientos en el mes{prev ? ` · contra ${esMonthLabel(prev.label)}` : ''}</Text>
+              <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.p1.movimientos.en.el.mes", { p1: detail.count, p2: prev ? ` · contra ${esMonthLabel(prev.label)}` : '' })}</Text>
               <View>
                 {lines.map((line) => {
                   const delta = change_(line.value, line.before);
@@ -475,7 +475,7 @@ export default function AnalyzerScreen() {
                     <View key={line.label} className="flex-row items-center gap-3 border-t border-gf-border py-4">
                       <View className="flex-1">
                         <Text className="font-inter-medium text-base text-gf-text">{line.label}</Text>
-                        {line.before !== null && <Text className="font-inter text-sm text-gf-text-muted">antes {money(line.before)}</Text>}
+                        {line.before !== null && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.antes.p1", { p1: money(line.before) })}</Text>}
                       </View>
                       <Text className="font-inter-bold text-xl" style={{ color: line.tone }}>{money(line.value)}</Text>
                       <View className="w-16 flex-row items-center justify-end gap-1">
@@ -486,18 +486,18 @@ export default function AnalyzerScreen() {
                   );
                 })}
               </View>
-              <Explain>Balance = ingresos − gastos del mes. La flecha compara cada cifra con el mes anterior: ▲ subió, ▼ bajó, ▬ casi no cambió. Verde es buena noticia (más ingresos o balance, menos gastos), rojo mala y naranja sin cambio.</Explain>
+              <Explain>{t("mobile.balance.ingresos.gastos.del.mes")}</Explain>
             </>
           );
         })()}
         {detail?.kind === 'averages' && (
           <>
             <View className="gap-1">
-              <Text className="font-inter text-base" style={{ color: colors.income }}>Ingresos: {money(monthlyAverages.avgIncome)} al mes</Text>
-              <Text className="font-inter text-base" style={{ color: colors.expense }}>Gastos: {money(monthlyAverages.avgExpense)} al mes</Text>
-              <Text className="font-inter text-base text-gf-text">Movimientos: {Math.round(monthlyAverages.avgTransactionCount)} al mes</Text>
+              <Text className="font-inter text-base" style={{ color: colors.income }}>{t("mobile.ingresos.p1.al.mes", { p1: money(monthlyAverages.avgIncome) })}</Text>
+              <Text className="font-inter text-base" style={{ color: colors.expense }}>{t("mobile.gastos.p1.al.mes", { p1: money(monthlyAverages.avgExpense) })}</Text>
+              <Text className="font-inter text-base text-gf-text">{t("mobile.movimientos.p1.al.mes", { p1: Math.round(monthlyAverages.avgTransactionCount) })}</Text>
             </View>
-            <Explain>Promedio de {monthlyAverages.monthsCount} meses (los de la tendencia, contando el mes elegido): la suma de cada columna ÷ {monthlyAverages.monthsCount}.</Explain>
+            <Explain>{t("mobile.promedio.de.p1.meses.los", { p1: monthlyAverages.monthsCount, p2: monthlyAverages.monthsCount })}</Explain>
             <View>
               {trend.map((item) => (
                 <View key={item.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
@@ -513,10 +513,10 @@ export default function AnalyzerScreen() {
         {detail?.kind === 'pace' && (
           <>
             <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
-            <Text className="font-inter text-base text-gf-text-muted">Al día {pace.dayOfMonth} sueles llevar {money(pace.avgPaceForSameDay)} ({pct(pace.deltaPct)}).</Text>
+            <Text className="font-inter text-base text-gf-text-muted">{t("mobile.al.dia.p1.sueles.llevar", { p1: pace.dayOfMonth, p2: money(pace.avgPaceForSameDay), p3: pct(pace.deltaPct) })}</Text>
             {pace.monthlyDetail.map((item) => (
               <View key={item.label} className="flex-row justify-between">
-                <Text className="font-inter text-sm text-gf-text-muted">{esMonthLabel(item.label)} · hasta el día {item.throughDay}</Text>
+                <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.p1.hasta.el.dia.p2", { p1: esMonthLabel(item.label), p2: item.throughDay })}</Text>
                 <Text className="font-inter-semibold text-sm text-gf-text">{money(item.amount)}</Text>
               </View>
             ))}
@@ -533,8 +533,8 @@ export default function AnalyzerScreen() {
                 </View>
                 <Text className="font-inter-semibold text-sm text-gf-text">{money(sub.amount)}</Text>
               </View>
-              {sub.isNew && <Text className="pl-12 font-inter text-xs" style={{ color: colors.accent }}>Nuevo este mes</Text>}
-              {sub.possibleDuplicateInMonth && <Text className="pl-12 font-inter text-xs" style={{ color: colors.expense }}>Posible duplicado en el mes</Text>}
+              {sub.isNew && <Text className="pl-12 font-inter text-xs" style={{ color: colors.accent }}>{t("mobile.nuevo.este.mes")}</Text>}
+              {sub.possibleDuplicateInMonth && <Text className="pl-12 font-inter text-xs" style={{ color: colors.expense }}>{t("mobile.posible.duplicado.en.el.mes")}</Text>}
               {[...sub.occurrences].reverse().map((occurrence, index) => (
                 <Pressable key={index} accessibilityRole="button" disabled={!occurrence._id} onPress={() => { setDetail(null); router.push({ pathname: '/movements/[id]', params: { id: String(occurrence._id), returnTo: '/more/analyzer' } }); }} className="flex-row justify-between py-1.5 pl-12">
                   <Text className="font-inter text-sm text-gf-text-muted">{new Date(occurrence.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</Text>

@@ -33,6 +33,7 @@ import { AccuracyCard } from '@/components/projections/accuracy-card';
 import { ProjectionMonthSheet } from '@/components/projections/month-sheet';
 import type { RootState } from '@/store';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -43,6 +44,7 @@ const TYPE_LABEL: Record<YearProjectionRow['type'], string> = { actual: 'Real', 
 // sources, the year's settings and the baseline. Like the web, anything entered in another currency (income
 // sources, the baseline, budgets) is converted to the main currency before the math.
 export default function ProjectionsScreen() {
+  const t = useT();
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const tablet = useIsTablet();
@@ -146,13 +148,13 @@ export default function ProjectionsScreen() {
   const appRefresh = useRefreshAppData();
 
   return (
-    <Screen title="Proyecciones" subtitle={`Moneda principal: ${currency} · Año ${year}`} backLabel="Más" onBack={() => router.back()} refreshing={appRefresh.refreshing} onRefresh={() => { appRefresh.refresh(); reload(); }}>
+    <Screen title={t("mobile.proyecciones")} subtitle={`Moneda principal: ${currency} · Año ${year}`} backLabel="Más" onBack={() => router.back()} refreshing={appRefresh.refreshing} onRefresh={() => { appRefresh.refresh(); reload(); }}>
       <View className="flex-row justify-between">
         <Pressable accessibilityRole="button" onPress={() => setYear((y) => y - 1)} hitSlop={8}>
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>‹ Año anterior</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ano.anterior")}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => setYear((y) => y + 1)} hitSlop={8}>
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Año siguiente ›</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ano.siguiente")}</Text>
         </Pressable>
       </View>
 
@@ -160,13 +162,13 @@ export default function ProjectionsScreen() {
       {!error && sources === null && <ActivityIndicator color={colors.accent} />}
 
       {sources !== null && (
-        <Card style={{ backgroundColor: dark ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title="Mes a mes" info={APP_INFO.mes_a_mes}>
+        <Card style={{ backgroundColor: dark ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title={t("mobile.mes.a.mes")} info={APP_INFO.mes_a_mes}>
           {inputs.missing.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
               {`Todavía no hay tipo de cambio para ${inputs.missing.join(', ')}: esas cifras se muestran sin convertir.`}
             </Text>
           )}
-          <Text className="font-inter text-xs text-gf-text-muted">Montos en {currency}.</Text>
+          <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.montos.en.p1", { p1: currency })}</Text>
           {rows.map((row, index) => {
             const income = row.type === 'actual' ? row.income : row.projectedIncome ?? row.income;
             const expense = row.type === 'actual' ? row.expense : row.projectedExpense ?? row.expense;
@@ -182,19 +184,19 @@ export default function ProjectionsScreen() {
                 </View>
                 <View className="flex-row gap-3">
                   <View className="flex-1">
-                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>Ingresos</Text>
+                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>{t("mobile.ingresos")}</Text>
                     <Text className={`font-inter-medium ${T('text-sm', 'text-3xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.income }}>{money(income ?? 0)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>Gastos</Text>
+                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>{t("mobile.gastos")}</Text>
                     <Text className={`font-inter-medium ${T('text-sm', 'text-3xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.expense }}>{money(expense ?? 0)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>Neto</Text>
+                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>{t("mobile.neto")}</Text>
                     <Text className={`font-inter-semibold ${T('text-sm', 'text-3xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: net < 0 ? colors.expense : colors.income }}>{money(net)}</Text>
                   </View>
                   <View className="flex-1">
-                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>Balance</Text>
+                    <Text className={`font-inter ${T('text-xs', 'text-lg')} text-gf-text-muted`} style={{ minHeight: 22 }}>{t("mobile.balance")}</Text>
                     <Text className={`font-inter-semibold ${T('text-sm', 'text-3xl')}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.text }}>
                       {balanceText(balanceRows[index])}
                     </Text>
@@ -203,7 +205,7 @@ export default function ProjectionsScreen() {
               </Pressable>
             );
           })}
-          <Text className="font-inter text-xs text-gf-text-muted">Los meses reales muestran lo que ya ocurrió; los estimados, lo que se proyecta. Toca un mes para abrirlo.</Text>
+          <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.los.meses.reales.muestran.lo")}</Text>
         </Card>
       )}
 

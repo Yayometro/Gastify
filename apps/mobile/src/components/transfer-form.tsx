@@ -10,10 +10,12 @@ import { useCatalog } from '@/hooks/use-catalog';
 import { messageOf } from '@/lib/write';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { dateText, validateTransfer, buildTransferBody, type TransferErrors, type TransferValues } from '@gastify/core/transactions/movementForm';
+import { useT } from "@/i18n/client";
 
 // A transfer between two of the person's accounts. Across currencies it is an exchange: the form asks
 // what arrives on the other side, and the server records both legs.
 export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unknown>) => Promise<void> }) {
+  const t = useT();
   const { accounts } = useCatalog();
   const [values, setValues] = useState<TransferValues>(() => ({
     sourceAccountId: accounts[0] ? idOf(accounts[0]) : '',
@@ -53,12 +55,12 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
   return (
     <View className="gap-4">
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Desde</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.desde")}</Text>
         <ChipPicker items={items} value={values.sourceAccountId} onChange={(id) => set('sourceAccountId', id)} emptyText="Primero crea dos cuentas en Más › Cuentas." />
         {errors.sourceAccountId && <Text className="font-inter text-sm text-red-500">{errors.sourceAccountId}</Text>}
       </View>
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">Hacia</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.hacia")}</Text>
         <ChipPicker items={items} value={values.destinationAccountId} onChange={(id) => set('destinationAccountId', id)} />
         {errors.destinationAccountId && <Text className="font-inter text-sm text-red-500">{errors.destinationAccountId}</Text>}
       </View>
@@ -72,9 +74,9 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
           {errors.destinationAmount && <Text className="font-inter text-sm text-red-500">{errors.destinationAmount}</Text>}
         </View>
       )}
-      <DateField label="Fecha" value={values.date} onChange={(day) => set('date', day)} />
+      <DateField label={t("mobile.fecha")} value={values.date} onChange={(day) => set('date', day)} />
       {errors.date && <Text className="font-inter text-sm text-red-500">{errors.date}</Text>}
-      <TextField label="Nombre (opcional)" value={values.name} onChangeText={(text) => set('name', text)} placeholder="Pago de tarjeta" maxLength={80} />
+      <TextField label={t("mobile.nombre.opcional")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={t("mobile.pago.de.tarjeta")} maxLength={80} />
       <FormError message={formError} />
       <GradientButton label={crossCurrency ? 'Cambiar moneda' : 'Transferir'} onPress={submit} loading={submitting} disabled={submitting} />
     </View>

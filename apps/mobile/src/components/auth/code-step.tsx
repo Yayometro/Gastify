@@ -5,6 +5,7 @@ import { authClient } from '@/auth-client';
 import { FormError } from '@/components/auth/auth-layout';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
+import { useT } from "@/i18n/client";
 
 // Same limit as the web's /verify-2fa: three wrong codes and the session is closed.
 const MAX_ATTEMPTS = 3;
@@ -12,6 +13,7 @@ const MAX_ATTEMPTS = 3;
 // Asks for the second factor: the 6-digit code of the authenticator app, or a backup code.
 // Used right after the password and again when an open session has been idle too long.
 export function CodeStep({ onVerified, onGiveUp }: { onVerified: () => void; onGiveUp: () => void }) {
+  const t = useT();
   const [code, setCode] = useState('');
   const [useBackup, setUseBackup] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -45,7 +47,7 @@ export function CodeStep({ onVerified, onGiveUp }: { onVerified: () => void; onG
       }
       setError(`Código incorrecto. Te quedan ${MAX_ATTEMPTS - next} intento(s).`);
     } catch {
-      setError('No pudimos conectar con el servidor. Revisa tu conexión.');
+      setError(t("mobile.no.pudimos.conectar.con.el"));
     } finally {
       setLoading(false);
     }
@@ -66,7 +68,7 @@ export function CodeStep({ onVerified, onGiveUp }: { onVerified: () => void; onG
         autoFocus
       />
       <FormError message={error} />
-      <GradientButton label="Verificar" onPress={verify} loading={loading} disabled={!code.trim()} />
+      <GradientButton label={t("mobile.verificar")} onPress={verify} loading={loading} disabled={!code.trim()} />
       <Pressable
         accessibilityRole="button"
         onPress={() => {

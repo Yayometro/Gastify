@@ -9,8 +9,10 @@ import { ThemedView } from '@/components/themed-view';
 import { Collapsible } from '@/components/ui/collapsible';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from "@/i18n/client";
 
 export default function TabTwoScreen() {
+  const t = useT();
   const safeAreaInsets = useSafeAreaInsets();
   const insets = {
     ...safeAreaInsets,
@@ -38,15 +40,15 @@ export default function TabTwoScreen() {
       contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
       <ThemedView style={styles.container}>
         <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
+          <ThemedText type="subtitle">{t("mobile.explore")}</ThemedText>
           <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
+            {t("mobile.this.starter.app.includes.example", {  })}
           </ThemedText>
 
           <ExternalLink href="https://docs.expo.dev" asChild>
             <Pressable style={({ pressed }) => pressed && styles.pressed}>
               <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
+                <ThemedText type="link">{t("mobile.expo.documentation")}</ThemedText>
                 <SymbolView
                   tintColor={theme.text}
                   name={{ ios: 'arrow.up.right.square', android: 'link', web: 'link' }}
@@ -58,26 +60,23 @@ export default function TabTwoScreen() {
         </ThemedView>
 
         <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
+          <Collapsible title={t("mobile.file.based.routing")}>
             <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
+              {t("mobile.this.app.has.two.screens")} <ThemedText type="code">{t("mobile.src.app.index.tsx")}</ThemedText> {t("mobile.and")}{' '}
+              <ThemedText type="code">{t("mobile.src.app.explore.tsx")}</ThemedText>
             </ThemedText>
             <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
+              {t("mobile.the.layout.file.in")} <ThemedText type="code">{t("mobile.src.app.layout.tsx")}</ThemedText> {t("mobile.sets.up.the.tab.navigator")}
             </ThemedText>
             <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
+              <ThemedText type="linkPrimary">{t("mobile.learn.more")}</ThemedText>
             </ExternalLink>
           </Collapsible>
 
-          <Collapsible title="Android, iOS, and web support">
+          <Collapsible title={t("mobile.android.ios.and.web.support")}>
             <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
               <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
+                {t("mobile.you.can.open.this.project")} <ThemedText type="smallBold">{t("mobile.w")}</ThemedText> {t("mobile.in.the.terminal.running.this")}
               </ThemedText>
               <Image
                 source={require('@/assets/images/tutorial-web.png')}
@@ -86,35 +85,31 @@ export default function TabTwoScreen() {
             </ThemedView>
           </Collapsible>
 
-          <Collapsible title="Images">
+          <Collapsible title={t("mobile.images")}>
             <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
+              {t("mobile.for.static.images.you.can")} <ThemedText type="code">{t("mobile.2x")}</ThemedText> {t("mobile.and")}{' '}
+              <ThemedText type="code">{t("mobile.3x")}</ThemedText> {t("mobile.suffixes.to.provide.files.for")}
             </ThemedText>
             <Image source={require('@/assets/images/react-logo.png')} style={styles.imageReact} />
             <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
+              <ThemedText type="linkPrimary">{t("mobile.learn.more")}</ThemedText>
             </ExternalLink>
           </Collapsible>
 
-          <Collapsible title="Light and dark mode components">
+          <Collapsible title={t("mobile.light.and.dark.mode.components")}>
             <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
+              {t("mobile.this.template.has.light.and")}{' '}
+              <ThemedText type="code">{t("mobile.usecolorscheme")}</ThemedText> {t("mobile.hook.lets.you.inspect.what")}
             </ThemedText>
             <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
+              <ThemedText type="linkPrimary">{t("mobile.learn.more")}</ThemedText>
             </ExternalLink>
           </Collapsible>
 
-          <Collapsible title="Animations">
+          <Collapsible title={t("mobile.animations")}>
             <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
+              {t("mobile.this.template.includes.an.example")}{' '}
+              <ThemedText type="code">{t("mobile.src.components.ui.collapsible.tsx")}</ThemedText> {t("mobile.component.uses.the.powerful")} <ThemedText type="code">{t("mobile.react.native.reanimated")}</ThemedText> {t("mobile.library.to.animate.opening.this")}
             </ThemedText>
           </Collapsible>
         </ThemedView>

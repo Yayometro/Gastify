@@ -10,6 +10,8 @@ import { GradientButton } from '@/components/ui/gradient-button';
 import { GlassSurface } from '@/components/ui/glass';
 import { MOOD_COLOR, type AlertMood } from '@/lib/alert-presentation';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 // alarm and fire are the budget notices (70 to 90 % and past 100 %); celebrate the congratulations.
 type ToastKind = 'ok' | 'error' | 'warning' | 'celebrate' | 'alarm' | 'fire';
@@ -28,18 +30,19 @@ export function useToast() {
   return useContext(ToastContext);
 }
 
-const TONES: Record<ToastKind, { icon: 'checkmark' | 'alert' | 'sparkles' | 'flame'; color: string; circle: string; title: string }> = {
-  ok: { icon: 'checkmark', color: '#34d399', circle: 'rgba(52, 211, 153, 0.18)', title: 'Listo' },
-  error: { icon: 'alert', color: '#fb7185', circle: 'rgba(251, 113, 133, 0.18)', title: 'Revisa esto' },
-  warning: { icon: 'alert', color: '#f59e0b', circle: 'rgba(245, 158, 11, 0.20)', title: 'Aviso' },
-  celebrate: { icon: 'sparkles', color: '#c084fc', circle: 'rgba(192, 132, 252, 0.22)', title: '¡Felicidades!' },
-  alarm: { icon: 'alert', color: '#f43f5e', circle: 'rgba(244, 63, 94, 0.20)', title: '¡Aguas!' },
-  fire: { icon: 'flame', color: '#f97316', circle: 'rgba(249, 115, 22, 0.22)', title: '¡Se está incendiando!' },
-};
+const TONES = (t: TranslateFn): Record<ToastKind, { icon: 'checkmark' | 'alert' | 'sparkles' | 'flame'; color: string; circle: string; title: string }> => ({
+  ok: { icon: 'checkmark', color: '#34d399', circle: 'rgba(52, 211, 153, 0.18)', title: t("mobile.listo") },
+  error: { icon: 'alert', color: '#fb7185', circle: 'rgba(251, 113, 133, 0.18)', title: t("mobile.revisa.esto") },
+  warning: { icon: 'alert', color: '#f59e0b', circle: 'rgba(245, 158, 11, 0.20)', title: t("mobile.aviso") },
+  celebrate: { icon: 'sparkles', color: '#c084fc', circle: 'rgba(192, 132, 252, 0.22)', title: t("mobile.felicidades") },
+  alarm: { icon: 'alert', color: '#f43f5e', circle: 'rgba(244, 63, 94, 0.20)', title: t("mobile.aguas") },
+  fire: { icon: 'flame', color: '#f97316', circle: 'rgba(249, 115, 22, 0.22)', title: t("mobile.se.esta.incendiando") },
+});
 
 const isMood = (kind: ToastKind): kind is AlertMood => kind === 'celebrate' || kind === 'alarm' || kind === 'fire';
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const t = useT();
   const insets = useSafeAreaInsets();
   const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const dark = useColorScheme() === 'dark';
@@ -76,7 +79,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 
   const present = useCallback((message: string, mood: AlertMood, options?: ToastOptions) => {
-    setPresented({ mood, title: options?.title ?? TONES[mood].title, message, href: options?.href });
+    setPresented({ mood, title: options?.title ?? TONES(t)[mood].title, message, href: options?.href });
   }, []);
 
   const value = useMemo(() => ({ show, present }), [show, present]);
@@ -111,7 +114,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       }),
     [drag, hide, present]
   );
-  const tone = toast ? TONES[toast.kind] : null;
+  const tone = toast ? TONES(t)[toast.kind] : null;
 
   return (
     <ToastContext.Provider value={value}>
@@ -138,20 +141,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <Modal visible={presented !== null} transparent animationType="fade" onRequestClose={() => setPresented(null)}>
         <View style={{ flex: 1, backgroundColor: presented?.mood === 'celebrate' || !presented ? 'rgba(10,5,25,0.82)' : 'rgba(26,4,12,0.78)', alignItems: 'center', justifyContent: 'center', padding: 28 }}>
           {/* A tap outside the card closes the window, as the "×" does. */}
-          <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setPresented(null)} style={StyleSheet.absoluteFill} />
+          <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={() => setPresented(null)} style={StyleSheet.absoluteFill} />
           {presented?.mood === 'celebrate' && <Celebration active />}
           {presented && presented.mood !== 'celebrate' && <AlarmEdges color={MOOD_COLOR[presented.mood]} fast={presented.mood === 'fire'} />}
           {presented?.mood === 'fire' && <FireEffect />}
           <GlassSurface radius={28} style={{ width: '100%', maxWidth: 420, backgroundColor: 'rgba(40,22,82,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={() => setPresented(null)} hitSlop={10} style={{ position: 'absolute', top: 14, right: 14, zIndex: 2 }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={() => setPresented(null)} hitSlop={10} style={{ position: 'absolute', top: 14, right: 14, zIndex: 2 }}>
               <Ionicons name="close" size={24} color="rgba(255,255,255,0.85)" />
             </Pressable>
             <View className="items-center gap-4 p-7">
               <Text style={{ fontSize: 56 }}>{presented?.mood === 'fire' ? '🔥' : presented?.mood === 'alarm' ? '😬' : '🎉'}</Text>
               <Text className="text-center font-inter-bold text-2xl" style={{ color: '#ffffff' }}>{presented?.title}</Text>
               <Text className="text-center font-inter text-base" style={{ color: 'rgba(255,255,255,0.85)' }}>{presented?.message}</Text>
-              {presented?.href ? <View style={{ alignSelf: 'stretch' }}><GradientButton label="Ver mi presupuesto" onPress={() => { const href = presented.href; setPresented(null); if (href) router.push(href as never); }} /></View> : null}
-              <Pressable accessibilityRole="button" onPress={() => setPresented(null)} hitSlop={10}><Text className="font-inter-semibold text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>Cerrar</Text></Pressable>
+              {presented?.href ? <View style={{ alignSelf: 'stretch' }}><GradientButton label={t("mobile.ver.mi.presupuesto")} onPress={() => { const href = presented.href; setPresented(null); if (href) router.push(href as never); }} /></View> : null}
+              <Pressable accessibilityRole="button" onPress={() => setPresented(null)} hitSlop={10}><Text className="font-inter-semibold text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>{t("mobile.cerrar")}</Text></Pressable>
             </View>
           </GlassSurface>
         </View>

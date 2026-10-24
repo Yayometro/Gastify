@@ -8,13 +8,15 @@ import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { sendWrite } from '@/lib/write';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import type { AppDispatch, RootState } from '@/store';
+import { useT } from "@/i18n/client";
 
 export default function NewCategoryScreen() {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const categories = useSelector((state: RootState) => state.categoriesReducer.data.user ?? []);
   return (
-    <Screen title="Nueva categoría" backLabel="Categorías" onBack={() => router.back()}>
+    <Screen title={t("mobile.nueva.categoria")} backLabel="Categorías" onBack={() => router.back()}>
       <CategoryForm
         submitLabel="Crear categoría"
         allowSubcategory

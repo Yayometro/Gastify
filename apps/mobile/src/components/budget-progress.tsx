@@ -5,11 +5,13 @@ import { Text, View, useColorScheme } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getBudgetMoodEmoji } from '@gastify/core/transformers/budgetHistory';
+import { useT } from "@/i18n/client";
 
 // The big face of a budget (the web shows it large): delighted when barely spent, panicked when over (and, for a saving
 // goal, the other way round).
 export function BudgetMood({ ratio, saving = false, size = 40 }: { ratio: number; saving?: boolean; size?: number }) {
-  return <Text style={{ fontSize: size, lineHeight: size + 6 }} accessibilityLabel="Cómo va este presupuesto">{getBudgetMoodEmoji(ratio, saving)}</Text>;
+  const t = useT();
+  return <Text style={{ fontSize: size, lineHeight: size + 6 }} accessibilityLabel={t("mobile.como.va.este.presupuesto")}>{getBudgetMoodEmoji(ratio, saving)}</Text>;
 }
 
 // The web's bar: a rounded track with a gradient fill and, at the tip of the fill, a circle with the percentage
@@ -32,6 +34,7 @@ export function BudgetProgress({
   currency: string;
   suffix?: string;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [width, setWidth] = useState(0);
@@ -67,7 +70,7 @@ export function BudgetProgress({
       </View>
       <View className="flex-row items-end justify-between gap-3">
         <Text className="font-inter-bold text-xl text-gf-text" numberOfLines={1} adjustsFontSizeToFit>{formatMoneyMajor(spent, currency)}</Text>
-        <Text className="font-inter text-xs text-gf-text-muted">de {formatMoneyMajor(goal, currency)} {suffix}</Text>
+        <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.de.p1.p2", { p1: formatMoneyMajor(goal, currency), p2: suffix })}</Text>
       </View>
     </View>
   );

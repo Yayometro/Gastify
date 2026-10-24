@@ -21,6 +21,7 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionLike } from '@gastify/core/transformers/transactionsChange';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 type Kind = 'spending' | 'incomes';
 
@@ -37,6 +38,7 @@ export function SummaryWidget({
   allMovements: TransactionLike[];
   currency: string;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [kind, setKind] = useState<Kind>('spending');
@@ -99,7 +101,7 @@ export function SummaryWidget({
       </Pressable>
       {level === 1 && (
         <Pressable accessibilityRole="button" accessibilityLabel={`Ver las transacciones de ${chosen.name}`} onPress={() => setPath((current) => ({ path: [...current.path, ALL_MOVEMENTS] }))} className="flex-row items-center gap-1 py-1">
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver transacciones</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.transacciones")}</Text>
           <Ionicons name="chevron-forward" size={18} color={colors.accent} />
         </Pressable>
       )}
@@ -136,20 +138,20 @@ export function SummaryWidget({
   const filters = (
     <>
       <CompactTimeFilter preset={preset} onPreset={setPreset} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
-      <Segmented options={[{ value: 'spending', label: 'Gastos' }, { value: 'incomes', label: 'Ingresos' }]} value={kind} onChange={setKind} />
+      <Segmented options={[{ value: 'spending', label: t("mobile.gastos") }, { value: 'incomes', label: t("mobile.ingresos") }]} value={kind} onChange={setKind} />
     </>
   );
   const totalText = <Text className="text-center font-inter-bold text-3xl" style={{ color: kind === 'spending' ? colors.expense : colors.income }}>{formatMoneyMajor(total, currency)}</Text>;
-  const chartPicker = categories.length > 0 ? <Segmented options={[{ value: 'ring', label: 'Anillo' }, { value: 'bubbles', label: 'Burbujas' }, { value: 'treemap', label: 'Mapa' }]} value={chart} onChange={setChart} /> : null;
+  const chartPicker = categories.length > 0 ? <Segmented options={[{ value: 'ring', label: t("mobile.anillo") }, { value: 'bubbles', label: t("mobile.burbujas") }, { value: 'treemap', label: t("mobile.mapa") }]} value={chart} onChange={setChart} /> : null;
   const MAX_ROWS = 15;
   const seeMore = (
     <Pressable accessibilityRole="button" onPress={() => setDetailOpen(true)} className="items-center rounded-full py-3" style={{ backgroundColor: colors.accentSoft }}>
-      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>Ver las {allRows.length} {allRows.length === 1 ? 'categoría' : 'categorías'} ›</Text>
+      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.las.p1.p2", { p1: allRows.length, p2: allRows.length === 1 ? 'categoría' : 'categorías' })}</Text>
     </Pressable>
   );
   // The big sheet: the filters, the same chart as the card (it drills down the same way) and every category, each row can be opened.
   const sheet = (
-    <DetailSheet tall visible={detailOpen} onClose={() => setDetailOpen(false)} title="Resumen de transacciones" subtitle={`${allRows.length} ${allRows.length === 1 ? 'categoría' : 'categorías'} · ${kind === 'spending' ? 'gastos' : 'ingresos'}`}>
+    <DetailSheet tall visible={detailOpen} onClose={() => setDetailOpen(false)} title={t("mobile.resumen.de.transacciones")} subtitle={`${allRows.length} ${allRows.length === 1 ? 'categoría' : 'categorías'} · ${kind === 'spending' ? 'gastos' : 'ingresos'}`}>
       {filters}
       {chartPicker}
       {totalText}
@@ -160,11 +162,11 @@ export function SummaryWidget({
   );
 
   return (
-    <Card title="Resumen de transacciones" info={APP_INFO.resumen_de_transacciones}>
+    <Card title={t("mobile.resumen.de.transacciones")} info={APP_INFO.resumen_de_transacciones}>
       {categories.length === 0 ? (
         <>
           {filters}
-          <Text className="font-inter text-sm text-gf-text-muted">Sin {kind === 'spending' ? 'gastos' : 'ingresos'} en este periodo.</Text>
+          <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.p1.en.este.periodo", { p1: kind === 'spending' ? 'gastos' : 'ingresos' })}</Text>
         </>
       ) : tablet ? (
         <View className="flex-row items-start gap-6">
@@ -195,7 +197,7 @@ export function SummaryWidget({
 
       {summary.months.length > 1 && (
         <View className="gap-2 pt-1">
-          <Text className="font-inter-medium text-sm text-gf-text-muted">Mes a mes</Text>
+          <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.mes.a.mes")}</Text>
           <MonthlyBars months={summary.months} show={kind} />
         </View>
       )}

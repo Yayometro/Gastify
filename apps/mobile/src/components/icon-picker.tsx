@@ -7,11 +7,13 @@ import { Colors } from '@/constants/theme';
 import { getApiBaseUrl } from '@gastify/core/api/client';
 import { FLUENT_PREFIX } from '@gastify/core/icons/fluentIcons';
 import { loadFluentManifest, searchFluentIcons, type FluentManifestIcon } from '@gastify/core/icons/fluentManifest';
+import { useT } from "@/i18n/client";
 
 // The Fluent icon library (the same one the web picker uses): a search box (Spanish or English) and the
 // matching icons, a page at a time with "Mostrar más". The list is loaded once, when the picker opens.
 const PAGE = 60;
 export function IconPicker({ value, onChange }: { value: string; onChange: (icon: string) => void }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [icons, setIcons] = useState<FluentManifestIcon[] | null>(null);
@@ -31,13 +33,13 @@ export function IconPicker({ value, onChange }: { value: string; onChange: (icon
   return (
     <View className="gap-3">
       <TextField
-        label="Buscar ícono"
+        label={t("mobile.buscar.icono")}
         value={query}
         onChangeText={(text) => {
           setQuery(text);
           setLimit(PAGE);
         }}
-        placeholder="comida, casa, avión…"
+        placeholder={t("mobile.comida.casa.avion")}
         autoCapitalize="none"
       />
       {icons !== null && !failed && (
@@ -46,11 +48,11 @@ export function IconPicker({ value, onChange }: { value: string; onChange: (icon
         </Text>
       )}
       {failed ? (
-        <Text className="font-inter text-sm text-red-500">No pudimos cargar los íconos. Revisa tu conexión.</Text>
+        <Text className="font-inter text-sm text-red-500">{t("mobile.no.pudimos.cargar.los.iconos")}</Text>
       ) : icons === null ? (
         <ActivityIndicator color={colors.accent} />
       ) : matches.length === 0 ? (
-        <Text className="font-inter text-sm text-gf-text-muted">Ningún ícono coincide con la búsqueda.</Text>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.ningun.icono.coincide.con.la")}</Text>
       ) : (
         <View className="flex-row flex-wrap gap-2">
           {matches.map((icon) => {
@@ -77,7 +79,7 @@ export function IconPicker({ value, onChange }: { value: string; onChange: (icon
       {found.length > limit && (
         <Pressable accessibilityRole="button" onPress={() => setLimit((current) => current + 120)} className="items-center py-2">
           <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
-            Mostrar más ({found.length - limit} restantes)
+            {t("mobile.mostrar.mas.p1.restantes", { p1: found.length - limit })}
           </Text>
         </Pressable>
       )}

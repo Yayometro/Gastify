@@ -3,19 +3,20 @@ import { Pressable, Text } from 'react-native';
 import { authClient } from '@/auth-client';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import { GradientButton } from '@/components/ui/gradient-button';
+import { useT } from "@/i18n/client";
 
 // The app only opens accounts that have a second factor (the data routes refuse a session that
 // never passed one). Setting one up from the phone comes later; for now it is done on the web.
 export function NoTwoFactorScreen({ email, onRetry }: { email: string; onRetry: () => void }) {
+  const t = useT();
   return (
-    <AuthLayout title="Falta un paso" subtitle={`Entraste como ${email}.`}>
+    <AuthLayout title={t("mobile.falta.un.paso")} subtitle={`Entraste como ${email}.`}>
       <Text className="font-inter text-base text-gf-text">
-        Para proteger tus movimientos, Gastify necesita que esta cuenta tenga la verificación en dos pasos activada.
-        Actívala desde la web (Perfil) y después vuelve a entrar aquí.
+        {t("mobile.para.proteger.tus.movimientos.gastify")}
       </Text>
-      <GradientButton label="Ya la activé, volver a entrar" onPress={onRetry} />
+      <GradientButton label={t("mobile.ya.la.active.volver.a")} onPress={onRetry} />
       <Pressable accessibilityRole="button" onPress={() => authClient.signOut()}>
-        <Text className="text-center font-inter text-sm text-gf-text-muted">Cerrar sesión</Text>
+        <Text className="text-center font-inter text-sm text-gf-text-muted">{t("mobile.cerrar.sesion")}</Text>
       </Pressable>
     </AuthLayout>
   );

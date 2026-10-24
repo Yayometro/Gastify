@@ -19,6 +19,7 @@ import type { TransactionData } from '@gastify/core/features/transacctionsSlice'
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
+import { useT } from "@/i18n/client";
 
 type Own = 'dashboard' | HistoryPreset;
 
@@ -41,6 +42,7 @@ export function OwnPeriodCategories({
   compareSummary: PeriodSummary | null;
   currency: string;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const now = useMemo(() => new Date(), []);
@@ -80,7 +82,7 @@ export function OwnPeriodCategories({
       <Text className="font-inter-semibold text-sm text-gf-text">{label}</Text>
       <Text className="font-inter-bold text-lg text-gf-text">{formatMoneyMajor(total, currency)}</Text>
       <Text className="pb-1 font-inter text-xs text-gf-text-muted">{list.length} {list.length === 1 ? 'movimiento' : 'movimientos'}</Text>
-      {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
+      {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
       {list.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => open(tx)} />)}
     </View>
   );
@@ -88,7 +90,7 @@ export function OwnPeriodCategories({
   return (
     <Card title={title} info={info}>
       <CompactTimeFilter preset={own} onPreset={setOwn} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard periodSelect />
-      {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Sin movimientos en este periodo.</Text>}
+      {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
       {rows.slice(0, 12).map((row: CompareRow) => (
         <Pressable key={row.name} accessibilityRole="button" accessibilityLabel={`Ver movimientos de ${row.name}`} onPress={() => setSelectedCategory(row.name)} className="gap-1.5">
           <View className="flex-row items-center gap-3">
@@ -106,12 +108,12 @@ export function OwnPeriodCategories({
       {comparing && compareSummary ? (
       <DetailSheet tall visible={selectedRow !== undefined} onClose={() => setSelectedCategory(null)} title={selectedRow?.name ?? ''} subtitle={`${selectedMovements.length} movimientos · ${formatMoneyMajor(selectedRow?.a ?? 0, currency)}`}>
         <View className="flex-row gap-2">
-          <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'desc' }} onPress={() => setOrder('desc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'desc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Mayor primero</Text></Pressable>
-          <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'asc' }} onPress={() => setOrder('asc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'asc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">Menor primero</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'desc' }} onPress={() => setOrder('desc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'desc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">{t("mobile.mayor.primero")}</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityState={{ selected: order === 'asc' }} onPress={() => setOrder('asc')} className="rounded-full border border-gf-border px-3 py-2" style={{ backgroundColor: order === 'asc' ? colors.accentSoft : undefined }}><Text className="font-inter-medium text-xs text-gf-text">{t("mobile.menor.primero")}</Text></Pressable>
         </View>
         {comparing && compareSummary ? (
           <>
-            <Text className="font-inter text-sm text-gf-text-muted">Izquierda: el periodo elegido. Derecha: el periodo con el que lo comparas.</Text>
+            <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.izquierda.el.periodo.elegido.derecha")}</Text>
             <View className={tablet ? 'flex-row items-start gap-4' : 'gap-5'}>
               {column(`Periodo · ${rangeLabelEs(summary.range.start, summary.range.end)}`, selectedRow?.a ?? 0, selectedMovements)}
               {column(`Comparado · ${rangeLabelEs(compareSummary.range.start, compareSummary.range.end)}`, selectedRow?.b ?? 0, comparedMovements)}

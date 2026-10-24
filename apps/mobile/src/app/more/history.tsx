@@ -1,3 +1,4 @@
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Text, View, useColorScheme, useWindowDimensions } from 'react-native';
@@ -38,6 +39,7 @@ import type { TransactionData } from '@gastify/core/features/transacctionsSlice'
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
@@ -55,14 +57,14 @@ function Delta({ current, previous, invert = false }: { current: number; previou
 }
 
 // The readings of «Datos del periodo»; with a comparison the same readings are made for the other period, in the same order.
-function periodFacts(x: PeriodSummary<TransactionData>, cell: (value: number) => string): { label: string; value: string; detail: string }[] {
+function periodFacts(t: TranslateFn, x: PeriodSummary<TransactionData>, cell: (value: number) => string): { label: string; value: string; detail: string }[] {
   const top = x.spendingByCategory[0];
   return [
-    { label: 'Movimientos', value: String(x.totals.count), detail: 'en el periodo' },
-    { label: 'Lo que conservaste', value: x.totals.incomes > 0 ? `${Math.round(((x.totals.incomes - x.totals.spending) / x.totals.incomes) * 100)}%` : '—', detail: 'de tus ingresos' },
-    { label: 'Gasto promedio por mes', value: cell(x.months.length ? x.totals.spending / x.months.length : 0), detail: `${x.months.length} ${x.months.length === 1 ? 'mes' : 'meses'}` },
-    { label: 'Lo que más pesa', value: top?.name ?? '—', detail: top ? cell(top.value) : 'sin gastos' },
-    { label: 'Gasto más grande', value: x.biggest[0] ? cell(Math.abs(getPrimaryAmount(x.biggest[0]))) : '—', detail: x.biggest[0]?.name ?? 'sin gastos' },
+    { label: t("mobile.movimientos"), value: String(x.totals.count), detail: 'en el periodo' },
+    { label: t("mobile.lo.que.conservaste"), value: x.totals.incomes > 0 ? `${Math.round(((x.totals.incomes - x.totals.spending) / x.totals.incomes) * 100)}%` : '—', detail: 'de tus ingresos' },
+    { label: t("mobile.gasto.promedio.por.mes"), value: cell(x.months.length ? x.totals.spending / x.months.length : 0), detail: `${x.months.length} ${x.months.length === 1 ? 'mes' : 'meses'}` },
+    { label: t("mobile.lo.que.mas.pesa"), value: top?.name ?? '—', detail: top ? cell(top.value) : 'sin gastos' },
+    { label: t("mobile.gasto.mas.grande"), value: x.biggest[0] ? cell(Math.abs(getPrimaryAmount(x.biggest[0]))) : '—', detail: x.biggest[0]?.name ?? 'sin gastos' },
   ];
 }
 
@@ -70,6 +72,7 @@ function periodFacts(x: PeriodSummary<TransactionData>, cell: (value: number) =>
 // optionally compare it with another (the same stretch a year earlier by default), and see the totals, the
 // months side by side, the categories and the biggest expenses of each.
 export default function HistoryScreen() {
+  const t = useT();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const historyStatus = useSelector((state: RootState) => state.transacctionsReducer.historyStatus);
   const currency = usePrimaryCurrency();
@@ -103,8 +106,8 @@ export default function HistoryScreen() {
   const cell = (value: number) => formatMoneyMajor(value, currency);
 
   return (
-    <Screen title="Historial" subtitle={labelA} backLabel="Más" onBack={() => router.back()} titleInfo={HISTORY_INFO}>
-      <Card title="Periodo" info={APP_INFO.periodo}>
+    <Screen title={t("mobile.historial")} subtitle={labelA} backLabel="Más" onBack={() => router.back()} titleInfo={HISTORY_INFO}>
+      <Card title={t("mobile.periodo")} info={APP_INFO.periodo}>
         {tablet ? (
           <PeriodBar
             preset={preset}
@@ -124,50 +127,50 @@ export default function HistoryScreen() {
           {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
           {preset === 'custom' && (
             <View className="gap-3">
-              <DateField label="Desde" value={from} onChange={setFrom} />
-              <DateField label="Hasta" value={to} onChange={setTo} />
+              <DateField label={t("mobile.desde")} value={from} onChange={setFrom} />
+              <DateField label={t("mobile.hasta")} value={to} onChange={setTo} />
             </View>
           )}
           </>
         )}
         <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
-          <Text className="flex-1 font-inter-medium text-base text-gf-text">Comparar con otro periodo</Text>
-          <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel="Comparar con otro periodo" />
+          <Text className="flex-1 font-inter-medium text-base text-gf-text">{t("mobile.comparar.con.otro.periodo")}</Text>
+          <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel={t("mobile.comparar.con.otro.periodo")} />
         </View>
         {compareOn && (
           <>
             <ChipPicker items={COMPARE_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={comparePreset} onChange={(id) => setComparePreset(id as ComparePreset)} moreAfter={99} />
             {comparePreset === 'custom' && (
               <View className="gap-3">
-                <DateField label="Comparar desde" value={compareFrom} onChange={setCompareFrom} />
-                <DateField label="Comparar hasta" value={compareTo} onChange={setCompareTo} />
+                <DateField label={t("mobile.comparar.desde")} value={compareFrom} onChange={setCompareFrom} />
+                <DateField label={t("mobile.comparar.hasta")} value={compareTo} onChange={setCompareTo} />
               </View>
             )}
-            <Text className="font-inter text-sm text-gf-text-muted">Se compara con {labelB}.</Text>
+            <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.se.compara.con.p1", { p1: labelB })}</Text>
           </>
         )}
-        {partial && <Text className="font-inter text-sm text-gf-text-muted">Todavía llegan movimientos antiguos; las cifras de periodos viejos pueden crecer.</Text>}
+        {partial && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.llegan.movimientos.antiguos.las")}</Text>}
       </Card>
 
       {tablet ? (
         <View className="flex-row items-stretch gap-4">
           <PairedColumn>
-      <Card title="Resumen" info={APP_INFO.resumen}>
+      <Card title={t("mobile.resumen")} info={APP_INFO.resumen}>
         {[
-          { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
-          { label: 'Gastos', av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
-          { label: 'Balance', av: a.totals.balance, bv: b?.totals.balance, color: colors.text, invert: false },
+          { label: t("mobile.ingresos"), av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
+          { label: t("mobile.gastos"), av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
+          { label: t("mobile.balance"), av: a.totals.balance, bv: b?.totals.balance, color: colors.text, invert: false },
         ].map((row) => (
           <View key={row.label} className={tablet ? 'gap-2 py-2' : 'gap-1'}>
             <Text className={`font-inter-medium text-gf-text-muted ${tablet ? 'text-lg' : 'text-sm'}`}>{row.label}</Text>
             <View className="flex-row gap-3">
               <View className="flex-1">
-                {b && <Text className="font-inter text-xs text-gf-text-muted">Periodo</Text>}
+                {b && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.periodo")}</Text>}
                 <Text className={`font-inter-bold ${tablet ? 'text-4xl' : 'text-lg'}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: row.color }}>{cell(row.av)}</Text>
               </View>
               {b && row.bv !== undefined && (
                 <View className="flex-1">
-                  <Text className="font-inter text-xs text-gf-text-muted">Comparado</Text>
+                  <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.comparado")}</Text>
                   <Text className={`font-inter-bold ${tablet ? 'text-4xl' : 'text-lg'}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: row.color, opacity: 0.5 }}>{cell(row.bv)}</Text>
                   <Delta current={row.av} previous={row.bv} invert={row.invert} />
                 </View>
@@ -178,14 +181,14 @@ export default function HistoryScreen() {
       </Card>
           </PairedColumn>
           <PairedColumn>
-      <Card title="Datos del periodo" info={APP_INFO.datos_del_periodo}>
+      <Card title={t("mobile.datos.del.periodo")} info={APP_INFO.datos_del_periodo}>
         <View className="flex-row flex-wrap gap-3">
-          {periodFacts(a, cell).map((fact, index) => ({ ...fact, versus: b ? periodFacts(b, cell)[index].value : null })).map((tile) => (
+          {periodFacts(t, a, cell).map((fact, index) => ({ ...fact, versus: b ? periodFacts(t, b, cell)[index].value : null })).map((tile) => (
             <View key={tile.label} className="gap-1 rounded-2xl p-4" style={{ flexBasis: '47%', flexGrow: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
               <Text className="font-inter text-sm text-gf-text-muted">{tile.label}</Text>
               <Text className="font-inter-bold text-xl text-gf-text" numberOfLines={1} adjustsFontSizeToFit>{tile.value}</Text>
               <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>{tile.detail}</Text>
-              {tile.versus !== null && <Text className="font-inter-semibold text-sm text-gf-text-muted" numberOfLines={1}>vs {tile.versus} (comparado)</Text>}
+              {tile.versus !== null && <Text className="font-inter-semibold text-sm text-gf-text-muted" numberOfLines={1}>{t("mobile.vs.p1.comparado", { p1: tile.versus })}</Text>}
             </View>
           ))}
         </View>
@@ -193,22 +196,22 @@ export default function HistoryScreen() {
           </PairedColumn>
         </View>
       ) : (
-      <Card title="Resumen" info={APP_INFO.resumen_2}>
+      <Card title={t("mobile.resumen")} info={APP_INFO.resumen_2}>
         {[
-          { label: 'Ingresos', av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
-          { label: 'Gastos', av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
-          { label: 'Balance', av: a.totals.balance, bv: b?.totals.balance, color: colors.text, invert: false },
+          { label: t("mobile.ingresos"), av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
+          { label: t("mobile.gastos"), av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
+          { label: t("mobile.balance"), av: a.totals.balance, bv: b?.totals.balance, color: colors.text, invert: false },
         ].map((row) => (
           <View key={row.label} className="gap-1">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{row.label}</Text>
             <View className="flex-row gap-3">
               <View className="flex-1">
-                {b && <Text className="font-inter text-xs text-gf-text-muted">Periodo</Text>}
+                {b && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.periodo")}</Text>}
                 <Text className="font-inter-bold text-lg" numberOfLines={1} adjustsFontSizeToFit style={{ color: row.color }}>{cell(row.av)}</Text>
               </View>
               {b && row.bv !== undefined && (
                 <View className="flex-1">
-                  <Text className="font-inter text-xs text-gf-text-muted">Comparado</Text>
+                  <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.comparado")}</Text>
                   <Text className={`font-inter-bold ${tablet ? 'text-4xl' : 'text-lg'}`} numberOfLines={1} adjustsFontSizeToFit style={{ color: row.color, opacity: 0.5 }}>{cell(row.bv)}</Text>
                   <Delta current={row.av} previous={row.bv} invert={row.invert} />
                 </View>
@@ -226,7 +229,7 @@ export default function HistoryScreen() {
           <PairedColumn>
       <OwnPeriodCategories
         kind="spending"
-        title="Gastos por categoría"
+        title={t("mobile.gastos.por.categoria")}
         info={APP_INFO.gastos_por_categor_a}
         movements={transactions}
         summary={a}
@@ -237,7 +240,7 @@ export default function HistoryScreen() {
           <PairedColumn>
       <OwnPeriodCategories
         kind="incomes"
-        title="Ingresos por categoría"
+        title={t("mobile.ingresos.por.categoria")}
         info={APP_INFO.ingresos_por_categor_a}
         movements={transactions}
         summary={a}
@@ -250,7 +253,7 @@ export default function HistoryScreen() {
         <>
       <OwnPeriodCategories
         kind="spending"
-        title="Gastos por categoría"
+        title={t("mobile.gastos.por.categoria")}
         info={APP_INFO.gastos_por_categor_a_2}
         movements={transactions}
         summary={a}
@@ -260,7 +263,7 @@ export default function HistoryScreen() {
 
       <OwnPeriodCategories
         kind="incomes"
-        title="Ingresos por categoría"
+        title={t("mobile.ingresos.por.categoria")}
         info={APP_INFO.ingresos_por_categor_a_2}
         movements={transactions}
         summary={a}

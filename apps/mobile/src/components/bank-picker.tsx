@@ -6,10 +6,12 @@ import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
 import { normalizeText } from '@gastify/core/search/normalizeText';
 import { banksForCountry, type Bank } from '@gastify/core/banks/banks';
+import { useT } from "@/i18n/client";
 
 // The banks of a country as small tiles, the main ones first and the rest below. Each group is one row that scrolls sideways,
 // with a button that opens all of its banks at once. Tapping the chosen one again clears it (the bank is optional).
 export function BankPicker({ country, value, onChange }: { country: string; value: string | null; onChange: (id: string | null) => void }) {
+  const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [query, setQuery] = useState('');
   const [openAll, setOpenAll] = useState<Record<string, boolean>>({});
@@ -57,8 +59,8 @@ export function BankPicker({ country, value, onChange }: { country: string; valu
   };
   return (
     <View className="gap-4">
-      <TextField label="Buscar banco" value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder="Por ejemplo, Nu o BBVA" />
-      {main.length === 0 && other.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">Ningún banco coincide con «{query}».</Text>}
+      <TextField label={t("mobile.buscar.banco")} value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder={t("mobile.por.ejemplo.nu.o.bbva")} />
+      {main.length === 0 && other.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.ningun.banco.coincide.con.p1", { p1: query })}</Text>}
       {group('main', 'Principales', main)}
       {group('other', 'Otros bancos y digitales', other)}
     </View>

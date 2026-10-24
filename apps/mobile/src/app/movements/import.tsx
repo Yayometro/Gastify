@@ -17,10 +17,12 @@ import { shareExcelTemplate, uploadExcelTemplate } from '@/lib/export-file';
 import { messageOf } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { APP_INFO } from '@gastify/core/info/appInfo';
+import { useT } from "@/i18n/client";
 
 // Import movements from Excel, as the web does: download the template, fill it in and upload it; the server reads it
 // and creates the movements (categories, tags and accounts are matched with the ones the person already has).
 export default function ImportScreen() {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   const { data: session } = authClient.useSession();
@@ -70,14 +72,14 @@ export default function ImportScreen() {
   };
 
   return (
-    <Screen title="Importar desde Excel" backLabel="Movimientos" onBack={() => router.back()}>
-      <Card title="1. Descarga la plantilla" info={APP_INFO.plantilla}>
-        <Text className="font-inter text-sm text-gf-text-muted">Se guarda como archivo Excel y se abre el menú para enviarla a tu computadora, a Archivos o a tu app de hojas de cálculo.</Text>
-        <OutlineButton label="Descargar plantilla" icon={<Ionicons name="download-outline" size={20} color="#7e22ce" />} onPress={template} loading={busy === 'template'} disabled={busy !== null || !email} />
+    <Screen title={t("mobile.importar.desde.excel")} backLabel="Movimientos" onBack={() => router.back()}>
+      <Card title={t("mobile.1.descarga.la.plantilla")} info={APP_INFO.plantilla}>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.se.guarda.como.archivo.excel")}</Text>
+        <OutlineButton label={t("mobile.descargar.plantilla")} icon={<Ionicons name="download-outline" size={20} color="#7e22ce" />} onPress={template} loading={busy === 'template'} disabled={busy !== null || !email} />
       </Card>
 
-      <Card title="2. Sube tu archivo">
-        <Text className="font-inter text-sm text-gf-text-muted">Elige el archivo .xlsx ya lleno. Los movimientos se crean al instante y puedes verlos en la lista.</Text>
+      <Card title={t("mobile.2.sube.tu.archivo")}>
+        <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.elige.el.archivo.xlsx.ya")}</Text>
         <GradientButton label={busy === 'upload' ? 'Importando…' : 'Elegir archivo e importar'} onPress={upload} loading={busy === 'upload'} disabled={busy !== null || !email} />
         <FormError message={error} />
         {result && (
@@ -87,7 +89,7 @@ export default function ImportScreen() {
             </Text>
             {result.uncategorized > 0 && (
               <Text className="font-inter text-sm text-gf-text-muted">
-                {result.uncategorized} quedaron sin categoría: el botón ✨ (Tools) los categoriza con tus reglas.
+                {t("mobile.p1.quedaron.sin.categoria.el", { p1: result.uncategorized })}
               </Text>
             )}
           </View>
