@@ -10,6 +10,7 @@ import type {
   WalletAnalyzerChampionMonthCategory,
   WalletAnalyzerChampionMonthSubcategory,
 } from "./WalletAnalyzerView";
+import { useT } from "@/i18n/client";
 
 const TITLES: Record<"transaction" | "category" | "subCategory", string> = {
   transaction: "Transacción más grande por mes",
@@ -49,6 +50,7 @@ function MonthlyChampionsModal({
   onSelectMonth,
   walletPrimaryCurrency,
 }: MonthlyChampionsModalProps): React.JSX.Element | null {
+  const t = useT();
   if (!kind) return null;
 
   const rows: MonthlyChampionsRow[] = (months || [])
@@ -115,11 +117,10 @@ function MonthlyChampionsModal({
               <p className="text-[13px] font-semibold text-gf-text truncate">{champion.name}</p>
               {kind !== "transaction" && (
                 <p className="text-[11px] text-gf-text-muted">
-                  {Math.round(
+                  {t("analyzer.percentOfYear", { p1: Math.round(
                     (champion as WalletAnalyzerChampionMonthCategory | WalletAnalyzerChampionMonthSubcategory)
                       .pctOfWindowTotal as number
-                  )}
-                  % del total de los 12 meses
+                  ) })}
                 </p>
               )}
             </div>

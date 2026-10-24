@@ -45,6 +45,7 @@ import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -147,6 +148,7 @@ export interface HistoricalWalletAnalyzerProps {
 // buildSpendPatternAnalysis) so both Wallet Analyzers speak the exact same
 // visual language without a second copy of any of them.
 function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps): React.JSX.Element {
+  const tr = useT();
   const { timePeriod, comparePeriod, compareEnabled, labelA, labelB, timePeriodsForSelecter } = periodState;
   const [budgets, setBudgets] = useState<BudgetData[]>([]);
   const [topN, setTopN] = useState<number>(6);
@@ -263,7 +265,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
   const periodFilters = (
     <div className="flex flex-col items-center gap-1">
-      <h2 className="text-2xl text-center font-bold text-gf-text">Wallet Analyzer</h2>
+      <h2 className="text-2xl text-center font-bold text-gf-text">{tr("analyzer.title")}</h2>
       <TypedPeriodFiltersWithCompare {...periodState} />
     </div>
   );
@@ -273,7 +275,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
       <div className="w-full flex flex-col gap-4">
         {periodFilters}
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 text-center">
-          <p className="text-xs text-gf-text-muted">Cargando Wallet Analyzer…</p>
+          <p className="text-xs text-gf-text-muted">{tr("analyzer.loading")}</p>
         </div>
       </div>
     );
@@ -354,7 +356,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
         walletPrimaryCurrency={walletPrimaryCurrency}
         transactions={transactions}
         currentRange={currentRange}
-        title="Lo más destacado del periodo"
+        title={tr("analyzer.highlights")}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -362,23 +364,23 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
         <div className="md:col-span-2 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
           <p className="text-[15px] font-extrabold text-gf-text">
             {labelA} <span className="text-[11px] font-normal text-gf-text-muted">({formatShortDate(currentRange.start)} - {formatShortDate(currentRange.end)})</span>
-            {" "}vs. periodo anterior equivalente{" "}
+            {" "}{tr("analyzer.vsPrevious")}{" "}
             <InfoTip info={APP_INFO.vs_el_mes_anterior_2} />
             <span className="text-[11px] font-normal text-gf-text-muted">({formatShortDate(previousRange.start)} - {formatShortDate(previousRange.end)})</span>
           </p>
-          <p className="text-xs text-gf-text-muted mb-3">Mismo número de días, justo antes de este periodo</p>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.previousHelp")}</p>
           <table className="w-full text-[13px]">
             <thead>
               <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
                 <th className="text-left font-bold pb-2"><InfoTip info={APP_INFO.totales} /></th>
-                <th className="text-right font-bold pb-2 text-gf-text-muted">Anterior</th>
+                <th className="text-right font-bold pb-2 text-gf-text-muted">{tr("analyzer.previous")}</th>
                 <th className="text-right font-bold pb-2">{labelA}</th>
-                <th className="text-right font-bold pb-2">Cambio</th>
+                <th className="text-right font-bold pb-2">{tr("analyzer.change")}</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="py-2 text-gf-text-muted">Ingresos</td>
+                <td className="py-2 text-gf-text-muted">{tr("analyzer.incomes")}</td>
                 <td className="py-2 text-right text-gf-text-muted">{formatMoneyMajor(previousTotals.income, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right font-semibold text-gf-text">{formatMoneyMajor(currentTotals.income, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right">
@@ -386,7 +388,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Gastos</td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">{tr("analyzer.bills")}</td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{formatMoneyMajor(previousTotals.expense, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">{formatMoneyMajor(currentTotals.expense, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right border-t border-gf-border">
@@ -394,7 +396,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Balance <InfoTip info={APP_INFO.resumen_2} /></td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">{tr("analyzer.balance")} <InfoTip info={APP_INFO.resumen_2} /></td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{formatMoneyMajor(previousTotals.balance, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">{formatMoneyMajor(currentTotals.balance, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right border-t border-gf-border">
@@ -402,7 +404,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Tasa de ahorro <InfoTip info={APP_INFO.datos_del_periodo} /></td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">{tr("analyzer.savingsRate")} <InfoTip info={APP_INFO.datos_del_periodo} /></td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{Math.round(previousTotals.savingsRate * 100)}%</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">{Math.round(currentTotals.savingsRate * 100)}%</td>
                 <td className="py-2 text-right border-t border-gf-border">
@@ -410,7 +412,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Transacciones</td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">{tr("analyzer.transactions")}</td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{previousTotals.transactionCount}</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">{currentTotals.transactionCount}</td>
                 <td className="py-2 text-right border-t border-gf-border">
@@ -429,14 +431,14 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
         {/* Trend */}
         <div className="md:col-span-3 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <span className="inline-flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Tendencia</p><InfoTip info={APP_INFO.tendencia} /></span>
-          <p className="text-xs text-gf-text-muted mb-3">Ingresos vs. gastos por periodo anterior equivalente</p>
+          <span className="inline-flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.trend")}</p><InfoTip info={APP_INFO.tendencia} /></span>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.trend.vsPrevious")}</p>
           <div
             onClick={() =>
               setActiveInsight({
                 icon: "📅",
                 tone: "info",
-                title: "Promedio por periodo",
+                title: tr("analyzer.avgPerPeriod"),
                 type: "monthly_average",
                 data: { avgIncome: monthlyAverages.avgIncome, avgExpense: monthlyAverages.avgExpense, avgTransactionCount: monthlyAverages.avgTransactionCount, trend },
               })
@@ -448,7 +450,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                 setActiveInsight({
                   icon: "📅",
                   tone: "info",
-                  title: "Promedio por periodo",
+                  title: tr("analyzer.avgPerPeriod"),
                   type: "monthly_average",
                   data: { avgIncome: monthlyAverages.avgIncome, avgExpense: monthlyAverages.avgExpense, avgTransactionCount: monthlyAverages.avgTransactionCount, trend },
                 });
@@ -457,15 +459,15 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
             className="grid grid-cols-3 gap-3 mb-4 cursor-pointer group"
           >
             <div className="rounded-xl bg-green-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <div className="flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">Promedio · Ingresos</p><InfoTip info={APP_INFO.promedio_mensual(monthlyAverages.monthsCount ?? 6)} /></div>
+              <div className="flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">{tr("analyzer.avg.incomes")}</p><InfoTip info={APP_INFO.promedio_mensual(monthlyAverages.monthsCount ?? 6)} /></div>
               <p className="text-lg font-extrabold text-green-400">{formatMoneyMajor(monthlyAverages.avgIncome, walletPrimaryCurrency)}</p>
             </div>
             <div className="rounded-xl bg-red-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-red-400/70">Promedio · Gastos</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-red-400/70">{tr("analyzer.avg.bills")}</p>
               <p className="text-lg font-extrabold text-red-400">{formatMoneyMajor(monthlyAverages.avgExpense, walletPrimaryCurrency)}</p>
             </div>
             <div className="rounded-xl bg-gf-accent-soft-bg px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300/70">Promedio · Transacciones</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300/70">{tr("analyzer.avg.transactions")}</p>
               <p className="text-lg font-extrabold text-purple-300">{Math.round(monthlyAverages.avgTransactionCount)}</p>
             </div>
           </div>
@@ -479,7 +481,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
       {/* Item-count control */}
       <div className="flex items-center justify-between px-1 flex-wrap gap-2">
-        <p className="text-xs font-semibold text-gf-text-muted">Elementos en Top categorías y Top transacciones</p>
+        <p className="text-xs font-semibold text-gf-text-muted">{tr("analyzer.topItems")}</p>
         <div className="flex items-center gap-1 bg-gf-surface border border-gf-border rounded-full p-1 shadow-sm">
           {[3, 6, 12, 24].map((n) => (
             <button
@@ -499,10 +501,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
       {/* Top categories - previous equivalent period left, current right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <div className="flex items-center gap-1.5"><p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías</p><InfoTip info={APP_INFO.analyzer(topN)} /></div>
+          <div className="flex items-center gap-1.5"><p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topCategories", { p1: topN })}</p><InfoTip info={APP_INFO.analyzer(topN)} /></div>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousPeriodLabel}</p>
           {topCategoriesBillsPrevious.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Sin gastos en el periodo anterior.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.noBillsPrevious")}</p>
           ) : (
             topCategoriesBillsPrevious.map((c, i) => (
               <RankRow key={c.name} index={i} item={c} currency={walletPrimaryCurrency} onClick={() => openCategoryModal(c, true, previousRange)} />
@@ -510,10 +512,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           )}
         </div>
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías</p>
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topCategories", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{labelA}</p>
           {topCategoriesBills.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Sin gastos en este periodo.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.noBills")}</p>
           ) : (
             topCategoriesBills.map((c, i) => (
               <RankRow
@@ -531,10 +533,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
       {/* Top transactions - previous equivalent period left, current right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} transacciones</p>
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topTransactions", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousPeriodLabel}</p>
           {topTransactionsBills.previous.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Sin transacciones en el periodo anterior.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.noTxPrevious")}</p>
           ) : (
             topTransactionsBills.previous.map((t, i) => (
               <RankRow
@@ -549,10 +551,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           )}
         </div>
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} transacciones</p>
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topTransactions", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{labelA}</p>
           {topTransactionsBills.current.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Sin transacciones en este periodo.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.noTx")}</p>
           ) : (
             topTransactionsBills.current.map((t, i) => (
               <RankRow
@@ -570,10 +572,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
       {/* Budgets */}
       <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-        <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Presupuestos · cumplimiento y rachas</p><InfoTip info={APP_INFO.c_mo_leer_esto} /></div>
-        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">Qué tan cerca estuviste de tus límites mensuales - toca una fila para ver el detalle</p><InfoTip info={APP_INFO.cumplimiento_del_presupuesto} className="mt-px" /></div>
+        <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.budgets.title")}</p><InfoTip info={APP_INFO.c_mo_leer_esto} /></div>
+        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.budgets.help")}</p><InfoTip info={APP_INFO.cumplimiento_del_presupuesto} className="mt-px" /></div>
         {budgetRows.length === 0 ? (
-          <p className="text-xs text-gf-text-muted">No tienes presupuestos de gasto configurados.</p>
+          <p className="text-xs text-gf-text-muted">{tr("analyzer.budgets.none")}</p>
         ) : (
           <div className="flex flex-col">
             {budgetRows.map((b) => {
@@ -615,8 +617,8 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
       {/* Biggest spend patterns */}
       {biggestSpendPatterns && (
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <span className="inline-flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Grandes gastos</p><InfoTip info={APP_INFO.grandes_gastos} /></span>
-          <p className="text-xs text-gf-text-muted mb-3">Dónde está tu gasto más grande en este periodo, y si hay un patrón detrás</p>
+          <span className="inline-flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.big.title")}</p><InfoTip info={APP_INFO.grandes_gastos} /></span>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.big.help")}</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
             <div
               onClick={() => setChampionsModalKind("transaction")}
@@ -625,7 +627,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setChampionsModalKind("transaction"); }}
               className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
             >
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Transacción más grande</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">{tr("analyzer.big.transaction")}</p>
               <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestTransaction.name}</p>
               <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestTransaction.amount, walletPrimaryCurrency)}</p>
               <p className="text-[11px] text-gf-text-muted truncate">
@@ -644,10 +646,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setChampionsModalKind("category"); }}
               className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
             >
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Categoría con más gasto</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">{tr("analyzer.big.category")}</p>
               <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestCategory.name}</p>
               <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestCategory.total, walletPrimaryCurrency)}</p>
-              <p className="text-[11px] text-gf-text-muted">{Math.round(biggestSpendPatterns.analysis.categoryShareOfTotal)}% de tu gasto total</p>
+              <p className="text-[11px] text-gf-text-muted">{tr("analyzer.big.percentOfTotal", { p1: Math.round(biggestSpendPatterns.analysis.categoryShareOfTotal) })}</p>
             </div>
 
             {biggestSpendPatterns.biggestSubcategory && (
@@ -658,17 +660,17 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setChampionsModalKind("subCategory"); }}
                 className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
               >
-                <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Subcategoría con más gasto</p>
+                <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">{tr("analyzer.big.subcategory")}</p>
                 <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestSubcategory.name}</p>
                 <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestSubcategory.total, walletPrimaryCurrency)}</p>
                 <p className="text-[11px] text-gf-text-muted">{biggestSpendPatterns.biggestSubcategory.categoryName}</p>
               </div>
             )}
           </div>
-          <div className="-mt-2 mb-2 flex items-center gap-1"><p className="text-[11px] text-gf-text-muted">Toca una tarjeta para ver el detalle mes por mes</p><InfoTip info={APP_INFO.mes_a_mes_2} /></div>
+          <div className="-mt-2 mb-2 flex items-center gap-1"><p className="text-[11px] text-gf-text-muted">{tr("analyzer.tapCard")}</p><InfoTip info={APP_INFO.mes_a_mes_2} /></div>
 
           <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
-            <div className="mb-1.5 flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-purple-300">Análisis</p><InfoTip info={APP_INFO.de_d_nde_sale_este_an_lisis} /></div>
+            <div className="mb-1.5 flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.analysis")}</p><InfoTip info={APP_INFO.de_d_nde_sale_este_an_lisis} /></div>
             <ul className="space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
               {buildSpendPatternAnalysis(biggestSpendPatterns).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
@@ -686,8 +688,8 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           single-month window since there'd be nothing to compare. */}
       {monthlyChampions && monthlyChampions.months.length > 1 && (
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Categoría líder por mes</p><InfoTip info={APP_INFO.l_deres_por_mes} /></div>
-          <p className="text-xs text-gf-text-muted mb-3">Qué categoría concentró más gasto, mes a mes, dentro de este periodo</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.leaderByMonth")}</p><InfoTip info={APP_INFO.l_deres_por_mes} /></div>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.leaderByMonth.help")}</p>
           <div className="flex flex-col">
             {monthlyChampions.months.map((m) => (
               <div
@@ -712,7 +714,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                     <span className="text-[12.5px] font-bold text-gf-text shrink-0">{formatMoneyMajor(m.biggestCategory.total, walletPrimaryCurrency)}</span>
                   </>
                 ) : (
-                  <p className="flex-1 text-[12px] text-gf-text-muted">Sin gastos ese mes</p>
+                  <p className="flex-1 text-[12px] text-gf-text-muted">{tr("analyzer.noBillsMonth")}</p>
                 )}
               </div>
             ))}
@@ -726,10 +728,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           non-primary currency, and how that's moved). */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p><InfoTip info={APP_INFO.suscripciones_recurrentes} /></div>
-          <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">Detectadas por nombre y frecuencia mensual</p><InfoTip info={APP_INFO.pagos_recurrentes} className="mt-px" /></div>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.subscriptions")}</p><InfoTip info={APP_INFO.suscripciones_recurrentes} /></div>
+          <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.subscriptions.help")}</p><InfoTip info={APP_INFO.pagos_recurrentes} className="mt-px" /></div>
           {subscriptions.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">No se detectaron suscripciones recurrentes.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.subscriptions.none")}</p>
           ) : (
             <div className="flex flex-col">
               {subscriptions.map((s) => (
@@ -750,9 +752,9 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                     <p className="text-[12.5px] font-semibold text-gf-text truncate">{s.name}</p>
                     <p className="text-[10.5px] text-gf-text-muted">{s.categoryName}</p>
                   </div>
-                  {s.isNew && <span className="text-[10px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>}
+                  {s.isNew && <span className="text-[10px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">{tr("analyzer.badge.new")}</span>}
                   {s.possibleDuplicateInMonth && (
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full">posible duplicado</span>
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full">{tr("analyzer.badge.duplicate")}</span>
                   )}
                   <span className="text-[12.5px] font-bold text-gf-text shrink-0">{formatMoneyMajor(s.amount, walletPrimaryCurrency)}</span>
                 </div>
@@ -762,20 +764,20 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
         </div>
 
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Exposición multi-moneda</p><InfoTip info={APP_INFO.exposici_n_multimoneda} /></div>
-          <p className="text-xs text-gf-text-muted mb-3">Valor de tus saldos en otras monedas</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.fx.title")}</p><InfoTip info={APP_INFO.exposici_n_multimoneda} /></div>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.fx.help")}</p>
           {fxExposure.loading ? (
-            <p className="text-xs text-gf-text-muted">Consultando tipo de cambio…</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.fx.loading")}</p>
           ) : fxExposure.rows.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Todas tus cuentas están en {walletPrimaryCurrency}.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.fx.allSame", { p1: walletPrimaryCurrency })}</p>
           ) : (
             <table className="w-full text-[13px]">
               <thead>
                 <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
-                  <th className="text-left font-bold pb-2">Moneda</th>
-                  <th className="text-right font-bold pb-2">Saldo</th>
-                  <th className="text-right font-bold pb-2">En {walletPrimaryCurrency}</th>
-                  <th className="text-right font-bold pb-2">Cambio</th>
+                  <th className="text-left font-bold pb-2">{tr("analyzer.fx.currency")}</th>
+                  <th className="text-right font-bold pb-2">{tr("analyzer.fx.balance")}</th>
+                  <th className="text-right font-bold pb-2">{tr("analyzer.fx.inCurrency", { p1: walletPrimaryCurrency })}</th>
+                  <th className="text-right font-bold pb-2">{tr("analyzer.change")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -797,26 +799,25 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
 
       {/* Pace */}
       <div
-        onClick={() => setActiveInsight({ icon: "🏃", tone: "info", title: "Ritmo de gasto", type: "spending_pace", data: pace })}
+        onClick={() => setActiveInsight({ icon: "🏃", tone: "info", title: tr("analyzer.pace.title"), type: "spending_pace", data: pace })}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveInsight({ icon: "🏃", tone: "info", title: "Ritmo de gasto", type: "spending_pace", data: pace }); }}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveInsight({ icon: "🏃", tone: "info", title: tr("analyzer.pace.title"), type: "spending_pace", data: pace }); }}
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">Ritmo de gasto</p><InfoTip info={APP_INFO.ritmo_de_gasto_2} /></div>
-          <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.pace.title")}</p><InfoTip info={APP_INFO.ritmo_de_gasto_2} /></div>
+          <span className="text-[11px] font-semibold text-purple-600">{tr("analyzer.seeDetail")}</span>
         </div>
-        <p className="text-xs text-gf-text-muted mb-3">Comparado con tu propio promedio a esta misma altura de periodos anteriores</p>
+        <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.pace.help")}</p>
         <div className="h-2.5 rounded-full bg-gf-surface-2 overflow-hidden">
           <div className="h-full rounded-full bg-purple-500" style={{ width: `${pacePct}%` }} />
         </div>
         <p className="text-xs text-gf-text-muted mt-2">
-          Llevas gastado {formatMoneyMajor(pace.spentSoFar, walletPrimaryCurrency)} al día {pace.dayOfMonth} de este periodo
+          {tr("analyzer.pace.spent")} {formatMoneyMajor(pace.spentSoFar, walletPrimaryCurrency)} {tr("analyzer.pace.today")} {pace.dayOfMonth} {tr("analyzer.pace.ofPeriod")}
           {pace.deltaPct !== null && (
             <>
-              {" — "}
-              {pace.deltaPct > 0 ? "más" : "menos"} que tu promedio de {formatMoneyMajor(pace.avgPaceForSameDay, walletPrimaryCurrency)} para esta misma altura en periodos anteriores ({Math.abs(Math.round(pace.deltaPct))}%).
+              {tr("analyzer.pace.vsAverage", { p1: pace.deltaPct > 0 ? "más" : "menos", p2: formatMoneyMajor(pace.avgPaceForSameDay, walletPrimaryCurrency), p3: Math.abs(Math.round(pace.deltaPct)) })}
             </>
           )}
         </p>
@@ -831,10 +832,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <p className="text-[15px] font-extrabold text-gf-text">Patrones por día de la semana</p>
-          <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
+          <p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.weekday.title")}</p>
+          <span className="text-[11px] font-semibold text-purple-600">{tr("analyzer.seeDetail")}</span>
         </div>
-        <p className="text-xs text-gf-text-muted mb-3">Promedio de gasto por día, en este periodo</p>
+        <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.weekday.help")}</p>
         <WalletAnalyzerWeekdayChart days={weekdaySpending.days} walletPrimaryCurrency={walletPrimaryCurrency} />
         <p className="text-xs text-gf-text-muted mt-3">{weekdaySpending.insight}</p>
       </div>
@@ -843,16 +844,16 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
       {compareEnabled && comparison && (
         <>
           <div className="flex flex-col items-center gap-1 pt-2">
-            <h2 className="text-2xl text-center font-bold text-gf-text">Comparativo entre periodos</h2>
-            <p className="text-xs text-gf-text-muted text-center">{labelA} vs. {labelB}</p>
+            <h2 className="text-2xl text-center font-bold text-gf-text">{tr("analyzer.compare.title")}</h2>
+            <p className="text-xs text-gf-text-muted text-center">{tr("analyzer.compare.vs", { p1: labelA, p2: labelB })}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías · gastos</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.compare.topBills", { p1: topN })}</p>
               <p className="text-[15px] font-extrabold text-gf-text mb-2">{labelB} → {labelA}</p>
               {comparison.categoriesBills.length === 0 ? (
-                <p className="text-xs text-gf-text-muted">Sin gastos en estos periodos.</p>
+                <p className="text-xs text-gf-text-muted">{tr("analyzer.compare.noBills")}</p>
               ) : (
                 comparison.categoriesBills.map((c, i) => (
                   <CategoryCompareRow key={c.name} index={i} item={c} currency={walletPrimaryCurrency} onClick={() => openCategoryModal(c, true, currentRange)} />
@@ -860,10 +861,10 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
               )}
             </div>
             <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías · ingresos</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.compare.topIncomes", { p1: topN })}</p>
               <p className="text-[15px] font-extrabold text-gf-text mb-2">{labelB} → {labelA}</p>
               {comparison.categoriesIncomes.length === 0 ? (
-                <p className="text-xs text-gf-text-muted">Sin ingresos en estos periodos.</p>
+                <p className="text-xs text-gf-text-muted">{tr("analyzer.compare.noIncomes")}</p>
               ) : (
                 comparison.categoriesIncomes.map((c, i) => (
                   <CategoryCompareRow key={c.name} index={i} item={c} currency={walletPrimaryCurrency} onClick={() => openCategoryModal(c, false, currentRange)} />
@@ -873,12 +874,12 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           </div>
 
           <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-            <p className="text-[15px] font-extrabold text-gf-text">Presupuestos · cambios entre periodos</p>
+            <p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.budgetsChange.title")}</p>
             <p className="text-xs text-gf-text-muted mb-3">
-              Gasto acumulado contra el límite de cada presupuesto ({labelB} → {labelA}) - toca una fila para ver el detalle mes a mes
+              {tr("analyzer.budgetsChange.help", { p1: labelB, p2: labelA })}
             </p>
             {comparison.budgetChanges.length === 0 ? (
-              <p className="text-xs text-gf-text-muted">No hay presupuestos con datos en estos periodos.</p>
+              <p className="text-xs text-gf-text-muted">{tr("analyzer.budgetsChange.none")}</p>
             ) : (
               <div className="flex flex-col">
                 {comparison.budgetChanges.map((row) => {

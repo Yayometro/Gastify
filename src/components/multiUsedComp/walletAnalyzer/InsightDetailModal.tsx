@@ -3,6 +3,7 @@ import React from "react";
 import { Modal } from "antd";
 import dayjs from "dayjs";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 interface MonthRowProps {
   label: React.ReactNode;
@@ -157,6 +158,7 @@ export interface InsightDetailModalProps {
 // insight-shaped objects built at click time from a budget row or the
 // spending-pace card - same body renderers, different `data`.
 function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: InsightDetailModalProps) {
+  const t = useT();
   if (!insight) return null;
   const { type, data, title, icon } = insight;
 
@@ -167,8 +169,8 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     const d = data as BudgetInsightDetailData;
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
-        Presupuesto mensual de {formatMoneyMajor(d.limit, walletPrimaryCurrency)} para <b>{d.category}</b>.
-        {" "}Racha actual: <b>{d.streakMonths}</b> mes{d.streakMonths === 1 ? "" : "es"} bajo presupuesto.
+        {t("analyzer.budgetMonthlyOf")} {formatMoneyMajor(d.limit, walletPrimaryCurrency)} {t("analyzer.for")} <b>{d.category}</b>.
+        {" "}{t("analyzer.streak.current")} <b>{d.streakMonths}</b> {t("analyzer.streak.month")}{d.streakMonths === 1 ? "" : "es"} {t("analyzer.streak.underBudget")}
       </p>
     );
     rows = (d.monthlySeries || []).map((m) => (
@@ -183,23 +185,21 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     const d = data as CategoryAnomalyInsightDetailData;
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
-        Promedio de los últimos {d.monthlyTotals?.length || 6} meses (sin contar este mes):{" "}
-        <b>{formatMoneyMajor(d.average, walletPrimaryCurrency)}</b>. Se necesitan al menos 3 meses de historial para
-        calcularlo.
+        {t("analyzer.avgOfLast")} {d.monthlyTotals?.length || 6} {t("analyzer.avgOfLast.months")}{" "}
+        <b>{formatMoneyMajor(d.average, walletPrimaryCurrency)}</b>{t("analyzer.avgOfLast.needThree")}
       </p>
     );
     rows = [
       ...(d.monthlyTotals || []).map((m) => (
         <MonthRow key={m.label} label={m.label} right={formatMoneyMajor(m.amount, walletPrimaryCurrency)} />
       )),
-      <MonthRow key="current" label="Este mes" right={formatMoneyMajor(d.current, walletPrimaryCurrency)} />,
+      <MonthRow key="current" label={t("analyzer.thisMonth")} right={formatMoneyMajor(d.current, walletPrimaryCurrency)} />,
     ];
   } else if (type === "subscription") {
     const d = data as SubscriptionInsightDetailData;
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
-        Detectada porque el mismo nombre se repite en al menos 2 de los últimos 3 meses con un monto que varía menos
-        de 15% — categoría <b>{d.categoryName}</b>.
+        {t("analyzer.subscriptions.rule")} <b>{d.categoryName}</b>.
       </p>
     );
     rows = (d.occurrences || []).map((o, i) => (
@@ -209,9 +209,8 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     const d = data as MonthlyAverageInsightDetailData;
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
-        Promedio de los últimos {d.trend?.length || 6} meses: <b>{formatMoneyMajor(d.avgIncome, walletPrimaryCurrency)}</b> de
-        ingresos, <b>{formatMoneyMajor(d.avgExpense, walletPrimaryCurrency)}</b> de gastos, y{" "}
-        <b>{Math.round(d.avgTransactionCount || 0)}</b> transacciones por mes.
+        {t("analyzer.avgOfLast")} {d.trend?.length || 6} {t("analyzer.months")} <b>{formatMoneyMajor(d.avgIncome, walletPrimaryCurrency)}</b> {t("analyzer.ofIncome")} <b>{formatMoneyMajor(d.avgExpense, walletPrimaryCurrency)}</b> {t("analyzer.ofBills")}{" "}
+        <b>{Math.round(d.avgTransactionCount || 0)}</b> {t("analyzer.txPerMonth")}
       </p>
     );
     rows = (d.trend || []).map((m) => (
@@ -223,16 +222,16 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     ));
   } else if (type === "trend_month") {
     const d = data as TrendMonthInsightDetailData;
-    explanation = <p className="text-xs text-gf-text-muted mb-3">Detalle de {d.label} — útil en pantallas donde no hay hover, como celular.</p>;
+    explanation = <p className="text-xs text-gf-text-muted mb-3">{t("analyzer.detailOf", { p1: d.label })}</p>;
     rows = [
-      <MonthRow key="income" label="Ingresos" right={formatMoneyMajor(d.income, walletPrimaryCurrency)} />,
-      <MonthRow key="expense" label="Gastos" right={formatMoneyMajor(d.expense, walletPrimaryCurrency)} />,
-      <MonthRow key="balance" label="Balance" right={formatMoneyMajor(d.income - d.expense, walletPrimaryCurrency)} />,
-      <MonthRow key="count" label="Transacciones" right={String(d.transactionCount)} />,
+      <MonthRow key="income" label={t("analyzer.incomes")} right={formatMoneyMajor(d.income, walletPrimaryCurrency)} />,
+      <MonthRow key="expense" label={t("analyzer.bills")} right={formatMoneyMajor(d.expense, walletPrimaryCurrency)} />,
+      <MonthRow key="balance" label={t("analyzer.balance")} right={formatMoneyMajor(d.income - d.expense, walletPrimaryCurrency)} />,
+      <MonthRow key="count" label={t("analyzer.transactions")} right={String(d.transactionCount)} />,
     ];
   } else if (type === "savings_rate") {
     const d = data as SavingsRateInsightDetailData;
-    explanation = <p className="text-xs text-gf-text-muted mb-3">Tasa de ahorro = balance del mes ÷ ingresos del mes.</p>;
+    explanation = <p className="text-xs text-gf-text-muted mb-3">{t("analyzer.savingsRate.formula")}</p>;
     rows = (d.savingsHistoryLabeled || []).map((m) => (
       <MonthRow key={m.label} label={m.label} right={`${Math.round(m.rate * 100)}%`} />
     ));
@@ -241,19 +240,19 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     const m = d.peakMonth;
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
-        De todos los meses dentro de este periodo, <b>{m.label}</b> fue el que más gasto acumuló.
+        {t("analyzer.bestMonth.intro")} <b>{m.label}</b> {t("analyzer.bestMonth.outro")}
       </p>
     );
     rows = [
       <MonthRow key="total" label={m.label} right={formatMoneyMajor(m.total, walletPrimaryCurrency)} />,
-      ...(m.biggestCategory ? [<MonthRow key="cat" label="Categoría con más gasto" right={`${m.biggestCategory.name} — ${formatMoneyMajor(m.biggestCategory.total, walletPrimaryCurrency)}`} />] : []),
-      ...(m.biggestTransaction ? [<MonthRow key="txn" label="Transacción más grande" right={`${m.biggestTransaction.name} — ${formatMoneyMajor(m.biggestTransaction.amount, walletPrimaryCurrency)}`} />] : []),
+      ...(m.biggestCategory ? [<MonthRow key="cat" label={t("analyzer.big.category")} right={`${m.biggestCategory.name} — ${formatMoneyMajor(m.biggestCategory.total, walletPrimaryCurrency)}`} />] : []),
+      ...(m.biggestTransaction ? [<MonthRow key="txn" label={t("analyzer.big.transaction")} right={`${m.biggestTransaction.name} — ${formatMoneyMajor(m.biggestTransaction.amount, walletPrimaryCurrency)}`} />] : []),
     ];
   } else if (type === "peak_month_vs_previous") {
     const d = data as PeakMonthVsPreviousInsightDetailData;
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
-        Comparación entre el mes de mayor gasto de este periodo y el del periodo anterior equivalente.
+        {t("analyzer.bestMonth.compare")}
       </p>
     );
     rows = [
@@ -265,7 +264,7 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     const q = d.peakQuarter;
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
-        De todos los trimestres dentro de este periodo, <b>{q.label}</b> fue el que más gasto acumuló.
+        {t("analyzer.bestQuarter.intro")} <b>{q.label}</b> {t("analyzer.bestMonth.outro")}
       </p>
     );
     rows = q.months.map((m) => <MonthRow key={m.label} label={m.label} right={formatMoneyMajor(m.total, walletPrimaryCurrency)} />);
@@ -273,8 +272,7 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     const d = data as SpendingPaceInsightDetailData;
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
-        Compara cuánto llevas gastado este mes (al día {d.dayOfMonth}) contra cuánto habías gastado, para ese mismo
-        día del mes, en cada uno de los últimos {d.monthlyDetail?.length || 6} meses.
+        {t("analyzer.pace.explain", { p1: d.dayOfMonth, p2: d.monthlyDetail?.length || 6 })}
       </p>
     );
     rows = [

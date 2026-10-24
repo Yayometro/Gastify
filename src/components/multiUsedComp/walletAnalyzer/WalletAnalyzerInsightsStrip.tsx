@@ -10,6 +10,7 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerInsightItem } from "./WalletAnalyzerView";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -166,6 +167,7 @@ function WalletAnalyzerInsightsStrip({
   currentRange,
   title = "Lo más destacado del mes",
 }: WalletAnalyzerInsightsStripProps): React.JSX.Element {
+  const t = useT();
   const { close, handleClose, renderModal, modalContent } = useModal();
   const [activeInsight, setActiveInsight] = useState<WalletAnalyzerInsightItem | null>(null);
 
@@ -191,9 +193,9 @@ function WalletAnalyzerInsightsStrip({
   return (
     <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
       <div className="mb-0.5 flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{title}</p><InfoTip info={APP_INFO.lo_m_s_destacado} /></div>
-      <p className="text-xs text-gf-text-muted mb-4">Calculado a partir de tu historial - sin llamadas a IA</p>
+      <p className="text-xs text-gf-text-muted mb-4">{t("analyzer.projections.method")}</p>
       {insights.length === 0 ? (
-        <p className="text-xs text-gf-text-muted">Nada fuera de lo común este mes.</p>
+        <p className="text-xs text-gf-text-muted">{t("analyzer.unusualNone")}</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {insights.map((insight, i) => (

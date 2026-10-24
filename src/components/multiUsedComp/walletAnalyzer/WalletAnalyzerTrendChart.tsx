@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 export interface WalletAnalyzerTrendChartItem {
   label?: string;
@@ -23,6 +24,7 @@ export interface WalletAnalyzerTrendChartProps {
 // technique as CategoryTreemap's cursor-following tooltip) instead of
 // being pinned above whichever column is hovered.
 function WalletAnalyzerTrendChart({ trend, walletPrimaryCurrency, onSelectMonth }: WalletAnalyzerTrendChartProps) {
+  const t = useT();
   const containerRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState<number | null>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -49,10 +51,10 @@ function WalletAnalyzerTrendChart({ trend, walletPrimaryCurrency, onSelectMonth 
           style={{ left: tooltipLeft, top: Math.max(cursor.y - 76, 0) }}
         >
           <p className="font-bold mb-1">{trend[hovered].label}</p>
-          <p className="text-green-300">Ingresos: {formatMoneyMajor(trend[hovered].income, walletPrimaryCurrency)}</p>
-          <p className="text-red-300">Gastos: {formatMoneyMajor(trend[hovered].expense, walletPrimaryCurrency)}</p>
+          <p className="text-green-300">{t("analyzer.incomesValue", { p1: formatMoneyMajor(trend[hovered].income, walletPrimaryCurrency) })}</p>
+          <p className="text-red-300">{t("analyzer.billsValue", { p1: formatMoneyMajor(trend[hovered].expense, walletPrimaryCurrency) })}</p>
           <p className="text-slate-300">
-            {trend[hovered].transactionCount} transacci{trend[hovered].transactionCount === 1 ? "ón" : "ones"}
+            {t("analyzer.txCount", { p1: trend[hovered].transactionCount, p2: trend[hovered].transactionCount === 1 ? "ón" : "ones" })}
           </p>
         </div>
       )}
@@ -94,13 +96,13 @@ function WalletAnalyzerTrendChart({ trend, walletPrimaryCurrency, onSelectMonth 
       </div>
       <div className="flex gap-3.5 text-[11px] text-gf-text-muted mt-2.5">
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-sm bg-green-500/80" /> Ingresos
+          <span className="w-2 h-2 rounded-sm bg-green-500/80" /> {t("analyzer.incomes")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-sm bg-red-500/80" /> Gastos
+          <span className="w-2 h-2 rounded-sm bg-red-500/80" /> {t("analyzer.bills")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-sm bg-purple-400/70" /> Transacciones
+          <span className="w-2 h-2 rounded-sm bg-purple-400/70" /> {t("analyzer.transactions")}
         </span>
       </div>
     </div>

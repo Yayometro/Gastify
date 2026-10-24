@@ -12,6 +12,7 @@ import type { WalletData } from "@/lib/features/walletSlice";
 import type { WalletAnalyzerSnapshotData } from "./WalletAnalyzerView";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT } from "@/i18n/client";
 
 const EMPTY_ARRAY: never[] = [];
 
@@ -34,6 +35,7 @@ export interface WalletAnalyzerTeaserProps {
 // with, so it just always follows the parent - one atomic, prop-driven
 // piece instead of owning its own navigation state.
 function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProps): React.JSX.Element | null {
+  const t = useT();
   const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
   const storedBudgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
   const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
@@ -54,11 +56,11 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
         walletPrimaryCurrency={walletPrimaryCurrency}
         transactions={transactions}
         currentRange={snapshot.currentRange}
-        title="Wallet Analyzer — resumen del mes"
+        title={t("analyzer.summaryTitle")}
       />
       <div className="mt-3 flex items-center justify-end gap-2">
         <Link href="/dashboard/analyzer" className="flex items-center gap-1 text-sm font-bold text-purple-300 transition-colors hover:text-white">
-          Ver análisis completo <span aria-hidden="true">→</span>
+          {t("analyzer.seeFull")} <span aria-hidden="true">→</span>
         </Link>
         <InfoTip info={APP_INFO.an_lisis_del_periodo} />
       </div>

@@ -14,6 +14,7 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
+import { useT } from "@/i18n/client";
 
 export interface MonthRange {
   start: Date;
@@ -101,6 +102,7 @@ export interface HistoricalProjectionsTableProps {
 // can legitimately span two, so wiring it up here would need real new
 // design work beyond "show the numbers for this range."
 function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableProps): React.JSX.Element | null {
+  const t = useT();
   const { timePeriod, getValueFromSelecter, timePeriodsForSelecter, handleRangeDate } = periodState;
   const { email } = useGetUserSession();
   const { transacciones, budgets, accounts, wallet } = useGetDataFromProvider() as DataFromProvider;
@@ -146,7 +148,7 @@ function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableP
 
   return (
     <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-      <div className="flex items-center justify-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text text-center">Proyecciones</p><InfoTip info={APP_INFO.mes_a_mes} /></div>
+      <div className="flex items-center justify-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text text-center">{t("analyzer.projections")}</p><InfoTip info={APP_INFO.mes_a_mes} /></div>
       <div className="flex justify-center mb-3">
         <TypedPeriodFiltersWithCompare
           timePeriod={timePeriod}
@@ -155,11 +157,11 @@ function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableP
           handleRangeDate={handleRangeDate}
         />
       </div>
-      <p className="text-xs text-gf-text-muted mb-3 text-center">Ingreso, gasto y balance proyectado mes a mes, para el rango elegido arriba</p>
+      <p className="text-xs text-gf-text-muted mb-3 text-center">{t("analyzer.projections.help")}</p>
       {isLoading ? (
-        <p className="text-xs text-gf-text-muted">Cargando proyecciones…</p>
+        <p className="text-xs text-gf-text-muted">{t("analyzer.projections.loading")}</p>
       ) : rows.length === 0 ? (
-        <p className="text-xs text-gf-text-muted">Sin datos de proyección para este periodo.</p>
+        <p className="text-xs text-gf-text-muted">{t("analyzer.projections.none")}</p>
       ) : (
         <TypedProjectionsView rows={rows} onRowClick={() => {}} />
       )}
