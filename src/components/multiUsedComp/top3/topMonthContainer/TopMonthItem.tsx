@@ -10,6 +10,7 @@ import ModalContentTopMonthItem, {
 } from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
+import { useT } from "@/i18n/client";
 
 export interface TopMonthItemProps<T = unknown> {
   childs?: T[] | null;
@@ -39,6 +40,7 @@ function TopMonthItem<T = unknown>({
   value,
   mode = "transaction",
 }: TopMonthItemProps<T>): React.JSX.Element {
+  const t = useT();
   const { close, handleClose, renderModal, modalContent } = useModal();
   function renderModalContent(item: unknown) {
     renderModal(<ModalContentTopMonthItem item={item as ModalContentTopMonthItemItem} close={handleClose} />);
@@ -60,7 +62,7 @@ function TopMonthItem<T = unknown>({
         <div className=" bg-gf-surface text-gf-text flex justify-center items-center border-2 rounded-full w-[25px] h-[25px] absolute top-[6px] right-[6px] shadow-lg gap-2">
           <BasicTooltip
             title={
-              "In each month you can see the highest bills or transactions according to the time-period selected and the number of elements to display"
+              t("dashboard.top.help")
             }
           />
         </div>
@@ -70,7 +72,7 @@ function TopMonthItem<T = unknown>({
             "No value"
           ) : (
             <p>
-              Value: <b>{value}</b>
+              {t("dashboard.value")} <b>{value}</b>
             </p>
           )}
         </section>

@@ -13,6 +13,7 @@ import ModalContentTopMonthItem, {
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
+import { useT } from "@/i18n/client";
 
 export interface RankRowItem extends PrimaryAmountItem {
   name?: string;
@@ -95,6 +96,7 @@ function RankRow<T extends RankRowItem = RankRowItem>({ index, item, currency, o
 }
 
 function TopRankColumn<T extends RankRowItem = RankRowItem>({ items, style, title, showCount = false }: TopRankColumnProps<T>): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const { close, handleClose, renderModal, modalContent } = useModal();
   function renderModalContent(item: unknown) {
@@ -107,7 +109,7 @@ function TopRankColumn<T extends RankRowItem = RankRowItem>({ items, style, titl
         {title}
         <div className="w-full flex flex-col mt-2">
           {!items || items.length <= 0 ? (
-            <p className="text-xs text-gf-text-muted text-center">No items to display...</p>
+            <p className="text-xs text-gf-text-muted text-center">{t("dashboard.top.none")}</p>
           ) : (
             items.map((item, i) => (
               <RankRow

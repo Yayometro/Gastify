@@ -47,6 +47,7 @@ import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT } from "@/i18n/client";
 
 interface DashboardProps {
   dataServ?: unknown;
@@ -160,6 +161,7 @@ const MultiCreditCardComp = MultiCreditCard as React.ComponentType<{
 const today = new Date();
 
 function Wallet({ session }: DashboardProps): React.JSX.Element {
+  const t = useT();
   const [user, setUser] = useState<DashboardUser>({});
   const [wallet, setWallet] = useState<DashboardWallet>({});
   const [accounts, setAccounts] = useState<DashboardAccount[]>([]);
@@ -428,10 +430,10 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
         </div>
         <div className="flex items-center justify-between text-xs text-white/80">
           <span>
-            Mes anterior: {formatMoneyMajor(previous, walletPrimaryCurrency, { showCode: false })}
+            {t("dashboard.prevMonth", { p1: formatMoneyMajor(previous, walletPrimaryCurrency, { showCode: false }) })}
           </span>
           <span>
-            Actual: {formatMoneyMajor(current, walletPrimaryCurrency, { showCode: false })}
+            {t("dashboard.actual", { p1: formatMoneyMajor(current, walletPrimaryCurrency, { showCode: false }) })}
           </span>
         </div>
       </div>
@@ -440,9 +442,9 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
 
   const accountsPanel = (
     <div className="scrollbar-thin-white bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full overflow-y-auto">
-      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">Tus cuentas</span><InfoTip info={APP_INFO.cuentas} /></span>
+      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.accounts.yours")}</span><InfoTip info={APP_INFO.cuentas} /></span>
       {!accounts || accounts.length === 0 ? (
-        <span className="text-white/60 text-xs">No accounts yet</span>
+        <span className="text-white/60 text-xs">{t("dashboard.accounts.none")}</span>
       ) : (
         [...accounts]
           .sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0))
@@ -474,15 +476,15 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
 
   const summaryPanel = loading || !periodReady ? panelSkeleton("Resumen") : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
-      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">Resumen</span><InfoTip info={APP_INFO.resumen} /></span>
+      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.summary")}</span><InfoTip info={APP_INFO.resumen} /></span>
       <div className="flex flex-col gap-2 justify-end flex-1">
       <div className="flex items-center justify-between gap-3 w-full">
         <span className="flex items-center gap-1.5 text-white text-sm shrink-0">
           <MdKeyboardDoubleArrowUp className="w-4 h-4 text-green-400 shrink-0" />
-          Incomes:
+          {t("dashboard.incomes")}
         </span>
         {!totalIncome ? (
-          <span className="text-green-400 text-sm">No amount...</span>
+          <span className="text-green-400 text-sm">{t("dashboard.noAmount")}</span>
         ) : (
           <span className="text-sm font-semibold" style={{ color: INCOME_COLOR }}>
             {formatMoneyMajor(totalIncome, walletPrimaryCurrency)}
@@ -492,10 +494,10 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
       <div className="flex items-center justify-between gap-3 w-full">
         <span className="flex items-center gap-1.5 text-white text-sm shrink-0">
           <MdKeyboardDoubleArrowDown className="w-4 h-4 text-red-400 shrink-0" />
-          Expenses:
+          {t("dashboard.bills")}
         </span>
         {!totalBill ? (
-          <span className="text-red-400 text-sm">No amount...</span>
+          <span className="text-red-400 text-sm">{t("dashboard.noAmount")}</span>
         ) : (
           <span className="text-sm font-semibold" style={{ color: EXPENSE_COLOR }}>
             {formatMoneyMajor(totalBill, walletPrimaryCurrency)}
@@ -509,10 +511,10 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
           ) : (
             <MdKeyboardDoubleArrowUp className="w-4 h-4 text-green-400 shrink-0" />
           )}
-          Balance:
+          {t("dashboard.balance")}
         </span>
         {!totalAmountBalance ? (
-          <span className="text-green-400 text-sm">No amount...</span>
+          <span className="text-green-400 text-sm">{t("dashboard.noAmount")}</span>
         ) : (
           <span className="text-sm font-semibold" style={{ color: BALANCE_COLOR }}>
             {formatMoneyMajor(totalAmountBalance, walletPrimaryCurrency)}
@@ -520,7 +522,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
         )}
       </div>
       <p className="text-white/70 text-[10px] pt-1 text-center">
-        From {dayjs(startDate).format("DD-MM-YYYY")} to {dayjs(endDate).format("DD-MM-YYYY")}.
+        {t("dashboard.range", { p1: dayjs(startDate).format("DD-MM-YYYY"), p2: dayjs(endDate).format("DD-MM-YYYY") })}
       </p>
       </div>
     </div>
@@ -528,7 +530,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
 
   const comparisonPanel = loading || !periodReady ? panelSkeleton("Vs. mes anterior") : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
-      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">Vs. mes anterior</span><InfoTip info={APP_INFO.vs_el_mes_anterior} /></span>
+      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.vsPrevious")}</span><InfoTip info={APP_INFO.vs_el_mes_anterior} /></span>
       {renderDeltaRow("Ingresos", totalIncome, prevTotalIncome, INCOME_COLOR)}
       {renderDeltaRow("Gastos", totalBill, prevTotalBill, EXPENSE_COLOR)}
       {renderDeltaRow("Balance", totalAmountBalance, prevTotalIncome - prevTotalBill, BALANCE_COLOR)}
@@ -543,7 +545,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
             <div className="w-full">
               <h2 className="text-white text-3xl sm:text-6xl font-thin text-center">
                 {!user.fullName ? <Spin size="large" /> : `${user.fullName} `}{" "}
-                Wallet
+                {t("dashboard.wallet")}
               </h2>
 
               <div className="hidden sm:grid sm:grid-cols-3 sm:gap-4 sm:items-stretch pt-6">
@@ -567,7 +569,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                     type="button"
                     onClick={() => goToHeaderSlide(headerActiveSlide - 1)}
                     disabled={headerActiveSlide === 0}
-                    aria-label="Previous"
+                    aria-label={t("dashboard.previous")}
                     className="w-6 h-6 flex items-center justify-center rounded-full bg-gf-surface/15 text-white disabled:opacity-30 transition-opacity"
                   >
                     <MdChevronLeft size={16} />
@@ -582,7 +584,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                     type="button"
                     onClick={() => goToHeaderSlide(headerActiveSlide + 1)}
                     disabled={headerActiveSlide === 2}
-                    aria-label="Next"
+                    aria-label={t("dashboard.next")}
                     className="w-6 h-6 flex items-center justify-center rounded-full bg-gf-surface/15 text-white disabled:opacity-30 transition-opacity"
                   >
                     <MdChevronRight size={16} />
@@ -604,7 +606,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 rpDate={handleRangeDate}
                 rpResponse={""}
               />
-              <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
+              <Tooltip title={t("dashboard.dateTip")}>
                 <div className="text-white w-[10px]">
                   <UniversalCategoIconComp
                     type={`${"fa/FaRegQuestionCircle"}`}

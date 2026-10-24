@@ -22,6 +22,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import fetcher from "@/helpers/fetcher";
+import { useT } from "@/i18n/client";
 
 export interface MultiCreditCardAccount {
   _id?: string;
@@ -80,6 +81,7 @@ function MultiCreditCard({
   mail,
   timePeriod,
 }: MultiCreditCardProps): React.JSX.Element {
+  const t = useT();
   const [userName, setUserName] = useState<string>("");
   const [allTransactions, setAllTransactions] = useState<MultiCreditCardTransaction[]>([]);
   const [accounts, setAccounts] = useState<MultiCreditCardAccount[]>([]);
@@ -148,7 +150,7 @@ function MultiCreditCard({
     <div className="gf-glass-card w-full overflow-x-hidden flex flex-col rounded-[32px] py-2">
       <div className="header text-center">
         <h1 className="movement-title text-gf-text text-2xl text-center font-bold py-4">
-          Accounts resume
+          {t("dashboard.accountsResume")}
           <InfoTip info={APP_INFO.total} />
         </h1>
       </div>

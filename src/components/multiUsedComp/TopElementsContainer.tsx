@@ -24,6 +24,7 @@ import TopRankColumn, { type RankRowItem } from "./top3/topRankColumn/TopRankCol
 import TopElementContainerView from "./TopElementContainerView";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { TabsTogglerComponentItem } from "./TabsComponents/TabsToggler";
+import { useT } from "@/i18n/client";
 
 const today = new Date();
 
@@ -72,6 +73,7 @@ export interface ContainerTransactionItem {
 }
 
 function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProps): React.JSX.Element {
+  const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [elementsToDisplay, setElementsToDisplay] = useState<number>(6);
   const [transactionsLocal, setTransactionsLocal] = useState<RankRowItem[][]>([]);
@@ -174,9 +176,9 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
   const topRankTitle = (label: string, total: string | number) => (
     <>
       <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-400">
-        Top {elementsToDisplay} {label}
+        {t("dashboard.top.title", { p1: elementsToDisplay, p2: label })}
       </p>
-      <p className="text-[15px] font-extrabold text-gf-text mb-2">Total: {total}</p>
+      <p className="text-[15px] font-extrabold text-gf-text mb-2">{t("dashboard.total", { p1: total })}</p>
     </>
   );
   const components: TabsTogglerComponentItem<object>[] = [
