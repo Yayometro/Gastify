@@ -1,9 +1,11 @@
+"use client";
 import React, { useState } from "react";
 import CategoryCirclePacking from "./CategoryCirclePacking";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import EmptyModule from "./EmptyModule";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { useT } from "@/i18n/client";
 
 // Typed bridge for unmigrated CategoryCirclePacking component
 interface CategoryCirclePackingProps {
@@ -29,6 +31,7 @@ function DisplayerCategoryCirclePacking({
   bill,
   fill,
 }: DisplayerCategoryCirclePackingProps): React.JSX.Element {
+  const t = useT();
   // Función para renderizar el contenido de cada pestaña
   const [ownBill, setOwnBill] = useState(true);
   const tabBill = bill ?? ownBill;
@@ -49,7 +52,7 @@ function DisplayerCategoryCirclePacking({
             tabBill ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Category Bills
+          {t("categories.chart.bills")}
         </div>
         <div
           onClick={() => handleToggle("income")}
@@ -57,9 +60,9 @@ function DisplayerCategoryCirclePacking({
             !tabBill ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Category Incomes
+          {t("categories.chart.incomes")}
         </div>
-        <Tooltip title="How to navigate 🤔? It's really simple just HOVER over the circle to see the description and amount. And if you want to see some circles with more detail, just click to zoom in or click in the father of the circle nested to zoom out.">
+        <Tooltip title={t("categories.chart.bubbleTip")}>
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}

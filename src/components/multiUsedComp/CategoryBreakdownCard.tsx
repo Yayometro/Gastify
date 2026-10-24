@@ -13,6 +13,8 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { categoryBreakdown, type BreakdownSlice } from "@gastify/core/history/categoryBreakdown";
 import { ALL_MOVEMENTS, backOne, drillView, openSlice, type DrillState } from "@gastify/core/history/categoryDrill";
 import type { TransactionLike } from "@gastify/core/transformers/transactionsChange";
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 // The category breakdown of the period, the same as the phone's "Resumen de transacciones": one of the charts (ring, bubbles
 // or map) on the left and the categories on the right. The chart and the list share one drill-down path, so a tap in either
@@ -20,12 +22,15 @@ import type { TransactionLike } from "@gastify/core/transformers/transactionsCha
 
 const EMPTY: never[] = [];
 // The map opens first on the web; the ring goes last.
-const CHARTS = [
-  { id: "map", label: "Mapa" },
-  { id: "bubbles", label: "Burbujas" },
-  { id: "ring", label: "Anillo" },
-] as const;
-type ChartId = (typeof CHARTS)[number]["id"];
+const CHART_IDS = ["map", "bubbles", "ring"] as const;
+type ChartId = (typeof CHART_IDS)[number];
+// The three charts, named in the person's language.
+const chartsFor = (t: TranslateFn) =>
+  [
+    { id: "map", label: t("categories.chart.treemap") },
+    { id: "bubbles", label: t("categories.chart.bubbles") },
+    { id: "ring", label: t("categories.chart.ring") },
+  ] as const;
 // The height of the chart panel. On desktop the list on the right stretches to the same height as the card's content.
 const PANEL_HEIGHT = "h-[560px]";
 
@@ -34,6 +39,7 @@ export interface CategoryBreakdownCardProps {
 }
 
 function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): React.JSX.Element {
+  const t = useT();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
   const primary = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const [kind, setKind] = useState<"spending" | "incomes">("spending");
@@ -84,13 +90,13 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
     <section className="gf-glass-card w-full rounded-[32px] p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-extrabold text-gf-text">Resumen de transacciones</h2>
+          <h2 className="text-xl font-extrabold text-gf-text">{t("categories.summary.title")}</h2>
           <InfoTip info={APP_INFO.resumen_de_transacciones} />
         </div>
         <div className="flex gap-1 rounded-full gf-glass-inset p-1.5">
           {[
-            { id: "spending" as const, label: "Gastos" },
-            { id: "incomes" as const, label: "Ingresos" },
+            { id: "spending" as const, label: t("categories.summary.bills") },
+            { id: "incomes" as const, label: t("categories.summary.incomes") },
           ].map((option) => (
             <button
               key={option.id}
@@ -111,7 +117,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="flex min-w-0 flex-col items-center gap-3">
           <div className="flex gap-1 rounded-full gf-glass-inset p-1.5">
-            {CHARTS.map((option) => (
+            {chartsFor(t).map((option) => (
               <button
                 key={option.id}
                 type="button"
@@ -144,10 +150,10 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
           )}
           {view.level === 1 && view.current && (
             <button type="button" onClick={() => setPath((current) => openSlice(current, ALL_MOVEMENTS))} className="mb-1 self-start text-sm text-purple-300 hover:text-white">
-              Ver todas las transacciones de {view.current.name} ›
+              {t("categories.summary.seeAll", { p1: view.current.name })}
             </button>
           )}
-          {view.slices.length === 0 && <p className="text-sm text-gf-text-muted">Sin movimientos en este periodo.</p>}
+          {view.slices.length === 0 && <p className="text-sm text-gf-text-muted">{t("categories.summary.none")}</p>}
           <div className="relative min-h-0 flex-1">
             <div className="absolute inset-0 flex flex-col gap-2 overflow-y-auto pr-1">
               {view.slices.map((slice) => {
@@ -166,8 +172,8 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-base font-semibold text-gf-text">{slice.name}</span>
-                      {hasChildren && <span className="text-xs text-purple-300">Ver subcategorías ›</span>}
-                      {view.level === 2 && <span className="text-xs text-gf-text-muted">{slice.count} movimiento{slice.count === 1 ? "" : "s"}</span>}
+                      {hasChildren && <span className="text-xs text-purple-300">{t("categories.summary.seeSub")}</span>}
+                      {view.level === 2 && <span className="text-xs text-gf-text-muted">{t("categories.summary.movements", { p1: slice.count, p2: slice.count === 1 ? "" : "s" })}</span>}
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-0.5">
                       <span className="text-base font-bold text-gf-text">{formatMoneyMajor(slice.value, primary, { showCode: false })}</span>

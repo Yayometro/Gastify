@@ -8,6 +8,7 @@ import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import UniversalCategoIcon from "./UniversalCategoIcon";
+import { useT } from "@/i18n/client";
 
 // Explicit interfaces for domain entities used in Treemap hierarchy and nodes
 export interface TreemapTag {
@@ -233,6 +234,7 @@ interface TileTooltipPosition {
 }
 
 export function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, currency, onClick, entered, containerRef }: TreemapTileProps): React.JSX.Element {
+  const tr = useT();
   const { node } = rect;
   const [hover, setHover] = useState(false);
   const [pos, setPos] = useState<TileTooltipPosition>({ x: 0, y: 0, w: 0, h: 0, flipX: false, flipY: false });
@@ -320,7 +322,7 @@ export function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, cur
                 )
               ) : (
                 <span className="text-gf-text-muted text-[10px]">
-                  {node.transactionCount} txn{node.transactionCount === 1 ? "" : "s"} · {pct}%
+                  {tr("categories.row.txn", { p1: node.transactionCount, p2: node.transactionCount === 1 ? "" : "s", p3: pct })}
                 </span>
               )}
             </div>
@@ -367,7 +369,7 @@ export function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, cur
                 <span className="text-gf-text-muted text-[11px]">{dayjs(node.date).format("DD/MM/YYYY")}</span>
               )}
               {node.accountName && (
-                <span className="text-gf-text-muted text-[11px]">Cuenta: {node.accountName}</span>
+                <span className="text-gf-text-muted text-[11px]">{tr("categories.row.account", { p1: node.accountName })}</span>
               )}
               {(node.categoryName || node.subcategoryName) && (
                 <span className="text-gf-text-muted text-[11px] text-center">
@@ -380,14 +382,14 @@ export function TreemapTile({ rect, index, isBig, canDrill, isSelected, pct, cur
                   {node.tags.map((tag) => tag.name).filter(Boolean).join(", ")}
                 </span>
               )}
-              <span className="text-gf-text-muted text-[11px]">{pct}% del total</span>
+              <span className="text-gf-text-muted text-[11px]">{tr("categories.row.ofTotal", { p1: pct })}</span>
             </>
           ) : (
             <>
               <span className="text-gf-text-muted text-[11px]">
-                {node.transactionCount} transaccion{node.transactionCount === 1 ? "" : "es"}
+                {tr("categories.row.transactions", { p1: node.transactionCount, p2: node.transactionCount === 1 ? "" : "es" })}
               </span>
-              <span className="text-gf-text-muted text-[11px]">{pct}% del total</span>
+              <span className="text-gf-text-muted text-[11px]">{tr("categories.row.ofTotal", { p1: pct })}</span>
             </>
           )}
         </div>
@@ -442,6 +444,7 @@ export interface CategoryTreemapProps {
 }
 
 function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapProps): React.JSX.Element {
+  const tr = useT();
   const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   // path = [] -> top-level categories.
   // path = [categoryName] -> that category's subcategories, UNLESS it has
@@ -644,7 +647,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
       {!ctFill && (
         <div className="CategoryTreemap-Content-title pt-5">
           <h1 className="wallet-budget-title text-2xl text-center font-bold">
-            Category {ctIsBill ? "Bills" : "Incomes"} Details
+            {tr("categories.detail.title", { p1: ctIsBill ? "Bills" : "Incomes" })}
           </h1>
         </div>
       )}
@@ -656,7 +659,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
                 <button
                   type="button"
                   onClick={() => setPath((prev) => prev.slice(0, -1))}
-                  aria-label="Back one level"
+                  aria-label={tr("categories.back")}
                   className="text-gf-text-muted hover:text-purple-600 transition-colors text-xl leading-none px-1"
                 >
                   ‹
@@ -681,7 +684,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
                         </>
                       )}
                       {!breadcrumb.second && autoExpandIsMixed && (
-                        <span className="text-gf-text-muted font-normal text-sm"> · Transacciones</span>
+                        <span className="text-gf-text-muted font-normal text-sm"> {tr("categories.transactionsSuffix")}</span>
                       )}
                     </>
                   )}
@@ -692,13 +695,13 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
                     transaction count and share of the total. */}
                 {path.length > 0 && (
                   <span className="text-gf-text-muted text-xs leading-tight">
-                    {headerCount} transaccion{headerCount === 1 ? "" : "es"} · {headerPct}% del total
+                    {tr("categories.row.txnOfTotal", { p1: headerCount, p2: headerCount === 1 ? "" : "es", p3: headerPct })}
                   </span>
                 )}
               </div>
             </div>
             <div className="text-gf-text-muted text-sm shrink-0 pl-2">
-              Total:{" "}
+              {tr("categories.total")}{" "}
               <span className="text-gf-text font-bold">
                 {formatMoneyMajor(headerTotal, walletPrimaryCurrency)}
               </span>
@@ -740,13 +743,13 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
                   </span>
                 )}
                 <span className="text-gf-text-muted text-xs">
-                  {totalValue > 0 ? ((selectedTransaction.value / totalValue) * 100).toFixed(1) : "0.0"}% del total
+                  {tr("categories.row.ofTotal", { p1: totalValue > 0 ? ((selectedTransaction.value / totalValue) * 100).toFixed(1) : "0.0" })}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedTransaction(null)}
-                aria-label="Close transaction detail"
+                aria-label={tr("categories.closeDetail")}
                 className="text-gf-text-muted hover:text-purple-600 transition-colors text-lg leading-none shrink-0"
               >
                 ×
@@ -807,7 +810,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
                       </span>
                     </span>
                     <span className="text-gf-text-muted font-normal text-[10px]">
-                      {count} txn{count === 1 ? "" : "s"} · {pct}%
+                      {tr("categories.row.txn", { p1: count, p2: count === 1 ? "" : "s", p3: pct })}
                     </span>
                   </span>
                 </button>

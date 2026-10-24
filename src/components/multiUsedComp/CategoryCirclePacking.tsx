@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { ResponsiveCirclePacking } from "@nivo/circle-packing";
 import { useSelector } from "react-redux";
@@ -7,6 +8,7 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import { percentOf } from "@gastify/core/format/percent";
+import { useT } from "@/i18n/client";
 
 export interface CategoryPackingNode {
   name?: string;
@@ -27,6 +29,7 @@ export interface CategoryCirclePackingProps {
 }
 
 function CategoryCirclePacking({ ccpTransacctions, ccpIsBill, ccpFill }: CategoryCirclePackingProps): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const [zoomedId, setZoomedId] = useState<string | null>(null);
   const [dataCat, setDataCat] = useState<CategoryPackingNode>({});
@@ -46,7 +49,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill, ccpFill }: Categor
       {!ccpFill && (
         <div className="CategoryCircle-Content-title pt-5">
           <h1 className="wallet-budget-title text-2xl text-center font-bold">
-            Category {ccpIsBill ? "Bills" : "Incomes"} Details
+            {t("categories.detail.title", { p1: ccpIsBill ? "Bills" : "Incomes" })}
           </h1>
         </div>
       )}
@@ -124,11 +127,11 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill, ccpFill }: Categor
                         {formatMoneyMajor(totalValueOn, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2 underline" >
-                        <p className="font-semibold">Amount:</p>
+                        <p className="font-semibold">{t("categories.amount")}</p>
                         {formatMoneyMajor(dataa.value, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
-                        <p className="font-semibold">Percentage:</p>
+                        <p className="font-semibold">{t("categories.percentage")}</p>
                         {percentOf(dataa.value, totalValueOn)}%
                       </div>
                     </div>

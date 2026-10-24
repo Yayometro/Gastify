@@ -1,9 +1,11 @@
+"use client";
 import React, { useState } from "react";
 import CategoryTreemap from "./CategoryTreemap";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import EmptyModule from "./EmptyModule";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { useT } from "@/i18n/client";
 
 // Typed bridge for unmigrated CategoryTreemap component
 interface CategoryTreemapProps {
@@ -33,6 +35,7 @@ function DisplayerCategoryTreemap({
   bill,
   fill,
 }: DisplayerCategoryTreemapProps): React.JSX.Element {
+  const t = useT();
   const [ownBill, setOwnBill] = useState(true);
   const tabBill = bill ?? ownBill;
   const handleToggle = (type: "bill" | "income" | string) => {
@@ -52,7 +55,7 @@ function DisplayerCategoryTreemap({
             tabBill ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Category Bills
+          {t("categories.chart.bills")}
         </div>
         <div
           onClick={() => handleToggle("income")}
@@ -60,9 +63,9 @@ function DisplayerCategoryTreemap({
             !tabBill ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Category Incomes
+          {t("categories.chart.incomes")}
         </div>
-        <Tooltip title="How to navigate 🤔? Hover over a tile to see the description and amount. Click a tile to zoom into its sub-categories.">
+        <Tooltip title={t("categories.chart.treemapTip")}>
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}

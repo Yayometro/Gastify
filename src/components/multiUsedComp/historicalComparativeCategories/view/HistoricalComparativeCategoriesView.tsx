@@ -8,6 +8,7 @@ import { Skeleton } from "antd";
 import PeriodFiltersWithCompare from "../../periodFiltersWithCompare/PeriodFiltersWithCompare";
 import type { TimePeriodOption } from "@/hooks/usePeriodComparison";
 import type { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
+import { useT } from "@/i18n/client";
 
 export interface HistoricalComparativeCategoriesViewProps {
   tabs: string[];
@@ -46,9 +47,10 @@ function HistoricalComparativeCategoriesView({
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
 }: HistoricalComparativeCategoriesViewProps): React.JSX.Element {
+  const t = useT();
   return (
     <div className="w-full h-full">
-      {title || <div className="flex items-center gap-2"><h1 className=" text-3xl text-purple-300">Categories comparative</h1><InfoTip info={APP_INFO.gastos_por_categor_a} /></div>}
+      {title || <div className="flex items-center gap-2"><h1 className=" text-3xl text-purple-300">{t("categories.compare.title")}</h1><InfoTip info={APP_INFO.gastos_por_categor_a} /></div>}
       <PeriodFiltersWithCompare
         timePeriod={timePeriod}
         getValueFromSelecter={getValueFromSelecter}
@@ -68,7 +70,7 @@ function HistoricalComparativeCategoriesView({
         <TabsToggler
           tabs={tabs}
           compontentsArray={components}
-          tooltip={"Select the tab that you want to see 😎"}
+          tooltip={t("categories.tabHelp")}
           contentStyle={"flex flex-col justify-center items-center"}
           tabInfo={{
             bills: APP_INFO.gastos_por_categor_a,

@@ -10,6 +10,7 @@ type Loader = () => Promise<{ default: Dict }>;
 
 const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
   es: {
+    categories: () => import("./messages/es/categories"),
     shared: () => import("./messages/es/shared"),
     analyzer: () => import("./messages/es/analyzer"),
     budgets: () => import("./messages/es/budgets"),
@@ -21,6 +22,7 @@ const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
     navbar: () => import("./messages/es/navbar"),
   },
   en: {
+    categories: () => import("./messages/en/categories"),
     shared: () => import("./messages/en/shared"),
     analyzer: () => import("./messages/en/analyzer"),
     budgets: () => import("./messages/en/budgets"),

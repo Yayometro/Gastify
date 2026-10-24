@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
@@ -8,6 +9,7 @@ import runNotify from "@/helpers/gastifyNotifier";
 import type { SubCategoryData } from "@/lib/features/subCategorySlice";
 import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { UserData } from "@/lib/features/userSlice";
+import { useT } from "@/i18n/client";
 
 export interface SubCategoryListProps {
   sclSubCategory?: SubCategoryData[] | null;
@@ -16,6 +18,7 @@ export interface SubCategoryListProps {
 }
 
 function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryListProps): React.JSX.Element {
+  const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<SubCategoryData>({});
 
@@ -39,7 +42,7 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryL
         ) : sclSubCategory.length <= 0 ? (
           <div className="w-full h-full flex flex-col justify-center items-center gap-2">
             <Spin size="large" />
-            <p className="">Loading...</p>
+            <p className="">{t("categories.loading")}</p>
           </div>
         ) : (
           sclSubCategory.map((subCategory) => (

@@ -3,6 +3,7 @@
 import React from "react";
 import TopCategoryRow from "../top3/topMonthContainer/TopCategoryRow";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 const TOP_N = 10;
 
@@ -56,6 +57,7 @@ function CategoriesCompareTable({
   walletPrimaryCurrency = "MXN",
   onOpenItem,
 }: CategoriesCompareTableProps): React.JSX.Element {
+  const t = useT();
   const topA = ((rowsA || []) as CategoryRowItem[]).slice(0, TOP_N);
   const topB = ((rowsB || []) as CategoryRowItem[]).slice(0, TOP_N);
 
@@ -65,21 +67,21 @@ function CategoriesCompareTable({
         <div className="flex flex-col items-center">
           <b className="text-xs text-gf-text-muted">{labelA}</b>
           <p>
-            Total {kindLabel}: <b>{formatMoneyMajor(totalA || 0, walletPrimaryCurrency)}</b>
+            {t("categories.total2")} {kindLabel}: <b>{formatMoneyMajor(totalA || 0, walletPrimaryCurrency)}</b>
           </p>
         </div>
-        <span className="text-purple-300 font-bold shrink-0">VS</span>
+        <span className="text-purple-300 font-bold shrink-0">{t("categories.vs")}</span>
         <div className="flex flex-col items-center">
           <b className="text-xs text-gf-text-muted">{labelB}</b>
           <p>
-            Total {kindLabel}: <b>{formatMoneyMajor(totalB || 0, walletPrimaryCurrency)}</b>
+            {t("categories.total2")} {kindLabel}: <b>{formatMoneyMajor(totalB || 0, walletPrimaryCurrency)}</b>
           </p>
         </div>
       </div>
       <div className="w-full grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1 min-w-0">
           {topA.length === 0 ? (
-            <p className="text-xs text-gf-text-muted text-center">No categories</p>
+            <p className="text-xs text-gf-text-muted text-center">{t("categories.none")}</p>
           ) : (
             topA.map((item, i) => (
               <TypedTopCategoryRow key={`a-${item._id || item.type || i}`} item={item} index={i} onClick={onOpenItem} />
@@ -88,7 +90,7 @@ function CategoriesCompareTable({
         </div>
         <div className="flex flex-col gap-1 min-w-0">
           {topB.length === 0 ? (
-            <p className="text-xs text-gf-text-muted text-center">No categories</p>
+            <p className="text-xs text-gf-text-muted text-center">{t("categories.none")}</p>
           ) : (
             topB.map((item, i) => (
               <TypedTopCategoryRow key={`b-${item._id || item.type || i}`} item={item} index={i} onClick={onOpenItem} />
@@ -97,8 +99,7 @@ function CategoriesCompareTable({
         </div>
       </div>
       <p className="text-[10px] text-gf-text-muted text-center">
-        Each side ranks its own top {TOP_N} categories independently - row 1 on the left and row 1
-        on the right don&apos;t have to be the same category.
+        {t("categories.compare.help", { p1: TOP_N })}
       </p>
     </div>
   );

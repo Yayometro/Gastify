@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
@@ -7,6 +8,7 @@ import SelectCategories from "@/components/categories/SelectCategoryProvider/Sel
 import runNotify from "@/helpers/gastifyNotifier";
 import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { UserData } from "@/lib/features/userSlice";
+import { useT } from "@/i18n/client";
 
 export interface CategoryListProps {
   clCategories?: CategoryData[] | null;
@@ -14,6 +16,7 @@ export interface CategoryListProps {
 }
 
 function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.Element {
+  const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryData>({});
 
@@ -37,7 +40,7 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
         ) : clCategories.length <= 0 ? (
           <div className="w-full h-full flex flex-col justify-center items-center gap-2">
             <Spin size="large" />
-            <p className="">Loading...</p>
+            <p className="">{t("categories.loading")}</p>
           </div>
         ) : (
           clCategories.map((category) => (
