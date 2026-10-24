@@ -1,0 +1,561 @@
+{
+  "movements (incl. import y categorizador)": {
+    "total": 338,
+    "files": [
+      "src/components/multiUsedComp/Movements.tsx",
+      "src/components/multiUsedComp/MovementsGuideModal.tsx",
+      "src/components/multiUsedComp/EditSingleTransModal.tsx",
+      "src/components/multiUsedComp/ReadFileComp.tsx",
+      "src/components/multiUsedComp/EditMultipleTransModal.tsx",
+      "src/components/multiUsedComp/AddTransactionComp.tsx",
+      "src/components/multiUsedComp/TransferExchangeModal.tsx",
+      "src/components/multiUsedComp/QuickEditModal.tsx",
+      "src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/propsForColumnChartAntComparative-tabsToggler/propsColTabsToggler.tsx",
+      "src/components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsController.tsx",
+      "src/components/Transactions/ItemList/TransactionItemList.tsx",
+      "src/components/multiUsedComp/DuplicateComparisonTable.tsx",
+      "src/components/multiUsedComp/ResumeTabsTrans.tsx",
+      "src/components/multiUsedComp/TransDetailsGrandContainer.tsx",
+      "src/components/multiUsedComp/CategorySuggestions/CategorySuggestionsSection.tsx",
+      "src/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab.tsx",
+      "src/components/multiUsedComp/ImportFromExcelButton.tsx",
+      "src/components/multiUsedComp/TransResumeChart.tsx",
+      "src/components/multiUsedComp/CategorySuggestions/SuggestionsList.tsx",
+      "src/components/multiUsedComp/CategorySuggestionsModal.tsx",
+      "src/components/multiUsedComp/HistoricalMovementsandCategories/HistoricalMovementsView.tsx",
+      "src/components/multiUsedComp/LatestMovementsCard.tsx",
+      "src/components/multiUsedComp/TransactionsResumeCont.tsx",
+      "src/components/multiUsedComp/AddTransactionModal.tsx",
+      "src/components/multiUsedComp/TabsTrans.tsx",
+      "src/components/multiUsedComp/MovementsClient.tsx",
+      "src/components/multiUsedComp/TabsComponents/tabsMontlyTransactions/TabsTogglerMontlyView.tsx",
+      "src/components/multiUsedComp/ToolsModal.tsx"
+    ]
+  },
+  "core/info": {
+    "total": 261,
+    "files": [
+      "packages/core/src/info/appInfo.ts",
+      "packages/core/src/info/createInfo.ts"
+    ]
+  },
+  "wallet-analyzer": {
+    "total": 201,
+    "files": [
+      "src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalWalletAnalyzer.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerView.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/InsightDetailModal.tsx",
+      "src/components/multiUsedComp/HistoricalWalletAnalyzer/BudgetPeriodDetailModal.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerProjectionCard.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerTrendChart.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/WeekdaySpendingDetailModal.tsx",
+      "src/components/multiUsedComp/HistoricalWalletAnalyzer/HistoricalProjectionsTable.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerInsightsStrip.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerTeaser.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/WalletAnalyzerWeekdayChart.tsx",
+      "src/components/multiUsedComp/walletAnalyzer/MonthlyChampionsModal.tsx"
+    ]
+  },
+  "mobile/app/more": {
+    "total": 184,
+    "files": [
+      "apps/mobile/src/app/more/analyzer.tsx",
+      "apps/mobile/src/app/more/categories/[id].tsx",
+      "apps/mobile/src/app/more/history.tsx",
+      "apps/mobile/src/app/more/accounts/[id].tsx",
+      "apps/mobile/src/app/more/profile.tsx",
+      "apps/mobile/src/app/more/projections.tsx",
+      "apps/mobile/src/app/more/index.tsx",
+      "apps/mobile/src/app/more/categories/index.tsx",
+      "apps/mobile/src/app/more/accounts/index.tsx",
+      "apps/mobile/src/app/more/accounts/new.tsx",
+      "apps/mobile/src/app/more/categories/new.tsx"
+    ]
+  },
+  "budgets": {
+    "total": 136,
+    "files": [
+      "src/components/multiUsedComp/Budgets/BudgetEditModal.tsx",
+      "src/components/multiUsedComp/Budgets/UnbudgetedSpending.tsx",
+      "src/components/multiUsedComp/Budgets/BudgetDetailModal.tsx",
+      "src/components/multiUsedComp/Budgets/BudgetsClient.tsx",
+      "src/components/multiUsedComp/Budgets/ProjectBudgetDetailModal.tsx",
+      "src/components/multiUsedComp/BudgetCont.tsx",
+      "src/components/multiUsedComp/Budgets/SpendingSummaryDetailModal.tsx",
+      "src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalDetailModal.tsx",
+      "src/components/multiUsedComp/historicalBudgetsComparative/HistoricalBudgetsComparativeView.tsx",
+      "src/components/multiUsedComp/historicalBudgetsComparative/BudgetHistoricalComparativeRow.tsx",
+      "src/components/multiUsedComp/historicalBudgetsComparative/propsForBudgetMonthlyChart.tsx",
+      "src/components/multiUsedComp/Budgets/BudgetBarRow.tsx"
+    ]
+  },
+  "mobile/components/raíz": {
+    "total": 124,
+    "files": [
+      "apps/mobile/src/components/movement-form.tsx",
+      "apps/mobile/src/components/budget-summary-sheet.tsx",
+      "apps/mobile/src/components/top-ranking.tsx",
+      "apps/mobile/src/components/compact-time-filter.tsx",
+      "apps/mobile/src/components/transfer-form.tsx",
+      "apps/mobile/src/components/category-picker.tsx",
+      "apps/mobile/src/components/export-sheet.tsx",
+      "apps/mobile/src/components/account-card-color.tsx",
+      "apps/mobile/src/components/color-picker.tsx",
+      "apps/mobile/src/components/icon-picker.tsx",
+      "apps/mobile/src/components/month-grid-modal.tsx",
+      "apps/mobile/src/components/toast.tsx",
+      "apps/mobile/src/components/bank-picker.tsx",
+      "apps/mobile/src/components/date-field.tsx",
+      "apps/mobile/src/components/info-tip.tsx",
+      "apps/mobile/src/components/month-switcher.tsx",
+      "apps/mobile/src/components/picker-modal.tsx",
+      "apps/mobile/src/components/totals-card.tsx",
+      "apps/mobile/src/components/appearance-card.tsx",
+      "apps/mobile/src/components/budget-progress.tsx",
+      "apps/mobile/src/components/chip-picker.tsx",
+      "apps/mobile/src/components/period-controls.tsx",
+      "apps/mobile/src/components/side-nav.tsx",
+      "apps/mobile/src/components/account-card.tsx",
+      "apps/mobile/src/components/date-rail.tsx",
+      "apps/mobile/src/components/info-content.tsx",
+      "apps/mobile/src/components/option-sheet.tsx"
+    ]
+  },
+  "compartidos (componentes)": {
+    "total": 119,
+    "files": [
+      "src/components/Verify2FAClient.tsx",
+      "src/components/multiUsedComp/TwoFactorPanel.tsx",
+      "src/components/multiUsedComp/ApiTokensPanel.tsx",
+      "src/components/multiUsedComp/DedupPreviewModal.tsx",
+      "src/components/Filters/timeRange/TimeRange.tsx",
+      "src/components/icons/IconsPreviewClient.tsx",
+      "src/components/multiUsedComp/chartsComponents/responsiveBarsChartComponent/ResponsiveBarsChartComponent.tsx",
+      "src/components/multiUsedComp/ChargedElsewhereSection.tsx",
+      "src/components/multiUsedComp/DeletePreviewRow.tsx",
+      "src/components/multiUsedComp/InfoTip.tsx",
+      "src/components/multiUsedComp/PrimaryCurrencySelector.tsx",
+      "src/components/toltips/tooltipsForCharts/TooltipForChart.tsx",
+      "src/components/inputs/search/SearchInput.tsx",
+      "src/components/multiUsedComp/AmountEquivalentPreview.tsx",
+      "src/components/multiUsedComp/InfoContent.tsx",
+      "src/components/multiUsedComp/TabsComponents/TabsToggler.tsx",
+      "src/components/multiUsedComp/Tag.tsx"
+    ]
+  },
+  "api/transactions": {
+    "total": 88,
+    "files": [
+      "src/app/api/general-data/transactions/[id]/route.ts",
+      "src/app/api/general-data/transactions/transfer/route.ts",
+      "src/app/api/general-data/transactions/edit-many/route.ts",
+      "src/app/api/general-data/transactions/get-all/route.ts",
+      "src/app/api/general-data/transactions/speech-add/route.ts",
+      "src/app/api/general-data/transactions/remove-transaction/[id]/route.ts",
+      "src/app/api/general-data/transactions/transfer/remove/route.ts",
+      "src/app/api/general-data/transactions/get-transactions/route.ts",
+      "src/app/api/general-data/transactions/link-budget/route.ts",
+      "src/app/api/general-data/transactions/new-transaction/route.ts",
+      "src/app/api/general-data/transactions/remove-many/route.ts"
+    ]
+  },
+  "categories": {
+    "total": 79,
+    "files": [
+      "src/components/multiUsedComp/EditCategoryModal.tsx",
+      "src/components/multiUsedComp/CategoriesClient.tsx",
+      "src/components/multiUsedComp/CategoryTreemap.tsx",
+      "src/components/multiUsedComp/historicalComparativeCategories/CategoriesCompareTable.tsx",
+      "src/components/multiUsedComp/CategoryColorPicker.tsx",
+      "src/components/multiUsedComp/DisplayerCategoryCirclePacking.tsx",
+      "src/components/multiUsedComp/DisplayerCategoryTreemap.tsx",
+      "src/components/multiUsedComp/CategoryBreakdownCard.tsx",
+      "src/components/multiUsedComp/CategoryCirclePacking.tsx",
+      "src/components/categories/categoryCircleWithChilds/CategoryCircleWithChilds.tsx",
+      "src/components/multiUsedComp/CategoryList.tsx",
+      "src/components/multiUsedComp/SubCategoryList.tsx",
+      "src/components/categories/categoriesModalList/CategoriesModalList.tsx",
+      "src/components/multiUsedComp/historicalComparativeCategories/view/HistoricalComparativeCategoriesView.tsx",
+      "src/components/buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext.tsx",
+      "src/components/buttons/selectCategoryBtn/SelectCategoryBtn.tsx"
+    ]
+  },
+  "projections": {
+    "total": 74,
+    "files": [
+      "src/components/multiUsedComp/Projections/ProjectionMonthDetailModal.tsx",
+      "src/components/multiUsedComp/Projections/HistoricalBaselinePanel.tsx",
+      "src/components/multiUsedComp/Projections/ProjectionAccuracyReport.tsx",
+      "src/components/multiUsedComp/Projections/ProjectionsView.tsx",
+      "src/components/multiUsedComp/Projections/IncomeSourcesPanel.tsx",
+      "src/components/multiUsedComp/Projections/ProjectionsClient.tsx",
+      "src/components/multiUsedComp/Projections/ProjectionVarianceCell.tsx"
+    ]
+  },
+  "mobile/components/profile": {
+    "total": 70,
+    "files": [
+      "apps/mobile/src/components/profile/two-factor-card.tsx",
+      "apps/mobile/src/components/profile/api-tokens-card.tsx",
+      "apps/mobile/src/components/profile/access-card.tsx",
+      "apps/mobile/src/components/profile/delete-account-card.tsx",
+      "apps/mobile/src/components/profile/passkeys-card.tsx",
+      "apps/mobile/src/components/profile/currency-card.tsx"
+    ]
+  },
+  "mobile/components/analyzer": {
+    "total": 64,
+    "files": [
+      "apps/mobile/src/components/analyzer/sheets.tsx",
+      "apps/mobile/src/components/analyzer/supplement.tsx",
+      "apps/mobile/src/components/analyzer/detail-sheet.tsx"
+    ]
+  },
+  "dashboard": {
+    "total": 61,
+    "files": [
+      "src/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem.tsx",
+      "src/components/Dashboard.tsx",
+      "src/components/multiUsedComp/TopElementContainerView.tsx",
+      "src/components/multiUsedComp/TopElementsContainer.tsx",
+      "src/components/multiUsedComp/top3/topMonthContainer/TopMonthItem.tsx",
+      "src/components/multiUsedComp/MultiCreditCard.tsx",
+      "src/components/multiUsedComp/top3/topRankColumn/TopRankColumn.tsx"
+    ]
+  },
+  "mobile/components/projections": {
+    "total": 61,
+    "files": [
+      "apps/mobile/src/components/projections/historical-references-card.tsx",
+      "apps/mobile/src/components/projections/income-sources-card.tsx",
+      "apps/mobile/src/components/projections/month-sheet.tsx",
+      "apps/mobile/src/components/projections/accuracy-card.tsx"
+    ]
+  },
+  "core/accounts": {
+    "total": 49,
+    "files": [
+      "packages/core/src/accounts/cardStyle.ts",
+      "packages/core/src/accounts/accountForm.ts"
+    ]
+  },
+  "mobile/app/raíz": {
+    "total": 47,
+    "files": [
+      "apps/mobile/src/app/explore.tsx",
+      "apps/mobile/src/app/index.tsx",
+      "apps/mobile/src/app/notifications.tsx",
+      "apps/mobile/src/app/add.tsx"
+    ]
+  },
+  "auth (login, registro, 2FA, passkeys)": {
+    "total": 44,
+    "files": [
+      "src/components/LoginComponent.tsx",
+      "src/components/RegisterComp.tsx",
+      "src/components/multiUsedComp/PasskeysPanel.tsx",
+      "src/lib/auth/stepUpRedirect.ts"
+    ]
+  },
+  "mobile/components/history": {
+    "total": 44,
+    "files": [
+      "apps/mobile/src/components/history/extra-insights.tsx",
+      "apps/mobile/src/components/history/budgets-comparative.tsx",
+      "apps/mobile/src/components/history/month-by-month.tsx",
+      "apps/mobile/src/components/history/own-period-categories.tsx",
+      "apps/mobile/src/components/history/projections-teaser.tsx",
+      "apps/mobile/src/components/history/period-bar.tsx"
+    ]
+  },
+  "accounts": {
+    "total": 43,
+    "files": [
+      "src/components/multiUsedComp/EditAccountModal.tsx",
+      "src/components/multiUsedComp/AccountClient.tsx",
+      "src/components/multiUsedComp/DeleteAccountPanel.tsx"
+    ]
+  },
+  "mobile/components/home": {
+    "total": 43,
+    "files": [
+      "apps/mobile/src/components/home/summary-carousel.tsx",
+      "apps/mobile/src/components/home/tablet-wallet-header.tsx",
+      "apps/mobile/src/components/home/summary-widget.tsx",
+      "apps/mobile/src/components/home/insights-widget.tsx",
+      "apps/mobile/src/components/home/budgets-widget.tsx",
+      "apps/mobile/src/components/home/category-table.tsx",
+      "apps/mobile/src/components/home/top-elements.tsx"
+    ]
+  },
+  "mobile/app/budgets": {
+    "total": 38,
+    "files": [
+      "apps/mobile/src/app/budgets/[id].tsx",
+      "apps/mobile/src/app/budgets/index.tsx"
+    ]
+  },
+  "mobile/app/movements": {
+    "total": 37,
+    "files": [
+      "apps/mobile/src/app/movements/index.tsx",
+      "apps/mobile/src/app/movements/[id].tsx",
+      "apps/mobile/src/app/movements/import.tsx"
+    ]
+  },
+  "mobile/components/movements": {
+    "total": 36,
+    "files": [
+      "apps/mobile/src/components/movements/movement-filters.tsx",
+      "apps/mobile/src/components/movements/bulk-edit-sheet.tsx",
+      "apps/mobile/src/components/movements/movement-row.tsx"
+    ]
+  },
+  "api/accounts": {
+    "total": 33,
+    "files": [
+      "src/app/api/general-data/accounts/update-account/route.ts",
+      "src/app/api/general-data/accounts/new-account/route.ts",
+      "src/app/api/general-data/accounts/get-account/route.ts",
+      "src/app/api/general-data/accounts/remove-account/route.ts",
+      "src/app/api/general-data/accounts/reorder/route.ts"
+    ]
+  },
+  "navbar y accesos rápidos": {
+    "total": 33,
+    "files": [
+      "src/components/Navbar.tsx",
+      "src/components/multiUsedComp/NotificationsBell.tsx",
+      "src/components/multiUsedComp/IconDisplayerMenu.tsx",
+      "src/components/multiUsedComp/notifications/AlertCelebration.tsx",
+      "src/components/multiUsedComp/ToolsFab.tsx"
+    ]
+  },
+  "core/transactions": {
+    "total": 32,
+    "files": [
+      "packages/core/src/transactions/movementFilters.ts",
+      "packages/core/src/transactions/movementForm.ts",
+      "packages/core/src/transactions/duplicateSettings.ts"
+    ]
+  },
+  "mobile/components/forms": {
+    "total": 30,
+    "files": [
+      "apps/mobile/src/components/forms/budget-form.tsx",
+      "apps/mobile/src/components/forms/category-form.tsx",
+      "apps/mobile/src/components/forms/account-form.tsx"
+    ]
+  },
+  "api/categories": {
+    "total": 29,
+    "files": [
+      "src/app/api/general-data/categories/get-all/route.ts",
+      "src/app/api/general-data/categories/get-categories/route.ts",
+      "src/app/api/general-data/categories/update-category/route.ts",
+      "src/app/api/general-data/categories/new-category/route.ts",
+      "src/app/api/general-data/categories/remove-category/route.ts"
+    ]
+  },
+  "mobile/components/auth": {
+    "total": 29,
+    "files": [
+      "apps/mobile/src/components/auth/login-screen.tsx",
+      "apps/mobile/src/components/auth/no-two-factor-screen.tsx",
+      "apps/mobile/src/components/auth/two-factor-screen.tsx",
+      "apps/mobile/src/components/auth/code-step.tsx"
+    ]
+  },
+  "api/budget": {
+    "total": 28,
+    "files": [
+      "src/app/api/general-data/budget/update/route.ts",
+      "src/app/api/general-data/budget/new/route.ts",
+      "src/app/api/general-data/budget/remove/route.ts",
+      "src/app/api/general-data/budget/get/route.ts",
+      "src/app/api/general-data/budget/get-historical/route.ts"
+    ]
+  },
+  "inicio": {
+    "total": 28,
+    "files": [
+      "src/app/page.tsx"
+    ]
+  },
+  "core/history": {
+    "total": 27,
+    "files": [
+      "packages/core/src/history/periodComparison.ts"
+    ]
+  },
+  "api/projection-baseline": {
+    "total": 24,
+    "files": [
+      "src/app/api/general-data/projection-baseline/update/route.ts",
+      "src/app/api/general-data/projection-baseline/delete/route.ts",
+      "src/app/api/general-data/projection-baseline/get/route.ts"
+    ]
+  },
+  "profile": {
+    "total": 24,
+    "files": [
+      "src/components/ProfileClient.tsx"
+    ]
+  },
+  "core/budgets": {
+    "total": 24,
+    "files": [
+      "packages/core/src/budgets/budgetAlerts.ts",
+      "packages/core/src/budgets/budgetForm.ts"
+    ]
+  },
+  "api/subcategory": {
+    "total": 23,
+    "files": [
+      "src/app/api/general-data/subcategory/get-sub-categories/route.ts",
+      "src/app/api/general-data/subcategory/new/route.ts",
+      "src/app/api/general-data/subcategory/update/route.ts",
+      "src/app/api/general-data/subcategory/remove/route.ts"
+    ]
+  },
+  "api/files": {
+    "total": 22,
+    "files": [
+      "src/app/api/general-data/files/template/[email]/route.ts",
+      "src/app/api/general-data/files/deduplicate/[id]/route.ts",
+      "src/app/api/general-data/files/upload/[id]/route.ts",
+      "src/app/api/general-data/files/export/[email]/route.ts"
+    ]
+  },
+  "api/income-sources": {
+    "total": 22,
+    "files": [
+      "src/app/api/general-data/income-sources/update/route.ts",
+      "src/app/api/general-data/income-sources/remove/route.ts",
+      "src/app/api/general-data/income-sources/get/route.ts",
+      "src/app/api/general-data/income-sources/new/route.ts"
+    ]
+  },
+  "core/transformers": {
+    "total": 18,
+    "files": [
+      "packages/core/src/transformers/walletAnalyzer.ts",
+      "packages/core/src/transformers/budgetHistoricalComparative.ts",
+      "packages/core/src/transformers/projectionsChange.ts"
+    ]
+  },
+  "api/tags": {
+    "total": 16,
+    "files": [
+      "src/app/api/general-data/tags/update/route.ts",
+      "src/app/api/general-data/tags/new/route.ts",
+      "src/app/api/general-data/tags/remove/route.ts"
+    ]
+  },
+  "api/api-tokens": {
+    "total": 15,
+    "files": [
+      "src/app/api/general-data/api-tokens/remove/route.ts",
+      "src/app/api/general-data/api-tokens/new/route.ts",
+      "src/app/api/general-data/api-tokens/list/route.ts"
+    ]
+  },
+  "api/user": {
+    "total": 14,
+    "files": [
+      "src/app/api/general-data/user/update-user/route.ts",
+      "src/app/api/general-data/user/get-user/route.ts",
+      "src/app/api/general-data/user/remove-user/route.ts"
+    ]
+  },
+  "api/wallet": {
+    "total": 12,
+    "files": [
+      "src/app/api/general-data/wallet/route.ts",
+      "src/app/api/general-data/wallet/get-wallet/route.ts"
+    ]
+  },
+  "api/projections": {
+    "total": 11,
+    "files": [
+      "src/app/api/general-data/projections/update/route.ts",
+      "src/app/api/general-data/projections/get/route.ts"
+    ]
+  },
+  "api/category-rules": {
+    "total": 10,
+    "files": [
+      "src/app/api/general-data/category-rules/apply-suggestions/route.ts",
+      "src/app/api/general-data/category-rules/suggest/route.ts"
+    ]
+  },
+  "history": {
+    "total": 10,
+    "files": [
+      "src/components/multiUsedComp/periodFiltersWithCompare/PeriodFiltersWithCompare.tsx",
+      "src/components/multiUsedComp/top3/topMonthContainer/TopElementsCompareTable.tsx",
+      "src/components/multiUsedComp/HistoryClient.tsx",
+      "src/components/multiUsedComp/loaders/HistoryGate.tsx"
+    ]
+  },
+  "mobile/components/tools": {
+    "total": 8,
+    "files": [
+      "apps/mobile/src/components/tools/categorizer.tsx",
+      "apps/mobile/src/components/tools/tools-fab.tsx"
+    ]
+  },
+  "api/fx": {
+    "total": 5,
+    "files": [
+      "src/app/api/general-data/fx/quote/route.ts"
+    ]
+  },
+  "mobile/components/ui": {
+    "total": 5,
+    "files": [
+      "apps/mobile/src/components/ui/skeleton.tsx",
+      "apps/mobile/src/components/ui/bottom-sheet.tsx",
+      "apps/mobile/src/components/ui/card.tsx",
+      "apps/mobile/src/components/ui/text-field.tsx"
+    ]
+  },
+  "core/money": {
+    "total": 4,
+    "files": [
+      "packages/core/src/money/currencies.ts"
+    ]
+  },
+  "api/otras": {
+    "total": 3,
+    "files": [
+      "src/app/api/register/route.ts"
+    ]
+  },
+  "mobile/components/charts": {
+    "total": 3,
+    "files": [
+      "apps/mobile/src/components/charts/category-bubbles.tsx",
+      "apps/mobile/src/components/charts/category-donut.tsx",
+      "apps/mobile/src/components/charts/category-treemap.tsx"
+    ]
+  },
+  "core/profile": {
+    "total": 3,
+    "files": [
+      "packages/core/src/profile/profileForm.ts"
+    ]
+  },
+  "mobile/components/budgets": {
+    "total": 1,
+    "files": [
+      "apps/mobile/src/components/budgets/budget-card.tsx"
+    ]
+  },
+  "core/banks": {
+    "total": 1,
+    "files": [
+      "packages/core/src/banks/banks.ts"
+    ]
+  }
+}

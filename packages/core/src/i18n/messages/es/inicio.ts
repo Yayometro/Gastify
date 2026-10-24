@@ -1,0 +1,35 @@
+// Texts of the "inicio" namespace. Spanish is the source text.
+const inicio = {
+  "inicio.nav.login": "Entrar",
+  "inicio.charts.your": "tus",
+  "inicio.brand": "Gastify",
+  "inicio.cta.register": "Regístrame",
+  "inicio.hero.discover": "Descubre",
+  "inicio.hero.spendingHabits": "tus hábitos de gasto en",
+  "inicio.hero.time": "1 min",
+  "inicio.hero.intro": "Registra tus gastos e importa tus estados de cuenta directamente desde archivos Excel o XML",
+  "inicio.cta.login": "Entrar 🤓",
+  "inicio.cta.registerHeart": "Regístrame ❤️",
+  "inicio.alt.dashboard": "Panel de Gastify en una laptop",
+  "inicio.alt.import": "Importa tus estados de cuenta desde Excel",
+  "inicio.feature.import": "Importa",
+  "inicio.feature.bankStatements": "Estados de cuenta",
+  "inicio.feature.directly": "directamente con Excel o XML",
+  "inicio.feature.forget": "Olvídate de registrar a mano todos tus gastos e ingresos. Solo descarga tus estados de cuenta y automatiza el poder de Gastify.",
+  "inicio.alt.charts": "Gráficas personalizadas de tus gastos",
+  "inicio.charts.getAll": "Obtén todos tus",
+  "inicio.charts.cashMovements": "movimientos de dinero",
+  "inicio.charts.customizable": "en gráficas personalizables. ¡Que no se te escape nada!",
+  "inicio.charts.analyze": "Analiza tu flujo de dinero con gráficas responsivas y dinámicas.",
+  "inicio.cta.readyTitle": "¿Listo para tomar el control de tus finanzas?",
+  "inicio.cta.readyText": "En menos de un minuto estarás listo para usar la app. ¡Regístrate!",
+  "inicio.cta.registerBig": "REGÍSTRAME ❤️",
+  "inicio.devices.title": "Gastify en tus dispositivos",
+  "inicio.footer.copyright": "© {p1} Gastify",
+  "inicio.footer.rights": "Todos los derechos reservados por Gastify",
+  "inicio.footer.trademark": "Gastify es una marca registrada y propiedad intelectual de Jair Vázquez",
+  "inicio.footer.privacy": "Toda la información que compartes con Gastify se guarda de forma segura en nuestra base de datos, y la información sensible no es accesible para nosotros ni para ningún tercero que intente usarla.",
+  "inicio.footer.contact": "Contáctanos"
+} as const;
+
+export default inicio;

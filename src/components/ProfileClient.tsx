@@ -21,6 +21,7 @@ import PasskeysPanel from "./multiUsedComp/PasskeysPanel";
 import TwoFactorPanel from "./multiUsedComp/TwoFactorPanel";
 import DeleteAccountPanel from "./multiUsedComp/DeleteAccountPanel";
 import type { RootState, AppDispatch } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 // Typed bridge components for unmigrated JS components
 const TypedEmptyModule = EmptyModule as React.ComponentType<{
@@ -60,6 +61,7 @@ interface UpdateUserApiResponse {
 }
 
 function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
+  const t = useT();
   const [onEdition, setOnEdition] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [onEditPasswordState, setOnEditPasswordState] = useState<boolean>(false);
@@ -210,7 +212,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
       setUserInfo({ ...userInfo, image: res.info.secure_url });
       runNotify(
         "ok",
-        "Your new avatar was successfully uploaded into our database, now SAVE THE CHANGES to finally apply changes 🤓"
+        t("profile.avatar.saved")
       );
     }
   };
@@ -233,7 +235,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
               <TypedUniversalCategoIcon type={"md/MdOutlineEdit"} siz={30} />
             ) : (
               <div className="onedit-btn border-2 rounded-full px-2 py-1 flex justify-center items-center gap-2">
-                <p className="">Off</p>
+                <p className="">{t("profile.toggle.off")}</p>
                 <TypedUniversalCategoIcon type={"md/MdEditNote"} siz={30} />
               </div>
             )}
@@ -262,7 +264,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
               )}
               <div className="w-full h-full displayed-profile flex flex-col items-start gap-7 pt-6 px-4 pb-12 sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
                 <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">Full name:</p>
+                  <p className="text-[11px]">{t("profile.fullName.label")}</p>
                   <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
                     <p className="text-lg font-light text-left">
                       {userData.fullName || "No name. Asign One..."}
@@ -270,13 +272,13 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                   </div>
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">Mail:</p>
+                  <p className="text-[11px]">{t("profile.mail.label")}</p>
                   <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
                     <p className="text-lg font-light text-left">{userData.mail}</p>
                   </div>
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <div className="flex items-center gap-1"><p className="text-[11px]">Password:</p><InfoTip info={APP_INFO.acceso} /></div>
+                  <div className="flex items-center gap-1"><p className="text-[11px]">{t("profile.password.label")}</p><InfoTip info={APP_INFO.acceso} /></div>
                   <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
                     <p className="text-lg font-light truncate text-left">
                       ***********
@@ -290,7 +292,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                   </div>
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">Image:</p>
+                  <p className="text-[11px]">{t("profile.image.label")}</p>
                     <div className="prof-edit-img flex justify-center items-center w-full">
                       <Image
                       className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500"
@@ -304,7 +306,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                     </div>
                 </div>
                 <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">Phone:</p>
+                  <p className="text-[11px]">{t("profile.phone.label")}</p>
                   <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
                     <p className="text-lg font-light truncate text-left">
                       {userData.phone || "No phone register"}
@@ -338,7 +340,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                 </h1>
                 <div className="w-full h-full displayed-profile flex flex-col items-start gap-7 pt-6 px-4 ">
                   <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                    <p className="text-[11px]">Full name:</p>
+                    <p className="text-[11px]">{t("profile.fullName.label")}</p>
                     <input
                       className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
                       type="text"
@@ -348,7 +350,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                     />
                   </div>
                   <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                    <p className="text-[11px]">Mail:</p>
+                    <p className="text-[11px]">{t("profile.mail.label")}</p>
                     <input
                       className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
                       type="text"
@@ -358,7 +360,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                     />
                   </div>
                   <div id="gf-change-password-toggle" className=" w-full cpc-name flex gap-2 justify-start items-center">
-                    <p className="text-[11px]">Change password?:</p>
+                    <p className="text-[11px]">{t("profile.changePassword.label")}</p>
                     <ConfigProvider
                       theme={{
                         token: {
@@ -386,7 +388,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                     <div
                       className={` w-full cpc-name flex flex-col justify-center items-start gap-1 cursor-not-allowed`}
                     >
-                      <div className="flex items-center gap-1"><p className="text-[11px]">Password:</p><InfoTip info={APP_INFO.acceso} /></div>
+                      <div className="flex items-center gap-1"><p className="text-[11px]">{t("profile.password.label")}</p><InfoTip info={APP_INFO.acceso} /></div>
                       <input
                         className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
                         type="text"
@@ -400,20 +402,20 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                       <div
                         className={` w-full cpc-name flex flex-col justify-center items-start cursor-not-allowed`}
                       >
-                        <p className="text-[11px] text-start">Password:</p>
+                        <p className="text-[11px] text-start">{t("profile.password.label")}</p>
                         <Space direction="vertical">
                           <Input.Password
-                            placeholder="input password"
+                            placeholder={t("profile.password.placeholder")}
                             className="profile-input-password"
                             name="password"
                             value={userInfo.password || ""}
                             onChange={(v) => handleChange(v, "password")}
                           />
                           <p className="text-[11px] text-start">
-                            Confirm password:
+                            {t("profile.confirmPassword.label")}
                           </p>
                           <Input.Password
-                            placeholder="input password"
+                            placeholder={t("profile.password.placeholder")}
                             className="profile-input-password"
                             name="passwordConfirm"
                             value={userInfo.passwordConfirm || ""}
@@ -424,7 +426,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                     </div>
                   )}
                   <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                    <p className="text-[11px]">Image:</p>
+                    <p className="text-[11px]">{t("profile.image.label")}</p>
                     <div className=" w-full h-full flex  flex-col gap-2 justify-center items-center">
                       <Image
                       className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500 mb-2 hover:bg-gf-surface"
@@ -446,7 +448,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                               className="py-1 px-2 gf-glass-button rounded-2xl text-white"
                               onClick={() => open()}
                             >
-                              Upload an Image
+                              {t("profile.image.upload")}
                             </button>
                           );
                         }}
@@ -454,7 +456,7 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
                     </div>
                   </div>
                   <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                    <p className="text-[11px]">Phone:</p>
+                    <p className="text-[11px]">{t("profile.phone.label")}</p>
                     <PhoneInput
                       defaultCountry="ua"
                       value={String(userInfo.phone) || ""}

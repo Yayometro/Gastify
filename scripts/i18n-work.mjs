@@ -109,6 +109,61 @@ function hookName(sf) {
   return taken ? "tr" : "t";
 }
 
+// Does a node contain JSX elements anywhere below it? A text that holds one cannot be rewritten as one message.
+function containsJsx(node) {
+  let found = false;
+  const visit = (child) => {
+    if (found) return;
+    if (ts.isJsxElement(child) || ts.isJsxFragment(child) || ts.isJsxSelfClosingElement(child)) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(child, visit);
+  };
+  ts.forEachChild(node, visit);
+  return found;
+}
+
+// A text sentence mixed with variables inside one element ("Llevas {n} de 3"): one message with {p1}, {p2}... placeholders.
+// Only when nothing but text and plain {expressions} sit between the first and the last text (no elements, no strings).
+function mixedText(node, sf) {
+  const kids = node.children;
+  const meaningful = kids.filter((k) => !(ts.isJsxText(k) && k.getText(sf).trim() === ""));
+  if (meaningful.length < 2) return null;
+  if (!meaningful.every((k) => ts.isJsxText(k) || (ts.isJsxExpression(k) && k.expression))) return null;
+  if (!meaningful.some((k) => ts.isJsxText(k) && LETTER.test(k.getText(sf)))) return null;
+  const from = kids.indexOf(meaningful[0]);
+  const to = kids.indexOf(meaningful[meaningful.length - 1]);
+  let text = "";
+  const params = {};
+  const consumed = [];
+  let n = 0;
+  for (let i = from; i <= to; i += 1) {
+    const k = kids[i];
+    if (ts.isJsxText(k)) {
+      text += decodeEntities(k.getText(sf)).replace(/\s+/g, " ");
+      consumed.push(k);
+    } else if (ts.isJsxExpression(k) && k.expression && ts.isStringLiteral(k.expression)) {
+      // {" "} is the space React needs between two elements: it is text, not a value.
+      text += decodeEntities(k.expression.text).replace(/\s+/g, " ");
+    } else if (ts.isJsxExpression(k) && k.expression) {
+      if (containsJsx(k.expression)) return null;
+      n += 1;
+      params[`p${n}`] = k.expression.getText(sf);
+      text += `{p${n}}`;
+    }
+  }
+  const source = text.replace(/\s+/g, " ").trim();
+  if (!LETTER.test(source.replace(/\{p\d+\}/g, " "))) return null;
+  const first = kids[from];
+  const last = kids[to];
+  const firstRaw = ts.isJsxText(first) ? first.getText(sf) : "";
+  const lastRaw = ts.isJsxText(last) ? last.getText(sf) : "";
+  const start = ts.isJsxText(first) ? first.getStart(sf) + (firstRaw.length - firstRaw.trimStart().length) : first.getStart(sf);
+  const end = ts.isJsxText(last) ? last.getEnd() - (lastRaw.length - lastRaw.trimEnd().length) : last.getEnd();
+  return { start, end, source, params, consumed };
+}
+
 // Finds every text in one file. Each candidate says what to replace and what kind of text it is.
 function collect(file, rel) {
   const text = readFileSync(file, "utf8");
@@ -116,14 +171,28 @@ function collect(file, rel) {
   const client = isUseClient(sf) || HOOK_HINT.test(text);
   const candidates = [];
   const push = (entry) => candidates.push({ file: rel, ...entry });
+  const consumed = new Set();
 
   const visit = (node) => {
     if (ts.isCallExpression(node) && node.expression.getText(sf).startsWith("console.")) return;
 
+    if ((ts.isJsxElement(node) || ts.isJsxFragment(node)) && !consumed.has(node)) {
+      const mixed = mixedText(node, sf);
+      if (mixed) {
+        for (const child of mixed.consumed) consumed.add(child);
+        push({ kind: "mixed", start: mixed.start, end: mixed.end, source: mixed.source, params: mixed.params, pure: true, component: componentOf(node) });
+      }
+    }
+
     if (ts.isJsxText(node)) {
+      if (consumed.has(node)) {
+        ts.forEachChild(node, visit);
+        return;
+      }
       const raw = node.getText(sf);
       const value = decodeEntities(raw).replace(/\s+/g, " ").trim();
-      if (looksLikeText(value)) {
+      // Anything with letters between JSX tags is shown to the person, even a single lowercase word ("your").
+      if (LETTER.test(value)) {
         const siblings = node.parent.children.filter((child) => !(ts.isJsxText(child) && child.getText(sf).trim() === ""));
         const lead = raw.length - raw.trimStart().length;
         const start = node.getStart(sf) + lead;
@@ -242,12 +311,14 @@ function apply(namespace, files) {
     const todoHere = [];
     for (const candidate of candidates) {
       const entry = byText.get(candidate.source);
-      if (!entry) continue;
       const line = sf.getLineAndCharacterOfPosition(candidate.start).line + 1;
+      if (!entry) {
+        manual.push({ file: rel, line, source: candidate.source, reason: "no está en el archivo de traducciones: corre plan otra vez" });
+        continue;
+      }
       const reason =
-        !candidate.pure ? "texto junto a variables o elementos" :
-        !candidate.component ? "fuera de un componente (no hay hook)" :
-        !client ? "archivo sin hooks ni \"use client\" (puede ser de servidor)" :
+        !candidate.pure ? "texto junto a elementos o expresiones que no se pueden reescribir solos" :
+        !candidate.component ? "fuera de un componente (no hay dónde poner el hook)" :
         !ts.isBlock(candidate.component.node.body ?? ts.factory.createBlock([])) ? "componente con cuerpo de expresión" :
         null;
       if (reason) {
@@ -264,38 +335,52 @@ function apply(namespace, files) {
     // 1) The texts, replaced from the end of the file backwards so the earlier positions stay valid.
     let out = text;
     for (const item of [...todoHere].sort((a, b) => b.start - a.start)) {
-      const call = `${fn}("${item.key}")`;
-      const replacement = item.kind === "jsx-text" ? `{${call}}` : item.kind === "attr" && !item.inJsxExpr ? `{${call}}` : call;
+      const params = item.params ? `, { ${Object.entries(item.params).map(([name, expr]) => `${name}: ${expr}`).join(", ")} }` : "";
+      const call = `${fn}("${item.key}"${params})`;
+      const replacement = item.kind === "jsx-text" || item.kind === "mixed" ? `{${call}}` : item.kind === "attr" && !item.inJsxExpr ? `{${call}}` : call;
       out = out.slice(0, item.start) + replacement + out.slice(item.end);
     }
 
-    // 2) The hook at the top of each component that now uses it, found again in the rewritten file by name.
+    // 2) In each component that now uses the translator: the hook (client) or the awaited server translator, and for a
+    // server component the `async` that the await needs. Found again in the rewritten file by name.
     const reparsed = ts.createSourceFile(abs, out, ts.ScriptTarget.Latest, true, abs.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     const components = componentsByName(reparsed);
-    const hookInserts = [];
+    const inserts = [];
     for (const name of names) {
       const node = components.get(name);
       if (!node) continue;
       const body = node.body;
       const firstStatement = body.statements[0];
       const indent = firstStatement ? " ".repeat(reparsed.getLineAndCharacterOfPosition(firstStatement.getStart(reparsed)).character) : "  ";
-      hookInserts.push({ at: body.getStart(reparsed) + 1, text: `\n${indent}const ${fn} = useT();` });
+      const line = client
+        ? `\n${indent}const ${fn} = useT();`
+        : `\n${indent}const ${fn} = await serverT(["${namespace}"]);`;
+      inserts.push({ at: body.getStart(reparsed) + 1, text: line });
+      if (!client) {
+        const isAsync = Boolean(node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword));
+        if (!isAsync) {
+          const keyword = ts.isFunctionDeclaration(node) ? node.getChildren(reparsed).find((c) => c.kind === ts.SyntaxKind.FunctionKeyword) : null;
+          const at = keyword ? keyword.getStart(reparsed) : node.getStart(reparsed);
+          inserts.push({ at, text: "async " });
+        }
+      }
     }
-    for (const insert of hookInserts.sort((a, b) => b.at - a.at)) {
+    for (const insert of inserts.sort((a, b) => b.at - a.at)) {
       out = out.slice(0, insert.at) + insert.text + out.slice(insert.at);
     }
 
     // 3) The import, after the last import (or after "use client" when there is none).
-    if (!out.includes(HOOK_IMPORT)) {
+    const importLine = client ? HOOK_IMPORT : 'import { serverT } from "@/i18n/server";';
+    if (!out.includes(importLine)) {
       const check = ts.createSourceFile(abs, out, ts.ScriptTarget.Latest, true, abs.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
       const imports = check.statements.filter((statement) => ts.isImportDeclaration(statement));
       const anchor = imports.length > 0 ? imports[imports.length - 1].getEnd() : isUseClient(check) ? check.statements[0].getEnd() : 0;
-      out = out.slice(0, anchor) + `\n${HOOK_IMPORT}` + out.slice(anchor);
+      out = out.slice(0, anchor) + `\n${importLine}` + out.slice(anchor);
     }
 
     writeFileSync(abs, out, "utf8");
     rewritten += todoHere.length;
-    console.log(`  ${rel}: ${todoHere.length} textos`);
+    console.log(`  ${rel}: ${todoHere.length} textos (${client ? "cliente" : "servidor"})`);
   }
 
   // The catalogs, from the todo file: the same keys in Spanish and English.
