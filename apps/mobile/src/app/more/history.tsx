@@ -1,3 +1,4 @@
+import { usePeriodLabels } from '@/hooks/use-period-labels';
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -22,7 +23,7 @@ import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import type { RootState } from '@/store';
 import { GfSwitch } from '@/components/ui/switch';
-import { rangeLabelEs } from '@gastify/core/format/spanishDates';
+import { rangeLabel } from "@gastify/core/i18n/dates";
 import {
   COMPARE_PRESETS,
   HISTORY_PRESETS,
@@ -39,7 +40,7 @@ import type { TransactionData } from '@gastify/core/features/transacctionsSlice'
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
@@ -72,6 +73,7 @@ function periodFacts(t: TranslateFn, x: PeriodSummary<TransactionData>, cell: (v
 // optionally compare it with another (the same stretch a year earlier by default), and see the totals, the
 // months side by side, the categories and the biggest expenses of each.
 export default function HistoryScreen() {
+  const locale = useLocale();
   const { APP_INFO, HISTORY_INFO } = useInfo();
   const t = useT();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
@@ -97,13 +99,14 @@ export default function HistoryScreen() {
   const rangeA = useMemo(() => historyRange(preset, now, { from: parseDateText(from), to: parseDateText(to) }, month), [preset, now, from, to, month]);
   const rangeB = useMemo(() => compareRange(comparePreset, rangeA, { from: parseDateText(compareFrom), to: parseDateText(compareTo) }), [comparePreset, rangeA, compareFrom, compareTo]);
 
-  const a = useMemo<PeriodSummary<TransactionData>>(() => summarizePeriod(transactions, rangeA), [transactions, rangeA]);
-  const b = useMemo<PeriodSummary<TransactionData> | null>(() => (compareOn ? summarizePeriod(transactions, rangeB) : null), [compareOn, transactions, rangeB]);
+  const labels = usePeriodLabels();
+  const a = useMemo<PeriodSummary<TransactionData>>(() => summarizePeriod(transactions, rangeA, labels), [transactions, rangeA, labels]);
+  const b = useMemo<PeriodSummary<TransactionData> | null>(() => (compareOn ? summarizePeriod(transactions, rangeB, labels) : null), [compareOn, transactions, rangeB, labels]);
 
   const partial = historyStatus !== 'complete';
 
-  const labelA = rangeLabelEs(rangeA.start, rangeA.end);
-  const labelB = rangeLabelEs(rangeB.start, rangeB.end);
+  const labelA = rangeLabel(rangeA.start, rangeA.end, locale);
+  const labelB = rangeLabel(rangeB.start, rangeB.end, locale);
   const cell = (value: number) => formatMoneyMajor(value, currency);
 
   return (
@@ -124,7 +127,7 @@ export default function HistoryScreen() {
           />
         ) : (
           <>
-          <ChipPicker items={HISTORY_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPreset(id as HistoryPreset)} moreAfter={99} />
+          <ChipPicker items={HISTORY_PRESETS.map((p) => ({ id: p.value, label: t(p.label) }))} value={preset} onChange={(id) => setPreset(id as HistoryPreset)} moreAfter={99} />
           {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
           {preset === 'custom' && (
             <View className="gap-3">
@@ -140,7 +143,7 @@ export default function HistoryScreen() {
         </View>
         {compareOn && (
           <>
-            <ChipPicker items={COMPARE_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={comparePreset} onChange={(id) => setComparePreset(id as ComparePreset)} moreAfter={99} />
+            <ChipPicker items={COMPARE_PRESETS.map((p) => ({ id: p.value, label: t(p.label) }))} value={comparePreset} onChange={(id) => setComparePreset(id as ComparePreset)} moreAfter={99} />
             {comparePreset === 'custom' && (
               <View className="gap-3">
                 <DateField label={t("mobile.comparar.desde")} value={compareFrom} onChange={setCompareFrom} />

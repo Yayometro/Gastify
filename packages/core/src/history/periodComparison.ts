@@ -1,4 +1,5 @@
-import { MONTHS_ES_SHORT } from "../format/spanishDates";
+import { monthName } from "../i18n/dates";
+import type { Locale } from "../i18n/locales";
 import { filterBillsOrIncomes, orderByHighestValue, reduceTransCategoriesSliced, type TransactionLike } from "../transformers/transactionsChange";
 import { getPrimaryAmount } from "../transformers/transactionsChange";
 import { isInRange } from "../transactions/movementFilters";
@@ -10,34 +11,34 @@ import { monthTotals, topSpendingCategories, type CategoryTotal, type MonthBound
 export type HistoryPreset = "last3" | "month" | "thisMonth" | "lastMonth" | "thisQuarter" | "lastQuarter" | "thisYear" | "lastYear" | "q1" | "q2" | "q3" | "q4" | "h1" | "h2" | "custom";
 
 export const HISTORY_PRESETS: { value: HistoryPreset; label: string }[] = [
-  { value: "last3", label: "Últimos 3 meses" },
-  { value: "month", label: "Un mes" },
-  { value: "thisMonth", label: "Este mes" },
-  { value: "lastMonth", label: "Mes pasado" },
-  { value: "thisQuarter", label: "Este trimestre" },
-  { value: "lastQuarter", label: "Trimestre pasado" },
-  { value: "thisYear", label: "Este año" },
-  { value: "lastYear", label: "Año pasado" },
-  { value: "custom", label: "Personalizado" },
+  { value: "last3", label: "history.preset.last3" },
+  { value: "month", label: "history.preset.month" },
+  { value: "thisMonth", label: "history.preset.thisMonth" },
+  { value: "lastMonth", label: "history.preset.lastMonth" },
+  { value: "thisQuarter", label: "history.preset.thisQuarter" },
+  { value: "lastQuarter", label: "history.preset.lastQuarter" },
+  { value: "thisYear", label: "history.preset.thisYear" },
+  { value: "lastYear", label: "history.preset.lastYear" },
+  { value: "custom", label: "history.preset.custom" },
 ];
 
 // The longer list of the wide screens (the web's): the same as above plus each quarter and each half of the current year.
 export const HISTORY_PRESETS_EXTENDED: { value: HistoryPreset; label: string }[] = [
-  { value: "last3", label: "Últimos 3 meses" },
-  { value: "month", label: "Un mes" },
-  { value: "thisMonth", label: "Este mes" },
-  { value: "lastMonth", label: "Mes pasado" },
-  { value: "thisQuarter", label: "Este trimestre" },
-  { value: "lastQuarter", label: "Trimestre pasado" },
-  { value: "q1", label: "Trimestre 1" },
-  { value: "q2", label: "Trimestre 2" },
-  { value: "q3", label: "Trimestre 3" },
-  { value: "q4", label: "Trimestre 4" },
-  { value: "h1", label: "Primer semestre" },
-  { value: "h2", label: "Segundo semestre" },
-  { value: "thisYear", label: "Este año" },
-  { value: "lastYear", label: "Año pasado" },
-  { value: "custom", label: "Personalizado" },
+  { value: "last3", label: "history.preset.last3" },
+  { value: "month", label: "history.preset.month" },
+  { value: "thisMonth", label: "history.preset.thisMonth" },
+  { value: "lastMonth", label: "history.preset.lastMonth" },
+  { value: "thisQuarter", label: "history.preset.thisQuarter" },
+  { value: "lastQuarter", label: "history.preset.lastQuarter" },
+  { value: "q1", label: "history.preset.q1" },
+  { value: "q2", label: "history.preset.q2" },
+  { value: "q3", label: "history.preset.q3" },
+  { value: "q4", label: "history.preset.q4" },
+  { value: "h1", label: "history.preset.h1" },
+  { value: "h2", label: "history.preset.h2" },
+  { value: "thisYear", label: "history.preset.thisYear" },
+  { value: "lastYear", label: "history.preset.lastYear" },
+  { value: "custom", label: "history.preset.custom" },
 ];
 
 function startOfMonth(year: number, month: number): Date {
@@ -97,9 +98,9 @@ export function historyRange(preset: HistoryPreset, now: Date, custom: { from: D
 export type ComparePreset = "yearAgo" | "previous" | "custom";
 
 export const COMPARE_PRESETS: { value: ComparePreset; label: string }[] = [
-  { value: "yearAgo", label: "Mismo periodo del año anterior" },
-  { value: "previous", label: "Periodo anterior" },
-  { value: "custom", label: "Personalizado" },
+  { value: "yearAgo", label: "history.compare.yearAgo" },
+  { value: "previous", label: "history.compare.previous" },
+  { value: "custom", label: "history.preset.custom" },
 ];
 
 export function compareRange(preset: ComparePreset, base: MonthBounds, custom: { from: Date | null; to: Date | null }): MonthBounds {
@@ -146,7 +147,13 @@ export interface PeriodSummary<T extends TransactionLike = TransactionLike> {
   biggest: T[];
 }
 
-export function summarizePeriod<T extends TransactionLike>(movements: T[], range: MonthBounds): PeriodSummary<T> {
+// What the summary says in the person's language: the month names, and the name of the movements with no category.
+export interface PeriodLabels {
+  locale: Locale;
+  noCategory: string;
+}
+
+export function summarizePeriod<T extends TransactionLike>(movements: T[], range: MonthBounds, labels: PeriodLabels): PeriodSummary<T> {
   const inRange = movements.filter((movement) => isInRange(movement, range));
   const { incomes, bills } = filterBillsOrIncomes(inRange);
 
@@ -157,12 +164,12 @@ export function summarizePeriod<T extends TransactionLike>(movements: T[], range
     const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0, 23, 59, 59, 999);
     const inMonth = inRange.filter((movement) => isInRange(movement, { start: monthStart, end: monthEnd }));
     const totals = monthTotals(inMonth);
-    months.push({ label: MONTHS_ES_SHORT[cursor.getMonth()], incomes: totals.incomes, spending: totals.spending });
+    months.push({ label: monthName(cursor.getMonth(), labels.locale, "short"), incomes: totals.incomes, spending: totals.spending });
     cursor.setMonth(cursor.getMonth() + 1);
   }
 
   const incomeRows = orderByHighestValue(reduceTransCategoriesSliced(incomes)).map((row) => ({
-    name: row.type === "No category" ? "Sin categoría" : row.type,
+    name: row.type === "No category" ? labels.noCategory : row.type,
     icon: row.icon,
     color: row.color,
     value: Math.round(row.value * 100) / 100,

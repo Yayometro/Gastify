@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
-import { MONTHS_ES } from '@gastify/core/format/spanishDates';
-import { useT } from "@/i18n/client";
+
+import { useLocale, useT } from "@/i18n/client";
+import { monthName } from "@gastify/core/i18n/dates";
 
 // Picks a month of any year: the year moves with the arrows, the twelve months are a grid. Months after
 // `latest` are not offered. Used wherever a period is chosen by month (tap the month's name).
@@ -24,6 +25,7 @@ export function MonthGridModal({
   onClose: () => void;
 }) {
   const t = useT();
+  const locale = useLocale();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [year, setYear] = useState(value.getFullYear());
@@ -59,7 +61,7 @@ export function MonthGridModal({
             </Pressable>
           </View>
           <View className="flex-row flex-wrap justify-between gap-y-3 px-6">
-            {MONTHS_ES.map((label, month) => {
+            {Array.from({ length: 12 }, (_, month) => monthName(month, locale)).map((label, month) => {
               const selected = value.getFullYear() === year && value.getMonth() === month;
               const future = index(year, month) > latestIndex;
               return (

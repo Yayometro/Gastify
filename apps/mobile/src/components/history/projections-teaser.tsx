@@ -12,13 +12,13 @@ import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';
 import { getApi } from '@gastify/core/api/client';
-import { MONTHS_ES_SHORT } from '@gastify/core/format/spanishDates';
+import { monthName } from "@gastify/core/i18n/dates";
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { convertBaselineToPrimary, convertSourcesToPrimary, foreignCurrenciesOf } from '@gastify/core/transformers/projectionInputs';
 import { buildProjectionAccuracyReport, buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -26,6 +26,7 @@ type Answer = { ok?: boolean; data?: unknown };
 // The projections of a year inside History, with their own year filter: the net of each month (green when money is
 // left, red when it is not) and the year's total, with a link to the full table.
 export function ProjectionsTeaser() {
+  const locale = useLocale();
   const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
@@ -116,7 +117,7 @@ export function ProjectionsTeaser() {
             {nets.map((value, index) => (
               <View key={index} className="flex-1 items-center justify-end gap-1">
                 <View style={{ width: '70%', height: Math.max(3, (Math.abs(value) / max) * 56), borderRadius: 4, backgroundColor: value < 0 ? colors.expense : colors.income, opacity: rows[index]?.type === 'estimate' ? 0.55 : 1 }} />
-                <Text className="font-inter text-[9px] text-gf-text-muted">{MONTHS_ES_SHORT[index]?.[0]?.toUpperCase()}</Text>
+                <Text className="font-inter text-[9px] text-gf-text-muted">{monthName(index, locale, "short")?.[0]?.toUpperCase()}</Text>
               </View>
             ))}
           </View>

@@ -5,8 +5,8 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { MonthGridModal } from '@/components/month-grid-modal';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
-import { monthTitleEs } from '@gastify/core/format/spanishDates';
-import { useT } from "@/i18n/client";
+import { monthTitle } from "@gastify/core/i18n/dates";
+import { useT, useLocale } from "@/i18n/client";
 
 // Moves the month shown one step back or forward; tapping the month's name opens a picker for any month of
 // any year (the web does the same with its calendar). Months after `latest` are not offered. Every screen
@@ -20,6 +20,7 @@ export function MonthSwitcher({
   onChange: (month: Date) => void;
   latest: Date;
 }) {
+  const locale = useLocale();
   const t = useT();
   const scheme = useColorScheme();
   const iconColor = Colors[scheme === 'dark' ? 'dark' : 'light'].text;
@@ -39,8 +40,8 @@ export function MonthSwitcher({
         className="h-11 w-11 items-center justify-center rounded-full">
         <Ionicons name="chevron-back" size={22} color={iconColor} />
       </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${monthTitleEs(value)}. Elegir otro mes`} onPress={() => setPickerOpen(true)} hitSlop={8} className="flex-row items-center gap-1">
-        <Text className="font-inter-semibold text-base text-gf-text">{monthTitleEs(value)}</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${monthTitle(value, locale)}. Elegir otro mes`} onPress={() => setPickerOpen(true)} hitSlop={8} className="flex-row items-center gap-1">
+        <Text className="font-inter-semibold text-base text-gf-text">{monthTitle(value, locale)}</Text>
         <Ionicons name="caret-down" size={12} color={iconColor} />
       </Pressable>
       <Pressable

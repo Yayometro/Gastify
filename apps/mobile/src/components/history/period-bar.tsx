@@ -5,19 +5,21 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { OptionSheet } from '@/components/option-sheet';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
-import { rangeLabelEs } from '@gastify/core/format/spanishDates';
+import { rangeLabel } from "@gastify/core/i18n/dates";
 import { HISTORY_PRESETS_EXTENDED, type HistoryPreset } from '@gastify/core/history/periodComparison';
 import type { MonthBounds } from '@gastify/core/transactions/monthSummary';
-import { useT } from "@/i18n/client";
+import { useT, useLocale } from "@/i18n/client";
 
 // The time selector of the web's History for wide screens: one glass bar with the period's name and its start and end
 // dates, arrows to move it back or forward by its own length, and the full list of periods (last 3 months, a month,
 // each quarter, each half, the year...) one tap away.
 export function PeriodBar({ preset, range, onPreset, onShift, canGoForward }: { preset: HistoryPreset; range: MonthBounds; onPreset: (value: HistoryPreset) => void; onShift: (direction: -1 | 1) => void; canGoForward: boolean }) {
+  const locale = useLocale();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [open, setOpen] = useState(false);
-  const label = HISTORY_PRESETS_EXTENDED.find((item) => item.value === preset)?.label ?? 'Periodo';
+  const presetKey = HISTORY_PRESETS_EXTENDED.find((item) => item.value === preset)?.label;
+  const label = presetKey ? t(presetKey) : t('movements.range.fallback');
   return (
     <>
       <GlassSurface radius={30} style={{ minHeight: 64 }}>
@@ -27,17 +29,17 @@ export function PeriodBar({ preset, range, onPreset, onShift, canGoForward }: { 
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel={`${label}. Elegir otro periodo`} onPress={() => setOpen(true)} hitSlop={8} className="items-center">
             <View className="flex-row items-center gap-1.5">
-              <Text className="font-inter-semibold text-lg text-gf-text">{preset === 'custom' ? 'Periodo' : label}</Text>
+              <Text className="font-inter-semibold text-lg text-gf-text">{preset === 'custom' ? t('movements.range.fallback') : label}</Text>
               <Ionicons name="caret-down" size={13} color={colors.text} />
             </View>
-            <Text className="font-inter text-sm text-gf-text-muted">{rangeLabelEs(range.start, range.end)}</Text>
+            <Text className="font-inter text-sm text-gf-text-muted">{rangeLabel(range.start, range.end, locale)}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.periodo.siguiente")} accessibilityState={{ disabled: !canGoForward }} disabled={!canGoForward} onPress={() => onShift(1)} hitSlop={8} className="h-12 w-12 items-center justify-center rounded-full" style={{ opacity: canGoForward ? 1 : 0.3 }}>
             <Ionicons name="chevron-forward" size={26} color={colors.text} />
           </Pressable>
         </View>
       </GlassSurface>
-      <OptionSheet visible={open} title={t("mobile.periodo")} options={HISTORY_PRESETS_EXTENDED.map((item) => ({ id: item.value, label: item.label }))} isSelected={(id) => id === preset} onSelect={(id) => onPreset(id as HistoryPreset)} onClose={() => setOpen(false)} />
+      <OptionSheet visible={open} title={t("mobile.periodo")} options={HISTORY_PRESETS_EXTENDED.map((item) => ({ id: item.value, label: t(item.label) }))} isSelected={(id) => id === preset} onSelect={(id) => onPreset(id as HistoryPreset)} onClose={() => setOpen(false)} />
     </>
   );
 }

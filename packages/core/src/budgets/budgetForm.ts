@@ -6,17 +6,18 @@ import { dateText, parseDateText, parseMoneyText, parseSignedMoneyText } from ".
 // (a goal for an event with start and end dates and its own icon).
 export type BudgetKind = "spending" | "saving" | "project";
 
+// The labels are catalog keys ("budgets.kind.spending"): the screen shows them with t(label).
 export const BUDGET_KINDS: { value: BudgetKind; label: string }[] = [
-  { value: "spending", label: "Gasto" },
-  { value: "saving", label: "Ahorro" },
-  { value: "project", label: "Proyecto" },
+  { value: "spending", label: "budgets.kind.spending" },
+  { value: "saving", label: "budgets.kind.saving" },
+  { value: "project", label: "budgets.kind.project" },
 ];
 
 export const BUDGET_PERIODS = [
-  { value: "monthly", label: "Mensual" },
-  { value: "quarterly", label: "Trimestral" },
-  { value: "biannual", label: "Semestral" },
-  { value: "yearly", label: "Anual" },
+  { value: "monthly", label: "budgets.period.monthly" },
+  { value: "quarterly", label: "budgets.period.quarterly" },
+  { value: "biannual", label: "budgets.period.biannual" },
+  { value: "yearly", label: "budgets.period.yearly" },
 ] as const;
 
 export interface BudgetValues {
@@ -55,18 +56,19 @@ export function emptyBudgetValues(kind: BudgetKind, currency = "MXN", today: Dat
   };
 }
 
+// The errors are catalog keys ("budgets.error.name"): the screen shows them with t(key).
 export function validateBudget(values: BudgetValues): BudgetErrors {
   const errors: BudgetErrors = {};
-  if (!values.name.trim()) errors.name = "Escribe un nombre.";
-  if (parseMoneyText(values.goalAmount) === null) errors.goalAmount = "Escribe una meta mayor a cero.";
-  if (values.kind === "spending" && values.categoryIds.length === 0) errors.categoryIds = "Elige al menos una categoría.";
+  if (!values.name.trim()) errors.name = "budgets.error.name";
+  if (parseMoneyText(values.goalAmount) === null) errors.goalAmount = "budgets.error.goal";
+  if (values.kind === "spending" && values.categoryIds.length === 0) errors.categoryIds = "budgets.error.categories";
   if (values.kind === "saving" && values.linkedAccountIds.length === 0 && parseSignedMoneyText(values.savingAmount) === null) {
-    errors.savingAmount = "Escribe lo ahorrado o liga una cuenta.";
+    errors.savingAmount = "budgets.error.saving";
   }
   if (values.kind === "project") {
     const start = parseDateText(values.startDate);
     const end = parseDateText(values.endDate);
-    if (!start || !end || end < start) errors.endDate = "La fecha final debe ser igual o posterior a la inicial.";
+    if (!start || !end || end < start) errors.endDate = "budgets.error.endDate";
   }
   return errors;
 }

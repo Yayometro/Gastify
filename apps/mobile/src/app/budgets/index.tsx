@@ -13,7 +13,6 @@ import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';
 import { totalInPrimary } from '@gastify/core/accounts/accountTotals';
-import { monthTitleEs } from '@gastify/core/format/spanishDates';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getBudgetCoverage } from '@gastify/core/transformers/budgetCoverage';
 import { convertBudgetsToPrimary, type ConvertedBudget } from '@gastify/core/transformers/budgetCurrency';
@@ -22,7 +21,7 @@ import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChan
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
-import { rangeLabelEs } from '@gastify/core/format/spanishDates';
+import { monthTitle, rangeLabel } from "@gastify/core/i18n/dates";
 import { BudgetSummarySheet, type BudgetLine, type GroupLine } from '@/components/budget-summary-sheet';
 import { BudgetCard } from '@/components/budgets/budget-card';
 import { OptionSheet } from '@/components/option-sheet';
@@ -34,7 +33,7 @@ import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -69,6 +68,7 @@ function NewButton({ label, kind }: { label: string; kind: 'spending' | 'saving'
 // the goal), saving (linked accounts or the saved amount) and projects (everything spent on them).
 // Tap one to see its movements and to edit it; the buttons create each kind.
 export default function BudgetsScreen() {
+  const locale = useLocale();
   const { APP_INFO } = useInfo();
   const t = useT();
   const budgetsState = useSelector((state: RootState) => state.budgetReducer);
@@ -91,7 +91,7 @@ export default function BudgetsScreen() {
     const [a, b] = from <= to ? [from, to] : [to, from];
     return { start: new Date(a.getFullYear(), a.getMonth(), a.getDate(), 0, 0, 0, 0), end: new Date(b.getFullYear(), b.getMonth(), b.getDate(), 23, 59, 59, 999) };
   }, [custom, month, fromText, toText, now]);
-  const periodLabel = custom ? rangeLabelEs(bounds.start, bounds.end) : monthTitleEs(month);
+  const periodLabel = custom ? rangeLabel(bounds.start, bounds.end, locale) : monthTitle(month, locale);
   const accounts = accountsState.data;
   const rates = useRatesToPrimary(
     [...budgetsState.data.map((budget) => budget.currency), ...accounts.map((account) => account.currency)],

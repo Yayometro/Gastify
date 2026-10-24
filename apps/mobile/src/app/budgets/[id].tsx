@@ -22,7 +22,7 @@ import type { AppDispatch, RootState } from '@/store';
 import { totalInPrimary } from '@gastify/core/accounts/accountTotals';
 import { budgetToValues } from '@gastify/core/budgets/budgetForm';
 import { idOf } from '@gastify/core/categories/categoryForm';
-import { monthTitleEs } from '@gastify/core/format/spanishDates';
+import { monthTitle } from "@gastify/core/i18n/dates";
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { monthBounds, sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
@@ -31,11 +31,12 @@ import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurren
 import { getBudgetActualSpend, matchBillToBudget } from '@gastify/core/transformers/projectionsChange';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 // One budget: where it stands this month (or in total, for a project), the movements that count toward
 // it, and the same form that creates it to change it or delete it.
 export default function BudgetDetailScreen() {
+  const locale = useLocale();
   const { APP_INFO } = useInfo();
   const t = useT();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
@@ -161,7 +162,7 @@ export default function BudgetDetailScreen() {
   };
 
   return (
-    <Screen title={stored.name || 'Presupuesto'} subtitle={project ? 'Proyecto' : saving ? 'Meta de ahorro' : monthTitleEs(now)} backLabel="Presupuestos" onBack={back}>
+    <Screen title={stored.name || 'Presupuesto'} subtitle={project ? 'Proyecto' : saving ? 'Meta de ahorro' : monthTitle(now, locale)} backLabel="Presupuestos" onBack={back}>
       <Card title={project ? 'Gastado en total' : saving ? 'Ahorrado' : 'Gastado este mes'}>
         {goal > 0 && (
           <>

@@ -1,3 +1,4 @@
+import { usePeriodLabels } from '@/hooks/use-period-labels';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
@@ -44,6 +45,7 @@ export function SummaryWidget({
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [kind, setKind] = useState<Kind>('spending');
   // This chart can look at its own period; by default it follows the dashboard's.
+  const labels = usePeriodLabels();
   const [preset, setPreset] = useState<'dashboard' | HistoryPreset>('dashboard');
   const now = useMemo(() => new Date(), []);
   const [month, setMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
@@ -52,8 +54,8 @@ export function SummaryWidget({
   const { summary, movements } = useMemo(() => {
     if (preset === 'dashboard') return { summary: dashboardSummary, movements: dashboardMovements };
     const range = historyRange(preset, now, { from: parseDateText(customFrom), to: parseDateText(customTo) }, month);
-    return { summary: summarizePeriod(allMovements, range), movements: allMovements.filter((movement) => isInRange(movement, range)) };
-  }, [preset, month, now, customFrom, customTo, allMovements, dashboardSummary, dashboardMovements]);
+    return { summary: summarizePeriod(allMovements, range, labels), movements: allMovements.filter((movement) => isInRange(movement, range)) };
+  }, [preset, month, now, customFrom, customTo, allMovements, dashboardSummary, dashboardMovements, labels]);
   // The chart type, as the web's selector: the nested ring, the bubbles or the treemap.
   const [chart, setChart] = useState<'ring' | 'bubbles' | 'treemap'>('ring');
   const total = kind === 'spending' ? summary.totals.spending : summary.totals.incomes;

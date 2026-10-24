@@ -7,6 +7,7 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { ACCOUNT_TYPES } from "@gastify/core/accounts/accountForm";
 import { accountGradient } from "@gastify/core/accounts/accountActivity";
 import { cardPalette } from "@gastify/core/accounts/cardPalette";
+import { useT } from "@/i18n/client";
 
 // The account drawn as a card, the same as the phone draws it: its color and its pattern (both saved on the account), the
 // bank, the name and the kind, the balance in its own currency with its equivalent, the card number that can be revealed,
@@ -77,11 +78,13 @@ function AccountCardFace({
   flowCurrency,
   onOpen,
 }: AccountCardFaceProps): React.JSX.Element {
+  const t = useT();
   const [reveal, setReveal] = useState<boolean>(false);
   const patternId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const { stops, ink, tint, light } = cardPalette(cardColor, accountGradient(seed || name || "cuenta"));
   const bank = bankById(bankId);
-  const typeLabel = ACCOUNT_TYPES.find((option) => option.value === accountType)?.label ?? accountType ?? "Débito";
+  const typeKey = ACCOUNT_TYPES.find((option) => option.value === accountType)?.label;
+  const typeLabel = typeKey ? t(typeKey) : accountType ?? t("accounts.type.debit");
   const up = light ? "#15803d" : "#86efac";
   const down = light ? "#be123c" : "#fda4af";
 

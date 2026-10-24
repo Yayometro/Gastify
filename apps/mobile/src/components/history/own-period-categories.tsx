@@ -1,3 +1,4 @@
+import { usePeriodLabels } from '@/hooks/use-period-labels';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
@@ -11,7 +12,7 @@ import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
-import { rangeLabelEs } from '@gastify/core/format/spanishDates';
+import { rangeLabel } from "@gastify/core/i18n/dates";
 import { compareCategories, historyRange, summarizePeriod, type CompareRow, type HistoryPreset, type PeriodSummary } from '@gastify/core/history/periodComparison';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { CategoryTotal } from '@gastify/core/transactions/monthSummary';
@@ -19,7 +20,7 @@ import type { TransactionData } from '@gastify/core/features/transacctionsSlice'
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
-import { useT } from "@/i18n/client";
+import { useT, useLocale } from "@/i18n/client";
 
 type Own = 'dashboard' | HistoryPreset;
 
@@ -42,6 +43,7 @@ export function OwnPeriodCategories({
   compareSummary: PeriodSummary | null;
   currency: string;
 }) {
+  const locale = useLocale();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -51,15 +53,16 @@ export function OwnPeriodCategories({
   const [customFrom, setCustomFrom] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
   const [customTo, setCustomTo] = useState(() => dateText(now));
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const labels = usePeriodLabels();
   const [order, setOrder] = useState<'desc' | 'asc'>('desc');
   const ownRange = useMemo(() => own === 'dashboard' ? summary.range : historyRange(own, now, { from: parseDateText(customFrom), to: parseDateText(customTo) }, month), [own, summary.range, now, customFrom, customTo, month]);
 
   const { rows, compare } = useMemo(() => {
     const pick = (s: PeriodSummary) => (kind === 'spending' ? s.spendingByCategory : (s.incomeByCategory as CategoryTotal[]));
     if (own === 'dashboard') return { rows: compareCategories(pick(summary), compareSummary ? pick(compareSummary) : []), compare: Boolean(compareSummary) };
-    const mine = summarizePeriod(movements, ownRange);
+    const mine = summarizePeriod(movements, ownRange, labels);
     return { rows: compareCategories(pick(mine), []), compare: false };
-  }, [own, ownRange, movements, summary, compareSummary, kind]);
+  }, [own, ownRange, movements, summary, compareSummary, kind, labels]);
 
   const max = Math.max(1, ...rows.map((row) => Math.max(row.a, row.b)));
   const selectedRow = rows.find((row) => row.name === selectedCategory);
@@ -115,8 +118,8 @@ export function OwnPeriodCategories({
           <>
             <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.izquierda.el.periodo.elegido.derecha")}</Text>
             <View className={tablet ? 'flex-row items-start gap-4' : 'gap-5'}>
-              {column(`Periodo · ${rangeLabelEs(summary.range.start, summary.range.end)}`, selectedRow?.a ?? 0, selectedMovements)}
-              {column(`Comparado · ${rangeLabelEs(compareSummary.range.start, compareSummary.range.end)}`, selectedRow?.b ?? 0, comparedMovements)}
+              {column(`Periodo · ${rangeLabel(summary.range.start, summary.range.end, locale)}`, selectedRow?.a ?? 0, selectedMovements)}
+              {column(`Comparado · ${rangeLabel(compareSummary.range.start, compareSummary.range.end, locale)}`, selectedRow?.b ?? 0, comparedMovements)}
             </View>
           </>
         ) : selectedMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => open(tx)} />)}

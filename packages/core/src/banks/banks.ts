@@ -71,7 +71,7 @@ export function bankCountryForCurrency(currency: string | null | undefined): str
 export function normalizeCardNumber(value: unknown): { ok: boolean; value: string | null; message?: string } {
   if (value === null || value === undefined || String(value).trim() === "") return { ok: true, value: null };
   const digits = String(value).replace(/[\s-]/g, "");
-  if (!/^\d{4,19}$/.test(digits)) return { ok: false, value: null, message: "El número debe tener de 4 a 19 dígitos (solo números)." };
+  if (!/^\d{4,19}$/.test(digits)) return { ok: false, value: null, message: "accounts.error.cardNumber" };
   return { ok: true, value: digits };
 }
 

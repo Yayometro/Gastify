@@ -34,7 +34,7 @@ import { idOf } from '@gastify/core/categories/categoryForm';
 import { movementsToCsv, type CsvMovement } from '@gastify/core/exports/movementsCsv';
 import { movementsToJson } from '@gastify/core/exports/movementsJson';
 import { fetchTransHistory, type TransactionData } from '@gastify/core/features/transacctionsSlice';
-import { monthTitleEs } from '@gastify/core/format/spanishDates';
+import { monthTitle } from "@gastify/core/i18n/dates";
 import { isHistoryReadyFor } from '@gastify/core/transactions/historyReady';
 import { isBeforeCutoff, movementTime } from '@gastify/core/transactions/historyWindow';
 import { groupByDay, monthTotals, movementKind } from '@gastify/core/transactions/monthSummary';
@@ -57,7 +57,7 @@ import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange'
 import { getDuplicates, getDuplicatesToDelete } from '@gastify/core/transformers/transactionDuplicates';
 import { DUPLICATE_DEFAULTS, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 type DaySection = { key: string; title: string; data: TransactionData[] };
@@ -77,6 +77,7 @@ const BULK_ACTIONS = (t: TranslateFn): { field: BulkField; label: string; icon: 
 ]);
 
 export default function MovementsScreen() {
+  const locale = useLocale();
   const { APP_INFO } = useInfo();
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
@@ -150,7 +151,7 @@ export default function MovementsScreen() {
   const items = useMemo(() => sortNewestFirst(duplicatesOn ? duplicates : filtered), [duplicatesOn, duplicates, filtered]);
   const totals = useMemo(() => monthTotals(items), [items]);
   const sections = useMemo<DaySection[]>(
-    () => groupByDay(items, now).map((group) => ({ key: group.key, title: group.label, data: group.items })),
+    () => groupByDay(items, now, locale, t).map((group) => ({ key: group.key, title: group.label, data: group.items })),
     [items, now]
   );
 
@@ -160,7 +161,7 @@ export default function MovementsScreen() {
   const olderFailed = transactions.historyStatus === 'failed' && cutoffTime !== null && range.start.getTime() < cutoffTime;
   const loading = transactions.status === 'loading' && transactions.data.length === 0;
   const active = countActiveFilters(filters) + (duplicatesOn ? 1 : 0);
-  const periodLabel = preset === 'month' ? monthTitleEs(month) : rangePresetLabel(preset);
+  const periodLabel = preset === 'month' ? monthTitle(month, locale) : rangePresetLabel(preset, t);
 
   const selectedMovements = transactions.data.filter((movement) => selected.includes(String(movement._id)));
   const touchesOlder = cutoff !== null && selectedMovements.some((movement) => isBeforeCutoff(movement, cutoff));
@@ -260,7 +261,7 @@ export default function MovementsScreen() {
         </Pressable>
       </View>
 
-      <ChipPicker items={presetsWithYears(yearsWithMovements(transactions.data)).map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />
+      <ChipPicker items={presetsWithYears(yearsWithMovements(transactions.data), t).map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />
 
       {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
       {preset === 'custom' && (

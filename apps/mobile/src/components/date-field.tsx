@@ -6,14 +6,16 @@ import { Platform, Pressable, Text, View, useColorScheme, useWindowDimensions } 
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { Colors } from '@/constants/theme';
-import { longDateEs } from '@gastify/core/format/spanishDates';
+import { longDate } from "@gastify/core/i18n/dates";
+import { INTL_TAG } from "@gastify/core/i18n/locales";
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
-import { useT } from "@/i18n/client";
+import { useT, useLocale } from "@/i18n/client";
 
 // A date as a tappable field that opens the system calendar (the web opens one too). The value is the
 // local day as AAAA-MM-DD, the format the forms and core use.
 export function DateField({ label, value, onChange }: { label: string; value: string; onChange: (day: string) => void }) {
   const t = useT();
+  const locale = useLocale();
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const wide = useWindowDimensions().width >= 768;
@@ -46,10 +48,10 @@ export function DateField({ label, value, onChange }: { label: string; value: st
       <Text className="font-inter-medium text-sm text-gf-text-muted">{label}</Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${label}: ${longDateEs(date)}. Cambiar fecha`}
+        accessibilityLabel={`${label}: ${longDate(date, locale)}. Cambiar fecha`}
         onPress={open}
         className="h-[52px] flex-row items-center justify-between rounded-full border border-gf-border bg-gf-surface px-5">
-        <Text className="font-inter text-base text-gf-text">{longDateEs(date)}</Text>
+        <Text className="font-inter text-base text-gf-text">{longDate(date, locale)}</Text>
         <Ionicons name="calendar-outline" size={22} color={colors.accent} />
       </Pressable>
 
@@ -74,7 +76,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
                   value={draft}
                   mode="date"
                   display="inline"
-                  locale="es-MX"
+                  locale={INTL_TAG[locale]}
                   themeVariant={dark ? 'dark' : 'light'}
                   accentColor="#9333ea"
                   onValueChange={(_, picked) => setDraft(picked)}

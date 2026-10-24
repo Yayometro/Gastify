@@ -4,6 +4,7 @@ import { normalizeText } from "../search/normalizeText";
 import { movementTime } from "./historyWindow";
 import { monthBounds, movementKind, type MonthBounds } from "./monthSummary";
 import type { TransactionLike } from "../transformers/transactionsChange";
+import type { TranslateFn } from "../i18n/translate";
 
 // The filters of the Movements list, the same ones the web has (search, type, exact amount in the
 // main or the account's currency, category, sub-category) plus the account, and the periods.
@@ -126,34 +127,37 @@ export type RangePreset =
   | "custom"
   | `year:${number}`;
 
+// The labels are catalog keys ("movements.range.month"); the presets for a year are named with the year (see presetsWithYears).
 export const RANGE_PRESETS: { value: RangePreset; label: string }[] = [
-  { value: "month", label: "Por mes" },
-  { value: "last7", label: "7 días" },
-  { value: "last30", label: "30 días" },
-  { value: "last90", label: "90 días" },
-  { value: "lastMonth", label: "Mes pasado" },
-  { value: "last3", label: "Últimos 3 meses" },
-  { value: "q1", label: "Trimestre 1" },
-  { value: "q2", label: "Trimestre 2" },
-  { value: "q3", label: "Trimestre 3" },
-  { value: "q4", label: "Trimestre 4" },
-  { value: "h1", label: "Primer semestre" },
-  { value: "h2", label: "Segundo semestre" },
-  { value: "year", label: "Este año" },
-  { value: "lastYear", label: "Año pasado" },
-  { value: "custom", label: "Personalizado" },
+  { value: "month", label: "movements.range.month" },
+  { value: "last7", label: "movements.range.last7" },
+  { value: "last30", label: "movements.range.last30" },
+  { value: "last90", label: "movements.range.last90" },
+  { value: "lastMonth", label: "movements.range.lastMonth" },
+  { value: "last3", label: "movements.range.last3" },
+  { value: "q1", label: "movements.range.q1" },
+  { value: "q2", label: "movements.range.q2" },
+  { value: "q3", label: "movements.range.q3" },
+  { value: "q4", label: "movements.range.q4" },
+  { value: "h1", label: "movements.range.h1" },
+  { value: "h2", label: "movements.range.h2" },
+  { value: "year", label: "movements.range.year" },
+  { value: "lastYear", label: "movements.range.lastYear" },
+  { value: "custom", label: "movements.range.custom" },
 ];
 
-// The presets plus one entry per whole year ("Todo 2025"), newest first, before "Personalizado".
-export function presetsWithYears(years: number[]): { value: RangePreset; label: string }[] {
-  const yearEntries = [...new Set(years)].sort((a, b) => b - a).map((year) => ({ value: `year:${year}` as RangePreset, label: `Todo ${year}` }));
-  const custom = RANGE_PRESETS[RANGE_PRESETS.length - 1];
-  return [...RANGE_PRESETS.slice(0, -1), ...yearEntries, custom];
+// The presets, translated, plus one entry per whole year ("All of 2025"), newest first, before "Custom".
+export function presetsWithYears(years: number[], t: TranslateFn): { value: RangePreset; label: string }[] {
+  const presets = RANGE_PRESETS.map((entry) => ({ value: entry.value, label: t(entry.label) }));
+  const yearEntries = [...new Set(years)].sort((a, b) => b - a).map((year) => ({ value: `year:${year}` as RangePreset, label: t("movements.range.allYear", { p1: year }) }));
+  const custom = presets[presets.length - 1];
+  return [...presets.slice(0, -1), ...yearEntries, custom];
 }
 
-export function rangePresetLabel(preset: RangePreset): string {
-  if (preset.startsWith("year:")) return `Todo ${preset.slice(5)}`;
-  return RANGE_PRESETS.find((entry) => entry.value === preset)?.label ?? "Periodo";
+export function rangePresetLabel(preset: RangePreset, t: TranslateFn): string {
+  if (preset.startsWith("year:")) return t("movements.range.allYear", { p1: preset.slice(5) });
+  const entry = RANGE_PRESETS.find((item) => item.value === preset);
+  return entry ? t(entry.label) : t("movements.range.fallback");
 }
 
 // The years that have at least one movement, for the whole-year entries (movements without a date are skipped).

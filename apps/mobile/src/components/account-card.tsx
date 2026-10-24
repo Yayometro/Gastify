@@ -15,8 +15,9 @@ import { DEFAULT_CARD_PATTERN } from '@gastify/core/accounts/cardStyle';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
+import { useT } from '@/i18n/client';
 
-const TYPE_LABEL: Record<string, string> = Object.fromEntries(ACCOUNT_TYPES.map((type) => [type.value, type.label]));
+const TYPE_KEY: Record<string, string> = Object.fromEntries(ACCOUNT_TYPES.map((type) => [type.value, type.label]));
 
 export const ACCOUNT_CARD_WIDTH = 300;
 
@@ -38,6 +39,7 @@ export function AccountCard({
   onPress?: () => void;
   width?: number | undefined;
 }) {
+  const t = useT();
   const [reveal, setReveal] = useState(false);
   const bank = bankById(account.bankId);
   const id = idOf(account);
@@ -66,7 +68,7 @@ export function AccountCard({
           {account.bankId ? <BankBadge bankId={account.bankId} size={44} /> : null}
           <Text className="flex-1 font-inter-semibold text-lg" numberOfLines={1} style={{ color: ink }}>{account.name || 'Cuenta'}</Text>
           <View style={{ backgroundColor: tint(0.22), borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
-            <Text className="font-inter-medium text-[11px]" style={{ color: ink }}>{TYPE_LABEL[type] ?? type}</Text>
+            <Text className="font-inter-medium text-[11px]" style={{ color: ink }}>{TYPE_KEY[type] ? t(TYPE_KEY[type]) : type}</Text>
           </View>
         </View>
         <View>

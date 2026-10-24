@@ -53,9 +53,9 @@ export function CompactTimeFilter({
   const tabletWidth = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const selectMode = periodSelect && tabletWidth;
   const options = includeDashboard
-    ? [{ id: 'dashboard', label: t("mobile.igual.que.arriba") }, { id: 'custom', label: t("mobile.personalizado") }, ...HISTORY_PRESETS.filter((item) => item.value !== 'custom').map((item) => ({ id: item.value, label: item.label }))]
-    : HISTORY_PRESETS.map((item) => ({ id: item.value, label: item.label }));
-  const selectOptions = [...(includeDashboard ? [{ id: 'dashboard', label: t("mobile.igual.que.arriba") }] : []), ...HISTORY_PRESETS_EXTENDED.map((item) => ({ id: item.value, label: item.label }))];
+    ? [{ id: 'dashboard', label: t("mobile.igual.que.arriba") }, { id: 'custom', label: t("mobile.personalizado") }, ...HISTORY_PRESETS.filter((item) => item.value !== 'custom').map((item) => ({ id: item.value, label: t(item.label) }))]
+    : HISTORY_PRESETS.map((item) => ({ id: item.value, label: t(item.label) }));
+  const selectOptions = [...(includeDashboard ? [{ id: 'dashboard', label: t("mobile.igual.que.arriba") }] : []), ...HISTORY_PRESETS_EXTENDED.map((item) => ({ id: item.value, label: t(item.label) }))];
   const activeLabel = (selectMode ? selectOptions : options).find((item) => item.id === preset)?.label;
 
   if (selectMode) {

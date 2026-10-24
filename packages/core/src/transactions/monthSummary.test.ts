@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 
-import { dayLabelEs, monthTitleEs } from "../format/spanishDates";
+import { dayLabel, monthTitle } from "../i18n/dates";
+import { createTranslator } from "../i18n/translate";
+import mobileEs from "../i18n/messages/es/mobile";
+
+const t = createTranslator("es", mobileEs);
 import { groupByDay, monthBounds, monthTotals, movementKind, movementsInMonth, sortNewestFirst, topSpendingCategories } from "./monthSummary";
 
 const food = { _id: "c1", name: "Comida", icon: "fluent/pizza", color: "#f97316" };
@@ -96,7 +100,9 @@ describe("groupByDay", () => {
         movement("c", new Date(2026, 9, 18, 21, 0).toISOString(), {}),
         movement("d", new Date(2026, 9, 12, 8, 0).toISOString(), {}),
       ]),
-      today
+      today,
+      "es",
+      t
     );
     expect(groups.map((g) => [g.label, g.items.length])).toEqual([
       ["Hoy", 2],
@@ -106,13 +112,15 @@ describe("groupByDay", () => {
   });
 });
 
-describe("Spanish dates", () => {
-  it("titles a month with a capital letter", () => {
-    expect(monthTitleEs(new Date(2026, 9, 1))).toBe("Octubre 2026");
+describe("dates in the person's language", () => {
+  it("titles a month with a capital letter, in each language", () => {
+    expect(monthTitle(new Date(2026, 9, 1), "es")).toBe("Octubre 2026");
+    expect(monthTitle(new Date(2026, 9, 1), "en")).toBe("October 2026");
   });
 
   it("adds the year only when it is not the current one", () => {
     const today = new Date(2026, 0, 10);
-    expect(dayLabelEs(new Date(2025, 11, 31), today)).toBe("miércoles 31 de diciembre de 2025");
+    expect(dayLabel(new Date(2025, 11, 31), today, "es", t)).toBe("miércoles 31 de diciembre de 2025");
+    expect(dayLabel(new Date(2026, 0, 9), today, "es", t)).toBe("Ayer");
   });
 });

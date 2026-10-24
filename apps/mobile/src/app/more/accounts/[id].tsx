@@ -1,3 +1,4 @@
+import { usePeriodLabels } from '@/hooks/use-period-labels';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,7 +51,8 @@ export default function EditAccountScreen() {
   const period = usePeriod('month');
   const inPeriod = useMemo(() => mine.filter((movement) => isInRange(movement, period.range)), [mine, period.range]);
   const totals = useMemo(() => monthTotals(inPeriod), [inPeriod]);
-  const summary = useMemo(() => summarizePeriod(mine, period.range), [mine, period.range]);
+  const labels = usePeriodLabels();
+  const summary = useMemo(() => summarizePeriod(mine, period.range, labels), [mine, period.range, labels]);
   const rates = useRatesToPrimary([account?.currency], primary);
   const activity = useMemo(() => accountActivity(mine, period.range), [mine, period.range]);
   const [editOpen, setEditOpen] = useState(false);

@@ -18,12 +18,12 @@ import { DateField } from '@/components/date-field';
 import { ChipPicker } from '@/components/chip-picker';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { GfSwitch } from '@/components/ui/switch';
-import { monthTitleEs, rangeLabelEs } from '@gastify/core/format/spanishDates';
+import { monthTitle, rangeLabel } from "@gastify/core/i18n/dates";
 import { COMPARE_PRESETS, compareRange, historyRange, type ComparePreset, type HistoryPreset } from '@gastify/core/history/periodComparison';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { filterBillsOrIncomes, getPrimaryAmount, orderByHighestValue, reduceTransCategoriesSliced } from '@gastify/core/transformers/transactionsChange';
-import { useT } from "@/i18n/client";
+import { useT, useLocale } from "@/i18n/client";
 
 // The web's "Top" sizes (the switch 3 / 6 / 12 / 24).
 export const TOP_SIZES = [3, 6, 12, 24] as const;
@@ -46,6 +46,7 @@ export function TopRanking({
   returnTo?: string;
   showComparison?: boolean;
 }) {
+  const locale = useLocale();
   const t = useT();
   const [preset, setPreset] = useState<HistoryPreset>(defaultPreset);
   const [size, setSize] = useState<TopSize>(6);
@@ -92,7 +93,7 @@ export function TopRanking({
       const monthList = kind === 'bills' ? sets.bills : sets.incomes;
       return {
         key: `${start.getFullYear()}-${start.getMonth()}`,
-        title: monthTitleEs(start),
+        title: monthTitle(start, locale),
         categories: orderByHighestValue(reduceTransCategoriesSliced(monthList)).slice(0, size),
         biggest: [...monthList].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, size),
       };
@@ -114,14 +115,14 @@ export function TopRanking({
         </View>
         {compareOn && (
           <View className="gap-3">
-            <ChipPicker items={COMPARE_PRESETS.map((p) => ({ id: p.value, label: p.label }))} value={comparePreset} onChange={(id) => setComparePreset(id as ComparePreset)} moreAfter={99} />
+            <ChipPicker items={COMPARE_PRESETS.map((p) => ({ id: p.value, label: t(p.label) }))} value={comparePreset} onChange={(id) => setComparePreset(id as ComparePreset)} moreAfter={99} />
             {comparePreset === 'custom' && (
               <View className="gap-3">
                 <DateField label={t("mobile.comparar.desde")} value={compareFrom} onChange={setCompareFrom} />
                 <DateField label={t("mobile.comparar.hasta")} value={compareTo} onChange={setCompareTo} />
               </View>
             )}
-            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.se.compara.con.p1", { p1: rangeLabelEs(previousRange.start, previousRange.end) })}</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.se.compara.con.p1", { p1: rangeLabel(previousRange.start, previousRange.end, locale) })}</Text>
           </View>
         )}
         </>
@@ -215,7 +216,7 @@ export function TopRanking({
       )}
       {showComparison && compareOn && (
         <View className="gap-2 border-t border-gf-border pt-3">
-          <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.periodo.anterior.p1", { p1: rangeLabelEs(previousRange.start, previousRange.end) })}</Text>
+          <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.periodo.anterior.p1", { p1: rangeLabel(previousRange.start, previousRange.end, locale) })}</Text>
           {previousList.length === 0 && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.sin.movimientos.para.comparar")}</Text>}
           {by === 'categories' ? previousCategories.map((row, index) => (
             <RankedRow key={row.type} rank={index + 1} last={index === previousCategories.length - 1}>

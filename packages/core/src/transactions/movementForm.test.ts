@@ -105,8 +105,9 @@ describe("transfers", () => {
   });
 
   it("builds a transfer for the same currency and an exchange across currencies, in minor units", () => {
-    expect(buildTransferBody(values, sameCurrency)).toMatchObject({ kind: "transfer", sourceAmountMinor: 50000, destinationAmountMinor: 50000 });
-    expect(buildTransferBody({ ...values, destinationAmount: "27.5" }, crossCurrency)).toMatchObject({
+    const names = { exchange: "Cambio de moneda", transfer: "Transferencia" };
+    expect(buildTransferBody(values, sameCurrency, names)).toMatchObject({ kind: "transfer", sourceAmountMinor: 50000, destinationAmountMinor: 50000 });
+    expect(buildTransferBody({ ...values, destinationAmount: "27.5" }, crossCurrency, names)).toMatchObject({
       kind: "exchange",
       sourceAmountMinor: 50000,
       destinationAmountMinor: 2750,

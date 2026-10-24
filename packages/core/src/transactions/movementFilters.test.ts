@@ -1,4 +1,8 @@
 import { describe, it, expect } from "vitest";
+import { createTranslator } from "../i18n/translate";
+import movementsEs from "../i18n/messages/es/movements";
+
+const t = createTranslator("es", movementsEs);
 
 import { EMPTY_FILTERS, applyMovementFilters, countActiveFilters, isInRange, presetsWithYears, rangeFor, rangePresetLabel, yearsWithMovements, type FilterableMovement } from "./movementFilters";
 
@@ -107,10 +111,10 @@ describe("the web's period presets", () => {
   });
 
   it("adds an entry per year with data, newest first, and labels them", () => {
-    const list = presetsWithYears([2024, 2026, 2025, 2025]);
+    const list = presetsWithYears([2024, 2026, 2025, 2025], t);
     expect(list.map((entry) => entry.label).slice(-4)).toEqual(["Todo 2026", "Todo 2025", "Todo 2024", "Personalizado"]);
-    expect(rangePresetLabel("year:2025")).toBe("Todo 2025");
-    expect(rangePresetLabel("q2")).toBe("Trimestre 2");
+    expect(rangePresetLabel("year:2025", t)).toBe("Todo 2025");
+    expect(rangePresetLabel("q2", t)).toBe("Trimestre 2");
     expect(yearsWithMovements([{ date: "2025-03-01T12:00:00Z" }, { date: "2026-01-02T12:00:00Z" }, {}]).sort()).toEqual([2025, 2026]);
   });
 });

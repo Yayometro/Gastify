@@ -16,6 +16,7 @@ import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurren
 import { getExplicitBudgetId, isProjectBudget, isSavingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
+import { useT } from '@/i18n/client';
 
 const STORE_KEY = 'budget_alerts_shown';
 
@@ -34,6 +35,7 @@ async function readShown(): Promise<string[]> {
 // The notices that apply right now: one per budget, saving goal or project that reached a level this period. The toasts
 // show them as they appear, and the Notifications screen lists the same ones.
 export function useBudgetAlertList(): BudgetAlert[] {
+  const t = useT();
   const dismissed = useDismissedAlertKeys();
   const budgets = useSelector((state: RootState) => state.budgetReducer.data);
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
@@ -64,11 +66,11 @@ export function useBudgetAlertList(): BudgetAlert[] {
       } else {
         value = getBudgetActualSpend(budget, transactions, bounds.start, bounds.end);
       }
-      const alert = currentBudgetAlert({ budgetId: id, name: budget.name || 'Presupuesto', kind, ratio: value / goal, dayOfPeriod: now.getDate(), periodKey });
+      const alert = currentBudgetAlert({ budgetId: id, name: budget.name || t('budgets.alert.defaultName'), kind, ratio: value / goal, dayOfPeriod: now.getDate(), periodKey }, t);
       if (alert) out.push(alert);
     }
     return out;
-  }, [ready, budgets, transactions, accounts, currency, rates]);
+  }, [ready, budgets, transactions, accounts, currency, rates, t]);
   // The notices the person swiped away stay away (for this budget and period).
   return useMemo(() => all.filter((alert) => !dismissed.includes(alert.key)), [all, dismissed]);
 }

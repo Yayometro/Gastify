@@ -1,11 +1,12 @@
 import { parseSignedMoneyText } from "../transactions/movementForm";
 import { SUPPORTED_CURRENCIES } from "../money/currencies";
 
+// The labels are catalog keys ("accounts.type.debit"): the screen shows them with t(label).
 export const ACCOUNT_TYPES = [
-  { value: "debit", label: "Débito" },
-  { value: "credit", label: "Crédito" },
-  { value: "cash", label: "Efectivo" },
-  { value: "savings", label: "Ahorro" },
+  { value: "debit", label: "accounts.type.debit" },
+  { value: "credit", label: "accounts.type.credit" },
+  { value: "cash", label: "accounts.type.cash" },
+  { value: "savings", label: "accounts.type.savings" },
 ] as const;
 
 export const ACCOUNT_CURRENCIES: readonly string[] = SUPPORTED_CURRENCIES;
@@ -19,11 +20,12 @@ export interface AccountValues {
 
 export type AccountErrors = Partial<Record<"name" | "amount", string>>;
 
+// The errors are catalog keys ("accounts.error.nameRequired"): the screen shows them with t(key).
 export function validateAccount(values: AccountValues): AccountErrors {
   const errors: AccountErrors = {};
-  if (!values.name.trim()) errors.name = "Escribe un nombre.";
-  else if (values.name.trim().length > 40) errors.name = "Usa como máximo 40 caracteres.";
-  if (parseSignedMoneyText(values.amount) === null) errors.amount = "Escribe un saldo, por ejemplo 1500 o -800.";
+  if (!values.name.trim()) errors.name = "accounts.error.nameRequired";
+  else if (values.name.trim().length > 40) errors.name = "accounts.error.nameTooLong";
+  if (parseSignedMoneyText(values.amount) === null) errors.amount = "accounts.error.amountInvalid";
   return errors;
 }
 

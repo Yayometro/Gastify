@@ -15,7 +15,7 @@ import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
 import { messageOf } from '@/lib/write';
 import { getApi } from '@gastify/core/api/client';
-import { MONTHS_ES } from '@gastify/core/format/spanishDates';
+import { monthName } from "@gastify/core/i18n/dates";
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { totalInPrimary } from '@gastify/core/accounts/accountTotals';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
@@ -33,7 +33,7 @@ import { AccuracyCard } from '@/components/projections/accuracy-card';
 import { ProjectionMonthSheet } from '@/components/projections/month-sheet';
 import type { RootState } from '@/store';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -44,6 +44,7 @@ const TYPE_LABEL: Record<YearProjectionRow['type'], string> = { actual: 'Real', 
 // sources, the year's settings and the baseline. Like the web, anything entered in another currency (income
 // sources, the baseline, budgets) is converted to the main currency before the math.
 export default function ProjectionsScreen() {
+  const locale = useLocale();
   const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
@@ -180,7 +181,7 @@ export default function ProjectionsScreen() {
             return (
               <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={`Abrir ${row.monthName}`} onPress={() => setOpenMonth(index)} className="gap-1 rounded-xl px-3 py-3" style={zebra(index, dark)}>
                 <View className="flex-row items-center justify-between">
-                  <Text className={`font-inter-semibold ${T('text-base', 'text-3xl')} capitalize text-gf-text`}>{MONTHS_ES[index] ?? row.monthName}</Text>
+                  <Text className={`font-inter-semibold ${T('text-base', 'text-3xl')} capitalize text-gf-text`}>{monthName(index, locale) ?? row.monthName}</Text>
                   <Text className={`font-inter-medium ${T('text-xs', 'text-lg')}`} style={{ color: row.type === 'estimate' ? colors.accent : colors.textSecondary }}>{TYPE_LABEL[row.type]}</Text>
                 </View>
                 <View className="flex-row gap-3">

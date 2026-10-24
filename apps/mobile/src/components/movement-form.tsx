@@ -156,7 +156,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
     }
   };
 
-  const errorText = (text?: string) => (text ? <Text className="font-inter text-sm text-red-500">{text}</Text> : null);
+  const errorText = (key?: string) => (key ? <Text className="font-inter text-sm text-red-500">{t(key)}</Text> : null);
 
   return (
     <View className="gap-4">

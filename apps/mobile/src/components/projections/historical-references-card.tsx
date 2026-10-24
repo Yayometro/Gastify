@@ -9,11 +9,11 @@ import { Card } from '@/components/ui/card';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
 import { messageOf, sendWrite } from '@/lib/write';
-import { monthTitleEs } from '@gastify/core/format/spanishDates';
+import { monthTitle } from "@gastify/core/i18n/dates";
 import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Kind = 'income' | 'expense';
@@ -23,6 +23,7 @@ const KIND_LABEL: Record<Kind, string> = { income: 'Ingreso', expense: 'Gasto' }
 // The historical references: the amounts each month that the projections start from (real income and spending
 // of the past, or an estimate that holds for a while). Income and spending are kept apart, as on the web.
 export function HistoricalReferencesCard({ baseline, currency, onChanged }: { baseline: AnyRecord | null; currency: string; onChanged: () => void }) {
+  const locale = useLocale();
   const { APP_INFO } = useInfo();
   const tr = useT();
   const toast = useToast();
@@ -89,7 +90,7 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
     ]);
   };
 
-  const label = (value: unknown) => (value ? monthTitleEs(new Date(value as string)) : '');
+  const label = (value: unknown) => (value ? monthTitle(new Date(value as string), locale) : '');
 
   return (
     <Card

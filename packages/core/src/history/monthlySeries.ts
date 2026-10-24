@@ -1,5 +1,6 @@
 import { monthBounds, monthTotals, movementsInMonth, type MonthTotals, type MonthBounds } from "../transactions/monthSummary";
-import { MONTHS_ES_SHORT } from "../format/spanishDates";
+import { monthName } from "../i18n/dates";
+import type { Locale } from "../i18n/locales";
 import type { TransactionLike } from "../transformers/transactionsChange";
 
 // The monthly history (oldest first): income, spending and balance of each of the last `count`
@@ -9,13 +10,13 @@ export interface MonthPoint extends MonthTotals {
   bounds: MonthBounds;
 }
 
-export function monthlySeries<T extends TransactionLike>(movements: T[], now: Date = new Date(), count = 12): MonthPoint[] {
+export function monthlySeries<T extends TransactionLike>(movements: T[], locale: Locale, now: Date = new Date(), count = 12): MonthPoint[] {
   const points: MonthPoint[] = [];
   for (let back = count - 1; back >= 0; back--) {
     const first = new Date(now.getFullYear(), now.getMonth() - back, 1);
     const bounds = monthBounds(first.getFullYear(), first.getMonth());
     const totals = monthTotals(movementsInMonth(movements, bounds));
-    points.push({ ...totals, label: MONTHS_ES_SHORT[first.getMonth()], bounds });
+    points.push({ ...totals, label: monthName(first.getMonth(), locale, "short"), bounds });
   }
   return points;
 }

@@ -61,11 +61,11 @@ export function AccountForm({
     <View className="gap-4">
       <View className="gap-2">
         <TextField label={t("mobile.nombre")} value={name} onChangeText={setName} placeholder={t("mobile.cuenta.nomina")} maxLength={40} autoCapitalize="sentences" />
-        {errors.name && <Text className="font-inter text-sm text-red-500">{errors.name}</Text>}
+        {errors.name && <Text className="font-inter text-sm text-red-500">{t(errors.name)}</Text>}
       </View>
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.tipo")}</Text>
-        <ChipPicker items={ACCOUNT_TYPES.map((type) => ({ id: type.value, label: type.label }))} value={accountType} onChange={setAccountType} />
+        <ChipPicker items={ACCOUNT_TYPES.map((type) => ({ id: type.value, label: t(type.label) }))} value={accountType} onChange={setAccountType} />
       </View>
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{currencyLocked ? `Moneda: ${currency} (no se cambia)` : 'Moneda (no se cambia después)'}</Text>
@@ -73,7 +73,7 @@ export function AccountForm({
       </View>
       <View className="gap-2">
         <TextField label={`Saldo (${currency})`} value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="numbers-and-punctuation" />
-        {errors.amount && <Text className="font-inter text-sm text-red-500">{errors.amount}</Text>}
+        {errors.amount && <Text className="font-inter text-sm text-red-500">{t(errors.amount)}</Text>}
       </View>
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.banco.opcional")}</Text>
@@ -89,7 +89,7 @@ export function AccountForm({
           </Pressable>
         </View>
         <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.es.opcional.nunca.pedimos.ni")}</Text>
-        {errors.cardNumber && <Text className="font-inter text-sm text-red-500">{errors.cardNumber}</Text>}
+        {errors.cardNumber && <Text className="font-inter text-sm text-red-500">{t(errors.cardNumber)}</Text>}
       </View>
       <FormError message={formError} />
       <GradientButton label={submitLabel} onPress={save} loading={saving} disabled={saving} />

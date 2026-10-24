@@ -12,7 +12,7 @@ export function PeriodControls({ period, years = [] }: { period: PeriodState; ye
   const t = useT();
   return (
     <View className="gap-3">
-      <ChipPicker items={presetsWithYears(years).map((p) => ({ id: p.value, label: p.label }))} value={period.preset} onChange={(id) => period.setPreset(id as RangePreset)} moreAfter={99} />
+      <ChipPicker items={presetsWithYears(years, t).map((p) => ({ id: p.value, label: p.label }))} value={period.preset} onChange={(id) => period.setPreset(id as RangePreset)} moreAfter={99} />
       {period.preset === 'month' && <MonthSwitcher value={period.month} onChange={period.setMonth} latest={period.now} />}
       {period.preset === 'custom' && (
         <View className="gap-3">

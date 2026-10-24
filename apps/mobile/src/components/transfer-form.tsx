@@ -44,7 +44,7 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
     if (Object.keys(found).length > 0) return;
     setSubmitting(true);
     try {
-      await onSubmit(buildTransferBody(values, currencies));
+      await onSubmit(buildTransferBody(values, currencies, { exchange: t("movements.transfer.defaultExchange"), transfer: t("movements.transfer.defaultTransfer") }));
     } catch (error) {
       setFormError(messageOf(error));
     } finally {
@@ -57,25 +57,25 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.desde")}</Text>
         <ChipPicker items={items} value={values.sourceAccountId} onChange={(id) => set('sourceAccountId', id)} emptyText="Primero crea dos cuentas en Más › Cuentas." />
-        {errors.sourceAccountId && <Text className="font-inter text-sm text-red-500">{errors.sourceAccountId}</Text>}
+        {errors.sourceAccountId && <Text className="font-inter text-sm text-red-500">{t(errors.sourceAccountId)}</Text>}
       </View>
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.hacia")}</Text>
         <ChipPicker items={items} value={values.destinationAccountId} onChange={(id) => set('destinationAccountId', id)} />
-        {errors.destinationAccountId && <Text className="font-inter text-sm text-red-500">{errors.destinationAccountId}</Text>}
+        {errors.destinationAccountId && <Text className="font-inter text-sm text-red-500">{t(errors.destinationAccountId)}</Text>}
       </View>
       <View className="gap-2">
         <TextField label={`Monto que sale${source ? ` (${source})` : ''}`} value={values.sourceAmount} onChangeText={(text) => set('sourceAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
-        {errors.sourceAmount && <Text className="font-inter text-sm text-red-500">{errors.sourceAmount}</Text>}
+        {errors.sourceAmount && <Text className="font-inter text-sm text-red-500">{t(errors.sourceAmount)}</Text>}
       </View>
       {crossCurrency && (
         <View className="gap-2">
           <TextField label={`Monto que llega${destination ? ` (${destination})` : ''}`} value={values.destinationAmount} onChangeText={(text) => set('destinationAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
-          {errors.destinationAmount && <Text className="font-inter text-sm text-red-500">{errors.destinationAmount}</Text>}
+          {errors.destinationAmount && <Text className="font-inter text-sm text-red-500">{t(errors.destinationAmount)}</Text>}
         </View>
       )}
       <DateField label={t("mobile.fecha")} value={values.date} onChange={(day) => set('date', day)} />
-      {errors.date && <Text className="font-inter text-sm text-red-500">{errors.date}</Text>}
+      {errors.date && <Text className="font-inter text-sm text-red-500">{t(errors.date)}</Text>}
       <TextField label={t("mobile.nombre.opcional")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={t("mobile.pago.de.tarjeta")} maxLength={80} />
       <FormError message={formError} />
       <GradientButton label={crossCurrency ? 'Cambiar moneda' : 'Transferir'} onPress={submit} loading={submitting} disabled={submitting} />

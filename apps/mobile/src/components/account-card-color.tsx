@@ -63,7 +63,7 @@ export function CardColorPicker({ account }: { account: AccountData }) {
   const palette = cardPalette(color, [autoFrom, autoTo]);
   // The colors are a single row until the person asks for all of them: the families take a lot of room.
   const [expanded, setExpanded] = useState(false);
-  const everyColor = [{ id: DEFAULT_CARD_COLOR, label: t("mobile.automatica"), stops: [autoFrom, autoTo] }, ...CARD_COLORS];
+  const everyColor = [{ id: DEFAULT_CARD_COLOR, label: t("mobile.automatica"), stops: [autoFrom, autoTo] }, ...CARD_COLORS.map((option) => ({ ...option, label: t(option.label) }))];
   const toggle = (label: string, onPress: () => void) => (
     <Pressable accessibilityRole="button" onPress={onPress} className="items-center rounded-full py-2.5" style={{ backgroundColor: colors.accentSoft }}>
       <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{label}</Text>
@@ -79,24 +79,24 @@ export function CardColorPicker({ account }: { account: AccountData }) {
               <Swatch key={option.id} selected={color === option.id} label={option.label} stops={option.stops} onPress={() => save({ cardColor: option.id })} accent={colors.accent} border={colors.border} text={colors.text} />
             ))}
           </ScrollView>
-          {toggle(`Ver todos los colores (${everyColor.length}) ›`, () => setExpanded(true))}
+          {toggle(t("accounts.card.showAll", { p1: everyColor.length }), () => setExpanded(true))}
         </View>
       ) : (
         <>
           {GROUPS.map((group) => (
         <View key={group} className="gap-2">
-          <Text className="font-inter-medium text-xs uppercase text-gf-text-muted">{group}</Text>
+          <Text className="font-inter-medium text-xs uppercase text-gf-text-muted">{t(`accounts.card.group.${group}`)}</Text>
           <View className="flex-row flex-wrap gap-2.5">
-            {group === 'Neutros' && (
+            {group === 'neutral' && (
               <Swatch selected={color === DEFAULT_CARD_COLOR} label={t("mobile.automatica")} stops={[autoFrom, autoTo]} onPress={() => save({ cardColor: DEFAULT_CARD_COLOR })} accent={colors.accent} border={colors.border} text={colors.text} />
             )}
             {CARD_COLORS.filter((option) => option.group === group).map((option) => (
-              <Swatch key={option.id} selected={color === option.id} label={option.label} stops={option.stops} onPress={() => save({ cardColor: option.id })} accent={colors.accent} border={colors.border} text={colors.text} />
+              <Swatch key={option.id} selected={color === option.id} label={t(option.label)} stops={option.stops} onPress={() => save({ cardColor: option.id })} accent={colors.accent} border={colors.border} text={colors.text} />
             ))}
           </View>
         </View>
           ))}
-          {toggle('Ver menos colores ‹', () => setExpanded(false))}
+          {toggle(t("accounts.card.showLess"), () => setExpanded(false))}
         </>
       )}
 
@@ -106,12 +106,12 @@ export function CardColorPicker({ account }: { account: AccountData }) {
           {CARD_PATTERNS.map((option) => {
             const selected = pattern === option.id;
             return (
-              <Pressable key={option.id} accessibilityRole="radio" accessibilityLabel={`Patrón ${option.label.toLowerCase()}`} accessibilityState={{ checked: selected }} onPress={() => save({ cardPattern: option.id })} className="gap-1" style={{ width: 84 }}>
+              <Pressable key={option.id} accessibilityRole="radio" accessibilityLabel={t("accounts.card.patternA11y", { p1: t(option.label).toLowerCase() })} accessibilityState={{ checked: selected }} onPress={() => save({ cardPattern: option.id })} className="gap-1" style={{ width: 84 }}>
                 <View style={{ height: 56, borderRadius: 14, overflow: 'hidden', borderWidth: selected ? 3 : 1, borderColor: selected ? colors.accent : colors.border }}>
                   <LinearGradient colors={palette.stops as [string, string, ...string[]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} />
                   <CardPattern pattern={option.id} tint={palette.tint} />
                 </View>
-                <Text className="font-inter-medium text-xs text-center" numberOfLines={1} style={{ color: selected ? colors.accent : colors.text }}>{option.label}</Text>
+                <Text className="font-inter-medium text-xs text-center" numberOfLines={1} style={{ color: selected ? colors.accent : colors.text }}>{t(option.label)}</Text>
               </Pressable>
             );
           })}
@@ -122,9 +122,10 @@ export function CardColorPicker({ account }: { account: AccountData }) {
 }
 
 function Swatch({ selected, label, stops, onPress, accent, border, text }: { selected: boolean; label: string; stops: string[]; onPress: () => void; accent: string; border: string; text: string }) {
+  const t = useT();
   const light = isLightColor(stops[0]);
   return (
-    <Pressable accessibilityRole="radio" accessibilityLabel={`Tarjeta ${label.toLowerCase()}`} accessibilityState={{ checked: selected }} onPress={onPress} className="items-center gap-1" style={{ width: 62 }}>
+    <Pressable accessibilityRole="radio" accessibilityLabel={t("accounts.card.swatchA11y", { p1: label.toLowerCase() })} accessibilityState={{ checked: selected }} onPress={onPress} className="items-center gap-1" style={{ width: 62 }}>
       <View className="items-center justify-center rounded-xl" style={{ width: 48, height: 48, borderWidth: selected ? 3 : 1, borderColor: selected ? accent : border, overflow: 'hidden' }}>
         <LinearGradient colors={stops as [string, string, ...string[]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} />
         {selected ? <Ionicons name="checkmark" size={20} color={light ? '#111827' : '#ffffff'} /> : null}

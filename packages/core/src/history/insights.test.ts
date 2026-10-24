@@ -4,6 +4,7 @@ import { computeInsights } from "./insights";
 import { historyRange, summarizePeriod } from "./periodComparison";
 
 const none = { from: null, to: null };
+const labels = { locale: "es" as const, noCategory: "Sin categoría" };
 const money = (amount: number) => ({ primary: { amountMinor: amount * 100, currency: "MXN" } });
 const cat = (name: string) => ({ _id: name, name, icon: "i", color: "#111" });
 const bill = (id: string, date: Date, amount: number, category: string) => ({ _id: id, date, isBill: true, isIncome: false, category: cat(category), displayMoney: money(amount) });
@@ -20,7 +21,7 @@ describe("computeInsights", () => {
   const range = historyRange("thisMonth", now, none);
 
   it("reads the pace, the projection, the savings rate and the top category of a period in progress", () => {
-    const current = summarizePeriod(movements, range);
+    const current = summarizePeriod(movements, range, labels);
     const insights = computeInsights(current, null, now);
     expect(insights.daysElapsed).toBe(10);
     expect(insights.dailyAverage).toBe(30);
@@ -36,10 +37,10 @@ describe("computeInsights", () => {
   });
 
   it("compares with the previous period and has no projection once the period is over", () => {
-    const current = summarizePeriod(movements, historyRange("thisMonth", now, none));
-    const previous = summarizePeriod(movements, historyRange("lastMonth", now, none));
+    const current = summarizePeriod(movements, historyRange("thisMonth", now, none), labels);
+    const previous = summarizePeriod(movements, historyRange("lastMonth", now, none), labels);
     expect(computeInsights(current, previous, now).spendingChange).toBeCloseTo(1); // 300 vs 150
-    const over = computeInsights(summarizePeriod(movements, historyRange("lastMonth", now, none)), null, now);
+    const over = computeInsights(summarizePeriod(movements, historyRange("lastMonth", now, none), labels), null, now);
     expect(over.projectedSpending).toBeNull();
   });
 });

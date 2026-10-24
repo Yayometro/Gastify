@@ -1,3 +1,4 @@
+import { usePeriodLabels } from '@/hooks/use-period-labels';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
@@ -28,13 +29,14 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   // Its own time filter, like the category widgets: it follows the screen's period (and comparison) until another one is chosen.
   const now = useMemo(() => new Date(), []);
+  const labels = usePeriodLabels();
   const [own, setOwn] = useState<'dashboard' | HistoryPreset>('dashboard');
   const [ownMonth, setOwnMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
   const [customFrom, setCustomFrom] = useState(() => dateText(new Date(now.getFullYear(), now.getMonth(), 1)));
   const [customTo, setCustomTo] = useState(() => dateText(now));
   const ownSummary = useMemo(
-    () => (own === 'dashboard' ? summary : summarizePeriod(movements, historyRange(own, now, { from: parseDateText(customFrom), to: parseDateText(customTo) }, ownMonth))),
-    [own, summary, movements, now, customFrom, customTo, ownMonth]
+    () => (own === 'dashboard' ? summary : summarizePeriod(movements, historyRange(own, now, { from: parseDateText(customFrom), to: parseDateText(customTo) }, ownMonth), labels)),
+    [own, summary, movements, now, customFrom, customTo, ownMonth, labels]
   );
   const months: MonthBar[] = ownSummary.months;
   const start = ownSummary.range.start;

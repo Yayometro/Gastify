@@ -9,13 +9,13 @@ Es un conteo de **piso**, no exacto: encuentra el texto JSX, los atributos que l
 | Área | Archivos con texto | Textos |
 |---|---:|---:|
 | web | 77 | 148 |
-| mobile | 47 | 61 |
-| core | 14 | 158 |
-| **Total** | **138** | **367** |
+| mobile | 46 | 59 |
+| core | 6 | 30 |
+| **Total** | **129** | **237** |
 
-Textos distintos: 296 (un mismo texto aparece en varias pantallas; el trabajo de traducción cuenta una vez cada texto distinto).
+Textos distintos: 191 (un mismo texto aparece en varias pantallas; el trabajo de traducción cuenta una vez cada texto distinto).
 
-Por tipo: texto JSX 2 · atributo visible 95 · mensaje de API 86 · Alert.alert 4 · aviso al usuario 22 · texto del core 158
+Por tipo: texto JSX 2 · atributo visible 93 · mensaje de API 86 · Alert.alert 4 · aviso al usuario 22 · texto del core 30
 
 ## Inicio y pantallas públicas
 
@@ -29,13 +29,9 @@ Pantallas de autenticación (login, registro, 2FA, passkeys): 2 textos en 2 arch
 
 | Zona | Archivos | Texto JSX | Atributos | API | Alertas | Avisos | Core | Total |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| core/accounts | 2 | 0 | 0 | 0 | 0 | 0 | 49 | **49** |
-| core/transactions | 3 | 0 | 0 | 0 | 0 | 0 | 32 | **32** |
-| core/history | 1 | 0 | 0 | 0 | 0 | 0 | 27 | **27** |
-| core/budgets | 2 | 0 | 0 | 0 | 0 | 0 | 24 | **24** |
 | categories | 9 | 0 | 13 | 0 | 0 | 5 | 0 | **18** |
-| mobile/components/raíz | 15 | 0 | 18 | 0 | 0 | 0 | 0 | **18** |
 | core/transformers | 3 | 0 | 0 | 0 | 0 | 0 | 18 | **18** |
+| mobile/components/raíz | 14 | 0 | 16 | 0 | 0 | 0 | 0 | **16** |
 | api/transactions | 8 | 0 | 0 | 15 | 0 | 0 | 0 | **15** |
 | api/accounts | 3 | 0 | 0 | 14 | 0 | 0 | 0 | **14** |
 | api/projection-baseline | 3 | 0 | 0 | 12 | 0 | 0 | 0 | **12** |
@@ -51,6 +47,7 @@ Pantallas de autenticación (login, registro, 2FA, passkeys): 2 textos en 2 arch
 | mobile/components/analyzer | 2 | 0 | 5 | 0 | 0 | 0 | 0 | **5** |
 | mobile/components/history | 4 | 0 | 5 | 0 | 0 | 0 | 0 | **5** |
 | mobile/components/profile | 5 | 0 | 1 | 0 | 4 | 0 | 0 | **5** |
+| core/transactions | 1 | 0 | 0 | 0 | 0 | 0 | 5 | **5** |
 | api/categories | 3 | 0 | 0 | 4 | 0 | 0 | 0 | **4** |
 | api/projections | 2 | 0 | 0 | 4 | 0 | 0 | 0 | **4** |
 | mobile/components/home | 3 | 0 | 4 | 0 | 0 | 0 | 0 | **4** |
@@ -75,39 +72,10 @@ Pantallas de autenticación (login, registro, 2FA, passkeys): 2 textos en 2 arch
 | mobile/components/budgets | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
 | mobile/components/projections | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
 | mobile/components/ui | 1 | 0 | 1 | 0 | 0 | 0 | 0 | **1** |
-| core/banks | 1 | 0 | 0 | 0 | 0 | 0 | 1 | **1** |
 
 ## Checklist por zona
 
 Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto fijo.
-
-<details><summary><strong>core/accounts</strong> — 49 textos en 2 archivos</summary>
-
-- [ ] `packages/core/src/accounts/cardStyle.ts` — 42 (texto del core 42)
-- [ ] `packages/core/src/accounts/accountForm.ts` — 7 (texto del core 7)
-
-</details>
-
-<details><summary><strong>core/transactions</strong> — 32 textos en 3 archivos</summary>
-
-- [ ] `packages/core/src/transactions/movementFilters.ts` — 16 (texto del core 16)
-- [ ] `packages/core/src/transactions/movementForm.ts` — 11 (texto del core 11)
-- [ ] `packages/core/src/transactions/duplicateSettings.ts` — 5 (texto del core 5)
-
-</details>
-
-<details><summary><strong>core/history</strong> — 27 textos en 1 archivos</summary>
-
-- [ ] `packages/core/src/history/periodComparison.ts` — 27 (texto del core 27)
-
-</details>
-
-<details><summary><strong>core/budgets</strong> — 24 textos en 2 archivos</summary>
-
-- [ ] `packages/core/src/budgets/budgetAlerts.ts` — 12 (texto del core 12)
-- [ ] `packages/core/src/budgets/budgetForm.ts` — 12 (texto del core 12)
-
-</details>
 
 <details><summary><strong>categories</strong> — 18 textos en 9 archivos</summary>
 
@@ -123,9 +91,16 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 
 </details>
 
-<details><summary><strong>mobile/components/raíz</strong> — 18 textos en 15 archivos</summary>
+<details><summary><strong>core/transformers</strong> — 18 textos en 3 archivos</summary>
 
-- [ ] `apps/mobile/src/components/account-card-color.tsx` — 2 (atributo visible 2)
+- [ ] `packages/core/src/transformers/walletAnalyzer.ts` — 16 (texto del core 16)
+- [ ] `packages/core/src/transformers/budgetHistoricalComparative.ts` — 1 (texto del core 1)
+- [ ] `packages/core/src/transformers/projectionsChange.ts` — 1 (texto del core 1)
+
+</details>
+
+<details><summary><strong>mobile/components/raíz</strong> — 16 textos en 14 archivos</summary>
+
 - [ ] `apps/mobile/src/components/movement-form.tsx` — 2 (atributo visible 2)
 - [ ] `apps/mobile/src/components/transfer-form.tsx` — 2 (atributo visible 2)
 - [ ] `apps/mobile/src/components/account-card.tsx` — 1 (atributo visible 1)
@@ -140,14 +115,6 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 - [ ] `apps/mobile/src/components/info-tip.tsx` — 1 (atributo visible 1)
 - [ ] `apps/mobile/src/components/month-switcher.tsx` — 1 (atributo visible 1)
 - [ ] `apps/mobile/src/components/top-ranking.tsx` — 1 (atributo visible 1)
-
-</details>
-
-<details><summary><strong>core/transformers</strong> — 18 textos en 3 archivos</summary>
-
-- [ ] `packages/core/src/transformers/walletAnalyzer.ts` — 16 (texto del core 16)
-- [ ] `packages/core/src/transformers/budgetHistoricalComparative.ts` — 1 (texto del core 1)
-- [ ] `packages/core/src/transformers/projectionsChange.ts` — 1 (texto del core 1)
 
 </details>
 
@@ -282,6 +249,12 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 - [ ] `apps/mobile/src/components/profile/currency-card.tsx` — 1 (Alert.alert 1)
 - [ ] `apps/mobile/src/components/profile/delete-account-card.tsx` — 1 (atributo visible 1)
 - [ ] `apps/mobile/src/components/profile/passkeys-card.tsx` — 1 (Alert.alert 1)
+
+</details>
+
+<details><summary><strong>core/transactions</strong> — 5 textos en 1 archivos</summary>
+
+- [ ] `packages/core/src/transactions/duplicateSettings.ts` — 5 (texto del core 5)
 
 </details>
 
@@ -445,12 +418,6 @@ Cada archivo con sus textos. Marca la casilla cuando esté migrado y sin texto f
 <details><summary><strong>mobile/components/ui</strong> — 1 textos en 1 archivos</summary>
 
 - [ ] `apps/mobile/src/components/ui/card.tsx` — 1 (atributo visible 1)
-
-</details>
-
-<details><summary><strong>core/banks</strong> — 1 textos en 1 archivos</summary>
-
-- [ ] `packages/core/src/banks/banks.ts` — 1 (texto del core 1)
 
 </details>
 

@@ -24,9 +24,9 @@ import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch, RootState } from '@/store';
 import type { UserData } from '@gastify/core/features/userSlice';
 import { updateUser } from '@gastify/core/features/userSlice';
-import { longDateEs } from '@gastify/core/format/spanishDates';
+import { longDate } from "@gastify/core/i18n/dates";
 import { PROFILE_NAME_MAX, buildProfileBody, initialsOf, profileToValues, validateProfile, type ProfileErrors } from '@gastify/core/profile/profileForm';
-import { useT } from "@/i18n/client";
+import { useT, useLocale } from "@/i18n/client";
 
 const AVATAR = 96;
 
@@ -42,6 +42,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 // The account: photo or initials, the data the web's profile shows and the two fields the phone can change
 // (name and phone), then how the person signs in (e-mail and password) right under it.
 export default function ProfileScreen() {
+  const locale = useLocale();
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
@@ -127,7 +128,7 @@ export default function ProfileScreen() {
       <Card title={t("mobile.cuenta")}>
         <InfoRow label={t("mobile.correo")} value={email || '—'} />
         <InfoRow label={t("mobile.moneda.principal")} value={currency} />
-        {created && !Number.isNaN(created.getTime()) && <InfoRow label={t("mobile.miembro.desde")} value={longDateEs(created)} />}
+        {created && !Number.isNaN(created.getTime()) && <InfoRow label={t("mobile.miembro.desde")} value={longDate(created, locale)} />}
       </Card>
 
       <TwoFactorCard />

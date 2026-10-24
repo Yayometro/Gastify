@@ -43,7 +43,7 @@ export function BudgetForm({
 
   const categoryItems: ChipItem[] = categories.map((category) => ({ id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color }));
   const accountItems: ChipItem[] = accounts.map((account) => ({ id: idOf(account), label: `${account.name} · ${account.currency}` }));
-  const error = (text?: string) => (text ? <Text className="font-inter text-sm text-red-500">{text}</Text> : null);
+  const error = (key?: string) => (key ? <Text className="font-inter text-sm text-red-500">{t(key)}</Text> : null);
 
   const save = async () => {
     const found = validateBudget(values);
@@ -78,7 +78,7 @@ export function BudgetForm({
         <>
           <View className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.periodo")}</Text>
-            <ChipPicker items={BUDGET_PERIODS.map((period) => ({ id: period.value, label: period.label }))} value={values.period} onChange={(value) => set('period', value)} moreAfter={99} />
+            <ChipPicker items={BUDGET_PERIODS.map((period) => ({ id: period.value, label: t(period.label) }))} value={values.period} onChange={(value) => set('period', value)} moreAfter={99} />
           </View>
           <View className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categorias.que.cubre")}</Text>

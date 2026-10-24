@@ -1,3 +1,4 @@
+import { usePeriodLabels } from '@/hooks/use-period-labels';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
@@ -26,14 +27,14 @@ import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
 import type { RootState } from '@/store';
 import { accountActivity } from '@gastify/core/accounts/accountActivity';
 import { totalInPrimary } from '@gastify/core/accounts/accountTotals';
-import { rangeLabelEs } from '@gastify/core/format/spanishDates';
+import { rangeLabel } from "@gastify/core/i18n/dates";
 import { computeInsights } from '@gastify/core/history/insights';
 import { compareRange, summarizePeriod } from '@gastify/core/history/periodComparison';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { isInRange, yearsWithMovements } from '@gastify/core/transactions/movementFilters';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -54,6 +55,7 @@ function LinkText({ label, onPress }: { label: string; onPress: () => void }) {
 // The phone's dashboard ("Wallet" on the web): the period, the accounts as cards, the totals, the summary
 // with its tabs, the biggest elements, the insights, the budgets and the latest movements.
 export default function HomeScreen() {
+  const locale = useLocale();
   const { APP_INFO } = useInfo();
   const t = useT();
   const { data: session } = authClient.useSession();
@@ -63,9 +65,10 @@ export default function HomeScreen() {
   const { refresh, refreshing } = useRefreshAppData();
   const period = usePeriod('month');
 
-  const summary = useMemo(() => summarizePeriod(transactions.data, period.range), [transactions.data, period.range]);
+  const labels = usePeriodLabels();
+  const summary = useMemo(() => summarizePeriod(transactions.data, period.range, labels), [transactions.data, period.range, labels]);
   const inPeriod = useMemo(() => transactions.data.filter((movement) => isInRange(movement, period.range)), [transactions.data, period.range]);
-  const previous = useMemo(() => summarizePeriod(transactions.data, compareRange('previous', period.range, { from: null, to: null })), [transactions.data, period.range]);
+  const previous = useMemo(() => summarizePeriod(transactions.data, compareRange('previous', period.range, { from: null, to: null }), labels), [transactions.data, period.range, labels]);
   const insights = useMemo(() => computeInsights(summary, previous, period.now), [summary, previous, period.now]);
   // Side by side on a wide screen, the latest movements are as tall as the budgets beside them: about three rows per budget card.
   const wideFlag = useWindowDimensions().width >= WIDE_MIN_WIDTH;
@@ -87,7 +90,7 @@ export default function HomeScreen() {
   return (
     <Screen
       title={firstName ? `Hola, ${firstName}` : 'Inicio'}
-      subtitle={period.preset === 'month' ? period.label : rangeLabelEs(period.range.start, period.range.end)}
+      subtitle={period.preset === 'month' ? period.label : rangeLabel(period.range.start, period.range.end, locale)}
       headerAction={<NotificationsBell />}
       refreshing={refreshing}
       onRefresh={refresh}

@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 
 import { compareCategories, compareRange, historyRange, percentChange, summarizePeriod } from "./periodComparison";
 
+const labels = { locale: "es" as const, noCategory: "Sin categoría" };
+
 const now = new Date(2026, 9, 20, 12);
 const none = { from: null, to: null };
 const money = (amount: number) => ({ primary: { amountMinor: amount * 100, currency: "MXN" } });
@@ -41,7 +43,7 @@ describe("summarizePeriod", () => {
   ];
 
   it("totals only what is in the range, month by month and by category", () => {
-    const summary = summarizePeriod(movements, historyRange("last3", now, none));
+    const summary = summarizePeriod(movements, historyRange("last3", now, none), labels);
     expect(summary.totals).toMatchObject({ incomes: 1000, spending: 1000, balance: 0 });
     expect(summary.months.map((m) => [m.label, m.incomes, m.spending])).toEqual([["ago", 1000, 200], ["sep", 0, 800], ["oct", 0, 0]]);
     expect(summary.spendingByCategory.map((c) => [c.name, c.value]).sort()).toEqual([["Auto", 500], ["Comida", 500]]);

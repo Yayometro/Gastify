@@ -11,6 +11,7 @@ import { getExplicitBudgetId, isProjectBudget, isSavingBudget } from "@gastify/c
 import { getPrimaryAmount } from "@gastify/core/transformers/transactionsChange";
 import { monthBounds } from "@gastify/core/transactions/monthSummary";
 import { idOf } from "@gastify/core/categories/categoryForm";
+import { useT } from "@/i18n/client";
 
 const EMPTY: never[] = [];
 // The notices the person dismissed stay dismissed for this device (a notice is about one budget and one period).
@@ -36,6 +37,7 @@ function writeDismissed(keys: string[]): void {
 // The notices about budgets, saving goals and projects (70 / 80 / 90 / 100 %, congratulations, saving progress): the same
 // rules as the app's, so both show the same notices. Budgets are converted to the wallet's currency first.
 export default function useBudgetAlertList(): { alerts: BudgetAlert[]; dismiss: (key: string) => void; dismissAll: () => void } {
+  const t = useT();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
   const storedBudgets = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY;
   const accounts = useSelector((state: RootState) => state.accountsReducer?.data) || EMPTY;
@@ -76,11 +78,11 @@ export default function useBudgetAlertList(): { alerts: BudgetAlert[]; dismiss: 
       } else {
         value = getBudgetActualSpend(budget as never, transactions as never, bounds.start, bounds.end);
       }
-      const alert = currentBudgetAlert({ budgetId: id, name: budget.name || "Presupuesto", kind, ratio: value / goal, dayOfPeriod: now.getDate(), periodKey });
+      const alert = currentBudgetAlert({ budgetId: id, name: budget.name || t("budgets.alert.defaultName"), kind, ratio: value / goal, dayOfPeriod: now.getDate(), periodKey }, t);
       if (alert) out.push(alert);
     }
     return out;
-  }, [budgets, transactions, accounts, primary]);
+  }, [budgets, transactions, accounts, primary, t]);
 
   const visible = useMemo(() => alerts.filter((alert) => !dismissed.includes(alert.key)), [alerts, dismissed]);
 

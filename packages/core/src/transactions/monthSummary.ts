@@ -1,5 +1,7 @@
 import { movementTime } from "./historyWindow";
-import { dayLabelEs } from "../format/spanishDates";
+import { dayLabel } from "../i18n/dates";
+import type { Locale } from "../i18n/locales";
+import type { TranslateFn } from "../i18n/translate";
 import {
   filterBillsOrIncomes,
   get_total_value_of_all_transactions,
@@ -91,7 +93,8 @@ export interface DayGroup<T> {
 }
 
 // Movements already sorted newest first, split into one group per local calendar day.
-export function groupByDay<T extends TransactionLike>(sorted: T[], today: Date = new Date()): DayGroup<T>[] {
+// The day's label ("Hoy", "Ayer", "lunes 14 de octubre") is written in the person's language.
+export function groupByDay<T extends TransactionLike>(sorted: T[], today: Date, locale: Locale, t: TranslateFn): DayGroup<T>[] {
   const groups: DayGroup<T>[] = [];
   for (const movement of sorted) {
     const time = movementTime(movement);
@@ -102,7 +105,7 @@ export function groupByDay<T extends TransactionLike>(sorted: T[], today: Date =
     if (last && last.key === key) {
       last.items.push(movement);
     } else {
-      groups.push({ key, label: dayLabelEs(date, today), items: [movement] });
+      groups.push({ key, label: dayLabel(date, today, locale, t), items: [movement] });
     }
   }
   return groups;

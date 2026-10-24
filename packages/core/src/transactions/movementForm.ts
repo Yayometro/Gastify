@@ -68,14 +68,15 @@ export function parseDateText(text: string): Date | null {
   return date;
 }
 
+// The errors are catalog keys ("movements.error.amount"): the screen shows them with t(key).
 export function validateMovement(values: MovementValues): MovementErrors {
   const errors: MovementErrors = {};
-  if (parseMoneyText(values.amount) === null) errors.amount = "Escribe un monto mayor a cero.";
-  if (!values.accountId) errors.accountId = "Elige una cuenta.";
-  if (!values.categoryId) errors.categoryId = "Elige una categoría.";
-  if (parseDateText(values.date) === null) errors.date = "Elige una fecha válida.";
+  if (parseMoneyText(values.amount) === null) errors.amount = "movements.error.amount";
+  if (!values.accountId) errors.accountId = "movements.error.account";
+  if (!values.categoryId) errors.categoryId = "movements.error.category";
+  if (parseDateText(values.date) === null) errors.date = "movements.error.date";
   if (values.chargedElsewhere && parseMoneyText(values.merchantAmount) === null) {
-    errors.merchantAmount = "Escribe cuánto cobró el comercio.";
+    errors.merchantAmount = "movements.error.merchantAmount";
   }
   return errors;
 }
@@ -119,19 +120,20 @@ export interface TransferValues {
 
 export type TransferErrors = Partial<Record<"sourceAccountId" | "destinationAccountId" | "sourceAmount" | "destinationAmount" | "date", string>>;
 
+// The errors are catalog keys, as in validateMovement.
 export function validateTransfer(values: TransferValues, currencies: Record<string, string>): TransferErrors {
   const errors: TransferErrors = {};
-  if (!values.sourceAccountId) errors.sourceAccountId = "Elige la cuenta de origen.";
-  if (!values.destinationAccountId) errors.destinationAccountId = "Elige la cuenta de destino.";
+  if (!values.sourceAccountId) errors.sourceAccountId = "movements.error.sourceAccount";
+  if (!values.destinationAccountId) errors.destinationAccountId = "movements.error.destinationAccount";
   if (values.sourceAccountId && values.sourceAccountId === values.destinationAccountId) {
-    errors.destinationAccountId = "Elige dos cuentas distintas.";
+    errors.destinationAccountId = "movements.error.sameAccount";
   }
-  if (parseMoneyText(values.sourceAmount) === null) errors.sourceAmount = "Escribe un monto mayor a cero.";
+  if (parseMoneyText(values.sourceAmount) === null) errors.sourceAmount = "movements.error.amount";
   const crossCurrency = isCrossCurrency(values, currencies);
   if (crossCurrency && parseMoneyText(values.destinationAmount) === null) {
-    errors.destinationAmount = "Escribe cuánto llega a la otra cuenta.";
+    errors.destinationAmount = "movements.error.destinationAmount";
   }
-  if (parseDateText(values.date) === null) errors.date = "Elige una fecha válida.";
+  if (parseDateText(values.date) === null) errors.date = "movements.error.date";
   return errors;
 }
 
@@ -141,16 +143,22 @@ function isCrossCurrency(values: TransferValues, currencies: Record<string, stri
   return Boolean(from && to && from !== to);
 }
 
+// The name a transfer gets when the person leaves it empty, in the language of the person (the caller translates it).
+export interface TransferNames {
+  exchange: string;
+  transfer: string;
+}
+
 // A transfer between accounts of the same currency is a "transfer"; between currencies it is an
 // "exchange", and the API needs both amounts in each account's minor units.
-export function buildTransferBody(values: TransferValues, currencies: Record<string, string>, now: Date = new Date()): Record<string, unknown> {
+export function buildTransferBody(values: TransferValues, currencies: Record<string, string>, names: TransferNames, now: Date = new Date()): Record<string, unknown> {
   const fromCurrency = currencies[values.sourceAccountId] || "MXN";
   const toCurrency = currencies[values.destinationAccountId] || fromCurrency;
   const crossCurrency = fromCurrency !== toCurrency;
   const sourceMajor = parseMoneyText(values.sourceAmount) ?? 0;
   const destinationMajor = crossCurrency ? parseMoneyText(values.destinationAmount) ?? 0 : sourceMajor;
   return {
-    name: values.name.trim() || (crossCurrency ? "Cambio de moneda" : "Transferencia"),
+    name: values.name.trim() || (crossCurrency ? names.exchange : names.transfer),
     kind: crossCurrency ? "exchange" : "transfer",
     sourceAccountId: values.sourceAccountId,
     sourceAmountMinor: majorToMinor(sourceMajor, fromCurrency),
