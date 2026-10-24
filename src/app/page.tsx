@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import LanguageSwitch from "@/i18n/LanguageSwitch";
 import { serverT } from "@/i18n/server";
 
 export default async function Home() {
@@ -34,6 +35,7 @@ export default async function Home() {
             {tr("inicio.nav.login")}
           </Link>
         </div>
+        <LanguageSwitch />
       </nav>
       <div className="bg-gf-bg flex flex-col items-center py-4">
         <div className="w-full max-w-[1218px] mt-6 max-md:max-w-full max-md:mt-10">

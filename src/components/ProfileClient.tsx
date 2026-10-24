@@ -1,5 +1,7 @@
 "use client";
 
+import LanguageSwitch from "@/i18n/LanguageSwitch";
+
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { APP_INFO } from "@gastify/core/info/appInfo";
@@ -227,6 +229,9 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
         </div>
       ) : (
         <div className="w-full h-full relative">
+          <div className="mb-3 flex justify-center">
+            <LanguageSwitch />
+          </div>
           <div
             className="edit-profile-btn absolute top-[10px] right-[10px] text-white cursor-pointer pulse-animation"
             onClick={() => setOnEdition(!onEdition)}
