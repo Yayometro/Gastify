@@ -4,11 +4,12 @@ import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { MonthTotals } from '@gastify/core/transactions/monthSummary';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // Income, spending and what is left of a month. Same numbers as the web's dashboard.
 export function TotalsCard({ totals, currency, title = 'Este mes' }: { totals: MonthTotals; currency: string; title?: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

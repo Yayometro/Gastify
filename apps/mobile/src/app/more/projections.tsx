@@ -32,8 +32,8 @@ import { zebra } from '@/components/ui/zebra';
 import { AccuracyCard } from '@/components/projections/accuracy-card';
 import { ProjectionMonthSheet } from '@/components/projections/month-sheet';
 import type { RootState } from '@/store';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -44,6 +44,7 @@ const TYPE_LABEL: Record<YearProjectionRow['type'], string> = { actual: 'Real', 
 // sources, the year's settings and the baseline. Like the web, anything entered in another currency (income
 // sources, the baseline, budgets) is converted to the main currency before the math.
 export default function ProjectionsScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const dark = scheme === 'dark';

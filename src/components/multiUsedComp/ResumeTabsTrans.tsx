@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import TabsTrans from "./TabsTrans";
 import { Tooltip } from "antd";
@@ -17,7 +17,7 @@ import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 const today = new Date();
 
@@ -27,6 +27,7 @@ export interface ResumeTabsTransProps {
 }
 
 function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const [isBillTab, setIsBillTab] = useState(true);
   const [allBills, setAllBills] = useState<TransactionData[]>([]);

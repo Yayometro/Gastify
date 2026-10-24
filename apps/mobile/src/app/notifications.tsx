@@ -10,14 +10,15 @@ import { Colors } from '@/constants/theme';
 import { dismissAlert } from '@/lib/alert-dismissals';
 import { alertMood, MOOD_COLOR, type AlertMood } from '@/lib/alert-presentation';
 import { useBudgetAlertList } from '@/hooks/use-budget-alerts';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 const GLYPH: Record<AlertMood, 'sparkles' | 'alert-circle' | 'flame'> = { celebrate: 'sparkles', alarm: 'alert-circle', fire: 'flame' };
 
 // The notices of the budgets, saving goals and projects that apply now. A tap opens the notice's own window (with its
 // effect and the button to the budget); a swipe to the left or to the right takes the notice off the list.
 export default function NotificationsScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const toast = useToast();

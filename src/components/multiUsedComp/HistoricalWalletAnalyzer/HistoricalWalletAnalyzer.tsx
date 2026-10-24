@@ -43,9 +43,9 @@ import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -148,6 +148,7 @@ export interface HistoricalWalletAnalyzerProps {
 // buildSpendPatternAnalysis) so both Wallet Analyzers speak the exact same
 // visual language without a second copy of any of them.
 function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const { timePeriod, comparePeriod, compareEnabled, labelA, labelB, timePeriodsForSelecter } = periodState;
   const [budgets, setBudgets] = useState<BudgetData[]>([]);

@@ -8,8 +8,8 @@ import { Card } from '@/components/ui/card';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type Setup = { uri: string; secret: string; codes: string[] };
 
@@ -17,6 +17,7 @@ type Setup = { uri: string; secret: string; codes: string[] };
 // turn it off, or make new backup codes. The password is asked for when the account has one (an account that
 // signs in only with Google leaves it empty).
 export function TwoFactorCard() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

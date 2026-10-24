@@ -3,11 +3,11 @@ import { NotificationsBell } from '@/components/notifications-bell';
 
 import { InfoTip, type InfoText } from '@/components/info-tip';
 import { Colors } from '@/constants/theme';
-import { HERO_INFO } from '@/lib/info-sections';
+
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { MonthTotals } from '@gastify/core/transactions/monthSummary';
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // The web's Wallet hero for wide screens: "<name> Wallet" in a thin large title and, under it, three panels side by
 // side: the accounts (biggest first), the period's summary and the comparison with the previous period. Same
@@ -78,6 +78,7 @@ export function TabletWalletHeader({
   currency: string;
   rangeText: string;
 }) {
+  const { HERO_INFO } = useInfo();
   const t = useT();
   const dark = useColorScheme() === 'dark';
   const money = (value: number) => formatMoneyMajor(value, currency);

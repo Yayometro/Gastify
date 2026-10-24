@@ -11,11 +11,12 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { filterBillsOrIncomes, getPrimaryAmount, orderByHighestValue, reduceTransCategoriesSliced } from '@gastify/core/transformers/transactionsChange';
 import type { MonthBounds } from '@gastify/core/transactions/monthSummary';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // The biggest of the period, as the web's "Top" modules: gastos or ingresos, by category or one by one.
 export function TopElements({ movements, range, currency }: { movements: TransactionData[]; range: MonthBounds; currency: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [kind, setKind] = useState<'bills' | 'incomes'>('bills');
   const [by, setBy] = useState<'categories' | 'movements'>('categories');

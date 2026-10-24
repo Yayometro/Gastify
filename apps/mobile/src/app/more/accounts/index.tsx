@@ -22,12 +22,13 @@ import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { moveInList } from '@gastify/core/accounts/accountForm';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@/store';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // Every account with its balance in its own currency and the total in the primary one. Tap one to
 // edit it; the arrows change the order the accounts are listed in (the web's order, saved on the server).
 export default function AccountsScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const tablet = useIsTablet();
   const dispatch = useDispatch<AppDispatch>();

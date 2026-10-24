@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useDispatch } from "react-redux";
 import { Spin, Tooltip } from "antd";
@@ -9,7 +9,7 @@ import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 import { updateWallet } from "@/lib/features/walletSlice";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface PrimaryCurrencySelectorWallet {
   _id?: string;
@@ -25,6 +25,7 @@ export interface PrimaryCurrencySelectorProps {
 // in. Never reinterprets already-stored native Account/Transaction money -
 // only changes presentation.
 function PrimaryCurrencySelector({ pcsWallet }: PrimaryCurrencySelectorProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const dispatch = useDispatch();

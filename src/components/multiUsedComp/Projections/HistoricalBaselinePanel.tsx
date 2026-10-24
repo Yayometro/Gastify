@@ -11,9 +11,9 @@ import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "../CategoIcon";
 import { formatMoneyMajor, isSupportedCurrency, minorToMajor, SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 import type { ProjectionBaselineData } from "@/hooks/useProjectionTable";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface BaselineTimelineEntry {
   _id?: string;
@@ -289,6 +289,7 @@ function HistoricalBaselinePanel({
   onChange,
   defaultOpen,
 }: HistoricalBaselinePanelProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [isOpen, setIsOpen] = useState<boolean>(!!defaultOpen);
   const totalEntries = (baseline?.incomeHistory?.length || 0) + (baseline?.expenseHistory?.length || 0);

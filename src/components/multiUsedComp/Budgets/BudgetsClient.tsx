@@ -53,9 +53,9 @@ import type { UserData } from "@/lib/features/userSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { AppDispatch } from "@/lib/store";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface BudgetsClientProps {
   mcSession?: string | null;
@@ -67,6 +67,7 @@ const today = new Date();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { transacciones, budgets, categories, user, wallet, loading } = useGetDataFromProvider();
   const [startDate, setStartDate] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));

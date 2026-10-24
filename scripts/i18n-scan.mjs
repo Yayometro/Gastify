@@ -74,13 +74,19 @@ function staticString(node) {
   return null;
 }
 
+// The catalogs themselves hold the texts on purpose: the message files, and the explanations (the Spanish source and the English one).
+const CATALOG = /(^|\/)packages\/core\/src\/(i18n\/messages\/|info\/(en\/|appInfo\.ts$|createInfo\.ts$))/;
+
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) {
       if (!SKIP_DIRS.has(entry.name)) walk(path.join(dir, entry.name), out);
       continue;
     }
-    if (/\.(tsx|ts)$/.test(entry.name) && !SKIP_FILE.test(entry.name)) out.push(path.join(dir, entry.name));
+    if (!/\.(tsx|ts)$/.test(entry.name) || SKIP_FILE.test(entry.name)) continue;
+    const file = path.join(dir, entry.name);
+    if (CATALOG.test(file.split(path.sep).join("/"))) continue;
+    out.push(file);
   }
   return out;
 }

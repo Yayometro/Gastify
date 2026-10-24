@@ -6,16 +6,17 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
 import { InfoTip } from "./InfoTip";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@gastify/core/transformers/transactionsChange";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 const EMPTY: never[] = [];
 const COUNT = 5;
 
 // The latest movements of the whole account, whatever period the page shows: the card of the app's home, on the web.
 function LatestMovementsCard(): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
   const primary = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";

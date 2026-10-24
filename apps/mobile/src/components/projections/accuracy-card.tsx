@@ -6,8 +6,8 @@ import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import { esMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 export type AccuracyRow = {
   monthName: string;
@@ -81,6 +81,7 @@ export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyR
 }
 
 export function AccuracyCard({ rows, currency, onMonthPress }: { rows: AccuracyRow[]; currency: string; onMonthPress?: (monthName: string) => void }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   if (rows.length === 0) return null;

@@ -45,9 +45,9 @@ import {
 } from "@gastify/core/time/timeFunctions";
 import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 interface DashboardProps {
   dataServ?: unknown;
@@ -161,6 +161,7 @@ const MultiCreditCardComp = MultiCreditCard as React.ComponentType<{
 const today = new Date();
 
 function Wallet({ session }: DashboardProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [user, setUser] = useState<DashboardUser>({});
   const [wallet, setWallet] = useState<DashboardWallet>({});

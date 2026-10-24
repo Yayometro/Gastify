@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import DisplayerCategoryTreemap from "./DisplayerCategoryTreemap";
@@ -17,7 +19,7 @@ import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Typed bridges for unmigrated child components
 interface DisplayerCategoryTreemapProps {
@@ -46,6 +48,7 @@ export interface TransDetailsGrandContainerProps {
 const today = new Date();
 
 function TransDetailsGrandContainer({ timePeriodFromFather }: TransDetailsGrandContainerProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   // "treemap" is the default view - it's the easiest to read at a glance,
   // Bubble and Nested Pie stay available as alternate ways to look at the

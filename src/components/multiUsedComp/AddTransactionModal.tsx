@@ -14,7 +14,8 @@ import {
   IoSwapHorizontalOutline,
   IoWalletOutline,
 } from "react-icons/io5";
-import { CREATE_KIND_INFO, CREATE_KIND_SUMMARY, CREATE_SCREEN_INFO, type CreateKind, type InfoText } from "@gastify/core/info/createInfo";
+import { type CreateKind, type InfoText } from "@gastify/core/info/createInfo";
+import type { InfoData } from "@gastify/core/info/catalog";
 import { BUDGET_TYPES } from "@/helpers/transformers/budgetTypes";
 import { lockBodyScroll, unlockBodyScroll } from "@/helpers/scrollLock";
 import type { RootState } from "@/lib/store";
@@ -28,7 +29,7 @@ import EditAccountModal from "./EditAccountModal";
 import TransferExchangeModal from "./TransferExchangeModal";
 import BudgetEditModal from "./Budgets/BudgetEditModal";
 import { InfoTip } from "./InfoTip";
-import { useT } from "@/i18n/client";
+import { useInfo, useT } from "@/i18n/client";
 
 export interface AddTransactionModalProps {
   close?: React.MouseEventHandler<HTMLElement> | (() => void);
@@ -37,7 +38,7 @@ export interface AddTransactionModalProps {
 type Option = { id: "excel" | CreateKind; label: string; icon: React.ReactNode; info: InfoText; summary: string };
 
 // A transaction is an income or an expense: the same explanation, under one name.
-const transactionInfo = (t: TranslateFn): InfoText => ({
+const transactionInfo = (t: TranslateFn, { CREATE_KIND_INFO }: Pick<InfoData, "CREATE_KIND_INFO">): InfoText => ({
   ...CREATE_KIND_INFO.expense,
   title: t("movements.help.transaction"),
   text: t("movements.help.transactionText"),
@@ -59,9 +60,9 @@ const excelInfo = (t: TranslateFn): InfoText => ({
 });
 
 // The options of the "+", in the order of the app's hub. Each one opens its own form on the right.
-const optionsFor = (t: TranslateFn): Option[] => [
+const optionsFor = (t: TranslateFn, { CREATE_KIND_INFO, CREATE_KIND_SUMMARY }: InfoData): Option[] => [
   // One form for both: a switch in it chooses whether it is an income or an expense.
-  { id: "expense", label: t("movements.option.transaction"), icon: <IoArrowDownCircleOutline size={20} />, info: transactionInfo(t), summary: t("movements.option.transactionSummary") },
+  { id: "expense", label: t("movements.option.transaction"), icon: <IoArrowDownCircleOutline size={20} />, info: transactionInfo(t, { CREATE_KIND_INFO }), summary: t("movements.option.transactionSummary") },
   { id: "transfer", label: t("movements.help.transfer"), icon: <IoSwapHorizontalOutline size={20} />, info: CREATE_KIND_INFO.transfer, summary: CREATE_KIND_SUMMARY.transfer },
   { id: "account", label: t("movements.new.account"), icon: <IoWalletOutline size={20} />, info: CREATE_KIND_INFO.account, summary: CREATE_KIND_SUMMARY.account },
   { id: "category", label: t("movements.new.category"), icon: <IoPricetagOutline size={20} />, info: CREATE_KIND_INFO.category, summary: CREATE_KIND_SUMMARY.category },
@@ -74,7 +75,9 @@ const optionsFor = (t: TranslateFn): Option[] => [
 // The "+" of the web: one window to create anything, as the app's "+" does. On a wide screen the options are a column at
 // the left and the form is at the right; on a narrow one the options are a row that scrolls sideways above the form.
 function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Element | null {
+  const { CREATE_SCREEN_INFO } = useInfo();
   const t = useT();
+  const info = useInfo();
   const [active, setActive] = useState<Option["id"]>("expense");
   // Bumped after a save: the form starts again, empty, for the next thing.
   const [round, setRound] = useState<number>(0);
@@ -90,7 +93,7 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
   }, []);
   if (!mounted) return null;
 
-  const options = optionsFor(t);
+  const options = optionsFor(t, info);
   const option = options.find((item) => item.id === active) ?? options[0];
   const again = () => setRound((value) => value + 1);
 

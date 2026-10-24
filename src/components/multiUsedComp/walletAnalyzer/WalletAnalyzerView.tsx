@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useMemo, useState } from "react";
 import { ConfigProvider, DatePicker } from "antd";
 import esES from "antd/locale/es_ES";
@@ -10,7 +12,7 @@ import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import UniversalCategoIcon from "../UniversalCategoIcon";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import WalletAnalyzerTrendChart from "./WalletAnalyzerTrendChart";
 import WalletAnalyzerWeekdayChart from "./WalletAnalyzerWeekdayChart";
@@ -21,7 +23,7 @@ import MonthlyChampionsModal from "./MonthlyChampionsModal";
 import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerTrendItem } from "./WalletAnalyzer";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 interface ModalContentTopMonthItemProps {
@@ -490,6 +492,7 @@ function WalletAnalyzerView({
   transactions,
   projectionComparison,
 }: WalletAnalyzerViewProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const {
     currentTotals,

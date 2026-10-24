@@ -9,9 +9,9 @@ import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/acco
 import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 import { BANKS, bankById } from "@gastify/core/banks/banks";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export type EditAccountModalMode = "edition" | "creation" | boolean | string | null | undefined;
 
@@ -56,6 +56,7 @@ export interface EditAccountModalProps {
 }
 
 function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline = false }: EditAccountModalProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [active, setActive] = useState<unknown>(false);

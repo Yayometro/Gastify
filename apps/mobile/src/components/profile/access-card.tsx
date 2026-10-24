@@ -13,12 +13,13 @@ import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { updateUser, type UserData } from '@gastify/core/features/userSlice';
 import { validateEmailAddress, validateNewPassword } from '@gastify/core/profile/accessRules';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // How the person signs in: the e-mail and the password, changed through the same route as the web's profile
 // (`general-data/user/update-user`). Changing the e-mail signs the person out, so they come back in with the new one.
 export function AccessCard({ email }: { email: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();

@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import TabsToggler, { type TabsTogglerComponentItem } from "../../TabsComponents/TabsToggler";
 import { Skeleton } from "antd";
 import PeriodFiltersWithCompare from "../../periodFiltersWithCompare/PeriodFiltersWithCompare";
 import type { TimePeriodOption } from "@/hooks/usePeriodComparison";
 import type { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface HistoricalComparativeCategoriesViewProps {
   tabs: string[];
@@ -47,6 +47,7 @@ function HistoricalComparativeCategoriesView({
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
 }: HistoricalComparativeCategoriesViewProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   return (
     <div className="w-full h-full">

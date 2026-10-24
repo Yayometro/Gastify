@@ -17,8 +17,8 @@ import { getValueActiveInMonth } from '@gastify/core/transformers/budgetHistory'
 import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getExpectedOccurrencesInMonth, getMonthBucketBreakdown, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
 import { filterBillsOrIncomes, getTransactionsFromTimeRange } from '@gastify/core/transformers/transactionsChange';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type AnyRecord = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -53,6 +53,7 @@ export function ProjectionMonthSheet({
   onSaved: (settings: AnyRecord) => void;
   onClose: () => void;
 }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const money = (value: number) => formatMoneyMajor(value, currency);

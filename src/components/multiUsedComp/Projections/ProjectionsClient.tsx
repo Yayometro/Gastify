@@ -26,9 +26,9 @@ import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 import PrimaryCurrencySelector, { type PrimaryCurrencySelectorWallet } from "../PrimaryCurrencySelector";
 import type { MonthDateRange } from "@gastify/core/time/timeFunctions";
 import type { CurrencyBreakdownData } from "../CurrencyBreakdownChips";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface ProjectionsClientProps {
   mcSession?: string | null;
@@ -42,6 +42,7 @@ export interface SelectedMonthDetails {
 }
 
 function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
   const [year, setYear] = useState<number>(new Date().getFullYear());

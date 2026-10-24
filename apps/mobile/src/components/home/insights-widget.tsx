@@ -6,8 +6,8 @@ import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
 import type { PeriodInsights } from '@gastify/core/history/insights';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // On a tablet each reading is its own glass tile (as the web's highlights are), with room for a longer subtext; on the phone
 // it is plain text in two columns.
@@ -26,6 +26,7 @@ function Fact({ label, value, detail, tone, tile, compact }: { label: string; va
 // Perspectivas: the pace of spending, where it is heading, how much is kept and how it moved, as the
 // web's analyzer strip does.
 export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insights: PeriodInsights; currency: string; onOpenAnalyzer: () => void }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

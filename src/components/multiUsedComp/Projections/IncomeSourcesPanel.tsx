@@ -12,9 +12,9 @@ import CategoIcon from "../CategoIcon";
 import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { IIncomeSource, IncomeSourceRecurrence } from "@/model/IncomeSource";
 import type { IncomeSourceItem } from "@/hooks/useProjectionTable";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export type IncomeSourceLike = IIncomeSource | IncomeSourceItem;
 
@@ -56,6 +56,7 @@ function IncomeSourcesPanel({
   walletPrimaryCurrency,
   onChange,
 }: IncomeSourcesPanelProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const defaultCurrency = walletPrimaryCurrency || "MXN";
   const [isOpen, setIsOpen] = useState<boolean>(false);

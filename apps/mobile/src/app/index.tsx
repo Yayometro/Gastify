@@ -32,8 +32,8 @@ import { compareRange, summarizePeriod } from '@gastify/core/history/periodCompa
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { isInRange, yearsWithMovements } from '@gastify/core/transactions/movementFilters';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -54,6 +54,7 @@ function LinkText({ label, onPress }: { label: string; onPress: () => void }) {
 // The phone's dashboard ("Wallet" on the web): the period, the accounts as cards, the totals, the summary
 // with its tabs, the biggest elements, the insights, the budgets and the latest movements.
 export default function HomeScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { data: session } = authClient.useSession();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);

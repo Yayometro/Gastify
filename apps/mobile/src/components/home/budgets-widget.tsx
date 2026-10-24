@@ -16,8 +16,8 @@ import { monthBounds } from '@gastify/core/transactions/monthSummary';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // The most budgets the dashboard shows; the rest are one tap away on «Ver todos».
 export const MAX_DASHBOARD_BUDGETS = 10;
@@ -48,6 +48,7 @@ export function useDashboardBudgetRows() {
 }
 
 export function BudgetsWidget() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const { rows, currency } = useDashboardBudgetRows();

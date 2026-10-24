@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
@@ -31,7 +31,7 @@ import { fetchWallet, type WalletData } from "@/lib/features/walletSlice";
 import { fetchAccounts, type AccountData } from "@/lib/features/accountsSlice";
 import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import type { RootState, AppDispatch } from "@/lib/store";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Typed bridge components for unmigrated JS components
 
@@ -74,6 +74,7 @@ export interface ExtendedAccount extends AccountData {
 }
 
 function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [onEdition, setOnEdition] = useState<EditAccountModalMode>(false);
   // DATES

@@ -3,10 +3,10 @@
 import React from "react";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import type { ProjectionAccuracyRow } from "@/hooks/useProjectionTable";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "../InfoTip";
 import ProjectionVarianceCell from "./ProjectionVarianceCell";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface ProjectionAccuracyReportProps {
   rows?: ProjectionAccuracyRow[] | null;
@@ -21,6 +21,7 @@ export interface ProjectionAccuracyReportProps {
 // dimensiones numéricas por mes (proyectado y real) que no caben como una
 // sola columna más en la tabla existente.
 function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReportProps): React.JSX.Element | null {
+  const { APP_INFO } = useInfo();
   const t = useT();
   if (!rows || rows.length === 0) return null;
 

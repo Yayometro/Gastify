@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
@@ -24,7 +24,7 @@ import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 import CurrencyBreakdownChips from "@/components/multiUsedComp/CurrencyBreakdownChips";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Unmigrated JS components typed bridges
 interface CurrencyBreakdownChipsProps {
@@ -132,6 +132,7 @@ function BudgetDetailModal({
   onClose,
   onEdit,
 }: BudgetDetailModalProps): React.JSX.Element | null {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const dispatch = useDispatch<AppDispatch>();
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";

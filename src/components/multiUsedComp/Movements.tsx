@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState, useContext, useMemo } from "react";
 import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
@@ -55,10 +57,10 @@ import ModalCategoryContent from "@/components/modals/contents/selectCategory/Mo
 import useModal from "@/hooks/useModalBasic";
 import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
 import DuplicateComparisonTable from "./DuplicateComparisonTable";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import MovementsGuideModal from "./MovementsGuideModal";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 const TypedEditMultipleTransModal = EditMultipleTransModal as React.ComponentType<{
   hidden?: React.ReactNode[];
@@ -184,6 +186,7 @@ export interface MovementsProps {
 const today = new Date();
 
 function MovementsContent({ timePeriodFromFather, mail, embedded = false }: MovementsProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const defaultPeriod: [Date, Date] | (Date | string | number)[] = timePeriodFromFather || [
     new Date(today.getFullYear(), today.getMonth(), 1),

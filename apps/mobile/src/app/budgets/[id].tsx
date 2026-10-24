@@ -30,12 +30,13 @@ import { getExplicitBudgetId, isProjectBudget, isSavingBudget } from '@gastify/c
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { getBudgetActualSpend, matchBillToBudget } from '@gastify/core/transformers/projectionsChange';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // One budget: where it stands this month (or in total, for a project), the movements that count toward
 // it, and the same form that creates it to change it or delete it.
 export default function BudgetDetailScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = String(rawId ?? '');

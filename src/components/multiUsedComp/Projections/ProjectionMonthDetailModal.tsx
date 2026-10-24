@@ -21,9 +21,9 @@ import CurrencyBreakdownChips, {
   type CurrencyBreakdownData,
 } from "../CurrencyBreakdownChips";
 import type { ProjectionTableRow } from "@/hooks/useProjectionTable";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 
 export interface BucketBreakdownItem {
@@ -108,6 +108,7 @@ function ProjectionMonthDetailModal({
   onClose,
   mail,
 }: ProjectionMonthDetailModalProps): React.JSX.Element | null {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [bufferValue, setBufferValue] = useState<number | string>(unexpectedBuffer ?? 0);
   const [incomeBufferValue, setIncomeBufferValue] = useState<number | string>(unexpectedIncomeBuffer ?? 0);

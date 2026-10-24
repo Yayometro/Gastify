@@ -56,8 +56,8 @@ import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { getDuplicates, getDuplicatesToDelete } from '@gastify/core/transformers/transactionDuplicates';
 import { DUPLICATE_DEFAULTS, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 type DaySection = { key: string; title: string; data: TransactionData[] };
@@ -77,6 +77,7 @@ const BULK_ACTIONS = (t: TranslateFn): { field: BulkField; label: string; icon: 
 ]);
 
 export default function MovementsScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();

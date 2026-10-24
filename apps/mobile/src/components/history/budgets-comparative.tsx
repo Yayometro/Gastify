@@ -12,12 +12,13 @@ import { idOf } from '@gastify/core/categories/categoryForm';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { buildBudgetHistoricalComparative } from '@gastify/core/transformers/budgetHistoricalComparative';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // Budgets against the period, month by month: how many months each one stayed within its limit (the web's
 // "compliance"), with a small strip of months (green kept, red exceeded) and a tap for each month's figures.
 export function BudgetsComparative({ start, end, compareStart, compareEnd }: { start: Date; end: Date; compareStart?: Date; compareEnd?: Date }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

@@ -18,7 +18,7 @@ import { Screen } from '@/components/screen';
 import { Card, PairedColumn } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { TABLET_MIN_WIDTH, WIDE_MIN_WIDTH } from '@/hooks/use-device-class';
-import { HISTORY_INFO } from '@/lib/info-sections';
+
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import type { RootState } from '@/store';
 import { GfSwitch } from '@/components/ui/switch';
@@ -38,8 +38,8 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
@@ -72,6 +72,7 @@ function periodFacts(t: TranslateFn, x: PeriodSummary<TransactionData>, cell: (v
 // optionally compare it with another (the same stretch a year earlier by default), and see the totals, the
 // months side by side, the categories and the biggest expenses of each.
 export default function HistoryScreen() {
+  const { APP_INFO, HISTORY_INFO } = useInfo();
   const t = useT();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer.data);
   const historyStatus = useSelector((state: RootState) => state.transacctionsReducer.historyStatus);

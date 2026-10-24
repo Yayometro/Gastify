@@ -16,12 +16,13 @@ import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { shareExcelTemplate, uploadExcelTemplate } from '@/lib/export-file';
 import { messageOf } from '@/lib/write';
 import type { AppDispatch } from '@/store';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // Import movements from Excel, as the web does: download the template, fill it in and upload it; the server reads it
 // and creates the movements (categories, tags and accounts are matched with the ones the person already has).
 export default function ImportScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();

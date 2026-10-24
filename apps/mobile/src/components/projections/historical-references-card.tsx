@@ -12,8 +12,8 @@ import { messageOf, sendWrite } from '@/lib/write';
 import { monthTitleEs } from '@gastify/core/format/spanishDates';
 import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Kind = 'income' | 'expense';
@@ -23,6 +23,7 @@ const KIND_LABEL: Record<Kind, string> = { income: 'Ingreso', expense: 'Gasto' }
 // The historical references: the amounts each month that the projections start from (real income and spending
 // of the past, or an estimate that holds for a while). Income and spending are kept apart, as on the web.
 export function HistoricalReferencesCard({ baseline, currency, onChanged }: { baseline: AnyRecord | null; currency: string; onChanged: () => void }) {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const toast = useToast();
   const [kind, setKind] = useState<Kind>('income');

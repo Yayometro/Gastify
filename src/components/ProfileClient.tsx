@@ -4,7 +4,7 @@ import LanguageSwitch from "@/i18n/LanguageSwitch";
 
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyModule from "./multiUsedComp/EmptyModule";
@@ -23,7 +23,7 @@ import PasskeysPanel from "./multiUsedComp/PasskeysPanel";
 import TwoFactorPanel from "./multiUsedComp/TwoFactorPanel";
 import DeleteAccountPanel from "./multiUsedComp/DeleteAccountPanel";
 import type { RootState, AppDispatch } from "@/lib/store";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Typed bridge components for unmigrated JS components
 const TypedEmptyModule = EmptyModule as React.ComponentType<{
@@ -63,6 +63,7 @@ interface UpdateUserApiResponse {
 }
 
 function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [onEdition, setOnEdition] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);

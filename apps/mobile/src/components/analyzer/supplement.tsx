@@ -12,8 +12,8 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
 import type { ProjectionMonthComparison } from '@gastify/core/transformers/projectionsChange';
 import type { WalletAnalyzerBudgetRow, WalletAnalyzerInsightItem, WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // The second line of a highlight tile on a tablet: a bit of context so the tile says more than the phone's single line.
 function highlightSubtext(item: WalletAnalyzerInsightItem, currency: string): string {
@@ -29,6 +29,7 @@ function highlightSubtext(item: WalletAnalyzerInsightItem, currency: string): st
 }
 
 export function AnalyzerHighlights({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const width = useWindowDimensions().width;
   const tablet = width >= TABLET_MIN_WIDTH;
@@ -70,6 +71,7 @@ export function AnalyzerHighlights({ snapshot, currency }: { snapshot: WalletAna
 }
 
 export function AnalyzerProjection({ comparison, loading, error, missing, currency }: { comparison: ProjectionMonthComparison | null; loading: boolean; error: boolean; missing: string[]; currency: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
@@ -99,6 +101,7 @@ export function AnalyzerProjection({ comparison, loading, error, missing, curren
 }
 
 export function AnalyzerBudgets({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [open, setOpen] = useState<WalletAnalyzerBudgetRow | null>(null);
   return (
@@ -123,6 +126,7 @@ export function AnalyzerBudgets({ snapshot, currency }: { snapshot: WalletAnalyz
 }
 
 export function AnalyzerBiggest({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [kind, setKind] = useState<ChampionKind | null>(null);
@@ -167,6 +171,7 @@ export function AnalyzerBiggest({ snapshot, currency }: { snapshot: WalletAnalyz
 }
 
 export function AnalyzerFxExposure({ rows, loading, missing, currency }: { rows: FxExposureRow[]; loading: boolean; missing: string[]; currency: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
@@ -189,6 +194,7 @@ export function AnalyzerFxExposure({ rows, loading, missing, currency }: { rows:
 }
 
 export function AnalyzerWeekday({ snapshot, currency }: { snapshot: WalletAnalyzerSnapshotData; currency: string }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [expanded, setExpanded] = useState(false);

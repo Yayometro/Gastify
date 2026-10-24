@@ -10,9 +10,9 @@ import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurren
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { WalletAnalyzerSnapshotData } from "./WalletAnalyzerView";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 const EMPTY_ARRAY: never[] = [];
 
@@ -35,6 +35,7 @@ export interface WalletAnalyzerTeaserProps {
 // with, so it just always follows the parent - one atomic, prop-driven
 // piece instead of owning its own navigation state.
 function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProps): React.JSX.Element | null {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
   const storedBudgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;

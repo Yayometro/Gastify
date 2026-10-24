@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import "@/components/styles/animations.css";
 import CreditCard from "./CreditCard";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import randomColor from "randomcolor";
 import { Skeleton } from "antd";
@@ -22,7 +22,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import fetcher from "@/helpers/fetcher";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface MultiCreditCardAccount {
   _id?: string;
@@ -81,6 +81,7 @@ function MultiCreditCard({
   mail,
   timePeriod,
 }: MultiCreditCardProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [userName, setUserName] = useState<string>("");
   const [allTransactions, setAllTransactions] = useState<MultiCreditCardTransaction[]>([]);

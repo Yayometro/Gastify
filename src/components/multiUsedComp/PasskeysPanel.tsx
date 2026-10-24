@@ -7,9 +7,9 @@ import { authClient } from "@/lib/auth/authClient";
 import runNotify from "@/helpers/gastifyNotifier";
 import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
 import CategoIcon from "./CategoIcon";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
 const TypedCategoIcon = CategoIcon as React.ComponentType<{
@@ -30,6 +30,7 @@ interface PasskeyItem {
 // this account. `useListPasskeys` is the auto-generated React hook for
 // Better Auth's `listPasskeys` atom (see @better-auth/passkey/client).
 function PasskeysPanel(): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);

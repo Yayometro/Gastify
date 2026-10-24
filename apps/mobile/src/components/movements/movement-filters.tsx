@@ -16,8 +16,8 @@ import { idOf } from '@gastify/core/categories/categoryForm';
 import { SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 import { DUPLICATE_CRITERIA_LABELS, toleranceFrom, type DuplicateSettings } from '@gastify/core/transactions/duplicateSettings';
 import { EMPTY_FILTERS, type MovementFilters, type ReadableFilter, type TypeFilter } from '@gastify/core/transactions/movementFilters';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 const READABLE = (t: TranslateFn): { id: ReadableFilter; label: string }[] => ([
@@ -64,6 +64,7 @@ export function MovementFiltersPanel({
   onRunDuplicates: () => void;
   onResetDuplicates: () => void;
 }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

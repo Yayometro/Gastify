@@ -17,9 +17,9 @@ import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
-import { CREATE_KIND_INFO, CREATE_KIND_SUMMARY, CREATE_SCREEN_INFO, type CreateKind } from '@/lib/create-info';
+import { type CreateKind } from '@gastify/core/info/createInfo';
 import { emptyBudgetValues } from '@gastify/core/budgets/budgetForm';
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 type Kind = CreateKind;
@@ -39,6 +39,7 @@ const KINDS = (t: TranslateFn): { value: Kind; label: string; icon: IconName }[]
 // The "+" of the bottom bar: a quick way to create anything, not only movements. Pick what to create
 // and its form appears below; what is saved goes to the same API routes the web uses.
 export default function AddScreen() {
+  const { CREATE_KIND_INFO, CREATE_KIND_SUMMARY, CREATE_SCREEN_INFO } = useInfo();
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();

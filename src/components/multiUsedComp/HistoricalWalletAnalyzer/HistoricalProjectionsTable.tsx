@@ -6,7 +6,7 @@ import useGetUserSession from "@/hooks/useGetUserSession";
 import useProjectionTable from "@/hooks/useProjectionTable";
 import { getYearEndBalance } from "@/helpers/transformers/projectionsChange";
 import ProjectionsView from "../Projections/ProjectionsView";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import PeriodFiltersWithCompare from "../periodFiltersWithCompare/PeriodFiltersWithCompare";
 import type { PeriodStateProps } from "./HistoricalWalletAnalyzer";
@@ -14,7 +14,7 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface MonthRange {
   start: Date;
@@ -102,6 +102,7 @@ export interface HistoricalProjectionsTableProps {
 // can legitimately span two, so wiring it up here would need real new
 // design work beyond "show the numbers for this range."
 function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableProps): React.JSX.Element | null {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { timePeriod, getValueFromSelecter, timePeriodsForSelecter, handleRangeDate } = periodState;
   const { email } = useGetUserSession();

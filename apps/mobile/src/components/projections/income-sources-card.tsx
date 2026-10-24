@@ -12,8 +12,8 @@ import { messageOf, sendWrite } from '@/lib/write';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 type AnyRecord = Record<string, unknown>;
@@ -27,6 +27,7 @@ const RECURRENCE = (t: TranslateFn): { id: string; label: string }[] => ([
 
 // Income sources: what comes in each period, as the web's panel. Listed, created and removed here.
 export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: AnyRecord[]; currency: string; onChanged: () => void }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const tr = useT();
   const toast = useToast();

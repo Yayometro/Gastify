@@ -22,9 +22,9 @@ import { MdFormatAlignLeft, MdOutlineCleaningServices } from "react-icons/md";
 import type { UserData } from "@/lib/features/userSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import type { AppDispatch, RootState } from "@/lib/store";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export type UploadStatusKey = "idle" | "uploading" | "processing" | "done" | "error";
 
@@ -109,6 +109,7 @@ export interface ReadFileCompProps {
 }
 
 function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const [isExcel, setIsExcel] = useState<boolean>(true);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);

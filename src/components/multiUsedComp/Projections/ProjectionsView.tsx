@@ -4,9 +4,9 @@ import React from "react";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "../InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface ProjectionRow {
   monthName: string;
@@ -85,6 +85,7 @@ const getExpenseColorClass = (type?: string): string => {
 };
 
 function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   return (
     <div className="w-full overflow-x-auto">

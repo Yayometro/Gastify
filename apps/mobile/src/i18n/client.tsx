@@ -3,6 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { createTranslator, type Dict, type TranslateFn } from "@gastify/core/i18n/translate";
 import { DEFAULT_LOCALE, LOCALES, resolveLocale, isLocale, type Locale } from "@gastify/core/i18n/locales";
 import { loadMessages, NAMESPACES } from "@gastify/core/i18n/catalogs";
+import { loadInfo, SPANISH_INFO, type InfoData } from "@gastify/core/info/catalog";
 
 // The app's language: the one the person chose (kept on the device), or else the device's own language, or Spanish.
 const STORE_KEY = "gf_locale";
@@ -27,16 +28,18 @@ async function savedLocale(): Promise<Locale | null> {
 interface I18nValue {
   locale: Locale;
   t: TranslateFn;
+  info: InfoData;
   setLocale: (locale: Locale) => void;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
-const UNPROVIDED: I18nValue = { locale: DEFAULT_LOCALE, t: createTranslator(DEFAULT_LOCALE, {}), setLocale: () => undefined };
+const UNPROVIDED: I18nValue = { locale: DEFAULT_LOCALE, t: createTranslator(DEFAULT_LOCALE, {}), info: SPANISH_INFO, setLocale: () => undefined };
 
 // The app waits for its texts (a few milliseconds from the device's own catalogs) before it draws, so no screen ever shows keys.
 export function I18nProvider({ children }: { children: React.ReactNode }): React.JSX.Element | null {
   const [locale, setLocaleState] = useState<Locale | null>(null);
   const [messages, setMessages] = useState<Dict | null>(null);
+  const [info, setInfo] = useState<InfoData | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -51,8 +54,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }): React
   useEffect(() => {
     if (!locale) return;
     let alive = true;
-    loadMessages(locale, NAMESPACES).then((loaded) => {
-      if (alive) setMessages(loaded);
+    Promise.all([loadMessages(locale, NAMESPACES), loadInfo(locale)]).then(([loaded, explanations]) => {
+      if (alive) {
+        setMessages(loaded);
+        setInfo(explanations);
+      }
     });
     return () => {
       alive = false;
@@ -62,13 +68,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }): React
   const setLocale = useCallback((next: Locale) => {
     if (!(LOCALES as readonly string[]).includes(next)) return;
     setMessages(null);
+    setInfo(null);
     setLocaleState(next);
     SecureStore.setItemAsync(STORE_KEY, next).catch(() => undefined);
   }, []);
 
   const value = useMemo<I18nValue | null>(
-    () => (locale && messages ? { locale, t: createTranslator(locale, messages), setLocale } : null),
-    [locale, messages, setLocale]
+    () => (locale && messages && info ? { locale, t: createTranslator(locale, messages), info, setLocale } : null),
+    [locale, messages, info, setLocale]
   );
 
   if (!value) return null;
@@ -86,4 +93,9 @@ export function useLocale(): Locale {
 
 export function useSetLocale(): (locale: Locale) => void {
   return (useContext(I18nContext) ?? UNPROVIDED).setLocale;
+}
+
+// The explanations ("?") of the current language.
+export function useInfo(): InfoData {
+  return (useContext(I18nContext) ?? UNPROVIDED).info;
 }

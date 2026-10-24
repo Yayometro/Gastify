@@ -33,8 +33,8 @@ import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -69,6 +69,7 @@ function NewButton({ label, kind }: { label: string; kind: 'spending' | 'saving'
 // the goal), saving (linked accounts or the saved amount) and projects (everything spent on them).
 // Tap one to see its movements and to edit it; the buttons create each kind.
 export default function BudgetsScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const budgetsState = useSelector((state: RootState) => state.budgetReducer);
   const transactions = useSelector((state: RootState) => state.transacctionsReducer);

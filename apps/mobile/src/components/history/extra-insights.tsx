@@ -10,10 +10,11 @@ import { Colors } from '@/constants/theme';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { computeMonthlyChampions, detectSubscriptions, findBiggestSpendPatterns } from '@gastify/core/transformers/walletAnalyzer';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 export function HistoryExtraInsights({ movements, currency, end, compareEnd }: { movements: TransactionData[]; currency: string; end: Date; compareEnd?: Date }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const anchor = useMemo(() => end < new Date() ? end : new Date(), [end]);

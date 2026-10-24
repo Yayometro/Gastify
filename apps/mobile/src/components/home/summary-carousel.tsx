@@ -6,12 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/components/ui/card';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
-import { HERO_INFO } from '@/lib/info-sections';
+
 import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { percentChange } from '@gastify/core/history/periodComparison';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { MonthTotals } from '@gastify/core/transactions/monthSummary';
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 type Props = {
   title: string;
@@ -94,6 +94,7 @@ function VersusPage({ totals, previous, currency }: Pick<Props, 'totals' | 'prev
 // one swipe to the left and the comparison with the previous period one swipe to the right. "Ver más" opens
 // the three of them together.
 export function SummaryCarousel(props: Props) {
+  const { HERO_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

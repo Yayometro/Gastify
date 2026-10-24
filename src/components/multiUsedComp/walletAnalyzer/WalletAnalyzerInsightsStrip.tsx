@@ -8,9 +8,9 @@ import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMo
 import InsightDetailModal from "./InsightDetailModal";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerInsightItem } from "./WalletAnalyzerView";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -167,6 +167,7 @@ function WalletAnalyzerInsightsStrip({
   currentRange,
   title = "Lo más destacado del mes",
 }: WalletAnalyzerInsightsStripProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { close, handleClose, renderModal, modalContent } = useModal();
   const [activeInsight, setActiveInsight] = useState<WalletAnalyzerInsightItem | null>(null);

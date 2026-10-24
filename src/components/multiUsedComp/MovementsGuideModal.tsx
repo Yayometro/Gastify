@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoWindow } from "./InfoTip";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface MovementsGuideModalProps {
   open: boolean;
@@ -44,6 +44,7 @@ function Layer({ title, children }: { title: string; children: React.ReactNode }
 }
 
 function MovementsGuideModal({ open, onClose }: MovementsGuideModalProps): React.JSX.Element | null {
+  const { APP_INFO } = useInfo();
   const t = useT();
   if (!open) return null;
   return (

@@ -9,8 +9,8 @@ import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
 import { messageOf, sendWrite } from '@/lib/write';
 import { getApi } from '@gastify/core/api/client';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type Token = { _id?: unknown; name: string; createdAt?: string | number | Date; lastUsedAt?: string | number | Date | null };
 
@@ -19,6 +19,7 @@ const day = (value: Token['createdAt']) => (value ? new Date(value).toLocaleDate
 // Access tokens for connecting other tools to the account (the web's "connector"). The token is shown once, when it is
 // created: it is copied or shared right then. The list only has names and dates, and a token can be revoked.
 export function ApiTokensCard() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

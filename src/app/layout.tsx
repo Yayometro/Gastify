@@ -6,6 +6,7 @@ import { AntdRegistry } from "@ant-design/nextjs-registry";
 import ThemeProvider from "./ThemeProvider";
 import { I18nProvider } from "@/i18n/client";
 import { currentLocale, messagesFor } from "@/i18n/server";
+import { loadInfo } from "@gastify/core/info/catalog";
 // import AllDataProvider from "@/components/Providers/AllDataProvider";
 import React from "react";
 
@@ -30,6 +31,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   // own namespace on top of these (see its layout).
   const locale = await currentLocale();
   const messages = await messagesFor(locale, ["common", "navbar", "auth"]);
+  // The explanations ("?") of the language, loaded with the texts (Spanish is ready at once; English loads when chosen).
+  const info = await loadInfo(locale);
   return (
     <html lang={locale}>
       <head>
@@ -46,7 +49,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body className={inter.className}>
         <AntdRegistry>
-          <I18nProvider locale={locale} messages={messages}>
+          <I18nProvider locale={locale} messages={messages} info={info}>
             <ThemeProvider>
               <ReduxProvider>
                 <main>{children}</main>

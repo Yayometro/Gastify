@@ -10,12 +10,13 @@ import { messageOf, sendWrite } from '@/lib/write';
 import type { AppDispatch, RootState } from '@/store';
 import { updateWallet } from '@gastify/core/features/walletSlice';
 import { CURRENCY_META, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // The main currency, as the web's selector: every total and report is shown in it. It only changes how things are
 // presented: each account keeps its own balance in its own currency.
 export function CurrencyCard() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();

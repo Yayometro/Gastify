@@ -8,9 +8,9 @@ import CategoIcon from "./CategoIcon";
 import useBudgetAlertList from "@/hooks/useBudgetAlertList";
 import { InfoTip } from "./InfoTip";
 import AlertCelebration from "./notifications/AlertCelebration";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import type { BudgetAlert } from "@gastify/core/budgets/budgetAlerts";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // The bell of the navigation bar: the number of notices that apply now, and the list of them in a window (the same
 // notices the app shows). Swiping a notice away in the app is the × here; it leaves with an animation.
@@ -21,6 +21,7 @@ const TONE_CLASS: Record<BudgetAlert["tone"], string> = {
 };
 
 function NotificationsBell(): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { alerts, dismiss, dismissAll } = useBudgetAlertList();
   const [celebrating, setCelebrating] = useState<BudgetAlert | null>(null);

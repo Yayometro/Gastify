@@ -3,12 +3,12 @@
 import React from "react";
 import { Tooltip } from "antd";
 import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface PeriodFiltersWithCompareProps {
   timePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;
@@ -57,6 +57,7 @@ function PeriodFiltersWithCompare({
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
 }: PeriodFiltersWithCompareProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const showCompareToggle = typeof setCompareEnabled === "function";
 

@@ -12,8 +12,8 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { topSpendingCategories } from '@gastify/core/transactions/monthSummary';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 const BAR_AREA = 150;
 const TABLET_BAR_AREA = 230;
@@ -22,6 +22,7 @@ const TABLET_BAR_AREA = 230;
 // figure written above it, the month's name below, and a tap opens that month in full. When another period is
 // compared, its months appear next to each one in a fainter tone.
 export function MonthByMonth({ summary, compareSummary, currency, movements }: { summary: PeriodSummary; compareSummary: PeriodSummary | null; currency: string; movements: TransactionData[] }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

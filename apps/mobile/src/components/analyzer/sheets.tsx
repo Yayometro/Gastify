@@ -15,8 +15,8 @@ import type {
   WalletAnalyzerMonthlyChampionEntry,
   WalletAnalyzerWeekdaySpendingData,
 } from '@gastify/core/transformers/walletAnalyzer';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // The detail sheets of the Wallet Analyzer, one per card, in the web's words. They are shared by the Analyzer and the
 // History screen, so both explain the same numbers the same way.
@@ -49,6 +49,7 @@ type D = Record<string, any>; // eslint-disable-line @typescript-eslint/no-expli
 
 // "Why" sheet for every insight type (the web's InsightDetailModal): a plain explanation and the months behind it.
 export function InsightSheet({ insight, currency, onClose }: { insight: WalletAnalyzerInsightItem | null; currency: string; onClose: () => void }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const money = (value: number) => formatMoneyMajor(value, currency);
   const d = (insight?.data ?? {}) as D;
@@ -116,6 +117,7 @@ export function InsightSheet({ insight, currency, onClose }: { insight: WalletAn
 
 // A budget's last months (the web opens this from the analyzer's budget rows): spent against the limit, month by month.
 export function BudgetSeriesSheet({ row, currency, onClose }: { row: WalletAnalyzerBudgetRow | null; currency: string; onClose: () => void }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const money = (value: number) => formatMoneyMajor(value, currency);
   const series = row?.monthlySeries ?? [];
@@ -142,6 +144,7 @@ const CHAMPION_TITLES: Record<ChampionKind, string> = { transaction: 'TransacciÃ
 
 // The leader of each of the last months (biggest movement, category or sub-category), biggest first.
 export function ChampionsSheet({ kind, months, currency, onClose }: { kind: ChampionKind | null; months: WalletAnalyzerMonthlyChampionEntry[]; currency: string; onClose: () => void }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const money = (value: number) => formatMoneyMajor(value, currency);
   const rows = kind
@@ -179,6 +182,7 @@ export function ChampionsSheet({ kind, months, currency, onClose }: { kind: Cham
 
 // "Ver anÃ¡lisis": the plain-language reading of the biggest spending, from computed facts only.
 export function SpendAnalysisSheet({ patterns, visible, onClose }: { patterns: BiggestSpendPatternsData | null; visible: boolean; onClose: () => void }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const bullets = patterns ? buildSpendPatternAnalysis(patterns) : [];
   return (
@@ -194,6 +198,7 @@ export function SpendAnalysisSheet({ patterns, visible, onClose }: { patterns: B
 
 // "Ver detalle" of the weekday pattern (the web's modal): the heaviest week, how the averages are worked out, and every day.
 export function WeekdaySheet({ data, visible, currency, onClose }: { data: WalletAnalyzerWeekdaySpendingData | null; visible: boolean; currency: string; onClose: () => void }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const money = (value: number) => formatMoneyMajor(value, currency);

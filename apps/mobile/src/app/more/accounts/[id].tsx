@@ -26,13 +26,14 @@ import { accountActivity } from '@gastify/core/accounts/accountActivity';
 import { summarizePeriod } from '@gastify/core/history/periodComparison';
 import { Colors } from '@/constants/theme';
 import { monthTotals, sortNewestFirst } from '@gastify/core/transactions/monthSummary';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // One account: its card (bank, name, currency, number), and the pencil on the card that opens the edition right under
 // it: the color and pattern, then the name, type and balance. The card already shows the bank and the number, so there
 // is no separate section for them.
 export default function EditAccountScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { id: rawId, returnTo: rawReturn } = useLocalSearchParams<{ id: string; returnTo?: string }>();
   const id = String(rawId ?? '');

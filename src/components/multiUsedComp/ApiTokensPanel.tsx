@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { Spin } from "antd";
 import dayjs from "dayjs";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "./CategoIcon";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 // Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
 const TypedCategoIcon = CategoIcon as React.ComponentType<{
@@ -33,6 +33,7 @@ export interface ApiTokensPanelProps {
 // agent connectors (Claude, later ChatGPT). See
 // .mds/AI_AGENT_CONNECTOR_PLAN.md for the full architecture this feeds.
 function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);

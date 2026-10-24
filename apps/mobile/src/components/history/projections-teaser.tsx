@@ -17,8 +17,8 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 import { convertBaselineToPrimary, convertSourcesToPrimary, foreignCurrenciesOf } from '@gastify/core/transformers/projectionInputs';
 import { buildProjectionAccuracyReport, buildYearProjectionTable, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
@@ -26,6 +26,7 @@ type Answer = { ok?: boolean; data?: unknown };
 // The projections of a year inside History, with their own year filter: the net of each month (green when money is
 // left, red when it is not) and the year's total, with a link to the full table.
 export function ProjectionsTeaser() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

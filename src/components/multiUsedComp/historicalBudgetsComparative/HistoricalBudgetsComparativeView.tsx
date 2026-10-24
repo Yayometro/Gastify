@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { Skeleton, Tooltip } from "antd";
 import SelecterFilter, { type SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
@@ -12,7 +12,7 @@ import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import BudgetHistoricalComparativeRow from "./BudgetHistoricalComparativeRow";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
 import type { TimePeriodOption } from "@/hooks/usePeriodComparison";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface HistoricalBudgetsComparativeViewProps {
   rows: BudgetHistoricalComparativeRowData[];
@@ -35,6 +35,7 @@ function HistoricalBudgetsComparativeView({
   walletPrimaryCurrency,
   onOpenDetail,
 }: HistoricalBudgetsComparativeViewProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const tr = useT();
   const t = useT();
   return (

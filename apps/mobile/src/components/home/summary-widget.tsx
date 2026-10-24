@@ -20,8 +20,8 @@ import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionLike } from '@gastify/core/transformers/transactionsChange';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type Kind = 'spending' | 'incomes';
 
@@ -38,6 +38,7 @@ export function SummaryWidget({
   allMovements: TransactionLike[];
   currency: string;
 }) {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

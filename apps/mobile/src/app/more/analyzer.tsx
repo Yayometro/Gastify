@@ -23,8 +23,8 @@ import type { RootState } from '@/store';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { buildWalletAnalyzerSnapshot, type WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type Detail =
   | { kind: 'month'; label: string; income: number; expense: number; count: number; previous: { label: string; income: number; expense: number; count: number } | null }
@@ -40,6 +40,7 @@ const pct = (value: number | null | undefined) => (value === null || value === u
 // The Wallet Analyzer on the phone: the same snapshot the web builds (totals against the previous month, a six-month
 // trend, averages, the biggest categories and movements, the spending pace), each card opening its detail.
 export default function AnalyzerScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const { month: monthParam } = useLocalSearchParams<{ month?: string }>();
   // A tablet turned sideways has room for two columns, as the web's wide layout does.

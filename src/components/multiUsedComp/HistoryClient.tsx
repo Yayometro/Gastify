@@ -14,8 +14,8 @@ import HistoricalWalletAnalyzer from "./HistoricalWalletAnalyzer/HistoricalWalle
 import HistoricalProjectionsTable from "./HistoricalWalletAnalyzer/HistoricalProjectionsTable";
 import usePeriodComparison from "@/hooks/usePeriodComparison";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { HISTORY_INFO } from "@gastify/core/info/appInfo";
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 export type PeriodComparisonState = ReturnType<typeof usePeriodComparison>;
 
@@ -51,6 +51,7 @@ export interface HistoryClientProps {
 }
 
 function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
+  const { HISTORY_INFO } = useInfo();
   const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   // Shared "period A vs period B" state for the chart/category/budget/

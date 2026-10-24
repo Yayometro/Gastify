@@ -8,12 +8,12 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { InfoTip } from "./InfoTip";
 import { BreakdownBubbles, BreakdownMap, BreakdownRing, type BreakdownChartProps } from "./BreakdownCharts";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { categoryBreakdown, type BreakdownSlice } from "@gastify/core/history/categoryBreakdown";
 import { ALL_MOVEMENTS, backOne, drillView, openSlice, type DrillState } from "@gastify/core/history/categoryDrill";
 import type { TransactionLike } from "@gastify/core/transformers/transactionsChange";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 // The category breakdown of the period, the same as the phone's "Resumen de transacciones": one of the charts (ring, bubbles
@@ -39,6 +39,7 @@ export interface CategoryBreakdownCardProps {
 }
 
 function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
   const primary = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";

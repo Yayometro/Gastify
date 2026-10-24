@@ -3,8 +3,8 @@ import React from "react";
 import { Skeleton } from "antd";
 import TabsToggler, { TabsTogglerComponentItem } from "../TabsToggler";
 import PeriodFiltersWithCompare from "../../periodFiltersWithCompare/PeriodFiltersWithCompare";
-import { APP_INFO } from "@gastify/core/info/appInfo";
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 // Typed bridge for unmigrated child JSX component
 interface PeriodFiltersWithCompareProps {
@@ -60,6 +60,7 @@ function TabsTogglerMontlyView({
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
 }: TabsTogglerMontlyViewProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   return (
     <div className="w-full h-full">

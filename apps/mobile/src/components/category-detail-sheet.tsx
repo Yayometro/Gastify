@@ -1,3 +1,4 @@
+import { useInfo } from "@/i18n/client";
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
@@ -9,7 +10,7 @@ import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
-import { APP_INFO } from '@gastify/core/info/appInfo';
+
 
 type Group = { key: string; name: string; icon?: string | null; color?: string | null; total: number; items: TransactionData[] };
 
@@ -32,6 +33,7 @@ export function CategoryDetailSheet({
   onOpenMovement: (movement: TransactionData) => void;
   onClose: () => void;
 }) {
+  const { APP_INFO } = useInfo();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [ascending, setAscending] = useState(false);
   const money = (value: number) => formatMoneyMajor(value, currency);

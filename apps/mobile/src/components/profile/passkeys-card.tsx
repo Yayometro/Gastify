@@ -5,8 +5,8 @@ import { authClient } from '@/auth-client';
 import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
-import { APP_INFO } from '@gastify/core/info/appInfo';
-import { useT } from "@/i18n/client";
+
+import { useT, useInfo } from "@/i18n/client";
 
 type Passkey = { id: string; name?: string | null; createdAt?: string | Date | null; deviceType?: string | null };
 
@@ -15,6 +15,7 @@ const when = (value: Passkey['createdAt']) => (value ? new Date(value).toLocaleD
 // The passkeys of the account (the web's panel): which ones exist and a way to remove one. A passkey is added
 // from the web or from the installed app, because Expo Go has no passkey support.
 export function PasskeysCard() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];

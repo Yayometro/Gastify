@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { APP_INFO } from "@gastify/core/info/appInfo";
+
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import { Skeleton, Tooltip } from "antd";
@@ -9,7 +9,7 @@ import UniversalCategoIcon from "./UniversalCategoIcon";
 import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import TabsToggler, { TabsTogglerComponentItem } from "./TabsComponents/TabsToggler";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface TopElementContainerViewProps {
   isLoading?: boolean;
@@ -35,6 +35,7 @@ function TopElementContainerView({
   getValueFromSelecter,
   getValueFromItems,
 }: TopElementContainerViewProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
   const t = useT();
   return (
     <div className="gf-glass-card w-full h-full rounded-[32px] p-4">
