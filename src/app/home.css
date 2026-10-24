@@ -152,3 +152,23 @@ html:has(.gf-home){scroll-snap-type:y proximity;scroll-padding-top:0}
 .home-end-inner{position:relative;display:flex;flex-direction:column;align-items:center;width:100%;margin-inline:auto}
 .home-end-inner>p{color:var(--home-muted);font-size:.98rem}
 @media(max-width:640px){.home-carousel-controls{gap:.55rem}.home-carousel-count{min-width:50px;font-size:.68rem}.home-carousel-dots{gap:.25rem}.home-carousel-dots button{width:15px;height:4px}.home-carousel-dots button.is-active{width:27px}.home-carousel-arrows{gap:.3rem}.home-carousel-arrows button,.home-carousel-toggle{width:33px;height:33px}.home-end-inner>p{max-width:34rem}}
+
+/* Keep mobile carousel navigation visually separate from its product render. */
+@media(max-width:800px){.home-story-inner>.home-carousel-controls,.home-showcase .home-carousel-controls{position:relative;z-index:2;margin-top:1.2rem}.home-story-media,.home-showcase-media{position:relative;z-index:0}}
+@media(max-width:640px){
+  .home-hero{gap:1rem;padding-block:1.2rem 2rem}
+  .home-hero h1{margin:0 0 .85rem;font-size:clamp(2.45rem,10.6vw,3.55rem)}
+  .home-hero-changing>p,.home-hero-assurance{display:none}
+  .home-hero-actions{gap:.75rem;margin-top:0}
+  .home-hero-copy>.home-carousel-controls{margin-top:.9rem;padding-top:.4rem}
+  .home-hero-media{margin-top:.3rem}
+  .home-hero .home-preview-topbar{height:44px;padding-inline:.9rem}
+  .home-hero .home-preview-content{padding:.9rem}
+  .home-hero .home-preview-balance{font-size:clamp(2.3rem,10vw,3rem)}
+  .home-hero .home-preview-content>p{margin-bottom:.8rem;font-size:.67rem}
+  .home-hero .home-preview-chart{padding:.75rem}
+  .home-hero .home-preview-category{margin:.55rem 0}
+  .home-hero .home-render-window,.home-hero .home-render-body{height:auto;min-height:0}
+  .home-story-card,.home-showcase-stage{gap:1.3rem}
+  .home-story-inner>.home-carousel-controls,.home-showcase .home-carousel-controls{margin-top:1.2rem;padding-top:1rem}
+}
