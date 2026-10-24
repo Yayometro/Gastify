@@ -7,6 +7,7 @@ import { authClient } from "@/lib/auth/authClient";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
+import { useT } from "@/i18n/client";
 
 interface AuthSession {
   user?: { email?: string; twoFactorEnabled?: boolean };
@@ -27,6 +28,7 @@ interface RemoveUserApiResponse {
 // retypes the email and the server requires a passkey verification from the last
 // few minutes (if it is stale, the user is sent to /verify-2fa and comes back).
 function DeleteAccountPanel(): React.JSX.Element {
+  const t = useT();
   const router = useRouter();
   const { data: rawSession } = authClient.useSession();
   const session = rawSession as AuthSession | null | undefined;
@@ -93,7 +95,7 @@ function DeleteAccountPanel(): React.JSX.Element {
         setIsLoading(false);
         return;
       }
-      runNotify("ok", "Tu cuenta y todos tus datos fueron eliminados.");
+      runNotify("ok", t("accounts.delete.done"));
       try {
         await (authClient.signOut as unknown as () => Promise<unknown>)();
       } catch {
@@ -115,29 +117,27 @@ function DeleteAccountPanel(): React.JSX.Element {
           className="remove-acc gf-glass-button-danger text-white text-sm font-medium rounded-full px-6 py-2"
           onClick={() => setIsOpen(true)}
         >
-          Eliminar mi cuenta
+          {t("accounts.delete.button")}
         </button>
       ) : (
         <div className="w-full max-w-[520px] bg-gf-surface rounded-2xl p-4 flex flex-col gap-3">
-          <p className="text-sm font-semibold text-red-400">Eliminar mi cuenta</p>
+          <p className="text-sm font-semibold text-red-400">{t("accounts.delete.button")}</p>
           <p className="text-xs text-gf-text-muted">
-            Esto borra tu cuenta y TODOS tus datos (movimientos, cuentas, categorías, presupuestos, etiquetas, passkeys
-            y la app autenticadora). No se puede deshacer.
+            {t("accounts.delete.warning")}
           </p>
           {!twoFactorEnabled && !passkeyOnly ? (
             <>
               <p className="text-xs text-gf-text">
-                Para eliminar tu cuenta primero registra un passkey o activa una app autenticadora (TOTP) en la sección de
-                verificación en dos pasos de arriba.
+                {t("accounts.delete.needFactor")}
               </p>
               <button type="button" className="text-purple-300 text-xs hover:underline self-start" onClick={close}>
-                Cerrar
+                {t("accounts.close")}
               </button>
             </>
           ) : (
             <form onSubmit={handleDelete} className="form-trans-edit w-full flex flex-col gap-2">
               <label className="text-xs text-gf-text-muted" htmlFor="gf-delete-mail">
-                Escribe tu correo ({session?.user?.email}) para confirmar
+                {t("accounts.delete.confirmMail", { p1: session?.user?.email })}
               </label>
               <input
                 id="gf-delete-mail"
@@ -174,7 +174,7 @@ function DeleteAccountPanel(): React.JSX.Element {
                 </>
               ) : (
                 <p className="text-xs text-gf-text">
-                  Al confirmar te pediremos tu passkey (huella / Face ID) para verificar que eres tú.
+                  {t("accounts.delete.passkeyNote")}
                 </p>
               )}
               {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
@@ -185,7 +185,7 @@ function DeleteAccountPanel(): React.JSX.Element {
                   className="gf-glass-button text-white text-xs rounded-full px-4 py-2"
                   onClick={close}
                 >
-                  Cancelar
+                  {t("accounts.cancel")}
                 </button>
                 <button
                   type="submit"

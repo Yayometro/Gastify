@@ -1,0 +1,143 @@
+{
+  "namespace": "navbar",
+  "entries": [
+    {
+      "key": "navbar.profile",
+      "source": "Profile",
+      "es": "Perfil",
+      "en": "Profile"
+    },
+    {
+      "key": "navbar.movements",
+      "source": "Movements",
+      "es": "Movimientos",
+      "en": "Transactions"
+    },
+    {
+      "key": "navbar.wallet",
+      "source": "Wallet",
+      "es": "Cartera",
+      "en": "Wallet"
+    },
+    {
+      "key": "navbar.budgets",
+      "source": "Budgets",
+      "es": "Presupuestos",
+      "en": "Budgets"
+    },
+    {
+      "key": "navbar.projections",
+      "source": "Projections",
+      "es": "Proyecciones",
+      "en": "Projections"
+    },
+    {
+      "key": "navbar.analyzer",
+      "source": "Wallet Analyzer",
+      "es": "Analizador de cartera",
+      "en": "Wallet Analyzer"
+    },
+    {
+      "key": "navbar.addTransaction",
+      "source": "Add a transaction",
+      "es": "Agregar movimiento",
+      "en": "Add a transaction"
+    },
+    {
+      "key": "navbar.accounts",
+      "source": "Accounts",
+      "es": "Cuentas",
+      "en": "Accounts"
+    },
+    {
+      "key": "navbar.history",
+      "source": "History",
+      "es": "Historial",
+      "en": "History"
+    },
+    {
+      "key": "navbar.categories",
+      "source": "Categories",
+      "es": "Categorías",
+      "en": "Categories"
+    },
+    {
+      "key": "navbar.toggleTheme",
+      "source": "Toggle light/dark mode",
+      "es": "Cambiar modo claro/oscuro",
+      "en": "Toggle light/dark mode"
+    },
+    {
+      "key": "navbar.notifications",
+      "source": "Notificaciones",
+      "es": "Notificaciones",
+      "en": "Notifications"
+    },
+    {
+      "key": "navbar.clearAll",
+      "source": "Limpiar todas",
+      "es": "Limpiar todas",
+      "en": "Clear all"
+    },
+    {
+      "key": "navbar.close",
+      "source": "Cerrar",
+      "es": "Cerrar",
+      "en": "Close"
+    },
+    {
+      "key": "navbar.notifications.none",
+      "source": "No hay avisos por ahora. Te avisamos cuando un presupuesto llegue al 70, 80, 90 o 100 %.",
+      "es": "No hay avisos por ahora. Te avisamos cuando un presupuesto llegue al 70, 80, 90 o 100 %.",
+      "en": "No notices for now. We will let you know when a budget reaches 70, 80, 90 or 100%."
+    },
+    {
+      "key": "navbar.icons.searchPlaceholder",
+      "source": "Buscar ícono: comida, casa, avión…",
+      "es": "Buscar ícono: comida, casa, avión…",
+      "en": "Search icon: food, house, plane…"
+    },
+    {
+      "key": "navbar.icons.search",
+      "source": "Buscar ícono",
+      "es": "Buscar ícono",
+      "en": "Search icon"
+    },
+    {
+      "key": "navbar.icons.loadError",
+      "source": "No pudimos cargar los íconos. Revisa tu conexión.",
+      "es": "No pudimos cargar los íconos. Revisa tu conexión.",
+      "en": "We could not load the icons. Check your connection."
+    },
+    {
+      "key": "navbar.icons.none",
+      "source": "Ningún ícono coincide con la búsqueda.",
+      "es": "Ningún ícono coincide con la búsqueda.",
+      "en": "No icon matches the search."
+    },
+    {
+      "key": "navbar.icons.more",
+      "source": "Mostrar más ({p1}restantes)",
+      "es": "Mostrar más ({p1} restantes)",
+      "en": "Show more ({p1} left)"
+    },
+    {
+      "key": "navbar.seeBudget",
+      "source": "Ver mi presupuesto",
+      "es": "Ver mi presupuesto",
+      "en": "See my budget"
+    },
+    {
+      "key": "navbar.tools.open",
+      "source": "Open tools",
+      "es": "Abrir herramientas",
+      "en": "Open tools"
+    },
+    {
+      "key": "navbar.tools.drag",
+      "source": "Tools (arrástralo a otro borde)",
+      "es": "Herramientas (arrástralo a otro borde)",
+      "en": "Tools (drag it to another edge)"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
+import { useT } from "@/i18n/client";
 
 export interface PeriodFiltersWithCompareProps {
   timePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;
@@ -56,6 +57,7 @@ function PeriodFiltersWithCompare({
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
 }: PeriodFiltersWithCompareProps): React.JSX.Element {
+  const t = useT();
   const showCompareToggle = typeof setCompareEnabled === "function";
 
   return (
@@ -69,7 +71,7 @@ function PeriodFiltersWithCompare({
             className="appearance-none w-4 h-4 rounded-full border-2 border-purple-300 checked:bg-purple-600 checked:border-purple-600 cursor-pointer transition-colors"
           />
           <Tooltip title={COMPARE_TOOLTIP}>
-            <span className="text-purple-300 font-medium">Compare</span>
+            <span className="text-purple-300 font-medium">{t("history.compare")}</span>
           </Tooltip>
           <Tooltip title={COMPARE_TOOLTIP}>
             <span className="text-purple-400 flex items-center">
@@ -86,16 +88,16 @@ function PeriodFiltersWithCompare({
       >
         <div className="flex flex-col items-center gap-1">
           <span className="text-xs">
-            From:{" "}
+            {t("history.from")}{" "}
             <b>
               {!timePeriod?.[0] ? "No time selected" : getDateInYearMonthDay(timePeriod[0])}
             </b>{" "}
-            to:{" "}
+            {t("history.to")}{" "}
             <b>{!timePeriod?.[1] ? "No time selected" : getDateInYearMonthDay(timePeriod[1])}</b>
           </span>
           <div className="flex items-center justify-center flex-wrap gap-2">
             <InfoTip info={APP_INFO.periodo} />
-            <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
+            <Tooltip title={t("history.dateTip")}>
               <div className="text-gf-text w-[10px]">
                 <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
               </div>
@@ -113,18 +115,18 @@ function PeriodFiltersWithCompare({
 
         {showCompareToggle && compareEnabled && (
           <>
-            <span className="text-purple-600 font-bold text-sm shrink-0">VS</span>
+            <span className="text-purple-600 font-bold text-sm shrink-0">{t("history.vs")}</span>
             <div className="flex flex-col items-center gap-1">
               {/* Mirrors the primary block's From/To line above its controls -
                   without it, this block was one line shorter than the primary
                   one, so `items-center` on the row centered it a few px off,
                   reading as a lopsided gap under just this side. */}
               <span className="text-xs">
-                From:{" "}
+                {t("history.from")}{" "}
                 <b>
                   {!comparePeriod?.[0] ? "No time selected" : getDateInYearMonthDay(comparePeriod[0])}
                 </b>{" "}
-                to:{" "}
+                {t("history.to")}{" "}
                 <b>
                   {!comparePeriod?.[1] ? "No time selected" : getDateInYearMonthDay(comparePeriod[1])}
                 </b>

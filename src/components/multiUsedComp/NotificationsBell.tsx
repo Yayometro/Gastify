@@ -10,6 +10,7 @@ import { InfoTip } from "./InfoTip";
 import AlertCelebration from "./notifications/AlertCelebration";
 import { APP_INFO } from "@gastify/core/info/appInfo";
 import type { BudgetAlert } from "@gastify/core/budgets/budgetAlerts";
+import { useT } from "@/i18n/client";
 
 // The bell of the navigation bar: the number of notices that apply now, and the list of them in a window (the same
 // notices the app shows). Swiping a notice away in the app is the × here; it leaves with an animation.
@@ -20,6 +21,7 @@ const TONE_CLASS: Record<BudgetAlert["tone"], string> = {
 };
 
 function NotificationsBell(): React.JSX.Element {
+  const t = useT();
   const { alerts, dismiss, dismissAll } = useBudgetAlertList();
   const [celebrating, setCelebrating] = useState<BudgetAlert | null>(null);
   const [clearing, setClearing] = useState<boolean>(false);
@@ -44,9 +46,9 @@ function NotificationsBell(): React.JSX.Element {
 
   return (
     <>
-      <button type="button" aria-label="Notificaciones" onClick={() => setOpen(true)} className="relative flex items-center justify-center">
+      <button type="button" aria-label={t("navbar.notifications")} onClick={() => setOpen(true)} className="relative flex items-center justify-center">
         <IoNotificationsOutline size={28} className="hidden sm:inline" />
-        <p className="sm:hidden hoverTooltip">Notificaciones</p>
+        <p className="sm:hidden hoverTooltip">{t("navbar.notifications")}</p>
         {alerts.length > 0 && (
           <span className="animate__animated animate__bounceIn absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
             {alerts.length}
@@ -63,16 +65,16 @@ function NotificationsBell(): React.JSX.Element {
             <div className="content absolute gf-glass-violet z-[5001] flex max-h-[80vh] w-[94vw] max-w-[480px] flex-col overflow-hidden rounded-3xl animate__animated animate__zoomIn animate__faster">
               <div className="flex items-center justify-between gap-3 px-6 pb-3 pt-6">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-white">Notificaciones</h2>
+                  <h2 className="text-xl font-bold text-white">{t("navbar.notifications")}</h2>
                   <InfoTip info={APP_INFO.notificaciones} />
                 </div>
                 <div className="flex items-center gap-2">
                   {alerts.length > 0 && (
                     <button type="button" onClick={clearAll} className="rounded-full gf-glass-card px-3 py-1 text-xs font-semibold text-purple-100 transition-transform hover:scale-105 hover:text-white active:scale-95">
-                      Limpiar todas
+                      {t("navbar.clearAll")}
                     </button>
                   )}
-                <button type="button" aria-label="Cerrar" onClick={() => setOpen(false)} className="rounded-full gf-glass-card p-1.5 text-purple-100 transition-colors hover:text-white">
+                <button type="button" aria-label={t("navbar.close")} onClick={() => setOpen(false)} className="rounded-full gf-glass-card p-1.5 text-purple-100 transition-colors hover:text-white">
                   <CategoIcon type={"MdClose"} siz={18} />
                 </button>
                 </div>
@@ -81,7 +83,7 @@ function NotificationsBell(): React.JSX.Element {
                 {alerts.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-10 text-center text-gf-text-muted">
                     <IoCheckmarkCircleOutline size={36} className="text-emerald-400" />
-                    <p className="text-sm">No hay avisos por ahora. Te avisamos cuando un presupuesto llegue al 70, 80, 90 o 100 %.</p>
+                    <p className="text-sm">{t("navbar.notifications.none")}</p>
                   </div>
                 ) : (
                   <ul className="flex flex-col gap-3">

@@ -26,6 +26,7 @@ import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
 import NotificationsBell from "./multiUsedComp/NotificationsBell";
 import { FaHistory } from "react-icons/fa";
 import { useThemeMode } from "@/app/ThemeProvider";
+import { useT } from "@/i18n/client";
 
 export type NavbarSession = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
 
@@ -36,6 +37,7 @@ export interface NavbarProps {
 // (`sesion` stays in NavbarProps - the layout still passes it - but nothing here reads it any more.)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Navbar(_props: NavbarProps): React.JSX.Element {
+  const t = useT();
   const [toggleNav, setToggleNav] = useState<boolean>(false);
   const [isAddTrans, setIsAddTrans] = useState<boolean>(false);
   const { mode, toggleMode } = useThemeMode();
@@ -73,45 +75,45 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
               height={50}
             />
             <p className="text-[10px] sm:text-[8px] w-[45px] break-word text-ellipsis overflow-hidden group truncate">{ccUser?.fullName}</p>
-            <p className="hidden hoverTooltip">Profile</p>
+            <p className="hidden hoverTooltip">{t("navbar.profile")}</p>
           </Link>
         </li>
         <li className={navItemClass("/dashboard/movements")}>
           <Link href="/dashboard/movements" aria-current={isActive("/dashboard/movements") ? "page" : undefined}>
             <FaMoneyBillTransfer size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Movements</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.movements")}</p>
           </Link>
         </li>
         <li className={navItemClass("/dashboard")}>
           <Link href="/dashboard" aria-current={isActive("/dashboard") ? "page" : undefined}>
             <FaWallet size={27} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Wallet</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.wallet")}</p>
           </Link>
         </li>
         <li className={navItemClass("/dashboard/budgets")}>
           <Link href="/dashboard/budgets" aria-current={isActive("/dashboard/budgets") ? "page" : undefined}>
             <MdSavings size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Budgets</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.budgets")}</p>
           </Link>
         </li>
         <li className={navItemClass("/dashboard/projections")}>
           <Link href="/dashboard/projections" aria-current={isActive("/dashboard/projections") ? "page" : undefined}>
             <MdAutoGraph size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Projections</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.projections")}</p>
           </Link>
         </li>
         <li className={navItemClass("/dashboard/analyzer")}>
           <Link href="/dashboard/analyzer" aria-current={isActive("/dashboard/analyzer") ? "page" : undefined}>
             <FaMagnifyingGlassChart size={27} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Wallet Analyzer</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.analyzer")}</p>
           </Link>
         </li>
         <li >
           <div className="add-more sm:flex micro-pulse">
-              <button type="button" onClick={toogleAddTrans} aria-label="Add a transaction" className="gf-glass-fab w-[50px] h-[50px]">
+              <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
                 <IoAdd size={30} />
               </button>
-              <p className="hidden hoverTooltip">Add a transaction</p>
+              <p className="hidden hoverTooltip">{t("navbar.addTransaction")}</p>
             </div>
             {
               (isAddTrans && <AddTransactionModal  close={toogleAddTrans}/>)
@@ -120,24 +122,24 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
         <li className={navItemClass("/dashboard/accounts")}>
           <Link href="/dashboard/accounts" aria-current={isActive("/dashboard/accounts") ? "page" : undefined}>
             <MdAccountBalance size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Accounts</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.accounts")}</p>
           </Link>
         </li>
         
         <li className={navItemClass("/dashboard/history")}>
           <Link href="/dashboard/history" aria-current={isActive("/dashboard/history") ? "page" : undefined}>
             <FaHistory size={30} className="hidden sm:inline"  />
-            <p className="sm:hidden hoverTooltip">History</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.history")}</p>
           </Link>
         </li>
         <li className={navItemClass("/dashboard/categories")}>
           <Link href="/dashboard/categories" aria-current={isActive("/dashboard/categories") ? "page" : undefined}>
             <BiSolidCategory size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Categories</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.categories")}</p>
           </Link>
         </li>
         <li className="gf-nav-item">
-          <button onClick={toggleMode} type="button" aria-label="Toggle light/dark mode">
+          <button onClick={toggleMode} type="button" aria-label={t("navbar.toggleTheme")}>
             {mode === "dark" ? (
               <MdLightMode size={26} className="hidden sm:inline" />
             ) : (
@@ -167,10 +169,10 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
           </Link>
         </li>
         <li className="">
-              <button type="button" onClick={toogleAddTrans} aria-label="Add a transaction" className="gf-glass-fab w-[50px] h-[50px]">
+              <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
                 <IoAdd size={30} />
               </button>
-              <p className="hidden hoverTooltip">Add a transaction</p>
+              <p className="hidden hoverTooltip">{t("navbar.addTransaction")}</p>
             {
               (isAddTrans && <AddTransactionModal close={toogleAddTrans}/>)
             }

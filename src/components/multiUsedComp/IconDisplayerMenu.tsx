@@ -9,6 +9,7 @@ import {
   searchFluentIcons,
   type FluentManifestIcon,
 } from "@/components/icons/fluentManifest";
+import { useT } from "@/i18n/client";
 
 export interface IconDisplayerMenuProps {
   // The icon chosen now, as "fluent/<slug>": it is highlighted in the grid.
@@ -23,6 +24,7 @@ export interface IconDisplayerMenuProps {
 const PAGE = 60;
 
 function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React.JSX.Element {
+  const t = useT();
   const [icons, setIcons] = useState<FluentManifestIcon[] | null>(null);
   const [failed, setFailed] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
@@ -54,12 +56,12 @@ function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React
           setQuery(e.target.value);
           setLimit(PAGE);
         }}
-        placeholder="Buscar ícono: comida, casa, avión…"
-        aria-label="Buscar ícono"
+        placeholder={t("navbar.icons.searchPlaceholder")}
+        aria-label={t("navbar.icons.search")}
         className="w-full rounded-full border-2 border-purple-500 bg-transparent px-3 py-1"
       />
       {failed ? (
-        <p className="text-sm text-red-300">No pudimos cargar los íconos. Revisa tu conexión.</p>
+        <p className="text-sm text-red-300">{t("navbar.icons.loadError")}</p>
       ) : icons === null ? (
         <div className="flex justify-center py-6">
           <Spin />
@@ -68,7 +70,7 @@ function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React
         <>
           <p className="text-xs text-gf-text-muted">{found.length === 1 ? "1 ícono" : `${found.length} íconos`}</p>
           {matches.length === 0 ? (
-            <p className="text-sm text-gf-text-muted">Ningún ícono coincide con la búsqueda.</p>
+            <p className="text-sm text-gf-text-muted">{t("navbar.icons.none")}</p>
           ) : (
             <ul className="flex flex-wrap gap-2">
               {matches.map((icon) => {
@@ -99,7 +101,7 @@ function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React
               onClick={() => setLimit((current) => current + 120)}
               className="self-center py-2 text-sm font-semibold text-purple-300"
             >
-              Mostrar más ({found.length - limit} restantes)
+              {t("navbar.icons.more", { p1: found.length - limit })}
             </button>
           )}
         </>

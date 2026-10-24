@@ -6,6 +6,7 @@ import { IoClose } from "react-icons/io5";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import type { BudgetAlert } from "@gastify/core/budgets/budgetAlerts";
 import { alertMood, type AlertMood } from "@gastify/core/budgets/alertMood";
+import { useT } from "@/i18n/client";
 
 // The window of a notice, the same as the app's: a celebration (confetti and fireworks) for a goal reached, an alarm
 // (the edges of the screen pulse) for 70 to 90 %, and a fire (flames rise) past the limit. It stays until it is closed.
@@ -144,6 +145,7 @@ export interface AlertCelebrationProps {
 }
 
 function AlertCelebration({ alert, onClose }: AlertCelebrationProps): React.JSX.Element {
+  const t = useT();
   const mood = alertMood(alert);
   const emoji = mood === "fire" ? "🔥" : mood === "alarm" ? "😬" : "🎉";
   return (
@@ -165,7 +167,7 @@ function AlertCelebration({ alert, onClose }: AlertCelebrationProps): React.JSX.
           )}
           {mood === "fire" && <FireLayer />}
           <div className="content gf-glass-violet animate__animated animate__zoomIn animate__faster relative z-[1] flex w-full max-w-[420px] flex-col items-center gap-4 rounded-[28px] p-7 text-center">
-            <button type="button" aria-label="Cerrar" onClick={onClose} className="absolute right-4 top-4 rounded-full p-1 text-purple-100 transition-transform hover:scale-125 hover:text-white">
+            <button type="button" aria-label={t("navbar.close")} onClick={onClose} className="absolute right-4 top-4 rounded-full p-1 text-purple-100 transition-transform hover:scale-125 hover:text-white">
               <IoClose size={24} />
             </button>
             <span className="text-[56px] leading-none" aria-hidden="true">
@@ -174,10 +176,10 @@ function AlertCelebration({ alert, onClose }: AlertCelebrationProps): React.JSX.
             <h2 className="text-2xl font-bold text-white">{alert.title}</h2>
             <p className="text-base text-purple-100/90">{alert.message}</p>
             <Link href="/dashboard/budgets" onClick={onClose} className="gf-glass-button w-full rounded-full px-4 py-3 text-center font-semibold text-white">
-              Ver mi presupuesto
+              {t("navbar.seeBudget")}
             </Link>
             <button type="button" onClick={onClose} className="text-sm font-semibold text-purple-200 hover:text-white">
-              Cerrar
+              {t("navbar.close")}
             </button>
           </div>
         </div>

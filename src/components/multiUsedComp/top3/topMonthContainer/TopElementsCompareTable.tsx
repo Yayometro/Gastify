@@ -10,6 +10,7 @@ import ModalContentTopMonthItem, {
   type ModalContentTopMonthItemItem,
 } from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import type { RelativeMonthGroup } from "@/helpers/transformers/transactionsChange";
+import { useT } from "@/i18n/client";
 
 export interface CompareColumn<T = unknown> extends Partial<RelativeMonthGroup<T>> {
   index?: number;
@@ -52,11 +53,12 @@ export interface TopElementsCompareTableProps<T = unknown> {
 // items on the left, the later period's on the right, so the reader scans
 // month-vs-month left to right instead of period-then-period stacked.
 function CompareCell({ column, mode, onOpenItem }: CompareCellProps): React.JSX.Element {
+  const t = useT();
   if (!column || column.childrens.length === 0) {
     return (
       <div className="flex flex-col gap-1 min-w-0">
         <p className="text-[11px] text-gf-text-muted text-center">{column?.monthLabel || "No data"}</p>
-        <p className="text-xs text-gray-300 italic">Nothing this month</p>
+        <p className="text-xs text-gray-300 italic">{t("history.nothingMonth")}</p>
       </div>
     );
   }
@@ -77,11 +79,12 @@ function CompareCell({ column, mode, onOpenItem }: CompareCellProps): React.JSX.
 }
 
 function CompareSection({ title, rows, mode, labelLeft, labelRight, onOpenItem }: CompareSectionProps): React.JSX.Element {
+  const t = useT();
   return (
     <div className="w-full flex flex-col gap-2 mb-4">
       <h2 className="text-xl text-purple-300">{title}</h2>
       {!rows || rows.length === 0 ? (
-        <p className="text-sm text-gf-text-muted">No items to compare for this period.</p>
+        <p className="text-sm text-gf-text-muted">{t("history.noCompare")}</p>
       ) : (
         <div className="w-full overflow-x-auto">
           <div className="min-w-[560px] flex flex-col gap-2">

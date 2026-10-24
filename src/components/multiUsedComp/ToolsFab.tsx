@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import ToolsModal from "@/components/multiUsedComp/ToolsModal";
+import { useT } from "@/i18n/client";
 
 export interface ToolsFabProps {
   mail?: string | null;
@@ -72,6 +73,7 @@ function readSpot(): Spot | null {
 // The floating "Tools" button (the sparkles) and the window it opens. A tap opens the window; a drag moves the button to
 // the nearest border.
 function ToolsFab({ mail }: ToolsFabProps): React.JSX.Element {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [spot, setSpot] = useState<Spot>(DEFAULT_SPOT);
   const [point, setPoint] = useState<Point>({ x: 0, y: 0 });
@@ -139,8 +141,8 @@ function ToolsFab({ mail }: ToolsFabProps): React.JSX.Element {
     <>
       <button
         type="button"
-        aria-label="Open tools"
-        title="Tools (arrástralo a otro borde)"
+        aria-label={t("navbar.tools.open")}
+        title={t("navbar.tools.drag")}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
