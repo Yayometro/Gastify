@@ -23,6 +23,11 @@ const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
   },
 };
 
+// The namespaces that have a catalog in a language (the ones the tests compare between Spanish and English).
+export function catalogsFor(locale: Locale): Namespace[] {
+  return NAMESPACES.filter((namespace) => Boolean(LOADERS[locale][namespace]));
+}
+
 // The text of the given namespaces in one language. A namespace without a catalog yet is simply empty (the fallback covers it).
 export async function loadMessages(locale: Locale, namespaces: readonly Namespace[]): Promise<Dict> {
   const parts = await Promise.all(

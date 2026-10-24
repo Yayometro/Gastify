@@ -2,10 +2,7 @@ import { describe, expect, it } from "vitest";
 import { translate, createTranslator } from "./translate";
 import { resolveLocale, localeFromAcceptLanguage, DEFAULT_LOCALE } from "./locales";
 import { formatDate, formatNumber } from "./format";
-import { NAMESPACES, loadMessages } from "./catalogs";
-// Every catalog file, in both languages. A new namespace is covered by the tests the moment its file exists.
-const ES_FILES = import.meta.glob<{ default: Record<string, string> }>("./messages/es/*.ts", { eager: true });
-const EN_FILES = import.meta.glob<{ default: Record<string, string> }>("./messages/en/*.ts", { eager: true });
+import { NAMESPACES, catalogsFor, loadMessages } from "./catalogs";
 
 const ES = { "a.hello": "Hola {name}", "a.count_one": "{count} cosa", "a.count_other": "{count} cosas", "a.only_es": "Solo español" };
 const EN = { "a.hello": "Hi {name}", "a.count_one": "{count} thing", "a.count_other": "{count} things" };
@@ -61,21 +58,26 @@ describe("format", () => {
   });
 });
 
-// The catalogs must say the same thing in both languages: the same keys, and the same {parameters} in each text.
-const PAIRS: [string, Record<string, string>, Record<string, string>][] = Object.keys(ES_FILES).map((file) => {
-  const name = file.split("/").pop()!.replace(/\.ts$/, "");
-  const enFile = file.replace("/es/", "/en/");
-  return [name, ES_FILES[file].default, EN_FILES[enFile].default];
-});
-
+// The catalogs must say the same thing in both languages: the same keys, and the same {parameters} in each text. The tests
+// load them the way the app does (loadMessages), so a namespace is covered the moment its catalog exists.
 describe("catalogs", () => {
-  it.each(PAIRS)("%s has the same keys in Spanish and English", (_name, es, en) => {
+  const spaces = catalogsFor("es");
+
+  it("has the same namespaces in both languages", () => {
+    expect(catalogsFor("en").sort()).toEqual([...spaces].sort());
+  });
+
+  it.each(spaces)("%s has the same keys in Spanish and English", async (space) => {
+    const es = await loadMessages("es", [space]);
+    const en = await loadMessages("en", [space]);
     expect(Object.keys(en).sort()).toEqual(Object.keys(es).sort());
   });
 
-  it.each(PAIRS)("%s keeps the same {parameters} in both languages", (_name, es, en) => {
+  it.each(spaces)("%s keeps the same {parameters} in both languages", async (space) => {
+    const es = await loadMessages("es", [space]);
+    const en = await loadMessages("en", [space]);
+    const params = (text: string) => (text.match(/\{\w+\}/g) ?? []).sort().join(",");
     for (const key of Object.keys(es)) {
-      const params = (text: string) => (text.match(/\{\w+\}/g) ?? []).sort().join(",");
       expect(params(en[key]), key).toBe(params(es[key]));
     }
   });
