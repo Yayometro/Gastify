@@ -3,7 +3,7 @@ import type { Locale } from "./locales";
 
 // The namespaces: one catalog file per namespace and language, under messages/<locale>/<namespace>.ts. A screen loads only the
 // namespaces it shows, so the first paint carries the text of its own screen and nothing else.
-export const NAMESPACES = ["common", "auth", "movements", "navbar", "dashboard", "budgets", "accounts", "categories", "profile", "history", "analyzer", "projections", "info", "errors", "inicio", "shared", "mobile"] as const;
+export const NAMESPACES = ["common", "auth", "movements", "navbar", "dashboard", "budgets", "accounts", "categories", "profile", "history", "analyzer", "projections", "info", "errors", "inicio", "shared", "web", "mobile"] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
 type Loader = () => Promise<{ default: Dict }>;
@@ -11,6 +11,7 @@ type Loader = () => Promise<{ default: Dict }>;
 const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
   es: {
     mobile: () => import("./messages/es/mobile"),
+    web: () => import("./messages/es/web"),
     errors: () => import("./messages/es/errors"),
     history: () => import("./messages/es/history"),
     accounts: () => import("./messages/es/accounts"),
@@ -29,6 +30,7 @@ const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
   },
   en: {
     mobile: () => import("./messages/en/mobile"),
+    web: () => import("./messages/en/web"),
     errors: () => import("./messages/en/errors"),
     history: () => import("./messages/en/history"),
     accounts: () => import("./messages/en/accounts"),

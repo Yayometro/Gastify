@@ -7,10 +7,10 @@ describe("validateNewPassword", () => {
     expect(validateNewPassword("Gastify#2026", "Gastify#2026")).toBeNull();
   });
   it("rejects each missing rule with its own message", () => {
-    expect(validateNewPassword("Gastify#2026", "Otra#2026")).toContain("no coinciden");
-    expect(validateNewPassword("Ab#1", "Ab#1")).toContain("8 caracteres");
-    expect(validateNewPassword("gastify#2026", "gastify#2026")).toContain("mayúscula");
-    expect(validateNewPassword("Gastify2026", "Gastify2026")).toContain("especial");
+    expect(validateNewPassword("Gastify#2026", "Otra#2026")).toBe("profile.error.passwordMismatch");
+    expect(validateNewPassword("Ab#1", "Ab#1")).toBe("auth.password.ruleLength");
+    expect(validateNewPassword("gastify#2026", "gastify#2026")).toBe("auth.password.ruleUppercase");
+    expect(validateNewPassword("Gastify2026", "Gastify2026")).toBe("profile.error.passwordSpecial");
   });
 });
 
@@ -19,7 +19,7 @@ describe("validateEmailAddress", () => {
     expect(validateEmailAddress(" nuevo@example.com ", "viejo@example.com")).toBeNull();
   });
   it("rejects a malformed address and the same one", () => {
-    expect(validateEmailAddress("no-es-correo", "a@b.co")).toBe("Escribe un correo válido.");
-    expect(validateEmailAddress("A@B.co", "a@b.co")).toBe("Ese ya es tu correo.");
+    expect(validateEmailAddress("no-es-correo", "a@b.co")).toBe("profile.error.mailInvalid");
+    expect(validateEmailAddress("A@B.co", "a@b.co")).toBe("profile.error.mailSame");
   });
 });

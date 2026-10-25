@@ -52,3 +52,8 @@ export function dayLabel(date: Date, today: Date, locale: Locale, t: TranslateFn
   const sameYear = date.getFullYear() === today.getFullYear();
   return tidy(formatterFor(locale, { weekday: "long", day: "numeric", month: "long", ...(sameYear ? {} : { year: "numeric" }) }).format(date), locale);
 }
+
+// "1 oct 2026", or "01 oct 2026" with a two-digit day, in the language.
+export function shortDate(date: Date, locale: Locale, twoDigitDay = false): string {
+  return formatterFor(locale, { day: twoDigitDay ? "2-digit" : "numeric", month: "short", year: "numeric" }).format(date);
+}

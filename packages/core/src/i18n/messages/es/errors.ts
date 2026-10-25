@@ -1,5 +1,7 @@
 // Texts of the "errors" namespace. Spanish is the source text.
 const errors = {
+  "errors.api.languageInvalid": "Idioma no válido",
+  "errors.api.countryInvalid": "País no válido",
   "errors.api.bulkReassignBlocked": "Reasignación masiva bloqueada: la cuenta destino es {p1}, pero al menos una transacción seleccionada es {p2}. Reasigna las transacciones de otra moneda una por una.",
   "errors.api.exchangeRateUnavailable": "No hay un tipo de cambio disponible para convertir {p1} -> {p2}. Inténtalo de nuevo en un momento.",
   "errors.api.currencyChoiceRequired": "Cambiar a una cuenta en otra moneda ({p1} -> {p2}) requiere elegir: convertir, reinterpretar o manual.",
@@ -236,7 +238,8 @@ const errors = {
   "errors.date.must.be.a.valid": "La fecha debe ser una fecha ISO válida, no futura",
   "errors.exchange.rate.estimate.unavailable": "Estimado de tipo de cambio no disponible",
   "errors.fx.quote.resolved": "Cotización de tipo de cambio resuelta",
-  "errors.no.user.was.saved.creating": "No se guardó ningún usuario al crear el usuario nuevo ❌"
+  "errors.no.user.was.saved.creating": "No se guardó ningún usuario al crear el usuario nuevo ❌",
+
 } as const;
 
 export default errors;

@@ -33,6 +33,7 @@ const en: Record<keyof typeof common, string> = {
   "common.language": "Language",
   "common.languageSpanish": "Spanish",
   "common.languageEnglish": "English",
+  "common.metaDescription": "Take control of your incomes and bills",
 };
 
 export default en;

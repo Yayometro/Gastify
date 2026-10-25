@@ -17,6 +17,12 @@ export interface BreakdownSlice {
 
 export const NO_CATEGORY_NAME = "Sin categoría";
 export const NO_SUBCATEGORY_NAME = "Sin subcategoría";
+
+// The names of the rows without a category (the app sets them in the language on screen).
+let labels = { noCategory: NO_CATEGORY_NAME, noSubcategory: NO_SUBCATEGORY_NAME };
+export function setBreakdownLabels(next: { noCategory?: string; noSubcategory?: string }): void {
+  labels = { ...labels, ...next };
+}
 const NO_CATEGORY_COLOR = "#9ca3af";
 
 function addTo(map: Map<string, BreakdownSlice>, key: string, name: string, icon: string, color: string, value: number): BreakdownSlice {
@@ -43,15 +49,15 @@ export function categoryBreakdown(movements: TransactionLike[], kind: "spending"
     const value = Math.abs(getPrimaryAmount(movement));
     if (!(value > 0)) continue;
     const category = movement.category;
-    const categoryKey = category?._id || category?.name || NO_CATEGORY_NAME;
-    const slice = addTo(categories, categoryKey, category?.name || NO_CATEGORY_NAME, category?.icon || "", category?.color || NO_CATEGORY_COLOR, value);
+    const categoryKey = category?._id || category?.name || labels.noCategory;
+    const slice = addTo(categories, categoryKey, category?.name || labels.noCategory, category?.icon || "", category?.color || NO_CATEGORY_COLOR, value);
 
     const subs = subsByCategory.get(categoryKey) ?? new Map<string, BreakdownSlice>();
     subsByCategory.set(categoryKey, subs);
     const sub = movement.subCategory;
-    const subKey = sub?._id || sub?.name || NO_SUBCATEGORY_NAME;
+    const subKey = sub?._id || sub?.name || labels.noSubcategory;
     // A subcategory without its own color or icon looks like its category.
-    const subSlice = addTo(subs, subKey, sub?.name || NO_SUBCATEGORY_NAME, sub?.icon || slice.icon, sub?.color || slice.color, value);
+    const subSlice = addTo(subs, subKey, sub?.name || labels.noSubcategory, sub?.icon || slice.icon, sub?.color || slice.color, value);
     // Each movement is also kept as a slice of its own, the third level of the drill-down (movement -> its amount).
     const named = movement as { _id?: unknown; name?: string | null; title?: string | null };
     const label = named.name || named.title || "Movimiento";

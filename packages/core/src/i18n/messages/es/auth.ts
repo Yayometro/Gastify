@@ -37,7 +37,23 @@ const auth = {
   "auth.passkey.nameLabel": "Nombre",
   "auth.passkey.namePlaceholder": "p. ej. Mi iPhone",
   "auth.passkey.addedOn": "Agregada el {date}",
-  "auth.passkey.unnamed": "Passkey sin nombre"
+  "auth.passkey.unnamed": "Passkey sin nombre",
+  "auth.could.not.sign.in.with.that.passkey": "No pudimos entrar con ese passkey 🤕",
+  "auth.something.went.wrong.please.verify.your.username.or.try": "Algo salió mal; revisa tu usuario o inténtalo más tarde 🤕",
+  "auth.enter.your.verification.code": "Ingresa tu código de verificación",
+  "auth.log.in.to.use.gastify": "Inicia sesión para usar Gastify 💸",
+  "auth.the.password.must.have.at.least.one.special.character": "La contraseña debe tener al menos un carácter especial \"!@#$%^&*(),.?\":{}|<>\".",
+  "auth.accept.the.terms.and.conditions": "Acepta los términos y condiciones",
+  "auth.verify.that.the.password.is.longer.than.8.characters.inc": "Verifica que la contraseña tenga más de 8 caracteres, al menos una mayúscula y al menos un carácter especial",
+  "auth.email.already.exists": "El correo ya existe",
+  "auth.we.couldn.t.register.the.passkey": "No se pudo registrar el passkey 🤕",
+  "auth.we.couldn.t.start.the.setup": "No se pudo iniciar la configuración 🤕",
+  "auth.incorrect.code.try.again": "Código incorrecto, intenta de nuevo 🤕",
+  "auth.you.closed.the.passkey.prompt.you.can.try.again.or.use.a": "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo o usar un código de tu app autenticadora.",
+  "auth.you.closed.the.passkey.prompt.you.can.try.again": "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo.",
+  "auth.done.taking.you.to.your.wallet": "¡Listo! Llevándote a tu Wallet…",
+  "auth.verifying.your.identity": "Verificando tu identidad…",
+  "auth.incorrect.code.you.have.p1.attempt.s.left": "Código incorrecto. Te quedan {p1} intento(s).",
 } as const;
 
 export default auth;

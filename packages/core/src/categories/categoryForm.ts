@@ -21,8 +21,8 @@ export function idOf(value: unknown): string {
 
 export function validateCategoryName(name: string): string | null {
   const trimmed = name.trim();
-  if (!trimmed) return "Escribe un nombre.";
-  if (trimmed.length > 40) return "Usa como máximo 40 caracteres.";
+  if (!trimmed) return "accounts.error.nameRequired";
+  if (trimmed.length > 40) return "accounts.error.nameTooLong";
   return null;
 }
 

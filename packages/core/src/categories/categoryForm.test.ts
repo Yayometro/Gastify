@@ -4,7 +4,7 @@ import { idOf, subCategoriesOf, validateCategoryName } from "./categoryForm";
 
 describe("validateCategoryName", () => {
   it("needs a name of at most 40 characters", () => {
-    expect(validateCategoryName("  ")).toBe("Escribe un nombre.");
+    expect(validateCategoryName("  ")).toBe("accounts.error.nameRequired");
     expect(validateCategoryName("x".repeat(41))).toBeDefined();
     expect(validateCategoryName("Comida")).toBeNull();
   });
