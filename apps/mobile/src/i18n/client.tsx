@@ -1,23 +1,28 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { useSelector } from "react-redux";
 import { createTranslator, type Dict, type TranslateFn } from "@gastify/core/i18n/translate";
-import { DEFAULT_LOCALE, LOCALES, resolveLocale, isLocale, type Locale } from "@gastify/core/i18n/locales";
+import { setCurrentTranslator } from "./now";
+import { chooseLocale, countryOf, DEFAULT_LOCALE, isLocale, type Locale } from "@gastify/core/i18n/locales";
+import { normalizeCountry } from "@gastify/core/i18n/countries";
 import { loadMessages, NAMESPACES } from "@gastify/core/i18n/catalogs";
 import { loadInfo, SPANISH_INFO, type InfoData } from "@gastify/core/info/catalog";
 import type { WalletText } from "@gastify/core/transformers/walletAnalyzer";
+import type { RootState } from "@/store";
 
-// The app's language: the one the person chose (kept on the device), or else the device's own language, or Spanish.
+// The last language the account chose, kept on the device so the app opens in it before the person's data has loaded.
 const STORE_KEY = "gf_locale";
 
-function deviceLocale(): Locale {
+// What the device says about where it is and what it speaks: its language tag, with the region (for example "es-MX").
+function deviceTag(): string | undefined {
   try {
-    return resolveLocale(Intl.DateTimeFormat().resolvedOptions().locale);
+    return Intl.DateTimeFormat().resolvedOptions().locale;
   } catch {
-    return DEFAULT_LOCALE;
+    return undefined;
   }
 }
 
-async function savedLocale(): Promise<Locale | null> {
+async function rememberedAccountLanguage(): Promise<Locale | null> {
   try {
     const value = await SecureStore.getItemAsync(STORE_KEY);
     return isLocale(value) ? value : null;
@@ -26,57 +31,88 @@ async function savedLocale(): Promise<Locale | null> {
   }
 }
 
+// The language the account chose (null: automatic), or undefined while the person's data has not loaded.
+export function useAccountLanguage(): Locale | null | undefined {
+  return useSelector((state: RootState) => {
+    if (state.userReducer.status !== "succeeded") return undefined;
+    const language = (state.userReducer.data as { language?: unknown }).language;
+    return isLocale(language) ? language : null;
+  });
+}
+
+// The country the account chose (null: automatic, where the phone says the person is), or undefined while the data has not loaded.
+export function useAccountCountry(): string | null | undefined {
+  return useSelector((state: RootState) => {
+    if (state.userReducer.status !== "succeeded") return undefined;
+    const country = (state.userReducer.data as { country?: unknown }).country;
+    return normalizeCountry(country) ?? null;
+  });
+}
+
 interface I18nValue {
   locale: Locale;
   t: TranslateFn;
   info: InfoData;
-  setLocale: (locale: Locale) => void;
+}
+
+interface Loaded extends I18nValue {
+  messages: Dict;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
-const UNPROVIDED: I18nValue = { locale: DEFAULT_LOCALE, t: createTranslator(DEFAULT_LOCALE, {}), info: SPANISH_INFO, setLocale: () => undefined };
+const UNPROVIDED: I18nValue = { locale: DEFAULT_LOCALE, t: createTranslator(DEFAULT_LOCALE, {}), info: SPANISH_INFO };
 
-// The app waits for its texts (a few milliseconds from the device's own catalogs) before it draws, so no screen ever shows keys.
+// The language of the app: the account's choice, else the one this device remembers, else where the phone says it is, else
+// the phone's language, else Spanish. The app waits for its first texts (a few milliseconds from the device's own catalogs) before
+// it draws, and keeps the previous texts while a new language loads, so no screen shows keys or goes blank.
 export function I18nProvider({ children }: { children: React.ReactNode }): React.JSX.Element | null {
-  const [locale, setLocaleState] = useState<Locale | null>(null);
-  const [messages, setMessages] = useState<Dict | null>(null);
-  const [info, setInfo] = useState<InfoData | null>(null);
+  const accountLanguage = useAccountLanguage();
+  const accountCountry = useAccountCountry();
+  const [remembered, setRemembered] = useState<Locale | null | undefined>(undefined);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
 
   useEffect(() => {
     let alive = true;
-    savedLocale().then((saved) => {
-      if (alive) setLocaleState(saved ?? deviceLocale());
+    rememberedAccountLanguage().then((value) => {
+      if (alive) setRemembered(value);
     });
     return () => {
       alive = false;
     };
   }, []);
 
+  // Remember the account's choice on this device (cleared when the account is automatic).
   useEffect(() => {
-    if (!locale) return;
+    if (accountLanguage === undefined) return;
+    const write = accountLanguage ? SecureStore.setItemAsync(STORE_KEY, accountLanguage) : SecureStore.deleteItemAsync(STORE_KEY);
+    write.catch(() => undefined);
+  }, [accountLanguage]);
+
+  const tag = deviceTag();
+  // The country the account chose wins over the phone's region (the phone only says where the person is until they choose).
+  const locale = chooseLocale({
+    account: accountLanguage !== undefined ? accountLanguage : (remembered ?? null),
+    country: accountCountry || countryOf(tag),
+    language: tag,
+  });
+
+  useEffect(() => {
+    if (remembered === undefined) return;
     let alive = true;
-    Promise.all([loadMessages(locale, NAMESPACES), loadInfo(locale)]).then(([loaded, explanations]) => {
+    Promise.all([loadMessages(locale, NAMESPACES), loadInfo(locale)]).then(([messages, info]) => {
       if (alive) {
-        setMessages(loaded);
-        setInfo(explanations);
+        setCurrentTranslator(locale, messages);
+        setLoaded({ locale, messages, info, t: createTranslator(locale, messages) });
       }
     });
     return () => {
       alive = false;
     };
-  }, [locale]);
-
-  const setLocale = useCallback((next: Locale) => {
-    if (!(LOCALES as readonly string[]).includes(next)) return;
-    setMessages(null);
-    setInfo(null);
-    setLocaleState(next);
-    SecureStore.setItemAsync(STORE_KEY, next).catch(() => undefined);
-  }, []);
+  }, [locale, remembered]);
 
   const value = useMemo<I18nValue | null>(
-    () => (locale && messages && info ? { locale, t: createTranslator(locale, messages), info, setLocale } : null),
-    [locale, messages, info, setLocale]
+    () => (loaded ? { locale: loaded.locale, t: loaded.t, info: loaded.info } : null),
+    [loaded]
   );
 
   if (!value) return null;
@@ -90,10 +126,6 @@ export function useT(): TranslateFn {
 
 export function useLocale(): Locale {
   return (useContext(I18nContext) ?? UNPROVIDED).locale;
-}
-
-export function useSetLocale(): (locale: Locale) => void {
-  return (useContext(I18nContext) ?? UNPROVIDED).setLocale;
 }
 
 // The explanations ("?") of the current language.

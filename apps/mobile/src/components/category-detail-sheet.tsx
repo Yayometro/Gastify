@@ -1,4 +1,4 @@
-import { useInfo } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
@@ -10,6 +10,7 @@ import { TABLET_MIN_WIDTH } from '@/hooks/use-device-class';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
+import { tNow } from '@/i18n/now';
 
 
 type Group = { key: string; name: string; icon?: string | null; color?: string | null; total: number; items: TransactionData[] };
@@ -33,6 +34,7 @@ export function CategoryDetailSheet({
   onOpenMovement: (movement: TransactionData) => void;
   onClose: () => void;
 }) {
+  const t = useT();
   const { APP_INFO } = useInfo();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const [ascending, setAscending] = useState(false);
@@ -43,7 +45,7 @@ export function CategoryDetailSheet({
     for (const tx of movements) {
       const subCategory = (tx as { subCategory?: { name?: string; icon?: string; color?: string } | null }).subCategory;
       const category = (tx as { category?: { icon?: string; color?: string } | null }).category;
-      const sub = subCategory?.name || 'Sin subcategoría';
+      const sub = subCategory?.name || t("mobile.sin.subcategoria");
       const group = map.get(sub) ?? { key: sub, name: sub, icon: subCategory?.icon ?? category?.icon, color: subCategory?.color ?? category?.color, total: 0, items: [] };
       group.total += Math.abs(getPrimaryAmount(tx));
       group.items.push(tx);
@@ -54,10 +56,10 @@ export function CategoryDetailSheet({
       .map((group) => ({ ...group, items: [...group.items].sort((a, b) => dir * (Math.abs(getPrimaryAmount(a)) - Math.abs(getPrimaryAmount(b)))) }))
       .sort((a, b) => dir * (a.total - b.total));
     return { total: sorted.reduce((sum, group) => sum + group.total, 0), groups: sorted };
-  }, [movements, ascending]);
+  }, [movements, ascending, t]);
 
   const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
-  const count = `${movements.length} ${movements.length === 1 ? 'movimiento' : 'movimientos'} · ${groups.length} ${groups.length === 1 ? 'subcategoría' : 'subcategorías'}`;
+  const count = `${tNow("mobile.movimientos.conteo", { count: movements.length, p1: movements.length })} · ${tNow("mobile.subcategorias.conteo", { count: groups.length, p1: groups.length })}`;
 
   return (
     <DetailSheet
@@ -86,7 +88,7 @@ export function CategoryDetailSheet({
       <View className="flex-row gap-2">
         {[false, true].map((asc) => (
           <Pressable key={String(asc)} accessibilityRole="button" accessibilityState={{ selected: ascending === asc }} onPress={() => setAscending(asc)} className="rounded-full border border-gf-border px-4 py-2" style={{ backgroundColor: ascending === asc ? colors.accentSoft : undefined }}>
-            <Text className="font-inter-medium text-sm text-gf-text">{asc ? 'Menor a mayor' : 'Mayor a menor'}</Text>
+            <Text className="font-inter-medium text-sm text-gf-text">{asc ? t("mobile.menor.a.mayor") : t("mobile.mayor.a.menor")}</Text>
           </Pressable>
         ))}
       </View>

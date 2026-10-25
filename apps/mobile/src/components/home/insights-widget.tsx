@@ -8,6 +8,7 @@ import type { PeriodInsights } from '@gastify/core/history/insights';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // On a tablet each reading is its own glass tile (as the web's highlights are), with room for a longer subtext; on the phone
 // it is plain text in two columns.
@@ -35,15 +36,15 @@ export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insight
   const columns = width >= WIDE_MIN_WIDTH ? 3 : 2;
   const pct = (value: number) => `${value >= 0 ? '+' : ''}${Math.round(value * 100)}%`;
   const tile = (key: string, fact: Omit<Parameters<typeof Fact>[0], 'tile' | 'compact'>) => <Fact key={key} tile compact={!tablet} {...fact} />;
-  const facts: ReactElement[] = [tile('daily', { label: t("mobile.gasto.por.dia"), value: formatMoneyMajor(insights.dailyAverage, currency), detail: `en ${insights.daysElapsed} ${insights.daysElapsed === 1 ? 'día' : 'días'}` })];
-  if (insights.projectedSpending !== null) facts.push(tile('projected', { label: t("mobile.al.ritmo.actual"), value: formatMoneyMajor(insights.projectedSpending, currency), detail: `gastarías en ${insights.days} días` }));
-  if (insights.savingsRate !== null) facts.push(tile('savings', { label: t("mobile.lo.que.conservas"), value: `${Math.round(insights.savingsRate * 100)}%`, detail: 'de tus ingresos', tone: insights.savingsRate < 0 ? colors.expense : colors.income }));
+  const facts: ReactElement[] = [tile('daily', { label: t("mobile.gasto.por.dia"), value: formatMoneyMajor(insights.dailyAverage, currency), detail: tNow("mobile.dias.conteo", { count: insights.daysElapsed, p1: insights.daysElapsed }) })];
+  if (insights.projectedSpending !== null) facts.push(tile('projected', { label: t("mobile.al.ritmo.actual"), value: formatMoneyMajor(insights.projectedSpending, currency), detail: tNow("mobile.gastarias.en.p1.dias", { p1: insights.days }) }));
+  if (insights.savingsRate !== null) facts.push(tile('savings', { label: t("mobile.lo.que.conservas"), value: `${Math.round(insights.savingsRate * 100)}%`, detail: t("mobile.de.tus.ingresos"), tone: insights.savingsRate < 0 ? colors.expense : colors.income }));
   if (insights.spendingChange !== null) facts.push(tile('spending-change', { label: t("mobile.gastos.vs.periodo.anterior"), value: pct(insights.spendingChange), tone: insights.spendingChange > 0 ? colors.expense : colors.income }));
   if (insights.incomeChange !== null) facts.push(tile('income-change', { label: t("mobile.ingresos.vs.periodo.anterior"), value: pct(insights.incomeChange), tone: insights.incomeChange >= 0 ? colors.income : colors.expense }));
-  if (insights.topCategory) facts.push(tile('top-category', { label: t("mobile.lo.que.mas.pesa"), value: insights.topCategory.name, detail: `${Math.round(insights.topCategory.share * 100)}% de los gastos` }));
-  if (insights.biggestExpense) facts.push(tile('biggest', { label: t("mobile.gasto.mas.grande"), value: formatMoneyMajor(insights.biggestExpense.amount, currency), detail: `${insights.biggestExpense.name} · ${Math.round(insights.biggestExpense.share * 100)}% del gasto` }));
-  if (insights.averageExpense !== null) facts.push(tile('average', { label: t("mobile.gasto.promedio"), value: formatMoneyMajor(insights.averageExpense, currency), detail: 'por cada gasto' }));
-  facts.push(tile('balance', { label: t("mobile.balance.del.periodo"), value: formatMoneyMajor(insights.balance, currency), detail: `${insights.movementCount} ${insights.movementCount === 1 ? 'movimiento' : 'movimientos'}`, tone: insights.balance < 0 ? colors.expense : colors.income }));
+  if (insights.topCategory) facts.push(tile('top-category', { label: t("mobile.lo.que.mas.pesa"), value: insights.topCategory.name, detail: tNow("mobile.p1.de.los.gastos", { p1: Math.round(insights.topCategory.share * 100) }) }));
+  if (insights.biggestExpense) facts.push(tile('biggest', { label: t("mobile.gasto.mas.grande"), value: formatMoneyMajor(insights.biggestExpense.amount, currency), detail: tNow("mobile.p1.p2.del.gasto", { p1: insights.biggestExpense.name, p2: Math.round(insights.biggestExpense.share * 100) }) }));
+  if (insights.averageExpense !== null) facts.push(tile('average', { label: t("mobile.gasto.promedio"), value: formatMoneyMajor(insights.averageExpense, currency), detail: t("mobile.por.cada.gasto") }));
+  facts.push(tile('balance', { label: t("mobile.balance.del.periodo"), value: formatMoneyMajor(insights.balance, currency), detail: tNow("mobile.movimientos.conteo", { count: insights.movementCount, p1: insights.movementCount }), tone: insights.balance < 0 ? colors.expense : colors.income }));
   const perRow = tablet ? columns : 2;
   const rows: ReactElement[][] = [];
   for (let index = 0; index < facts.length; index += perRow) rows.push(facts.slice(index, index + perRow));

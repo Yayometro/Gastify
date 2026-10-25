@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import { NAV_ICON } from '@/lib/nav-icons';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -33,7 +34,7 @@ function MenuRow({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={soon ? `${label}, próximamente` : label}
+      accessibilityLabel={soon ? tNow("mobile.p1.proximamente", { p1: label }) : label}
       accessibilityState={{ disabled: soon }}
       disabled={soon}
       onPress={onPress}

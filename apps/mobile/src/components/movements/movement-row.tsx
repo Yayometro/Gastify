@@ -8,6 +8,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { movementTime } from '@gastify/core/transactions/historyWindow';
 import { movementKind } from '@gastify/core/transactions/monthSummary';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
+import { useT } from '@/i18n/client';
 
 function clock(time: number | null): string {
   if (time === null) return '';
@@ -37,6 +38,7 @@ export function MovementRow({
   onPress?: () => void;
   onLongPress?: () => void;
 }) {
+  const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const category = movement.category ?? null;
@@ -60,8 +62,8 @@ export function MovementRow({
 
   const sign = kind === 'income' ? '+' : kind === 'expense' ? '-' : '';
   const amountColor = kind === 'income' ? colors.income : kind === 'expense' ? colors.expense : colors.textSecondary;
-  const title = movement.name || category?.name || 'Movimiento';
-  const detail = kind === 'transfer' ? 'Transferencia' : category?.name || 'Sin categoría';
+  const title = movement.name || category?.name || t("errors.api.movement");
+  const detail = kind === 'transfer' ? t("mobile.transferencia") : category?.name || t("history.noCategory");
   const amount = formatMoneyMajor(Math.abs(getPrimaryAmount(movement)), currency);
 
   return (

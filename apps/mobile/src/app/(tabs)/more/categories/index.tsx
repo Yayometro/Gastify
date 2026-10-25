@@ -51,11 +51,11 @@ export default function CategoriesScreen() {
 
   const subtitle = (category: CategoryData, subs: SubCategoryData[]) => {
     const names = subCategoriesOf(subs, idOf(category)).map((sub) => sub.name).filter(Boolean);
-    return names.length === 0 ? 'Sin subcategorías' : names.join(' · ');
+    return names.length === 0 ? t("mobile.sin.subcategorias") : names.join(' · ');
   };
 
   return (
-    <Screen title={t("mobile.categorias")} backLabel="Más" onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
+    <Screen title={t("mobile.categorias")} backLabel={t("mobile.mas")} onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
       <TextField label="" value={query} onChangeText={setQuery} placeholder={t("mobile.buscar.categoria.o.subcategoria")} autoCorrect={false} />
       <Pressable accessibilityRole="button" onPress={() => router.push('/more/categories/new')} className="items-center rounded-3xl bg-gf-surface p-4">
         <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
@@ -74,7 +74,7 @@ export default function CategoriesScreen() {
                 onPress={() => router.push({ pathname: '/more/categories/[id]', params: { id: idOf(category) } })}
                 className="flex-row items-center gap-3 py-1.5">
                 <CategoryBadge icon={category.icon} color={category.color} size={40} />
-                <Text className="flex-1 font-inter-medium text-base text-gf-text">{category.name || 'Categoría'}</Text>
+                <Text className="flex-1 font-inter-medium text-base text-gf-text">{category.name || t("dashboard.bulk.category")}</Text>
                 <Text className="font-inter text-base text-gf-text-muted">›</Text>
               </Pressable>
             ))}
@@ -89,7 +89,7 @@ export default function CategoriesScreen() {
                 className="flex-row items-center gap-3 py-1.5">
                 <CategoryBadge icon={sub.icon} color={sub.color} size={34} />
                 <View className="flex-1">
-                  <Text className="font-inter-medium text-base text-gf-text">{sub.name || 'Subcategoría'}</Text>
+                  <Text className="font-inter-medium text-base text-gf-text">{sub.name || t("dashboard.dup.subcategory")}</Text>
                   <Text className="font-inter text-sm text-gf-text-muted">{parentName(sub)}</Text>
                 </View>
                 <Text className="font-inter text-base text-gf-text-muted">›</Text>
@@ -102,7 +102,7 @@ export default function CategoriesScreen() {
       {!searching && (
       <>
       <Card title={t("mobile.tus.categorias")}>
-        {own.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{query ? 'Ninguna coincide.' : 'Todavía no creaste ninguna.'}</Text>}
+        {own.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{query ? t("mobile.ninguna.coincide") : t("mobile.todavia.no.creaste.ninguna")}</Text>}
         {own.map((category) => {
           const id = idOf(category);
           return (
@@ -113,7 +113,7 @@ export default function CategoriesScreen() {
               className="flex-row items-center gap-3 py-1.5">
               <CategoryBadge icon={category.icon} color={category.color} size={40} />
               <View className="flex-1">
-                <Text className="font-inter-medium text-base text-gf-text">{category.name || 'Categoría'}</Text>
+                <Text className="font-inter-medium text-base text-gf-text">{category.name || t("dashboard.bulk.category")}</Text>
                 <Text className="font-inter text-sm text-gf-text-muted" numberOfLines={2}>{subtitle(category, ownSubs)}</Text>
               </View>
               <Text className="font-inter text-base text-gf-text-muted">›</Text>
@@ -128,7 +128,7 @@ export default function CategoriesScreen() {
           <View key={idOf(category)} className="flex-row items-center gap-3 py-1.5">
             <CategoryBadge icon={category.icon} color={category.color} size={40} />
             <View className="flex-1">
-              <Text className="font-inter-medium text-base text-gf-text">{category.name || 'Categoría'}</Text>
+              <Text className="font-inter-medium text-base text-gf-text">{category.name || t("dashboard.bulk.category")}</Text>
               <Text className="font-inter text-sm text-gf-text-muted" numberOfLines={2}>{subtitle(category, [...ownSubs, ...defaultSubs])}</Text>
             </View>
           </View>

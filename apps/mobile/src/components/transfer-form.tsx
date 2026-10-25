@@ -56,7 +56,7 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
     <View className="gap-4">
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.desde")}</Text>
-        <ChipPicker items={items} value={values.sourceAccountId} onChange={(id) => set('sourceAccountId', id)} emptyText="Primero crea dos cuentas en Más › Cuentas." />
+        <ChipPicker items={items} value={values.sourceAccountId} onChange={(id) => set('sourceAccountId', id)} emptyText={t("mobile.primero.crea.dos.cuentas.en.mas.cuentas")} />
         {errors.sourceAccountId && <Text className="font-inter text-sm text-red-500">{t(errors.sourceAccountId)}</Text>}
       </View>
       <View className="gap-2">
@@ -78,7 +78,7 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
       {errors.date && <Text className="font-inter text-sm text-red-500">{t(errors.date)}</Text>}
       <TextField label={t("mobile.nombre.opcional")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={t("mobile.pago.de.tarjeta")} maxLength={80} />
       <FormError message={formError} />
-      <GradientButton label={crossCurrency ? 'Cambiar moneda' : 'Transferir'} onPress={submit} loading={submitting} disabled={submitting} />
+      <GradientButton label={crossCurrency ? t("movements.bulk.changeCurrency") : t("mobile.transferir")} onPress={submit} loading={submitting} disabled={submitting} />
     </View>
   );
 }

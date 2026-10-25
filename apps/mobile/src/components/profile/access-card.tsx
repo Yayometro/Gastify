@@ -34,7 +34,8 @@ export function AccessCard({ email }: { email: string }) {
   const [openForm, setOpenForm] = useState<'email' | 'password' | null>(null);
 
   const changeEmail = () => {
-    const problem = validateEmailAddress(newEmail, email);
+    const problemKey = validateEmailAddress(newEmail, email);
+    const problem = problemKey ? t(problemKey) : null;
     setEmailError(problem);
     if (problem) return;
     Alert.alert(t("mobile.cambiar.tu.correo"), t("mobile.profile.signInNewMail", { p1: newEmail.trim() }), [
@@ -46,7 +47,7 @@ export function AccessCard({ email }: { email: string }) {
           try {
             const updated = await sendWrite<UserData | null>('general-data/user/update-user', { mail: newEmail.trim() });
             if (updated && typeof updated === 'object') dispatch(updateUser(updated));
-            toast.show('Correo actualizado. Vuelve a entrar con el nuevo.');
+            toast.show(t("profile.access.mailChanged"));
             await authClient.signOut();
           } catch (e) {
             setEmailError(messageOf(e));
@@ -65,7 +66,7 @@ export function AccessCard({ email }: { email: string }) {
     setPasswordBusy(true);
     try {
       await sendWrite('general-data/user/update-user', { password });
-      toast.show('Contraseña actualizada');
+      toast.show(t("profile.access.passwordChanged"));
       setPassword('');
       setConfirm('');
       setOpenForm(null);
@@ -83,7 +84,7 @@ export function AccessCard({ email }: { email: string }) {
           <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.cambiar.correo")}</Text>
           <Text className="font-inter text-sm text-gf-text-muted" numberOfLines={1}>{email}</Text>
         </View>
-        <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{openForm === 'email' ? 'Cerrar' : 'Editar'}</Text></View>
+        <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{openForm === 'email' ? t("accounts.close") : t("common.edit")}</Text></View>
       </Pressable>
       {openForm === 'email' && (
         <View className="gap-3">
@@ -100,7 +101,7 @@ export function AccessCard({ email }: { email: string }) {
           <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.cambiar.contrasena")}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.minimo.8.caracteres.una.mayuscula")}</Text>
         </View>
-        <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{openForm === 'password' ? 'Cerrar' : 'Editar'}</Text></View>
+        <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft }}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{openForm === 'password' ? t("accounts.close") : t("common.edit")}</Text></View>
       </Pressable>
       {openForm === 'password' && (
         <View className="gap-3">

@@ -10,6 +10,7 @@ import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { AppearanceCard } from '@/components/appearance-card';
 import { LanguageCard } from '@/components/profile/language-card';
+import { CountryCard } from '@/components/profile/country-card';
 import { AccessCard } from '@/components/profile/access-card';
 import { CurrencyCard } from '@/components/profile/currency-card';
 import { ApiTokensCard } from '@/components/profile/api-tokens-card';
@@ -80,7 +81,7 @@ export default function ProfileScreen() {
     try {
       const updated = await sendWrite<UserData | null>('general-data/user/update-user', buildProfileBody({ fullName, phone }));
       if (updated && typeof updated === 'object') dispatch(updateUser(updated));
-      toast.show('Perfil actualizado');
+      toast.show(t("profile.data.saved"));
     } catch (e) {
       setFormError(messageOf(e));
     } finally {
@@ -89,7 +90,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <Screen title={t("mobile.perfil")} backLabel="Más" onBack={() => router.back()}>
+    <Screen title={t("mobile.perfil")} backLabel={t("mobile.mas")} onBack={() => router.back()}>
       <View className="items-center gap-3">
         {user?.image ? (
           <Image source={{ uri: user.image }} style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2 }} contentFit="cover" alt={t("mobile.tu.foto.de.perfil")} />
@@ -99,7 +100,7 @@ export default function ProfileScreen() {
           </View>
         )}
         <View className="items-center">
-          <Text className="font-inter-bold text-xl text-gf-text">{user?.fullName || 'Tu cuenta'}</Text>
+          <Text className="font-inter-bold text-xl text-gf-text">{user?.fullName || t("errors.api.yourAccount")}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">{email}</Text>
         </View>
       </View>
@@ -124,6 +125,8 @@ export default function ProfileScreen() {
       <AppearanceCard />
 
       <LanguageCard />
+
+      <CountryCard />
 
       <Card title={t("mobile.cuenta")}>
         <InfoRow label={t("mobile.correo")} value={email || '—'} />

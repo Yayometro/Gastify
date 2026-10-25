@@ -43,7 +43,7 @@ export function AccountCard({
   const [reveal, setReveal] = useState(false);
   const bank = bankById(account.bankId);
   const id = idOf(account);
-  const { stops, ink, tint, light } = cardPalette(account.cardColor, accountGradient(id || account.name || 'cuenta'));
+  const { stops, ink, tint, light } = cardPalette(account.cardColor, accountGradient(id || account.name || t("budgets.account")));
   const up = light ? '#15803d' : '#86efac';
   const down = light ? '#be123c' : '#fda4af';
   const code = account.currency || primary;
@@ -66,7 +66,7 @@ export function AccountCard({
         <CardPattern pattern={account.cardPattern ?? DEFAULT_CARD_PATTERN} tint={tint} />
         <View className="flex-row items-center justify-between gap-3">
           {account.bankId ? <BankBadge bankId={account.bankId} size={44} /> : null}
-          <Text className="flex-1 font-inter-semibold text-lg" numberOfLines={1} style={{ color: ink }}>{account.name || 'Cuenta'}</Text>
+          <Text className="flex-1 font-inter-semibold text-lg" numberOfLines={1} style={{ color: ink }}>{account.name || t("dashboard.bulk.account")}</Text>
           <View style={{ backgroundColor: tint(0.22), borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
             <Text className="font-inter-medium text-[11px]" style={{ color: ink }}>{TYPE_KEY[type] ? t(TYPE_KEY[type]) : type}</Text>
           </View>
@@ -79,7 +79,7 @@ export function AccountCard({
           )}
         </View>
         {account.cardNumber ? (
-          <Pressable accessibilityRole="button" accessibilityLabel={reveal ? 'Ocultar el número' : 'Mostrar el número'} onPress={() => setReveal((value) => !value)} hitSlop={8} className="flex-row items-center gap-2 self-start">
+          <Pressable accessibilityRole="button" accessibilityLabel={reveal ? t("mobile.ocultar.el.numero") : t("mobile.mostrar.el.numero")} onPress={() => setReveal((value) => !value)} hitSlop={8} className="flex-row items-center gap-2 self-start">
             <Text className="font-inter-medium text-sm" style={{ color: tint(0.92), letterSpacing: 1 }}>{formatCardNumber(account.cardNumber, reveal)}</Text>
             <Ionicons name={reveal ? 'eye-off-outline' : 'eye-outline'} size={18} color={tint(0.9)} />
           </Pressable>

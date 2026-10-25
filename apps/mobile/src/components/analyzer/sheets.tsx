@@ -5,7 +5,7 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { CategoryBadge } from '@/components/category-badge';
 import { Colors } from '@/constants/theme';
-import { esMonthLabel } from '@/lib/month-label';
+import { localMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { buildSpendPatternAnalysis } from '@gastify/core/transformers/spendPatternAnalysis';
 import type {
@@ -17,6 +17,9 @@ import type {
 } from '@gastify/core/transformers/walletAnalyzer';
 
 import { useT, useInfo } from "@/i18n/client";
+import { shortDate } from '@gastify/core/i18n/dates';
+import { currentLocale } from '@/i18n/now';
+import { tNow } from '@/i18n/now';
 
 // The detail sheets of the Wallet Analyzer, one per card, in the web's words. They are shared by the Analyzer and the
 // History screen, so both explain the same numbers the same way.
@@ -25,7 +28,7 @@ function Row({ label, right, met, bold = false }: { label: string; right: string
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   return (
     <View className="flex-row items-center justify-between gap-3 border-t border-gf-border py-2.5">
-      <Text className={`flex-1 text-base text-gf-text ${bold ? 'font-inter-semibold' : 'font-inter'}`}>{esMonthLabel(label)}</Text>
+      <Text className={`flex-1 text-base text-gf-text ${bold ? 'font-inter-semibold' : 'font-inter'}`}>{localMonthLabel(label)}</Text>
       <Text className="font-inter-semibold text-base text-gf-text">{right}</Text>
       {met !== undefined && <Text className="w-6 text-center font-inter-bold text-base" style={{ color: met ? colors.income : colors.expense }}>{met ? '✓' : '✗'}</Text>}
     </View>
@@ -58,7 +61,7 @@ export function InsightSheet({ insight, currency, onClose }: { insight: WalletAn
 
   switch (insight?.type) {
     case 'budget':
-      explanation = <Explain>{t("mobile.presupuesto.mensual.de.p1.para", { p1: money(d.limit), p2: d.category, p3: d.streakMonths, p4: d.streakMonths === 1 ? 'mes' : 'meses' })}</Explain>;
+      explanation = <Explain>{t("mobile.presupuesto.mensual.de.p1.para", { p1: money(d.limit), p2: d.category, p3: d.streakMonths, p4: d.streakMonths === 1 ? t("analyzer.streak.month") : tNow("mobile.meses") })}</Explain>;
       rows = (d.monthlySeries ?? []).map((m: D) => <Row key={m.label} label={m.label} right={`${money(m.actual)} / ${money(m.goal)}`} met={m.met} />);
       break;
     case 'category_anomaly':
@@ -67,7 +70,7 @@ export function InsightSheet({ insight, currency, onClose }: { insight: WalletAn
       break;
     case 'subscription':
       explanation = <Explain>{t("mobile.detectada.porque.el.mismo.nombre", { p1: d.categoryName })}</Explain>;
-      rows = (d.occurrences ?? []).map((o: D, i: number) => <Row key={i} label={new Date(o.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })} right={money(o.amount)} />);
+      rows = (d.occurrences ?? []).map((o: D, i: number) => <Row key={i} label={shortDate(new Date(o.date), currentLocale(), true)} right={money(o.amount)} />);
       break;
     case 'monthly_average':
       explanation = <Explain>{t("mobile.promedio.de.los.ultimos.p1.2", { p1: d.trend?.length || 6, p2: money(d.avgIncome), p3: money(d.avgExpense), p4: Math.round(d.avgTransactionCount || 0) })}</Explain>;
@@ -125,7 +128,7 @@ export function BudgetSeriesSheet({ row, currency, onClose }: { row: WalletAnaly
     <DetailSheet
       visible={Boolean(row)}
       title={row?.category ?? ''}
-      subtitle={row ? `Límite mensual ${money(row.limit)} · racha ${row.streakMonths} ${row.streakMonths === 1 ? 'mes' : 'meses'}` : undefined}
+      subtitle={row ? `${tNow("mobile.limite.mensual")} ${money(row.limit)} · ${tNow("mobile.racha")} ${row.streakMonths} ${row.streakMonths === 1 ? t("analyzer.streak.month") : tNow("mobile.meses")}` : undefined}
       info={APP_INFO.cumplimiento_del_presupuesto}
       onClose={onClose}>
       {series.length === 0 && <Explain>{t("mobile.todavia.no.hay.meses.suficientes")}</Explain>}
@@ -140,12 +143,13 @@ export function BudgetSeriesSheet({ row, currency, onClose }: { row: WalletAnaly
 }
 
 export type ChampionKind = 'transaction' | 'category' | 'subCategory';
-const CHAMPION_TITLES: Record<ChampionKind, string> = { transaction: 'Transacción más grande por mes', category: 'Categoría con más gasto por mes', subCategory: 'Subcategoría con más gasto por mes' };
 
 // The leader of each of the last months (biggest movement, category or sub-category), biggest first.
 export function ChampionsSheet({ kind, months, currency, onClose }: { kind: ChampionKind | null; months: WalletAnalyzerMonthlyChampionEntry[]; currency: string; onClose: () => void }) {
   const { APP_INFO } = useInfo();
   const t = useT();
+  // The title of each champion kind, in the language on screen.
+  const championTitle = (value: ChampionKind): string => t(value === 'transaction' ? "mobile.transaccion.mas.grande.por.mes" : value === 'category' ? "mobile.categoria.con.mas.gasto.por.mes" : "mobile.subcategoria.con.mas.gasto.por.mes");
   const money = (value: number) => formatMoneyMajor(value, currency);
   const rows = kind
     ? months
@@ -156,7 +160,7 @@ export function ChampionsSheet({ kind, months, currency, onClose }: { kind: Cham
   return (
     <DetailSheet
       visible={kind !== null}
-      title={kind ? CHAMPION_TITLES[kind] : ''}
+      title={kind ? championTitle(kind) : ''}
       info={APP_INFO.l_deres_por_mes}
       onClose={onClose}>
       {rows.map(({ entry, champion }) => (
@@ -168,7 +172,7 @@ export function ChampionsSheet({ kind, months, currency, onClose }: { kind: Cham
           className="flex-row items-center gap-3 border-t border-gf-border py-2.5">
           <CategoryBadge icon={champion.icon ?? champion.categoryIcon} color={champion.color ?? champion.categoryColor} size={38} />
           <View className="flex-1">
-            <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{esMonthLabel(entry.label)}</Text>
+            <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{localMonthLabel(entry.label)}</Text>
             <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{champion.name}</Text>
             {kind !== 'transaction' && champion.pctOfWindowTotal !== undefined && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.p1.del.total.de.los", { p1: Math.round(champion.pctOfWindowTotal) })}</Text>}
           </View>
@@ -213,7 +217,7 @@ export function WeekdaySheet({ data, visible, currency, onClose }: { data: Walle
       {best && (
         <View className="gap-0.5 rounded-2xl p-3" style={{ backgroundColor: colors.accentSoft }}>
           <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.semana.con.mas.gasto")}</Text>
-          <Text className="font-inter-bold text-lg text-gf-text">{esMonthLabel(best.label)} — {money(best.total)}</Text>
+          <Text className="font-inter-bold text-lg text-gf-text">{localMonthLabel(best.label)} — {money(best.total)}</Text>
           <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.p1.transacciones", { p1: best.count })}</Text>
         </View>
       )}

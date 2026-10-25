@@ -38,7 +38,6 @@ import { useT, useInfo, useLocale } from "@/i18n/client";
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
 
-const TYPE_LABEL: Record<YearProjectionRow['type'], string> = { actual: 'Real', current: 'Este mes', estimate: 'Estimado' };
 
 // The year's projection, month by month, read-only: the same table the web builds from the income
 // sources, the year's settings and the baseline. Like the web, anything entered in another currency (income
@@ -47,6 +46,7 @@ export default function ProjectionsScreen() {
   const locale = useLocale();
   const { APP_INFO } = useInfo();
   const t = useT();
+  const TYPE_LABEL: Record<YearProjectionRow['type'], string> = { actual: t("analyzer.table.actual"), current: t("analyzer.thisMonth"), estimate: t("mobile.estimado") };
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const tablet = useIsTablet();
@@ -150,7 +150,7 @@ export default function ProjectionsScreen() {
   const appRefresh = useRefreshAppData();
 
   return (
-    <Screen title={t("mobile.proyecciones")} subtitle={t("mobile.projections.subtitle", { p1: currency, p2: year })} backLabel="Más" onBack={() => router.back()} refreshing={appRefresh.refreshing} onRefresh={() => { appRefresh.refresh(); reload(); }}>
+    <Screen title={t("mobile.proyecciones")} subtitle={t("mobile.projections.subtitle", { p1: currency, p2: year })} backLabel={t("mobile.mas")} onBack={() => router.back()} refreshing={appRefresh.refreshing} onRefresh={() => { appRefresh.refresh(); reload(); }}>
       <View className="flex-row justify-between">
         <Pressable accessibilityRole="button" onPress={() => setYear((y) => y - 1)} hitSlop={8}>
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ano.anterior")}</Text>

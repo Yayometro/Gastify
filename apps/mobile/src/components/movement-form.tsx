@@ -30,6 +30,7 @@ import {
 } from '@gastify/core/transactions/movementForm';
 import { useT } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
+import { tNow } from '@/i18n/now';
 
 const TYPE_OPTIONS = (t: TranslateFn): { value: MovementType; label: string }[] => ([
   { value: 'expense', label: t("mobile.gasto") },
@@ -110,9 +111,9 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
         if (!amountTouched) {
           setValues((current) => ({ ...current, amount: String(minorToMajor(answer.data!.amountMinor, accountCurrency)) }));
         }
-        setQuoteNote(answer.data.stale ? 'Tipo de cambio estimado (puede estar desactualizado).' : 'Tipo de cambio estimado de hoy.');
+        setQuoteNote(answer.data.stale ? t("mobile.tipo.de.cambio.estimado.puede.estar.desactualizado") : t("mobile.tipo.de.cambio.estimado.de.hoy"));
       } catch {
-        if (!cancelled) setQuoteNote('No pudimos estimar el tipo de cambio; escribe el monto de la cuenta.');
+        if (!cancelled) setQuoteNote(t("mobile.no.pudimos.estimar.el.tipo.de.cambio.escribe.el.monto.de.la."));
       } finally {
         if (!cancelled) setQuoting(false);
       }
@@ -121,7 +122,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [values.chargedElsewhere, values.merchantAmount, values.merchantCurrency, accountCurrency, amountTouched]);
+  }, [values.chargedElsewhere, values.merchantAmount, values.merchantCurrency, accountCurrency, amountTouched, t]);
 
   const accountItems: ChipItem[] = accounts.map((account) => ({
     id: idOf(account),
@@ -130,7 +131,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
   }));
   const budgetItems: ChipItem[] = [
     { id: '', label: t("mobile.ninguno") },
-    ...budgets.filter((budget) => isSpendingBudget(budget) || isProjectBudget(budget)).map((budget) => ({ id: idOf(budget), label: budget.name || 'Presupuesto', icon: budget.icon })),
+    ...budgets.filter((budget) => isSpendingBudget(budget) || isProjectBudget(budget)).map((budget) => ({ id: idOf(budget), label: budget.name || t("budgets.alert.defaultName"), icon: budget.icon })),
   ];
   const currencyItems: ChipItem[] = SUPPORTED_CURRENCIES.map((code) => ({ id: code, label: code }));
 
@@ -145,7 +146,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
     if (Object.keys(found).length > 0) return;
     const category = categories.find((item) => idOf(item) === values.categoryId);
     const sub = subCategories.find((item) => idOf(item) === values.subCategoryId);
-    const fallbackName = sub?.name || category?.name || 'Movimiento';
+    const fallbackName = sub?.name || category?.name || t("errors.api.movement");
     setSubmitting(true);
     try {
       await onSubmit(buildMovementBody({ ...values, type }, fallbackName));
@@ -204,7 +205,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
             />
             {errorText(errors.merchantAmount)}
             <Text className="font-inter text-sm text-gf-text-muted">
-              {quoting ? 'Calculando el monto de la cuenta…' : quoteNote ?? `El monto de arriba (${accountCurrency}) es lo que salió de la cuenta; puedes corregirlo.`}
+              {quoting ? t("mobile.calculando.el.monto.de.la.cuenta") : quoteNote ?? tNow("mobile.el.monto.de.arriba.p1.es.lo.que.salio.de.la.cuenta.puedes.co", { p1: accountCurrency })}
             </Text>
           </View>
         )}
@@ -212,7 +213,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
 
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.cuenta")}</Text>
-        <ChipPicker items={accountItems} value={values.accountId} onChange={(id) => set('accountId', id)} title={t("mobile.cuentas")} emptyText="Primero crea una cuenta en Más › Cuentas." />
+        <ChipPicker items={accountItems} value={values.accountId} onChange={(id) => set('accountId', id)} title={t("mobile.cuentas")} emptyText={t("mobile.primero.crea.una.cuenta.en.mas.cuentas")} />
         {errorText(errors.accountId)}
       </View>
 
@@ -221,7 +222,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
         <CategoryPicker
           categories={categories}
           subCategories={subCategories}
-          allLabel="Sin categoría"
+          allLabel={t("history.noCategory")}
           value={{ categoryId: values.categoryId, subCategoryId: values.subCategoryId }}
           onChange={(next) => setValues((current) => ({ ...current, categoryId: next.categoryId, subCategoryId: next.subCategoryId }))}
         />

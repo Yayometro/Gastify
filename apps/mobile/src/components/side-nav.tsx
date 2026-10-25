@@ -81,10 +81,10 @@ export function SideNav() {
                 <Text className="font-inter-bold text-sm" style={{ color: '#ffffff' }}>{initialsOf(user?.fullName)}</Text>
               </View>
             )}
-            <Text className="font-inter text-[10px] text-gf-text" numberOfLines={1} style={{ maxWidth: 64 }}>{user?.fullName?.split(' ')[0] ?? 'Perfil'}</Text>
+            <Text className="font-inter text-[10px] text-gf-text" numberOfLines={1} style={{ maxWidth: 64 }}>{user?.fullName?.split(' ')[0] ?? t("mobile.perfil")}</Text>
           </Pressable>
           {BEFORE_ADD(t).map(navItem)}
-          {iconButton('add', 'Agregar un movimiento', () => router.navigate('/add' as never), (
+          {iconButton('add', t("mobile.agregar.un.movimiento"), () => router.navigate('/add' as never), (
             <View style={styles.fabShadow}>
               <LinearGradient colors={dark ? ['#e879f9', '#a855f7', '#7e22ce'] : ['#e879f9', '#9333ea']} start={{ x: 0.2, y: 0 }} end={{ x: 0.6, y: 1 }} style={styles.fab}>
                 <Ionicons name="add" size={36} color="#ffffff" />
@@ -92,8 +92,8 @@ export function SideNav() {
             </View>
           ), is(pathname, '/add'))}
           {AFTER_ADD(t).map(navItem)}
-          {iconButton('theme', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro', () => setMode(dark ? 'light' : 'dark'), <Ionicons name={dark ? 'sunny-outline' : 'moon-outline'} size={26} color={colors.text} />)}
-          {iconButton('notifications', 'Notificaciones', () => router.navigate('/notifications' as never), <NotificationsGlyph size={26} />, is(pathname, '/notifications'))}
+          {iconButton('theme', dark ? t("mobile.cambiar.a.modo.claro") : t("mobile.cambiar.a.modo.oscuro"), () => setMode(dark ? 'light' : 'dark'), <Ionicons name={dark ? 'sunny-outline' : 'moon-outline'} size={26} color={colors.text} />)}
+          {iconButton('notifications', t("mobile.notificaciones"), () => router.navigate('/notifications' as never), <NotificationsGlyph size={26} />, is(pathname, '/notifications'))}
         </ScrollView>
       </GlassSurface>
       </View>

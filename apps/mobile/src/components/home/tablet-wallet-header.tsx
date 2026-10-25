@@ -8,6 +8,7 @@ import type { AccountData } from '@gastify/core/features/accountsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { MonthTotals } from '@gastify/core/transactions/monthSummary';
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // The web's Wallet hero for wide screens: "<name> Wallet" in a thin large title and, under it, three panels side by
 // side: the accounts (biggest first), the period's summary and the comparison with the previous period. Same
@@ -86,7 +87,7 @@ export function TabletWalletHeader({
   return (
     <View className="gap-6 pb-1 pt-2">
       <View className="flex-row items-center justify-center gap-4">
-        <Text className="font-inter-bold text-5xl text-gf-text">{name ? `Hola, ${name.split(' ')[0]}` : 'Inicio'}</Text>
+        <Text className="font-inter-bold text-5xl text-gf-text">{name ? tNow("mobile.hola.p1", { p1: name.split(' ')[0] }) : t("shared.start")}</Text>
         <NotificationsBell size={44} />
       </View>
       <View className="flex-row items-stretch gap-4">
@@ -96,7 +97,7 @@ export function TabletWalletHeader({
           ) : (
             sorted.map((account) => (
               <View key={String(account._id ?? account.name)} className="flex-row items-center justify-between gap-2 rounded-xl px-3 py-2.5" style={{ backgroundColor: dark ? 'rgba(0,0,0,0.15)' : 'rgba(27,16,61,0.05)' }}>
-                <Text className="flex-1 font-inter text-base text-gf-text" numberOfLines={1}>{account.name || 'Cuenta'}</Text>
+                <Text className="flex-1 font-inter text-base text-gf-text" numberOfLines={1}>{account.name || t("dashboard.bulk.account")}</Text>
                 <Text className="font-inter-medium text-base text-gf-text">
                   {formatMoneyMajor(account.amount ?? 0, account.currency || currency, { showCode: false })}
                   {account.currency && account.currency !== currency ? ` ${account.currency}` : ''}
@@ -107,9 +108,9 @@ export function TabletWalletHeader({
         </Panel>
         <Panel label={t("mobile.resumen")} info={HERO_INFO.summary}>
           <View className="flex-1 justify-end gap-2">
-            <Row label={t("mobile.ingresos.3")} value={totals.incomes ? money(totals.incomes) : 'Sin monto…'} color={INCOME} />
-            <Row label={t("mobile.gastos.3")} value={totals.spending ? money(totals.spending) : 'Sin monto…'} color={EXPENSE} />
-            <Row label={t("mobile.balance.2")} value={totals.balance ? money(totals.balance) : 'Sin monto…'} color={BALANCE} />
+            <Row label={t("mobile.ingresos.3")} value={totals.incomes ? money(totals.incomes) : t("dashboard.noAmount")} color={INCOME} />
+            <Row label={t("mobile.gastos.3")} value={totals.spending ? money(totals.spending) : t("dashboard.noAmount")} color={EXPENSE} />
+            <Row label={t("mobile.balance.2")} value={totals.balance ? money(totals.balance) : t("dashboard.noAmount")} color={BALANCE} />
             <Text className="pt-1 text-center font-inter text-xs text-gf-text-muted">{rangeText}</Text>
           </View>
         </Panel>

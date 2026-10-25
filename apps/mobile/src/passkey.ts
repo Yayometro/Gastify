@@ -1,4 +1,5 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { tNow } from '@/i18n/now';
 import { useEffect, useState } from 'react';
 
 import { isPasskeyAvailable, signInWithPasskey, type PasskeyDriver, type PasskeyResult } from '@gastify/core/auth/passkeySignIn';
@@ -53,7 +54,7 @@ export function signInWithDevicePasskey(): Promise<PasskeyResult> {
 // What to tell the person when it did not work.
 export function passkeyFailureMessage(reason: Exclude<PasskeyResult, { ok: true }>['reason']): string | null {
   if (reason === 'cancelled') return null;
-  if (reason === 'no-credentials') return 'No encontramos un passkey de Gastify en este dispositivo.';
-  if (reason === 'unavailable') return 'Los passkeys no están disponibles en esta versión de la app.';
-  return 'No pudimos entrar con tu passkey. Intenta de nuevo o usa otro método.';
+  if (reason === 'no-credentials') return tNow("mobile.no.encontramos.un.passkey.de.gastify.en.este.dispositivo");
+  if (reason === 'unavailable') return tNow("mobile.los.passkeys.no.estan.disponibles.en.esta.version.de.la.app");
+  return tNow("mobile.no.pudimos.entrar.con.tu.passkey.intenta.de.nuevo.o.usa.otro");
 }

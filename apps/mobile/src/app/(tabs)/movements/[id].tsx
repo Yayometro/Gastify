@@ -38,7 +38,7 @@ export default function MovementDetailScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const back = () => goBackTo(returnTo, () => (router.canGoBack() ? router.back() : router.replace('/movements')));
-  const backLabel = returnLabel(returnTo, 'Movimientos');
+  const backLabel = returnLabel(returnTo, t("mobile.movimientos"));
 
   if (!movement) {
     return (
@@ -63,7 +63,7 @@ export default function MovementDetailScreen() {
           try {
             await sendWrite(`general-data/transactions/remove-transaction/${id}`, {});
             dispatch(removeOneTransacction(id));
-            toast.show('Movimiento borrado');
+            toast.show(t("mobile.movimiento.borrado"));
             reloadAfterWrite(dispatch, olderTouched);
             back();
           } catch (e) {
@@ -78,7 +78,7 @@ export default function MovementDetailScreen() {
 
   const save = async (body: Record<string, unknown>) => {
     await sendWrite(`general-data/transactions/${id}`, body);
-    toast.show('Cambios guardados');
+    toast.show(t("mobile.cambios.guardados"));
     reloadAfterWrite(dispatch, olderTouched);
     back();
   };
@@ -102,7 +102,7 @@ export default function MovementDetailScreen() {
           {tagList.length > 0 && <TagChips tags={tagList} />}
           <MovementForm
             key={id}
-            submitLabel="Guardar cambios"
+            submitLabel={t("mobile.guardar.cambios")}
             initial={{
               type: kind === 'income' ? 'income' : 'expense',
               amount: String(movement.amount ?? ''),

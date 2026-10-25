@@ -41,6 +41,7 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 
 import { useT, useInfo, useLocale } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
@@ -61,11 +62,11 @@ function Delta({ current, previous, invert = false }: { current: number; previou
 function periodFacts(t: TranslateFn, x: PeriodSummary<TransactionData>, cell: (value: number) => string): { label: string; value: string; detail: string }[] {
   const top = x.spendingByCategory[0];
   return [
-    { label: t("mobile.movimientos"), value: String(x.totals.count), detail: 'en el periodo' },
-    { label: t("mobile.lo.que.conservaste"), value: x.totals.incomes > 0 ? `${Math.round(((x.totals.incomes - x.totals.spending) / x.totals.incomes) * 100)}%` : '—', detail: 'de tus ingresos' },
-    { label: t("mobile.gasto.promedio.por.mes"), value: cell(x.months.length ? x.totals.spending / x.months.length : 0), detail: `${x.months.length} ${x.months.length === 1 ? 'mes' : 'meses'}` },
-    { label: t("mobile.lo.que.mas.pesa"), value: top?.name ?? '—', detail: top ? cell(top.value) : 'sin gastos' },
-    { label: t("mobile.gasto.mas.grande"), value: x.biggest[0] ? cell(Math.abs(getPrimaryAmount(x.biggest[0]))) : '—', detail: x.biggest[0]?.name ?? 'sin gastos' },
+    { label: t("mobile.movimientos"), value: String(x.totals.count), detail: t("mobile.en.el.periodo") },
+    { label: t("mobile.lo.que.conservaste"), value: x.totals.incomes > 0 ? `${Math.round(((x.totals.incomes - x.totals.spending) / x.totals.incomes) * 100)}%` : '—', detail: t("mobile.de.tus.ingresos") },
+    { label: t("mobile.gasto.promedio.por.mes"), value: cell(x.months.length ? x.totals.spending / x.months.length : 0), detail: tNow("mobile.meses.conteo", { count: x.months.length, p1: x.months.length }) },
+    { label: t("mobile.lo.que.mas.pesa"), value: top?.name ?? '—', detail: top ? cell(top.value) : t("mobile.sin.gastos") },
+    { label: t("mobile.gasto.mas.grande"), value: x.biggest[0] ? cell(Math.abs(getPrimaryAmount(x.biggest[0]))) : '—', detail: x.biggest[0]?.name ?? t("mobile.sin.gastos") },
   ];
 }
 
@@ -110,7 +111,7 @@ export default function HistoryScreen() {
   const cell = (value: number) => formatMoneyMajor(value, currency);
 
   return (
-    <Screen title={t("mobile.historial")} subtitle={labelA} backLabel="Más" onBack={() => router.back()} titleInfo={HISTORY_INFO}>
+    <Screen title={t("mobile.historial")} subtitle={labelA} backLabel={t("mobile.mas")} onBack={() => router.back()} titleInfo={HISTORY_INFO}>
       <Card title={t("mobile.periodo")} info={APP_INFO.periodo}>
         {tablet ? (
           <PeriodBar

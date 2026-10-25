@@ -46,7 +46,7 @@ export default function EditCategoryScreen() {
 
   if (!category) {
     return (
-      <Screen title={t("mobile.categoria")} backLabel="Categorías" onBack={back}>
+      <Screen title={t("mobile.categoria")} backLabel={t("mobile.categorias")} onBack={back}>
         <Text className="font-inter text-base text-gf-text-muted">{t("mobile.esta.categoria.no.se.puede")}</Text>
       </Screen>
     );
@@ -61,7 +61,7 @@ export default function EditCategoryScreen() {
         onPress: async () => {
           try {
             await sendWrite('general-data/categories/remove-category', id);
-            toast.show('Categoría borrada');
+            toast.show(t("mobile.categoria.borrada"));
             reloadAfterWrite(dispatch);
             back();
           } catch (e) {
@@ -85,7 +85,8 @@ export default function EditCategoryScreen() {
 
   const saveSub = async () => {
     if (!draft) return;
-    const problem = validateCategoryName(draft.name);
+    const problemKey = validateCategoryName(draft.name);
+    const problem = problemKey ? t(problemKey) : null;
     if (problem) return setSubError(problem);
     setBusy(true);
     setSubError(null);
@@ -95,7 +96,7 @@ export default function EditCategoryScreen() {
       } else {
         await sendWrite('general-data/subcategory/new', { name: draft.name.trim(), icon: draft.icon, color: draft.color, fatherCategory: draft.parentId });
       }
-      toast.show(draft.id ? 'Subcategoría guardada' : 'Subcategoría creada');
+      toast.show(draft.id ? t("mobile.subcategoria.guardada") : t("mobile.subcategoria.creada"));
       reloadAfterWrite(dispatch);
       setDraft(null);
     } catch (e) {
@@ -114,7 +115,7 @@ export default function EditCategoryScreen() {
         onPress: async () => {
           try {
             await sendWrite('general-data/subcategory/remove', subId);
-            toast.show('Subcategoría borrada');
+            toast.show(t("mobile.subcategoria.borrada"));
             reloadAfterWrite(dispatch);
           } catch (e) {
             toast.show(messageOf(e), 'error');
@@ -125,14 +126,14 @@ export default function EditCategoryScreen() {
   };
 
   return (
-    <Screen title={category.name || 'Categoría'} backLabel="Categorías" onBack={back}>
+    <Screen title={category.name || t("dashboard.bulk.category")} backLabel={t("mobile.categorias")} onBack={back}>
       <CategoryForm
         key={id}
         initial={{ name: category.name ?? '', icon: category.icon ?? 'fluent/label', color: category.color ?? '#F57C00' }}
-        submitLabel="Guardar cambios"
+        submitLabel={t("mobile.guardar.cambios")}
         onSubmit={async (values) => {
           await sendWrite('general-data/categories/update-category', { id, ...values });
-          toast.show('Categoría guardada');
+          toast.show(t("mobile.categoria.guardada"));
           reloadAfterWrite(dispatch);
           back();
         }}
@@ -146,7 +147,7 @@ export default function EditCategoryScreen() {
           return (
             <View key={subId} className="flex-row items-center gap-3 border-b border-gf-border pb-3">
               <CategoryBadge icon={sub.icon} color={sub.color} size={36} />
-              <Text className="flex-1 font-inter-medium text-base text-gf-text">{sub.name || 'Subcategoría'}</Text>
+              <Text className="flex-1 font-inter-medium text-base text-gf-text">{sub.name || t("dashboard.dup.subcategory")}</Text>
               <Pressable accessibilityRole="button" onPress={() => startSub(sub)}>
                 <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.editar")}</Text>
               </Pressable>
@@ -162,13 +163,13 @@ export default function EditCategoryScreen() {
             <View className="flex-row items-end gap-3">
               <CategoryBadge icon={draft.icon} color={draft.color} size={52} />
               <View className="flex-1">
-                <TextField label={draft.id ? 'Nombre' : 'Nueva subcategoría'} value={draft.name} onChangeText={(text) => setDraft({ ...draft, name: text })} placeholder={t("mobile.restaurantes")} maxLength={40} autoCapitalize="sentences" />
+                <TextField label={draft.id ? t("accounts.form.name") : t("mobile.nueva.subcategoria")} value={draft.name} onChangeText={(text) => setDraft({ ...draft, name: text })} placeholder={t("mobile.restaurantes")} maxLength={40} autoCapitalize="sentences" />
               </View>
             </View>
             <View className="gap-2">
               <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categoria.a.la.que.pertenece")}</Text>
               <ChipPicker
-                items={userCategories.map((item) => ({ id: idOf(item), label: item.name || 'Categoría', icon: item.icon, color: item.color }))}
+                items={userCategories.map((item) => ({ id: idOf(item), label: item.name || t("dashboard.bulk.category"), icon: item.icon, color: item.color }))}
                 value={draft.parentId}
                 onChange={(parentId) => setDraft({ ...draft, parentId })}
                 title={t("mobile.categorias")}
@@ -184,7 +185,7 @@ export default function EditCategoryScreen() {
               <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />
             </View>
             <FormError message={subError} />
-            <GradientButton label={draft.id ? 'Guardar subcategoría' : 'Agregar subcategoría'} onPress={saveSub} loading={busy} disabled={busy} />
+            <GradientButton label={draft.id ? t("mobile.guardar.subcategoria") : t("mobile.agregar.subcategoria")} onPress={saveSub} loading={busy} disabled={busy} />
             <Pressable accessibilityRole="button" onPress={() => setDraft(null)} className="items-center py-1">
               <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.cancelar")}</Text>
             </Pressable>

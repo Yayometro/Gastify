@@ -61,7 +61,7 @@ export default function EditAccountScreen() {
 
   if (!account) {
     return (
-      <Screen title={t("mobile.cuenta")} backLabel="Cuentas" onBack={back}>
+      <Screen title={t("mobile.cuenta")} backLabel={t("accounts.title")} onBack={back}>
         <Text className="font-inter text-base text-gf-text-muted">{t("mobile.no.encontramos.esta.cuenta")}</Text>
       </Screen>
     );
@@ -76,7 +76,7 @@ export default function EditAccountScreen() {
         onPress: async () => {
           try {
             await sendWrite('general-data/accounts/remove-account', id);
-            toast.show('Cuenta borrada');
+            toast.show(t("mobile.cuenta.borrada"));
             reloadAfterWrite(dispatch);
             back();
           } catch (e) {
@@ -89,14 +89,14 @@ export default function EditAccountScreen() {
 
   return (
     <Screen
-      title={account.name || 'Cuenta'}
+      title={account.name || t("dashboard.bulk.account")}
       subtitle={t("mobile.accounts.currencySubtitle", { p1: account.currency || 'MXN' })}
-      backLabel={returnTo ? 'Inicio' : 'Cuentas'}
+      backLabel={returnTo ? t("shared.start") : t("accounts.title")}
       onBack={back}
       headerAction={
         <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.editar.cuenta")} onPress={() => setEditOpen((open) => !open)} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ backgroundColor: colors.accentSoft }}>
           <Ionicons name={editOpen ? 'close' : 'pencil'} size={16} color={colors.accent} />
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{editOpen ? 'Cerrar' : 'Editar'}</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{editOpen ? t("accounts.close") : t("common.edit")}</Text>
         </Pressable>
       }>
       <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} />
@@ -110,10 +110,10 @@ export default function EditAccountScreen() {
                 key={id}
                 currencyLocked
                 initial={{ name: account.name ?? '', accountType: account.accountType ?? 'debit', currency: account.currency || 'MXN', amount: account.amount !== undefined && account.amount !== null ? String(account.amount) : '0', bankId: account.bankId ?? null, cardNumber: account.cardNumber ?? '' }}
-                submitLabel="Guardar cambios"
+                submitLabel={t("mobile.guardar.cambios")}
                 onSubmit={async (values) => {
                   await sendWrite('general-data/accounts/update-account', { accountId: id, ...values });
-                  toast.show('Cuenta guardada');
+                  toast.show(t("mobile.cuenta.guardada"));
                   reloadAfterWrite(dispatch);
                   setEditOpen(false);
                 }}

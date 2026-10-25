@@ -14,15 +14,17 @@ import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/curr
 import { dateText, parseDateText } from '@gastify/core/transactions/movementForm';
 
 import { useT, useInfo, useLocale } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 type AnyRecord = Record<string, unknown>;
 type Kind = 'income' | 'expense';
 
-const KIND_LABEL: Record<Kind, string> = { income: 'Ingreso', expense: 'Gasto' };
 
 // The historical references: the amounts each month that the projections start from (real income and spending
 // of the past, or an estimate that holds for a while). Income and spending are kept apart, as on the web.
 export function HistoricalReferencesCard({ baseline, currency, onChanged }: { baseline: AnyRecord | null; currency: string; onChanged: () => void }) {
+  const t = useT();
+  const KIND_LABEL: Record<Kind, string> = { income: t("analyzer.income"), expense: t("analyzer.bill") };
   const locale = useLocale();
   const { APP_INFO } = useInfo();
   const tr = useT();
@@ -59,7 +61,7 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
         amount: value,
         currency: code,
       });
-      toast.show('Referencia guardada');
+      toast.show(t("mobile.referencia.guardada"));
       setAmount('');
       setTo('');
       setOpen(false);
@@ -80,7 +82,7 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
         onPress: async () => {
           try {
             await sendWrite('general-data/projection-baseline/delete', { kind, entryId: String(entry._id ?? '') });
-            toast.show('Referencia borrada');
+            toast.show(t("mobile.referencia.borrada"));
             onChanged();
           } catch (e) {
             toast.show(messageOf(e), 'error');
@@ -107,7 +109,7 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
         <View key={String(entry._id ?? entry.effectiveFrom)} className="flex-row items-center gap-3">
           <View className="flex-1">
             <Text className="font-inter-medium text-base text-gf-text">
-              {tr("mobile.desde.p1.p2", { p1: label(entry.effectiveFrom), p2: entry.effectiveTo ? ` hasta ${label(entry.effectiveTo)}` : ' (en curso)' })}
+              {tr("mobile.desde.p1.p2", { p1: label(entry.effectiveFrom), p2: entry.effectiveTo ? tNow("mobile.hasta.p1", { p1: label(entry.effectiveTo) }) : ' (en curso)' })}
             </Text>
             <Text className="font-inter text-sm text-gf-text-muted">
               {tr("mobile.p1.al.mes", { p1: formatMoneyMajor(Number(entry.amount) || 0, String(entry.currency ?? currency)) })}

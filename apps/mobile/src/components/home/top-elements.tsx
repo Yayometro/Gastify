@@ -34,7 +34,7 @@ export function TopElements({ movements, range, currency }: { movements: Transac
         ? categories.map((row) => (
             <View key={row.type} className="flex-row items-center gap-3">
               <CategoryBadge icon={row.icon} color={row.color} size={36} />
-              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
               <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
             </View>
           ))

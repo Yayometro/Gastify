@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Colors } from '@/constants/theme';
-import { EXPORT_FORMATS, type ExportFormat } from '@/lib/export-file';
+import { exportFormats, type ExportFormat } from '@/lib/export-file';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // A bottom sheet to choose the file format of an export (the web offers Excel; the phone also CSV and JSON).
 export function ExportSheet({
@@ -38,9 +39,9 @@ export function ExportSheet({
               )}
             </View>
             <Text className="pb-2 font-inter text-sm text-gf-text-muted">
-              {t("mobile.p1.del.periodo.y.los", { p1: count === 1 ? '1 movimiento' : `${count} movimientos` })}
+              {t("mobile.p1.del.periodo.y.los", { p1: count === 1 ? '1 movimiento' : tNow("mobile.movimientos.conteo", { count: count, p1: count }) })}
             </Text>
-            {EXPORT_FORMATS.map((format) => (
+            {exportFormats().map((format) => (
               <Pressable
                 key={format.value}
                 accessibilityRole="button"

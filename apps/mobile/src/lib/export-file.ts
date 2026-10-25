@@ -1,15 +1,20 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
+import { tNow } from '@/i18n/now';
+
 import { API_URL, authClient } from '@/auth-client';
 
 export type ExportFormat = 'csv' | 'json' | 'xlsx';
 
-export const EXPORT_FORMATS: { value: ExportFormat; label: string; hint: string }[] = [
-  { value: 'xlsx', label: 'Excel (.xlsx)', hint: 'Igual que la exportación de la web' },
-  { value: 'csv', label: 'CSV (.csv)', hint: 'Para cualquier hoja de cálculo' },
-  { value: 'json', label: 'JSON (.json)', hint: 'Para otras herramientas o respaldos' },
-];
+// The export formats, read when they are shown (so they follow the language on screen).
+export function exportFormats(): { value: ExportFormat; label: string; hint: string }[] {
+  return [
+    { value: 'xlsx', label: 'Excel (.xlsx)', hint: tNow("mobile.igual.que.la.exportacion.de.la.web") },
+    { value: 'csv', label: 'CSV (.csv)', hint: tNow("mobile.para.cualquier.hoja.de.calculo") },
+    { value: 'json', label: 'JSON (.json)', hint: tNow("mobile.para.otras.herramientas.o.respaldos") },
+  ];
+}
 
 const FILE_TYPES: Record<ExportFormat, { mimeType: string; uti: string }> = {
   csv: { mimeType: 'text/csv', uti: 'public.comma-separated-values-text' },
@@ -24,7 +29,7 @@ export function exportFileName(format: ExportFormat, today: Date): string {
 
 // Saves the content in the cache folder and opens the system share sheet (Files, Mail, Drive, Excel...).
 async function shareFile(name: string, content: string | Uint8Array, format: ExportFormat, title: string): Promise<void> {
-  if (!(await Sharing.isAvailableAsync())) throw new Error('Este dispositivo no puede compartir archivos.');
+  if (!(await Sharing.isAvailableAsync())) throw new Error(tNow("mobile.este.dispositivo.no.puede.compartir.archivos"));
   const file = new File(Paths.cache, name);
   file.create({ overwrite: true });
   file.write(content);
@@ -48,7 +53,7 @@ export async function shareExcelExport(transactionIds: string[], email: string, 
   });
   if (!response.ok) {
     const answer = (await response.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(answer?.message || 'No pudimos crear el archivo de Excel.');
+    throw new Error(answer?.message || tNow("mobile.no.pudimos.crear.el.archivo.de.excel"));
   }
   const bytes = new Uint8Array(await response.arrayBuffer());
   await shareFile(exportFileName('xlsx', today), bytes, 'xlsx', title);
@@ -58,12 +63,12 @@ export async function shareExcelExport(transactionIds: string[], email: string, 
 export async function shareExcelTemplate(email: string, title: string): Promise<void> {
   const cookie = (await authClient.getCookie()) ?? '';
   const response = await fetch(`${API_URL}/api/general-data/files/template/${encodeURIComponent(email)}`, { method: 'GET', headers: { Cookie: cookie }, credentials: 'omit' });
-  if (!response.ok) throw new Error('No pudimos descargar la plantilla.');
+  if (!response.ok) throw new Error(tNow("mobile.no.pudimos.descargar.la.plantilla"));
   const bytes = new Uint8Array(await response.arrayBuffer());
   const file = new File(Paths.cache, 'gastify-plantilla.xlsx');
   file.create({ overwrite: true });
   file.write(bytes);
-  if (!(await Sharing.isAvailableAsync())) throw new Error('Este dispositivo no puede compartir archivos.');
+  if (!(await Sharing.isAvailableAsync())) throw new Error(tNow("mobile.este.dispositivo.no.puede.compartir.archivos"));
   await Sharing.shareAsync(file.uri, { mimeType: FILE_TYPES.xlsx.mimeType, UTI: FILE_TYPES.xlsx.uti, dialogTitle: title });
 }
 
@@ -77,5 +82,5 @@ export async function uploadExcelTemplate(email: string, file: { uri: string; na
   // React Native sends a { uri, name, type } part as a file.
   form.append('file', { uri: file.uri, name: file.name, type: file.mimeType || FILE_TYPES.xlsx.mimeType } as unknown as Blob);
   const response = await fetch(`${API_URL}/api/general-data/files/upload/${encodeURIComponent(email)}`, { method: 'POST', headers: { Cookie: cookie }, body: form, credentials: 'omit' });
-  return (await response.json().catch(() => ({ ok: false, message: 'El servidor no respondió como se esperaba.' }))) as ImportAnswer;
+  return (await response.json().catch(() => ({ ok: false, message: tNow("mobile.el.servidor.no.respondio.como.se.esperaba") }))) as ImportAnswer;
 }

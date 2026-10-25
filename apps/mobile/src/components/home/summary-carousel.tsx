@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native';
+import { Pressable, ScrollView, Text, View, useColorScheme, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '@/components/ui/card';
@@ -83,9 +83,9 @@ function VersusPage({ totals, previous, currency }: Pick<Props, 'totals' | 'prev
   };
   return (
     <View className="gap-2">
-      {line('Ingresos', totals.incomes, previous.incomes, false)}
-      {line('Gastos', totals.spending, previous.spending, true)}
-      {line('Balance', totals.balance, previous.balance, false)}
+      {line(t("analyzer.incomes"), totals.incomes, previous.incomes, false)}
+      {line(t("analyzer.bills"), totals.spending, previous.spending, true)}
+      {line(t("analyzer.balance"), totals.balance, previous.balance, false)}
     </View>
   );
 }
@@ -101,14 +101,14 @@ export function SummaryCarousel(props: Props) {
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(1);
   const [more, setMore] = useState(false);
-  const scroller = useRef<ScrollView>(null);
+  const scroller = useRef<ScrollViewInstance>(null);
 
   // The summary is the page you land on: the carousel starts on the middle page.
   useEffect(() => {
     if (width > 0) scroller.current?.scrollTo({ x: width, animated: false });
   }, [width]);
 
-  const names = ['Contra el periodo anterior', props.title, 'Cuentas'];
+  const names = [t("mobile.contra.el.periodo.anterior"), props.title, t("accounts.title")];
   const goToPage = (next: number) => {
     const target = Math.max(0, Math.min(2, next));
     setPage(target);

@@ -59,6 +59,7 @@ import { DUPLICATE_DEFAULTS, type DuplicateSettings } from '@gastify/core/transa
 
 import { useT, useInfo, useLocale } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
+import { tNow } from '@/i18n/now';
 
 type DaySection = { key: string; title: string; data: TransactionData[] };
 
@@ -152,7 +153,7 @@ export default function MovementsScreen() {
   const totals = useMemo(() => monthTotals(items), [items]);
   const sections = useMemo<DaySection[]>(
     () => groupByDay(items, now, locale, t).map((group) => ({ key: group.key, title: group.label, data: group.items })),
-    [items, now]
+    [items, now, locale, t]
   );
 
   const historyReady = isHistoryReadyFor({ historyStatus: transactions.historyStatus, historyCutoff: transactions.historyCutoff }, range.start);
@@ -176,7 +177,7 @@ export default function MovementsScreen() {
 
   const removeSelected = () => {
     const count = selected.length;
-    Alert.alert(count === 1 ? 'Borrar este movimiento' : `Borrar ${count} movimientos`, t("mobile.no.se.puede.deshacer"), [
+    Alert.alert(count === 1 ? t("mobile.borrar.este.movimiento") : tNow("mobile.movimientos.borrar", { count: count, p1: count }), t("mobile.no.se.puede.deshacer"), [
       { text: t("mobile.cancelar"), style: 'cancel' },
       {
         text: t("mobile.borrar"),
@@ -186,7 +187,7 @@ export default function MovementsScreen() {
           setActionError(null);
           try {
             await sendWrite('general-data/transactions/remove-many', { manyTrans: selected });
-            toast.show(count === 1 ? 'Movimiento borrado' : `${count} movimientos borrados`);
+            toast.show(count === 1 ? t("mobile.movimiento.borrado") : tNow("mobile.movimientos.borrados", { count: count, p1: count }));
             finishAction();
           } catch (error) {
             setActionError(messageOf(error));
@@ -204,7 +205,7 @@ export default function MovementsScreen() {
     setExporting(true);
     setActionError(null);
     try {
-      const title = `Movimientos ${periodLabel}`;
+      const title = tNow("mobile.movimientos.p1", { p1: periodLabel });
       if (format === 'xlsx') {
         await shareExcelExport(items.map((movement) => String(movement._id)), session?.user.email ?? 'me', title);
       } else {
@@ -214,9 +215,9 @@ export default function MovementsScreen() {
           return {
             date: dateText(new Date(movementTime(movement) ?? 0)),
             name: movement.name || '',
-            category: movement.category?.name || 'Sin categoría',
+            category: movement.category?.name || t("history.noCategory"),
             subCategory: movement.subCategory?.name || '',
-            type: kind === 'income' ? 'Ingreso' : kind === 'expense' ? 'Gasto' : 'Transferencia',
+            type: kind === 'income' ? t("analyzer.income") : kind === 'expense' ? t("analyzer.bill") : t("mobile.transferencia"),
             amount: Math.abs(getPrimaryAmount(movement)),
             currency,
             account: account?.name || '',
@@ -233,14 +234,14 @@ export default function MovementsScreen() {
     }
   };
 
-  const categoryItems = categories.map((category) => ({ id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color }));
+  const categoryItems = categories.map((category) => ({ id: idOf(category), label: category.name || t("dashboard.bulk.category"), icon: category.icon, color: category.color }));
 
   const header = (
     <View className="gap-4 pb-4" onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}>
       {returnTo && (
         <Pressable accessibilityRole="button" onPress={() => goBackTo(returnTo, () => router.back())} hitSlop={8} className="flex-row items-center gap-1">
           <Ionicons name="chevron-back" size={20} color={colors.accent} />
-          <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>{returnLabel(returnTo, 'Atrás')}</Text>
+          <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>{returnLabel(returnTo, t("mobile.atras"))}</Text>
         </Pressable>
       )}
       <View className="flex-row items-end justify-between gap-3">
@@ -291,7 +292,7 @@ export default function MovementsScreen() {
           className="flex-row items-center justify-center gap-2 rounded-full px-5 py-3"
           style={selectionMode ? { backgroundColor: colors.accent } : { backgroundColor: colors.backgroundElement, borderWidth: 1, borderColor: colors.border }}>
           <Ionicons name="checkmark-done-outline" size={20} color={selectionMode ? '#ffffff' : colors.accent} />
-          <Text className="font-inter-semibold text-base" style={{ color: selectionMode ? '#ffffff' : colors.text }}>{selectionMode ? 'Listo' : 'Seleccionar'}</Text>
+          <Text className="font-inter-semibold text-base" style={{ color: selectionMode ? '#ffffff' : colors.text }}>{selectionMode ? t("common.success") : t("mobile.seleccionar")}</Text>
         </Pressable>
       </View>
 
@@ -358,7 +359,7 @@ export default function MovementsScreen() {
         <BulkEditSheet
           field={bulkField}
           ids={selected}
-          accounts={accountsData.map((account) => ({ id: idOf(account), label: account.name || 'Cuenta', currency: account.currency }))}
+          accounts={accountsData.map((account) => ({ id: idOf(account), label: account.name || t("dashboard.bulk.account"), currency: account.currency }))}
           categories={categoryItems}
           onClose={() => setBulkField(null)}
           onDone={() => { setBulkField(null); finishAction(); }}
@@ -381,7 +382,7 @@ export default function MovementsScreen() {
           </Pressable>
         </Card>
       )}
-      <TotalsCard totals={totals} currency={currency} title={active > 0 ? 'Totales con los filtros' : preset === 'month' ? 'Totales del mes' : 'Totales del periodo'} />
+      <TotalsCard totals={totals} currency={currency} title={active > 0 ? t("mobile.totales.con.los.filtros") : preset === 'month' ? t("mobile.totales.del.mes") : t("mobile.totales.del.periodo")} />
     </View>
   );
 
@@ -414,8 +415,8 @@ export default function MovementsScreen() {
             loading ? (
               <SkeletonRows count={6} />
             ) : historyReady ? (
-              <Text className="font-inter text-sm text-gf-text-muted">{active > 0 ? 'Ningún movimiento coincide con los filtros.' : `No hay movimientos en ${periodLabel}.`}</Text>
-            ) : null
+              <Text className="font-inter text-sm text-gf-text-muted">{active > 0 ? t("mobile.ningun.movimiento.coincide.con.los.filtros") : tNow("mobile.no.hay.movimientos.en.p1", { p1: periodLabel })}</Text>
+            ) : undefined
           }
           stickySectionHeadersEnabled={false}
           keyboardShouldPersistTaps="handled"

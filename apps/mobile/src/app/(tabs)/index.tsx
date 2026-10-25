@@ -35,6 +35,9 @@ import { sortNewestFirst } from '@gastify/core/transactions/monthSummary';
 import { isInRange, yearsWithMovements } from '@gastify/core/transactions/movementFilters';
 
 import { useT, useInfo, useLocale } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
+import { shortDate } from '@gastify/core/i18n/dates';
+import { currentLocale } from '@/i18n/now';
 
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
@@ -89,12 +92,12 @@ export default function HomeScreen() {
 
   return (
     <Screen
-      title={firstName ? `Hola, ${firstName}` : 'Inicio'}
+      title={firstName ? tNow("mobile.hola.p1", { p1: firstName }) : t("shared.start")}
       subtitle={period.preset === 'month' ? period.label : rangeLabel(period.range.start, period.range.end, locale)}
       headerAction={<NotificationsBell />}
       refreshing={refreshing}
       onRefresh={refresh}
-      hero={<TabletWalletHeader name={session?.user.name ?? undefined} accounts={accounts} totals={summary.totals} previous={previous.totals} currency={currency} rangeText={`Del ${period.range.start.toLocaleDateString('es-MX')} al ${period.range.end.toLocaleDateString('es-MX')}.`} />}>
+      hero={<TabletWalletHeader name={session?.user.name ?? undefined} accounts={accounts} totals={summary.totals} previous={previous.totals} currency={currency} rangeText={tNow("mobile.del.p1.al.p2", { p1: shortDate(period.range.start, currentLocale()), p2: shortDate(period.range.end, currentLocale()) })} />}>
       {transactions.status === 'failed' && (
         <Text className="font-inter text-sm text-red-500">{t("mobile.no.pudimos.cargar.tus.movimientos")}</Text>
       )}
@@ -103,7 +106,7 @@ export default function HomeScreen() {
 
       {!tablet && (
         <SummaryCarousel
-          title={period.preset === 'month' ? 'Este mes' : 'Del periodo'}
+          title={period.preset === 'month' ? t("analyzer.thisMonth") : t("mobile.del.periodo")}
           totals={summary.totals}
           previous={previous.totals}
           currency={currency}
@@ -119,7 +122,7 @@ export default function HomeScreen() {
             <LinkText label={t("mobile.ver.todas")} onPress={() => router.push('/more/accounts')} />
           </View>
           <Text className="font-inter text-sm text-gf-text-muted">
-            {t("mobile.en.total.p1.p2", { p1: formatMoneyMajor(accountTotal.total, currency), p2: accountTotal.missingCurrencies.length > 0 ? ` (sin tipo de cambio para ${accountTotal.missingCurrencies.join(', ')})` : '' })}
+            {t("mobile.en.total.p1.p2", { p1: formatMoneyMajor(accountTotal.total, currency), p2: accountTotal.missingCurrencies.length > 0 ? tNow("mobile.sin.tipo.de.cambio.para.p1", { p1: accountTotal.missingCurrencies.join(', ') }) : '' })}
           </Text>
           <AccountsCarousel accounts={accounts} primary={currency} activity={activity} rates={rates} />
         </View>

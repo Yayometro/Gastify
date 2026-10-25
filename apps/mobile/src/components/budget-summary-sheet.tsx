@@ -13,6 +13,7 @@ import { Colors } from '@/constants/theme';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 export type BudgetLine = { key: string; name: string; icon?: string; color?: string; spent: number; goal: number };
 export type GroupLine = { key: string; categoryId?: string; name: string; icon?: string; color?: string; amount: number; count: number };
@@ -59,7 +60,7 @@ export function BudgetSummarySheet({
           <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
             <View className="flex-row items-center justify-between px-6 pb-2 pt-5">
               {group && <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.volver.a.categorias.sin.presupuesto")} onPress={() => setSelectedGroup(null)} hitSlop={10}><Ionicons name="arrow-back" size={24} color={colors.text} /></Pressable>}
-              <Text className="flex-1 font-inter-bold text-2xl text-gf-text">{group ? group.name : kind === 'unbudgeted' ? 'Sin presupuesto' : 'Gasto total'}</Text>
+              <Text className="flex-1 font-inter-bold text-2xl text-gf-text">{group ? group.name : kind === 'unbudgeted' ? t("budgets.unbudgeted") : t("mobile.gasto.total")}</Text>
               <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={close} hitSlop={10}>
                 <Ionicons name="close" size={26} color={colors.text} />
               </Pressable>
@@ -88,7 +89,7 @@ export function BudgetSummarySheet({
               {kind === 'unbudgeted' && group && (
                 <>
                   <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(group.amount, currency)}</Text>
-                  <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.p1.p2.en.esta.categoria", { p1: groupMovements.length, p2: groupMovements.length === 1 ? 'movimiento sin presupuesto' : 'movimientos sin presupuesto' })}</Text>
+                  <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.p1.p2.en.esta.categoria", { p1: groupMovements.length, p2: tNow("mobile.movimientos.sin.presupuesto", { count: groupMovements.length }) })}</Text>
                   {group.categoryId && <Pressable accessibilityRole="button" onPress={() => { close(); onAddBudget(group.categoryId); }} className="items-center rounded-full border border-gf-border py-3"><Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>{t("mobile.agregar.presupuesto.para.p1", { p1: group.name })}</Text></Pressable>}
                   {groupMovements.map((movement) => <MovementRow divider key={String(movement._id)} movement={movement} currency={currency} onPress={() => { close(); router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: '/budgets' } }); }} />)}
                 </>
@@ -112,7 +113,7 @@ export function BudgetSummarySheet({
                       <CategoryBadge icon={group.icon} color={group.color} size={34} />
                       <View className="flex-1">
                         <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{group.name}</Text>
-                        <Text className="font-inter text-xs text-gf-text-muted">{group.count} {group.count === 1 ? 'movimiento' : 'movimientos'}</Text>
+                        <Text className="font-inter text-xs text-gf-text-muted">{tNow("mobile.movimientos.conteo", { count: group.count, p1: group.count })}</Text>
                       </View>
                       <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(group.amount, currency)}</Text>
                       <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />

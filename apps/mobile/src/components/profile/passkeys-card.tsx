@@ -7,10 +7,12 @@ import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 
 import { useT, useInfo } from "@/i18n/client";
+import { shortDate } from '@gastify/core/i18n/dates';
+import { currentLocale, tNow } from '@/i18n/now';
 
 type Passkey = { id: string; name?: string | null; createdAt?: string | Date | null; deviceType?: string | null };
 
-const when = (value: Passkey['createdAt']) => (value ? new Date(value).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+const when = (value: Passkey['createdAt']) => (value ? shortDate(new Date(value), currentLocale()) : '');
 
 // The passkeys of the account (the web's panel): which ones exist and a way to remove one. A passkey is added
 // from the web or from the installed app, because Expo Go has no passkey support.
@@ -29,21 +31,21 @@ export function PasskeysCard() {
     setError(null);
     try {
       const { data, error: failure } = await authClient.$fetch<Passkey[]>('/passkey/list-user-passkeys', { method: 'GET' });
-      if (failure) throw new Error(failure.message || 'No pudimos leer tus passkeys.');
+      if (failure) throw new Error(failure.message || t("mobile.no.pudimos.leer.tus.passkeys"));
       setPasskeys(Array.isArray(data) ? data : []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No pudimos leer tus passkeys.');
+      setError(e instanceof Error ? e.message : t("mobile.no.pudimos.leer.tus.passkeys"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   const remove = (passkey: Passkey) =>
-    Alert.alert(t("mobile.quitar.este.passkey"), t("mobile.profile.passkeyRemoved", { p1: passkey.name || 'este passkey' }), [
+    Alert.alert(t("mobile.quitar.este.passkey"), t("mobile.profile.passkeyRemoved", { p1: passkey.name || tNow("mobile.este.passkey") }), [
       { text: t("mobile.cancelar"), style: 'cancel' },
       {
         text: t("mobile.quitar"),
@@ -51,10 +53,10 @@ export function PasskeysCard() {
         onPress: async () => {
           const { error: failure } = await authClient.$fetch('/passkey/delete-passkey', { method: 'POST', body: { id: passkey.id } });
           if (failure) {
-            toast.show(failure.message || 'No pudimos quitarlo.', 'error');
+            toast.show(failure.message || t("mobile.no.pudimos.quitarlo"), 'error');
             return;
           }
-          toast.show('Passkey quitado');
+          toast.show(t("mobile.passkey.quitado"));
           load();
         },
       },
@@ -68,7 +70,7 @@ export function PasskeysCard() {
       {passkeys.map((passkey) => (
         <View key={passkey.id} className="flex-row items-center gap-3">
           <View className="flex-1">
-            <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{passkey.name || 'Passkey'}</Text>
+            <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{passkey.name || t("mobile.passkey")}</Text>
             <Text className="font-inter text-xs text-gf-text-muted">{[passkey.deviceType, when(passkey.createdAt)].filter(Boolean).join(' · ')}</Text>
           </View>
           <Pressable accessibilityRole="button" onPress={() => remove(passkey)} hitSlop={8}>

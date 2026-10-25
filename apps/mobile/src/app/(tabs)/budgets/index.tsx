@@ -27,7 +27,7 @@ import { BudgetCard } from '@/components/budgets/budget-card';
 import { OptionSheet } from '@/components/option-sheet';
 import { glassFill } from '@/components/ui/glass-fill';
 import { lookOf } from '@/lib/budget-look';
-import { BUDGET_ORDERS, sortBudgetRows, type BudgetOrder } from '@/lib/budget-sort';
+import { budgetOrders, sortBudgetRows, type BudgetOrder } from '@/lib/budget-sort';
 import { DateField } from '@/components/date-field';
 import { MonthSwitcher } from '@/components/month-switcher';
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
@@ -174,20 +174,20 @@ export default function BudgetsScreen() {
     for (const tx of coverage.uncovered) {
       const category = (tx as unknown as { category?: { _id?: unknown; name?: string; icon?: string; color?: string } | null }).category;
       const key = category?._id ? String(category._id) : category?.name || 'none';
-      const row = map.get(key) ?? { key, categoryId: category?._id ? String(category._id) : undefined, name: category?.name || 'Sin categoría', icon: category?.icon, color: category?.color, amount: 0, count: 0 };
+      const row = map.get(key) ?? { key, categoryId: category?._id ? String(category._id) : undefined, name: category?.name || t("history.noCategory"), icon: category?.icon, color: category?.color, amount: 0, count: 0 };
       row.amount += getPrimaryAmount(tx);
       row.count += 1;
       map.set(key, row);
     }
     return [...map.values()].map((row) => ({ ...row, amount: Math.round(row.amount * 100) / 100 })).sort((a, b) => b.amount - a.amount);
-  }, [coverage]);
+  }, [coverage, t]);
 
   const budgetLines = useMemo<BudgetLine[]>(
     () => spendingRows.map((row) => {
       const look = lookOf(row.budget, '#9333ea');
-      return { key: idOf(row.budget), name: row.budget.name || 'Presupuesto', icon: look.icon ?? undefined, color: look.color ?? undefined, spent: row.spent, goal: row.goal };
+      return { key: idOf(row.budget), name: row.budget.name || t("budgets.alert.defaultName"), icon: look.icon ?? undefined, color: look.color ?? undefined, spent: row.spent, goal: row.goal };
     }),
-    [spendingRows]
+    [spendingRows, t]
   );
 
   const [order, setOrder] = useState<BudgetOrder>('ratio');
@@ -261,9 +261,9 @@ export default function BudgetsScreen() {
 
       <Pressable accessibilityRole="button" onPress={() => setOrderOpen(true)} className="flex-row items-center justify-between rounded-full px-5 py-3" style={glassFill(scheme === 'dark', colors.backgroundElement)}>
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.ordenar.por")}</Text>
-        <Text className="font-inter-semibold text-sm text-gf-text">{BUDGET_ORDERS.find((item) => item.id === order)?.label} ▾</Text>
+        <Text className="font-inter-semibold text-sm text-gf-text">{budgetOrders().find((item) => item.id === order)?.label} ▾</Text>
       </Pressable>
-      <OptionSheet visible={orderOpen} title={t("mobile.ordenar.presupuestos")} options={BUDGET_ORDERS} isSelected={(id) => id === order} onSelect={(id) => setOrder(id as BudgetOrder)} onClose={() => setOrderOpen(false)} />
+      <OptionSheet visible={orderOpen} title={t("mobile.ordenar.presupuestos")} options={budgetOrders()} isSelected={(id) => id === order} onSelect={(id) => setOrder(id as BudgetOrder)} onClose={() => setOrderOpen(false)} />
 
       {loading ? (
         <SkeletonRows count={4} />

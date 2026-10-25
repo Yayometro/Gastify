@@ -21,7 +21,7 @@ export function PickerModal({
   onSelect,
   onClose,
   multiple = false,
-  searchPlaceholder = 'Buscar',
+  searchPlaceholder: searchPlaceholderProp,
 }: {
   visible: boolean;
   title: string;
@@ -34,6 +34,7 @@ export function PickerModal({
   searchPlaceholder?: string;
 }) {
   const t = useT();
+  const searchPlaceholder = searchPlaceholderProp ?? t("common.search");
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];

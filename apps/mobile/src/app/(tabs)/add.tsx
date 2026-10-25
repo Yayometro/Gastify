@@ -64,10 +64,10 @@ export default function AddScreen() {
             key={`${kind}-${round}`}
             hideType
             type={kind}
-            submitLabel="Guardar movimiento"
+            submitLabel={t("mobile.guardar.movimiento")}
             onSubmit={async (body) => {
               await sendWrite('general-data/transactions/new-transaction', body);
-              done(kind === 'income' ? 'Ingreso guardado' : 'Gasto guardado');
+              done(kind === 'income' ? t("mobile.ingreso.guardado") : t("mobile.gasto.guardado"));
             }}
           />
         );
@@ -77,7 +77,7 @@ export default function AddScreen() {
             key={`transfer-${round}`}
             onSubmit={async (body) => {
               await sendWrite('general-data/transactions/transfer', body);
-              done('Transferencia guardada');
+              done(t("mobile.transferencia.guardada"));
             }}
           />
         );
@@ -85,10 +85,10 @@ export default function AddScreen() {
         return (
           <AccountForm
             key={`account-${round}`}
-            submitLabel="Crear cuenta"
+            submitLabel={t("mobile.crear.cuenta")}
             onSubmit={async (values) => {
               await sendWrite('general-data/accounts/new-account', values);
-              done('Cuenta creada');
+              done(t("mobile.cuenta.creada"));
             }}
           />
         );
@@ -96,10 +96,10 @@ export default function AddScreen() {
         return (
           <CategoryForm
             key={`category-${round}`}
-            submitLabel="Crear categoría"
+            submitLabel={t("mobile.crear.categoria")}
             onSubmit={async (values) => {
               await sendWrite('general-data/categories/new-category', values);
-              done('Categoría creada');
+              done(t("mobile.categoria.creada"));
             }}
           />
         );
@@ -108,10 +108,10 @@ export default function AddScreen() {
           <BudgetForm
             key={`${kind}-${round}`}
             initial={emptyBudgetValues(kind === 'budget' ? 'spending' : kind, currency)}
-            submitLabel="Crear"
+            submitLabel={t("mobile.crear")}
             onSubmit={async (body) => {
               await sendWrite('general-data/budget/new', body);
-              done(kind === 'saving' ? 'Meta de ahorro creada' : kind === 'project' ? 'Proyecto creado' : 'Presupuesto creado');
+              done(kind === 'saving' ? t("mobile.meta.de.ahorro.creada") : kind === 'project' ? t("mobile.proyecto.creado") : t("mobile.presupuesto.creado"));
             }}
           />
         );

@@ -29,7 +29,7 @@ export default function NotificationsScreen() {
     <Screen
       title={t("mobile.notificaciones")}
       subtitle={t("mobile.avisos.de.tus.presupuestos.ahorros")}
-      backLabel="Atrás"
+      backLabel={t("mobile.atras")}
       onBack={back}
       headerAction={
         alerts.length > 0 ? (

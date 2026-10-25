@@ -14,6 +14,7 @@ import type { AppDispatch } from '@/store';
 import { getApi } from '@gastify/core/api/client';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 type Ref = { _id?: string; name?: string; color?: string | null; icon?: string | null } | null | undefined;
 type Entry = {
@@ -41,7 +42,7 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
     setError(null);
     try {
       const res = await getApi().post<{ ok?: boolean; data?: Entry[]; message?: string }>('general-data/category-rules/suggest', {});
-      if (!res?.ok) throw new Error(res?.message || 'No pudimos buscar sugerencias.');
+      if (!res?.ok) throw new Error(res?.message || t("mobile.no.pudimos.buscar.sugerencias"));
       setEntries(res.data ?? []);
       setSkipped({});
     } catch (e) {
@@ -49,7 +50,7 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -66,7 +67,7 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
         subCategory: entry.suggestion.subCategory?._id ?? null,
       }));
       await sendWrite('general-data/category-rules/apply-suggestions', { applications });
-      toast.show(applications.length === 1 ? '1 movimiento categorizado' : `${applications.length} movimientos categorizados`);
+      toast.show(tNow("mobile.movimientos.categorizados", { count: applications.length, p1: applications.length }));
       reloadAfterWrite(dispatch);
       onApplied?.();
       await load();
@@ -93,13 +94,13 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
   return (
     <View className="gap-3">
       <Text className="text-center font-inter text-sm text-gf-text-muted">
-        {t("mobile.p1.p2.con.una.regla", { p1: entries.length, p2: entries.length === 1 ? 'movimiento sin categoría coincide' : 'movimientos sin categoría coinciden' })}
+        {t("mobile.p1.p2.con.una.regla", { p1: entries.length, p2: tNow("mobile.movimientos.sin.categoria.coinciden", { count: entries.length }) })}
       </Text>
       {entries.map((entry) => {
         const id = String(entry.transaction._id);
         const skip = Boolean(skipped[id]);
         const low = entry.suggestion.confidence === 'low';
-        const target = entry.suggestion.subCategory?.name || entry.suggestion.category?.name || 'Sin categoría';
+        const target = entry.suggestion.subCategory?.name || entry.suggestion.category?.name || t("history.noCategory");
         const icon = entry.suggestion.subCategory?.icon || entry.suggestion.category?.icon;
         const color = entry.suggestion.subCategory?.color || entry.suggestion.category?.color;
         return (
@@ -112,7 +113,7 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
             style={{ opacity: skip ? 0.5 : 1, backgroundColor: low ? 'rgba(245, 158, 11, 0.12)' : undefined }}>
             <View className="flex-row items-center gap-3">
               <Ionicons name={skip ? 'square-outline' : 'checkbox'} size={22} color={skip ? colors.textSecondary : colors.accent} />
-              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{entry.transaction.name || 'Movimiento'}</Text>
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{entry.transaction.name || t("errors.api.movement")}</Text>
               <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(Math.abs(Number(entry.transaction.amount) || 0), currency)}</Text>
             </View>
             <View className="flex-row items-center gap-2 pl-8">
@@ -125,7 +126,7 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
           </Pressable>
         );
       })}
-      <GradientButton label={chosen.length === 0 ? 'Nada seleccionado' : `Aplicar ${chosen.length}`} onPress={apply} loading={applying} disabled={applying || chosen.length === 0} />
+      <GradientButton label={chosen.length === 0 ? t("mobile.nada.seleccionado") : tNow("mobile.aplicar.p1", { p1: chosen.length })} onPress={apply} loading={applying} disabled={applying || chosen.length === 0} />
     </View>
   );
 }

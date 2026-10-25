@@ -73,7 +73,7 @@ export default function AccountsScreen() {
   };
 
   return (
-    <Screen title={t("mobile.cuentas")} backLabel="Más" onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
+    <Screen title={t("mobile.cuentas")} backLabel={t("mobile.mas")} onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
       <Pressable accessibilityRole="button" onPress={() => router.push('/more/accounts/new')} className="items-center rounded-3xl bg-gf-surface p-4">
         <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
           {t("mobile.nueva.cuenta")}

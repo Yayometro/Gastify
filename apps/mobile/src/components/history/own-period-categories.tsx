@@ -21,6 +21,7 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { useT, useLocale } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 type Own = 'dashboard' | HistoryPreset;
 
@@ -70,21 +71,21 @@ export function OwnPeriodCategories({
   const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
   const selectedMovements = useMemo(() => {
     if (!selectedCategory) return [];
-    return movements.filter((tx) => isInRange(tx, ownRange) && (kind === 'spending' ? tx.isBill && !tx.isIncome : tx.isIncome) && (tx.category?.name || 'Sin categoría') === selectedCategory)
+    return movements.filter((tx) => isInRange(tx, ownRange) && (kind === 'spending' ? tx.isBill && !tx.isIncome : tx.isIncome) && (tx.category?.name || t("history.noCategory")) === selectedCategory)
       .sort((a, b) => order === 'desc' ? getPrimaryAmount(b) - getPrimaryAmount(a) : getPrimaryAmount(a) - getPrimaryAmount(b));
-  }, [movements, ownRange, kind, selectedCategory, order]);
+  }, [movements, ownRange, kind, selectedCategory, order, t]);
 
   const comparedMovements = useMemo(() => {
     if (!selectedCategory || !comparing || !compareSummary) return [];
-    return movements.filter((tx) => isInRange(tx, compareSummary.range) && (kind === 'spending' ? tx.isBill && !tx.isIncome : tx.isIncome) && (tx.category?.name || 'Sin categoría') === selectedCategory)
+    return movements.filter((tx) => isInRange(tx, compareSummary.range) && (kind === 'spending' ? tx.isBill && !tx.isIncome : tx.isIncome) && (tx.category?.name || t("history.noCategory")) === selectedCategory)
       .sort((x, y) => order === 'desc' ? getPrimaryAmount(y) - getPrimaryAmount(x) : getPrimaryAmount(x) - getPrimaryAmount(y));
-  }, [movements, compareSummary, comparing, kind, selectedCategory, order]);
+  }, [movements, compareSummary, comparing, kind, selectedCategory, order, t]);
   const open = (tx: TransactionData) => { setSelectedCategory(null); router.push({ pathname: '/movements/[id]', params: { id: String(tx._id), returnTo: '/more/history' } }); };
   const column = (label: string, total: number, list: TransactionData[]) => (
     <View className="flex-1 gap-1" key={label}>
       <Text className="font-inter-semibold text-sm text-gf-text">{label}</Text>
       <Text className="font-inter-bold text-lg text-gf-text">{formatMoneyMajor(total, currency)}</Text>
-      <Text className="pb-1 font-inter text-xs text-gf-text-muted">{list.length} {list.length === 1 ? 'movimiento' : 'movimientos'}</Text>
+      <Text className="pb-1 font-inter text-xs text-gf-text-muted">{tNow("mobile.movimientos.conteo", { count: list.length, p1: list.length })}</Text>
       {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
       {list.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => open(tx)} />)}
     </View>
@@ -118,8 +119,8 @@ export function OwnPeriodCategories({
           <>
             <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.izquierda.el.periodo.elegido.derecha")}</Text>
             <View className={tablet ? 'flex-row items-start gap-4' : 'gap-5'}>
-              {column(`Periodo · ${rangeLabel(summary.range.start, summary.range.end, locale)}`, selectedRow?.a ?? 0, selectedMovements)}
-              {column(`Comparado · ${rangeLabel(compareSummary.range.start, compareSummary.range.end, locale)}`, selectedRow?.b ?? 0, comparedMovements)}
+              {column(tNow("mobile.periodo.p1", { p1: rangeLabel(summary.range.start, summary.range.end, locale) }), selectedRow?.a ?? 0, selectedMovements)}
+              {column(tNow("mobile.comparado.p1.2", { p1: rangeLabel(compareSummary.range.start, compareSummary.range.end, locale) }), selectedRow?.b ?? 0, comparedMovements)}
             </View>
           </>
         ) : selectedMovements.map((tx) => <MovementRow divider key={String(tx._id)} movement={tx} currency={currency} onPress={() => open(tx)} />)}

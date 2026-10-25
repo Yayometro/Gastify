@@ -11,10 +11,13 @@ import { messageOf, sendWrite } from '@/lib/write';
 import { getApi } from '@gastify/core/api/client';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
+import { shortDate } from '@gastify/core/i18n/dates';
+import { currentLocale } from '@/i18n/now';
 
 type Token = { _id?: unknown; name: string; createdAt?: string | number | Date; lastUsedAt?: string | number | Date | null };
 
-const day = (value: Token['createdAt']) => (value ? new Date(value).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+const day = (value: Token['createdAt']) => (value ? shortDate(new Date(value), currentLocale()) : '');
 
 // Access tokens for connecting other tools to the account (the web's "connector"). The token is shown once, when it is
 // created: it is copied or shared right then. The list only has names and dates, and a token can be revoked.
@@ -35,7 +38,7 @@ export function ApiTokensCard() {
     setLoading(true);
     try {
       const res = await getApi().post<{ ok?: boolean; data?: Token[]; message?: string }>('general-data/api-tokens/list', {});
-      if (!res?.ok) throw new Error(res?.message || 'No pudimos leer tus tokens.');
+      if (!res?.ok) throw new Error(res?.message || t("mobile.no.pudimos.leer.tus.tokens"));
       setTokens(res.data ?? []);
       setError(null);
     } catch (e) {
@@ -43,7 +46,7 @@ export function ApiTokensCard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -74,7 +77,7 @@ export function ApiTokensCard() {
         onPress: async () => {
           try {
             await sendWrite('general-data/api-tokens/remove', { tokenId: String(token._id) });
-            toast.show('Token revocado');
+            toast.show(t("mobile.token.revocado"));
             setCreated(null);
             load();
           } catch (e) {
@@ -93,7 +96,7 @@ export function ApiTokensCard() {
           <View className="flex-1">
             <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{token.name}</Text>
             <Text className="font-inter text-xs text-gf-text-muted">
-              {t("mobile.creado.p1.p2", { p1: day(token.createdAt), p2: token.lastUsedAt ? ` · usado ${day(token.lastUsedAt)}` : ' · sin usar' })}
+              {t("mobile.creado.p1.p2", { p1: day(token.createdAt), p2: token.lastUsedAt ? tNow("mobile.usado.p1", { p1: day(token.lastUsedAt) }) : ' · sin usar' })}
             </Text>
           </View>
           <Pressable accessibilityRole="button" onPress={() => revoke(token)} hitSlop={8}>

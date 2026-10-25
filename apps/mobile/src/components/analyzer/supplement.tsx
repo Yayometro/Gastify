@@ -14,17 +14,18 @@ import type { ProjectionMonthComparison } from '@gastify/core/transformers/proje
 import type { WalletAnalyzerBudgetRow, WalletAnalyzerInsightItem, WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // The second line of a highlight tile on a tablet: a bit of context so the tile says more than the phone's single line.
 function highlightSubtext(item: WalletAnalyzerInsightItem, currency: string): string {
   const d = (item.data ?? {}) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   const money = (value: unknown) => formatMoneyMajor(Number(value) || 0, currency);
   switch (item.type) {
-    case 'budget': return `Límite ${money(d.limit)} · racha de ${d.streakMonths ?? 0} ${d.streakMonths === 1 ? 'mes' : 'meses'}`;
-    case 'category_anomaly': return `Tu promedio es ${money(d.average)} · este mes ${money(d.current)}`;
-    case 'subscription': return `${d.categoryName ?? 'Pago recurrente'} · toca para ver los cargos`;
-    case 'savings_rate': return 'Parte de tus ingresos que conservas';
-    default: return 'Toca para ver el detalle y cómo se calcula';
+    case 'budget': return `${tNow("analyzer.table.limit")} ${money(d.limit)} · ${tNow("mobile.racha.de")} ${d.streakMonths ?? 0} ${tNow(d.streakMonths === 1 ? "analyzer.streak.month" : "mobile.meses")}`;
+    case 'category_anomaly': return `${tNow("mobile.tu.promedio.es")} ${money(d.average)} · ${tNow("mobile.este.mes.2")} ${money(d.current)}`;
+    case 'subscription': return `${d.categoryName ?? tNow("mobile.pago.recurrente")} · ${tNow("mobile.toca.para.ver.los.cargos")}`;
+    case 'savings_rate': return tNow("mobile.parte.de.tus.ingresos.que.conservas");
+    default: return tNow("mobile.toca.para.ver.el.detalle.y.como.se.calcula");
   }
 }
 
@@ -81,7 +82,7 @@ export function AnalyzerProjection({ comparison, loading, error, missing, curren
       {error && <Text className="font-inter text-sm text-red-500">{t("mobile.no.se.pudo.cargar.la")}</Text>}
       {!loading && !error && !comparison && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.no.hay.una.referencia.guardada")}</Text>}
       {comparison && <>
-        <Text className="font-inter text-xs text-gf-text-muted">{comparison.type === 'closed' ? 'Mes cerrado · previsto contra real' : 'Mes en curso · avance contra previsto'}</Text>
+        <Text className="font-inter text-xs text-gf-text-muted">{comparison.type === 'closed' ? t("mobile.mes.cerrado.previsto.contra.real") : t("mobile.mes.en.curso.avance.contra.previsto")}</Text>
         <View className="flex-row gap-3">
           {[
             { label: t("mobile.ingresos"), projected: comparison.projectedIncome, actual: comparison.actualIncome, tone: colors.income },
@@ -113,7 +114,7 @@ export function AnalyzerBudgets({ snapshot, currency }: { snapshot: WalletAnalyz
           <Pressable key={row.budgetId} accessibilityRole="button" onPress={() => setOpen(row)} className="gap-1.5 border-t border-gf-border py-2">
             <View className="flex-row justify-between gap-3">
               <Text className="flex-1 font-inter-semibold text-sm text-gf-text" numberOfLines={1}>{row.category}</Text>
-              <Text className="font-inter text-xs text-gf-text-muted">{row.streakMonths >= 2 ? `${row.streakMonths} meses ✓` : `${Math.round(row.pct)}%`}</Text>
+              <Text className="font-inter text-xs text-gf-text-muted">{row.streakMonths >= 2 ? tNow("mobile.p1.meses", { p1: row.streakMonths }) : `${Math.round(row.pct)}%`}</Text>
             </View>
             <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.p1.de.p2", { p1: formatMoneyMajor(row.spent, currency), p2: formatMoneyMajor(row.limit, currency) })}</Text>
             <ProgressBar ratio={ratio} color={getBudgetBarColor(ratio, false)} />
@@ -185,7 +186,7 @@ export function AnalyzerFxExposure({ rows, loading, missing, currency }: { rows:
         </View>
         <View className="items-end">
           <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.valueInPrimary, currency)}</Text>
-          <Text className="font-inter text-xs" style={{ color: row.changePct === null ? colors.textSecondary : row.changePct >= 0 ? colors.income : colors.expense }}>{row.changePct === null ? 'Sin comparación' : `${row.changePct >= 0 ? '+' : ''}${Math.round(row.changePct)}% vs mes anterior`}</Text>
+          <Text className="font-inter text-xs" style={{ color: row.changePct === null ? colors.textSecondary : row.changePct >= 0 ? colors.income : colors.expense }}>{row.changePct === null ? t("mobile.sin.comparacion") : tNow("mobile.p1.p2.vs.mes.anterior", { p1: row.changePct >= 0 ? '+' : '', p2: Math.round(row.changePct) })}</Text>
         </View>
       </View>)}
       {missing.length > 0 && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.sin.cotizacion.para.p1.esos", { p1: missing.join(', ') })}</Text>}

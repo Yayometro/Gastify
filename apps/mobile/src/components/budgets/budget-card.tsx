@@ -13,6 +13,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { ConvertedBudget } from '@gastify/core/transformers/budgetCurrency';
 import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
 import { isProjectBudget } from '@gastify/core/transformers/budgetTypes';
+import { tNow } from '@/i18n/now';
 
 export type BudgetRow = { budget: ConvertedBudget<BudgetData>; spent: number; goal: number; ratio: number };
 
@@ -26,27 +27,27 @@ export function BudgetCard({ row, currency, saving }: { row: BudgetRow; currency
   const diff = spent - goal;
   const exceeded = !saving && goal > 0 && diff > 0;
   const look = lookOf(budget, colors.accentSoft);
-  const kind = isProjectBudget(budget) ? 'Proyecto' : saving ? 'Meta de ahorro' : 'Presupuesto de gasto';
+  const kind = isProjectBudget(budget) ? t("budgets.kind.project") : saving ? t("mobile.meta.de.ahorro") : t("mobile.presupuesto.de.gasto");
   const status = exceeded
-    ? `Excedido por ${formatMoneyMajor(diff, currency)}`
+    ? tNow("mobile.excedido.por.p1", { p1: formatMoneyMajor(diff, currency) })
     : saving
       ? diff < 0
-        ? `Faltan ${formatMoneyMajor(-diff, currency)}`
-        : 'Meta alcanzada 🎉'
-      : `Quedan ${formatMoneyMajor(Math.max(-diff, 0), currency)}`;
+        ? tNow("mobile.faltan.p1", { p1: formatMoneyMajor(-diff, currency) })
+        : t("mobile.meta.alcanzada.2")
+      : tNow("mobile.quedan.p1", { p1: formatMoneyMajor(Math.max(-diff, 0), currency) });
   const statusColor = exceeded ? colors.expense : saving ? (diff >= 0 ? '#60a5fa' : colors.textSecondary) : colors.income;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t("mobile.openLabel", { p1: budget.name || 'presupuesto' })}
+      accessibilityLabel={t("mobile.openLabel", { p1: budget.name || tNow("mobile.presupuesto.2") })}
       onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: idOf(budget) } })}>
       <Card>
         <View className="flex-row items-center gap-3">
           <CategoryBadge icon={look.icon} color={look.color} size={40} />
           <View className="flex-1">
             <Text className="font-inter-semibold text-base text-gf-text" numberOfLines={1}>
-              {budget.name || 'Presupuesto'}
+              {budget.name || t("budgets.alert.defaultName")}
             </Text>
             <Text className="font-inter text-xs text-gf-text-muted" numberOfLines={1}>{kind} · {periodSuffix(budget).replace('/', '')}</Text>
           </View>

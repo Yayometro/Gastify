@@ -35,7 +35,7 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
     try {
       const answer = await getApi().post<RemoveUserAnswer>('general-data/user/remove-user', { code: code.trim(), method, confirmMail: confirmMail.trim() });
       if (!answer?.ok) {
-        setError(deleteAccountErrorText(answer));
+        setError(deleteAccountErrorText(answer, t));
         setCode('');
         return;
       }
@@ -52,7 +52,8 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
   };
 
   const confirm = () => {
-    const problem = validateDeleteAccount({ accountEmail: email, confirmMail, code, method });
+    const problemKey = validateDeleteAccount({ accountEmail: email, confirmMail, code, method });
+    const problem = problemKey ? t(problemKey) : null;
     if (problem) {
       setError(problem);
       return;
@@ -89,10 +90,10 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
         <>
           <TextField label={t("mobile.profile.typeMailToConfirm", { p1: email })} value={confirmMail} onChangeText={setConfirmMail} keyboardType="email-address" autoComplete="email" />
           <TextField
-            label={method === 'backup' ? 'Código de respaldo' : 'Código de tu app autenticadora'}
+            label={method === 'backup' ? t("shared.backup.code") : t("shared.verify.appCode")}
             value={code}
             onChangeText={setCode}
-            placeholder={method === 'backup' ? 'xxxxx-xxxxx' : '6 dígitos'}
+            placeholder={method === 'backup' ? 'xxxxx-xxxxx' : t("mobile.6.digitos")}
             keyboardType={method === 'backup' ? 'default' : 'number-pad'}
             maxLength={method === 'backup' ? 20 : 6}
             autoComplete="one-time-code"
@@ -106,7 +107,7 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
               setError(null);
             }}
             hitSlop={8}>
-            <Text className="font-inter-medium text-sm text-gf-accent-soft-text">{method === 'backup' ? 'Usar el código de mi app' : 'Usar un código de respaldo'}</Text>
+            <Text className="font-inter-medium text-sm text-gf-accent-soft-text">{method === 'backup' ? t("mobile.usar.el.codigo.de.mi.app") : t("mobile.usar.un.codigo.de.respaldo")}</Text>
           </Pressable>
           <View className="flex-row gap-3">
             <Pressable accessibilityRole="button" onPress={close} disabled={busy} className="flex-1 items-center rounded-full border border-gf-border py-3">
@@ -119,7 +120,7 @@ export function DeleteAccountCard({ email, twoFactorEnabled }: { email: string; 
               disabled={busy}
               className="flex-1 items-center rounded-full bg-red-600 py-3"
               style={{ opacity: busy ? 0.6 : 1 }}>
-              <Text className="font-inter-semibold text-base" style={{ color: '#ffffff' }}>{busy ? 'Eliminando…' : 'Eliminar'}</Text>
+              <Text className="font-inter-semibold text-base" style={{ color: '#ffffff' }}>{busy ? 'Eliminando…' : t("mobile.eliminar")}</Text>
             </Pressable>
           </View>
         </>

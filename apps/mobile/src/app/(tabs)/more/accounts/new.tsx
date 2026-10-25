@@ -14,12 +14,12 @@ export default function NewAccountScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
   return (
-    <Screen title={t("mobile.nueva.cuenta")} backLabel="Cuentas" onBack={() => router.back()}>
+    <Screen title={t("mobile.nueva.cuenta")} backLabel={t("accounts.title")} onBack={() => router.back()}>
       <AccountForm
-        submitLabel="Crear cuenta"
+        submitLabel={t("mobile.crear.cuenta")}
         onSubmit={async (values) => {
           await sendWrite('general-data/accounts/new-account', values);
-          toast.show('Cuenta creada');
+          toast.show(t("mobile.cuenta.creada"));
           reloadAfterWrite(dispatch);
           router.back();
         }}

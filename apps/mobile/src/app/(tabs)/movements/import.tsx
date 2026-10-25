@@ -18,6 +18,7 @@ import { messageOf } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // Import movements from Excel, as the web does: download the template, fill it in and upload it; the server reads it
 // and creates the movements (categories, tags and accounts are matched with the ones the person already has).
@@ -36,7 +37,7 @@ export default function ImportScreen() {
     setBusy('template');
     setError(null);
     try {
-      await shareExcelTemplate(email, 'Plantilla de Gastify');
+      await shareExcelTemplate(email, t("mobile.plantilla.de.gastify"));
     } catch (e) {
       setError(messageOf(e));
     } finally {
@@ -57,13 +58,13 @@ export default function ImportScreen() {
     try {
       const answer = await uploadExcelTemplate(email, { uri: asset.uri, name: asset.name, mimeType: asset.mimeType });
       if (!answer.ok) {
-        setError(answer.versionMismatch ? 'Tu plantilla es de una versión anterior. Descarga la plantilla de nuevo y vuelve a intentarlo.' : answer.message || 'No pudimos procesar el archivo.');
+        setError(answer.versionMismatch ? t("mobile.tu.plantilla.es.de.una.version.anterior.descarga.la.plantill") : answer.message || t("mobile.no.pudimos.procesar.el.archivo"));
         return;
       }
       const created = answer.data?.length ?? 0;
       const uncategorized = (answer.data ?? []).filter((item) => !item.category && !item.subCategory).length;
       setResult({ created, uncategorized });
-      toast.show(created === 1 ? '1 movimiento importado' : `${created} movimientos importados`);
+      toast.show(created === 1 ? t("mobile.1.movimiento.importado") : tNow("mobile.movimientos.import", { count: created, p1: created }));
       reloadAfterWrite(dispatch, true);
     } catch (e) {
       setError(messageOf(e));
@@ -73,7 +74,7 @@ export default function ImportScreen() {
   };
 
   return (
-    <Screen title={t("mobile.importar.desde.excel")} backLabel="Movimientos" onBack={() => router.back()}>
+    <Screen title={t("mobile.importar.desde.excel")} backLabel={t("mobile.movimientos")} onBack={() => router.back()}>
       <Card title={t("mobile.1.descarga.la.plantilla")} info={APP_INFO.plantilla}>
         <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.se.guarda.como.archivo.excel")}</Text>
         <OutlineButton label={t("mobile.descargar.plantilla")} icon={<Ionicons name="download-outline" size={20} color="#7e22ce" />} onPress={template} loading={busy === 'template'} disabled={busy !== null || !email} />
@@ -81,12 +82,12 @@ export default function ImportScreen() {
 
       <Card title={t("mobile.2.sube.tu.archivo")}>
         <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.elige.el.archivo.xlsx.ya")}</Text>
-        <GradientButton label={busy === 'upload' ? 'Importando…' : 'Elegir archivo e importar'} onPress={upload} loading={busy === 'upload'} disabled={busy !== null || !email} />
+        <GradientButton label={busy === 'upload' ? 'Importando…' : t("mobile.elegir.archivo.e.importar")} onPress={upload} loading={busy === 'upload'} disabled={busy !== null || !email} />
         <FormError message={error} />
         {result && (
           <View className="gap-1 rounded-2xl border border-gf-border p-3">
             <Text className="font-inter-semibold text-base text-gf-text">
-              {result.created === 0 ? 'No se creó ningún movimiento' : `${result.created} ${result.created === 1 ? 'movimiento creado' : 'movimientos creados'}`}
+              {result.created === 0 ? t("mobile.no.se.creo.ningun.movimiento") : tNow("mobile.movimientos.creados", { count: result.created, p1: result.created })}
             </Text>
             {result.uncategorized > 0 && (
               <Text className="font-inter text-sm text-gf-text-muted">

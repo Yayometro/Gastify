@@ -12,10 +12,14 @@ import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { emptyBudgetValues, type BudgetKind } from '@gastify/core/budgets/budgetForm';
 import { idOf } from '@gastify/core/categories/categoryForm';
+import { useT } from '@/i18n/client';
+import { tNow } from '@/i18n/now';
 
-const TITLES: Record<BudgetKind, string> = { spending: 'Nuevo presupuesto', saving: 'Nueva meta de ahorro', project: 'Nuevo proyecto' };
+// The title of each kind of new budget: a catalog key, read when the screen is shown.
+const TITLE_KEYS: Record<BudgetKind, string> = { spending: "budgets.new", saving: "mobile.nueva.meta.de.ahorro", project: "mobile.nuevo.proyecto" };
 
 export default function NewBudgetScreen() {
+  const t = useT();
   const { kind: rawKind, categoryId } = useLocalSearchParams<{ kind?: string; categoryId?: string }>();
   const kind: BudgetKind = rawKind === 'saving' || rawKind === 'project' ? rawKind : 'spending';
   const dispatch = useDispatch<AppDispatch>();
@@ -29,16 +33,16 @@ export default function NewBudgetScreen() {
     initial.categoryIds = [idOf(category)];
   }
   return (
-    <Screen title={TITLES[kind]} backLabel="Presupuestos" onBack={() => router.back()}>
+    <Screen title={tNow(TITLE_KEYS[kind])} backLabel={t("budgets.title")} onBack={() => router.back()}>
       <BudgetForm
         initial={initial}
-        submitLabel="Crear"
+        submitLabel={t("mobile.crear")}
         onSubmit={async (body) => {
           const created = await sendWrite<Record<string, unknown> | null>('general-data/budget/new', body);
           // Show it at once: the new budget goes into the list as soon as the server answers, the notice appears
           // right away and the full reload (which can take seconds with many movements) runs afterwards.
           if (created && typeof created === 'object' && '_id' in created) dispatch(addNewBudget(created as never));
-          toast.show(kind === 'project' ? 'Proyecto creado' : kind === 'saving' ? 'Meta de ahorro creada' : 'Presupuesto creado');
+          toast.show(kind === 'project' ? t("mobile.proyecto.creado") : kind === 'saving' ? t("mobile.meta.de.ahorro.creada") : t("mobile.presupuesto.creado"));
           router.back();
           dispatch(fetchBudget(undefined));
           reloadAfterWrite(dispatch);

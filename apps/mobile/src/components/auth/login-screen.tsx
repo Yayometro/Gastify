@@ -11,15 +11,16 @@ import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
 import { passkeyFailureMessage, signInWithDevicePasskey, usePasskeyAvailable } from '@/passkey';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 type SignInError = { status?: number; code?: string; message?: string };
 
 function messageFor(error: SignInError): string {
-  if (error.status === 429) return 'Demasiados intentos. Espera un momento y vuelve a intentar.';
+  if (error.status === 429) return tNow("mobile.demasiados.intentos.espera.un.momento.y.vuelve.a.intentar");
   if (error.status === 401 || error.status === 400 || error.code === 'INVALID_EMAIL_OR_PASSWORD') {
-    return 'Correo o contraseña incorrectos.';
+    return tNow("mobile.correo.o.contrasena.incorrectos");
   }
-  return error.message || 'No pudimos iniciar sesión.';
+  return error.message || tNow("mobile.no.pudimos.iniciar.sesion");
 }
 
 // Email and password first. If the account has a second factor, the code step follows on the same

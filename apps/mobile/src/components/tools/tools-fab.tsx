@@ -20,7 +20,7 @@ const TOOLS = (t: TranslateFn): Tool[] => ([
     id: 'uncategorized',
     label: t("mobile.sin.categoria"),
     title: t("mobile.transaction.categorizer"),
-    about: 'Busca tus movimientos sin categoría y sugiere una según las reglas que guardaste (nombre del comercio, monto). Nada cambia hasta que revises y apliques.',
+    about: t("mobile.busca.tus.movimientos.sin.categoria.y.sugiere.una.segun.las."),
     render: () => <Categorizer />,
   },
 ]);

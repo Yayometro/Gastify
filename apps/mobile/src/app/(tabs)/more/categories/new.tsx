@@ -16,9 +16,9 @@ export default function NewCategoryScreen() {
   const toast = useToast();
   const categories = useSelector((state: RootState) => state.categoriesReducer.data.user ?? []);
   return (
-    <Screen title={t("mobile.nueva.categoria")} backLabel="Categorías" onBack={() => router.back()}>
+    <Screen title={t("mobile.nueva.categoria")} backLabel={t("mobile.categorias")} onBack={() => router.back()}>
       <CategoryForm
-        submitLabel="Crear categoría"
+        submitLabel={t("mobile.crear.categoria")}
         allowSubcategory
         existing={categories}
         onSubmit={async ({ sub, ...values }) => {
@@ -32,7 +32,7 @@ export default function NewCategoryScreen() {
               fatherCategory: sub.parentId ?? idOf(created as never),
             });
           }
-          toast.show(sub ? 'Categoría y subcategoría creadas' : 'Categoría creada');
+          toast.show(sub ? t("mobile.categoria.y.subcategoria.creadas") : t("mobile.categoria.creada"));
           reloadAfterWrite(dispatch);
           router.back();
         }}

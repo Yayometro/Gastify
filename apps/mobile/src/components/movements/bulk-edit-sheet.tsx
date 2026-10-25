@@ -12,19 +12,21 @@ import { messageOf, sendWrite, sendWriteAnswer } from '@/lib/write';
 import { ACCOUNT_CURRENCIES } from '@gastify/core/accounts/accountForm';
 import { dateText, movementInstant } from '@gastify/core/transactions/movementForm';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // One field of every selected movement at a time (rename, date, type, category, account, currency), or every field at
 // once ("edición general"). What a person leaves blank keeps each movement's own value.
 export type BulkField = 'name' | 'date' | 'type' | 'category' | 'account' | 'currency' | 'general';
 
-const TITLES: Record<BulkField, string> = {
-  name: 'Cambiar el nombre',
-  date: 'Cambiar la fecha',
-  type: 'Cambiar el tipo',
-  category: 'Cambiar la categoría',
-  account: 'Cambiar la cuenta',
-  currency: 'Cambiar la divisa',
-  general: 'Edición general',
+// The title of each bulk edit: a catalog key, read when the sheet is shown.
+const TITLE_KEYS: Record<BulkField, string> = {
+  name: "mobile.cambiar.el.nombre",
+  date: "mobile.cambiar.la.fecha",
+  type: "mobile.cambiar.el.tipo",
+  category: "mobile.cambiar.la.categoria",
+  account: "mobile.cambiar.la.cuenta",
+  currency: "mobile.cambiar.la.divisa",
+  general: "mobile.edicion.general",
 };
 
 export type BulkOption = { id: string; label: string; icon?: string; color?: string; currency?: string };
@@ -118,10 +120,10 @@ export function BulkEditSheet({
     const stillBlocked = answer.skipped ?? [];
     setBlocked(stillBlocked);
     if (stillBlocked.length === 0) {
-      toast.show(changed === 1 ? 'Movimiento cambiado a ' + currency : `${changed} movimientos cambiados a ${currency}`);
+      toast.show(tNow("mobile.movimientos.cambiados", { count: changed, p1: changed, p2: currency }));
       onDone();
     } else {
-      toast.show(`${changed} cambiados · ${stillBlocked.length} no se pueden`, 'warning');
+      toast.show(tNow("mobile.p1.cambiados.p2.no.se.pueden", { p1: changed, p2: stillBlocked.length }), 'warning');
     }
   };
 
@@ -141,13 +143,13 @@ export function BulkEditSheet({
     }
     const body = payload();
     if (!body) {
-      setError(field === 'general' ? 'Llena al menos un campo: lo que dejes en blanco se queda igual.' : 'Elige un valor para cambiar.');
+      setError(field === 'general' ? t("mobile.llena.al.menos.un.campo.lo.que.dejes.en.blanco.se.queda.igua") : t("mobile.elige.un.valor.para.cambiar"));
       return;
     }
     setBusy(true);
     try {
       await sendWrite('general-data/transactions/edit-many', body);
-      toast.show(count === 1 ? 'Movimiento actualizado' : `${count} movimientos actualizados`);
+      toast.show(count === 1 ? t("mobile.movimiento.actualizado") : tNow("mobile.movimientos.actualizados", { count: count, p1: count }));
       onDone();
     } catch (failure) {
       setError(messageOf(failure));
@@ -177,7 +179,7 @@ export function BulkEditSheet({
     <DetailSheet
       visible
       onClose={onClose}
-      title={TITLES[field]}
+      title={tNow(TITLE_KEYS[field])}
       subtitle={t("mobile.movements.bulkSelected", { count, p1: count })}
       info={
         field === 'general'
@@ -187,28 +189,28 @@ export function BulkEditSheet({
             : undefined
       }>
       {(field === 'name' || field === 'general') && (
-        <TextField label={field === 'general' ? 'Nombre (opcional)' : 'Nombre nuevo'} value={name} onChangeText={setName} maxLength={80} placeholder={t("mobile.si.lo.dejas.vacio.no")} />
+        <TextField label={field === 'general' ? t("mobile.nombre.opcional") : t("mobile.nombre.nuevo")} value={name} onChangeText={setName} maxLength={80} placeholder={t("mobile.si.lo.dejas.vacio.no")} />
       )}
       {field === 'general' && (
         <TextField label={t("mobile.monto.opcional")} value={amount} onChangeText={(text) => setAmount(text.replace(/[^0-9.,]/g, ''))} keyboardType="decimal-pad" placeholder={t("mobile.sin.cambio")} />
       )}
-      {(field === 'date' || field === 'general') && <DateField label={field === 'general' ? 'Fecha (opcional)' : 'Fecha nueva'} value={date} onChange={setDate} />}
+      {(field === 'date' || field === 'general') && <DateField label={field === 'general' ? t("mobile.fecha.opcional") : t("mobile.fecha.nueva")} value={date} onChange={setDate} />}
       {(field === 'type' || field === 'general') && (
         <View className="gap-2">
-          <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? 'Tipo (opcional)' : 'Tipo'}</Text>
+          <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? t("mobile.tipo.opcional") : t("budgets.form.type")}</Text>
           <ChipPicker items={[{ id: 'expense', label: t("mobile.gasto") }, { id: 'income', label: t("mobile.ingreso") }]} value={type} onChange={setType} />
         </View>
       )}
       {(field === 'account' || field === 'general') && (
         <View className="gap-2">
-          <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? 'Cuenta (opcional)' : 'Cuenta'}</Text>
-          <ChipPicker items={accounts} value={accountId} onChange={setAccountId} title={t("mobile.cuentas")} emptyText="Todavía no tienes cuentas." />
+          <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? t("mobile.cuenta.opcional") : t("dashboard.bulk.account")}</Text>
+          <ChipPicker items={accounts} value={accountId} onChange={setAccountId} title={t("mobile.cuentas")} emptyText={t("mobile.todavia.no.tienes.cuentas")} />
         </View>
       )}
       {(field === 'category' || field === 'general') && (
         <View className="gap-2">
-          <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? 'Categoría (opcional)' : 'Categoría'}</Text>
-          <ChipPicker items={categories} value={categoryId} onChange={setCategoryId} title={t("mobile.categorias")} emptyText="Todavía no tienes categorías." />
+          <Text className="font-inter-medium text-sm text-gf-text-muted">{field === 'general' ? t("mobile.categoria.opcional") : t("dashboard.bulk.category")}</Text>
+          <ChipPicker items={categories} value={categoryId} onChange={setCategoryId} title={t("mobile.categorias")} emptyText={t("mobile.todavia.no.tienes.categorias")} />
           <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.al.cambiar.la.categoria.la")}</Text>
         </View>
       )}
@@ -223,23 +225,23 @@ export function BulkEditSheet({
           {blocked.length > 0 && (
             <View className="gap-3 rounded-2xl border p-3" style={{ borderColor: colors.border }}>
               <Text className="font-inter-semibold text-sm text-gf-text">
-                {t("mobile.p1.con.su.cuenta.actual", { p1: blocked.length === 1 ? '1 movimiento no se puede cambiar' : `${blocked.length} movimientos no se pueden cambiar` })}
+                {t("mobile.p1.con.su.cuenta.actual", { p1: blocked.length === 1 ? '1 movimiento no se puede cambiar' : tNow("mobile.movimientos.no.cambiar", { count: blocked.length, p1: blocked.length }) })}
               </Text>
               {blocked.map((item) => (
                 <Text key={item.id} className="font-inter text-xs text-gf-text-muted">• {item.name}: {item.reason}</Text>
               ))}
               <View className="gap-2">
                 <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.pasarlos.a.una.cuenta.en", { p1: currency })}</Text>
-                <ChipPicker items={currencyAccounts} value={destinationId} onChange={setDestinationId} title={t("mobile.cuentas")} emptyText={`No tienes cuentas en ${currency}.`} />
+                <ChipPicker items={currencyAccounts} value={destinationId} onChange={setDestinationId} title={t("mobile.cuentas")} emptyText={tNow("mobile.no.tienes.cuentas.en.p1", { p1: currency })} />
               </View>
-              <GradientButton label={busy ? 'Guardando…' : `Cambiar también su cuenta (${blocked.length})`} onPress={changeBlockedAccounts} loading={busy} disabled={busy || !destinationId} />
+              <GradientButton label={busy ? 'Guardando…' : tNow("mobile.cambiar.tambien.su.cuenta.p1", { p1: blocked.length })} onPress={changeBlockedAccounts} loading={busy} disabled={busy || !destinationId} />
             </View>
           )}
         </View>
       )}
 
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
-      {blocked.length === 0 && button(field === 'general' ? 'Guardar en todos' : field === 'currency' ? 'Cambiar la divisa' : 'Guardar')}
+      {blocked.length === 0 && button(field === 'general' ? t("mobile.guardar.en.todos") : field === 'currency' ? t("mobile.cambiar.la.divisa") : t("common.save"))}
       <Text className="font-inter text-xs" style={{ color: colors.textSecondary }}>{t("mobile.se.aplica.a.los.p1", { p1: count })}</Text>
     </DetailSheet>
   );

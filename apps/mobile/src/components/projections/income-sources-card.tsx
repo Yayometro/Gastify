@@ -48,7 +48,7 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
     setSaving(true);
     try {
       await sendWrite('general-data/income-sources/new', { name: name.trim(), amount: value, currency: code, recurrence, anchorDate: parseDateText(anchor) ?? new Date() });
-      toast.show('Fuente de ingreso creada');
+      toast.show(t("mobile.fuente.de.ingreso.creada"));
       setName('');
       setAmount('');
       setOpen(false);
@@ -69,7 +69,7 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
         onPress: async () => {
           try {
             await sendWrite('general-data/income-sources/remove', { id: idOf(source as never) });
-            toast.show('Fuente borrada');
+            toast.show(t("mobile.fuente.borrada"));
             onChanged();
           } catch (e) {
             toast.show(messageOf(e), 'error');
@@ -85,7 +85,7 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
       {sources.map((source) => (
         <View key={idOf(source as never)} className="flex-row items-center gap-3">
           <View className="flex-1">
-            <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{String(source.name ?? 'Fuente')}</Text>
+            <Text className="font-inter-medium text-base text-gf-text" numberOfLines={1}>{String(source.name ?? t("mobile.fuente"))}</Text>
             <Text className="font-inter text-sm text-gf-text-muted">
               {formatMoneyMajor(Number(source.amount) || 0, String(source.currency ?? currency))} · {RECURRENCE(t).find((r) => r.id === source.recurrence)?.label ?? String(source.recurrence ?? '')}
             </Text>

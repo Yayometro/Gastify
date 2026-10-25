@@ -10,6 +10,7 @@ import { ToolsFab } from '@/components/tools/tools-fab';
 import { Colors } from '@/constants/theme';
 import { useBudgetAlerts } from '@/hooks/use-budget-alerts';
 import { useLoadAppData } from '@/hooks/use-load-app-data';
+import { useT } from '@/i18n/client';
 
 const ICON_SIZE = 25;
 
@@ -28,6 +29,7 @@ const slideBetweenTabs = ({ current }: { current: { progress: Animated.Value } }
 // icons only (same icon families as the web: FaWallet, FaMoneyBillTransfer, MdSavings, IoAdd),
 // a purple gradient "+" in the middle, and a soft purple highlight behind the active icon.
 export default function AppTabs() {
+  const t = useT();
   // Only rendered for a signed-in, unlocked session (see AuthGate): the data loads start here, once.
   useLoadAppData();
   useBudgetAlerts();
@@ -38,14 +40,14 @@ export default function AppTabs() {
   const colors = Colors[isDark ? 'dark' : 'light'];
 
   // The icon of a regular tab; the active one gets the soft accent background.
-  const glyph = (render: (color: ColorValue) => ReactNode) =>
+  const glyph = (render: (color: string) => ReactNode) =>
     function TabGlyph({ focused, color }: { focused: boolean; color: ColorValue }) {
       return (
         <View style={styles.glyph}>
           {/* Always mounted, only its opacity changes: Android drops the rounded corners of a
               background that is switched on after the first render. */}
           <View style={[styles.highlight, isDark ? styles.highlightDark : { backgroundColor: colors.accentSoft }, { opacity: focused ? 1 : 0 }]} />
-          {render(color)}
+          {render(color as string)}
         </View>
       );
     };
@@ -68,16 +70,16 @@ export default function AppTabs() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Inicio',
-          tabBarAccessibilityLabel: 'Inicio',
+          title: t("shared.start"),
+          tabBarAccessibilityLabel: t("shared.start"),
           tabBarIcon: glyph((color) => <FontAwesome6 name="wallet" size={ICON_SIZE - 2} color={color} />),
         }}
       />
       <Tabs.Screen
         name="movements"
         options={{
-          title: 'Movimientos',
-          tabBarAccessibilityLabel: 'Movimientos',
+          title: t("mobile.movimientos"),
+          tabBarAccessibilityLabel: t("mobile.movimientos"),
           // A tab is an entry point to its list, not to the last detail opened from Inicio.
           popToTopOnBlur: true,
           tabBarIcon: glyph((color) => <FontAwesome6 name="money-bill-transfer" size={ICON_SIZE - 2} color={color} />),
@@ -85,13 +87,13 @@ export default function AppTabs() {
       />
       <Tabs.Screen
         name="add"
-        options={{ title: 'Agregar', tabBarAccessibilityLabel: 'Agregar un movimiento', tabBarIcon: fab }}
+        options={{ title: t("budgets.add"), tabBarAccessibilityLabel: t("mobile.agregar.un.movimiento"), tabBarIcon: fab }}
       />
       <Tabs.Screen
         name="budgets"
         options={{
-          title: 'Presupuestos',
-          tabBarAccessibilityLabel: 'Presupuestos',
+          title: t("budgets.title"),
+          tabBarAccessibilityLabel: t("budgets.title"),
           popToTopOnBlur: true,
           tabBarIcon: glyph((color) => <MaterialIcons name="savings" size={ICON_SIZE + 3} color={color} />),
         }}
@@ -99,16 +101,14 @@ export default function AppTabs() {
       <Tabs.Screen
         name="more"
         options={{
-          title: 'Más',
-          tabBarAccessibilityLabel: 'Más',
+          title: t("mobile.mas"),
+          tabBarAccessibilityLabel: t("mobile.mas"),
           popToTopOnBlur: true,
           tabBarIcon: glyph((color) => <Ionicons name="ellipsis-horizontal" size={ICON_SIZE + 2} color={color} />),
         }}
       />
       {/* Template leftover (src/app/explore.tsx): kept out of the bar until the file is removed. */}
       <Tabs.Screen name="explore" options={{ href: null }} />
-      {/* Opened from the bell (Inicio, the side bar, Más), never from the bar. */}
-      <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
   );
 

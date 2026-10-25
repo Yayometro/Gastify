@@ -77,7 +77,7 @@ export function CompactTimeFilter({
               onPress={() => setExpanded((value) => !value)}
               className="items-center justify-center rounded-full px-4"
               style={{ height: 52, backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: scheme === 'dark' ? 'rgba(211,184,251,0.35)' : 'rgba(126,34,206,0.25)' }}>
-              <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? 'Menos filtros' : 'Más filtros'}</Text>
+              <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? t("mobile.menos.filtros") : t("mobile.mas.filtros")}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -107,7 +107,7 @@ export function CompactTimeFilter({
           onPress={() => setExpanded((value) => !value)}
           className="items-center justify-center rounded-full px-4"
           style={{ height: 52, backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: scheme === 'dark' ? 'rgba(211,184,251,0.35)' : 'rgba(126,34,206,0.25)' }}>
-          <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? 'Menos filtros' : 'Más filtros'}</Text>
+          <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? t("mobile.menos.filtros") : t("mobile.mas.filtros")}</Text>
         </Pressable>
       </View>
       {preset !== 'month' && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.periodo.activo.p1", { p1: activeLabel ?? "" })}</Text>}

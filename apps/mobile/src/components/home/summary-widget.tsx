@@ -23,6 +23,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import type { TransactionLike } from '@gastify/core/transformers/transactionsChange';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 type Kind = 'spending' | 'incomes';
 
@@ -100,7 +101,7 @@ export function SummaryWidget({
     <View className="flex-row items-center justify-between gap-3">
       <Pressable accessibilityRole="button" onPress={back} className="flex-row items-center gap-1 py-1">
         <Ionicons name="arrow-back" size={18} color={colors.accent} />
-        <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{level === 1 ? 'Todas las categorías' : `Volver a ${chosen.name}`}</Text>
+        <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{level === 1 ? t("mobile.todas.las.categorias") : tNow("mobile.volver.a.p1", { p1: chosen.name })}</Text>
       </Pressable>
       {level === 1 && (
         <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.home.seeTransactionsOf", { p1: chosen.name })} onPress={() => setPath((current) => ({ path: [...current.path, ALL_MOVEMENTS] }))} className="flex-row items-center gap-1 py-1">
@@ -122,9 +123,9 @@ export function SummaryWidget({
           slices={shown}
           selectedKey={zoomed ? null : selected}
           onSelect={select}
-          centerTitle={chosen ? chosen.name : kind === 'spending' ? 'Gastos' : 'Ingresos'}
+          centerTitle={chosen ? chosen.name : kind === 'spending' ? t("analyzer.bills") : t("analyzer.incomes")}
           centerValue={formatMoneyMajor(shownTotal, currency)}
-          centerHint={zoomed ? '‹ Toca para volver' : 'Toca una sección ›'}
+          centerHint={zoomed ? t("mobile.toca.para.volver") : t("mobile.toca.una.seccion")}
           centerIcon={chosen && chosen.icon ? { icon: chosen.icon, color: chosen.color } : null}
           onCenterPress={zoomed ? back : undefined}
           trackColor={scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(27,16,61,0.06)'}
@@ -135,7 +136,7 @@ export function SummaryWidget({
   );
 
   const table = (limit?: number) => (
-    <CategoryTable rows={tableRows} total={shownTotal} currency={currency} selectedKey={zoomed ? null : selected} disabled={false} firstColumn={zoomed && chosen ? (level === 1 ? `${chosen.name} · subcategorías` : `${chosen.name} · movimientos`) : 'Categoría'} limit={limit} onPressRow={select} drillLabel={level === 0 ? 'Ver subcategorías' : level === 1 ? 'Ver transacciones' : undefined} />
+    <CategoryTable rows={tableRows} total={shownTotal} currency={currency} selectedKey={zoomed ? null : selected} disabled={false} firstColumn={zoomed && chosen ? (level === 1 ? tNow("mobile.p1.subcategorias", { p1: chosen.name }) : tNow("mobile.p1.movimientos", { p1: chosen.name })) : t("dashboard.bulk.category")} limit={limit} onPressRow={select} drillLabel={level === 0 ? t("mobile.ver.subcategorias") : level === 1 ? t("mobile.ver.transacciones") : undefined} />
   );
 
   const filters = (
@@ -149,7 +150,7 @@ export function SummaryWidget({
   const MAX_ROWS = 15;
   const seeMore = (
     <Pressable accessibilityRole="button" onPress={() => setDetailOpen(true)} className="items-center rounded-full py-3" style={{ backgroundColor: colors.accentSoft }}>
-      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.las.p1.p2", { p1: allRows.length, p2: allRows.length === 1 ? 'categoría' : 'categorías' })}</Text>
+      <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.las.p1.p2", { p1: allRows.length, p2: tNow("mobile.categorias.nombre", { count: allRows.length }) })}</Text>
     </Pressable>
   );
   // The big sheet: the filters, the same chart as the card (it drills down the same way) and every category, each row can be opened.
@@ -169,7 +170,7 @@ export function SummaryWidget({
       {categories.length === 0 ? (
         <>
           {filters}
-          <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.p1.en.este.periodo", { p1: kind === 'spending' ? 'gastos' : 'ingresos' })}</Text>
+          <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.p1.en.este.periodo", { p1: kind === 'spending' ? t("mobile.home.spendingWord") : t("mobile.home.incomeWord") })}</Text>
         </>
       ) : tablet ? (
         <View className="flex-row items-start gap-6">

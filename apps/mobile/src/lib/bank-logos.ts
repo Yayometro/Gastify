@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- Metro bundles images through require() with static paths, the way React Native expects. */
 import type { ImageSource } from 'expo-image';
 
 // The logo image of each bank, by the bank's id (see @gastify/core/banks). They are 256×256 WebP with a transparent background, the

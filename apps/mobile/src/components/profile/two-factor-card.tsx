@@ -38,7 +38,7 @@ export function TwoFactorCard() {
     try {
       await action();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No pudimos completar la acción.');
+      setError(e instanceof Error ? e.message : t("mobile.no.pudimos.completar.la.accion"));
     } finally {
       setBusy(false);
     }
@@ -47,7 +47,7 @@ export function TwoFactorCard() {
   const start = () =>
     run(async () => {
       const { data, error: failure } = await authClient.twoFactor.enable({ method: 'totp', password: password || undefined });
-      if (failure || !data || data.method !== 'totp') throw new Error(failure?.message || 'No pudimos activar la verificación en dos pasos.');
+      if (failure || !data || data.method !== 'totp') throw new Error(failure?.message || t("mobile.no.pudimos.activar.la.verificacion.en.dos.pasos"));
       const secret = /secret=([A-Za-z2-7]+)/.exec(data.totpURI)?.[1] ?? '';
       setSetup({ uri: data.totpURI, secret, codes: data.backupCodes ?? [] });
       setPassword('');
@@ -56,8 +56,8 @@ export function TwoFactorCard() {
   const confirmCode = () =>
     run(async () => {
       const { error: failure } = await authClient.twoFactor.verifyTotp({ code: code.trim() });
-      if (failure) throw new Error(failure.message || 'Código incorrecto.');
-      toast.show('Verificación en dos pasos activada');
+      if (failure) throw new Error(failure.message || t("mobile.codigo.incorrecto"));
+      toast.show(t("mobile.verificacion.en.dos.pasos.activada"));
       setSetup(null);
       setCode('');
       refreshSession();
@@ -72,8 +72,8 @@ export function TwoFactorCard() {
         onPress: () =>
           run(async () => {
             const { error: failure } = await authClient.twoFactor.disable({ password: password || undefined });
-            if (failure) throw new Error(failure.message || 'No pudimos desactivarla.');
-            toast.show('Verificación en dos pasos desactivada');
+            if (failure) throw new Error(failure.message || t("mobile.no.pudimos.desactivarla"));
+            toast.show(t("mobile.verificacion.en.dos.pasos.desactivada"));
             setPassword('');
             refreshSession();
           }),
@@ -83,7 +83,7 @@ export function TwoFactorCard() {
   const newCodes = () =>
     run(async () => {
       const { data, error: failure } = await authClient.twoFactor.generateBackupCodes({ password: password || undefined });
-      if (failure || !data) throw new Error(failure?.message || 'No pudimos generar los códigos.');
+      if (failure || !data) throw new Error(failure?.message || t("mobile.no.pudimos.generar.los.codigos"));
       setCodes(data.backupCodes);
       setPassword('');
     });
@@ -95,7 +95,7 @@ export function TwoFactorCard() {
       title={t("mobile.verificacion.en.dos.pasos")}
       info={APP_INFO.verificaci_n_en_dos_pasos}>
       <Text className="font-inter text-sm" style={{ color: enabled ? colors.income : colors.textSecondary }}>
-        {enabled ? 'Activada con app autenticadora' : 'Desactivada. Actívala para proteger tu cuenta.'}
+        {enabled ? t("mobile.activada.con.app.autenticadora") : t("mobile.desactivada.activala.para.proteger.tu.cuenta")}
       </Text>
 
       {setup && (
