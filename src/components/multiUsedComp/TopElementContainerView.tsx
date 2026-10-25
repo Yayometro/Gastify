@@ -45,13 +45,13 @@ function TopElementContainerView({
           {t("dashboard.from")}{" "}
           <b>
             {!timePeriod[0]
-              ? "No time selected"
+              ? t("web.no.time.selected")
               : getDateInYearMonthDay(timePeriod[0] as string | number | Date)}
           </b>{" "}
           {t("dashboard.to")}{" "}
           <b>
             {!timePeriod[1]
-              ? "No time selected"
+              ? t("web.no.time.selected")
               : getDateInYearMonthDay(timePeriod[1] as string | number | Date)}
           </b>
         </span>
@@ -93,7 +93,7 @@ function TopElementContainerView({
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler
-          tabs={["Bills", "Incomes"]}
+          tabs={[t("web.bills"), t("web.incomes")]}
           compontentsArray={components}
           tooltip={t("dashboard.top.tabHelp")}
           contentStyle={"grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"}

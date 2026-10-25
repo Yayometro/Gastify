@@ -56,7 +56,8 @@ export interface TopRankColumnProps<T extends RankRowItem = RankRowItem> {
 // as the same design family as the Wallet Analyzer's own Top 12 section,
 // instead of the old AtomicTop tile-strip look.
 function RankRow<T extends RankRowItem = RankRowItem>({ index, item, currency, onClick, count }: RankRowProps<T>): React.JSX.Element {
-  const name = item.name || item.type || "No name";
+  const t = useT();
+  const name = item.name || item.type || t("web.no.name.2");
   const color = item?.color || item.category?.color || "#DADADA";
   const icon = item.icon || item.category?.icon;
   // A category row says how many transactions it holds; a transaction row says which category it belongs to.

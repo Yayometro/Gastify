@@ -463,7 +463,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
               className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
               type="submit"
             >
-              {isLoading ? <Spin /> : "Guardar movimiento"}
+              {isLoading ? <Spin /> : tr("web.save.transaction")}
             </button>
             <button
               type="button"

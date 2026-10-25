@@ -379,7 +379,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
         setIsLoading(false);
         onClose();
       } else {
-        runNotify("error", response?.message || "Something went wrong");
+        runNotify("error", response?.message || t("web.something.went.wrong"));
         setIsLoading(false);
       }
     } catch (e) {
@@ -621,7 +621,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
               type="submit"
               disabled={needsCurrencyStrategy && !currencyStrategy}
             >
-              {isLoading ? <Spin /> : "Save changes"}
+              {isLoading ? <Spin /> : t("web.save.changes")}
             </button>
           </div>
         </form>

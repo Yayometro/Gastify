@@ -145,9 +145,9 @@ export default function ProjectBudgetDetailModal({
         transactionId,
         budgetId: shouldLink ? budget._id : null,
       })) as { ok?: boolean; data?: TransactionData; message?: string };
-      if (!res.ok || !res.data) throw new Error(res.message || "Could not update the movement");
+      if (!res.ok || !res.data) throw new Error(res.message || tr("web.could.not.update.the.movement"));
       dispatch(updateTransaction(res.data));
-      runNotify("ok", shouldLink ? "Movement added to project" : "Movement removed from project");
+      runNotify("ok", shouldLink ? tr("web.movement.added.to.project") : tr("web.movement.removed.from.project"));
     } catch (error: unknown) {
       runNotify("error", (error as { message?: string })?.message || String(error));
     }
@@ -155,8 +155,8 @@ export default function ProjectBudgetDetailModal({
 
   const range =
     budget.eventStartDate || budget.eventEndDate
-      ? `${budget.eventStartDate ? dayjs(budget.eventStartDate).format("DD MMM YYYY") : "No start date"} → ${budget.eventEndDate ? dayjs(budget.eventEndDate).format("DD MMM YYYY") : "No end date"}`
-      : "Dates not set";
+      ? `${budget.eventStartDate ? dayjs(budget.eventStartDate).format("DD MMM YYYY") : tr("web.no.start.date")} → ${budget.eventEndDate ? dayjs(budget.eventEndDate).format("DD MMM YYYY") : tr("web.no.end.date")}`
+      : tr("web.dates.not.set");
 
   return (
     <>
@@ -200,7 +200,7 @@ export default function ProjectBudgetDetailModal({
                     spent > goal ? "bg-red-500/15 border-red-200" : "bg-emerald-500/15 border-emerald-200"
                   }`}
                 >
-                  <p className="text-[10px] text-gf-text-muted uppercase">{spent > goal ? "Over" : "Available"}</p>
+                  <p className="text-[10px] text-gf-text-muted uppercase">{spent > goal ? tr("web.over") : tr("web.available")}</p>
                   <p className="text-lg font-bold">{usdFormatChanger(Math.abs(goal - spent))}</p>
                 </div>
               </div>
@@ -288,7 +288,7 @@ export default function ProjectBudgetDetailModal({
                               <span className="block text-xs font-semibold truncate">{transaction.name}</span>
                               <span className="block text-[10px] text-gf-text-muted">
                                 {dayjs(transaction.date).format("DD MMM YYYY")}
-                                {suggested ? " · Suggested by tag" : ""}
+                                {suggested ? tr("web.suggested.by.tag") : ""}
                               </span>
                             </span>
                             <strong className="text-xs text-red-500 shrink-0">

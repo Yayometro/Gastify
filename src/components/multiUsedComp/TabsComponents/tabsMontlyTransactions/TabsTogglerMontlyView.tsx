@@ -81,7 +81,7 @@ function TabsTogglerMontlyView({
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler
-          tabs={tabs || ["Comparative", "Bills", "Incomes"]}
+          tabs={tabs || [t("web.comparative"), t("web.bills"), t("web.incomes")]}
           compontentsArray={components}
           tooltip={t("movements.top.tabHelp")}
           tabInfo={{ comparative: APP_INFO.detalle_del_mes(Boolean(compareEnabled)) }}

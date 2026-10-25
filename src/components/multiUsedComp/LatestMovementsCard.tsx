@@ -1,4 +1,5 @@
 "use client";
+import { shortDate } from "@gastify/core/i18n/dates";
 
 import React, { useMemo } from "react";
 import Link from "next/link";
@@ -9,7 +10,7 @@ import { InfoTip } from "./InfoTip";
 
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@gastify/core/transformers/transactionsChange";
-import { useT, useInfo } from "@/i18n/client";
+import { useLocale, useT, useInfo } from "@/i18n/client";
 
 const EMPTY: never[] = [];
 const COUNT = 5;
@@ -18,6 +19,7 @@ const COUNT = 5;
 function LatestMovementsCard(): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
+  const locale = useLocale();
   const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
   const primary = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const latest = useMemo(
@@ -49,9 +51,9 @@ function LatestMovementsCard(): React.JSX.Element {
             return (
               <li key={String(transaction._id)} className="flex items-center justify-between gap-3 border-b border-gf-border py-2.5 last:border-b-0">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-gf-text">{transaction.name || "Movimiento"}</p>
+                  <p className="truncate text-sm font-semibold text-gf-text">{transaction.name || t("errors.api.movement")}</p>
                   <p className="text-[11px] text-gf-text-muted">
-                    {new Date(transaction.date as string).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
+                    {shortDate(new Date(transaction.date as string), locale, true)}
                   </p>
                 </div>
                 <p className={`shrink-0 text-sm font-bold ${income ? "text-emerald-400" : "text-rose-400"}`}>

@@ -140,7 +140,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       const response = await fetch(
         toFetch.getFullPath(`general-data/files/template/${userEmail}`)
       );
-      if (!response.ok) throw new Error("Template generation failed");
+      if (!response.ok) throw new Error(t("web.template.generation.failed"));
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -160,7 +160,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
   const customRequest: NonNullable<UploadProps["customRequest"]> = async ({ file, onSuccess, onError }) => {
     const userEmail = ccUser.mail || email;
     if (!userEmail) {
-      onError?.(new Error("User not available yet, please try again"));
+      onError?.(new Error(t("web.user.not.available.yet.please.try.again")));
       return;
     }
     setUploadStatus("uploading");
@@ -192,7 +192,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           if (res?.versionMismatch) {
             runNotify("error", t("movements.templateOutdated"));
           } else {
-            runNotify("error", res?.message || "Something went wrong, please try again 🤕");
+            runNotify("error", res?.message || t("web.something.went.wrong.please.try.again"));
           }
           return;
         }
@@ -214,7 +214,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
         const errMsg =
           (info.file.response as UploadApiResponse | undefined)?.message ||
           info.file.error?.message ||
-          "The file couldn't be processed, please try again 🤕";
+          t("web.the.file.couldn.t.be.processed.please.try.again");
         runNotify("error", errMsg);
         setTimeout(() => setUploadStatus("idle"), 3000);
       }
@@ -224,7 +224,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
   const dedupRequest: NonNullable<UploadProps["customRequest"]> = async ({ file, onSuccess, onError }) => {
     const userEmail = ccUser.mail || email;
     if (!userEmail) {
-      onError?.(new Error("User not available yet, please try again"));
+      onError?.(new Error(t("web.user.not.available.yet.please.try.again")));
       return;
     }
     setDedupLoading(true);
@@ -256,7 +256,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       if (info.file.status === "done") {
         const res = info.file.response as DedupPreviewData | undefined;
         if (!res?.ok) {
-          runNotify("error", res?.message || "Could not process deduplication 🤕");
+          runNotify("error", res?.message || t("web.could.not.process.deduplication"));
           return;
         }
         // Show preview modal — user must confirm before deleting
@@ -283,7 +283,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
         setDedupResult({ removed: idsToDelete.length, scanned: dedupPreview?.scanned });
         runNotify("ok", t("movements.dedupRemoved", { p1: idsToDelete.length }));
       } else {
-        runNotify("error", res?.message || "Could not delete transactions 🤕");
+        runNotify("error", res?.message || t("web.could.not.delete.transactions"));
       }
     } catch {
       runNotify("error", tr("movements.delete.failed"));
@@ -320,7 +320,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
         runNotify("ok", t("categories.categorizedCount", { p1: res.data.length }));
         return true;
       }
-      runNotify("error", res?.message || "Could not apply suggestions 🤕");
+      runNotify("error", res?.message || t("web.could.not.apply.suggestions"));
       return false;
     } catch {
       runNotify("error", tr("movements.categorizer.applyFailed"));
@@ -349,7 +349,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           className="flex items-center gap-2 text-purple-500 hover:text-purple-400 w-fit cursor-pointer text-sm"
           onClick={() => setIsExcel(!isExcel)}
         >
-          <p>{isExcel ? "Excel file" : "XML file"}</p>
+          <p>{isExcel ? t("web.excel.file") : t("web.xml.file")}</p>
           {isExcel ? <PiMicrosoftExcelLogoFill size={18} /> : <BsFiletypeXml size={18} />}
         </div>
 
@@ -361,7 +361,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
               disabled={isUploading}
               className="gf-glass-button !border-0 !text-white"
             >
-              {isUploading ? "Processing..." : "Upload file"}
+              {isUploading ? "Processing..." : t("web.upload.file")}
             </Button>
           </Upload>
         </div>
@@ -374,7 +374,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
               <p className="font-semibold">
                 {uploadResult.count > 0
                   ? `${uploadResult.count} transaction${uploadResult.count !== 1 ? "s" : ""} imported successfully`
-                  : "File processed — no new transactions found"}
+                  : t("web.file.processed.no.new.transactions.found")}
               </p>
               <p className="text-green-500 mt-[2px]">{tr("movements.import.readyTitle")}</p>
             </div>
@@ -393,7 +393,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           onClick={handleDownloadTemplate}
         >
           <MdFormatAlignLeft size={16} />
-          <span className="inline-flex items-center gap-1.5"><span>{isDownloading ? "Generating template..." : "Download format"}</span><InfoTip info={APP_INFO.plantilla} /></span>
+          <span className="inline-flex items-center gap-1.5"><span>{isDownloading ? t("web.generating.template") : t("web.download.format")}</span><InfoTip info={APP_INFO.plantilla} /></span>
         </div>
       </div>
 
@@ -407,7 +407,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           className="flex items-center gap-2 text-sm text-gf-text-muted hover:text-purple-500 transition-colors cursor-pointer"
         >
           <MdOutlineCleaningServices size={18} />
-          <span>{showDedup ? "Hide" : "Remove duplicates from Excel"}</span>
+          <span>{showDedup ? t("web.hide") : t("web.remove.duplicates.from.excel")}</span>
         </button>
 
         {showDedup && (
@@ -441,8 +441,8 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
             </div>
             <p className="text-[10px] text-gf-text-muted text-center max-w-[260px] -mt-1 leading-relaxed">
               {dedupDeleteAll
-                ? "Every transaction matching a row in the file will be deleted — nothing is kept."
-                : "One record is always kept per group — only the extra copies are removed."}
+                ? t("web.every.transaction.matching.a.row.in.the.file.will.be.del")
+                : t("web.one.record.is.always.kept.per.group.only.the.extra.copie")}
             </p>
 
             <div onClick={(e) => e.stopPropagation()}>
@@ -452,7 +452,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
                   loading={dedupLoading}
                   className={`text-xs ${dedupDeleteAll ? "!border-red-400 !text-red-400 hover:!border-red-500" : ""}`}
                 >
-                  {dedupLoading ? "Scanning for duplicates..." : "Upload & Clean"}
+                  {dedupLoading ? t("web.scanning.for.duplicates") : t("web.upload.clean")}
                 </Button>
               </Upload>
             </div>

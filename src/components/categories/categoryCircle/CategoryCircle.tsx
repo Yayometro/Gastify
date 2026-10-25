@@ -1,6 +1,7 @@
 import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { Tooltip } from "antd";
+import { useT } from "@/i18n/client";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
@@ -35,8 +36,9 @@ function CategoryCircle<T = unknown>({
   onSelect,
   borderWidth,
 }: CategoryCircleProps<T>): React.JSX.Element {
+  const t = useT();
   return (
-    <Tooltip title={`${name || "No name..."}`}>
+    <Tooltip title={`${name || t("web.no.name")}`}>
       <div
         style={{
           backgroundColor: color || "#ABABAB",
@@ -58,7 +60,7 @@ function CategoryCircle<T = unknown>({
         </div>
         <div className="cc-list-content-subCategory w-full flex items-center justify-center truncate">
           <p className="w-full min-[400px]:text-lg min-[600px]:text-xl truncate px-2">
-            {name || "No name..."}
+            {name || t("web.no.name")}
           </p>
         </div>
       </div>

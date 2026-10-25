@@ -37,15 +37,15 @@ function WalletAnalyzerProjectionCard({ comparison, walletPrimaryCurrency }: Wal
   const varianceIncome = comparison.actualIncome - comparison.projectedIncome;
   const varianceExpense = comparison.actualExpense - comparison.projectedExpense;
   const isInProgress = comparison.type === "in-progress";
-  const actualColumnLabel = isInProgress ? "Real hasta hoy" : "Real";
+  const actualColumnLabel = isInProgress ? t("web.actual.to.date") : t("analyzer.table.actual");
 
   return (
     <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
       <div className="mb-0.5 flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{t("analyzer.projectedVsActual")}</p><InfoTip info={APP_INFO.proyecci_n_del_mes} /></div>
       <p className="text-xs text-gf-text-muted mb-4">
         {isInProgress
-          ? "Este mes sigue en curso - comparado contra lo esperado hasta ahora."
-          : "Lo que proyectabas para este mes contra lo que realmente pasó."}
+          ? t("web.this.month.is.still.in.progress.compared.against.what.wa")
+          : t("web.what.you.projected.for.this.month.against.what.actually")}
       </p>
 
       <div className="grid grid-cols-2 gap-3 mb-4">

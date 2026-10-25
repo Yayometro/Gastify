@@ -454,7 +454,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
               key={acc._id}
               className="flex justify-between items-center gap-2 bg-black/15 rounded-lg px-2.5 py-1.5 text-white text-xs"
             >
-              <span className="truncate">{acc.name || "Account"}</span>
+              <span className="truncate">{acc.name || t("web.account")}</span>
               <span className="shrink-0 font-medium">
                 {formatMoneyMajor(acc.amount || 0, acc.currency || walletPrimaryCurrency, { showCode: false })}
                 {acc.currency && acc.currency !== walletPrimaryCurrency ? ` ${acc.currency}` : ""}
@@ -475,7 +475,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     </div>
   );
 
-  const summaryPanel = loading || !periodReady ? panelSkeleton("Resumen") : (
+  const summaryPanel = loading || !periodReady ? panelSkeleton(t("dashboard.summary")) : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
       <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.summary")}</span><InfoTip info={APP_INFO.resumen} /></span>
       <div className="flex flex-col gap-2 justify-end flex-1">
@@ -529,12 +529,12 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     </div>
   );
 
-  const comparisonPanel = loading || !periodReady ? panelSkeleton("Vs. mes anterior") : (
+  const comparisonPanel = loading || !periodReady ? panelSkeleton(t("dashboard.vsPrevious")) : (
     <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
       <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.vsPrevious")}</span><InfoTip info={APP_INFO.vs_el_mes_anterior} /></span>
-      {renderDeltaRow("Ingresos", totalIncome, prevTotalIncome, INCOME_COLOR)}
-      {renderDeltaRow("Gastos", totalBill, prevTotalBill, EXPENSE_COLOR)}
-      {renderDeltaRow("Balance", totalAmountBalance, prevTotalIncome - prevTotalBill, BALANCE_COLOR)}
+      {renderDeltaRow(t("analyzer.incomes"), totalIncome, prevTotalIncome, INCOME_COLOR)}
+      {renderDeltaRow(t("analyzer.bills"), totalBill, prevTotalBill, EXPENSE_COLOR)}
+      {renderDeltaRow(t("analyzer.balance"), totalAmountBalance, prevTotalIncome - prevTotalBill, BALANCE_COLOR)}
     </div>
   );
 

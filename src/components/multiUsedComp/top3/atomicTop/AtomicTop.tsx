@@ -5,6 +5,7 @@ import UniversalCategoIcon from "../../UniversalCategoIcon";
 import CategoIcon from "../../CategoIcon";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
@@ -39,6 +40,7 @@ function AtomicTop<T = unknown>({
   tooltip,
   getItem,
 }: AtomicTopProps<T>): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   return (
     <>
@@ -62,7 +64,7 @@ function AtomicTop<T = unknown>({
                 />
             </div>
             <p className="w-full text-[15px] font-semibold truncate">
-              {name || "No category name"}
+              {name || t("web.no.category.name")}
             </p>
           </div>
         </div>

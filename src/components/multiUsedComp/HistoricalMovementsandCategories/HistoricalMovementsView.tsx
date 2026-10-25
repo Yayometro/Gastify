@@ -75,7 +75,7 @@ function HistoricalMovementsView({
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler
-          tabs={tabs || ["Bills", "Incomes"]}
+          tabs={tabs || [t("web.bills"), t("web.incomes")]}
           compontentsArray={components}
           tooltip={t("movements.top.tabHelp")}
           contentStyle={"flex flex-col justify-center items-center"}

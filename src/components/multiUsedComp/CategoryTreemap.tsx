@@ -507,7 +507,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
     if (path.length === 0 || !activeCategory) return null;
     const second =
       activeSubcategory?.name ||
-      (path[1] === "__direct__" ? "Other" : null) ||
+      (path[1] === "__direct__" ? tr("web.other") : null) ||
       autoExpandSingleSubcategory?.name ||
       null;
     return {
@@ -568,7 +568,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
     if (activeCategory.loc > 0) {
       subs.push({
         key: "__direct__",
-        name: `Other ${activeCategory.name}`,
+        name: tr("web.other.p1", { p1: activeCategory.name }),
         color: activeCategory.color,
         icon: activeCategory.icon,
         value: activeCategory.loc,
@@ -647,7 +647,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
       {!ctFill && (
         <div className="CategoryTreemap-Content-title pt-5">
           <h1 className="wallet-budget-title text-2xl text-center font-bold">
-            {tr("categories.detail.title", { p1: ctIsBill ? "Bills" : "Incomes" })}
+            {tr("categories.detail.title", { p1: ctIsBill ? tr("web.bills") : tr("web.incomes") })}
           </h1>
         </div>
       )}
@@ -668,7 +668,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
               <div className="min-w-0 flex flex-col">
                 <h2 className="text-gf-text font-bold text-lg leading-tight truncate">
                   {!breadcrumb ? (
-                    `Category ${ctIsBill ? "Bills" : "Incomes"}`
+                    `${tr("web.category")} ${ctIsBill ? tr("web.bills") : tr("web.incomes")}`
                   ) : (
                     <>
                       <span
@@ -729,7 +729,7 @@ function CategoryTreemap({ ctTransactions, ctIsBill, ctFill }: CategoryTreemapPr
                 </div>
                 <span className="text-gf-text-muted text-xs">
                   {selectedTransaction.date && dayjs(selectedTransaction.date).format("DD/MM/YYYY")}
-                  {selectedTransaction.accountName ? ` · Cuenta: ${selectedTransaction.accountName}` : ""}
+                  {selectedTransaction.accountName ? tr("web.account.p1", { p1: selectedTransaction.accountName }) : ""}
                 </span>
                 {(selectedTransaction.categoryName || selectedTransaction.subcategoryName) && (
                   <span className="text-gf-text-muted text-xs">

@@ -46,7 +46,7 @@ export function generatePropForBudgetMonthlyChart({
     return [
       {
         type: m.label,
-        transactionType: "Actual",
+        transactionType: t("web.actual"),
         value: m.actual,
         color: getBudgetBarColor(ratio, false),
         fillOpacity: m.estimated ? 0.5 : 1,
@@ -55,7 +55,7 @@ export function generatePropForBudgetMonthlyChart({
       },
       {
         type: m.label,
-        transactionType: "Goal",
+        transactionType: t("web.goal"),
         value: m.goal,
         color: GOAL_COLOR,
         fillOpacity: 1,
@@ -79,8 +79,8 @@ export function generatePropForBudgetMonthlyChart({
       valueFormat: (value) => formatMoneyMajor(value, walletPrimaryCurrency),
       renderTooltip: ({ title, items }) => {
         const monthData = monthlySeries.find((m) => m.label === title);
-        const actual = items.find((it) => it.transactionType === "Actual");
-        const goal = items.find((it) => it.transactionType === "Goal");
+        const actual = items.find((it) => it.transactionType === t("web.actual"));
+        const goal = items.find((it) => it.transactionType === t("web.goal"));
         return (
           <div
             className="max-w-[240px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
@@ -97,8 +97,8 @@ export function generatePropForBudgetMonthlyChart({
             </div>
             {monthData && (
               <p className={`text-xs font-semibold ${monthData.met ? "text-green-400" : "text-red-400"}`}>
-                {monthData.met ? "Met" : "Exceeded"}
-                {monthData.estimated ? " (estimated goal)" : ""}
+                {monthData.met ? t("web.met") : t("web.exceeded")}
+                {monthData.estimated ? t("web.estimated.goal") : ""}
               </p>
             )}
           </div>

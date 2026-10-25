@@ -13,9 +13,9 @@ import type {
 import { useT } from "@/i18n/client";
 
 const TITLES: Record<"transaction" | "category" | "subCategory", string> = {
-  transaction: "Transacción más grande por mes",
-  category: "Categoría con más gasto por mes",
-  subCategory: "Subcategoría con más gasto por mes",
+  transaction: "web.largest.transaction.per.month",
+  category: "web.category.with.the.most.spending.per.month",
+  subCategory: "web.subcategory.with.the.most.spending.per.month",
 };
 
 export type ChampionItem =
@@ -79,7 +79,7 @@ function MonthlyChampionsModal({
       footer={null}
       className="gf-antd-modal-glass"
       zIndex={20000}
-      title={<span className="text-purple-300 font-semibold text-base">{TITLES[kind]}</span>}
+      title={<span className="text-purple-300 font-semibold text-base">{t(TITLES[kind])}</span>}
     >
       <div className="flex flex-col max-h-[420px] overflow-y-auto pr-1">
         {rows.map(({ entry, champion }) => (

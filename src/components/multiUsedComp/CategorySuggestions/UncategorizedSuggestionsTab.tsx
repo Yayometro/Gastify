@@ -69,7 +69,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestio
         onApplied?.(res.data);
         return true;
       }
-      runNotify("error", res?.message || "Could not apply suggestions 🤕");
+      runNotify("error", res?.message || t("web.could.not.apply.suggestions"));
       return false;
     } catch {
       runNotify("error", t("movements.categorizer.applyFailed"));

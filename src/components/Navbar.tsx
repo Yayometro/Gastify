@@ -145,7 +145,7 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             ) : (
               <MdDarkMode size={26} className="hidden sm:inline" />
             )}
-            <p className="sm:hidden hoverTooltip">{mode === "dark" ? "Light mode" : "Dark mode"}</p>
+            <p className="sm:hidden hoverTooltip">{mode === "dark" ? t("web.light.mode") : t("web.dark.mode")}</p>
           </button>
         </li>
         <li className="gf-nav-item">

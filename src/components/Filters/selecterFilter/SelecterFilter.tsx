@@ -1,6 +1,7 @@
 "use client";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import React, { useState } from "react";
+import { useT } from "@/i18n/client";
 
 export interface SelecterPeriod {
   value: string | number;
@@ -21,6 +22,7 @@ function SelecterFilter({
   periodFromFather,
   styles,
 }: SelecterFilterProps): React.JSX.Element {
+  const t = useT();
   const periods: SelecterPeriod[] = periodOverride || [
     { value: 2, name: "Yesterday" },
     { value: 7, name: "Last week" },
@@ -51,7 +53,7 @@ function SelecterFilter({
         onChange={handleDurationChange}
       >
         {periods.length <= 0
-          ? "No periods to map..."
+          ? t("web.no.periods.to.show")
           : periods.map((period) => (
               <option
                 key={`${period.name}-${period.value}`}

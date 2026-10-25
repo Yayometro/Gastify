@@ -24,6 +24,7 @@ import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalContentTopMonthItem, { type ModalContentTopMonthItemItem } from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import type { PeriodComparisonState, TimePeriodOption } from "@/hooks/usePeriodComparison";
 import type { TabsTogglerComponentItem } from "../TabsComponents/TabsToggler";
+import { useT } from "@/i18n/client";
 
 export interface HistoricalComparativeCategoriesProps {
   periodState: PeriodComparisonState;
@@ -99,6 +100,7 @@ export interface ResponsiveBarsChartPropsPlus {
 
 
 function HistoricalComparativeCategories({ periodState }: HistoricalComparativeCategoriesProps): React.JSX.Element {
+  const t = useT();
   const [, setIsLoading] = useState<boolean>(false);
   const [totalAmount, setTotalAmount] = useState<number | number[]>(0);
   const [transactionCategories, setTransactionCategories] = useState<unknown[][]>([]);
@@ -225,8 +227,8 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
       props: {
         data: transactionCategories[0] || [],
         totalValue: (totalAmount as number[])[0] || 0,
-        legendBottom: "Months",
-        legendLeft: "Amount",
+        legendBottom: t("web.months"),
+        legendLeft: t("web.amount"),
         propsPlus: {
           onClick: (a: { data: ModalContentTopMonthItemItem; [key: string]: unknown }) => {
             renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />);
@@ -240,8 +242,8 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
       props: {
         data: transactionCategories[1] || [],
         totalValue: (totalAmount as number[])[1] || 0,
-        legendBottom: "Months",
-        legendLeft: "Amount",
+        legendBottom: t("web.months"),
+        legendLeft: t("web.amount"),
         propsPlus: {
           onClick: (a: { data: ModalContentTopMonthItemItem; [key: string]: unknown }) => {
             renderModal(<ModalContentTopMonthItem item={a.data} close={handleClose} />);
@@ -252,7 +254,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
     },
   ];
 
-  const tabs: string[] = ["Bills", "Incomes"];
+  const tabs: string[] = [t("web.bills"), t("web.incomes")];
   if (compareEnabled && compareCategoryData) {
     const onOpenItem = (item: ModalContentTopMonthItemItem) =>
       renderModal(<ModalContentTopMonthItem item={item} close={handleClose} />);
@@ -266,7 +268,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
           totalB: compareCategoryData.bills.totalB,
           labelA: compareCategoryData.labelA,
           labelB: compareCategoryData.labelB,
-          kindLabel: "Bills",
+          kindLabel: t("web.bills"),
           walletPrimaryCurrency,
           onOpenItem,
         },
@@ -281,14 +283,14 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
           totalB: compareCategoryData.incomes.totalB,
           labelA: compareCategoryData.labelA,
           labelB: compareCategoryData.labelB,
-          kindLabel: "Incomes",
+          kindLabel: t("web.incomes"),
           walletPrimaryCurrency,
           onOpenItem,
         },
         Component: TypedCategoriesCompareTable,
       }
     );
-    tabs.push("Compare bills", "Compare incomes");
+    tabs.push(t("web.compare.bills"), t("web.compare.incomes"));
   }
 
   // PROPS

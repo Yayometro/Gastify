@@ -80,7 +80,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
     slices: view.slices,
     total: view.total,
     level: view.level,
-    title: view.current?.name ?? (isSpending ? "Gastos" : "Ingresos"),
+    title: view.current?.name ?? (isSpending ? t("analyzer.bills") : t("analyzer.incomes")),
     currency: primary,
     onSelect: select,
     onBack: back,
@@ -145,7 +145,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
         <div className={`flex min-h-0 min-w-0 flex-col gap-2 ${PANEL_HEIGHT} lg:h-auto`}>
           {path.path.length > 0 && (
             <button type="button" onClick={back} className="mb-1 flex items-center gap-1 self-start text-base font-semibold text-purple-300 hover:text-white">
-              ‹ {view.level === 1 ? "Todas las categorías" : view.current?.name ?? "Volver"}
+              ‹ {view.level === 1 ? t("web.all.categories") : view.current?.name ?? t("common.back")}
             </button>
           )}
           {view.level === 1 && view.current && (
@@ -179,7 +179,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
                       <span className="text-base font-bold text-gf-text">{formatMoneyMajor(slice.value, primary, { showCode: false })}</span>
                       {view.level < 2 && (
                         <span className="text-xs text-gf-text-muted">
-                          {slice.count} {slice.count === 1 ? "transacción" : "transacciones"} · {percent}%
+                          {slice.count} {slice.count === 1 ? t("movements.word.transaction") : "transacciones"} · {percent}%
                         </span>
                       )}
                     </span>

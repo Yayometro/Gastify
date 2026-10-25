@@ -79,6 +79,12 @@ export const auth = betterAuth({
       email: "mail",
       name: "fullName",
     },
+    // The language chosen on the account (the profile). Read with the session, so the layouts know it without another query.
+    // `input: false`: clients change it only through the app's profile route, never through Better Auth.
+    additionalFields: {
+      language: { type: "string", required: false, input: false },
+      country: { type: "string", required: false, input: false },
+    },
   },
   // `stepUpVerifiedAt` is the app's own step-up-freshness marker (see
   // dashboard/layout.tsx and IdleStepUpGuard.tsx) - never written by Better

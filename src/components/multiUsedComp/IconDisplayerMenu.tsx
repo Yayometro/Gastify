@@ -68,7 +68,7 @@ function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React
         </div>
       ) : (
         <>
-          <p className="text-xs text-gf-text-muted">{found.length === 1 ? "1 ícono" : `${found.length} íconos`}</p>
+          <p className="text-xs text-gf-text-muted">{found.length === 1 ? t("web.1.icon") : `${found.length} íconos`}</p>
           {matches.length === 0 ? (
             <p className="text-sm text-gf-text-muted">{t("navbar.icons.none")}</p>
           ) : (

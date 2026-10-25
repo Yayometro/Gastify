@@ -67,7 +67,7 @@ function SpendingSummaryDetailModal({
         const actual = (budget._id ? actualByBudgetId?.[budget._id] : undefined) || 0;
         const goal = budget.goalAmount || 0;
         const ratio = goal > 0 ? actual / goal : 0;
-        return { id: budget._id, name: budget.name || "Unnamed budget", actual, goal, ratio };
+        return { id: budget._id, name: budget.name || t("web.unnamed.budget"), actual, goal, ratio };
       })
       .sort((a, b) => b.actual - a.actual);
   }, [spendingBudgets, actualByBudgetId]);

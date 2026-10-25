@@ -585,12 +585,12 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
               return (
                 <div
                   key={b.budgetId}
-                  onClick={() => setActiveInsight({ icon: b.status === "over" ? "⚠️" : "📊", tone: "info", title: `${b.category} — cumplimiento`, type: "budget", data: b })}
+                  onClick={() => setActiveInsight({ icon: b.status === "over" ? "⚠️" : "📊", tone: "info", title: tr("web.p1.compliance", { p1: b.category }), type: "budget", data: b })}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
-                      setActiveInsight({ icon: "📊", tone: "info", title: `${b.category} — cumplimiento`, type: "budget", data: b });
+                      setActiveInsight({ icon: "📊", tone: "info", title: tr("web.p1.compliance", { p1: b.category }), type: "budget", data: b });
                     }
                   }}
                   className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 cursor-pointer gf-hover-glass transition-colors"
@@ -607,7 +607,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
                       b.status === "over" ? "text-red-400 bg-red-500/15" : b.status === "warning" ? "text-amber-400 bg-amber-500/15" : "text-green-400 bg-green-500/15"
                     }`}
                   >
-                    {b.streakMonths >= 2 ? `${b.streakMonths} meses ✅` : `${Math.round(b.pct)}%`}
+                    {b.streakMonths >= 2 ? tr("web.p1.months", { p1: b.streakMonths }) : `${Math.round(b.pct)}%`}
                   </span>
                 </div>
               );
@@ -674,7 +674,7 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
           <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
             <div className="mb-1.5 flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.analysis")}</p><InfoTip info={APP_INFO.de_d_nde_sale_este_an_lisis} /></div>
             <ul className="space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
-              {buildSpendPatternAnalysis(biggestSpendPatterns).map((bullet, i) => (
+              {buildSpendPatternAnalysis(biggestSpendPatterns, tr).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
               ))}
             </ul>

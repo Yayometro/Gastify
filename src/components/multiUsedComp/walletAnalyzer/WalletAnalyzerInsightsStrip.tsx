@@ -1,4 +1,5 @@
 "use client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 import React, { useState } from "react";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getCategoryTransactions } from "@/helpers/transformers/walletAnalyzer";
@@ -113,14 +114,14 @@ export interface WalletAnalyzerInsightsStripProps {
 
 // Card one-liners are rendered here (not baked into the transformer)
 // because they need `currency` for proper $/comma formatting.
-export function renderInsightDetail(insight: WalletAnalyzerInsightItem, currency: string): string {
+export function renderInsightDetail(insight: WalletAnalyzerInsightItem, currency: string, t: TranslateFn): string {
   const { type, data } = insight;
   switch (type) {
     case "budget": {
       const d = data as BudgetInsightData;
       return d.status === "over"
         ? `${Math.round(d.pct)}% del límite — ${formatMoneyMajor(d.spent, currency)} de ${formatMoneyMajor(d.limit, currency)}`
-        : "Bajo presupuesto de forma consistente";
+        : t("web.consistently.under.budget");
     }
     case "category_anomaly": {
       const d = data as CategoryAnomalyInsightData;
@@ -165,11 +166,12 @@ function WalletAnalyzerInsightsStrip({
   walletPrimaryCurrency,
   transactions,
   currentRange,
-  title = "Lo más destacado del mes",
+  title: titleProp,
 }: WalletAnalyzerInsightsStripProps): React.JSX.Element {
   const text = useWalletText();
   const { APP_INFO } = useInfo();
   const t = useT();
+  const title = titleProp ?? t("web.highlights.of.the.month");
   const { close, handleClose, renderModal, modalContent } = useModal();
   const [activeInsight, setActiveInsight] = useState<WalletAnalyzerInsightItem | null>(null);
 
@@ -217,7 +219,7 @@ function WalletAnalyzerInsightsStrip({
                 {insight.icon}
               </span>
               <p className="text-xs font-bold text-gf-text leading-tight">{insight.title}</p>
-              <p className="text-[11px] text-gf-text-muted leading-snug">{renderInsightDetail(insight, walletPrimaryCurrency)}</p>
+              <p className="text-[11px] text-gf-text-muted leading-snug">{renderInsightDetail(insight, walletPrimaryCurrency, t)}</p>
             </div>
           ))}
         </div>

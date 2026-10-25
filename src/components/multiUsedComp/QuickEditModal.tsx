@@ -181,7 +181,7 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
         setIsLoading(false); // set before unmount to avoid setState-on-unmounted warning
         onClose();
       } else {
-        runNotify("error", response.message || "Something went wrong");
+        runNotify("error", response.message || t("web.something.went.wrong"));
         setIsLoading(false);
       }
     } catch (e) {
@@ -340,8 +340,8 @@ function QuickEditInner({ field, transIds, onClose }: QuickEditInnerProps): Reac
       onCancel={onClose}
       onOk={handleSubmit}
       confirmLoading={isLoading}
-      okText="Apply to all"
-      cancelText="Cancel"
+      okText={t("web.apply.to.all")}
+      cancelText={t("web.cancel")}
       okButtonProps={{
         className: isLoading
           ? "!bg-purple-300 !border-purple-300 !text-white/70 cursor-not-allowed"

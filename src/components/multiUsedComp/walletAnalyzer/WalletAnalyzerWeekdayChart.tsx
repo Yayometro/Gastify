@@ -23,6 +23,13 @@ const SHORT_LABELS: Record<string, string> = {
   Viernes: "Vie",
   Sábado: "Sáb",
   Domingo: "Dom",
+  Monday: "Mon",
+  Tuesday: "Tue",
+  Wednesday: "Wed",
+  Thursday: "Thu",
+  Friday: "Fri",
+  Saturday: "Sat",
+  Sunday: "Sun",
 };
 
 // Same hand-rolled div-bar + hover-tooltip technique as
@@ -56,7 +63,7 @@ function WalletAnalyzerWeekdayChart({ days, walletPrimaryCurrency }: WalletAnaly
               style={{ height: `${Math.max(2, (day.avgPerOccurrence / maxValue) * 108)}px` }}
             />
           </div>
-          <span className={`text-[11px] font-semibold ${hovered === i ? "text-gf-text-muted" : "text-gf-text-muted"}`}>{SHORT_LABELS[day.dayName]}</span>
+          <span className={`text-[11px] font-semibold ${hovered === i ? "text-gf-text-muted" : "text-gf-text-muted"}`}>{SHORT_LABELS[day.dayName] ?? day.dayName.slice(0, 3)}</span>
         </div>
       ))}
     </div>

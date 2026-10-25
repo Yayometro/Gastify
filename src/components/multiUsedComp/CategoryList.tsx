@@ -45,7 +45,7 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
         ) : (
           clCategories.map((category) => (
             <Tooltip
-              title={`${category?.name || "No name..."}`}
+              title={`${category?.name || t("web.no.name")}`}
               key={`cc-clist-key-cat-${category._id}`}
             >
               <div
@@ -82,7 +82,7 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
                 </div>
                 <div className="cc-list-content-category w-full flex items-center justify-center truncate">
                   <p className="w-full min-[400px]:text-lg min-[600px]:text-xl truncate px-2">
-                    {category?.name || "No name..."}
+                    {category?.name || t("web.no.name")}
                   </p>
                 </div>
               </div>

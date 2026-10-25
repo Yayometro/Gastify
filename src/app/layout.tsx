@@ -5,16 +5,19 @@ import ReduxProvider from "@/lib/ReduxProvider";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import ThemeProvider from "./ThemeProvider";
 import { I18nProvider } from "@/i18n/client";
-import { currentLocale, messagesFor } from "@/i18n/server";
+import { currentLocale, messagesFor, serverT } from "@/i18n/server";
 // import AllDataProvider from "@/components/Providers/AllDataProvider";
 import React from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Gastify 💸",
-  description: "Take control of your incomes and bills",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await serverT(["common"]);
+  return {
+    title: "Gastify 💸",
+    description: t("common.metaDescription"),
+  };
+}
 
 // Runs before React hydrates, so the light theme (when previously chosen)
 // paints on first frame instead of flashing dark-then-light. Dark needs no

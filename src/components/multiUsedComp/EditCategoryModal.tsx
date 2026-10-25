@@ -314,7 +314,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
       </div>
       {!isInline && (
         <h1 className="text-center font-thin py-[20px] text-2xl min-[400px]:text-3xl sm:text-[50px] text-white shrink-0">
-          {ecmMode === "edition" ? `Edit "${ecmCategory?.name || "Category"}"` : "Create New Category"} 🪄
+          {ecmMode === "edition" ? `${t("web.edit")} "${ecmCategory?.name || t("web.category")}"` : t("web.create.new.category")} 🪄
         </h1>
       )}
       <div
@@ -401,7 +401,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                         siz={30}
                       />
                       <span className="font-medium text-purple-300">
-                        {fatherCat?.name || "Click to select a father category"}
+                        {fatherCat?.name || t("web.click.to.select.a.parent.category")}
                       </span>
                     </div>
                     <DownOutlined className="text-purple-600" />
@@ -424,7 +424,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                   className="w-full p-2 text-center gf-glass-button-danger text-white rounded-full mt-3 cursor-pointer"
                   onClick={handleRemove}
                 >
-                  {t("categories.form.remove", { p1: formCategory?.fatherCategory ? "Subcategory" : "Category" })}
+                  {t("categories.form.remove", { p1: formCategory?.fatherCategory ? "Subcategory" : t("web.category") })}
                 </button>
               )}
             </div>
@@ -435,9 +435,9 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
               {isLoading ? (
                 <Spin />
               ) : ecmMode === "edition" ? (
-                "Edit"
+                t("web.edit")
               ) : (
-                "Create"
+                t("web.create")
               )}
             </button>
             {isInline && (

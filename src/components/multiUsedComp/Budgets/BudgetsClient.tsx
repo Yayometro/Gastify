@@ -1,4 +1,5 @@
 "use client";
+import { shortDate } from "@gastify/core/i18n/dates";
 
 import React, { useMemo, useState } from "react";
 import { Skeleton, Tooltip } from "antd";
@@ -55,7 +56,7 @@ import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { AppDispatch } from "@/lib/store";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT, useInfo } from "@/i18n/client";
+import { useLocale, useT, useInfo } from "@/i18n/client";
 
 export interface BudgetsClientProps {
   mcSession?: string | null;
@@ -69,6 +70,7 @@ const today = new Date();
 function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
+  const locale = useLocale();
   const { transacciones, budgets, categories, user, wallet, loading } = useGetDataFromProvider();
   const [startDate, setStartDate] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
   const [endDate, setEndDate] = useState<Date>(getLastDayOfMonth(today.getFullYear(), today.getMonth()));
@@ -164,19 +166,12 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
       start.getFullYear() === lastMonthDate.getFullYear() &&
       start.getMonth() === lastMonthDate.getMonth();
 
-    const startStr = start.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    const endStr = end.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    const startStr = shortDate(start, locale);
+    const endStr = shortDate(end, locale);
 
     let tag = "";
-    if (isThisMonth) tag = " (This Month)";
-    else if (isLastMonth) tag = " (Last Month)";
+    if (isThisMonth) tag = t("web.this.month");
+    else if (isLastMonth) tag = t("web.last.month");
 
     return `${startStr} - ${endStr}${tag}`;
   };
@@ -272,7 +267,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
         toFetch.post("general-data/transactions/link-budget", { transactionId: transaction._id as string, budgetId: project._id })
       ));
       const failed = results.find((result) => !result.ok);
-      if (failed) throw new Error(failed.message || "Could not link all movements");
+      if (failed) throw new Error(failed.message || t("web.could.not.link.all.movements"));
       results.forEach((result) => result.data && dispatch(updateTransaction(result.data)));
       const count = (group.movements || []).length;
       runNotify("ok", t("budgets.movementsAdded", { count, p1: count, p2: project.name }));

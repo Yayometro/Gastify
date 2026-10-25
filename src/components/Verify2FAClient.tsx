@@ -221,7 +221,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       router.push("/login?securityCheckFailed=1");
       return;
     }
-    runNotify("error", message || `Código incorrecto. Te quedan ${MAX_ATTEMPTS - next} intento(s).`);
+    runNotify("error", message || tr("auth.incorrect.code.you.have.p1.attempt.s.left", { p1: MAX_ATTEMPTS - next }));
   }
 
   // --- Onboarding: register a passkey right here ---
@@ -230,7 +230,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       setLoading(true);
       const { error } = await authClient.passkey.addPasskey({ name: "Passkey principal" });
       if (error) {
-        runNotify("error", error.message || "No se pudo registrar el passkey 🤕");
+        runNotify("error", error.message || tr("auth.we.couldn.t.register.the.passkey"));
         return;
       }
       runNotify("ok", tr("shared.passkey.registered"));
@@ -273,7 +273,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
           // only a real wrong-password retry gets a toast.
           if (currentPassword) runNotify("error", tr("shared.password.wrong"));
         } else {
-          runNotify("error", error.message || "No se pudo iniciar la configuración 🤕");
+          runNotify("error", error.message || tr("auth.we.couldn.t.start.the.setup"));
         }
         setPhase("onboard-totp-password");
         return;
@@ -303,7 +303,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       setLoading(true);
       const { error } = await authClient.twoFactor.verifyTotp({ code });
       if (error) {
-        runNotify("error", error.message || "Código incorrecto, intenta de nuevo 🤕");
+        runNotify("error", error.message || tr("auth.incorrect.code.try.again"));
         return;
       }
       setPhase("onboard-backup-reveal");
@@ -324,8 +324,8 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
         if ((error as { code?: string }).code === "AUTH_CANCELLED" || /cancel/i.test(error.message || "")) {
           setPasskeyNotice(
             hasTotp
-              ? "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo o usar un código de tu app autenticadora."
-              : "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo."
+              ? tr("auth.you.closed.the.passkey.prompt.you.can.try.again.or.use.a")
+              : tr("auth.you.closed.the.passkey.prompt.you.can.try.again")
           );
           return;
         }
@@ -401,7 +401,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       <div className={cardClasses}>
         <l-quantum size="120" speed="3.1" color="purple"></l-quantum>
         <p className="text-lg text-purple-200 text-center">
-          {redirecting ? "¡Listo! Llevándote a tu Wallet…" : "Verificando tu identidad…"}
+          {redirecting ? tr("auth.done.taking.you.to.your.wallet") : tr("auth.verifying.your.identity")}
         </p>
       </div>
     );

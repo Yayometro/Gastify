@@ -245,11 +245,11 @@ function TabsTogglerMontlyController({
       // around - falls back to B's (or a plain "Month N") only when A has
       // no data at all for this index.
       const monthName =
-        (iA || bA || iB || bB)?.monthLabel?.split(" ")[0] || `Month ${idx + 1}`;
-      if (iA) chartData.push(tagOne(iA, monthName, "Income", labelA, "#88FFE3", false));
-      if (iB) chartData.push(tagOne(iB, monthName, "Income", labelB, "#4fd1b5", true));
-      if (bA) chartData.push(tagOne(bA, monthName, "Bill", labelA, "#ff8c8c", false));
-      if (bB) chartData.push(tagOne(bB, monthName, "Bill", labelB, "#ff5252", true));
+        (iA || bA || iB || bB)?.monthLabel?.split(" ")[0] || t("web.month.p1", { p1: idx + 1 });
+      if (iA) chartData.push(tagOne(iA, monthName, t("web.income"), labelA, "#88FFE3", false));
+      if (iB) chartData.push(tagOne(iB, monthName, t("web.income"), labelB, "#4fd1b5", true));
+      if (bA) chartData.push(tagOne(bA, monthName, t("web.bill"), labelA, "#ff8c8c", false));
+      if (bB) chartData.push(tagOne(bB, monthName, t("web.bill"), labelB, "#ff5252", true));
     });
 
     setCompareChartData({
@@ -274,7 +274,7 @@ function TabsTogglerMontlyController({
         data: data[0] || [],
         totalValue: totalAmount[0] || 0,
         legendBottom: "months",
-        legendLeft: "Amount",
+        legendLeft: t("web.amount"),
       },
       Component: ResponsiveBarsChartComponent,
     },
@@ -283,8 +283,8 @@ function TabsTogglerMontlyController({
       props: {
         data: data[1] || [],
         totalValue: totalAmount[1] || 0,
-        legendBottom: "Months",
-        legendLeft: "Amount",
+        legendBottom: t("web.months"),
+        legendLeft: t("web.amount"),
       },
       Component: ResponsiveBarsChartComponent,
     },
@@ -302,7 +302,7 @@ function TabsTogglerMontlyController({
     },
   ];
 
-  const tabs = ["Comparative", "Bills", "Incomes"];
+  const tabs = [t("web.comparative"), t("web.bills"), t("web.incomes")];
   if (compareEnabled && compareChartData) {
     components.push({
       tab: "compare periods",
@@ -316,7 +316,7 @@ function TabsTogglerMontlyController({
       }),
       Component: ComparativeColumnChart,
     });
-    tabs.push("Compare periods");
+    tabs.push(t("web.compare.periods"));
   }
 
   return (

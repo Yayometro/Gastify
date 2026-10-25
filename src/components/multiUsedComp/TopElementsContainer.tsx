@@ -186,7 +186,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       tab: "bills",
       props: {
         items: transactionsLocal[1],
-        title: topRankTitle("Transactions", totalTransactionsLocal.bills),
+        title: topRankTitle(t("web.transactions"), totalTransactionsLocal.bills),
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
@@ -194,7 +194,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       tab: "incomes",
       props: {
         items: transactionsLocal[0],
-        title: topRankTitle("Transactions", totalTransactionsLocal.income),
+        title: topRankTitle(t("web.transactions"), totalTransactionsLocal.income),
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
@@ -202,7 +202,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       tab: "bills",
       props: {
         items: transactionCategories.bills.children,
-        title: topRankTitle("Categories", transactionCategories.bills.total),
+        title: topRankTitle(t("web.categories"), transactionCategories.bills.total),
         // Each category row says how many transactions it holds.
         showCount: true,
       },
@@ -212,7 +212,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       tab: "incomes",
       props: {
         items: transactionCategories.incomes.children,
-        title: topRankTitle("Categories", transactionCategories.incomes.total),
+        title: topRankTitle(t("web.categories"), transactionCategories.incomes.total),
         showCount: true,
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,

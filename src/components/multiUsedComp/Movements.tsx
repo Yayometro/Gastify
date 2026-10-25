@@ -1,4 +1,5 @@
 "use client";
+import { shortDate } from "@gastify/core/i18n/dates";
 
 import React, { useEffect, useRef, useState, useContext, useMemo } from "react";
 import "@/components/styles/animations.css";
@@ -60,7 +61,7 @@ import DuplicateComparisonTable from "./DuplicateComparisonTable";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import MovementsGuideModal from "./MovementsGuideModal";
-import { useT, useInfo } from "@/i18n/client";
+import { useLocale, useT, useInfo } from "@/i18n/client";
 
 const TypedEditMultipleTransModal = EditMultipleTransModal as React.ComponentType<{
   hidden?: React.ReactNode[];
@@ -187,6 +188,7 @@ const today = new Date();
 
 function MovementsContent({ timePeriodFromFather, mail, embedded = false }: MovementsProps): React.JSX.Element {
   const t = useT();
+  const locale = useLocale();
   const { APP_INFO } = useInfo();
   const tr = useT();
   const defaultPeriod: [Date, Date] | (Date | string | number)[] = timePeriodFromFather || [
@@ -268,7 +270,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   const selectedCategoryObj = categoryFilter ? allCategories.find((c) => String(c._id) === String(categoryFilter)) : null;
   const selectedSubCategoryObj = subCategoryFilter ? allSubCategories.find((s) => String(s._id) === String(subCategoryFilter)) : null;
 
-  const displayCatName = itemSelected?.name || selectedSubCategoryObj?.name || selectedCategoryObj?.name || "Category";
+  const displayCatName = itemSelected?.name || selectedSubCategoryObj?.name || selectedCategoryObj?.name || t("web.category");
   const displayCatIcon = itemSelected?.icon || selectedSubCategoryObj?.icon || selectedCategoryObj?.icon || "md/MdOutlineCategory";
   const displayFatherName = (itemSelected as (CategoryItem & { fatherCategory?: { name?: string } }))?.fatherCategory?.name || (selectedSubCategoryObj ? allCategories.find((c) => String(c._id) === String(selectedSubCategoryObj.fatherCategory))?.name : null);
 
@@ -421,24 +423,24 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   function buildFilterSummary(): string[] {
     const parts: string[] = [];
     const [start, end] = timePeriod;
-    parts.push(`Period: ${getDateInYearMonthDay(start)} → ${getDateInYearMonthDay(end)}`);
-    if (trastType !== "all") parts.push(`Type: ${trastType === "incomes" ? "Incomes only" : "Bills only"}`);
-    if (readable !== "all") parts.push(`Readable: ${readable === "true" ? "Readable only" : "Not readable"}`);
-    if (searchQuery.trim()) parts.push(`Search: "${searchQuery.trim()}"`);
+    parts.push(t("web.period.p1.p2", { p1: getDateInYearMonthDay(start), p2: getDateInYearMonthDay(end) }));
+    if (trastType !== "all") parts.push(`${t("web.type")}: ${trastType === "incomes" ? t("web.incomes.only") : t("web.bills.only")}`);
+    if (readable !== "all") parts.push(`${t("web.readable")}: ${readable === "true" ? t("web.readable.only") : t("web.not.readable")}`);
+    if (searchQuery.trim()) parts.push(t("web.search.p1", { p1: searchQuery.trim() }));
     if (exactAmountFilter !== "") {
       const filterCurrency = exactAmountMode === "native" ? exactAmountCurrency : (wallet?.primaryCurrency || "MXN");
       const modeLabel = exactAmountMode === "native" ? "native" : "primary";
-      parts.push(`Amount: ${formatMoneyMinor(majorToMinor(Number(exactAmountFilter), filterCurrency), filterCurrency)} (${modeLabel})`);
+      parts.push(t("web.amount.p1.p2", { p1: formatMoneyMinor(majorToMinor(Number(exactAmountFilter), filterCurrency), filterCurrency), p2: modeLabel }));
     }
     if (categoryFilter) {
       const cat = allCategories.find((c) => String(c._id) === categoryFilter);
-      parts.push(`Category: ${cat?.name || categoryFilter}`);
+      parts.push(t("web.category.p1", { p1: cat?.name || categoryFilter }));
     }
     if (subCategoryFilter) {
       const subCat = allSubCategories.find((c) => String(c._id) === subCategoryFilter);
-      parts.push(`SubCategory: ${subCat?.name || subCategoryFilter}`);
+      parts.push(t("web.subcategory.p1", { p1: subCat?.name || subCategoryFilter }));
     }
-    if (dupMode) parts.push(`Mode: Duplicate finder (${dupCount} found)`);
+    if (dupMode) parts.push(t("web.mode.duplicate.finder.p1.found", { p1: dupCount }));
     return parts;
   }
 
@@ -472,7 +474,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         );
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));
-          throw new Error(err.message || "Export failed");
+          throw new Error(err.message || t("web.export.failed"));
         }
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
@@ -489,7 +491,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
       setExportOpen(false);
     } catch (e: unknown) {
       const err = e as { message?: string };
-      runNotify("error", err?.message || "Export failed, please try again 🤕");
+      runNotify("error", err?.message || t("web.export.failed.please.try.again"));
     } finally {
       setExportLoading(false);
     }
@@ -517,7 +519,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
       if (res.ok) {
         runNotify("ok", String(res.message));
       } else {
-        runNotify("error", res.message || "Something went wrong removing this transfer, please try again 🤕");
+        runNotify("error", res.message || t("web.something.went.wrong.removing.this.transfer.please.try.a"));
       }
     } catch (e: unknown) {
       runNotify("error", String(e));
@@ -716,8 +718,8 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         onOk={handleExportConfirm}
         onCancel={() => { setExportModalOpen(false); }}
         confirmLoading={exportLoading}
-        okText={exportLoading ? "Exporting…" : `Export as ${exportFormat === "excel" ? "Excel" : "JSON"}`}
-        cancelText="Cancel"
+        okText={exportLoading ? "Exporting…" : `${t("web.export.as")} ${exportFormat === "excel" ? t("web.excel") : "JSON"}`}
+        cancelText={t("web.cancel")}
         okButtonProps={{
           className: "!bg-purple-600 !border-purple-600 !text-white hover:!bg-purple-500 hover:!border-purple-500 transition-colors",
         }}
@@ -740,8 +742,8 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
           </div>
           <p className="text-xs text-gf-text-muted">
             {exportFormat === "excel"
-              ? "The file will match the Gastify import template and can be re-uploaded to any Gastify account."
-              : "The JSON file includes all fields: category, subcategory, account, tags, amounts and dates."}
+              ? t("web.the.file.will.match.the.gastify.import.template.and.can")
+              : t("web.the.json.file.includes.all.fields.category.subcategory.a")}
           </p>
         </div>
       </Modal>
@@ -761,8 +763,8 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
           onOk={() => handleOkRemove()}
           onCancel={() => handleCancel()}
           confirmLoading={confirmLoading}
-          okText="Confirm delete"
-          cancelText="Cancel"
+          okText={t("web.confirm.delete")}
+          cancelText={t("web.cancel")}
           okButtonProps={{
             className: confirmLoading
               ? "!bg-red-300 !border-red-300 !text-white cursor-not-allowed"
@@ -773,8 +775,8 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         >
           <p className="text-gf-text-muted text-sm mb-2">
             {getTransById(transRemovableId)?.transferGroupId
-              ? "This is one leg of a transfer/exchange - both linked transactions will be deleted together. This action cannot be undone."
-              : "Are you sure you want to permanently delete this transaction? This action cannot be undone."}
+              ? t("web.this.is.one.leg.of.a.transfer.exchange.both.linked.trans")
+              : t("web.are.you.sure.you.want.to.permanently.delete.this.transac")}
           </p>
           <DeletePreviewRow transaction={getTransById(transRemovableId)} />
         </Modal>
@@ -786,8 +788,8 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
           onOk={() => handleOkRemove("many")}
           onCancel={() => handleCancel("many")}
           confirmLoading={confirmLoading}
-          okText="Confirm delete"
-          cancelText="Cancel"
+          okText={t("web.confirm.delete")}
+          cancelText={t("web.cancel")}
           width={dupMode ? 750 : 520}
           okButtonProps={{
             className: confirmLoading
@@ -799,7 +801,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
         >
           <p className="text-gf-text-muted text-sm mb-2">
             {tr("movements.delete.sure")}{" "}
-            <b>{selectedTrans.length > 0 ? `${selectedTrans.length} transactions` : "these items"}</b>?{" "}
+            <b>{selectedTrans.length > 0 ? `${selectedTrans.length} transactions` : t("web.these.items")}</b>?{" "}
             {tr("movements.delete.irreversible")}
           </p>
           {dupMode ? (
@@ -848,7 +850,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
           ]}
         >
           <p className="text-xs text-gf-text-muted mb-3">
-            {tr("movements.dup.mode")} <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>{tr("movements.dup.reviewNote")}
+            {tr("movements.dup.mode")} <b>{dupDeleteAll ? t("web.delete.all.matches") : t("web.delete.only.duplicates.keep.1.original")}</b>{tr("movements.dup.reviewNote")}
           </p>
           <TypedDuplicateComparisonTable
             pairs={getDuplicatePairs(allMovements, selectedTrans, dupCriteria, dupDateTolerance, dupAmountTolerance)}
@@ -1212,8 +1214,8 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                           <Tooltip
                             title={
                               dupDeleteAll
-                                ? "All matching items will be selected (nothing is kept)"
-                                : "One original per group is kept — only extras are selected"
+                                ? t("web.all.matching.items.will.be.selected.nothing.is.kept")
+                                : t("web.one.original.per.group.is.kept.only.extras.are.selected")
                             }
                           >
                             <button
@@ -1225,7 +1227,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                               }`}
                             >
                               <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={12} />
-                              {dupDeleteAll ? "Delete all matches" : "Delete only duplicates"}
+                              {dupDeleteAll ? t("web.delete.all.matches") : t("web.delete.only.duplicates")}
                             </button>
                           </Tooltip>
                         </div>
@@ -1263,7 +1265,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                 {/* Results summary */}
                 {dupMode && (
                   <p className={`text-[11px] font-medium ${dupCount > 0 ? "text-orange-500" : "text-green-400"}`}>
-                    {dupCount > 0 ? `${dupCount} possible duplicate transaction(s) found` : "No duplicates found with current criteria 🎉"}
+                    {dupCount > 0 ? `${dupCount} possible duplicate transaction(s) found` : t("web.no.duplicates.found.with.the.current.criteria")}
                   </p>
                 )}
               </div>
@@ -1449,7 +1451,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
               <div className="w-full flex flex-col items-center justify-center py-10 text-gf-text-muted gap-2">
                 {dupMode ? <MdOutlineFindInPage size={32} /> : <IoSearchOutline size={32} />}
                 <p className="text-sm">
-                  {dupMode ? "No duplicates found with the selected criteria 🎉" : "No transactions match your filters"}
+                  {dupMode ? t("web.no.duplicates.found.with.the.selected.criteria") : t("web.no.transactions.match.your.filters")}
                 </p>
                 {dupMode && (
                   <button onClick={() => { setDupMode(false); setDupFinderOpen(false); }} className="text-xs text-orange-500 hover:underline">
@@ -1481,7 +1483,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     <>
                       <div>{tr("movements.row.reported", { p1: primary.currency, p2: formatMoneyMinor(primary.amountMinor, primary.currency) })}</div>
                       <div>{tr("movements.row.rate", { p1: primary.rate, p2: primary.source })}</div>
-                      <div>{new Date(primary.effectiveDate).toLocaleDateString()} — {primary.estimated ? "estimated" : "exact"}{primary.stale ? ", stale" : ""}</div>
+                      <div>{shortDate(new Date(primary.effectiveDate), locale)} — {primary.estimated ? t("web.estimated") : t("web.exact")}{primary.stale ? t("web.stale") : ""}</div>
                     </>
                   ) : (
                     <div>{tr("movements.row.rateUnavailable")}</div>
@@ -1549,7 +1551,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                   <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end">
                       <div className="flex flex-col items-end">
                         <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-500" : movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
-                          <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? "Currency exchange" : "Transfer"} — not counted as income or spending` : ""}>
+                          <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? t("web.currency.exchange") : t("web.transfer")} — ${t("web.not.counted.as.income.or.spending")}` : ""}>
                             <span className="flex items-center">
                               <CategoIcon type={isTransferLeg ? "MdSwapHoriz" : movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
                             </span>

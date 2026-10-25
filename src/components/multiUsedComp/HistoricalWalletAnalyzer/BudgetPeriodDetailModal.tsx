@@ -48,7 +48,7 @@ function PeriodTable({ label, periodData, walletPrimaryCurrency }: PeriodTablePr
               <td className="text-right py-2">{formatMoneyMajor(m.actual, walletPrimaryCurrency)}</td>
               <td className="text-right py-2">{formatMoneyMajor(m.goal, walletPrimaryCurrency)}</td>
               <td className={`text-right py-2 font-medium ${m.met ? "text-green-400" : "text-red-400"}`}>
-                {m.met ? "Cumplido" : "Excedido"}
+                {m.met ? t("web.met") : t("web.over")}
               </td>
             </tr>
           ))}

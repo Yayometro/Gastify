@@ -46,7 +46,8 @@ async function DashboardLayout({
   }
 
   // The language of the wallet and its texts: the screens below read them with useT() and useInfo().
-  const locale = await currentLocale();
+  // The account's language (saved in the profile) wins over the device's choice and the country.
+  const locale = await currentLocale(sesion.user.language, sesion.user.country);
   const messages = await messagesFor(locale, WALLET_NAMESPACES);
 
   return (

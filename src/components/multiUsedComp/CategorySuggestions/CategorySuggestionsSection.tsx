@@ -11,8 +11,7 @@ import { useT } from "@/i18n/client";
 // transactions have a suggested category, and opens the Tools window on that tool. "card" is the whole section (wide
 // screens, next to the transactions); "button" is a pill for narrow screens.
 
-const TOOLTIP_TEXT =
-  "Scans your uncategorized transactions and suggests a category based on your saved rules (merchant name, amount). Nothing changes until you review and apply.";
+const TOOLTIP_TEXT = "web.scans.your.uncategorized.transactions.and.suggests.a.cat";
 
 interface SuggestApiResponse {
   ok?: boolean;
@@ -51,7 +50,7 @@ function CategorySuggestionsSection({ mail, variant = "card" }: CategorySuggesti
   if (variant === "button") {
     return (
       <>
-        <Tooltip title={TOOLTIP_TEXT}>
+        <Tooltip title={t(TOOLTIP_TEXT)}>
           <button
             type="button"
             onClick={() => setShowModal(true)}
@@ -72,7 +71,7 @@ function CategorySuggestionsSection({ mail, variant = "card" }: CategorySuggesti
     <div className="gf-glass-card py-6 my-2 px-[30px] rounded-[60px] w-full h-full max-w-[900px] flex flex-col items-center justify-center gap-2">
       <div className="flex items-center gap-1">
         <h1 className="text-xl font-light">{t("movements.categorizer.title")}</h1>
-        <Tooltip title={TOOLTIP_TEXT}>
+        <Tooltip title={t(TOOLTIP_TEXT)}>
           <div className="text-purple-400 cursor-help">
             <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={14} />
           </div>

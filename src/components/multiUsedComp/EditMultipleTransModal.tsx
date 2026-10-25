@@ -206,7 +206,7 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
         handleClean();
         onClose();
       } else {
-        runNotify("error", response.message || "Something went wrong");
+        runNotify("error", response.message || tr("web.something.went.wrong"));
       }
     } catch (err) {
       runNotify("error", String(err));
@@ -347,7 +347,7 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
             className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
-            {isLoading ? <Spin /> : "Save changes"}
+            {isLoading ? <Spin /> : tr("web.save.changes")}
           </button>
         </form>
 

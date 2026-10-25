@@ -56,7 +56,7 @@ export default function RegisterComp(): React.JSX.Element {
   }, []);
 
   const passString: string =
-    'The password must have at least one special character "!@#$%^&*(),.?":{}|<>".';
+    t("auth.the.password.must.have.at.least.one.special.character");
   const regexCapital: RegExp = /[A-Z]/;
   const regexSpecial: RegExp = /[!@#$%^&*(),.?":_{}|<>]/;
 
@@ -97,7 +97,7 @@ export default function RegisterComp(): React.JSX.Element {
       setLoading(true);
       // Send data to backend using fetcher(formData)
       if (formData.termnsYes === false) {
-        window.alert("Accept the terms and conditions");
+        window.alert(t("auth.accept.the.terms.and.conditions"));
         setLoading(false);
       }
       //password validation:
@@ -107,7 +107,7 @@ export default function RegisterComp(): React.JSX.Element {
         !regexSpecial.test(formData.password)
       ) {
         window.alert(
-          "Verify that password length is higher than 8, that also includes min one capital letter and has at least one special character"
+          t("auth.verify.that.the.password.is.longer.than.8.characters.inc")
         );
         setFormData({ ...formData, password: "" });
         setLoading(false);
@@ -119,7 +119,7 @@ export default function RegisterComp(): React.JSX.Element {
       //
       if (response.error) {
         if (response.errorUser) {
-          setFormData({ ...formData, formError: "Email already exist" });
+          setFormData({ ...formData, formError: t("auth.email.already.exists") });
           setLoading(false);
           return;
         }

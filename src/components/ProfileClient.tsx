@@ -1,40 +1,31 @@
 "use client";
 
-import LanguageSwitch from "@/i18n/LanguageSwitch";
-
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
-
-import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
-import EmptyModule from "./multiUsedComp/EmptyModule";
-import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
-import SignOutPanel from "./multiUsedComp/SignOutPanel";
-import "@/components/styles/animations.css";
-import { Switch, Spin, ConfigProvider, Space, Input } from "antd";
-import runNotify from "@/helpers/gastifyNotifier";
-import fetcher from "@/helpers/fetcher";
-import { PhoneInput } from "react-international-phone";
-import "react-international-phone/style.css";
-import { fetchUser, updateUser, type UserData } from "@/lib/features/userSlice";
 import { CldUploadWidget, type CloudinaryUploadWidgetResults } from "next-cloudinary";
-import ApiTokensPanel from "./multiUsedComp/ApiTokensPanel";
+import AccountLanguage, { type AccountLanguageChoice } from "@/i18n/AccountLanguage";
+import { isLocale } from "@gastify/core/i18n/locales";
+import { longDate } from "@gastify/core/i18n/dates";
+import { initialsOf } from "@gastify/core/profile/profileForm";
+import runNotify from "@/helpers/gastifyNotifier";
+import { fetchUser, updateUser, type UserData } from "@/lib/features/userSlice";
+import type { RootState, AppDispatch } from "@/lib/store";
+import { useLocale, useT } from "@/i18n/client";
+import EmptyModule from "./multiUsedComp/EmptyModule";
 import PasskeysPanel from "./multiUsedComp/PasskeysPanel";
 import TwoFactorPanel from "./multiUsedComp/TwoFactorPanel";
+import ApiTokensPanel from "./multiUsedComp/ApiTokensPanel";
 import DeleteAccountPanel from "./multiUsedComp/DeleteAccountPanel";
-import type { RootState, AppDispatch } from "@/lib/store";
-import { useT, useInfo } from "@/i18n/client";
+import ProfileDataCard from "./profile/ProfileDataCard";
+import ProfileAccessCard from "./profile/ProfileAccessCard";
+import ProfileSignOut from "./profile/ProfileSignOut";
+import ProfileCountryCard from "./profile/ProfileCountryCard";
+import { ProfileCard, errorMessage, saveAccount } from "./profile/ProfileParts";
 
 // Typed bridge components for unmigrated JS components
 const TypedEmptyModule = EmptyModule as React.ComponentType<{
   emMessage?: string;
-}>;
-
-const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
-  type: string;
-  siz?: number;
-  colore?: string;
-  className?: string;
 }>;
 
 const TypedApiTokensPanel = ApiTokensPanel as React.ComponentType<{
@@ -45,447 +36,170 @@ interface ProfileClientProps {
   pcSession?: string;
 }
 
-interface ProfileUserInfo {
-  fullName?: string | null;
-  mail?: string | null;
-  password?: string | null;
-  passwordConfirm?: string | null;
-  image?: string | null;
-  phone?: string | number | null;
-  [key: string]: unknown;
-}
+type Section = "profile" | "privacy";
 
-interface UpdateUserApiResponse {
-  ok?: boolean;
-  message?: string;
-  data?: UserData;
-  [key: string]: unknown;
-}
-
+// The profile, the way the phone's settings are: a list of sections on the left (on a phone, a row of tabs on top) and the chosen
+// section on the right. "Perfil" is the account; "Privacidad" is reserved for the privacy options.
 function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
-  const { APP_INFO } = useInfo();
   const t = useT();
-  const [onEdition, setOnEdition] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [onEditPasswordState, setOnEditPasswordState] = useState<boolean>(false);
-  const [userInfo, setUserInfo] = useState<ProfileUserInfo>({
-    fullName: "",
-    mail: "",
-    password: "",
-    passwordConfirm: null,
-    image: "",
-    phone: "",
-  });
-  const [, setImageUrl] = useState<string | undefined>();
-  // Redux
   const dispatch = useDispatch<AppDispatch>();
   const ccUser = useSelector((state: RootState) => state.userReducer);
   const userData = ccUser.data as UserData;
-  //FETCHER
-  const toFetch = fetcher();
-  //USE EFFECTS
+  const [section, setSection] = useState<Section>("profile");
+
   useEffect(() => {
-    // User
     if (ccUser.status == "idle") {
       dispatch(fetchUser(pcSession));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => {
-    if (ccUser.status == "loading") {
-      setIsLoading(true);
-    }
-    if (ccUser.status == "succeeded") {
-      setIsLoading(false);
-    }
-    if (userData) {
-      setUserInfo({
-        ...userInfo,
-        fullName: userData.fullName || null,
-        mail: userData.mail || null,
-        password: null,
-        passwordConfirm: null,
-        image: userData.image || null,
-        phone: userData.phone || null,
-      });
-      setImageUrl(userData.image);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData]);
 
-  const onEditPassword = (val: boolean) => {
-    setOnEditPasswordState(val);
-  };
+  const sections: { id: Section; label: string }[] = [
+    { id: "profile", label: t("profile.section.profile") },
+    { id: "privacy", label: t("profile.section.privacy") },
+  ];
 
-  // TwoFactorPanel's "¿No conoces tu contraseña?" link (shown when 2FA
-  // needs a password confirmation this account doesn't actually know)
-  // points here. TwoFactorPanel only ever renders in the READ-ONLY profile
-  // view (!onEdition) - the "Change password?" toggle only exists in the
-  // EDIT view further down this same file - so reaching it needs BOTH
-  // switching views (setOnEdition) AND opening the toggle within that view
-  // (setOnEditPasswordState), not just the toggle alone.
-  useEffect(() => {
-    const openChangePassword = () => {
-      setOnEdition(true);
-      setOnEditPasswordState(true);
-      setTimeout(() => {
-        document.getElementById("gf-change-password-toggle")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 50);
-    };
-    window.addEventListener("gf:open-change-password", openChangePassword);
-    return () => window.removeEventListener("gf:open-change-password", openChangePassword);
-  }, []);
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement> | string,
-    tp?: string
-  ) => {
-    if (tp === "phone") {
-      setUserInfo({ ...userInfo, phone: e as string });
-    } else {
-      const { name, value } = (e as React.ChangeEvent<HTMLInputElement>).target;
-      setUserInfo({ ...userInfo, [name]: value });
-    }
-  };
+  if (!userData) {
+    return (
+      <div className="flex justify-center items-center content-wallet-glass rounded-2xl h-screen">
+        <TypedEmptyModule emMessage={t("profile.noUserData")} />
+      </div>
+    );
+  }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    try {
-      e.preventDefault();
-      setIsLoading(true);
-      //   verify double password
-      if (onEditPasswordState) {
-        const regexCapital = /[A-Z]/;
-        const regexSpecial = /[!@#$%^&*(),.?":_{}|<>]/;
-        if (userInfo.password !== userInfo.passwordConfirm) {
-          runNotify(
-            "error",
-            t("profile.pwdMismatch")
-          );
-          setUserInfo({ ...userInfo, password: null, passwordConfirm: null });
-          setIsLoading(false);
-        }
-        if (
-          userInfo.password.length < 8 &&
-          userInfo.passwordConfirm.length < 8
-        ) {
-          runNotify(
-            "error",
-            t("profile.pwdMin8")
-          );
-          setUserInfo({ ...userInfo, password: null, passwordConfirm: null });
-          setIsLoading(false);
-        }
-        if (
-          !regexCapital.test(userInfo.password) &&
-          !regexCapital.test(userInfo.passwordConfirm)
-        ) {
-          runNotify(
-            "error",
-            t("profile.pwdUpper")
-          );
-          setUserInfo({ ...userInfo, password: null, passwordConfirm: null });
-          setIsLoading(false);
-        }
-        if (
-          !regexSpecial.test(userInfo.password) &&
-          !regexSpecial.test(userInfo.passwordConfirm)
-        ) {
-          runNotify(
-            "error",
-            t("profile.pwdSpecial")
-          );
-          setUserInfo({ ...userInfo, password: null, passwordConfirm: null });
-          setIsLoading(false);
-        }
-      }
-      const res = (await toFetch.post("general-data/user/update-user", userInfo)) as UpdateUserApiResponse;
-      if (res.ok) {
-        runNotify("ok", `${res.message}`);
-        //UPDATE REDUX FRONT END
-        dispatch(updateUser(res.data));
-        setIsLoading(false);
-      }
-    } catch (e) {
-      runNotify("error", String(e));
-      setIsLoading(false);
-    }
-  };
-  //IMAGE PROCESSING
-  const onImgHandling = (res: CloudinaryUploadWidgetResults) => {
-    if (typeof res.info === "object" && res.info && "secure_url" in res.info && res.info.secure_url) {
-      setUserInfo({ ...userInfo, image: res.info.secure_url });
-      runNotify(
-        "ok",
-        t("profile.avatar.saved")
-      );
-    }
-  };
-  //
   return (
-    <div className="profile-component-container w-full h-full sm:pr-2">
-      {!userData ? (
-        <div className="flex justify-center items-center content-wallet-glass rounded-2xl h-screen">
-          <TypedEmptyModule
-            emMessage={t("profile.noUserData")}
+    <div className="flex w-full flex-col gap-6 p-4 md:flex-row md:items-start md:p-8">
+      <nav aria-label={t("profile.section.profile")} className="flex shrink-0 gap-2 overflow-x-auto md:sticky md:top-6 md:w-56 md:flex-col">
+        {sections.map((item) => {
+          const active = item.id === section;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              aria-current={active ? "page" : undefined}
+              onClick={() => setSection(item.id)}
+              className={`rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all ${active ? "gf-glass-button text-white" : "gf-glass-card text-gf-text-muted hover:text-gf-text"}`}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* The chosen section sits in the middle of the room that is left next to the menu, as the settings of the big social networks do. */}
+      <div className="flex min-w-0 flex-1 justify-center">
+        <main className="flex w-full max-w-3xl flex-col gap-4">
+          {section === "profile" ? <ProfilePanel user={userData} pcSession={pcSession} /> : <PrivacyPanel />}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// The account: the photo and the name on top, then the cards in the phone's order, then the security panels as they are.
+function ProfilePanel({ user, pcSession }: { user: UserData; pcSession?: string }): React.JSX.Element {
+  const t = useT();
+  const locale = useLocale();
+  const dispatch = useDispatch<AppDispatch>();
+  const created = user.createdAt ? new Date(user.createdAt) : null;
+
+  // The photo is saved as soon as the upload finishes (the phone shows it the same way on its next load).
+  const savePhoto = async (url: string) => {
+    try {
+      const updated = await saveAccount({ image: url });
+      if (updated) dispatch(updateUser(updated));
+      runNotify("ok", t("profile.data.saved"));
+    } catch (error) {
+      runNotify("error", errorMessage(error));
+    }
+  };
+
+  const onPhotoUploaded = (result: CloudinaryUploadWidgetResults) => {
+    if (typeof result.info === "object" && result.info && "secure_url" in result.info && result.info.secure_url) {
+      void savePhoto(result.info.secure_url);
+    }
+  };
+
+  const saveLanguage = async (choice: AccountLanguageChoice) => {
+    try {
+      const updated = await saveAccount({ language: choice });
+      if (updated) dispatch(updateUser(updated));
+    } catch (error) {
+      runNotify("error", errorMessage(error));
+      throw error;
+    }
+  };
+
+  return (
+    <>
+      <header className="flex flex-col items-center gap-3 py-2">
+        {user.image ? (
+          <Image
+            className="rounded-full border border-gf-border object-cover shadow-md"
+            src={user.image}
+            alt={t("navbar.profileAlt", { p1: user.fullName })}
+            width={96}
+            height={96}
           />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-purple-700 text-3xl font-bold text-white shadow-md">
+            {initialsOf(user.fullName)}
+          </div>
+        )}
+        <div className="flex flex-col items-center text-center">
+          <p className="text-xl font-bold text-gf-text">{user.fullName || "—"}</p>
+          <p className="text-sm text-gf-text-muted">{user.mail}</p>
         </div>
-      ) : (
-        <div className="w-full h-full relative">
-          <div className="mb-3 flex justify-center">
-            <LanguageSwitch />
+        <CldUploadWidget uploadPreset="Gastify_Cloudinary_Preset" onSuccess={(success) => onPhotoUploaded(success)}>
+          {({ open }) => (
+            <button type="button" onClick={() => open()} className="rounded-full gf-glass-inset px-4 py-2 text-sm font-semibold text-gf-text">
+              {t("profile.photo.change")}
+            </button>
+          )}
+        </CldUploadWidget>
+      </header>
+
+      <ProfileDataCard user={user} />
+      <ProfileAccessCard email={user.mail ?? ""} />
+
+      <ProfileCard title={t("profile.language.title")}>
+        <AccountLanguage current={isLocale(user.language) ? user.language : null} onSave={saveLanguage} />
+      </ProfileCard>
+
+      <ProfileCountryCard />
+
+      <ProfileCard title={t("profile.account.title")}>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm text-gf-text-muted">{t("profile.account.email")}</span>
+            <span className="truncate text-sm font-semibold text-gf-text">{user.mail}</span>
           </div>
-          <div
-            className="edit-profile-btn absolute top-[10px] right-[10px] text-white cursor-pointer pulse-animation"
-            onClick={() => setOnEdition(!onEdition)}
-          >
-            {!onEdition ? (
-              <TypedUniversalCategoIcon type={"md/MdOutlineEdit"} siz={30} />
-            ) : (
-              <div className="onedit-btn border-2 rounded-full px-2 py-1 flex justify-center items-center gap-2">
-                <p className="">{t("profile.toggle.off")}</p>
-                <TypedUniversalCategoIcon type={"md/MdEditNote"} siz={30} />
-              </div>
-            )}
-          </div>
-          <div className="profile-img py-2">
-            <Image
-              className="rounded-full border-[1px]  m-auto w-[110px]  sm:w-[140px] shadow-md"
-              src={
-                userData.image
-                  ? userData.image
-                  : "/img/profile/user-non-profile.jpg"
-              }
-              alt={t("navbar.profileAlt", { p1: userData?.fullName })}
-              width={150}
-              height={150}
-            />
-          </div>
-          {!onEdition ? (
-            <div className="content-profile-cont w-full min-h-screen content-wallet-glass text-center flex flex-col justify-start items-center rounded-t-[100px] rounded-b-2xl">
-              {userData.fullName == "" ? (
-                <Spin size="large" />
-              ) : (
-                <h1 className="text-3xl pt-9 pb-1">
-                  {`${userData.fullName} Profile` || "Profile"}
-                </h1>
-              )}
-              <div className="w-full h-full displayed-profile flex flex-col items-start gap-7 pt-6 px-4 pb-12 sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
-                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">{t("profile.fullName.label")}</p>
-                  <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
-                    <p className="text-lg font-light text-left">
-                      {userData.fullName || "No name. Asign One..."}
-                    </p>
-                  </div>
-                </div>
-                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">{t("profile.mail.label")}</p>
-                  <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
-                    <p className="text-lg font-light text-left">{userData.mail}</p>
-                  </div>
-                </div>
-                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <div className="flex items-center gap-1"><p className="text-[11px]">{t("profile.password.label")}</p><InfoTip info={APP_INFO.acceso} /></div>
-                  <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
-                    <p className="text-lg font-light truncate text-left">
-                      ***********
-                      {/* {userData.password ? userData.password
-                        .split("")
-                        .map((c) => "*")
-                        .join("")
-                        : ''
-                      } */}
-                    </p>
-                  </div>
-                </div>
-                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">{t("profile.image.label")}</p>
-                    <div className="prof-edit-img flex justify-center items-center w-full">
-                      <Image
-                      className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500"
-                        alt="gastify-profile-avatar"
-                        width={100}
-                        height={100}
-                        src={userInfo.image
-                          ? userInfo.image
-                          : "/img/profile/user-non-profile.jpg"}
-                      />
-                    </div>
-                </div>
-                <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                  <p className="text-[11px]">{t("profile.phone.label")}</p>
-                  <div className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2">
-                    <p className="text-lg font-light truncate text-left">
-                      {userData.phone || "No phone register"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full px-4 sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]">
-                <PasskeysPanel />
-                <TwoFactorPanel />
-                <TypedApiTokensPanel mail={pcSession} />
-              </div>
-              <SignOutPanel />
-              <DeleteAccountPanel />
-            </div>
-          ) : (
-            <div className="w-full h-full content-wallet-glass rounded-t-[100px] relative">
-              <div
-                className={`${
-                  isLoading ? "absolute" : "hidden"
-                } top-0 left-0 bg-gf-surface/70 babackdrop-blur-sm flex justify-center items-center w-full h-full z-[1001] rounded-t-[100px]`}
-              >
-                <Spin size="large" />
-              </div>
-              <form
-                className="content-profile-form-cont w-full min-h-screen content-wallet-glass text-center flex flex-col justify-start items-center rounded-t-[100px] rounded-b-2xl sm:items-center sm:px-[150px] md:px-[200px] lg:px-[300px] xl:px-[400px]"
-                onSubmit={handleSubmit}
-              >
-                <h1 className="text-3xl pt-9 pb-1">
-                  {`${userData.fullName} Profile` || "Profile"}
-                </h1>
-                <div className="w-full h-full displayed-profile flex flex-col items-start gap-7 pt-6 px-4 ">
-                  <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                    <p className="text-[11px]">{t("profile.fullName.label")}</p>
-                    <input
-                      className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
-                      type="text"
-                      name="fullName"
-                      value={userInfo.fullName || null}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                    <p className="text-[11px]">{t("profile.mail.label")}</p>
-                    <input
-                      className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
-                      type="text"
-                      name="mail"
-                      value={userInfo.mail || null}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div id="gf-change-password-toggle" className=" w-full cpc-name flex gap-2 justify-start items-center">
-                    <p className="text-[11px]">{t("profile.changePassword.label")}</p>
-                    <ConfigProvider
-                      theme={{
-                        token: {
-                          // Seed Token
-                          colorPrimary: "#9700FF",
-                          borderRadius: 2,
-                          colorBorder: "#9700FF",
-                          // Alias Token
-                          colorBgContainer: "#9700FF",
-                        },
-                      }}
-                    >
-                      <Space size={12}>
-                        <div className="switch-profile-password rounded-full">
-                          <Switch
-                            onChange={(value) => onEditPassword(value)}
-                            value={onEditPasswordState}
-                            className="border-[2px] border-purple-300"
-                          />
-                        </div>
-                      </Space>
-                    </ConfigProvider>
-                  </div>
-                  {!onEditPasswordState ? (
-                    <div
-                      className={` w-full cpc-name flex flex-col justify-center items-start gap-1 cursor-not-allowed`}
-                    >
-                      <div className="flex items-center gap-1"><p className="text-[11px]">{t("profile.password.label")}</p><InfoTip info={APP_INFO.acceso} /></div>
-                      <input
-                        className="gf-profile-field w-full border-2 border-purple-400 rounded-xl truncate px-3 py-2 text-lg font-light"
-                        type="text"
-                        name="password"
-                        placeholder="****************"
-                        disabled
-                      />
-                    </div>
-                  ) : (
-                    <div className="edit-pass-sub-cont flex flex-col gap-3">
-                      <div
-                        className={` w-full cpc-name flex flex-col justify-center items-start cursor-not-allowed`}
-                      >
-                        <p className="text-[11px] text-start">{t("profile.password.label")}</p>
-                        <Space direction="vertical">
-                          <Input.Password
-                            placeholder={t("profile.password.placeholder")}
-                            className="profile-input-password"
-                            name="password"
-                            value={userInfo.password || ""}
-                            onChange={(v) => handleChange(v, "password")}
-                          />
-                          <p className="text-[11px] text-start">
-                            {t("profile.confirmPassword.label")}
-                          </p>
-                          <Input.Password
-                            placeholder={t("profile.password.placeholder")}
-                            className="profile-input-password"
-                            name="passwordConfirm"
-                            value={userInfo.passwordConfirm || ""}
-                            onChange={(v) => handleChange(v, "passwordConfirm")}
-                          />
-                        </Space>
-                      </div>
-                    </div>
-                  )}
-                  <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                    <p className="text-[11px]">{t("profile.image.label")}</p>
-                    <div className=" w-full h-full flex  flex-col gap-2 justify-center items-center">
-                      <Image
-                      className="rounded-full border-2 m-auto w-[110px]  sm:w-[140px] shadow-md border-purple-500 mb-2 hover:bg-gf-surface"
-                        alt="gastify-profile-avatar"
-                        width={100}
-                        height={100}
-                        src={userInfo.image
-                          ? userInfo.image
-                          : "/img/profile/user-non-profile.jpg"}
-                      />
-                      <CldUploadWidget
-                        uploadPreset="Gastify_Cloudinary_Preset"
-                        onSuccess={(success) => onImgHandling(success)}
-                      >
-                        {({ open }) => {
-                          return (
-                            <button
-                              type="button"
-                              className="py-1 px-2 gf-glass-button rounded-2xl text-white"
-                              onClick={() => open()}
-                            >
-                              {t("profile.image.upload")}
-                            </button>
-                          );
-                        }}
-                      </CldUploadWidget>
-                    </div>
-                  </div>
-                  <div className=" w-full cpc-name flex flex-col justify-center items-start gap-1">
-                    <p className="text-[11px]">{t("profile.phone.label")}</p>
-                    <PhoneInput
-                      defaultCountry="ua"
-                      value={String(userInfo.phone) || ""}
-                      // name="phone"
-                      onChange={(phone) => handleChange(phone, "phone")}
-                    />
-                  </div>
-                  <button
-                    className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
-                    type="submit"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <Spin /> : "Submit"}
-                  </button>
-                </div>
-              </form>
-              <SignOutPanel />
-              <DeleteAccountPanel />
+          {created && !Number.isNaN(created.getTime()) && (
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-gf-text-muted">{t("profile.account.since")}</span>
+              <span className="text-sm font-semibold text-gf-text">{longDate(created, locale)}</span>
             </div>
           )}
         </div>
-      )}
-    </div>
+      </ProfileCard>
+
+      <PasskeysPanel />
+      <TwoFactorPanel />
+      <TypedApiTokensPanel mail={pcSession} />
+
+      <ProfileSignOut />
+      <DeleteAccountPanel />
+    </>
+  );
+}
+
+// Reserved for the privacy options; for now it only says so.
+function PrivacyPanel(): React.JSX.Element {
+  const t = useT();
+  return (
+    <ProfileCard title={t("profile.section.privacy")}>
+      <p className="text-sm text-gf-text-muted">{t("profile.privacy.soon")}</p>
+    </ProfileCard>
   );
 }
 

@@ -188,7 +188,7 @@ const resetDrilldown = () => {
       {!trchFill && (
         <div className="trch-Content-title pt-5 flex justify-center items-center gap-3">
           <h1 className="wallet-budget-title text-2xl text-center font-bold">
-            {t("movements.resume.categoryDetailsP", { p1: trchIsBill ? "Bills" : "Incomes" })}
+            {t("movements.resume.categoryDetailsP", { p1: trchIsBill ? t("web.bills") : t("web.incomes") })}
           </h1>
           {resetButton}
         </div>
@@ -259,7 +259,7 @@ const resetDrilldown = () => {
                     <div className="flex flex-col text-[13px] font-semibold">
                       <div className="flex gap-2">
                         <p className="font-semibold">
-                          {trchIsBill ? "Total spent:" : "Total earned:"}
+                          {trchIsBill ? t("web.total.spent") : t("web.total.earned")}
                         </p>
                         {formatMoneyMajor(totalValueOn, walletPrimaryCurrency)}
                       </div>

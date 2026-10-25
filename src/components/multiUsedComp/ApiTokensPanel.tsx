@@ -182,7 +182,7 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
               type="submit"
               className="gf-glass-button text-white rounded-full px-4 py-2"
             >
-              {isLoading ? <Spin /> : "Generate token"}
+              {isLoading ? <Spin /> : tr("web.generate.token")}
             </button>
           </form>
         </div>

@@ -49,7 +49,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill, ccpFill }: Categor
       {!ccpFill && (
         <div className="CategoryCircle-Content-title pt-5">
           <h1 className="wallet-budget-title text-2xl text-center font-bold">
-            {t("categories.detail.title", { p1: ccpIsBill ? "Bills" : "Incomes" })}
+            {t("categories.detail.title", { p1: ccpIsBill ? t("web.bills") : t("web.incomes") })}
           </h1>
         </div>
       )}
@@ -122,7 +122,7 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill, ccpFill }: Categor
                     <div className="flex flex-col text-[13px] font-semibold">
                       <div className="flex gap-2">
                         <p className="font-semibold">
-                          {ccpIsBill ? "Total spent:" : "Total earned:"}
+                          {ccpIsBill ? t("web.total.spent") : t("web.total.earned")}
                         </p>
                         {formatMoneyMajor(totalValueOn, walletPrimaryCurrency)}
                       </div>

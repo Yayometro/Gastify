@@ -81,7 +81,7 @@ function AccountCardFace({
   const t = useT();
   const [reveal, setReveal] = useState<boolean>(false);
   const patternId = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const { stops, ink, tint, light } = cardPalette(cardColor, accountGradient(seed || name || "cuenta"));
+  const { stops, ink, tint, light } = cardPalette(cardColor, accountGradient(seed || name || t("budgets.account")));
   const bank = bankById(bankId);
   const typeKey = ACCOUNT_TYPES.find((option) => option.value === accountType)?.label;
   const typeLabel = typeKey ? t(typeKey) : accountType ?? t("accounts.type.debit");
@@ -113,7 +113,7 @@ function AccountCardFace({
           className="min-w-0 flex-1 truncate text-left text-lg font-semibold"
           style={{ color: ink }}
         >
-          {name || "Cuenta"}
+          {name || t("dashboard.bulk.account")}
         </button>
         <span className="shrink-0 rounded-[10px] px-2 py-[3px] text-[11px] font-medium" style={{ background: tint(0.22), color: ink }}>
           {typeLabel}
@@ -138,7 +138,7 @@ function AccountCardFace({
       {cardNumber ? (
         <button
           type="button"
-          aria-label={reveal ? "Ocultar el número" : "Mostrar el número"}
+          aria-label={reveal ? t("web.hide.the.number") : t("web.show.the.number")}
           onClick={(event) => {
             event.stopPropagation();
             setReveal((value) => !value);

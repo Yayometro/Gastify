@@ -3,11 +3,13 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 // The dashboard renders with the recent months first; while the rest of the
 // history is still arriving, totals for older periods may be incomplete. This
 // small pill says so, and disappears as soon as the history is in.
 function HistoryLoadingPill(): React.JSX.Element | null {
+  const t = useT();
   const historyStatus = useSelector((state: RootState) => state.transacctionsReducer?.historyStatus);
   if (historyStatus !== "loading" && historyStatus !== "failed") return null;
   const failed = historyStatus === "failed";
@@ -20,8 +22,8 @@ function HistoryLoadingPill(): React.JSX.Element | null {
       }`}
     >
       {failed
-        ? "No se pudo cargar tu historial completo. Recarga la página para intentarlo de nuevo."
-        : "Cargando tu historial completo… los totales de periodos anteriores pueden estar incompletos."}
+        ? t("web.we.couldn.t.load.your.full.history.reload.the.page.to.tr")
+        : t("web.loading.your.full.history.the.totals.of.earlier.periods")}
     </div>
   );
 }
