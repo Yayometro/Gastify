@@ -41,7 +41,7 @@ describe("remove-many route", () => {
     const data = await res.json();
 
     expect(data.ok).toBe(false);
-    expect(data.error).toMatch(/No session/);
+    expect(data.error).toMatch(/No hay sesión activa/);
     expect(Transaction.deleteMany).not.toHaveBeenCalled();
   });
 
@@ -54,7 +54,7 @@ describe("remove-many route", () => {
     const data = await res.json();
 
     expect(data.ok).toBe(false);
-    expect(data.error).toMatch(/User not found/);
+    expect(data.error).toMatch(/No encontramos tu usuario/);
     expect(Transaction.deleteMany).not.toHaveBeenCalled();
   });
 
@@ -69,7 +69,7 @@ describe("remove-many route", () => {
     expect(data.ok).toBe(true);
     expect(data.status).toBe(200);
     expect(data.deletedCount).toBe(2);
-    expect(data.message).toBe('"2" transactions removed successfully');
+    expect(data.message).toBe('Se eliminaron "2" transacciones correctamente');
   });
 
   it("handles empty or missing manyTrans safely", async () => {

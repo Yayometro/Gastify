@@ -3,6 +3,7 @@ import Account, { type IAccount } from "@/model/Account";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export type RemoveAccountRequestBody = string;
 
@@ -18,8 +19,9 @@ export type RemoveAccountResponse = RemoveAccountSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveAccountResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on REMOVE-ACCOUNT POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.7"));
     const accountId = (await request.json()) as RemoveAccountRequestBody;
     // Security fix: this route had zero ownership/session check - it
     // deleted whatever Account matched accountId, no matter who owned
@@ -30,10 +32,10 @@ export async function POST(
     // caller's own session/wallet. The only real call site
     // (EditAccountModal.jsx) always removes the caller's own account.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on REMOVE-ACCOUNT POST");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.remove.3"));
     // FIND ACCOUNT
     const removedAccount = await Account.findOneAndDelete({
       _id: accountId,
@@ -41,10 +43,10 @@ export async function POST(
     });
     //IF ERROR
     if (!removedAccount)
-      throw new Error(`No Account was identified to be removed`);
+      throw new Error(t("errors.api.accountNotIdentifiedRemove"));
 
     return NextResponse.json({
-      message: `${removedAccount.name} removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: removedAccount.name }),
       data: removedAccount,
       status: 201,
       ok: true,

@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import "@/components/styles/animations.css";
 import CreditCard from "./CreditCard";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import randomColor from "randomcolor";
 import { Skeleton } from "antd";
 import {
@@ -20,6 +22,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import fetcher from "@/helpers/fetcher";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface MultiCreditCardAccount {
   _id?: string;
@@ -49,6 +52,7 @@ export interface MultiCreditCardProps {
   mccSession?: unknown;
   walletPrimaryCurrency?: string;
   mail?: string;
+  timePeriod?: [Date, Date] | null;
 }
 
 function SortableCard({ account, children }: SortableCardProps): React.JSX.Element {
@@ -75,7 +79,10 @@ function MultiCreditCard({
   trans,
   walletPrimaryCurrency,
   mail,
+  timePeriod,
 }: MultiCreditCardProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   const [userName, setUserName] = useState<string>("");
   const [allTransactions, setAllTransactions] = useState<MultiCreditCardTransaction[]>([]);
   const [accounts, setAccounts] = useState<MultiCreditCardAccount[]>([]);
@@ -144,10 +151,11 @@ function MultiCreditCard({
     <div className="gf-glass-card w-full overflow-x-hidden flex flex-col rounded-[32px] py-2">
       <div className="header text-center">
         <h1 className="movement-title text-gf-text text-2xl text-center font-bold py-4">
-          Accounts resume
+          {t("dashboard.accountsResume")}
+          <InfoTip info={APP_INFO.total} />
         </h1>
       </div>
-      <div className="scrollbar-thin flex flex-row pb-6 px-1 overflow-x-scroll">
+      <div className="scrollbar-thin flex flex-row items-stretch gap-5 px-5 pb-6 overflow-x-auto">
         {accounts && accounts.length > 0 ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={accounts.map((a) => a._id)} strategy={horizontalListSortingStrategy}>
@@ -159,7 +167,7 @@ function MultiCreditCard({
                     trans={allTransactions}
                     cardColor={cardColors[ac._id]}
                     walletPrimaryCurrency={walletPrimaryCurrency}
-                    current
+                    timePeriod={timePeriod}
                   />
                 </SortableCard>
               ))}

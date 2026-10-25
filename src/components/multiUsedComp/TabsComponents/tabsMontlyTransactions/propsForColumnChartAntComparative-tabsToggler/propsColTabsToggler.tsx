@@ -1,3 +1,4 @@
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 import React from "react";
 import AtomicTop from "@/components/multiUsedComp/top3/atomicTop/AtomicTop";
 import TooltipForChart, {
@@ -16,6 +17,7 @@ export interface ClickedItem {
 }
 
 export interface GeneratePropForChartColAntTogglerTabsOptions {
+  t: TranslateFn;
   data: unknown[][];
   clickedItems: ClickedItem[];
   setClickedItems: React.Dispatch<React.SetStateAction<ClickedItem[]>>;
@@ -29,6 +31,7 @@ export const generatePropForChartColAntTogglerTabs = ({
   setClickedItems,
   totalAmount,
   walletPrimaryCurrency = "MXN",
+  t,
 }: GeneratePropForChartColAntTogglerTabsOptions) => {
   return {
     data: data[2],
@@ -43,9 +46,9 @@ export const generatePropForChartColAntTogglerTabs = ({
                 className=" py-2 px-2 bg-purple-600 rounded-full hover:bg-purple-800 gap-4 text-white"
                 onClick={() => setClickedItems([])}
               >
-                Clear
+                {t("movements.bulk.clear")}
               </button>
-              <p className=" text-xs">Selected: </p>
+              <p className=" text-xs">{t("movements.bulk.selected")} </p>
             </section>
             <div className="w-full grid grid-cols-2 items-center gap-2 min-[452px]:flex min-[452px]:justify-start min-[452px]:flex-wrap">
               {clickedItems.map((item, index) => (
@@ -62,8 +65,8 @@ export const generatePropForChartColAntTogglerTabs = ({
                   }
                   tooltip={
                     <div className="flex flex-col justify-center items-center">
-                      <b>Type: {item.type}</b>
-                      <b>Value: {formatMoneyMajor(item.value as number, walletPrimaryCurrency)}</b>
+                      <b>{t("movements.bulk.typeValue", { p1: item.type })}</b>
+                      <b>{t("movements.bulk.valueValue", { p1: formatMoneyMajor(item.value as number, walletPrimaryCurrency) })}</b>
                     </div>
                   }
                 />
@@ -73,14 +76,14 @@ export const generatePropForChartColAntTogglerTabs = ({
         )}
         <div className="w-full pt-2 flex flex-col items-center gap-0.5 text-sm">
           <p className="text-emerald-400">
-            Total incomes: <b>{formatMoneyMajor(totalAmount[0] || 0, walletPrimaryCurrency)}</b>
+            {t("movements.compare.incomes")} <b>{formatMoneyMajor(totalAmount[0] || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className="text-red-500">
-            Total bills: <b>{formatMoneyMajor(totalAmount[1] || 0, walletPrimaryCurrency)}</b>
+            {t("movements.compare.bills")} <b>{formatMoneyMajor(totalAmount[1] || 0, walletPrimaryCurrency)}</b>
           </p>
           <div className="border-t border-gf-border w-48 my-1"></div>
           <p className={`font-semibold ${(totalAmount[0] || 0) - (totalAmount[1] || 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            Balance (Incomes - Bills):{" "}
+            {t("movements.compare.balance")}{" "}
             <b>{formatMoneyMajor((totalAmount[0] || 0) - (totalAmount[1] || 0), walletPrimaryCurrency)}</b>
           </p>
         </div>
@@ -148,6 +151,7 @@ export interface PeriodCompareTotals {
 }
 
 export interface GeneratePropForChartColAntPeriodCompareOptions {
+  t: TranslateFn;
   compareData: PeriodCompareDatum[];
   totals: PeriodCompareTotals;
   labelA: string;
@@ -166,6 +170,7 @@ export const generatePropForChartColAntPeriodCompare = ({
   labelA,
   labelB,
   walletPrimaryCurrency = "MXN",
+  t,
 }: GeneratePropForChartColAntPeriodCompareOptions) => {
   const balanceA = (totals.incomeA || 0) - (totals.billA || 0);
   const balanceB = (totals.incomeB || 0) - (totals.billB || 0);
@@ -186,26 +191,26 @@ export const generatePropForChartColAntPeriodCompare = ({
         <div className="flex flex-col items-center">
           <b className="text-xs text-gf-text-muted">{labelA}</b>
           <p className="text-emerald-400">
-            Income: <b>{formatMoneyMajor(totals.incomeA || 0, walletPrimaryCurrency)}</b>
+            {t("movements.compare.incomeLabel")} <b>{formatMoneyMajor(totals.incomeA || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className="text-red-500">
-            Bills: <b>{formatMoneyMajor(totals.billA || 0, walletPrimaryCurrency)}</b>
+            {t("movements.compare.billsLabel")} <b>{formatMoneyMajor(totals.billA || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className={`font-semibold ${balanceA >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            Balance: <b>{formatMoneyMajor(balanceA, walletPrimaryCurrency)}</b>
+            {t("movements.compare.balanceLabel")} <b>{formatMoneyMajor(balanceA, walletPrimaryCurrency)}</b>
           </p>
         </div>
-        <span className="text-purple-300 font-bold shrink-0">VS</span>
+        <span className="text-purple-300 font-bold shrink-0">{t("movements.compare.vs")}</span>
         <div className="flex flex-col items-center">
           <b className="text-xs text-gf-text-muted">{labelB}</b>
           <p className="text-emerald-400">
-            Income: <b>{formatMoneyMajor(totals.incomeB || 0, walletPrimaryCurrency)}</b>
+            {t("movements.compare.incomeLabel")} <b>{formatMoneyMajor(totals.incomeB || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className="text-red-500">
-            Bills: <b>{formatMoneyMajor(totals.billB || 0, walletPrimaryCurrency)}</b>
+            {t("movements.compare.billsLabel")} <b>{formatMoneyMajor(totals.billB || 0, walletPrimaryCurrency)}</b>
           </p>
           <p className={`font-semibold ${balanceB >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            Balance: <b>{formatMoneyMajor(balanceB, walletPrimaryCurrency)}</b>
+            {t("movements.compare.balanceLabel")} <b>{formatMoneyMajor(balanceB, walletPrimaryCurrency)}</b>
           </p>
         </div>
       </div>

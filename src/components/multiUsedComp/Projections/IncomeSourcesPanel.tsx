@@ -13,6 +13,9 @@ import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@gastify/
 import type { IIncomeSource, IncomeSourceRecurrence } from "@/model/IncomeSource";
 import type { IncomeSourceItem } from "@/hooks/useProjectionTable";
 
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT, useInfo } from "@/i18n/client";
+
 export type IncomeSourceLike = IIncomeSource | IncomeSourceItem;
 
 export interface IncomeSourceFormData {
@@ -32,10 +35,10 @@ export interface IncomeSourcesPanelProps {
 }
 
 const RECURRENCE_LABELS: Record<string, string> = {
-  monthly: "Monthly",
-  semimonthly: "Semimonthly (fixed paydays, ~2/mo)",
-  biweekly: "Biweekly (every 14 days)",
-  weekly: "Weekly",
+  monthly: "web.monthly",
+  semimonthly: "web.semimonthly.fixed.paydays.about.2.a.month",
+  biweekly: "web.biweekly.every.14.days",
+  weekly: "web.weekly",
 };
 
 const getEmptyForm = (currency?: string): IncomeSourceFormData => ({
@@ -53,6 +56,8 @@ function IncomeSourcesPanel({
   walletPrimaryCurrency,
   onChange,
 }: IncomeSourcesPanelProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   const defaultCurrency = walletPrimaryCurrency || "MXN";
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -97,7 +102,7 @@ function IncomeSourcesPanel({
     e.preventDefault();
     // An empty amount used to become 0 silently (Number("") is 0, bug 75).
     if (String(form.amount).trim() === "" || !Number.isFinite(Number(form.amount))) {
-      runNotify("error", "Enter an amount");
+      runNotify("error", t("projections.enterAmount"));
       return;
     }
     try {
@@ -157,7 +162,7 @@ function IncomeSourcesPanel({
         onClick={() => setIsOpen(!isOpen)}
       >
         <h2 className="text-xl text-purple-300 font-normal">
-          Income sources ({(incomeSources || []).length})
+          {t("projections.sources.title")}{(incomeSources || []).length})<InfoTip info={APP_INFO.fuentes_de_ingreso} />
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
@@ -172,7 +177,7 @@ function IncomeSourcesPanel({
                 <div className="flex flex-col">
                   <p className="text-purple-300">{source.name}</p>
                   <p className="text-xs text-gf-text-muted">
-                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence as string] ?? source.recurrence ?? "Custom"}
+                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence as string] ?? source.recurrence ?? t("web.custom")}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -194,18 +199,18 @@ function IncomeSourcesPanel({
             className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">
-              <p className="label-tfp mb-1">Name</p>
+              <p className="label-tfp mb-1">{t("projections.sources.name")}</p>
               <input
                 type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="e.g. Sueldo Nomina"
+                placeholder={t("projections.sources.namePlaceholder")}
                 required
               />
             </div>
             <div className="flex flex-col">
-              <p className="label-tfp mb-1">Amount / occurrence</p>
+              <p className="label-tfp mb-1">{t("projections.sources.amount")}</p>
               <input
                 type="number"
                 name="amount"
@@ -215,7 +220,7 @@ function IncomeSourcesPanel({
               />
             </div>
             <div className="flex flex-col">
-              <p className="label-tfp mb-1">Currency</p>
+              <p className="label-tfp mb-1">{t("projections.sources.currency")}</p>
               <select
                 className="etm-selector"
                 name="currency"
@@ -230,22 +235,22 @@ function IncomeSourcesPanel({
               </select>
             </div>
             <div className="flex flex-col">
-              <p className="label-tfp mb-1">Recurrence</p>
+              <p className="label-tfp mb-1">{t("projections.sources.recurrence")}</p>
               <select
                 className="etm-selector"
                 name="recurrence"
                 value={form.recurrence}
                 onChange={handleChange}
               >
-                {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
+                {Object.entries(RECURRENCE_LABELS).map(([value, labelKey]) => (
                   <option key={value} value={value}>
-                    {label}
+                    {t(labelKey)}
                   </option>
                 ))}
               </select>
             </div>
             <div className="flex flex-col">
-              <p className="label-tfp mb-1">First payment date</p>
+              <p className="label-tfp mb-1">{t("projections.sources.firstDate")}</p>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <MobileDateTimePicker
                   slotProps={{ textField: { size: "small", variant: "standard" } }}
@@ -277,11 +282,11 @@ function IncomeSourcesPanel({
               type="submit"
               className="gf-glass-button text-white rounded-full px-4 py-2"
             >
-              {isLoading ? <Spin /> : editingId ? "Save" : "Add"}
+              {isLoading ? <Spin /> : editingId ? t("web.save") : t("web.add")}
             </button>
             {editingId && (
               <button type="button" className="gf-glass-button-neutral text-gf-text rounded-full px-4 py-2" onClick={resetForm}>
-                Cancel
+                {t("projections.sources.cancel")}
               </button>
             )}
           </form>

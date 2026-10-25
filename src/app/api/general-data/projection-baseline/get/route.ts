@@ -4,6 +4,7 @@ import dbConnection from "@/app/api/dbConnection";
 import ProjectionBaseline from "@/model/ProjectionBaseline";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 const getProjectionBaselineBodySchema = z
   .object({
@@ -37,9 +38,10 @@ export async function GET(): Promise<
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<GetProjectionBaselineResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on GET PROJECTION BASELINE POST");
+      throw new Error(t("errors.no.data.in.request.on.13"));
     // Security fix: this used to trust whatever mail the client sent in the
     // body, letting any caller (this endpoint isn't covered by middleware.ts's
     // matcher) read another user's projection baseline - an IDOR, same underlying
@@ -47,7 +49,7 @@ export async function POST(
     // The only real call sites (WalletAnalyzer.tsx and useProjectionTable.js)
     // send the session user's email. We now verify the session and use sesion.user.email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     const rawBody = (await request.json().catch(() => ({}))) || {};
     getProjectionBaselineBodySchema.safeParse(rawBody);
@@ -55,13 +57,13 @@ export async function POST(
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const walletId = userFound.wallet;
 
     // Not every wallet has one yet - null is a valid, expected result.
     const baseline = await ProjectionBaseline.findOne({ wallet: walletId }).lean();
     return NextResponse.json({
-      message: `Projection Baseline was found successfully 🤓`,
+      message: t("errors.api.baselineFound"),
       data: baseline || null,
       status: 201,
       ok: true,

@@ -8,6 +8,7 @@ import SuggestionsList, {
   type CategorySuggestionEntry,
   type CategorySuggestionApplication,
 } from "@/components/multiUsedComp/CategorySuggestions/SuggestionsList";
+import { useT } from "@/i18n/client";
 
 // Reviews suggestions for ALL of a wallet's already-existing uncategorized
 // transactions (not just ones from a fresh Excel upload) - fetches on mount.
@@ -32,6 +33,7 @@ interface ApplyApiResponse {
 }
 
 function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestionsTabProps): React.JSX.Element {
+  const t = useT();
   const [loading, setLoading] = useState<boolean>(true);
   const [suggestions, setSuggestions] = useState<CategorySuggestionEntry[]>([]);
   const [applying, setApplying] = useState<boolean>(false);
@@ -61,16 +63,16 @@ function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestio
         applications,
       })) as ApplyApiResponse;
       if (res.ok) {
-        runNotify("ok", `${res.data?.length} transaction(s) categorized 🏷️`);
+        runNotify("ok", t("categories.categorizedCount", { p1: res.data?.length }));
         const appliedIds = new Set(applications.map((a) => String(a.transactionId)));
         setSuggestions((prev) => prev.filter((s) => !appliedIds.has(String(s.transaction._id))));
         onApplied?.(res.data);
         return true;
       }
-      runNotify("error", res?.message || "Could not apply suggestions 🤕");
+      runNotify("error", res?.message || t("web.could.not.apply.suggestions"));
       return false;
     } catch {
-      runNotify("error", "Could not apply suggestions 🤕");
+      runNotify("error", t("movements.categorizer.applyFailed"));
       return false;
     } finally {
       setApplying(false);
@@ -81,7 +83,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestio
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-10">
         <Spin />
-        <p className="text-xs text-gf-text-muted">Scanning uncategorized transactions...</p>
+        <p className="text-xs text-gf-text-muted">{t("movements.categorizer.scanning")}</p>
       </div>
     );
   }
@@ -89,7 +91,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestio
   if (suggestions.length === 0) {
     return (
       <p className="text-sm text-gf-text-muted text-center py-10">
-        No suggestions right now — you&apos;re all caught up! 🎉
+        {t("movements.categorizer.none")}
       </p>
     );
   }
@@ -97,7 +99,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestio
   return (
     <div>
       <p className="text-xs text-gf-text-muted text-center mb-3">
-        {suggestions.length} uncategorized transaction{suggestions.length !== 1 ? "s" : ""} matched a rule · uncheck any to skip
+        {t("movements.categorizer.matched", { p1: suggestions.length, p2: suggestions.length !== 1 ? "s" : "" })}
       </p>
       <SuggestionsList
         suggestions={suggestions}

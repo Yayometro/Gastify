@@ -51,7 +51,7 @@ describe("POST category-rules/apply-suggestions (bug 125)", () => {
     m(Category).findById.mockReturnValue(lean(owned()));
     m(SubCategory).findById.mockReturnValue(lean(owned({ fatherCategory: "other" })));
     await expect(POST(req({ applications: [{ transactionId: "t1", category: "c1", subCategory: "s1" }] }))).rejects.toThrow(
-      "does not belong"
+      "no pertenece"
     );
   });
 

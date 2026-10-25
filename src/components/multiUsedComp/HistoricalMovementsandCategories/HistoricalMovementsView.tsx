@@ -6,6 +6,7 @@ import SelecterItemsToDisplay from "@/components/Filters/selecterItemsToDisplay/
 import TabsToggler, { TabsTogglerComponentItem } from "../TabsComponents/TabsToggler";
 import PeriodFiltersWithCompare from "../periodFiltersWithCompare/PeriodFiltersWithCompare";
 import type { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
+import { useT } from "@/i18n/client";
 
 export interface HistoricalMovementsViewProps {
   isLoading?: boolean;
@@ -46,9 +47,10 @@ function HistoricalMovementsView({
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
 }: HistoricalMovementsViewProps): React.JSX.Element {
+  const t = useT();
   return (
     <div className="w-full h-full">
-      <h1>Top {elementsToDisplay} elements by month</h1>
+      <h1>{t("movements.top.byMonth", { p1: elementsToDisplay })}</h1>
       <PeriodFiltersWithCompare
         timePeriod={timePeriod}
         getValueFromSelecter={getValueFromSelecter}
@@ -73,9 +75,9 @@ function HistoricalMovementsView({
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler
-          tabs={tabs || ["Bills", "Incomes"]}
+          tabs={tabs || [t("web.bills"), t("web.incomes")]}
           compontentsArray={components}
-          tooltip={"Select the tab that you want to see 😎"}
+          tooltip={t("movements.top.tabHelp")}
           contentStyle={"flex flex-col justify-center items-center"}
         />
       )}

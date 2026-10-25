@@ -1,0 +1,128 @@
+"use client";
+
+import React, { useState } from "react";
+import "animate.css";
+import { IoNotificationsOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
+import BasicModal from "@/components/modals/basicModal/BasicModal";
+import CategoIcon from "./CategoIcon";
+import useBudgetAlertList from "@/hooks/useBudgetAlertList";
+import { InfoTip } from "./InfoTip";
+import AlertCelebration from "./notifications/AlertCelebration";
+
+import type { BudgetAlert } from "@gastify/core/budgets/budgetAlerts";
+import { useT, useInfo } from "@/i18n/client";
+
+// The bell of the navigation bar: the number of notices that apply now, and the list of them in a window (the same
+// notices the app shows). Swiping a notice away in the app is the × here; it leaves with an animation.
+const TONE_CLASS: Record<BudgetAlert["tone"], string> = {
+  warning: "border-amber-400/60 bg-amber-500/15",
+  danger: "border-red-400/60 bg-red-500/15",
+  celebrate: "border-emerald-400/60 bg-emerald-500/15",
+};
+
+function NotificationsBell(): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
+  const { alerts, dismiss, dismissAll } = useBudgetAlertList();
+  const [celebrating, setCelebrating] = useState<BudgetAlert | null>(null);
+  const [clearing, setClearing] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
+  const [leaving, setLeaving] = useState<string | null>(null);
+
+  const remove = (key: string): void => {
+    setLeaving(key);
+    window.setTimeout(() => {
+      dismiss(key);
+      setLeaving(null);
+    }, 380);
+  };
+
+  const clearAll = (): void => {
+    setClearing(true);
+    window.setTimeout(() => {
+      dismissAll();
+      setClearing(false);
+    }, 380);
+  };
+
+  return (
+    <>
+      <button type="button" aria-label={t("navbar.notifications")} onClick={() => setOpen(true)} className="relative flex items-center justify-center">
+        <IoNotificationsOutline size={28} className="hidden sm:inline" />
+        <p className="sm:hidden hoverTooltip">{t("navbar.notifications")}</p>
+        {alerts.length > 0 && (
+          <span className="animate__animated animate__bounceIn absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+            {alerts.length}
+          </span>
+        )}
+      </button>
+
+      {celebrating && <AlertCelebration alert={celebrating} onClose={() => setCelebrating(null)} />}
+
+      {open && (
+        <BasicModal
+          close={() => setOpen(false)}
+          renderContent={
+            <div className="content absolute gf-glass-violet z-[5001] flex max-h-[80vh] w-[94vw] max-w-[480px] flex-col overflow-hidden rounded-3xl animate__animated animate__zoomIn animate__faster">
+              <div className="flex items-center justify-between gap-3 px-6 pb-3 pt-6">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-white">{t("navbar.notifications")}</h2>
+                  <InfoTip info={APP_INFO.notificaciones} />
+                </div>
+                <div className="flex items-center gap-2">
+                  {alerts.length > 0 && (
+                    <button type="button" onClick={clearAll} className="rounded-full gf-glass-card px-3 py-1 text-xs font-semibold text-purple-100 transition-transform hover:scale-105 hover:text-white active:scale-95">
+                      {t("navbar.clearAll")}
+                    </button>
+                  )}
+                <button type="button" aria-label={t("navbar.close")} onClick={() => setOpen(false)} className="rounded-full gf-glass-card p-1.5 text-purple-100 transition-colors hover:text-white">
+                  <CategoIcon type={"MdClose"} siz={18} />
+                </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto px-6 pb-6">
+                {alerts.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 py-10 text-center text-gf-text-muted">
+                    <IoCheckmarkCircleOutline size={36} className="text-emerald-400" />
+                    <p className="text-sm">{t("navbar.notifications.none")}</p>
+                  </div>
+                ) : (
+                  <ul className="flex flex-col gap-3">
+                    {alerts.map((alert) => (
+                      <li
+                        key={alert.key}
+                        className={`${leaving === alert.key || clearing ? "animate__animated animate__fadeOutRight animate__faster" : "animate__animated animate__fadeInDown"}`}
+                      >
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setCelebrating(alert)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") setCelebrating(alert);
+                          }}
+                          className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] ${TONE_CLASS[alert.tone]}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-white">{alert.title}</p>
+                              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-purple-100/90">{alert.message}</p>
+                            </div>
+                            <button type="button" aria-label={t("shared.dismissAlert", { p1: alert.title })} onClick={(event) => { event.stopPropagation(); remove(alert.key); }} className="shrink-0 rounded-full p-1 text-purple-100 transition-transform hover:scale-125 hover:text-white">
+                              <CategoIcon type={"MdClose"} siz={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          }
+        />
+      )}
+    </>
+  );
+}
+
+export default NotificationsBell;

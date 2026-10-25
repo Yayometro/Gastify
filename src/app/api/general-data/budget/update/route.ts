@@ -8,6 +8,7 @@ import "@/model/Category";
 import "@/model/SubCategory";
 import "@/model/Account";
 import "@/model/Tag";
+import { serverT } from "@/i18n/server";
 
 export interface UpdateBudgetGetStatusResponse {
   mes: string;
@@ -50,8 +51,9 @@ export async function GET(): Promise<NextResponse<UpdateBudgetGetStatusResponse>
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UpdateBudgetResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on NEW BUDGET POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.9"));
     const {
       id,
       name,
@@ -71,7 +73,7 @@ export async function POST(
       icon,
       currency,
     } = (await request.json()) as UpdateBudgetRequestBody;
-    if (!id) throw new Error(`No ID  was provided to update budget 🤕`);
+    if (!id) throw new Error(t("errors.api.noIdUpdateBudget"));
     // Security fix: this used to look up the Budget by id alone, with zero
     // ownership check - this endpoint isn't covered by middleware.ts's
     // matcher, so any caller could edit any other user's budget. Now the
@@ -79,14 +81,14 @@ export async function POST(
     // id belonging to someone else's budget fails the same "not found"
     // check as a bogus id.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on UPDATE BUDGET");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.update.4"));
     // FIND WALLET and UPDATE
     const updateBudget = await Budget.findOne({ _id: id, wallet: userFound.wallet });
     //IF ERROR
-    if (!updateBudget) throw new Error(`No Budget was identified to update 🤕`);
+    if (!updateBudget) throw new Error(t("errors.api.budgetNotIdentifiedUpdate"));
     // VERSION HISTORY if goalAmount/savingAmount is actually changing
     const amountIsChanging =
       (goalAmount !== undefined && Number(goalAmount) !== Number(updateBudget.goalAmount)) ||
@@ -144,7 +146,7 @@ export async function POST(
     // SAVE
     const savedBudget = await updateBudget.save();
     //IF ERROR
-    if (!savedBudget) throw new Error("Updated Budget was not saved 🤕");
+    if (!savedBudget) throw new Error(t("errors.updated.budget.was.not.saved"));
     await savedBudget.populate([
       { path: "category", strictPopulate: false },
       { path: "subCategory", strictPopulate: false },
@@ -154,7 +156,7 @@ export async function POST(
       { path: "linkedTags", strictPopulate: false },
     ]);
     return NextResponse.json({
-      message: `${savedBudget.name} was updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: savedBudget.name }),
       data: savedBudget,
       status: 201,
       ok: true,

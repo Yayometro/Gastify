@@ -1,6 +1,7 @@
 "use client";
 import React, { useMemo } from "react";
 import { ResponsiveBar, type BarCustomLayerProps, type BarDatum } from "@nivo/bar";
+import { useT } from "@/i18n/client";
 
 // Column chart for "two or more series per category" comparisons (bills vs
 // incomes per month, period A vs period B, a budget's actual vs goal, budgeted
@@ -62,6 +63,7 @@ function withOpacity(color: string, opacity: number): string {
 }
 
 function ComparativeColumnChart({ data, totalValue, propPlus = {} }: ComparativeColumnChartProps): React.JSX.Element {
+  const t = useT();
   const { mode = "grouped", label, renderTooltip, onBarClick, isDimmed, legend, valueFormat, height } = propPlus;
 
   const { rows, keys, lookup } = useMemo(() => {
@@ -205,7 +207,7 @@ function ComparativeColumnChart({ data, totalValue, propPlus = {} }: Comparative
             if (datum && onBarClick) onBarClick(datum);
           }}
           role="img"
-          ariaLabel="Comparative column chart"
+          ariaLabel={t("web.comparative.column.chart")}
         />
       </div>
     </div>

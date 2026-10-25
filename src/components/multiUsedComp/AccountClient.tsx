@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { Spin, Tooltip, Skeleton } from "antd";
@@ -29,6 +31,7 @@ import { fetchWallet, type WalletData } from "@/lib/features/walletSlice";
 import { fetchAccounts, type AccountData } from "@/lib/features/accountsSlice";
 import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import type { RootState, AppDispatch } from "@/lib/store";
+import { useT, useInfo } from "@/i18n/client";
 
 // Typed bridge components for unmigrated JS components
 
@@ -71,6 +74,8 @@ export interface ExtendedAccount extends AccountData {
 }
 
 function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   const [onEdition, setOnEdition] = useState<EditAccountModalMode>(false);
   // DATES
   const [selectedDuration, setSelectedDuration] = useState<number>(30);
@@ -257,7 +262,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                 nameGeneral === undefined || nameGeneral === "" ? (<Spin />) : 
                 (`${nameGeneral} `)
               }
-              {" "}Accounts
+              {" "}{t("accounts.title")}
             </h1>
           </div>
           <div className="filters flex items-center justify-center gap-2">
@@ -268,19 +273,19 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                 value={selectedDuration}
                 onChange={handleDurationChange}
               >
-                <option value={2}>Yesterday </option>
-                <option value={7}>Last week</option>
-                <option value={15}>Last 15 days</option>
-                <option value={30}>Last 30 days</option>
-                <option value={60}>Last 60 days</option>
-                <option value={90}>Last 90 days</option>
+                <option value={2}>{t("accounts.range.yesterday")} </option>
+                <option value={7}>{t("accounts.range.lastWeek")}</option>
+                <option value={15}>{t("accounts.range.15")}</option>
+                <option value={30}>{t("accounts.range.30")}</option>
+                <option value={60}>{t("accounts.range.60")}</option>
+                <option value={90}>{t("accounts.range.90")}</option>
               </select>
               <div className="filterIconContainer absolute right-[3px] pointer-events-none">
                 <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
               </div>
             </div>
             <TimeRange rpDate={handleRangeDate} startDateValue={startDate} endDateValue={endDate} />
-            <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
+            <Tooltip title={t("accounts.dateTip")}>
               <div className="text-white w-[10px]">
                 <UniversalCategoIcon
                   type={`${"fa/FaRegQuestionCircle"}`}
@@ -301,6 +306,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                   trans={transactionData}
                   walletPrimaryCurrency={walletData?.primaryCurrency}
                   mail={acSession}
+                  timePeriod={startDate && endDate ? [startDate, endDate] : null}
                 />
             </div>
             <div className="ac-dashboard-client w-full-h-full">
@@ -317,7 +323,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                   <div className="w-full flex justify-center items-center gap-3">
                     <button
                       type="button"
-                      aria-label="Previous account"
+                      aria-label={t("accounts.prev")}
                       className="gf-glass-fab w-[44px] h-[44px] shrink-0"
                       onClick={() => {
                         const prevIndex = carruselCurrent - 1;
@@ -332,11 +338,11 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                       />
                     </button>
                     <h1 className="text-[30px] min-[350px]:text-[40px] sm:text-[60px] font-light">
-                      {finalAccounts[carruselCurrent]?.name || "No name data..."}
+                      {finalAccounts[carruselCurrent]?.name || t("web.no.name.data")}
                     </h1>
                     <button
                       type="button"
-                      aria-label="Next account"
+                      aria-label={t("accounts.next")}
                       className="gf-glass-fab w-[44px] h-[44px] shrink-0"
                       onClick={() => {
                         const nextIndex = carruselCurrent + 1;
@@ -356,7 +362,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                         className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
                         onClick={() => setOnEdition("edition")}
                     >
-                        <p className="text-white">Edit Account</p>
+                        <p className="text-white">{t("accounts.edit")}</p>
                         <div className=" flex justify-center items-center">
                           <CategoIcon type={`MdModeEdit`} siz={25} />
                         </div>
@@ -365,7 +371,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                         className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
                         onClick={() => setOnEdition("creation")}
                     >
-                        <p className="text-white">New Account</p>
+                        <p className="text-white">{t("accounts.new")}</p>
                         <div className=" flex justify-center items-center">
                           <CategoIcon type={`MdAddCircleOutline`} siz={25} />
                         </div>
@@ -386,17 +392,18 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                   </div>
                   <div className="ac-TransactionsDetails w-full h-full mt-10">
                     <h1 className=" font-bold text-2xl sm:text-3xl">
-                      Account movements details
+                      {t("accounts.movements.title")}
+                      <InfoTip info={APP_INFO.movimientos_de_la_cuenta} />
                     </h1>
                     <div className="filters flex flex-col justify-center items-center mb-2">
                       <span className="text-xs">
-                        From:{" "}
-                        <b>{treemapTimePeriod[0] ? getDateInYearMonthDay(treemapTimePeriod[0]) : "No time selected"}</b>
-                        {" "}to:{" "}
-                        <b>{treemapTimePeriod[1] ? getDateInYearMonthDay(treemapTimePeriod[1]) : "No time selected"}</b>
+                        {t("accounts.from")}{" "}
+                        <b>{treemapTimePeriod[0] ? getDateInYearMonthDay(treemapTimePeriod[0]) : t("web.no.time.selected")}</b>
+                        {" "}{t("accounts.to")}{" "}
+                        <b>{treemapTimePeriod[1] ? getDateInYearMonthDay(treemapTimePeriod[1]) : t("web.no.time.selected")}</b>
                       </span>
                       <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-                        <Tooltip title="Filter by date using a preset range or selecting a specific range 🤓">
+                        <Tooltip title={t("accounts.dateTip2")}>
                           <div className="text-gf-text w-[10px]">
                             <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
                           </div>

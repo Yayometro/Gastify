@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { ResponsiveCirclePacking } from "@nivo/circle-packing";
 import { useSelector } from "react-redux";
@@ -7,6 +8,7 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import { percentOf } from "@gastify/core/format/percent";
+import { useT } from "@/i18n/client";
 
 export interface CategoryPackingNode {
   name?: string;
@@ -22,9 +24,12 @@ export interface CategoryPackingNode {
 export interface CategoryCirclePackingProps {
   ccpTransacctions?: TransactionData[];
   ccpIsBill?: boolean;
+  // Inside the breakdown card the chart takes the card's height instead of its own fixed one.
+  ccpFill?: boolean;
 }
 
-function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }: CategoryCirclePackingProps): React.JSX.Element {
+function CategoryCirclePacking({ ccpTransacctions, ccpIsBill, ccpFill }: CategoryCirclePackingProps): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const [zoomedId, setZoomedId] = useState<string | null>(null);
   const [dataCat, setDataCat] = useState<CategoryPackingNode>({});
@@ -41,13 +46,15 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }: CategoryCirclePa
   // console.log(dataCat);
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
-      <div className="CategoryCircle-Content-title pt-5">
-        <h1 className="wallet-budget-title text-2xl text-center font-bold">
-          Category {ccpIsBill ? "Bills" : "Incomes"} Details
-        </h1>
-      </div>
-      <div className="circle-graph-container w-full h-full">
-        <div className="circle-graph-container w-[100%] h-[500px] sm:h-[700px] md:h-[800px]">
+      {!ccpFill && (
+        <div className="CategoryCircle-Content-title pt-5">
+          <h1 className="wallet-budget-title text-2xl text-center font-bold">
+            {t("categories.detail.title", { p1: ccpIsBill ? t("web.bills") : t("web.incomes") })}
+          </h1>
+        </div>
+      )}
+      <div className={ccpFill ? "relative min-h-0 w-full flex-1" : "circle-graph-container w-full h-full"}>
+        <div className={ccpFill ? "absolute inset-0" : "circle-graph-container w-[100%] h-[500px] sm:h-[700px] md:h-[800px]"}>
           <ResponsiveCirclePacking<CategoryPackingNode>
             data={dataCat}
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
@@ -115,16 +122,16 @@ function CategoryCirclePacking({ ccpTransacctions, ccpIsBill }: CategoryCirclePa
                     <div className="flex flex-col text-[13px] font-semibold">
                       <div className="flex gap-2">
                         <p className="font-semibold">
-                          {ccpIsBill ? "Total spent:" : "Total earned:"}
+                          {ccpIsBill ? t("web.total.spent") : t("web.total.earned")}
                         </p>
                         {formatMoneyMajor(totalValueOn, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2 underline" >
-                        <p className="font-semibold">Amount:</p>
+                        <p className="font-semibold">{t("categories.amount")}</p>
                         {formatMoneyMajor(dataa.value, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
-                        <p className="font-semibold">Percentage:</p>
+                        <p className="font-semibold">{t("categories.percentage")}</p>
                         {percentOf(dataa.value, totalValueOn)}%
                       </div>
                     </div>

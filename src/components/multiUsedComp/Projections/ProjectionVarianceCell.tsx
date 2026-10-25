@@ -3,6 +3,7 @@
 import React from "react";
 import { Tooltip } from "antd";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { useT } from "@/i18n/client";
 
 export interface ProjectionVarianceCellProps {
   label: string;
@@ -29,6 +30,7 @@ function ProjectionVarianceCell({
   value,
   betterWhenPositive,
 }: ProjectionVarianceCellProps): React.JSX.Element {
+  const t = useT();
   // No variance at all is neither better nor worse (0 satisfied both comparisons and always read
   // "better than expected", bug 52).
   const isNeutral = value === 0;
@@ -36,13 +38,13 @@ function ProjectionVarianceCell({
   const sign = value > 0 ? "+" : "";
   const verb = betterWhenPositive ? "ganaste" : "gastaste";
   const comparison = value >= 0 ? "más" : "menos";
-  const verdict = isNeutral ? "igual a lo esperado" : isBetter ? "mejor de lo esperado" : "peor de lo esperado";
+  const verdict = isNeutral ? t("web.as.expected") : isBetter ? t("web.better.than.expected") : t("web.worse.than.expected");
   const tooltip = (
     <>
-      {label} real ({usdFormatChanger(actual)}) − {label.toLowerCase()} proyectado ({usdFormatChanger(projected)}) = {sign}{usdFormatChanger(value)}.
+      {label} {t("projections.real")}{usdFormatChanger(actual)}) − {label.toLowerCase()} {t("projections.projected")}{usdFormatChanger(projected)}) = {sign}{usdFormatChanger(value)}.
       <br />
       {isNeutral
-        ? `Sin variación respecto a lo que proyectabas — ${verdict}.`
+        ? t("web.no.variance.from.what.you.projected.p1", { p1: verdict })
         : `${verb.charAt(0).toUpperCase() + verb.slice(1)} ${usdFormatChanger(Math.abs(value))} ${comparison} de lo que proyectabas — ${verdict}.`}
     </>
   );

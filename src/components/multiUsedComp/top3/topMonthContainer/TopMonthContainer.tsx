@@ -7,6 +7,7 @@ import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import type { PrimaryAmountItem } from "@gastify/core/time/timeFunctions";
 import TopMonthItem from "./TopMonthItem";
 import type { RootState } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 export interface TopMonthContainerStyle {
   father?: string;
@@ -38,6 +39,7 @@ function TopMonthContainer<T extends TopMonthContainerItem = TopMonthContainerIt
   title,
   mode = "transaction",
 }: TopMonthContainerProps<T>): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   return (
     <div
@@ -57,7 +59,7 @@ function TopMonthContainer<T extends TopMonthContainerItem = TopMonthContainerIt
           don't waste horizontal space when there's room for 2-3 months. */}
       <div className={style?.child || "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 w-full"}>
         {!items || items.length <= 0
-          ? "No items to display"
+          ? t("web.no.items.to.show.2")
           : items.map((item, index) => {
               return (
                 <TopMonthItem

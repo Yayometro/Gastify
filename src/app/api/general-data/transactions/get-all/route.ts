@@ -9,6 +9,7 @@ import "@/model/Tag";
 import "@/model/Budget";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { toPublicUser } from "@/lib/auth/publicUser";
+import { serverT } from "@/i18n/server";
 
 export interface TransactionsGetAllData {
   user: unknown;
@@ -31,9 +32,10 @@ export type TransactionsGetAllResponse = TransactionsGetAllSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<TransactionsGetAllResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No request received from get-all in Transactions");
+      throw new Error(t("errors.no.request.received.from.get"));
 
     // Security fix: this route previously lacked session verification and trusted
     // whatever userMail was sent in the request body (IDOR), returning another user's
@@ -41,14 +43,14 @@ export async function POST(
     // We now verify auth.api.getSession, resolve the session user, and scope all
     // database lookups to that authenticated user and wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     //DB
     await dbConnection();
     // User find
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
 
@@ -74,7 +76,7 @@ export async function POST(
       });
     if (!movementsFounded)
       throw new Error(
-        "No movements found, review the user and wallet id on get-all/transactions in POST"
+        t("errors.no.movements.found.review.the")
       );
 
     //FIND CATEGORIES
@@ -84,7 +86,7 @@ export async function POST(
     }).lean();
     if (!categoriesFounded)
       throw new Error(
-        "No categories found, review the user and wallet id on GENERAL-DATA POST"
+        t("errors.no.categories.found.review.the")
       );
 
     //FIND DEFUALT CATEGORIES
@@ -93,7 +95,7 @@ export async function POST(
     }).lean();
     if (!defaultCategoriesFounded)
       throw new Error(
-        "No default categories found, review the user and wallet id on GENERAL-DATA POST"
+        t("errors.no.default.categories.found.review")
       );
 
     //FIND SUB CATEGORIES
@@ -107,7 +109,7 @@ export async function POST(
       });
     if (!subCategoriesFounded)
       throw new Error(
-        "No SubCategories found, review the user and wallet id on GENERAL-DATA POST"
+        t("errors.no.subcategories.found.review.the")
       );
 
     // ACCOUNTS
@@ -117,7 +119,7 @@ export async function POST(
     });
     if (!accountsFounded)
       throw new Error(
-        "No Accounts found, review the user and wallet id on GENERAL-DATA POST"
+        t("errors.no.accounts.found.review.the")
       );
 
     const dataFull = {
@@ -130,7 +132,7 @@ export async function POST(
     };
     return NextResponse.json({
       data: dataFull,
-      message: "Categories and SubCategories founded",
+      message: t("errors.categories.and.subcategories.founded"),
       status: 201,
       ok: true,
     });

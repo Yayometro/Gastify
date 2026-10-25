@@ -1,4 +1,5 @@
 "use client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 import React, { useState, useEffect, useContext } from "react";
 import { Switch, ConfigProvider, Space, Spin } from "antd";
@@ -26,6 +27,7 @@ import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEq
 import AmountEquivalentPreview from "./AmountEquivalentPreview";
 import ChargedElsewhereSection from "./ChargedElsewhereSection";
 import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.ComponentType<{
   onClose?: () => void;
@@ -40,10 +42,10 @@ export interface CurrencyStrategyOption {
   description: string;
 }
 
-export const CURRENCY_STRATEGIES: CurrencyStrategyOption[] = [
-  { value: "convert", label: "Convert", description: "Recalculate the amount to preserve the same reported value." },
-  { value: "reinterpret", label: "Keep number", description: "Keep the same number, just relabel the currency." },
-  { value: "manual", label: "Enter manually", description: "Type the exact amount in the new currency." },
+export const currencyStrategies = (t: TranslateFn): CurrencyStrategyOption[] => [
+  { value: "convert", label: t("movements.currencyChange.convert"), description: t("movements.currencyChange.convertHelp") },
+  { value: "reinterpret", label: t("movements.currencyChange.keepNumber"), description: t("movements.currencyChange.keepHelp") },
+  { value: "manual", label: t("movements.currencyChange.manual"), description: t("movements.currencyChange.manualHelp") },
 ];
 
 export interface EditSingleTransMoneyMerchant {
@@ -165,6 +167,8 @@ interface FormState {
 }
 
 function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransItem; onClose: () => void }): React.JSX.Element {
+  const t = useT();
+  const tr = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -338,7 +342,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (needsCurrencyStrategy && !currencyStrategy) {
-      runNotify("error", "Choose how to handle the currency change before saving");
+      runNotify("error", tr("movements.currencyChange.choose"));
       return;
     }
     setIsLoading(true);
@@ -375,7 +379,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
         setIsLoading(false);
         onClose();
       } else {
-        runNotify("error", response?.message || "Something went wrong");
+        runNotify("error", response?.message || t("web.something.went.wrong"));
         setIsLoading(false);
       }
     } catch (e) {
@@ -385,7 +389,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-black/50 backdrop-blur-md flex items-center justify-center">
+    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-black/50 backdrop-blur-md flex items-center justify-center" onClick={(event) => { if (event.target === event.currentTarget) handleClose(); }}>
       <div className="content gf-glass-violet flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         {isLoading && (
           <div className="absolute top-0 left-0 bg-gf-surface/70 flex justify-center items-center w-full h-full z-[10001]">
@@ -393,28 +397,28 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
           </div>
         )}
 
-        <h1 className="text-center py-[10px] text-2xl text-white">Edit Transaction ✏️</h1>
+        <h1 className="text-center py-[10px] text-2xl text-white">{tr("movements.edit.title")}</h1>
 
         <form
           onSubmit={handleSubmit}
           className="form-trans-edit w-full h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20 overflow-y-scroll"
         >
-          <p className="label-tfp">Name</p>
+          <p className="label-tfp">{tr("movements.columns.name")}</p>
           <input
             type="text"
             name="name"
             value={form.name}
             onChange={handleChange}
-            placeholder="Transaction name"
+            placeholder={tr("movements.edit.name")}
           />
 
-          <p className="label-tfp">Amount ({needsCurrencyStrategy ? selectedAccountCurrency : originalAccountCurrency})</p>
+          <p className="label-tfp">{tr("movements.edit.amount", { p1: needsCurrencyStrategy ? selectedAccountCurrency : originalAccountCurrency })}</p>
           <input
             type="number"
             name="amount"
             value={form.amount}
             onChange={handleChange}
-            placeholder="Amount"
+            placeholder={tr("movements.columns.amount")}
           />
           <AmountEquivalentPreview quote={amountEquivalent} />
           {selectedAccountCurrency !== (wallet?.primaryCurrency || "MXN") && (
@@ -435,12 +439,12 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
                     setReportedOverrideOpen(true);
                   }}
                 >
-                  Doesn&apos;t look right? Correct it
+                  {tr("movements.edit.wrongAmount")}
                 </button>
               ) : (
                 <div className="flex flex-col gap-1 bg-gf-accent-soft-bg border border-purple-200 rounded-xl p-2">
                   <p className="label-tfp !mb-0">
-                    Exact reported amount ({wallet?.primaryCurrency || "MXN"})
+                    {tr("movements.edit.exactAmount", { p1: wallet?.primaryCurrency || "MXN" })}
                   </p>
                   <div className="flex gap-2 items-center">
                     <input
@@ -448,7 +452,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
                       step="0.01"
                       value={reportedOverrideAmount}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportedOverrideAmount(e.target.value)}
-                      placeholder="Exact amount"
+                      placeholder={tr("movements.amount.exact")}
                       className="flex-1"
                     />
                     <button
@@ -459,7 +463,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
                         setReportedOverrideAmount("");
                       }}
                     >
-                      Cancel
+                      {tr("movements.cancel")}
                     </button>
                   </div>
                 </div>
@@ -489,22 +493,22 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             <ConfigProvider theme={{ token: { colorPrimary: "#9700FF", borderRadius: 2, colorBgContainer: "#9700FF" } }}>
               <Space direction="horizontal" size={12}>
                 <div className="switch-int-cont">
-                  <p className="label-tfp">Is Income:</p>
+                  <p className="label-tfp">{tr("movements.edit.isIncome")}</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "income")} value={form.isIncome} />
                 </div>
                 <div className="switch-int-cont">
-                  <p className="label-tfp">Is Bill:</p>
+                  <p className="label-tfp">{tr("movements.edit.isBill")}</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "bill")} value={form.isBill} />
                 </div>
                 <div className="switch-int-cont">
-                  <p className="label-tfp">Is Readable:</p>
+                  <p className="label-tfp">{tr("movements.edit.isReadable")}</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "readable")} value={form.isReadable} />
                 </div>
               </Space>
             </ConfigProvider>
           </div>
 
-          <p className="label-tfp">Date</p>
+          <p className="label-tfp">{tr("movements.columns.date")}</p>
           <div className="date-container w-full h-[100px]">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["MobileDateTimePicker"]}>
@@ -532,7 +536,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             </LocalizationProvider>
           </div>
 
-          <p className="label-tfp">Category</p>
+          <p className="label-tfp">{tr("movements.columns.category")}</p>
           <TypedBtnSelectCategoryContext onClose={handleClose} />
           {close && (
             <BasicModal
@@ -542,23 +546,23 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             />
           )}
 
-          <p className="label-tfp">Tags</p>
+          <p className="label-tfp">{tr("movements.edit.tags")}</p>
           <input
             type="text"
             name="tags"
             value={form.tags}
             onChange={handleChange}
-            placeholder="Tags (separated by comma)"
+            placeholder={tr("movements.edit.tagsHint")}
           />
 
-          <p className="label-tfp">Account</p>
+          <p className="label-tfp">{tr("movements.bulk.account")}</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               value={form.account || ""}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setForm((p) => ({ ...p, account: e.target.value || null }))}
             >
-              <option value="">No account</option>
+              <option value="">{tr("movements.edit.noAccount")}</option>
               {accounts?.map((acc) => (
                 <option value={acc._id} key={acc._id}>{acc.name}</option>
               ))}
@@ -568,9 +572,9 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
           {needsCurrencyStrategy && (
             <div className="w-full bg-yellow-500/15 border border-yellow-300 rounded-xl p-2 flex flex-col gap-1">
               <p className="text-[11px] text-yellow-800">
-                This account is in {selectedAccountCurrency}, different from {originalAccountCurrency}. Choose how to handle it:
+                {tr("movements.edit.accountCurrency", { p1: selectedAccountCurrency, p2: originalAccountCurrency })}
               </p>
-              {CURRENCY_STRATEGIES.map((strategy) => (
+              {currencyStrategies(t).map((strategy) => (
                 <label key={strategy.value} className="flex items-start gap-2 text-[11px] cursor-pointer">
                   <input
                     type="radio"
@@ -588,14 +592,14 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             </div>
           )}
 
-          <p className="label-tfp">Project (optional)</p>
+          <p className="label-tfp">{tr("movements.edit.project")}</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               value={form.budget || ""}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setForm((p) => ({ ...p, budget: e.target.value || null }))}
             >
-              <option value="">No project</option>
+              <option value="">{tr("movements.edit.noProject")}</option>
               {projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}
             </select>
           </div>
@@ -606,7 +610,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
               onClick={onClose}
               className="flex-1 p-2 gf-glass-button-neutral text-gf-text text-center rounded-full"
             >
-              Cancel
+              {tr("movements.cancel")}
             </button>
             <button
               className={`flex-1 p-2 text-white text-center rounded-full ${
@@ -617,7 +621,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
               type="submit"
               disabled={needsCurrencyStrategy && !currencyStrategy}
             >
-              {isLoading ? <Spin /> : "Save changes"}
+              {isLoading ? <Spin /> : t("web.save.changes")}
             </button>
           </div>
         </form>

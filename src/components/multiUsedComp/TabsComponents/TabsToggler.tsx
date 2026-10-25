@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { Tooltip } from "antd";
 import EmptyModule from "../EmptyModule";
+import { InfoTip } from "../InfoTip";
+import type { InfoText } from "@gastify/core/info/createInfo";
+import { useT } from "@/i18n/client";
 
 export interface TabsTogglerComponentItem<P extends object = Record<string, unknown>> {
   tab: string;
@@ -17,6 +20,8 @@ export interface TabsTogglerProps {
   compontentsArray?: TabsTogglerComponentItem<any>[] | null;
   tooltip?: React.ReactNode;
   contentStyle?: string;
+  // An explanation for a tab, by the tab's name in lowercase: a "?" next to that tab's label.
+  tabInfo?: Record<string, InfoText>;
 }
 
 function TabsToggler({
@@ -24,7 +29,9 @@ function TabsToggler({
   compontentsArray,
   tooltip,
   contentStyle,
+  tabInfo,
 }: TabsTogglerProps): React.JSX.Element {
+  const t = useT();
   const [active, setActive] = useState(tabs?.[0]?.toLowerCase() || "");
 
   // Every "Compare" toggle on the History page adds/removes tabs at
@@ -60,20 +67,25 @@ function TabsToggler({
 
   return (
     <div className="rtt-cont w-full h-full mt-1">
-      <div className="tabs-toggler w-full text-center flex justify-center items-center gap-2 gf-tab-bar-accent rounded-md mb-3">
+      <div className="tabs-toggler mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 overflow-x-auto rounded-full gf-glass-inset p-1">
         {!tabs || tabs.length <= 0
           ? "No tabs in array, set at least one... "
           : tabs.map((tab) => (
               <div
                 key={"tabsToggler-" + tab}
                 onClick={() => handleTab(tab)}
-                className={`tab-rtt-bill p-4 cursor-pointer hover:text-purple-300 ${
+                role="tab"
+                aria-selected={active === tab.toLowerCase()}
+                className={`flex shrink-0 cursor-pointer items-center whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
                   active === tab.toLowerCase()
-                    ? "border-b-2 border-purple-600 text-purple-600 "
-                    : ""
+                    ? "gf-glass-button text-white"
+                    : "text-purple-200/80 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {tab}
+                <span className="inline-flex items-center gap-1">
+                  {tab}
+                  {tabInfo?.[tab.toLowerCase()] ? <InfoTip info={tabInfo[tab.toLowerCase()]} /> : null}
+                </span>
               </div>
             ))}
         <Tooltip title={tooltip}>
@@ -87,7 +99,7 @@ function TabsToggler({
       </div>
       <div className={contentStyle || "tabs-toggler-content-cont"}>
         {activeComponent || (
-          <EmptyModule emMessage="Ups... Nothing here 🤔. Component SHOULD have an array of components! 🚨" />
+          <EmptyModule emMessage={t("shared.tabs.missing")} />
         )}
       </div>
     </div>

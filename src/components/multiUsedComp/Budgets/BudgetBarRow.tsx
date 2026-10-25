@@ -9,6 +9,7 @@ import { isProjectBudget, isSavingBudget } from "@/helpers/transformers/budgetTy
 import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
+import { useT } from "@/i18n/client";
 
 export interface BudgetCategoryRef {
   _id?: string;
@@ -47,6 +48,7 @@ export interface BudgetBarRowProps {
 }
 
 function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const budgetCurrency = budget.currency || walletPrimaryCurrency;
   const goalAmount = budget.goalAmount || 0;
@@ -87,8 +89,8 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
       ? `Goal reached${balance < 0 ? `, exceeded by ${usdFormatChanger(Math.abs(balance))}` : ""} 🎉`
       : `${usdFormatChanger(balance)} to go`
     : exceeded
-      ? `Exceeded by ${usdFormatChanger(Math.abs(balance))}`
-      : `${usdFormatChanger(balance)} remaining`;
+      ? t("web.exceeded.by.p1", { p1: usdFormatChanger(Math.abs(balance)) })
+      : t("web.p1.remaining", { p1: usdFormatChanger(balance) });
   const balanceColor = isSaving
     ? balance <= 0
       ? "text-blue-300"
@@ -123,7 +125,7 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
             <div className="flex items-center -space-x-2">
               {budget.categories.slice(0, 3).map((catItem, idx) => {
                 const catObj = catItem.subCategory || catItem.category;
-                const name = catObj?.name || "Category";
+                const name = catObj?.name || t("web.category");
                 const color = catObj?.color || "#DADADA";
                 const icon = catObj?.icon || null;
                 return (
@@ -152,15 +154,15 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
             </div>
           )}
           <div className="flex flex-col">
-            <p className="text-purple-200 font-bold">{budget.name || "Unnamed budget"}</p>
+            <p className="text-purple-200 font-bold">{budget.name || t("web.unnamed.budget")}</p>
             <p className="text-[10px] gf-text-muted-glass">
-              {isSaving ? "Saving Goal" : isProject ? "Project Budget" : "Spending Budget"} • {periodLabel} • {budgetCurrency} based
+              {t("budgets.basedSubtitle", { p1: isSaving ? "Saving Goal" : isProject ? "Project Budget" : "Spending Budget", p2: periodLabel, p3: budgetCurrency })}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <p className={`text-sm font-bold ${balanceColor}`}>{balanceText}</p>
-          <span className="text-4xl leading-none" title="How this budget is doing">
+          <span className="text-4xl leading-none" title={t("budgets.howDoing")}>
             {moodEmoji}
           </span>
         </div>
@@ -189,7 +191,7 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
                 : "text-red-300"
               : "text-gf-text"
           }`}
-          title={isExceeded ? `Exceeded limit/goal! (${pctNum}%)` : `${pctNum}% of goal/limit`}
+          title={isExceeded ? t("web.exceeded.limit.goal.p1", { p1: pctNum }) : t("web.p1.of.goal.limit", { p1: pctNum })}
         >
           <span>{pctNum}%</span>
         </div>
@@ -197,8 +199,7 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
       <div className="flex justify-between text-xs gf-text-muted-glass mt-1">
         <span>{usdFormatChanger(value)}</span>
         <span>
-          of {usdFormatChanger(goalAmount)}
-          {isProject ? " total" : periodLabel}
+          {t("budgets.ofParams", { p1: usdFormatChanger(goalAmount), p2: isProject ? " total" : periodLabel })}
         </span>
       </div>
     </div>

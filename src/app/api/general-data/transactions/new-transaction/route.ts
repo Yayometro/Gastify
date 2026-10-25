@@ -4,6 +4,7 @@ import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { createTransaction } from "@/lib/transactions/createTransaction";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -48,9 +49,10 @@ export interface NewTransactionPostSuccessResponse {
 export type NewTransactionPostResponse = NewTransactionPostSuccessResponse;
 
 export async function GET(): Promise<NextResponse<NewTransactionGetResponse>> {
+  const t = await serverT(["errors"]);
   try {
     return NextResponse.json({
-      message: "Data founded in new Transaction",
+      message: t("errors.data.founded.in.new.transaction"),
       status: 201,
       ok: true,
     });
@@ -62,8 +64,9 @@ export async function GET(): Promise<NextResponse<NewTransactionGetResponse>> {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<NewTransactionPostResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on GENERAL-DATA POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on"));
     const body = ((await request.json()) || {}) as CreateTransactionRequestBody;
 
     // Security fix: this route previously lacked session verification and
@@ -72,12 +75,12 @@ export async function POST(
     // auth.api.getSession, find the session user in the database, and derive
     // user and wallet directly from the session.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on NEW TRANSACTION");
+      throw new Error(t("errors.user.not.found.on.new"));
 
     // Typed caller invocation for unmigrated createTransaction helper
     const { transaction, name } = await (
@@ -106,7 +109,7 @@ export async function POST(
     });
 
     return NextResponse.json({
-      message: `${name || "Transaction"} was created successfully`,
+      message: t("errors.api.createdPlain", { p1: name || t("errors.api.transactionFallback") }),
       data: transaction,
       status: 201,
       ok: true,

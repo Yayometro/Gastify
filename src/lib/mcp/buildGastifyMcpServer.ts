@@ -27,6 +27,14 @@ import { getLastDayOfQuarter } from "@gastify/core/time/timeFunctions";
 import { buildProjectionsForRange } from "@/lib/mcp/mcpProjections";
 import type { IUser } from "@/model/User";
 import type { ApiTokenWallet } from "@/lib/auth/apiTokens";
+import { createTranslator } from "@gastify/core/i18n/translate";
+import { DEFAULT_LOCALE } from "@gastify/core/i18n/locales";
+import analyzerEs from "@gastify/core/i18n/messages/es/analyzer";
+import historyEs from "@gastify/core/i18n/messages/es/history";
+import budgetsEs from "@gastify/core/i18n/messages/es/budgets";
+import type { WalletText } from "@gastify/core/transformers/walletAnalyzer";
+// The language of the analyzer texts for this server: the server has no screen language, so it writes in the default one.
+const WALLET_TEXT: WalletText = { locale: DEFAULT_LOCALE, t: createTranslator(DEFAULT_LOCALE, { ...analyzerEs, ...historyEs, ...budgetsEs }) };
 
 export interface GastifyMcpAuth {
   user: IUser | { _id: unknown };
@@ -522,7 +530,7 @@ export function buildGastifyMcpServer({ user, wallet }: GastifyMcpAuth): McpServ
         { user, wallet },
         { from: getSnapshotLookbackStart(referenceDate) }
       );
-      const snapshot = buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate });
+      const snapshot = buildWalletAnalyzerSnapshot({ text: WALLET_TEXT, transactions, budgets, referenceDate });
       const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
       const data = {
         ...buildCuratedWalletSummary(snapshot),
@@ -552,7 +560,7 @@ export function buildGastifyMcpServer({ user, wallet }: GastifyMcpAuth): McpServ
         { user, wallet },
         { from: getSnapshotLookbackStart(referenceDate) }
       );
-      const snapshot = buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate });
+      const snapshot = buildWalletAnalyzerSnapshot({ text: WALLET_TEXT, transactions, budgets, referenceDate });
       const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
       const data = {
         ...snapshot,
@@ -597,7 +605,7 @@ export function buildGastifyMcpServer({ user, wallet }: GastifyMcpAuth): McpServ
       );
       const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
       const data = {
-        ...buildMonthComparison({ transactions, monthADate: dateA, monthBDate: dateB }),
+        ...buildMonthComparison({ text: WALLET_TEXT, transactions, monthADate: dateA, monthBDate: dateB }),
         walletPrimaryCurrency,
         currencyBreakdown: {
           monthA: buildCurrencyBreakdown(transactions, walletPrimaryCurrency, rangeA),
@@ -624,7 +632,7 @@ export function buildGastifyMcpServer({ user, wallet }: GastifyMcpAuth): McpServ
         { user, wallet },
         { from: getPeriodSnapshotLookbackStart(range) }
       );
-      const snapshot = buildPeriodSnapshot({ transactions, budgets, range });
+      const snapshot = buildPeriodSnapshot({ text: WALLET_TEXT, transactions, budgets, range });
       const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
       const data = {
         ...buildCuratedPeriodSummary(snapshot),
@@ -654,7 +662,7 @@ export function buildGastifyMcpServer({ user, wallet }: GastifyMcpAuth): McpServ
         { user, wallet },
         { from: getPeriodSnapshotLookbackStart(range) }
       );
-      const snapshot = buildPeriodSnapshot({ transactions, budgets, range });
+      const snapshot = buildPeriodSnapshot({ text: WALLET_TEXT, transactions, budgets, range });
       const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
       const data = {
         ...snapshot,
@@ -695,7 +703,7 @@ export function buildGastifyMcpServer({ user, wallet }: GastifyMcpAuth): McpServ
       );
       const walletPrimaryCurrency = wallet.primaryCurrency || "MXN";
       const data = {
-        ...buildPeriodComparison({
+        ...buildPeriodComparison({ text: WALLET_TEXT,
           transactions,
           budgets,
           rangeA: resolvedA.range,

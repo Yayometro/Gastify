@@ -4,6 +4,7 @@ import { z } from "zod";
 import Transaction from "@/model/Transaction";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -37,10 +38,11 @@ export type RemoveManyTransactionsResponse =
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveManyTransactionsResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
       throw new Error(
-        "No request info ID send to work on REMOVE MANY TRANSACTION"
+        t("errors.no.request.info.id.send")
       );
 
     const { manyTrans } = ((await request.json()) ||
@@ -52,13 +54,13 @@ export async function POST(
     // We now verify the caller's session via auth.api.getSession, find the
     // session user in the database, and scope the deletion query to the user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on REMOVE MANY TRANSACTIONS");
+      throw new Error(t("errors.user.not.found.on.remove.2"));
 
     const userWallet = userFound.wallet;
 
@@ -70,10 +72,10 @@ export async function POST(
     console.log(result);
     if (!result)
       throw new Error(
-        "Something went wrong trying to delete multiple transactions"
+        t("errors.something.went.wrong.trying.to")
       );
     return NextResponse.json({
-      message: `"${result.deletedCount}" transactions removed successfully`,
+      message: t("errors.api.transactionsRemoved", { p1: result.deletedCount }),
       deletedCount: result.deletedCount,
       status: 200,
       ok: true,
@@ -81,7 +83,7 @@ export async function POST(
   } catch (e) {
     console.log(e);
     return NextResponse.json({
-      error: (e as Error)?.message || "Unexpected error",
+      error: (e as Error)?.message || t("errors.api.unexpectedError"),
       status: 500,
       ok: false,
     });

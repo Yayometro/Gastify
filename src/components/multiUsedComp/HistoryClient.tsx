@@ -13,6 +13,9 @@ import HistoricalBudgetsComparative from "./historicalBudgetsComparative/Histori
 import HistoricalWalletAnalyzer from "./HistoricalWalletAnalyzer/HistoricalWalletAnalyzer";
 import HistoricalProjectionsTable from "./HistoricalWalletAnalyzer/HistoricalProjectionsTable";
 import usePeriodComparison from "@/hooks/usePeriodComparison";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+
+import { useT, useInfo } from "@/i18n/client";
 
 export type PeriodComparisonState = ReturnType<typeof usePeriodComparison>;
 
@@ -48,6 +51,8 @@ export interface HistoryClientProps {
 }
 
 function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
+  const { HISTORY_INFO } = useInfo();
+  const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   // Shared "period A vs period B" state for the chart/category/budget/
   // movements sections below - see usePeriodComparison for why this used
@@ -88,15 +93,15 @@ function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
         <div className="loader">
           {isLoading && (
             <TypedDashboardLoadingMessage
-              message={`We are building up your dashboard and data`}
-              subMessage={`Please wait a moment 🤓`}
+              message={t("web.we.are.building.up.your.dashboard.and.data")}
+              subMessage={t("web.please.wait.a.moment")}
               setLoading={toggleIsLoading}
             />
           )}
         </div>
         <div className="w-full profile-img py-4 text-center text-white">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
-            Transactions History
+            {t("history.title")}<InfoTip info={HISTORY_INFO} />
           </h1>
         </div>
         <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">

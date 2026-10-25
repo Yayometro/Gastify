@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { usdFormatChanger, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
@@ -22,6 +24,7 @@ import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 import CurrencyBreakdownChips from "@/components/multiUsedComp/CurrencyBreakdownChips";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
+import { useT, useInfo } from "@/i18n/client";
 
 // Unmigrated JS components typed bridges
 interface CurrencyBreakdownChipsProps {
@@ -129,6 +132,8 @@ function BudgetDetailModal({
   onClose,
   onEdit,
 }: BudgetDetailModalProps): React.JSX.Element | null {
+  const { APP_INFO } = useInfo();
+  const tr = useT();
   const dispatch = useDispatch<AppDispatch>();
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const { total: linkedAccountsTotal, breakdown: linkedAccountsBreakdown } = useLinkedAccountsTotal(
@@ -170,7 +175,7 @@ function BudgetDetailModal({
           const amount = getPrimaryAmount(t);
           spent += amount;
 
-          const catName = t.subCategory?.name || t.category?.name || "Other";
+          const catName = t.subCategory?.name || t.category?.name || tr("web.other");
           const catColor = t.subCategory?.color || t.category?.color || "#DADADA";
           const catIcon = t.subCategory?.icon || t.category?.icon || "md/MdFilterNone";
 
@@ -224,32 +229,32 @@ function BudgetDetailModal({
     const toGo = goalAmount - effectiveAmount;
     remainingText =
       toGo <= 0
-        ? "Goal reached 🎉"
+        ? tr("web.goal.reached")
         : `${usdFormatChanger(toGo)} to go`;
   } else {
     const remain = goalAmount - effectiveAmount;
     remainingText =
       remain >= 0
-        ? `${usdFormatChanger(remain)} remaining`
-        : `Exceeded limit by ${usdFormatChanger(Math.abs(remain))}`;
+        ? tr("web.p1.remaining", { p1: usdFormatChanger(remain) })
+        : tr("web.exceeded.limit.by.p1", { p1: usdFormatChanger(Math.abs(remain)) });
   }
 
   const periodLabel = budget.period
     ? ` / ${budget.period === "yearly" ? "year" : budget.period === "quarterly" ? "quarter" : budget.period === "biannual" ? "6m" : "month"}`
-    : " / month";
+    : tr("web.month");
 
   const getEmojiTooltipMessage = (r: number, saving: boolean): string => {
     const safeRatio = Number.isFinite(r) ? r : 0;
     if (saving) {
-      if (safeRatio >= 0.85) return "🤩 Amazing! You are at or very close to your savings goal!";
-      if (safeRatio >= 0.35) return "🙂 Good progress! Keep saving toward your goal.";
-      return "😟 Just starting. Keep pushing toward your savings goal!";
+      if (safeRatio >= 0.85) return tr("web.amazing.you.are.at.or.very.close.to.your.savings.goal");
+      if (safeRatio >= 0.35) return tr("web.good.progress.keep.saving.toward.your.goal");
+      return tr("web.just.starting.keep.pushing.toward.your.savings.goal");
     }
-    if (safeRatio > 1) return "🔥 Watch out! You have exceeded the limit for this budget.";
-    if (safeRatio >= 0.85) return "😰 Cuidado, estás muy cerca de tu límite.";
-    if (safeRatio >= 0.6) return "😐 Halfway there. Keep an eye on your remaining limit.";
-    if (safeRatio >= 0.3) return "🙂 Doing well! Spendings are moderate.";
-    return "🤩 Excellent! Very little spent so far.";
+    if (safeRatio > 1) return tr("web.watch.out.you.have.exceeded.the.limit.for.this.budget");
+    if (safeRatio >= 0.85) return tr("web.careful.you.are.very.close.to.your.limit");
+    if (safeRatio >= 0.6) return tr("web.halfway.there.keep.an.eye.on.your.remaining.limit");
+    if (safeRatio >= 0.3) return tr("web.doing.well.spending.is.moderate");
+    return tr("web.excellent.very.little.spent.so.far");
   };
 
   const emojiTooltip = getEmojiTooltipMessage(ratio, isSaving);
@@ -261,11 +266,11 @@ function BudgetDetailModal({
       // defaults to 2000 and used to open BEHIND it, invisible and unclickable,
       // so deleting from here could never be confirmed.
       zIndex: 10000,
-      title: "Delete this movement?",
-      content: "Are you sure you want to remove this transaction?",
-      okText: "Yes, delete",
+      title: tr("budgets.movement.confirmQuestion"),
+      content: tr("web.are.you.sure.you.want.to.remove.this.transaction"),
+      okText: tr("web.yes.delete"),
       okType: "danger",
-      cancelText: "Cancel",
+      cancelText: tr("web.cancel"),
       onOk: async () => {
         try {
           // `fetcher` is a factory: it used to be called as `fetcher.post`, which
@@ -277,9 +282,9 @@ function BudgetDetailModal({
           );
           if (res.ok) {
             dispatch(removeOneTransacction(id));
-            runNotify("ok", "Movement deleted successfully!");
+            runNotify("ok", tr("budgets.movement.deleted"));
           } else {
-            runNotify("error", "Error removing transaction.");
+            runNotify("error", tr("budgets.movement.deleteError"));
           }
         } catch (e: unknown) {
           runNotify("error", String(e));
@@ -307,10 +312,10 @@ function BudgetDetailModal({
               <div className="flex items-start justify-between gap-3 pr-12">
                 <div>
                   <h2 className="text-2xl font-bold text-purple-300">
-                    {budget.name || "Unnamed Budget"}
+                    {budget.name || tr("web.unnamed.budget")}
                   </h2>
                   <p className="text-xs text-gf-text-muted mt-0.5">
-                    {isSaving ? "Savings goal" : "Spending budget"} ({budget.period || "monthly"}) • {budgetCurrency} based
+                    {tr("budgets.budgetSubtitle", { p1: isSaving ? "Savings goal" : "Spending budget", p2: budget.period || "monthly", p3: budgetCurrency })}
                   </p>
                 </div>
                 <Tooltip title={emojiTooltip} placement="left">
@@ -356,14 +361,14 @@ function BudgetDetailModal({
                           : "text-red-300"
                         : "text-gf-text"
                     }`}
-                    title={isExceeded ? `Exceeded limit/goal! (${pctNum}%)` : `${pctNum}% of goal/limit`}
+                    title={isExceeded ? tr("web.exceeded.limit.goal.p1", { p1: pctNum }) : tr("web.p1.of.goal.limit", { p1: pctNum })}
                   >
                     <span>{pctNum}%</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-semibold text-purple-300">
-                    {pctNum}% of {isSaving ? "goal" : "limit"}
+                    {tr("budgets.percentOf", { p1: pctNum, p2: isSaving ? "goal" : "limit" })}
                   </span>
                   <span className="font-bold text-gf-text-muted">{remainingText}</span>
                 </div>
@@ -373,7 +378,8 @@ function BudgetDetailModal({
               {categoryBreakdown.length > 0 && (
                 <div className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
                   <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-3">
-                    Spending Distribution by Category
+                    {tr("budgets.chart.spendingByCategory")}
+                    <InfoTip info={APP_INFO.distribuci_n_del_gasto} />
                   </h3>
                   {/* Stacked bar */}
                   <div className="w-full h-3.5 bg-gf-surface-2 rounded-full overflow-hidden flex mb-3">
@@ -423,7 +429,7 @@ function BudgetDetailModal({
               {/* Detailed Movements List (Movements.jsx transaction component style) */}
               <div>
                 <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-2">
-                  Detailed Movements ({matchingTransactions.length})
+                  {tr("budgets.movement.detailed", { p1: matchingTransactions.length })}
                 </h3>
 
                 {/* Linked accounts banner for savings */}
@@ -432,7 +438,7 @@ function BudgetDetailModal({
                     <div className="flex items-center gap-2">
                       <span className="text-base">🔗</span>
                       <span>
-                        Linked to {budget.linkedAccounts.length} account{budget.linkedAccounts.length !== 1 ? "s" : ""}:{" "}
+                        {tr("budgets.linkedTo")} {budget.linkedAccounts.length} {tr("budgets.account")}{budget.linkedAccounts.length !== 1 ? "s" : ""}:{" "}
                         <strong>
                           {budget.linkedAccounts
                             .map((a) => `${a.name || "Account"} (${formatMoneyMajor(a.amount || 0, a.currency || walletPrimaryCurrency, { showCode: true })})`)
@@ -450,7 +456,7 @@ function BudgetDetailModal({
                     <div className="flex items-center gap-2">
                       <span className="text-base">📌</span>
                       <span>
-                        Manual saving progress set:
+                        {tr("budgets.saving.manualSet")}
                       </span>
                     </div>
                     <span className="font-bold text-blue-200">{usdFormatChanger(budget.savingAmount)}</span>
@@ -481,31 +487,31 @@ function BudgetDetailModal({
                           <div className="flex flex-col truncate">
                             <div className="font-medium text-xs text-gf-text truncate">
                               {!movement.name ? (
-                                <span className="italic text-gf-text-muted">No name. Asign one...</span>
+                                <span className="italic text-gf-text-muted">{tr("budgets.noName")}</span>
                               ) : (
                                 <span>{movement.name}</span>
                               )}
                             </div>
                             <div className="text-[10px] text-gf-text-muted flex items-center gap-2 flex-wrap mt-0.5">
                               <span>
-                                <strong className="text-gf-text-muted font-light">Cat: </strong>
+                                <strong className="text-gf-text-muted font-light">{tr("budgets.movement.cat")} </strong>
                                 {movement.category?.name || "—"}
                               </span>
                               {movement.subCategory?.name && (
                                 <span>
-                                  <strong className="text-gf-text-muted font-light">Sub: </strong>
+                                  <strong className="text-gf-text-muted font-light">{tr("budgets.movement.sub")} </strong>
                                   {movement.subCategory.name}
                                 </span>
                               )}
                               <span>
-                                <strong className="text-gf-text-muted font-light">Acc: </strong>
+                                <strong className="text-gf-text-muted font-light">{tr("budgets.movement.acc")} </strong>
                                 {movement.account?.name || "—"}
                               </span>
                             </div>
                             <div className="flex flex-wrap gap-1 items-center justify-start text-[10px] text-gf-text-muted mt-1">
-                              <span className="font-light">Tags:</span>
+                              <span className="font-light">{tr("budgets.movement.tags")}</span>
                               {!movement.tags || movement.tags.length === 0 ? (
-                                <span>No tags...</span>
+                                <span>{tr("budgets.movement.noTags")}</span>
                               ) : (
                                 movement.tags.map((tag) => (
                                   <Tag tag={tag} key={tag._id} size={8} />
@@ -541,7 +547,7 @@ function BudgetDetailModal({
                               type="button"
                               onClick={() => handleRemoveTrans(movement._id)}
                               className="text-gf-text-muted hover:text-red-400 transition-colors p-1 cursor-pointer"
-                              title="Delete transaction"
+                              title={tr("budgets.transaction.delete")}
                             >
                               <CategoIcon type="MdDelete" />
                             </button>
@@ -549,7 +555,7 @@ function BudgetDetailModal({
                               type="button"
                               onClick={() => setEditingTrans(movement)}
                               className="text-gf-text-muted hover:text-purple-600 transition-colors p-1 cursor-pointer"
-                              title="Edit transaction"
+                              title={tr("budgets.transaction.edit")}
                             >
                               <CategoIcon type="MdOutlineCreate" />
                             </button>
@@ -560,7 +566,7 @@ function BudgetDetailModal({
                   </div>
                 ) : (
                   <div className="py-4">
-                    <EmptyModule emMessage="No movements found for this budget in the selected time period 🤓" />
+                    <EmptyModule emMessage={tr("budgets.movement.none")} />
                   </div>
                 )}
               </div>
@@ -576,7 +582,7 @@ function BudgetDetailModal({
                   className="w-full py-3 px-4 gf-glass-button text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
                 >
                   <UniversalCategoIcon type="md/MdEdit" siz={18} />
-                  <span>Edit Budget ✏️</span>
+                  <span>{tr("budgets.edit")}</span>
                 </button>
               </div>
             </div>

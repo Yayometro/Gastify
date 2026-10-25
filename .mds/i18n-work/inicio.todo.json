@@ -1,0 +1,185 @@
+{
+  "namespace": "inicio",
+  "entries": [
+    {
+      "key": "inicio.nav.login",
+      "source": "login",
+      "es": "Entrar",
+      "en": "Login"
+    },
+    {
+      "key": "inicio.charts.your",
+      "source": "your",
+      "es": "tus",
+      "en": "your"
+    },
+    {
+      "key": "inicio.brand",
+      "source": "Gastify",
+      "es": "Gastify",
+      "en": "Gastify"
+    },
+    {
+      "key": "inicio.cta.register",
+      "source": "Register me",
+      "es": "Regístrame",
+      "en": "Register me"
+    },
+    {
+      "key": "inicio.hero.discover",
+      "source": "Discover",
+      "es": "Descubre",
+      "en": "Discover"
+    },
+    {
+      "key": "inicio.hero.spendingHabits",
+      "source": "your spending habits in",
+      "es": "tus hábitos de gasto en",
+      "en": "your spending habits in"
+    },
+    {
+      "key": "inicio.hero.time",
+      "source": "1 min",
+      "es": "1 min",
+      "en": "1 min"
+    },
+    {
+      "key": "inicio.hero.intro",
+      "source": "Register your expenses, import your Bank Statements directly using Excel or XML files",
+      "es": "Registra tus gastos e importa tus estados de cuenta directamente desde archivos Excel o XML",
+      "en": "Register your expenses, import your Bank Statements directly using Excel or XML files"
+    },
+    {
+      "key": "inicio.cta.login",
+      "source": "Login 🤓",
+      "es": "Entrar 🤓",
+      "en": "Login 🤓"
+    },
+    {
+      "key": "inicio.cta.registerHeart",
+      "source": "Register me ❤️",
+      "es": "Regístrame ❤️",
+      "en": "Register me ❤️"
+    },
+    {
+      "key": "inicio.alt.dashboard",
+      "source": "Gastify dashboard on a laptop",
+      "es": "Panel de Gastify en una laptop",
+      "en": "Gastify dashboard on a laptop"
+    },
+    {
+      "key": "inicio.alt.import",
+      "source": "Import your bank statements from Excel",
+      "es": "Importa tus estados de cuenta desde Excel",
+      "en": "Import your bank statements from Excel"
+    },
+    {
+      "key": "inicio.feature.import",
+      "source": "Import",
+      "es": "Importa",
+      "en": "Import"
+    },
+    {
+      "key": "inicio.feature.bankStatements",
+      "source": "Bank Statements",
+      "es": "Estados de cuenta",
+      "en": "Bank Statements"
+    },
+    {
+      "key": "inicio.feature.directly",
+      "source": "directly using Excel or XML",
+      "es": "directamente con Excel o XML",
+      "en": "directly using Excel or XML"
+    },
+    {
+      "key": "inicio.feature.forget",
+      "source": "Forget about register manually all your bills and incomes. Just download your bank statements and automatize the power of Gastify.",
+      "es": "Olvídate de registrar a mano todos tus gastos e ingresos. Solo descarga tus estados de cuenta y automatiza el poder de Gastify.",
+      "en": "Forget about register manually all your bills and incomes. Just download your bank statements and automatize the power of Gastify."
+    },
+    {
+      "key": "inicio.alt.charts",
+      "source": "Custom charts of your spending",
+      "es": "Gráficas personalizadas de tus gastos",
+      "en": "Custom charts of your spending"
+    },
+    {
+      "key": "inicio.charts.getAll",
+      "source": "Get all",
+      "es": "Obtén todos tus",
+      "en": "Get all"
+    },
+    {
+      "key": "inicio.charts.cashMovements",
+      "source": "cash movements",
+      "es": "movimientos de dinero",
+      "en": "cash movements"
+    },
+    {
+      "key": "inicio.charts.customizable",
+      "source": "in customizable charts. Don’t forget anything!",
+      "es": "en gráficas personalizables. ¡Que no se te escape nada!",
+      "en": "in customizable charts. Don’t forget anything!"
+    },
+    {
+      "key": "inicio.charts.analyze",
+      "source": "Analyze your cash flow with responsive and dynamic charts.",
+      "es": "Analiza tu flujo de dinero con gráficas responsivas y dinámicas.",
+      "en": "Analyze your cash flow with responsive and dynamic charts."
+    },
+    {
+      "key": "inicio.cta.readyTitle",
+      "source": "Ready to take the control over your finances?",
+      "es": "¿Listo para tomar el control de tus finanzas?",
+      "en": "Ready to take the control over your finances?"
+    },
+    {
+      "key": "inicio.cta.readyText",
+      "source": "In less than a minute you’ll be ready to use the app. Register!",
+      "es": "En menos de un minuto estarás listo para usar la app. ¡Regístrate!",
+      "en": "In less than a minute you’ll be ready to use the app. Register!"
+    },
+    {
+      "key": "inicio.cta.registerBig",
+      "source": "REGISTER ME ❤️",
+      "es": "REGÍSTRAME ❤️",
+      "en": "REGISTER ME ❤️"
+    },
+    {
+      "key": "inicio.devices.title",
+      "source": "Gastify on your devices",
+      "es": "Gastify en tus dispositivos",
+      "en": "Gastify on your devices"
+    },
+    {
+      "key": "inicio.footer.copyright",
+      "source": "© {p1}Gastify",
+      "es": "© {p1} Gastify",
+      "en": "© {p1} Gastify"
+    },
+    {
+      "key": "inicio.footer.rights",
+      "source": "All rights reserved by Gastify",
+      "es": "Todos los derechos reservados por Gastify",
+      "en": "All rights reserved by Gastify"
+    },
+    {
+      "key": "inicio.footer.trademark",
+      "source": "Gastify is a trademark and intellectual property of Jair Vázquez",
+      "es": "Gastify es una marca registrada y propiedad intelectual de Jair Vázquez",
+      "en": "Gastify is a trademark and intellectual property of Jair Vázquez"
+    },
+    {
+      "key": "inicio.footer.privacy",
+      "source": "All information shared with Gastify is securely stored in our database and sensitive information is not accessible to us or any third party seeking to use it.",
+      "es": "Toda la información que compartes con Gastify se guarda de forma segura en nuestra base de datos, y la información sensible no es accesible para nosotros ni para ningún tercero que intente usarla.",
+      "en": "All information shared with Gastify is securely stored in our database and sensitive information is not accessible to us or any third party seeking to use it."
+    },
+    {
+      "key": "inicio.footer.contact",
+      "source": "Contact us",
+      "es": "Contáctanos",
+      "en": "Contact us"
+    }
+  ]
+}

@@ -16,6 +16,7 @@ import { getExplicitBudgetId } from "@/helpers/transformers/budgetTypes";
 import { updateTransaction, type TransactionData } from "@/lib/features/transacctionsSlice";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
+import { useT } from "@/i18n/client";
 
 export interface ProjectBudgetTagRef {
   _id?: string;
@@ -82,6 +83,8 @@ export default function ProjectBudgetDetailModal({
   onClose,
   onEdit,
 }: ProjectBudgetDetailModalProps): React.JSX.Element {
+  const tr = useT();
+  const t = useT();
   const [editingMovement, setEditingMovement] = useState<ProjectBudgetTransactionItem | null>(null);
   const [showAddExisting, setShowAddExisting] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -142,9 +145,9 @@ export default function ProjectBudgetDetailModal({
         transactionId,
         budgetId: shouldLink ? budget._id : null,
       })) as { ok?: boolean; data?: TransactionData; message?: string };
-      if (!res.ok || !res.data) throw new Error(res.message || "Could not update the movement");
+      if (!res.ok || !res.data) throw new Error(res.message || tr("web.could.not.update.the.movement"));
       dispatch(updateTransaction(res.data));
-      runNotify("ok", shouldLink ? "Movement added to project" : "Movement removed from project");
+      runNotify("ok", shouldLink ? tr("web.movement.added.to.project") : tr("web.movement.removed.from.project"));
     } catch (error: unknown) {
       runNotify("error", (error as { message?: string })?.message || String(error));
     }
@@ -152,8 +155,8 @@ export default function ProjectBudgetDetailModal({
 
   const range =
     budget.eventStartDate || budget.eventEndDate
-      ? `${budget.eventStartDate ? dayjs(budget.eventStartDate).format("DD MMM YYYY") : "No start date"} → ${budget.eventEndDate ? dayjs(budget.eventEndDate).format("DD MMM YYYY") : "No end date"}`
-      : "Dates not set";
+      ? `${budget.eventStartDate ? dayjs(budget.eventStartDate).format("DD MMM YYYY") : tr("web.no.start.date")} → ${budget.eventEndDate ? dayjs(budget.eventEndDate).format("DD MMM YYYY") : tr("web.no.end.date")}`
+      : tr("web.dates.not.set");
 
   return (
     <>
@@ -175,21 +178,21 @@ export default function ProjectBudgetDetailModal({
                 </span>
                 <div>
                   <p className="text-xs text-purple-200 font-bold uppercase tracking-wide">
-                    Project budget • {budgetCurrency} based
+                    {t("budgets.projectSubtitle", { p1: budgetCurrency })}
                   </p>
                   <h2 className="text-2xl font-bold">{budget.name}</h2>
                 </div>
               </div>
-              <p className="text-xs text-purple-100 mt-1">{range} · dates are editable</p>
+              <p className="text-xs text-purple-100 mt-1">{t("budgets.datesEditable", { p1: range })}</p>
             </div>
             <div className="bg-gf-surface-2 rounded-t-[38px] px-5 sm:px-7 py-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                 <div className="bg-gf-surface border border-gf-border rounded-2xl p-3">
-                  <p className="text-[10px] text-gf-text-muted uppercase">Spent</p>
+                  <p className="text-[10px] text-gf-text-muted uppercase">{t("budgets.spent")}</p>
                   <p className="text-lg font-bold text-purple-300">{usdFormatChanger(spent)}</p>
                 </div>
                 <div className="bg-gf-surface border border-gf-border rounded-2xl p-3">
-                  <p className="text-[10px] text-gf-text-muted uppercase">Limit</p>
+                  <p className="text-[10px] text-gf-text-muted uppercase">{t("budgets.limit")}</p>
                   <p className="text-lg font-bold text-purple-300">{usdFormatChanger(goal)}</p>
                 </div>
                 <div
@@ -197,7 +200,7 @@ export default function ProjectBudgetDetailModal({
                     spent > goal ? "bg-red-500/15 border-red-200" : "bg-emerald-500/15 border-emerald-200"
                   }`}
                 >
-                  <p className="text-[10px] text-gf-text-muted uppercase">{spent > goal ? "Over" : "Available"}</p>
+                  <p className="text-[10px] text-gf-text-muted uppercase">{spent > goal ? tr("web.over") : tr("web.available")}</p>
                   <p className="text-lg font-bold">{usdFormatChanger(Math.abs(goal - spent))}</p>
                 </div>
               </div>
@@ -208,12 +211,12 @@ export default function ProjectBudgetDetailModal({
                 />
               </div>
               <p className="text-[11px] text-gf-text-muted mt-2">
-                {Math.round(ratio * 100)}% used · counts linked expenses from any purchase date
+                {t("budgets.usedNote", { p1: Math.round(ratio * 100) })}
               </p>
 
               {!!budget.linkedTags?.length && (
                 <div className="mt-4">
-                  <p className="text-[10px] uppercase tracking-wide text-gf-text-muted mb-1">Suggestion tags</p>
+                  <p className="text-[10px] uppercase tracking-wide text-gf-text-muted mb-1">{t("budgets.suggestionTags")}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {budget.linkedTags.map((tag) => {
                       const key =
@@ -240,21 +243,21 @@ export default function ProjectBudgetDetailModal({
                   onClick={() => onEdit(budget)}
                   className="rounded-full gf-glass-button text-white text-xs font-bold px-4 py-2"
                 >
-                  Edit project
+                  {t("budgets.project.edit")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAddExisting((value) => !value)}
                   className="rounded-full border border-purple-300 text-purple-300 text-xs font-bold px-4 py-2"
                 >
-                  Add existing movement
+                  {t("budgets.project.addExisting")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCreate(true)}
                   className="rounded-full border border-purple-300 text-purple-300 text-xs font-bold px-4 py-2"
                 >
-                  Create movement
+                  {t("budgets.project.createMovement")}
                 </button>
               </div>
 
@@ -264,11 +267,11 @@ export default function ProjectBudgetDetailModal({
                     type="search"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search expenses…"
+                    placeholder={t("budgets.project.searchExpenses")}
                     className="w-full mb-2"
                   />
                   {!!tagIds.length && (
-                    <p className="text-[10px] text-purple-300 mb-2">Movements sharing a project tag are shown first.</p>
+                    <p className="text-[10px] text-purple-300 mb-2">{t("budgets.project.tagFirst")}</p>
                   )}
                   <div className="flex flex-col gap-2 max-h-56 overflow-y-auto">
                     {candidates.length ? (
@@ -285,7 +288,7 @@ export default function ProjectBudgetDetailModal({
                               <span className="block text-xs font-semibold truncate">{transaction.name}</span>
                               <span className="block text-[10px] text-gf-text-muted">
                                 {dayjs(transaction.date).format("DD MMM YYYY")}
-                                {suggested ? " · Suggested by tag" : ""}
+                                {suggested ? tr("web.suggested.by.tag") : ""}
                               </span>
                             </span>
                             <strong className="text-xs text-red-500 shrink-0">
@@ -295,7 +298,7 @@ export default function ProjectBudgetDetailModal({
                         );
                       })
                     ) : (
-                      <p className="text-xs text-gf-text-muted text-center py-3">No available expenses found.</p>
+                      <p className="text-xs text-gf-text-muted text-center py-3">{t("budgets.project.noExpenses")}</p>
                     )}
                   </div>
                 </div>
@@ -303,7 +306,7 @@ export default function ProjectBudgetDetailModal({
 
               <div className="mt-5">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-purple-300">Linked movements</h3>
+                  <h3 className="font-bold text-purple-300">{t("budgets.project.linked")}</h3>
                   <span className="text-xs text-gf-text-muted">{linked.length}</span>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -322,7 +325,7 @@ export default function ProjectBudgetDetailModal({
                         <strong className="text-xs text-red-500">{usdFormatChanger(transaction.amount)}</strong>
                         <button
                           type="button"
-                          title="Edit movement"
+                          title={t("budgets.movement.edit")}
                           onClick={() => setEditingMovement(transaction)}
                           className="text-gf-text-muted hover:text-purple-600"
                         >
@@ -330,7 +333,7 @@ export default function ProjectBudgetDetailModal({
                         </button>
                         <button
                           type="button"
-                          title="Remove from project"
+                          title={t("budgets.project.remove")}
                           onClick={() => linkMovement(transaction._id, false)}
                           className="text-gf-text-muted hover:text-red-400"
                         >
@@ -340,9 +343,9 @@ export default function ProjectBudgetDetailModal({
                     ))
                   ) : (
                     <div className="text-center bg-gf-surface border border-dashed border-gf-border rounded-2xl p-5">
-                      <p className="text-sm font-semibold text-gf-text-muted">No movements linked yet</p>
+                      <p className="text-sm font-semibold text-gf-text-muted">{t("budgets.project.noLinked")}</p>
                       <p className="text-xs text-gf-text-muted mt-1">
-                        Add an existing expense or create one for this project.
+                        {t("budgets.project.addHelp")}
                       </p>
                     </div>
                   )}
@@ -361,7 +364,7 @@ export default function ProjectBudgetDetailModal({
           renderContent={
             <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[720px] h-[88vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl">
               <div className="relative text-white px-5 py-4 font-bold">
-                New project movement
+                {tr("budgets.project.newMovement")}
                 <button
                   type="button"
                   onClick={() => setShowCreate(false)}

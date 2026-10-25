@@ -1,0 +1,59 @@
+{
+  "namespace": "history",
+  "entries": [
+    {
+      "key": "history.compare",
+      "source": "Compare",
+      "es": "Comparar",
+      "en": "Compare"
+    },
+    {
+      "key": "history.from",
+      "source": "From:",
+      "es": "Desde:",
+      "en": "From:"
+    },
+    {
+      "key": "history.to",
+      "source": "to:",
+      "es": "hasta:",
+      "en": "to:"
+    },
+    {
+      "key": "history.dateTip",
+      "source": "Filter the date by a generic filter or by selecting a specific range 🤓",
+      "es": "Filtra la fecha con un filtro genérico o eligiendo un rango específico 🤓",
+      "en": "Filter the date by a generic filter or by selecting a specific range 🤓"
+    },
+    {
+      "key": "history.vs",
+      "source": "VS",
+      "es": "VS",
+      "en": "VS"
+    },
+    {
+      "key": "history.nothingMonth",
+      "source": "Nothing this month",
+      "es": "Nada este mes",
+      "en": "Nothing this month"
+    },
+    {
+      "key": "history.noCompare",
+      "source": "No items to compare for this period.",
+      "es": "No hay elementos para comparar en este periodo.",
+      "en": "No items to compare for this period."
+    },
+    {
+      "key": "history.title",
+      "source": "Transactions History",
+      "es": "Historial de movimientos",
+      "en": "Transactions history"
+    },
+    {
+      "key": "history.loadingOld",
+      "source": "Cargando tus movimientos más antiguos… los números de este periodo se completarán solos.",
+      "es": "Cargando tus movimientos más antiguos… los números de este periodo se completarán solos.",
+      "en": "Loading your oldest transactions… the numbers for this period will fill in on their own."
+    }
+  ]
+}

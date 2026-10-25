@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
@@ -7,6 +8,7 @@ import SelectCategories from "@/components/categories/SelectCategoryProvider/Sel
 import runNotify from "@/helpers/gastifyNotifier";
 import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { UserData } from "@/lib/features/userSlice";
+import { useT } from "@/i18n/client";
 
 export interface CategoryListProps {
   clCategories?: CategoryData[] | null;
@@ -14,6 +16,7 @@ export interface CategoryListProps {
 }
 
 function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.Element {
+  const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryData>({});
 
@@ -31,18 +34,18 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
         !clCategories ? (
           <div className="w-full h-full flex justify-center items-center">
             <EmptyModule
-              emMessage={`No categories to display. Please create a new one or refresh the page and try later... 🤕`}
+              emMessage={t("categories.emptyList2")}
             />
           </div>
         ) : clCategories.length <= 0 ? (
           <div className="w-full h-full flex flex-col justify-center items-center gap-2">
             <Spin size="large" />
-            <p className="">Loading...</p>
+            <p className="">{t("categories.loading")}</p>
           </div>
         ) : (
           clCategories.map((category) => (
             <Tooltip
-              title={`${category?.name || "No name..."}`}
+              title={`${category?.name || t("web.no.name")}`}
               key={`cc-clist-key-cat-${category._id}`}
             >
               <div
@@ -52,9 +55,7 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
                   if (category.isDefaultCatego) {
                     runNotify(
                       "warning",
-                      `"${
-                        category?.name || "This"
-                      }" is a default category and can't be modified in any way 🚨`
+                      t("categories.defaultCategory", { p1: category?.name || t("categories.thisOne") })
                     );
                   } else {
                     setOnEdition(`edition`);
@@ -81,7 +82,7 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
                 </div>
                 <div className="cc-list-content-category w-full flex items-center justify-center truncate">
                   <p className="w-full min-[400px]:text-lg min-[600px]:text-xl truncate px-2">
-                    {category?.name || "No name..."}
+                    {category?.name || t("web.no.name")}
                   </p>
                 </div>
               </div>

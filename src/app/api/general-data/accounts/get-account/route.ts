@@ -3,6 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Account from "@/model/Account";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface GetAccountSuccessResponse {
   data: unknown;
@@ -16,8 +17,9 @@ export type GetAccountResponse = GetAccountSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<GetAccountResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     // Security fix: this used to trust whatever mail the client sent in the
     // body and return that user's accounts (names, balances, institutions)
     // to anyone, signed in or not - an IDOR, same issue already fixed in the
@@ -25,13 +27,13 @@ export async function POST(
     // user now comes from the session; any body the client still sends
     // (accountsSlice.ts's fetchAccounts sends its own mail) is ignored.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     //DB
     await dbConnection();
     // User find
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GET-ACCOUNT POST");
+      throw new Error(t("errors.user.not.found.review.the.2"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
 
@@ -54,11 +56,11 @@ export async function POST(
       .lean();
     if (!accountFounded)
       throw new Error(
-        "No accounts found, review the user and wallet id on GET-ACCOUNT POST"
+        t("errors.no.accounts.found.review.the.2")
       );
     return NextResponse.json({
       data: accountFounded,
-      message: "Accoutns founded",
+      message: t("errors.accoutns.founded"),
       status: 201,
       ok: true,
     });

@@ -1,22 +1,16 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import CategoIcon from "./CategoIcon";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { DownOutlined } from "@ant-design/icons";
-import {
-  ColorPicker,
-  ConfigProvider,
-  Space,
-  Spin,
-  Switch,
-  Tooltip,
-} from "antd";
+import { ConfigProvider, Space, Spin, Switch } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import IconDisplayerMenu from "./IconDisplayerMenu";
+import CategoryColorPicker from "./CategoryColorPicker";
 import { useDispatch, useSelector } from "react-redux";
-import useModal from "@/hooks/useModalBasic";
-import BasicModal from "../modals/basicModal/BasicModal";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
+import { CATEGORY_COLORS } from "@gastify/core/categories/categoryForm";
 import {
   addNewCategory,
   removeOneCategory,
@@ -31,6 +25,7 @@ import {
 } from "@/lib/features/subCategorySlice";
 import type { AppDispatch, RootState } from "@/lib/store";
 import type { UserData } from "@/lib/features/userSlice";
+import { useT } from "@/i18n/client";
 
 export interface FormCategoryState {
   id?: string;
@@ -55,22 +50,23 @@ export interface EditCategoryModalProps {
 }
 
 function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }: EditCategoryModalProps): React.JSX.Element {
+  const t = useT();
   const [isLoading, setIsLoading] = useState(false);
   const [active, setActive] = useState<string | boolean>(false);
   const [formCategory, setFormCategory] = useState<FormCategoryState>({
     id: "",
     name: "",
     icon: "",
-    color: 0,
+    color: CATEGORY_COLORS[0],
     fatherCategory: "",
     user: "",
     wallet: "",
   });
   const [isSub, setIsSub] = useState(false);
   const [fatherCat, setFatherCat] = useState<CategoryData>({});
-  const [isCatMenuOpen, setIsCatMenuOpen] = useState(false);
+  // The father picker opens in place, under its box (no window of its own).
+  const [isFatherOpen, setIsFatherOpen] = useState(false);
   const toFetch = fetcher();
-  const { close: isSelectorOpen, handleClose: handleSelectorClose } = useModal();
 
   //REDUX
   const dispatchEcm = useDispatch<AppDispatch>();
@@ -171,7 +167,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
           if (!formCategory.fatherCategory) {
             runNotify(
               "warning",
-              `You must select a "father" category if you are going to create a sub category, please select one... 🚨`
+              t("categories.mustSelectFather")
             );
             setIsLoading(false);
             return null;
@@ -183,7 +179,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
           ) {
             runNotify(
               "warning",
-              `You must select a icon for this category/sub-category... 🚨`
+              t("categories.mustSelectIcon")
             );
             setIsLoading(false);
             return null;
@@ -241,7 +237,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
     setFormCategory({
       name: "",
       icon: "",
-      color: 0,
+      color: CATEGORY_COLORS[0],
       fatherCategory: "",
       user: "",
       wallet: "",
@@ -255,9 +251,8 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
     const { name, value } = e.target;
     setFormCategory({ ...formCategory, [name]: value });
   };
-  const handleColorChange = (e: string) => {
-    // console.log(`#${e}`);
-    setFormCategory({ ...formCategory, color: `#${e}` });
+  const handleColorChange = (color: string) => {
+    setFormCategory((prev) => ({ ...prev, color }));
   };
 
   const handleFatherCategory = (cat: CategoryData) => {
@@ -280,7 +275,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
       );
       if (!res.ok) {
         console.log('first');
-        runNotify("error", "Something went wrong, please try again later 🤕");
+        runNotify("error", t("categories.error"));
         setIsLoading(false);
         handleClose();
       } else {
@@ -289,7 +284,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
           dispatchEcm(removeOneCategory(res.data.categoRemoved._id));
           runNotify(
             "ok",
-            `"${res.data.categoRemoved.name.toUpperCase()}" was removed successfully 🤓`
+            t("categories.removed", { p1: res.data.categoRemoved.name.toUpperCase() })
           );
         } else { // SUBCATEGORIES
           dispatchEcm(removeSubCategory(res.data._id));
@@ -302,7 +297,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
         handleClose();
       }
     } catch (e) {
-      runNotify("error", "Something went wrong, please try again later 🤕");
+      runNotify("error", t("categories.error"));
       console.log(e);
       setIsLoading(false);
     }
@@ -319,7 +314,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
       </div>
       {!isInline && (
         <h1 className="text-center font-thin py-[20px] text-2xl min-[400px]:text-3xl sm:text-[50px] text-white shrink-0">
-          {ecmMode === "edition" ? `Edit "${ecmCategory?.name || "Category"}"` : "Create New Category"} 🪄
+          {ecmMode === "edition" ? `${t("web.edit")} "${ecmCategory?.name || t("web.category")}"` : t("web.create.new.category")} 🪄
         </h1>
       )}
       <div
@@ -338,74 +333,33 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
             onSubmit={handlerSubmit}
             className={`w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 ${!isInline ? 'rounded-t-[60px] pt-[30px]' : 'pt-4'} pb-20`}
           >
-            {isInline && (
-              <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full pb-4">
-                Create New Category
-              </h1>
-            )}
-            <p className="label-tfp ">Name</p>
+            <p className="label-tfp ">{t("categories.form.name")}</p>
             <input
               type="text"
               name="name"
               className="w-full h-14 rounded-3xl gf-glass-inset px-3 text-gf-text"
               value={formCategory.name || null}
               onChange={handleChange}
-              placeholder="CategoryName"
+              placeholder={t("categories.form.categoryName")}
             />
-            <div className="w-full flex flex-col sm:flex-row gap-4 sm:items-start">
-              <div className="flex flex-col">
-                <p className="label-tfp ">Icon</p>
-                <div className="icon-form-cont flex gap-2 min-h-[64px] items-center">
-                  <div
-                    className="selected-icon-form-cont gf-glass-inset rounded-2xl p-2 flex flex-col items-center justify-center cursor-pointer"
-                    onClick={() => setIsCatMenuOpen(true)}
-                  >
-                    <p className="label-tfp ">
-                      {formCategory?.icon ? "Selected" : "No icon"}
-                    </p>
-                    <UniversalCategoIcon
-                      type={`${formCategory?.icon || "md/MdFilterNone"}`}
-                      siz={30}
-                    />
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <IconDisplayerMenu
-                      idmActive={isCatMenuOpen}
-                      idmIcon={(i: string) =>
-                        setFormCategory({ ...formCategory, icon: i })
-                      }
-                      idmClose={(a: boolean) => setIsCatMenuOpen(a)}
-                    />
-                  </div>
-                </div>
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col gap-2 w-full">
+                <p className="label-tfp ">{t("categories.form.color")}</p>
+                <CategoryColorPicker
+                  value={typeof formCategory.color === "string" && formCategory.color ? formCategory.color : CATEGORY_COLORS[0]}
+                  onChange={handleColorChange}
+                />
               </div>
-              <div className="flex flex-col">
-                <p className="label-tfp ">Color</p>
-                <div className="flex gap-2 items-center min-h-[64px]">
-                  <Space direction="vertical">
-                    <ColorPicker
-                      value={formCategory?.color ? String(formCategory.color) : "#ABABAB"}
-                      format="hex"
-                      showText
-                      style={{
-                        border: `2px solid ${formCategory?.color ? String(formCategory.color) : "#ABABAB"}`,
-                      }}
-                      onChange={(c) => handleColorChange(c.toHex())}
-                    />
-                  </Space>
-                  <Tooltip title="Select the color you want to set for your category or subcategory... 🤓">
-                    <div className="text-white w-[10px]">
-                      <UniversalCategoIcon
-                        type={`${"fa/FaRegQuestionCircle"}`}
-                        siz={15}
-                      />
-                    </div>
-                  </Tooltip>
-                </div>
+              <div className="flex flex-col gap-2 w-full">
+                <p className="label-tfp ">{t("categories.form.icon")}</p>
+                <IconDisplayerMenu
+                  idmValue={formCategory?.icon || ""}
+                  idmIcon={(i: string) => setFormCategory((prev) => ({ ...prev, icon: i }))}
+                />
               </div>
               {(ecmMode === "creation" || (ecmMode === "edition" && isSub)) && (
                 <div className="flex flex-col">
-                  <p className="label-tfp ">Is sub category?</p>
+                  <p className="label-tfp ">{t("categories.form.isSub")}</p>
                   <div className="flex items-center min-h-[64px]">
                     <ConfigProvider
                       theme={{
@@ -436,9 +390,9 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                     !isSub ? "hidden" : "flex"
                   } flex-col gap-1 w-full mt-2`}
                 >
-                  <p className="label-tfp !text-[12px] !text-purple-600">Selected Father Category:</p>
+                  <p className="label-tfp !text-[12px] !text-purple-600">{t("categories.form.fatherSelected")}</p>
                   <div
-                    onClick={handleSelectorClose}
+                    onClick={() => setIsFatherOpen((open) => !open)}
                     className="w-full gf-glass-inset rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:brightness-110 transition-[filter]"
                   >
                     <div className="flex items-center gap-3">
@@ -447,25 +401,18 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                         siz={30}
                       />
                       <span className="font-medium text-purple-300">
-                        {fatherCat?.name || "Click to select a father category"}
+                        {fatherCat?.name || t("web.click.to.select.a.parent.category")}
                       </span>
                     </div>
                     <DownOutlined className="text-purple-600" />
                   </div>
                 </div>
-                {isSelectorOpen && (
-                  <BasicModal
-                    close={handleSelectorClose}
-                    zIndexClass="z-[20000]"
-                    renderContent={
-                      <ModalCategoryContent
-                        close={handleSelectorClose}
-                        getSelected={handleFatherCategory}
-                        onlyFathers={true}
-                      />
-                    }
-                    renderBodyContent={undefined}
-                    renderHeader={undefined}
+                {isSub && isFatherOpen && (
+                  <ModalCategoryContent
+                    close={() => setIsFatherOpen(false)}
+                    getSelected={handleFatherCategory}
+                    onlyFathers={true}
+                    inline
                   />
                 )}
               </>
@@ -477,8 +424,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                   className="w-full p-2 text-center gf-glass-button-danger text-white rounded-full mt-3 cursor-pointer"
                   onClick={handleRemove}
                 >
-                  Remove{" "}
-                  {formCategory?.fatherCategory ? "Subcategory" : "Category"}
+                  {t("categories.form.remove", { p1: formCategory?.fatherCategory ? "Subcategory" : t("web.category") })}
                 </button>
               )}
             </div>
@@ -489,9 +435,9 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
               {isLoading ? (
                 <Spin />
               ) : ecmMode === "edition" ? (
-                "Edit"
+                t("web.edit")
               ) : (
-                "Create"
+                t("web.create")
               )}
             </button>
             {isInline && (
@@ -500,7 +446,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                 className="clearForm w-full p-2 gf-glass-button-neutral text-red-300 text-center rounded-full cursor-pointer mt-2 mb-4"
                 onClick={handleClose}
               >
-                Clear Form
+                {t("categories.form.clear")}
               </button>
             )}
           </form>

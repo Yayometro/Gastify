@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import QRCode from "qrcode";
 import { authClient } from "@/lib/auth/authClient";
+import { signInWithPasskeyOnce } from "@/lib/auth/passkeyCeremony";
 import runNotify from "@/helpers/gastifyNotifier";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
 import { FACTOR_CHANGE_STEP_UP_TTL_MINUTES, STEP_UP_TTL_MINUTES } from "@/lib/auth/stepUpConfig";
@@ -17,6 +18,7 @@ import { fetchCategories } from "@/lib/features/categoriesSlice";
 import { fetchSubCat } from "@/lib/features/subCategorySlice";
 import { fetchTrans } from "@/lib/features/transacctionsSlice";
 import { fetchBudget } from "@/lib/features/budgetSlice";
+import { useT } from "@/i18n/client";
 
 const MAX_ATTEMPTS = 3;
 
@@ -117,6 +119,7 @@ export interface Verify2FAClientProps {
 }
 
 function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasskey, hasTotp: serverHasTotp }: Verify2FAClientProps = {}): React.JSX.Element {
+  const tr = useT();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { data: rawSession, isPending: sessionPending } = authClient.useSession();
@@ -212,13 +215,13 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
     const next = attempts + 1;
     setAttempts(next);
     if (next >= MAX_ATTEMPTS) {
-      runNotify("error", "No pudimos verificar tu identidad después de 3 intentos. Por seguridad cerramos tu sesión.");
+      runNotify("error", tr("shared.stepUp.failed3"));
       clearLoopGuard();
       await (authClient.signOut as unknown as () => Promise<unknown>)();
       router.push("/login?securityCheckFailed=1");
       return;
     }
-    runNotify("error", message || `Código incorrecto. Te quedan ${MAX_ATTEMPTS - next} intento(s).`);
+    runNotify("error", message || tr("auth.incorrect.code.you.have.p1.attempt.s.left", { p1: MAX_ATTEMPTS - next }));
   }
 
   // --- Onboarding: register a passkey right here ---
@@ -227,10 +230,10 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       setLoading(true);
       const { error } = await authClient.passkey.addPasskey({ name: "Passkey principal" });
       if (error) {
-        runNotify("error", error.message || "No se pudo registrar el passkey 🤕");
+        runNotify("error", error.message || tr("auth.we.couldn.t.register.the.passkey"));
         return;
       }
-      runNotify("ok", "Passkey registrado 🤓");
+      runNotify("ok", tr("shared.passkey.registered"));
       await finishStepUp();
     } finally {
       setLoading(false);
@@ -268,9 +271,9 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
           // A password-less first attempt landing here just means the
           // account has one on file - nothing "incorrect" happened yet, so
           // only a real wrong-password retry gets a toast.
-          if (currentPassword) runNotify("error", "Contraseña incorrecta 🤕");
+          if (currentPassword) runNotify("error", tr("shared.password.wrong"));
         } else {
-          runNotify("error", error.message || "No se pudo iniciar la configuración 🤕");
+          runNotify("error", error.message || tr("auth.we.couldn.t.start.the.setup"));
         }
         setPhase("onboard-totp-password");
         return;
@@ -300,7 +303,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       setLoading(true);
       const { error } = await authClient.twoFactor.verifyTotp({ code });
       if (error) {
-        runNotify("error", error.message || "Código incorrecto, intenta de nuevo 🤕");
+        runNotify("error", error.message || tr("auth.incorrect.code.try.again"));
         return;
       }
       setPhase("onboard-backup-reveal");
@@ -314,15 +317,15 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
     try {
       setLoading(true);
       setPasskeyNotice("");
-      const { error } = await authClient.signIn.passkey();
+      const { error } = await signInWithPasskeyOnce();
       if (error) {
         // Closing the system dialog (Esc / Cancel) is not a failed guess: no
         // attempt is spent, the user is told what happened and can retry or use a code.
         if ((error as { code?: string }).code === "AUTH_CANCELLED" || /cancel/i.test(error.message || "")) {
           setPasskeyNotice(
             hasTotp
-              ? "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo o usar un código de tu app autenticadora."
-              : "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo."
+              ? tr("auth.you.closed.the.passkey.prompt.you.can.try.again.or.use.a")
+              : tr("auth.you.closed.the.passkey.prompt.you.can.try.again")
           );
           return;
         }
@@ -387,7 +390,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       <div className={cardClasses}>
         <l-quantum size="120" speed="3.1" color="purple"></l-quantum>
         <p className="text-lg text-purple-200 text-center">
-          Por seguridad, cerramos tu sesión. Inicia sesión de nuevo para continuar…
+          {tr("shared.signedOut")}
         </p>
       </div>
     );
@@ -398,7 +401,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       <div className={cardClasses}>
         <l-quantum size="120" speed="3.1" color="purple"></l-quantum>
         <p className="text-lg text-purple-200 text-center">
-          {redirecting ? "¡Listo! Llevándote a tu Wallet…" : "Verificando tu identidad…"}
+          {redirecting ? tr("auth.done.taking.you.to.your.wallet") : tr("auth.verifying.your.identity")}
         </p>
       </div>
     );
@@ -408,39 +411,38 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
     <div className={cardClasses}>
       {phase === "onboard-choose" && (
         <>
-          <h1 className="text-white text-2xl font-normal text-center">Estamos añadiendo una capa extra de seguridad a tu cuenta</h1>
+          <h1 className="text-white text-2xl font-normal text-center">{tr("shared.stepUp.title")}</h1>
           <p className="text-gf-text-muted text-sm text-center">
-            A partir de ahora, cada vez que inicies sesión (o después de un rato sin actividad) te pediremos confirmar
-            tu identidad. Elige cómo prefieres hacerlo:
+            {tr("shared.stepUp.intro")}
           </p>
           <button type="button" disabled={loading} onClick={handleOnboardPasskey} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
-            Registrar huella / Face ID (passkey)
+            {tr("shared.stepUp.passkeyOption")}
           </button>
           <button type="button" disabled={loading} onClick={startOnboardTotp} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
-            Usar una app autenticadora (Google/Microsoft Authenticator)
+            {tr("shared.stepUp.totpOption")}
           </button>
         </>
       )}
 
       {phase === "onboard-totp-password" && (
         <>
-          <h1 className="text-white text-2xl font-normal text-center">Confirma tu contraseña</h1>
+          <h1 className="text-white text-2xl font-normal text-center">{tr("shared.confirmPassword.title")}</h1>
           <p className="text-gf-text-muted text-sm text-center">
-            Tu cuenta tiene una contraseña configurada - confírmala para activar la app autenticadora.
+            {tr("shared.confirmPassword.totp")}
           </p>
           <form onSubmit={handleOnboardTotpStart} className="form-trans-edit w-full flex flex-col gap-2 items-center">
             <input
               type="password"
               name="password"
               autoComplete="current-password"
-              placeholder="Tu contraseña"
+              placeholder={tr("shared.password.yours")}
               value={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               autoFocus
               required
             />
             <button type="submit" disabled={loading} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
-              Continuar
+              {tr("shared.continue")}
             </button>
           </form>
           {/* Only escape hatch here that doesn't need the password:
@@ -448,37 +450,37 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
               doesn't know it (every migrated account has one on file,
               used or not) isn't stuck with no way forward. */}
           <button type="button" className="text-purple-300 text-xs hover:underline" onClick={() => { setPassword(""); setPhase("onboard-choose"); }}>
-            ¿No conoces tu contraseña? Registra tu huella / Face ID en su lugar
+            {tr("shared.noPassword.usePasskey")}
           </button>
           <button type="button" className="text-purple-300 text-xs hover:underline" onClick={() => { setPhase("onboard-choose"); setPassword(""); }}>
-            Cancelar
+            {tr("shared.cancel")}
           </button>
         </>
       )}
 
       {phase === "onboard-totp-scan" && totpSetup && (
         <>
-          <h1 className="text-white text-2xl font-normal text-center">Escanea este código</h1>
+          <h1 className="text-white text-2xl font-normal text-center">{tr("shared.totp.scan")}</h1>
           <p className="text-gf-text-muted text-sm text-center">
-            Ábrelo con Google Authenticator, Microsoft Authenticator, o la app que prefieras.
+            {tr("shared.totp.openWith")}
           </p>
           {qrDataUrl && (
             <div className="bg-white p-3 rounded-2xl">
-              <Image src={qrDataUrl} alt="Código QR para configurar TOTP" width={260} height={260} />
+              <Image src={qrDataUrl} alt={tr("shared.totp.qrAlt")} width={260} height={260} />
             </div>
           )}
           <form onSubmit={handleOnboardTotpConfirm} className="form-trans-edit w-full flex flex-col gap-2 items-center">
             <input
               type="text"
               inputMode="numeric"
-              placeholder="Código de 6 dígitos"
+              placeholder={tr("shared.totp.codeLabel")}
               value={code}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
               className="form-control text-center"
               required
             />
             <button type="submit" disabled={loading} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
-              Confirmar
+              {tr("shared.confirm")}
             </button>
           </form>
         </>
@@ -486,9 +488,9 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
 
       {phase === "onboard-backup-reveal" && totpSetup && (
         <>
-          <h1 className="text-white text-2xl font-normal text-center">Guarda tus códigos de respaldo</h1>
+          <h1 className="text-white text-2xl font-normal text-center">{tr("shared.backup.title")}</h1>
           <p className="text-gf-text-muted text-sm text-center">
-            Úsalos si alguna vez pierdes acceso a tu app autenticadora. Cada uno solo funciona una vez.
+            {tr("shared.backup.help")}
           </p>
           <div className="bg-gf-surface border-2 border-purple-400 rounded-2xl p-3 w-full">
             <div className="grid grid-cols-2 gap-2">
@@ -504,22 +506,22 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
                 className="shrink-0 gf-glass-button text-white text-xs rounded-full px-3 py-2"
                 onClick={() => {
                   navigator.clipboard.writeText(totpSetup.backupCodes.join("\n"));
-                  runNotify("ok", "Copiados al portapapeles 🤓");
+                  runNotify("ok", tr("shared.copied"));
                 }}
               >
-                Copiar todos
+                {tr("shared.copyAll")}
               </button>
               <button
                 type="button"
                 className="shrink-0 gf-glass-button text-white text-xs rounded-full px-3 py-2"
                 onClick={() => downloadBackupCodes(totpSetup.backupCodes)}
               >
-                Descargar
+                {tr("shared.download")}
               </button>
             </div>
           </div>
           <button type="button" disabled={loading} onClick={finishStepUp} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
-            Ya los guardé, continuar
+            {tr("shared.backup.saved")}
           </button>
         </>
       )}
@@ -527,7 +529,7 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
       {phase === "challenge" && (
         <>
           <l-quantum size="80" speed="3.1" color="purple"></l-quantum>
-          <h1 className="text-white text-2xl font-normal text-center">Verifica tu identidad</h1>
+          <h1 className="text-white text-2xl font-normal text-center">{tr("shared.verify.title")}</h1>
           <p className="text-gf-text-muted text-sm text-center">
             {reauth
               ? `Para cambiar tus factores de verificación (passkeys, app autenticadora o códigos de respaldo) te pedimos confirmar tu identidad cada ${FACTOR_CHANGE_STEP_UP_TTL_MINUTES} minutos. Pon tu huella, Face ID o código del dispositivo para continuar.`
@@ -535,11 +537,11 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
           </p>
           {passkeyNotice && <p className="text-xs text-amber-300 text-center">{passkeyNotice}</p>}
           <button type="button" disabled={loading} onClick={handleChallengePasskey} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
-            Verificar con mi passkey
+            {tr("shared.verify.passkey")}
           </button>
           {hasTotp && (
             <button type="button" className="text-purple-300 text-xs hover:underline" onClick={() => setPhase("challenge-totp")}>
-              ¿No tienes tu dispositivo? Usa un código
+              {tr("shared.verify.noDevice")}
             </button>
           )}
         </>
@@ -547,41 +549,41 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
 
       {phase === "challenge-totp" && (
         <>
-          <h1 className="text-white text-2xl font-normal text-center">Ingresa tu código</h1>
+          <h1 className="text-white text-2xl font-normal text-center">{tr("shared.verify.enterCode")}</h1>
           <form onSubmit={handleChallengeTotp} className="form-trans-edit w-full flex flex-col gap-2 items-center">
             <input
               type="text"
               inputMode="numeric"
-              placeholder="Código de tu app autenticadora"
+              placeholder={tr("shared.verify.appCode")}
               value={code}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
               className="form-control text-center"
               required
             />
             <button type="submit" disabled={loading} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
-              Verificar
+              {tr("shared.verify")}
             </button>
           </form>
           <button type="button" className="text-purple-300 text-xs hover:underline" onClick={() => setPhase("challenge-backup")}>
-            Usar un código de respaldo en su lugar
+            {tr("shared.verify.useBackup")}
           </button>
         </>
       )}
 
       {phase === "challenge-backup" && (
         <>
-          <h1 className="text-white text-2xl font-normal text-center">Código de respaldo</h1>
+          <h1 className="text-white text-2xl font-normal text-center">{tr("shared.backup.code")}</h1>
           <form onSubmit={handleChallengeBackupCode} className="form-trans-edit w-full flex flex-col gap-2 items-center">
             <input
               type="text"
-              placeholder="Código de respaldo"
+              placeholder={tr("shared.backup.code")}
               value={code}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
               className="form-control text-center"
               required
             />
             <button type="submit" disabled={loading} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
-              Verificar
+              {tr("shared.verify")}
             </button>
           </form>
         </>

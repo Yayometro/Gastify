@@ -4,6 +4,7 @@ import dbConnection from "@/app/api/dbConnection";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface WalletGetResponse {
   mes: string;
@@ -42,8 +43,9 @@ export async function GET(): Promise<NextResponse<WalletGetResponse>> {
 export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<WalletPostResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on WALLET POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.22"));
     const {
       name,
       cash,
@@ -62,10 +64,10 @@ export async function POST(
     // (PrimaryCurrencySelector.jsx) always sends the caller's own wallet id
     // anyway.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on WALLET POST");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.wallet"));
     const walletId = userFound.wallet;
     // FIND WALLET
     const findWallet = await Wallet.findById(
@@ -73,7 +75,7 @@ export async function POST(
     );
     //IF ERROR
     if (!findWallet)
-      throw new Error(`No Wallet was identified to update 🤕`);
+      throw new Error(t("errors.api.walletNotIdentified"));
     //UPDATE WALLET
     findWallet.name = !name ? findWallet.name : name;
     // `??` (not a truthiness test): 0 and false are real values that must be
@@ -88,7 +90,7 @@ export async function POST(
     // reinterprets already-stored native Account/Transaction money.
     if (primaryCurrency && primaryCurrency !== findWallet.primaryCurrency) {
       if (!SUPPORTED_CURRENCIES.includes(primaryCurrency)) {
-        throw new Error(`Unsupported currency: ${primaryCurrency}`);
+        throw new Error(t("errors.api.unsupportedCurrency", { p1: primaryCurrency }));
       }
       findWallet.primaryCurrency = primaryCurrency;
       findWallet.currencyUpdatedAt = new Date();
@@ -97,9 +99,9 @@ export async function POST(
     // SAVE
     const updatedWallet = await findWallet.save();
     //IF ERROR
-    if (!updatedWallet) throw new Error("Wallet was not updated 🤕");
+    if (!updatedWallet) throw new Error(t("errors.wallet.was.not.updated"));
     return NextResponse.json({
-      message: `${updatedWallet.name} was updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: updatedWallet.name }),
       data: updatedWallet,
       status: 201,
       ok: true,

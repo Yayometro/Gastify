@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth/authClient";
+import { usePathname } from "next/navigation";
 import type { auth } from "@/lib/auth/betterAuth";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,12 +10,11 @@ import "@/components/styles/animations.css";
 
 import { IoIosArrowUp } from "react-icons/io";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
-import { FaWallet } from "react-icons/fa6";
+import { FaMagnifyingGlassChart, FaWallet } from "react-icons/fa6";
 import { MdAutoGraph } from "react-icons/md";
 import { MdSavings } from "react-icons/md";
 import { IoAdd } from "react-icons/io5";
 import { MdAccountBalance } from "react-icons/md";
-import { IoMdExit } from "react-icons/io";
 import { BiSolidCategory } from "react-icons/bi";
 import { MdLightMode, MdDarkMode } from "react-icons/md";
 
@@ -25,8 +23,10 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/store";
 import type { UserData } from "@/lib/features/userSlice";
 import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
+import NotificationsBell from "./multiUsedComp/NotificationsBell";
 import { FaHistory } from "react-icons/fa";
 import { useThemeMode } from "@/app/ThemeProvider";
+import { useT } from "@/i18n/client";
 
 export type NavbarSession = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
 
@@ -37,15 +37,14 @@ export interface NavbarProps {
 // (`sesion` stays in NavbarProps - the layout still passes it - but nothing here reads it any more.)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Navbar(_props: NavbarProps): React.JSX.Element {
+  const t = useT();
   const [toggleNav, setToggleNav] = useState<boolean>(false);
   const [isAddTrans, setIsAddTrans] = useState<boolean>(false);
   const { mode, toggleMode } = useThemeMode();
-  const router = useRouter();
-  const handleSignOut = (): void => {
-    authClient.signOut({
-      fetchOptions: { onSuccess: () => router.push("/login") },
-    });
-  };
+  const pathname = usePathname();
+  // The page the person is on: its icon gets the capsule (the same one the iPad's side bar uses).
+  const isActive = (href: string): boolean => (href === "/dashboard" ? pathname === "/dashboard" : pathname === href || pathname.startsWith(`${href}/`));
+  const navItemClass = (href: string): string => `gf-nav-item ${isActive(href) ? "gf-nav-active" : ""}`;
   const handleToggleNav = (): void => {
     setToggleNav(!toggleNav);
   };
@@ -71,83 +70,86 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             <Image
               className="rounded-full border-[1px] border-purple-500 m-auto w-[60px]  sm:w-[40px]"
               src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
-              alt={`${ccUser?.fullName} profile account`}
+              alt={t("navbar.profileAlt", { p1: ccUser?.fullName })}
               width={50}
               height={50}
             />
             <p className="text-[10px] sm:text-[8px] w-[45px] break-word text-ellipsis overflow-hidden group truncate">{ccUser?.fullName}</p>
-            <p className="hidden hoverTooltip">Profile</p>
+            <p className="hidden hoverTooltip">{t("navbar.profile")}</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/movements">
+        <li className={navItemClass("/dashboard/movements")}>
+          <Link href="/dashboard/movements" aria-current={isActive("/dashboard/movements") ? "page" : undefined}>
             <FaMoneyBillTransfer size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Movements</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.movements")}</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard">
+        <li className={navItemClass("/dashboard")}>
+          <Link href="/dashboard" aria-current={isActive("/dashboard") ? "page" : undefined}>
             <FaWallet size={27} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Wallet</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.wallet")}</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/budgets">
+        <li className={navItemClass("/dashboard/budgets")}>
+          <Link href="/dashboard/budgets" aria-current={isActive("/dashboard/budgets") ? "page" : undefined}>
             <MdSavings size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Budgets</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.budgets")}</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/projections">
+        <li className={navItemClass("/dashboard/projections")}>
+          <Link href="/dashboard/projections" aria-current={isActive("/dashboard/projections") ? "page" : undefined}>
             <MdAutoGraph size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Projections</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.projections")}</p>
+          </Link>
+        </li>
+        <li className={navItemClass("/dashboard/analyzer")}>
+          <Link href="/dashboard/analyzer" aria-current={isActive("/dashboard/analyzer") ? "page" : undefined}>
+            <FaMagnifyingGlassChart size={27} className="hidden sm:inline" />
+            <p className="sm:hidden hoverTooltip">{t("navbar.analyzer")}</p>
           </Link>
         </li>
         <li >
           <div className="add-more sm:flex micro-pulse">
-              <button type="button" onClick={toogleAddTrans} aria-label="Add a transaction" className="gf-glass-fab w-[50px] h-[50px]">
+              <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
                 <IoAdd size={30} />
               </button>
-              <p className="hidden hoverTooltip">Add a transaction</p>
+              <p className="hidden hoverTooltip">{t("navbar.addTransaction")}</p>
             </div>
             {
               (isAddTrans && <AddTransactionModal  close={toogleAddTrans}/>)
             }
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/accounts">
+        <li className={navItemClass("/dashboard/accounts")}>
+          <Link href="/dashboard/accounts" aria-current={isActive("/dashboard/accounts") ? "page" : undefined}>
             <MdAccountBalance size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Accounts</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.accounts")}</p>
           </Link>
         </li>
         
-        <li className="micro-pulse">
-          <Link href={`/dashboard/history`}>
+        <li className={navItemClass("/dashboard/history")}>
+          <Link href="/dashboard/history" aria-current={isActive("/dashboard/history") ? "page" : undefined}>
             <FaHistory size={30} className="hidden sm:inline"  />
-            <p className="sm:hidden hoverTooltip">History</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.history")}</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <Link href="/dashboard/categories">
+        <li className={navItemClass("/dashboard/categories")}>
+          <Link href="/dashboard/categories" aria-current={isActive("/dashboard/categories") ? "page" : undefined}>
             <BiSolidCategory size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Categories</p>
+            <p className="sm:hidden hoverTooltip">{t("navbar.categories")}</p>
           </Link>
         </li>
-        <li className="micro-pulse">
-          <button onClick={toggleMode} type="button" aria-label="Toggle light/dark mode">
+        <li className="gf-nav-item">
+          <button onClick={toggleMode} type="button" aria-label={t("navbar.toggleTheme")}>
             {mode === "dark" ? (
               <MdLightMode size={26} className="hidden sm:inline" />
             ) : (
               <MdDarkMode size={26} className="hidden sm:inline" />
             )}
-            <p className="sm:hidden hoverTooltip">{mode === "dark" ? "Light mode" : "Dark mode"}</p>
+            <p className="sm:hidden hoverTooltip">{mode === "dark" ? t("web.light.mode") : t("web.dark.mode")}</p>
           </button>
         </li>
-        <li className=" flash">
-          <button onClick={handleSignOut}>
-            <IoMdExit size={30} className="hidden sm:inline" />
-            <p className="sm:hidden hoverTooltip">Sign Out</p>
-          </button>
+        <li className="gf-nav-item">
+          <NotificationsBell />
         </li>
       </ul>
       <ul className="gf-nav-surface text-gf-text mb-3 n-mobile w-[93%] flex flex-row justify-between py-2 px-3 items-center rounded-full shadow-xl z-[1002] fadeInUp md:hidden">
@@ -167,10 +169,10 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
           </Link>
         </li>
         <li className="">
-              <button type="button" onClick={toogleAddTrans} aria-label="Add a transaction" className="gf-glass-fab w-[50px] h-[50px]">
+              <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
                 <IoAdd size={30} />
               </button>
-              <p className="hidden hoverTooltip">Add a transaction</p>
+              <p className="hidden hoverTooltip">{t("navbar.addTransaction")}</p>
             {
               (isAddTrans && <AddTransactionModal close={toogleAddTrans}/>)
             }
@@ -190,7 +192,7 @@ function Navbar(_props: NavbarProps): React.JSX.Element {
             <Image
               className="rounded-full border-[1px] border-purple-500 m-auto w-[30px]  sm:w-[40px]"
               src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
-              alt={`${ccUser?.fullName} profile account`}
+              alt={t("navbar.profileAlt", { p1: ccUser?.fullName })}
               width={50}
               height={50}
             />

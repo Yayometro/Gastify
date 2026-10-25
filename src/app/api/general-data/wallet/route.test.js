@@ -69,7 +69,7 @@ describe("wallet primaryCurrency mutation", () => {
 
     await expect(
       POST(mockRequest({ walletId: "w1", primaryCurrency: "GBP" }))
-    ).rejects.toThrow(/Unsupported currency/);
+    ).rejects.toThrow(/Moneda no soportada/);
 
     expect(wallet.save).not.toHaveBeenCalled();
     expect(wallet.primaryCurrency).toBe("MXN");

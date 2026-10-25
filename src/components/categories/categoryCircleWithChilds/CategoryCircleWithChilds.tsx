@@ -1,8 +1,10 @@
+"use client";
 import React from "react";
 import CategoryCircle, { type CategoryFatherLike } from "../categoryCircle/CategoryCircle";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { Tooltip } from "antd";
 import { FaRegQuestionCircle } from "react-icons/fa";
+import { useT } from "@/i18n/client";
 
 export interface SubCategoryItem {
   _id?: string;
@@ -31,6 +33,7 @@ function CategoryCircleWithChilds<T = unknown>({
   onSelect,
   childs,
 }: CategoryCircleWithChildsProps<T>): React.JSX.Element {
+  const t = useT();
   return (
     <div className="father-container flex flex-col justify-start items-center gap-2">
       <span
@@ -39,16 +42,16 @@ function CategoryCircleWithChilds<T = unknown>({
       >
         <UniversalCategoIcon type={icon} />
         <h1>{name}</h1>
-        <Tooltip title={`Select the title of the father as well if you want to select the father and not the sub-category childs`}>
+        <Tooltip title={t("categories.tipFather")}>
           <FaRegQuestionCircle size={25}/>
         </Tooltip>
       </span>
       <p className="text-sm font-semibold text-purple-300">
-        {name} Sub Categories:
+        {t("categories.subs.title", { p1: name })}
       </p>
       <div className="childs-container flex justify-center items-center gap-2 flex-wrap">
         {!childs ? (
-          <p>{"This component hasn't sub-categories..."} 🤷</p>
+          <p>{t("categories.subs.none")} 🤷</p>
         ) : (
           (childs as SubCategoryItem[]).map((sub) => (
             <CategoryCircle

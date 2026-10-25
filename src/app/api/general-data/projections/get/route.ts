@@ -4,6 +4,7 @@ import dbConnection from "@/app/api/dbConnection";
 import ProjectionSettings from "@/model/ProjectionSettings";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 const getProjectionSettingsBodySchema = z
   .object({
@@ -38,9 +39,10 @@ export async function GET(): Promise<
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<GetProjectionSettingsResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on GET PROJECTION SETTINGS POST");
+      throw new Error(t("errors.no.data.in.request.on.24"));
     // Security fix: this used to trust whatever mail the client sent in the
     // body, letting any caller (this endpoint isn't covered by middleware.ts's
     // matcher) read another user's projection settings - an IDOR, same underlying
@@ -48,7 +50,7 @@ export async function POST(
     // The only real call sites (WalletAnalyzer.tsx and useProjectionTable.js)
     // send { mail, year }. We now verify the session and use sesion.user.email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     const rawBody = (await request.json()) || {};
     const parsed = getProjectionSettingsBodySchema.safeParse(rawBody);
@@ -57,12 +59,12 @@ export async function POST(
       : (rawBody as GetProjectionSettingsRequestBody);
     const { year } = body;
     if (!year)
-      throw new Error(`No mail/year was provided to get projection settings 🤕`);
+      throw new Error(t("errors.api.projectionsGetNoMail"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const walletId = userFound.wallet;
 
     const settings = await ProjectionSettings.findOne({
@@ -71,7 +73,7 @@ export async function POST(
     }).lean();
 
     return NextResponse.json({
-      message: `Projection Settings were looked up successfully 🤓`,
+      message: t("errors.api.projectionsFound"),
       data: settings || null,
       status: 201,
       ok: true,

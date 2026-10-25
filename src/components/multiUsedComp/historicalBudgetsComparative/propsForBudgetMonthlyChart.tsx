@@ -1,3 +1,4 @@
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 import React from "react";
 import { getBudgetBarColor } from "@/helpers/transformers/budgetHistory";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
@@ -24,6 +25,7 @@ export interface BudgetMonthlyChartProps {
 }
 
 export interface GeneratePropForBudgetMonthlyChartParams {
+  t: TranslateFn;
   monthlySeries: MonthlyBudgetSeriesItem[];
   walletPrimaryCurrency?: string;
 }
@@ -37,13 +39,14 @@ export interface GeneratePropForBudgetMonthlyChartParams {
 export function generatePropForBudgetMonthlyChart({
   monthlySeries,
   walletPrimaryCurrency = "MXN",
+  t,
 }: GeneratePropForBudgetMonthlyChartParams): BudgetMonthlyChartProps {
   const data: BudgetMonthlyChartDatum[] = monthlySeries.flatMap((m) => {
     const ratio = m.goal > 0 ? m.actual / m.goal : m.actual > 0 ? 1.5 : 0;
     return [
       {
         type: m.label,
-        transactionType: "Actual",
+        transactionType: t("web.actual"),
         value: m.actual,
         color: getBudgetBarColor(ratio, false),
         fillOpacity: m.estimated ? 0.5 : 1,
@@ -52,7 +55,7 @@ export function generatePropForBudgetMonthlyChart({
       },
       {
         type: m.label,
-        transactionType: "Goal",
+        transactionType: t("web.goal"),
         value: m.goal,
         color: GOAL_COLOR,
         fillOpacity: 1,
@@ -70,14 +73,14 @@ export function generatePropForBudgetMonthlyChart({
       label: false,
       height: 170,
       legend: [
-        { id: "Actual", label: "Actual", color: "#94A3B8" },
-        { id: "Goal", label: "Goal", color: GOAL_COLOR },
+        { id: "Actual", label: t("budgets.comparative.actual"), color: "#94A3B8" },
+        { id: "Goal", label: t("budgets.comparative.goal"), color: GOAL_COLOR },
       ],
       valueFormat: (value) => formatMoneyMajor(value, walletPrimaryCurrency),
       renderTooltip: ({ title, items }) => {
         const monthData = monthlySeries.find((m) => m.label === title);
-        const actual = items.find((it) => it.transactionType === "Actual");
-        const goal = items.find((it) => it.transactionType === "Goal");
+        const actual = items.find((it) => it.transactionType === t("web.actual"));
+        const goal = items.find((it) => it.transactionType === t("web.goal"));
         return (
           <div
             className="max-w-[240px] gf-glass-chip text-gf-text flex gap-1.5 flex-col items-center justify-center rounded-2xl p-3 font-sans"
@@ -85,17 +88,17 @@ export function generatePropForBudgetMonthlyChart({
           >
             <h1 className="text-sm text-center font-bold">{String(title)}</h1>
             <div className="w-full flex items-center justify-between gap-3 text-xs">
-              <span className="text-gf-text-muted">Actual:</span>
+              <span className="text-gf-text-muted">{t("budgets.actualLabel")}</span>
               <b>{formatMoneyMajor(actual?.value ?? monthData?.actual ?? 0, walletPrimaryCurrency)}</b>
             </div>
             <div className="w-full flex items-center justify-between gap-3 text-xs">
-              <span className="text-gf-text-muted">Goal:</span>
+              <span className="text-gf-text-muted">{t("budgets.goalLabel")}</span>
               <b>{formatMoneyMajor(goal?.value ?? monthData?.goal ?? 0, walletPrimaryCurrency)}</b>
             </div>
             {monthData && (
               <p className={`text-xs font-semibold ${monthData.met ? "text-green-400" : "text-red-400"}`}>
-                {monthData.met ? "Met" : "Exceeded"}
-                {monthData.estimated ? " (estimated goal)" : ""}
+                {monthData.met ? t("web.met") : t("web.exceeded")}
+                {monthData.estimated ? t("web.estimated.goal") : ""}
               </p>
             )}
           </div>

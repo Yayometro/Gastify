@@ -7,6 +7,7 @@ import { authClient } from "@/lib/auth/authClient";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
+import { useT } from "@/i18n/client";
 
 interface AuthSession {
   user?: { email?: string; twoFactorEnabled?: boolean };
@@ -27,6 +28,7 @@ interface RemoveUserApiResponse {
 // retypes the email and the server requires a passkey verification from the last
 // few minutes (if it is stale, the user is sent to /verify-2fa and comes back).
 function DeleteAccountPanel(): React.JSX.Element {
+  const t = useT();
   const router = useRouter();
   const { data: rawSession } = authClient.useSession();
   const session = rawSession as AuthSession | null | undefined;
@@ -54,7 +56,7 @@ function DeleteAccountPanel(): React.JSX.Element {
     setErrorMessage("");
     // A typo in the email must not cost a fingerprint prompt.
     if (confirmMail.trim().toLowerCase() !== String(session?.user?.email || "").toLowerCase()) {
-      setErrorMessage("El correo escrito no coincide con el de tu cuenta.");
+      setErrorMessage(t("profile.delete.mailMismatch"));
       return;
     }
     try {
@@ -68,8 +70,8 @@ function DeleteAccountPanel(): React.JSX.Element {
           const cancelled = (error as { code?: string }).code === "AUTH_CANCELLED" || /cancel/i.test(error.message || "");
           setErrorMessage(
             cancelled
-              ? "Cerraste el cuadro del passkey. Vuelve a intentarlo cuando quieras confirmar."
-              : error.message || "No se pudo verificar tu passkey."
+              ? t("web.you.closed.the.passkey.prompt.try.again.whenever.you.wan")
+              : error.message || t("web.we.couldn.t.verify.your.passkey")
           );
           setIsLoading(false);
           return;
@@ -81,19 +83,19 @@ function DeleteAccountPanel(): React.JSX.Element {
         confirmMail,
       });
       if (!res.ok) {
-        if (redirectIfStepUpRequired({ code: res.code })) return;
+        if (redirectIfStepUpRequired({ code: res.code }, t("auth.stepUp"))) return;
         const extra =
           typeof res.attemptsLeft === "number"
-            ? ` Te quedan ${res.attemptsLeft} intento(s).`
+            ? t("web.you.have.p1.attempt.s.left", { p1: res.attemptsLeft })
             : res.retryAfterMinutes
-              ? ` Intenta de nuevo en ${res.retryAfterMinutes} min.`
+              ? t("web.try.again.in.p1.min", { p1: res.retryAfterMinutes })
               : "";
-        setErrorMessage((res.message || "No se pudo eliminar la cuenta.") + extra);
+        setErrorMessage((res.message || t("profile.delete.failed")) + extra);
         setCode("");
         setIsLoading(false);
         return;
       }
-      runNotify("ok", "Tu cuenta y todos tus datos fueron eliminados.");
+      runNotify("ok", t("accounts.delete.done"));
       try {
         await (authClient.signOut as unknown as () => Promise<unknown>)();
       } catch {
@@ -102,7 +104,7 @@ function DeleteAccountPanel(): React.JSX.Element {
       router.push("/");
     } catch (err) {
       console.log(err);
-      setErrorMessage("Algo salió mal al eliminar la cuenta. Intenta de nuevo.");
+      setErrorMessage(t("web.something.went.wrong.deleting.the.account.try.again"));
       setIsLoading(false);
     }
   }
@@ -115,29 +117,27 @@ function DeleteAccountPanel(): React.JSX.Element {
           className="remove-acc gf-glass-button-danger text-white text-sm font-medium rounded-full px-6 py-2"
           onClick={() => setIsOpen(true)}
         >
-          Eliminar mi cuenta
+          {t("accounts.delete.button")}
         </button>
       ) : (
         <div className="w-full max-w-[520px] bg-gf-surface rounded-2xl p-4 flex flex-col gap-3">
-          <p className="text-sm font-semibold text-red-400">Eliminar mi cuenta</p>
+          <p className="text-sm font-semibold text-red-400">{t("accounts.delete.button")}</p>
           <p className="text-xs text-gf-text-muted">
-            Esto borra tu cuenta y TODOS tus datos (movimientos, cuentas, categorías, presupuestos, etiquetas, passkeys
-            y la app autenticadora). No se puede deshacer.
+            {t("accounts.delete.warning")}
           </p>
           {!twoFactorEnabled && !passkeyOnly ? (
             <>
               <p className="text-xs text-gf-text">
-                Para eliminar tu cuenta primero registra un passkey o activa una app autenticadora (TOTP) en la sección de
-                verificación en dos pasos de arriba.
+                {t("accounts.delete.needFactor")}
               </p>
               <button type="button" className="text-purple-300 text-xs hover:underline self-start" onClick={close}>
-                Cerrar
+                {t("accounts.close")}
               </button>
             </>
           ) : (
             <form onSubmit={handleDelete} className="form-trans-edit w-full flex flex-col gap-2">
               <label className="text-xs text-gf-text-muted" htmlFor="gf-delete-mail">
-                Escribe tu correo ({session?.user?.email}) para confirmar
+                {t("accounts.delete.confirmMail", { p1: session?.user?.email })}
               </label>
               <input
                 id="gf-delete-mail"
@@ -150,7 +150,7 @@ function DeleteAccountPanel(): React.JSX.Element {
               {twoFactorEnabled ? (
                 <>
                   <label className="text-xs text-gf-text-muted" htmlFor="gf-delete-code">
-                    {useBackupCode ? "Un código de respaldo" : "Código de 6 dígitos de tu app autenticadora"}
+                    {useBackupCode ? t("web.a.backup.code") : t("web.6.digit.code.from.your.authenticator.app")}
                   </label>
                   <input
                     id="gf-delete-code"
@@ -169,12 +169,12 @@ function DeleteAccountPanel(): React.JSX.Element {
                       setCode("");
                     }}
                   >
-                    {useBackupCode ? "Usar el código de mi app autenticadora" : "Usar un código de respaldo"}
+                    {useBackupCode ? t("web.use.my.authenticator.app.code") : t("web.use.a.backup.code")}
                   </button>
                 </>
               ) : (
                 <p className="text-xs text-gf-text">
-                  Al confirmar te pediremos tu passkey (huella / Face ID) para verificar que eres tú.
+                  {t("accounts.delete.passkeyNote")}
                 </p>
               )}
               {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
@@ -185,14 +185,14 @@ function DeleteAccountPanel(): React.JSX.Element {
                   className="gf-glass-button text-white text-xs rounded-full px-4 py-2"
                   onClick={close}
                 >
-                  Cancelar
+                  {t("accounts.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !confirmMail || (twoFactorEnabled && !code)}
                   className="gf-glass-button-danger text-white text-xs rounded-full px-4 py-2"
                 >
-                  {isLoading ? <Spin /> : "Eliminar definitivamente"}
+                  {isLoading ? <Spin /> : t("web.delete.permanently")}
                 </button>
               </div>
             </form>

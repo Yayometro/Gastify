@@ -1,4 +1,5 @@
 "use client";
+import { shortDate } from "@gastify/core/i18n/dates";
 
 import React, { useMemo, useState } from "react";
 import { Skeleton, Tooltip } from "antd";
@@ -54,6 +55,9 @@ import type { WalletData } from "@/lib/features/walletSlice";
 import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { AppDispatch } from "@/lib/store";
 
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useLocale, useT, useInfo } from "@/i18n/client";
+
 export interface BudgetsClientProps {
   mcSession?: string | null;
 }
@@ -64,6 +68,9 @@ const today = new Date();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
+  const locale = useLocale();
   const { transacciones, budgets, categories, user, wallet, loading } = useGetDataFromProvider();
   const [startDate, setStartDate] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
   const [endDate, setEndDate] = useState<Date>(getLastDayOfMonth(today.getFullYear(), today.getMonth()));
@@ -159,19 +166,12 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
       start.getFullYear() === lastMonthDate.getFullYear() &&
       start.getMonth() === lastMonthDate.getMonth();
 
-    const startStr = start.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    const endStr = end.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    const startStr = shortDate(start, locale);
+    const endStr = shortDate(end, locale);
 
     let tag = "";
-    if (isThisMonth) tag = " (This Month)";
-    else if (isLastMonth) tag = " (Last Month)";
+    if (isThisMonth) tag = t("web.this.month");
+    else if (isLastMonth) tag = t("web.last.month");
 
     return `${startStr} - ${endStr}${tag}`;
   };
@@ -267,10 +267,10 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
         toFetch.post("general-data/transactions/link-budget", { transactionId: transaction._id as string, budgetId: project._id })
       ));
       const failed = results.find((result) => !result.ok);
-      if (failed) throw new Error(failed.message || "Could not link all movements");
+      if (failed) throw new Error(failed.message || t("web.could.not.link.all.movements"));
       results.forEach((result) => result.data && dispatch(updateTransaction(result.data)));
       const count = (group.movements || []).length;
-      runNotify("ok", `${count} movement${count === 1 ? "" : "s"} added to ${project.name}`);
+      runNotify("ok", t("budgets.movementsAdded", { count, p1: count, p2: project.name }));
     } catch (error: unknown) {
       const err = error as { message?: string };
       runNotify("error", err?.message || String(error));
@@ -289,11 +289,11 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
     <div className="w-full h-full sm:pr-2 pb-10">
       <div className="w-full profile-img py-4 text-center text-white">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
-          Budgets
+          {t("budgets.title")}
         </h1>
       </div>
       <div className="w-full flex items-center justify-center pt-2">
-        <Tooltip title="Every amount on this page is shown in this currency unless a budget sets its own.">
+        <Tooltip title={t("budgets.currencyNote")}>
           <div>
             <PrimaryCurrencySelector pcsWallet={wallet as PrimaryCurrencySelectorWallet} />
           </div>
@@ -304,23 +304,23 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
           <div className="flex items-center gap-2">
             <div
               className="gf-glass-card text-purple-100 font-semibold text-xs px-3.5 py-1.5 rounded-2xl flex items-center gap-1.5 select-none"
-              title="Time period currently being considered for budgets"
+              title={t("budgets.period.current")}
             >
               <UniversalCategoIcon type="fa/FaCalendarAlt" siz={13} />
               <span>{getBudgetRangeLabel(startDate, endDate)}</span>
             </div>
             <TimeRange rpDate={handleDateChange} rpResponse={""} />
-            <Tooltip title="Click to return time to current month 🤓">
+            <Tooltip title={t("budgets.period.backToNow")}>
               <button
                 type="button"
                 onClick={handleResetFilters}
                 className="flex items-center gap-1 gf-glass-card hover:brightness-110 text-purple-100 font-bold px-3 py-1.5 rounded-full text-xs transition-[filter] cursor-pointer"
               >
                 <UniversalCategoIcon type="md/MdRefresh" siz={15} />
-                <span>Reset</span>
+                <span>{t("budgets.reset")}</span>
               </button>
             </Tooltip>
-            <Tooltip title="Filter by a preset period or pick a specific range; the left/right arrows jump to the previous/next month. 🤓">
+            <Tooltip title={t("budgets.period.help")}>
               <div className="text-purple-500">
                 <UniversalCategoIcon type={"fa/FaRegQuestionCircle"} siz={15} />
               </div>
@@ -331,7 +331,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
             onClick={openCreate}
           >
             <CategoIcon type="MdAddCircleOutline" siz={22} />
-            <p>New Budget</p>
+            <p>{t("budgets.new")}</p>
           </div>
         </div>
 
@@ -339,28 +339,28 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
           <Skeleton active />
         ) : (
           <>
-            <h2 className="text-xl text-purple-300 mb-2">Spending budgets</h2>
+            <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 mb-2">{t("budgets.spending.title")}</h2><InfoTip info={APP_INFO.presupuestos} /></span>
             {(spendingBudgets.length > 0 || (coverage as SpendingSummaryCoverage).totalSpent > 0) && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                 <div
                   className="flex-1 bg-gf-accent-soft-bg rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
                   onClick={() => setShowSpendingSummary(true)}
                 >
-                  <p className="text-xs text-gf-text-muted">Planned</p>
+                  <p className="text-xs text-gf-text-muted">{t("budgets.planned")}</p>
                   <p className="text-lg text-purple-300 font-bold">{usdFormatChanger(spendingTotals.fixed)}</p>
                 </div>
                 <div
                   className="flex-1 bg-gf-accent-soft-bg rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
                   onClick={() => setShowSpendingSummary(true)}
                 >
-                  <p className="text-xs text-gf-text-muted">Total spent</p>
+                  <span className="inline-flex items-center gap-1.5"><p className="text-xs text-gf-text-muted">{t("budgets.totalSpent")}</p><InfoTip info={APP_INFO.gasto_total} /></span>
                   <p className="text-lg text-purple-300 font-bold">{usdFormatChanger((coverage as SpendingSummaryCoverage).totalSpent)}</p>
                 </div>
                 <div
                   className="flex-1 gf-glass-warning rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
                   onClick={() => setShowSpendingSummary(true)}
                 >
-                  <p className="text-xs text-amber-400">Unbudgeted</p>
+                  <span className="inline-flex items-center gap-1.5"><p className="text-xs text-amber-400">{t("budgets.unbudgeted")}</p><InfoTip info={APP_INFO.sin_presupuesto} /></span>
                   <p className="text-lg text-amber-400 font-bold">
                     {usdFormatChanger((coverage as SpendingSummaryCoverage).unbudgetedSpent)}
                     <span className="text-xs font-normal ml-1">
@@ -371,7 +371,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
               </div>
             )}
             {spendingBudgets.length <= 0 ? (
-              <EmptyModule emMessage="No spending budgets yet. Create one 🤓" />
+              <EmptyModule emMessage={t("budgets.spending.none")} />
             ) : (
               <div className="flex flex-col gap-2 mb-6">
                 {spendingBudgets.map((budget) => (
@@ -398,10 +398,10 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
               </div>
             )}
 
-            <h2 className="text-xl text-purple-300 mb-2">Projects</h2>
-            <p className="text-xs text-gf-text-muted mb-3">One-time plans made from specific movements. Their dates and details can be changed at any time.</p>
+            <h2 className="text-xl text-purple-300 mb-2">{t("budgets.projects")}</h2>
+            <p className="text-xs text-gf-text-muted mb-3">{t("budgets.projects.help")}</p>
             {projectBudgets.length <= 0 ? (
-              <div className="mb-6"><EmptyModule emMessage="No project budgets yet. Create one for a trip, renovation, or event ✈️" /></div>
+              <div className="mb-6"><EmptyModule emMessage={t("budgets.projects.none")} /></div>
             ) : (
               <div className="flex flex-col gap-2 mb-6">
                 {projectBudgets.map((budget) => (
@@ -415,9 +415,9 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
               </div>
             )}
 
-            <h2 className="text-xl text-purple-300 mb-2">Savings</h2>
+            <h2 className="text-xl text-purple-300 mb-2">{t("budgets.savings")}</h2>
             {savingBudgets.length <= 0 ? (
-              <EmptyModule emMessage="No savings budgets yet. Create one 🤓" />
+              <EmptyModule emMessage={t("budgets.savings.none")} />
             ) : (
               <div className="flex flex-col gap-2">
                 {savingBudgets.map((budget) => (

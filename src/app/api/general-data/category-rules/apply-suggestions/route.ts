@@ -8,6 +8,7 @@ import "@/model/Account";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { assertOwnedOrDefault } from "@/lib/auth/ownership";
+import { serverT } from "@/i18n/server";
 
 export interface CategorySuggestionApplication {
   transactionId?: string | null;
@@ -31,25 +32,26 @@ export type ApplySuggestionsResponse = ApplySuggestionsSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<ApplySuggestionsResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on APPLY SUGGESTIONS POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.25"));
     // applications: [{ transactionId, category, subCategory }] - each row can carry
     // a different category, unlike edit-many which applies one value to a whole batch.
     const { applications } = (await request.json()) as ApplySuggestionsRequestBody;
     if (!Array.isArray(applications) || applications.length === 0)
-      throw new Error("No applications were provided to apply-suggestions 🤕");
+      throw new Error(t("errors.no.applications.were.provided.to"));
 
     // Security fix: previously this route lacked session authentication and updated
     // transactions and assigned category/subCategory without verifying ownership.
     // We now authenticate the caller session, scope transaction lookups to the caller's
     // user and wallet, and verify category/subCategory ownership or default status.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on APPLY SUGGESTIONS POST");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.apply"));
 
     // Two passes (bug 125): everything is validated FIRST (ownership, a category that matches its
     // sub-category, valid ids) and nothing is saved until the whole batch is valid. It used to save as
@@ -91,7 +93,7 @@ export async function POST(
       }
       // A sub-category must belong to the category it is applied with.
       if (foundSub && app.category && String(foundSub.fatherCategory) !== String(app.category)) {
-        throw new Error("The sub-category does not belong to that category 🤕");
+        throw new Error(t("errors.the.sub.category.does.not"));
       }
       prepared.push({ transaction, subCategory: app.subCategory, category: app.category });
     }
@@ -116,7 +118,7 @@ export async function POST(
       .lean();
 
     return NextResponse.json({
-      message: `${populated.length} transaction(s) categorized`,
+      message: t("errors.api.transactionsCategorized", { p1: populated.length }),
       data: populated,
       status: 201,
       ok: true,

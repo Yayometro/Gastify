@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import EmptyModule from "./EmptyModule";
 import UniversalCategoIcon from "./UniversalCategoIcon";
@@ -8,6 +9,7 @@ import runNotify from "@/helpers/gastifyNotifier";
 import type { SubCategoryData } from "@/lib/features/subCategorySlice";
 import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { UserData } from "@/lib/features/userSlice";
+import { useT } from "@/i18n/client";
 
 export interface SubCategoryListProps {
   sclSubCategory?: SubCategoryData[] | null;
@@ -16,6 +18,7 @@ export interface SubCategoryListProps {
 }
 
 function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryListProps): React.JSX.Element {
+  const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<SubCategoryData>({});
 
@@ -33,13 +36,13 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryL
         !sclSubCategory ? (
           <div className="w-full h-full flex justify-center items-center">
             <EmptyModule
-              emMessage={`No subcategories to display. Please create a new one or refresh the page and try later... 🤕`}
+              emMessage={t("categories.emptySubcategoriesList")}
             />
           </div>
         ) : sclSubCategory.length <= 0 ? (
           <div className="w-full h-full flex flex-col justify-center items-center gap-2">
             <Spin size="large" />
-            <p className="">Loading...</p>
+            <p className="">{t("categories.loading")}</p>
           </div>
         ) : (
           sclSubCategory.map((subCategory) => (
@@ -58,9 +61,7 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryL
                   if (subCategory.isDefaultSubCatego) {
                     runNotify(
                       "warning",
-                      `"${
-                        subCategory?.name || "This"
-                      }" is a default SubCategory and can't be modified in any way 🚨`
+                      t("categories.defaultSubCategory", { p1: subCategory?.name || t("categories.thisOne") })
                     );
                   } else {
                     setOnEdition(`edition`);
@@ -87,7 +88,7 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryL
                 </div>
                 <div className="cc-list-content-subCategory w-full flex items-center justify-center truncate">
                   <p className="w-full min-[400px]:text-lg min-[600px]:text-xl truncate px-2">
-                    {subCategory?.name || "No name..."}
+                    {subCategory?.name || t("web.no.name")}
                   </p>
                 </div>
               </div>

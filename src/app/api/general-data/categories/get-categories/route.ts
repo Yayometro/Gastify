@@ -3,6 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import Category from "@/model/Category";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface GetCategoriesSuccessResponse {
   data: {
@@ -19,8 +20,9 @@ export type GetCategoriesResponse = GetCategoriesSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<GetCategoriesResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     // Security fix: this used to trust whatever mail the client sent in the
     // body, letting any caller (this endpoint isn't covered by
     // middleware.ts's matcher) read another user's categories - an IDOR,
@@ -28,13 +30,13 @@ export async function POST(
     // real call site (categoriesSlice.ts's fetchCategories) always sends
     // its own session's email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     //DB
     await dbConnection();
     // User find
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
 
@@ -54,7 +56,7 @@ export async function POST(
       .lean();
     if (!categoriesFounded)
       throw new Error(
-        "No categories found, review the user and wallet id on GENERAL-DATA POST"
+        t("errors.no.categories.found.review.the")
       );
     //FIND DEFUALT CATEGORIES
     const defaultCategoriesFounded = await (
@@ -70,7 +72,7 @@ export async function POST(
       .lean();
     if (!defaultCategoriesFounded)
       throw new Error(
-        "No default categories found, review the user and wallet id on GENERAL-DATA POST"
+        t("errors.no.default.categories.found.review")
       );
     const dataFull = {
       categories: categoriesFounded,
@@ -78,7 +80,7 @@ export async function POST(
     };
     return NextResponse.json({
       data: dataFull,
-      message: "Categories and SubCategories founded",
+      message: t("errors.categories.and.subcategories.founded"),
       status: 201,
       ok: true,
     });

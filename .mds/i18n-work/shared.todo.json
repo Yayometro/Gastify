@@ -1,0 +1,557 @@
+{
+  "namespace": "shared",
+  "entries": [
+    {
+      "key": "shared.stepUp.failed3",
+      "source": "No pudimos verificar tu identidad después de 3 intentos. Por seguridad cerramos tu sesión.",
+      "es": "No pudimos verificar tu identidad después de 3 intentos. Por seguridad cerramos tu sesión.",
+      "en": "We could not verify your identity after 3 attempts. For security, we signed you out."
+    },
+    {
+      "key": "shared.passkey.registered",
+      "source": "Passkey registrado 🤓",
+      "es": "Passkey registrado 🤓",
+      "en": "Passkey registered 🤓"
+    },
+    {
+      "key": "shared.password.wrong",
+      "source": "Contraseña incorrecta 🤕",
+      "es": "Contraseña incorrecta 🤕",
+      "en": "Wrong password 🤕"
+    },
+    {
+      "key": "shared.signedOut",
+      "source": "Por seguridad, cerramos tu sesión. Inicia sesión de nuevo para continuar…",
+      "es": "Por seguridad, cerramos tu sesión. Inicia sesión de nuevo para continuar…",
+      "en": "For security, we signed you out. Sign in again to continue…"
+    },
+    {
+      "key": "shared.stepUp.title",
+      "source": "Estamos añadiendo una capa extra de seguridad a tu cuenta",
+      "es": "Estamos añadiendo una capa extra de seguridad a tu cuenta",
+      "en": "We are adding an extra layer of security to your account"
+    },
+    {
+      "key": "shared.stepUp.intro",
+      "source": "A partir de ahora, cada vez que inicies sesión (o después de un rato sin actividad) te pediremos confirmar tu identidad. Elige cómo prefieres hacerlo:",
+      "es": "A partir de ahora, cada vez que inicies sesión (o después de un rato sin actividad) te pediremos confirmar tu identidad. Elige cómo prefieres hacerlo:",
+      "en": "From now on, every time you sign in (or after a while without activity) we will ask you to confirm your identity. Choose how you prefer to do it:"
+    },
+    {
+      "key": "shared.stepUp.passkeyOption",
+      "source": "Registrar huella / Face ID (passkey)",
+      "es": "Registrar huella / Face ID (passkey)",
+      "en": "Register fingerprint / Face ID (passkey)"
+    },
+    {
+      "key": "shared.stepUp.totpOption",
+      "source": "Usar una app autenticadora (Google/Microsoft Authenticator)",
+      "es": "Usar una app autenticadora (Google/Microsoft Authenticator)",
+      "en": "Use an authenticator app (Google/Microsoft Authenticator)"
+    },
+    {
+      "key": "shared.confirmPassword.title",
+      "source": "Confirma tu contraseña",
+      "es": "Confirma tu contraseña",
+      "en": "Confirm your password"
+    },
+    {
+      "key": "shared.confirmPassword.totp",
+      "source": "Tu cuenta tiene una contraseña configurada - confírmala para activar la app autenticadora.",
+      "es": "Tu cuenta tiene una contraseña configurada - confírmala para activar la app autenticadora.",
+      "en": "Your account has a password set — confirm it to turn on the authenticator app."
+    },
+    {
+      "key": "shared.password.yours",
+      "source": "Tu contraseña",
+      "es": "Tu contraseña",
+      "en": "Your password"
+    },
+    {
+      "key": "shared.continue",
+      "source": "Continuar",
+      "es": "Continuar",
+      "en": "Continue"
+    },
+    {
+      "key": "shared.noPassword.usePasskey",
+      "source": "¿No conoces tu contraseña? Registra tu huella / Face ID en su lugar",
+      "es": "¿No conoces tu contraseña? Registra tu huella / Face ID en su lugar",
+      "en": "Don't know your password? Register your fingerprint / Face ID instead"
+    },
+    {
+      "key": "shared.cancel",
+      "source": "Cancelar",
+      "es": "Cancelar",
+      "en": "Cancel"
+    },
+    {
+      "key": "shared.totp.scan",
+      "source": "Escanea este código",
+      "es": "Escanea este código",
+      "en": "Scan this code"
+    },
+    {
+      "key": "shared.totp.openWith",
+      "source": "Ábrelo con Google Authenticator, Microsoft Authenticator, o la app que prefieras.",
+      "es": "Ábrelo con Google Authenticator, Microsoft Authenticator, o la app que prefieras.",
+      "en": "Open it with Google Authenticator, Microsoft Authenticator, or any app you prefer."
+    },
+    {
+      "key": "shared.totp.qrAlt",
+      "source": "Código QR para configurar TOTP",
+      "es": "Código QR para configurar TOTP",
+      "en": "QR code to set up TOTP"
+    },
+    {
+      "key": "shared.totp.codeLabel",
+      "source": "Código de 6 dígitos",
+      "es": "Código de 6 dígitos",
+      "en": "6-digit code"
+    },
+    {
+      "key": "shared.confirm",
+      "source": "Confirmar",
+      "es": "Confirmar",
+      "en": "Confirm"
+    },
+    {
+      "key": "shared.backup.title",
+      "source": "Guarda tus códigos de respaldo",
+      "es": "Guarda tus códigos de respaldo",
+      "en": "Save your backup codes"
+    },
+    {
+      "key": "shared.backup.help",
+      "source": "Úsalos si alguna vez pierdes acceso a tu app autenticadora. Cada uno solo funciona una vez.",
+      "es": "Úsalos si alguna vez pierdes acceso a tu app autenticadora. Cada uno solo funciona una vez.",
+      "en": "Use them if you ever lose access to your authenticator app. Each one works only once."
+    },
+    {
+      "key": "shared.copied",
+      "source": "Copiados al portapapeles 🤓",
+      "es": "Copiados al portapapeles 🤓",
+      "en": "Copied to the clipboard 🤓"
+    },
+    {
+      "key": "shared.copyAll",
+      "source": "Copiar todos",
+      "es": "Copiar todos",
+      "en": "Copy all"
+    },
+    {
+      "key": "shared.download",
+      "source": "Descargar",
+      "es": "Descargar",
+      "en": "Download"
+    },
+    {
+      "key": "shared.backup.saved",
+      "source": "Ya los guardé, continuar",
+      "es": "Ya los guardé, continuar",
+      "en": "I saved them, continue"
+    },
+    {
+      "key": "shared.verify.title",
+      "source": "Verifica tu identidad",
+      "es": "Verifica tu identidad",
+      "en": "Verify your identity"
+    },
+    {
+      "key": "shared.verify.passkey",
+      "source": "Verificar con mi passkey",
+      "es": "Verificar con mi passkey",
+      "en": "Verify with my passkey"
+    },
+    {
+      "key": "shared.verify.noDevice",
+      "source": "¿No tienes tu dispositivo? Usa un código",
+      "es": "¿No tienes tu dispositivo? Usa un código",
+      "en": "Don't have your device? Use a code"
+    },
+    {
+      "key": "shared.verify.enterCode",
+      "source": "Ingresa tu código",
+      "es": "Ingresa tu código",
+      "en": "Enter your code"
+    },
+    {
+      "key": "shared.verify.appCode",
+      "source": "Código de tu app autenticadora",
+      "es": "Código de tu app autenticadora",
+      "en": "Code from your authenticator app"
+    },
+    {
+      "key": "shared.verify",
+      "source": "Verificar",
+      "es": "Verificar",
+      "en": "Verify"
+    },
+    {
+      "key": "shared.verify.useBackup",
+      "source": "Usar un código de respaldo en su lugar",
+      "es": "Usar un código de respaldo en su lugar",
+      "en": "Use a backup code instead"
+    },
+    {
+      "key": "shared.backup.code",
+      "source": "Código de respaldo",
+      "es": "Código de respaldo",
+      "en": "Backup code"
+    },
+    {
+      "key": "shared.twoStep.on",
+      "source": "Verificación en dos pasos activada 🤓",
+      "es": "Verificación en dos pasos activada 🤓",
+      "en": "Two-step verification turned on 🤓"
+    },
+    {
+      "key": "shared.twoStep.off",
+      "source": "Verificación en dos pasos desactivada 🤓",
+      "es": "Verificación en dos pasos desactivada 🤓",
+      "en": "Two-step verification turned off 🤓"
+    },
+    {
+      "key": "shared.twoStep.title",
+      "source": "Autenticación en dos pasos",
+      "es": "Autenticación en dos pasos",
+      "en": "Two-step authentication"
+    },
+    {
+      "key": "shared.twoStep.help",
+      "source": "Además de tu passkey, puedes activar una app autenticadora (Google Authenticator, Microsoft Authenticator, etc.) como método de verificación adicional.",
+      "es": "Además de tu passkey, puedes activar una app autenticadora (Google Authenticator, Microsoft Authenticator, etc.) como método de verificación adicional.",
+      "en": "Besides your passkey, you can turn on an authenticator app (Google Authenticator, Microsoft Authenticator, etc.) as an extra verification method."
+    },
+    {
+      "key": "shared.twoStep.status",
+      "source": "Estado:",
+      "es": "Estado:",
+      "en": "Status:"
+    },
+    {
+      "key": "shared.twoStep.confirmToEnable",
+      "source": "Tu cuenta tiene una contraseña configurada. Confírmala para activar la verificación en dos pasos.",
+      "es": "Tu cuenta tiene una contraseña configurada. Confírmala para activar la verificación en dos pasos.",
+      "en": "Your account has a password set. Confirm it to turn on two-step verification."
+    },
+    {
+      "key": "shared.twoStep.noPassword",
+      "source": "¿No conoces tu contraseña? Defínela más arriba, en &ldquo;Change password?&rdquo;",
+      "es": "¿No conoces tu contraseña? Defínela más arriba, en “Change password?”",
+      "en": "Don't know your password? Set it above, under “Change password?”"
+    },
+    {
+      "key": "shared.twoStep.confirmToDisable",
+      "source": "Confirma tu contraseña para desactivar la verificación en dos pasos.",
+      "es": "Confirma tu contraseña para desactivar la verificación en dos pasos.",
+      "en": "Confirm your password to turn off two-step verification."
+    },
+    {
+      "key": "shared.totp.scanHelp",
+      "source": "Escanea este código con tu app autenticadora.",
+      "es": "Escanea este código con tu app autenticadora.",
+      "en": "Scan this code with your authenticator app."
+    },
+    {
+      "key": "shared.backup.saveNow",
+      "source": "Guarda estos códigos de respaldo - no se mostrarán de nuevo:",
+      "es": "Guarda estos códigos de respaldo - no se mostrarán de nuevo:",
+      "en": "Save these backup codes — they will not be shown again:"
+    },
+    {
+      "key": "shared.copy",
+      "source": "Copiar",
+      "es": "Copiar",
+      "en": "Copy"
+    },
+    {
+      "key": "shared.done.hide",
+      "source": "Listo, ocultar",
+      "es": "Listo, ocultar",
+      "en": "Done, hide"
+    },
+    {
+      "key": "shared.backup.copyNow",
+      "source": "Copia estos códigos ahora - los anteriores ya no funcionan:",
+      "es": "Copia estos códigos ahora - los anteriores ya no funcionan:",
+      "en": "Copy these codes now — the previous ones no longer work:"
+    },
+    {
+      "key": "shared.backup.regenerate",
+      "source": "Confirma tu contraseña para regenerar tus códigos de respaldo.",
+      "es": "Confirma tu contraseña para regenerar tus códigos de respaldo.",
+      "en": "Confirm your password to regenerate your backup codes."
+    },
+    {
+      "key": "shared.tokens.title",
+      "source": "Connector access tokens",
+      "es": "Tokens de acceso de conectores",
+      "en": "Connector access tokens"
+    },
+    {
+      "key": "shared.tokens.help",
+      "source": "Personal tokens for AI agent connectors (Claude, ChatGPT) to create transactions on your behalf. Each one is shown only once at creation - store it wherever the connector asks for it, then it can't be viewed again (only revoked).",
+      "es": "Tokens personales para los conectores de agentes de IA (Claude, ChatGPT) que crean movimientos por tu cuenta. Cada uno se muestra una sola vez al crearlo: guárdalo donde el conector lo pida, porque después no se puede volver a ver (solo revocar).",
+      "en": "Personal tokens for AI agent connectors (Claude, ChatGPT) to create transactions on your behalf. Each one is shown only once at creation - store it wherever the connector asks for it, then it can't be viewed again (only revoked)."
+    },
+    {
+      "key": "shared.tokens.copyNow",
+      "source": "Copy this token now - it won't be shown again:",
+      "es": "Copia este token ahora: no se volverá a mostrar:",
+      "en": "Copy this token now — it won't be shown again:"
+    },
+    {
+      "key": "shared.copiedOne",
+      "source": "Copied to clipboard 🤓",
+      "es": "Copiado al portapapeles 🤓",
+      "en": "Copied to the clipboard 🤓"
+    },
+    {
+      "key": "shared.tokens.copy",
+      "source": "Copy",
+      "es": "Copiar",
+      "en": "Copy"
+    },
+    {
+      "key": "shared.tokens.doneHide",
+      "source": "Done, hide this",
+      "es": "Listo, ocultar",
+      "en": "Done, hide this"
+    },
+    {
+      "key": "shared.tokens.none",
+      "source": "No tokens yet.",
+      "es": "Todavía no hay tokens.",
+      "en": "No tokens yet."
+    },
+    {
+      "key": "shared.tokens.meta",
+      "source": "Created {p1}· Last used {p2}",
+      "es": "Creado {p1} · Último uso {p2}",
+      "en": "Created {p1} · Last used {p2}"
+    },
+    {
+      "key": "shared.name",
+      "source": "Name",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "shared.tokens.namePlaceholder",
+      "source": "e.g. Claude connector",
+      "es": "p. ej. conector de Claude",
+      "en": "e.g. Claude connector"
+    },
+    {
+      "key": "shared.dedup.confirm",
+      "source": "Confirm deduplication",
+      "es": "Confirmar deduplicación",
+      "en": "Confirm deduplication"
+    },
+    {
+      "key": "shared.dedup.scanned",
+      "source": "{p1}row{p2}scanned {p3}",
+      "es": "{p1} fila{p2} revisada{p3}",
+      "en": "{p1} row{p2} scanned {p3}"
+    },
+    {
+      "key": "shared.dedup.willDelete",
+      "source": "Will be deleted",
+      "es": "Se borrarán",
+      "en": "Will be deleted"
+    },
+    {
+      "key": "shared.of",
+      "source": "of",
+      "es": "de",
+      "en": "of"
+    },
+    {
+      "key": "shared.dedup.skipped",
+      "source": "· {p1}skipped",
+      "es": "· {p1} omitidas",
+      "en": "· {p1} skipped"
+    },
+    {
+      "key": "shared.dedup.excelRow",
+      "source": "Excel row",
+      "es": "Fila de Excel",
+      "en": "Excel row"
+    },
+    {
+      "key": "shared.dedup.noneDeleted",
+      "source": "No transactions will be deleted.",
+      "es": "No se borrará ningún movimiento.",
+      "en": "No transactions will be deleted."
+    },
+    {
+      "key": "shared.dedup.nothingKeep",
+      "source": "Nothing to keep.",
+      "es": "Nada que conservar.",
+      "en": "Nothing to keep."
+    },
+    {
+      "key": "shared.dedup.cancel",
+      "source": "Cancel",
+      "es": "Cancelar",
+      "en": "Cancel"
+    },
+    {
+      "key": "shared.start",
+      "source": "Start",
+      "es": "Inicio",
+      "en": "Start"
+    },
+    {
+      "key": "shared.end",
+      "source": "End",
+      "es": "Fin",
+      "en": "End"
+    },
+    {
+      "key": "shared.noChange",
+      "source": "sin cambio",
+      "es": "sin cambio",
+      "en": "no change"
+    },
+    {
+      "key": "shared.icons.onlyDefaults",
+      "source": "Solo en tus datos / valores por defecto (no están en el selector antiguo)",
+      "es": "Solo en tus datos / valores por defecto (no están en el selector antiguo)",
+      "en": "Only in your data / default values (not in the old picker)"
+    },
+    {
+      "key": "shared.icons.brandLogos",
+      "source": "Logos de marcas: no existen como emoji, se quedan igual",
+      "es": "Logos de marcas: no existen como emoji, se quedan igual",
+      "en": "Brand logos: they don't exist as emoji, so they stay the same"
+    },
+    {
+      "key": "shared.icons.mapping",
+      "source": "Equivalencias de íconos (solo desarrollo)",
+      "es": "Equivalencias de íconos (solo desarrollo)",
+      "en": "Icon equivalences (development only)"
+    },
+    {
+      "key": "shared.icons.help",
+      "source": "Izquierda: el ícono de hoy. Derecha: el emoji Fluent 3D con el que se dibujará. {p1}equivalencias.",
+      "es": "Izquierda: el ícono de hoy. Derecha: el emoji Fluent 3D con el que se dibujará. {p1} equivalencias.",
+      "en": "Left: today's icon. Right: the Fluent 3D emoji it will be drawn with. {p1} equivalences."
+    },
+    {
+      "key": "shared.icons.filter",
+      "source": "Filtrar (nombre viejo o nuevo)...",
+      "es": "Filtrar (nombre viejo o nuevo)...",
+      "en": "Filter (old or new name)..."
+    },
+    {
+      "key": "shared.totalSpent",
+      "source": "Total spent:",
+      "es": "Total gastado:",
+      "en": "Total spent:"
+    },
+    {
+      "key": "shared.amount",
+      "source": "Amount:",
+      "es": "Monto:",
+      "en": "Amount:"
+    },
+    {
+      "key": "shared.percentage",
+      "source": "Percentage:",
+      "es": "Porcentaje:",
+      "en": "Percentage:"
+    },
+    {
+      "key": "shared.total",
+      "source": "Total:",
+      "es": "Total:",
+      "en": "Total:"
+    },
+    {
+      "key": "shared.charged.otherCurrency",
+      "source": "Charged in another currency",
+      "es": "Cobrado en otra moneda",
+      "en": "Charged in another currency"
+    },
+    {
+      "key": "shared.charged.amount",
+      "source": "Charged amount",
+      "es": "Monto cobrado",
+      "en": "Charged amount"
+    },
+    {
+      "key": "shared.amountWord",
+      "source": "Amount",
+      "es": "Monto",
+      "en": "Amount"
+    },
+    {
+      "key": "shared.cat",
+      "source": "Cat:",
+      "es": "Cat.:",
+      "en": "Cat:"
+    },
+    {
+      "key": "shared.sub",
+      "source": "• Sub:",
+      "es": "• Sub:",
+      "en": "• Sub:"
+    },
+    {
+      "key": "shared.acc",
+      "source": "• Acc:",
+      "es": "• Cta.:",
+      "en": "• Acc:"
+    },
+    {
+      "key": "shared.understood",
+      "source": "Entendido",
+      "es": "Entendido",
+      "en": "Got it"
+    },
+    {
+      "key": "shared.close",
+      "source": "Cerrar",
+      "es": "Cerrar",
+      "en": "Close"
+    },
+    {
+      "key": "shared.currency.help",
+      "source": "Wallet reports and totals are displayed in this currency. It does not change how each Account's own balance is stored.",
+      "es": "Los reportes y totales de la cartera se muestran en esta moneda. No cambia cómo se guarda el saldo propio de cada cuenta.",
+      "en": "Wallet reports and totals are displayed in this currency. It does not change how each Account's own balance is stored."
+    },
+    {
+      "key": "shared.currency.primary",
+      "source": "Primary currency:",
+      "es": "Moneda principal:",
+      "en": "Primary currency:"
+    },
+    {
+      "key": "shared.search",
+      "source": "Search",
+      "es": "Buscar",
+      "en": "Search"
+    },
+    {
+      "key": "shared.example",
+      "source": "Ejemplo",
+      "es": "Ejemplo",
+      "en": "Example"
+    },
+    {
+      "key": "shared.tabs.missing",
+      "source": "Ups... Nothing here 🤔. Component SHOULD have an array of components! 🚨",
+      "es": "Vaya… no hay nada aquí 🤔. El componente debería tener una lista de componentes. 🚨",
+      "en": "Ups... Nothing here 🤔. Component SHOULD have an array of components! 🚨"
+    },
+    {
+      "key": "shared.noTag",
+      "source": "No tag...",
+      "es": "Sin etiqueta…",
+      "en": "No tag…"
+    }
+  ]
+}

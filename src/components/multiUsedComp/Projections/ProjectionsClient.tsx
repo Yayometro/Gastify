@@ -27,6 +27,9 @@ import PrimaryCurrencySelector, { type PrimaryCurrencySelectorWallet } from "../
 import type { MonthDateRange } from "@gastify/core/time/timeFunctions";
 import type { CurrencyBreakdownData } from "../CurrencyBreakdownChips";
 
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT, useInfo } from "@/i18n/client";
+
 export interface ProjectionsClientProps {
   mcSession?: string | null;
 }
@@ -39,6 +42,8 @@ export interface SelectedMonthDetails {
 }
 
 function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [selectedMonthName, setSelectedMonthName] = useState<string | null>(null);
@@ -101,7 +106,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
             })
             .filter(Boolean)
         : nonSavingBudgets.filter((b) => !b.archived);
-    const bucketBreakdown = getMonthBucketBreakdown(bills, budgetsForChart, selectedUnexpectedBuffer);
+    const bucketBreakdown = getMonthBucketBreakdown(bills, budgetsForChart, selectedUnexpectedBuffer, { budget: t("budgets.alert.defaultName"), unexpected: t("projections.unexpectedRow") });
     const incomeOccurrences =
       selectedRow.type === "actual"
         ? []
@@ -113,7 +118,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
               occurrences: getExpectedOccurrencesInMonth(s, start, end),
             }));
     return { bucketBreakdown, incomeOccurrences, incomeCurrencyBreakdown, expenseCurrencyBreakdown };
-  }, [selectedRow, monthRanges, transacciones, budgetsConverted, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency]);
+  }, [selectedRow, monthRanges, transacciones, budgetsConverted, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency, t]);
 
   const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }: SaveBuffersPayload): Promise<void> => {
     const res = await toFetch.post("general-data/projections/update", {
@@ -143,11 +148,11 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
     <div className="w-full h-full sm:pr-2 pb-10">
       <div className="w-full profile-img py-4 text-center text-white">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
-          Projections
+          {t("projections.title")}<InfoTip info={APP_INFO.proyecciones} />
         </h1>
       </div>
       <div className="w-full flex items-center justify-center pt-2">
-        <Tooltip title="Every figure in these projections is expressed in this currency. Change it here if you want projections in a different currency.">
+        <Tooltip title={t("projections.currency.help")}>
           <div>
             <PrimaryCurrencySelector pcsWallet={wallet as PrimaryCurrencySelectorWallet | null | undefined} />
           </div>
@@ -169,9 +174,9 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
 
         <div className="flex items-center justify-center gap-1 mb-4 text-purple-300">
           <p className="text-lg">
-            Total money today: <span className="font-bold">{usdFormatChanger(startingBalance)}</span>
+            {t("projections.today.total")} <span className="font-bold">{usdFormatChanger(startingBalance)}</span>
           </p>
-          <Tooltip title="Sum of all your non-credit accounts (debit, cash, savings) as of right now. Credit accounts are excluded since that money isn't really yours to spend.">
+          <Tooltip title={t("projections.today.help")}>
             <div>
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
             </div>

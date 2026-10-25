@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useDispatch } from "react-redux";
 import { Spin, Tooltip } from "antd";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
 import { updateWallet } from "@/lib/features/walletSlice";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface PrimaryCurrencySelectorWallet {
   _id?: string;
@@ -22,6 +25,8 @@ export interface PrimaryCurrencySelectorProps {
 // in. Never reinterprets already-stored native Account/Transaction money -
 // only changes presentation.
 function PrimaryCurrencySelector({ pcsWallet }: PrimaryCurrencySelectorProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const dispatch = useDispatch();
   const toFetch = fetcher();
@@ -39,9 +44,9 @@ function PrimaryCurrencySelector({ pcsWallet }: PrimaryCurrencySelectorProps): R
       });
       if (res.ok) {
         dispatch(updateWallet(res.data));
-        runNotify("ok", `Primary currency changed to ${nextCurrency} 🤓`);
+        runNotify("ok", t("profile.primaryCurrencyChanged", { p1: nextCurrency }));
       } else {
-        runNotify("error", res.message || "Could not change primary currency");
+        runNotify("error", res.message || t("web.could.not.change.primary.currency"));
       }
     } catch (err) {
       runNotify("error", String(err));
@@ -51,9 +56,10 @@ function PrimaryCurrencySelector({ pcsWallet }: PrimaryCurrencySelectorProps): R
   };
 
   return (
-    <Tooltip title="Wallet reports and totals are displayed in this currency. It does not change how each Account's own balance is stored.">
+    <Tooltip title={t("shared.currency.help")}>
       <div className="pcs-container flex items-center gap-1 text-[10px] font-light bg-gf-surface-2 text-gf-text rounded-2xl px-[8px] py-[2px] sm:text-xs">
-        <span className="whitespace-nowrap">Primary currency:</span>
+        <span className="whitespace-nowrap">{t("shared.currency.primary")}</span>
+        <InfoTip info={APP_INFO.moneda_principal} />
         {isSaving ? (
           <Spin size="small" />
         ) : (

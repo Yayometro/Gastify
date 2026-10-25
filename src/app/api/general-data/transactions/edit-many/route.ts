@@ -11,9 +11,12 @@ import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { assertOwnedOrDefault } from "@/lib/auth/ownership";
-import { minorToMajor } from "@gastify/core/money/currencies";
+import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
+import { planCurrencyChange } from "@gastify/core/money/currencyChange";
+import { convert } from "@/lib/money/server/fxRateService";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoney } from "@/lib/money/server/transactionReadService";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -55,8 +58,9 @@ export type EditManyTransactionsResponse =
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<EditManyTransactionsResponse>> {
+  const tr = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on Update Many Trans");
+    if (!request) throw new Error(tr("errors.no.data.in.request.on.3"));
     const body = ((await request.json()) || {}) as EditManyTransactionsRequestBody;
     const {
       transactions,
@@ -72,6 +76,8 @@ export async function POST(
       subCategory,
       tags,
     } = body;
+    // The new currency for the "currency" field (only used when that field is targeted).
+    const targetCurrency = typeof (body as { currency?: unknown }).currency === "string" ? String((body as { currency?: unknown }).currency) : "";
 
     // Security fix: this route previously lacked session verification and
     // performed Transaction.findById / Transaction.save directly with zero ownership check.
@@ -79,18 +85,18 @@ export async function POST(
     // session user in the database, and scope transaction and account lookups to the
     // user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(tr("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on EDIT MANY TRANSACTIONS");
+      throw new Error(tr("errors.user.not.found.on.edit"));
 
     const userWallet = userFound.wallet;
 
     if (!transactions || transactions.length === 0)
-      throw new Error("No transaction IDs passed to edit-many");
+      throw new Error(tr("errors.no.transaction.ids.passed.to"));
 
     // If no fields array provided fall back to updating all truthy values (legacy behaviour)
     const targeted = Array.isArray(fields) && fields.length > 0;
@@ -121,33 +127,75 @@ export async function POST(
     // this up front so the action either fully applies or is fully blocked.
     if (shouldUpdate("account") && account) {
       const destinationAccount = await Account.findOne({ _id: account, wallet: userWallet }).lean();
-      if (!destinationAccount) throw new Error("Destination account not found for bulk account reassignment");
+      if (!destinationAccount) throw new Error(tr("errors.destination.account.not.found.for"));
       const destCurrency = destinationAccount.currency || "MXN";
 
       for (const transId of transactions) {
         const t = await Transaction.findOne({ _id: transId, wallet: userWallet }).lean();
-        if (!t) throw new Error(`Transaction ${transId} not found`);
+        if (!t) throw new Error(tr("errors.api.transactionNotFound", { p1: transId }));
         const w = await getWalletCached(t.wallet);
         const tCurrency = t.money?.account?.currency || w?.primaryCurrency || "MXN";
         if (tCurrency !== destCurrency) {
-          throw new Error(
-            `Bulk account reassignment blocked: destination Account is ${destCurrency} but at least one selected Transaction is ${tCurrency}. Reassign mismatched-currency transactions individually instead.`
-          );
+          throw new Error(tr("errors.api.bulkReassignBlocked", { p1: destCurrency, p2: tCurrency }));
         }
       }
     }
 
     const savedTrans: unknown[] = [];
+    // Movements that could not change currency, with the reason: they are reported, not failed.
+    const skipped: { id: string; name: string; accountCurrency: string; reason: string }[] = [];
 
     for (const transId of transactions) {
       const transaction = await Transaction.findOne({ _id: transId, wallet: userWallet });
-      if (!transaction) throw new Error(`Transaction ${transId} not found`);
+      if (!transaction) throw new Error(tr("errors.api.transactionNotFound", { p1: transId }));
 
       const parentWallet = await getWalletCached(transaction.wallet);
       const currentAccountCurrency = transaction.money?.account?.currency || parentWallet?.primaryCurrency || "MXN";
       const amountTouched = shouldUpdate("amount") && amount !== undefined && amount !== "" && amount !== null;
       const accountTouched = shouldUpdate("account");
       const dateTouched = shouldUpdate("date") && Boolean(date);
+
+      // Currency: the amount is converted with the rate of the movement's date, and the movement goes to the destination
+      // account (chosen in the change) only when that account is in the new currency. Movements with no account convert
+      // directly. Anything else is reported in "skipped" and left as it was.
+      let currencyDone = false;
+      if (shouldUpdate("currency") && targetCurrency) {
+        const destination = accountTouched && account ? await Account.findOne({ _id: account, wallet: userWallet }).lean() : null;
+        const ownAccount = transaction.account ? await Account.findOne({ _id: transaction.account, wallet: userWallet }).lean() : null;
+        const plan = planCurrencyChange(
+          [{ id: String(transaction._id), name: transaction.name || tr("errors.api.movement"), accountCurrency: ownAccount?.currency ?? null }],
+          targetCurrency,
+          destination ? { id: String(destination._id), currency: destination.currency || "MXN" } : null
+        );
+        if (plan.blocked.length > 0) {
+          skipped.push({ id: String(transaction._id), name: transaction.name || tr("errors.api.movement"), accountCurrency: plan.blocked[0].accountCurrency, reason: plan.blocked[0].reason });
+          continue;
+        }
+        const fromCurrency = currentAccountCurrency;
+        if (fromCurrency !== targetCurrency) {
+          const currentAmount = transaction.money?.account
+            ? minorToMajor(transaction.money.account.amountMinor, transaction.money.account.currency)
+            : Number(transaction.amount) || 0;
+          const converted = await convert({ amountMinor: majorToMinor(currentAmount, fromCurrency), fromCurrency, toCurrency: targetCurrency, date: transaction.date });
+          if (!converted.available) {
+            skipped.push({ id: String(transaction._id), name: transaction.name || tr("errors.api.movement"), accountCurrency: fromCurrency, reason: "No hay tipo de cambio para la fecha de este movimiento." });
+            continue;
+          }
+          const newAmount = minorToMajor(converted.amountMinor, targetCurrency);
+          transaction.amount = newAmount;
+          transaction.money = await buildTransactionMoney({
+            accountAmount: newAmount,
+            accountCurrency: targetCurrency,
+            merchantAmount: undefined,
+            merchantCurrency: undefined,
+            walletPrimaryCurrency: parentWallet?.primaryCurrency || "MXN",
+            date: transaction.date,
+            manualReportingAmount: undefined,
+          });
+        }
+        if (destination) transaction.account = destination._id as mongoose.Types.ObjectId;
+        currencyDone = true;
+      }
 
       if (shouldUpdate("name") && name !== undefined && name !== "" && name !== null)
         transaction.name = name;
@@ -168,7 +216,7 @@ export async function POST(
       if (accountTouched)
         transaction.account = (account as unknown as mongoose.Types.ObjectId) || undefined;
 
-      if (amountTouched || accountTouched || dateTouched) {
+      if (!currencyDone && (amountTouched || accountTouched || dateTouched)) {
         // Already validated same-currency above when the Account changes,
         // so no per-transaction conversion strategy is needed here.
         const nextAccountCurrency = accountTouched
@@ -234,15 +282,16 @@ export async function POST(
     }
 
     return NextResponse.json({
-      message: `${savedTrans.length} transaction(s) updated successfully 😎`,
+      message: tr("errors.api.transactionsUpdated", { p1: savedTrans.length }),
       data: savedTrans,
+      skipped,
       status: 201,
       ok: true,
     });
   } catch (e) {
     console.error("edit-many error:", e);
     return NextResponse.json(
-      { ok: false, message: (e as Error)?.message || "Unexpected error" },
+      { ok: false, message: (e as Error)?.message || tr("errors.api.unexpectedError") },
       { status: 500 }
     );
   }

@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import CategoIcon from "../CategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
+import { useT } from "@/i18n/client";
 
 export interface SpendingBudgetSummaryItem {
   _id?: string;
@@ -59,13 +60,14 @@ function SpendingSummaryDetailModal({
   coverage,
   spendingTotals,
 }: SpendingSummaryDetailModalProps): React.JSX.Element {
+  const t = useT();
   const rows: SpendingSummaryRow[] = useMemo(() => {
     return (spendingBudgets || [])
       .map((budget) => {
         const actual = (budget._id ? actualByBudgetId?.[budget._id] : undefined) || 0;
         const goal = budget.goalAmount || 0;
         const ratio = goal > 0 ? actual / goal : 0;
-        return { id: budget._id, name: budget.name || "Unnamed budget", actual, goal, ratio };
+        return { id: budget._id, name: budget.name || t("web.unnamed.budget"), actual, goal, ratio };
       })
       .sort((a, b) => b.actual - a.actual);
   }, [spendingBudgets, actualByBudgetId]);
@@ -80,18 +82,18 @@ function SpendingSummaryDetailModal({
         <CategoIcon type="MdClose" siz={20} />
       </button>
       <div className="px-6 pt-6 pb-4 shrink-0">
-        <h1 className="text-2xl font-bold text-white">Spending summary</h1>
+        <h1 className="text-2xl font-bold text-white">{t("budgets.summary")}</h1>
         <div className="grid grid-cols-3 gap-2 mt-4">
           <div className="gf-glass-row rounded-2xl p-3 text-center">
-            <p className="text-xs gf-text-muted-glass">Planned</p>
+            <p className="text-xs gf-text-muted-glass">{t("budgets.planned")}</p>
             <p className="text-lg font-bold text-white">{usdFormatChanger(spendingTotals.fixed)}</p>
           </div>
           <div className="gf-glass-row rounded-2xl p-3 text-center">
-            <p className="text-xs gf-text-muted-glass">Total spent</p>
+            <p className="text-xs gf-text-muted-glass">{t("budgets.totalSpent")}</p>
             <p className="text-lg font-bold text-white">{usdFormatChanger(coverage.totalSpent)}</p>
           </div>
           <div className="gf-glass-warning rounded-2xl p-3 text-center">
-            <p className="text-xs text-amber-300">Unbudgeted</p>
+            <p className="text-xs text-amber-300">{t("budgets.unbudgeted")}</p>
             <p className="text-lg font-bold text-amber-300">
               {usdFormatChanger(coverage.unbudgetedSpent)}
               <span className="text-xs font-normal ml-1">· {Math.round(coverage.unbudgetedPercentage)}%</span>
@@ -100,10 +102,10 @@ function SpendingSummaryDetailModal({
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-6 pb-6">
-        <p className="text-xs uppercase tracking-wide gf-text-muted-glass mb-2">Planned vs. spent, by budget</p>
+        <p className="text-xs uppercase tracking-wide gf-text-muted-glass mb-2">{t("budgets.summary.help")}</p>
         <div className="flex flex-col gap-2 mb-5">
           {rows.length === 0 ? (
-            <p className="text-sm gf-text-muted-glass text-center py-4">No spending budgets yet.</p>
+            <p className="text-sm gf-text-muted-glass text-center py-4">{t("budgets.summary.none")}</p>
           ) : (
             rows.map((row) => (
               <div key={row.id} className="gf-glass-row rounded-xl p-3">
@@ -128,7 +130,7 @@ function SpendingSummaryDetailModal({
         </div>
         {coverage.groups.length > 0 && (
           <>
-            <p className="text-xs uppercase tracking-wide gf-text-muted-glass mb-2">Unbudgeted, by category</p>
+            <p className="text-xs uppercase tracking-wide gf-text-muted-glass mb-2">{t("budgets.summary.unbudgeted")}</p>
             <div className="flex flex-col gap-2">
               {coverage.groups.map((group) => (
                 <div

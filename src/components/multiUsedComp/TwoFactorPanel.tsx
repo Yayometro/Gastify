@@ -10,6 +10,9 @@ import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
 import CategoIcon from "./CategoIcon";
 
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT, useInfo } from "@/i18n/client";
+
 // Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
 const TypedCategoIcon = CategoIcon as React.ComponentType<{
   type: string;
@@ -49,6 +52,8 @@ interface AuthSession {
 // (a Better Auth built-in field, from the twoFactor plugin's own schema)
 // is the source of truth for whether this is already set up.
 function TwoFactorPanel(): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: rawSession, refetch } = authClient.useSession();
@@ -115,15 +120,15 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { data, error } = await authClient.twoFactor.enable({ method: "totp", password: currentPassword || undefined });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
         if (error.code === "INVALID_PASSWORD") {
           // Only a real wrong-password attempt gets a toast - the very
           // first, password-less try failing this way just means the
           // account has one on file, nothing "incorrect" happened yet.
-          if (currentPassword) runNotify("error", "Contraseña incorrecta 🤕");
+          if (currentPassword) runNotify("error", t("shared.password.wrong"));
           setSetupStep("password-enable");
         } else {
-          runNotify("error", error.message || "No se pudo iniciar la configuración 🤕");
+          runNotify("error", error.message || t("web.we.couldn.t.start.the.setup"));
         }
         return;
       }
@@ -146,10 +151,10 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.twoFactor.verifyTotp({ code });
       if (error) {
-        runNotify("error", error.message || "Código incorrecto 🤕");
+        runNotify("error", error.message || t("web.incorrect.code"));
         return;
       }
-      runNotify("ok", "Verificación en dos pasos activada 🤓");
+      runNotify("ok", t("shared.twoStep.on"));
       setSetupStep("confirm-done");
       setCode("");
       refetch();
@@ -167,16 +172,16 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.twoFactor.disable({ password: currentPassword || undefined });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
         if (error.code === "INVALID_PASSWORD") {
-          if (currentPassword) runNotify("error", "Contraseña incorrecta 🤕");
+          if (currentPassword) runNotify("error", t("shared.password.wrong"));
           setSetupStep("password-disable");
         } else {
-          runNotify("error", error.message || "No se pudo desactivar 🤕");
+          runNotify("error", error.message || t("web.we.couldn.t.turn.it.off"));
         }
         return;
       }
-      runNotify("ok", "Verificación en dos pasos desactivada 🤓");
+      runNotify("ok", t("shared.twoStep.off"));
       setPassword("");
       setSetupStep(null);
       setTotpSetup(null);
@@ -197,12 +202,12 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { data, error } = await authClient.twoFactor.generateBackupCodes({ password: currentPassword || undefined });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
         if (error.code === "INVALID_PASSWORD") {
-          if (currentPassword) runNotify("error", "Contraseña incorrecta 🤕");
+          if (currentPassword) runNotify("error", t("shared.password.wrong"));
           setSetupStep("password-regenerate");
         } else {
-          runNotify("error", error.message || "No se pudieron regenerar los códigos 🤕");
+          runNotify("error", error.message || t("web.we.couldn.t.regenerate.the.codes"));
         }
         return;
       }
@@ -234,7 +239,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.signIn.passkey();
       if (error) {
-        runNotify("error", error.message || "No se pudo verificar tu passkey 🤕");
+        runNotify("error", error.message || t("web.we.couldn.t.verify.your.passkey.2"));
         return;
       }
     } catch (err) {
@@ -252,7 +257,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.signIn.passkey();
       if (error) {
-        runNotify("error", error.message || "No se pudo verificar tu passkey 🤕");
+        runNotify("error", error.message || t("web.we.couldn.t.verify.your.passkey.2"));
         return;
       }
     } catch (err) {
@@ -267,20 +272,19 @@ function TwoFactorPanel(): React.JSX.Element {
   return (
     <div className="two-factor-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
       <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-        <h2 className="text-xl text-purple-300 font-normal">Autenticación en dos pasos</h2>
+        <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 font-normal">{t("shared.twoStep.title")}</h2><InfoTip info={APP_INFO.verificaci_n_en_dos_pasos} /></span>
         <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
         <div className="mt-3">
           <p className="text-xs text-gf-text-muted mb-3">
-            Además de tu passkey, puedes activar una app autenticadora (Google Authenticator, Microsoft
-            Authenticator, etc.) como método de verificación adicional.
+            {t("shared.twoStep.help")}
           </p>
 
           {!setupStep && (
             <div className="bg-gf-surface rounded-2xl p-3 flex justify-between items-center">
               <p className="text-sm text-gf-text">
-                Estado: <span className={twoFactorEnabled ? "text-green-400 font-semibold" : "text-gf-text-muted"}>{twoFactorEnabled ? "Activada" : "No activada"}</span>
+                {t("shared.twoStep.status")} <span className={twoFactorEnabled ? "text-green-400 font-semibold" : "text-gf-text-muted"}>{twoFactorEnabled ? t("web.on") : t("web.off")}</span>
               </p>
               {twoFactorEnabled ? (
                 <button
@@ -289,7 +293,7 @@ function TwoFactorPanel(): React.JSX.Element {
                   className="gf-glass-button-danger text-white text-xs rounded-full px-4 py-2"
                   onClick={() => handleDisableSecurely()}
                 >
-                  {isLoading ? <Spin /> : "Desactivar"}
+                  {isLoading ? <Spin /> : t("web.turn.off")}
                 </button>
               ) : (
                 <button
@@ -298,7 +302,7 @@ function TwoFactorPanel(): React.JSX.Element {
                   className="gf-glass-button text-white text-xs rounded-full px-4 py-2"
                   onClick={() => handleStartSetup()}
                 >
-                  {isLoading ? <Spin /> : "Activar"}
+                  {isLoading ? <Spin /> : t("web.turn.on")}
                 </button>
               )}
             </div>
@@ -307,29 +311,29 @@ function TwoFactorPanel(): React.JSX.Element {
           {setupStep === "password-enable" && (
             <div className="bg-gf-surface rounded-2xl p-3 flex flex-col items-center gap-3">
               <p className="text-xs text-gf-text-muted text-center">
-                Tu cuenta tiene una contraseña configurada. Confírmala para activar la verificación en dos pasos.
+                {t("shared.twoStep.confirmToEnable")}
               </p>
               <form onSubmit={handleStartSetup} className="form-trans-edit w-full flex flex-col gap-2 items-center">
                 <input
                   type="password"
                   name="password"
                   autoComplete="current-password"
-                  placeholder="Tu contraseña"
+                  placeholder={t("shared.password.yours")}
                   value={password}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   autoFocus
                 />
                 <div className="flex gap-2 w-full">
                   <button type="submit" disabled={isLoading} className="gf-glass-button text-white text-xs rounded-full px-4 py-2 grow">
-                    {isLoading ? <Spin /> : "Continuar"}
+                    {isLoading ? <Spin /> : t("common.continue")}
                   </button>
                   <button type="button" className="text-[11px] text-gf-text-muted underline" onClick={() => { setSetupStep(null); setPassword(""); }}>
-                    Cancelar
+                    {t("shared.cancel")}
                   </button>
                 </div>
               </form>
               <button type="button" className="text-[11px] text-purple-300 hover:underline" onClick={scrollToChangePassword}>
-                ¿No conoces tu contraseña? Defínela más arriba, en &ldquo;Change password?&rdquo;
+                {t("shared.twoStep.noPassword")}
               </button>
             </div>
           )}
@@ -337,24 +341,24 @@ function TwoFactorPanel(): React.JSX.Element {
           {setupStep === "password-disable" && (
             <div className="bg-gf-surface rounded-2xl p-3 flex flex-col items-center gap-3">
               <p className="text-xs text-gf-text-muted text-center">
-                Confirma tu contraseña para desactivar la verificación en dos pasos.
+                {t("shared.twoStep.confirmToDisable")}
               </p>
               <form onSubmit={handleDisable} className="form-trans-edit w-full flex flex-col gap-2 items-center">
                 <input
                   type="password"
                   name="password"
                   autoComplete="current-password"
-                  placeholder="Tu contraseña"
+                  placeholder={t("shared.password.yours")}
                   value={password}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   autoFocus
                 />
                 <div className="flex gap-2 w-full">
                   <button type="submit" disabled={isLoading} className="gf-glass-button-danger text-white text-xs rounded-full px-4 py-2 grow">
-                    {isLoading ? <Spin /> : "Desactivar"}
+                    {isLoading ? <Spin /> : t("web.turn.off")}
                   </button>
                   <button type="button" className="text-[11px] text-gf-text-muted underline" onClick={() => { setSetupStep(null); setPassword(""); }}>
-                    Cancelar
+                    {t("shared.cancel")}
                   </button>
                 </div>
               </form>
@@ -363,23 +367,23 @@ function TwoFactorPanel(): React.JSX.Element {
 
           {setupStep === "scan" && totpSetup && (
             <div className="bg-gf-surface rounded-2xl p-3 flex flex-col items-center gap-3">
-              <p className="text-xs text-gf-text-muted text-center">Escanea este código con tu app autenticadora.</p>
+              <p className="text-xs text-gf-text-muted text-center">{t("shared.totp.scanHelp")}</p>
               {qrDataUrl && (
                 <div className="bg-white p-2 rounded-2xl">
-                  <Image src={qrDataUrl} alt="Código QR para configurar TOTP" width={260} height={260} />
+                  <Image src={qrDataUrl} alt={t("shared.totp.qrAlt")} width={260} height={260} />
                 </div>
               )}
               <form onSubmit={handleConfirmSetup} className="form-trans-edit w-full flex flex-col gap-2 items-center">
                 <input
                   type="text"
                   inputMode="numeric"
-                  placeholder="Código de 6 dígitos"
+                  placeholder={t("shared.totp.codeLabel")}
                   value={code}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
                   required
                 />
                 <button type="submit" className="gf-glass-button text-white text-xs rounded-full px-4 py-2">
-                  {isLoading ? <Spin /> : "Confirmar"}
+                  {isLoading ? <Spin /> : t("common.confirm")}
                 </button>
               </form>
             </div>
@@ -387,7 +391,7 @@ function TwoFactorPanel(): React.JSX.Element {
 
           {setupStep === "confirm-done" && totpSetup && (
             <div className="bg-gf-surface border-2 border-purple-400 rounded-2xl p-3">
-              <p className="text-xs font-semibold text-purple-300 mb-1">Guarda estos códigos de respaldo - no se mostrarán de nuevo:</p>
+              <p className="text-xs font-semibold text-purple-300 mb-1">{t("shared.backup.saveNow")}</p>
               <div className="grid grid-cols-2 gap-2">
                 {totpSetup.backupCodes.map((backupCode: string) => (
                   <code key={backupCode} className="text-xs bg-gf-accent-soft-bg rounded-xl px-2 py-2 text-center break-all">
@@ -401,21 +405,21 @@ function TwoFactorPanel(): React.JSX.Element {
                   className="shrink-0 gf-glass-button text-white text-xs rounded-full px-3 py-2"
                   onClick={() => {
                     navigator.clipboard.writeText(totpSetup.backupCodes.join("\n"));
-                    runNotify("ok", "Copiados al portapapeles 🤓");
+                    runNotify("ok", t("shared.copied"));
                   }}
                 >
-                  Copiar
+                  {t("shared.copy")}
                 </button>
                 <button
                   type="button"
                   className="shrink-0 gf-glass-button text-white text-xs rounded-full px-3 py-2"
                   onClick={() => downloadBackupCodes(totpSetup.backupCodes)}
                 >
-                  Descargar
+                  {t("shared.download")}
                 </button>
               </div>
               <button type="button" className="text-[11px] text-gf-text-muted underline mt-2 ml-3" onClick={() => { setSetupStep(null); setTotpSetup(null); }}>
-                Listo, ocultar
+                {t("shared.done.hide")}
               </button>
             </div>
           )}
@@ -425,7 +429,7 @@ function TwoFactorPanel(): React.JSX.Element {
               {newBackupCodes ? (
                 <div className="bg-gf-surface border-2 border-purple-400 rounded-2xl p-3">
                   <p className="text-xs font-semibold text-purple-300 mb-1">
-                    Copia estos códigos ahora - los anteriores ya no funcionan:
+                    {t("shared.backup.copyNow")}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {newBackupCodes.map((backupCode: string) => (
@@ -440,42 +444,42 @@ function TwoFactorPanel(): React.JSX.Element {
                       className="shrink-0 gf-glass-button text-white text-xs rounded-full px-3 py-2"
                       onClick={() => {
                         navigator.clipboard.writeText(newBackupCodes.join("\n"));
-                        runNotify("ok", "Copiados al portapapeles 🤓");
+                        runNotify("ok", t("shared.copied"));
                       }}
                     >
-                      Copiar
+                      {t("shared.copy")}
                     </button>
                     <button
                       type="button"
                       className="shrink-0 gf-glass-button text-white text-xs rounded-full px-3 py-2"
                       onClick={() => downloadBackupCodes(newBackupCodes)}
                     >
-                      Descargar
+                      {t("shared.download")}
                     </button>
                   </div>
                   <button type="button" className="text-[11px] text-gf-text-muted underline mt-2 ml-3" onClick={() => setNewBackupCodes(null)}>
-                    Listo, ocultar
+                    {t("shared.done.hide")}
                   </button>
                 </div>
               ) : setupStep === "password-regenerate" ? (
                 <div className="bg-gf-surface rounded-2xl p-3 flex flex-col items-center gap-3">
-                  <p className="text-xs text-gf-text-muted text-center">Confirma tu contraseña para regenerar tus códigos de respaldo.</p>
+                  <p className="text-xs text-gf-text-muted text-center">{t("shared.backup.regenerate")}</p>
                   <form onSubmit={handleRegenerateBackupCodes} className="form-trans-edit w-full flex flex-col gap-2 items-center">
                     <input
                       type="password"
                       name="password"
                       autoComplete="current-password"
-                      placeholder="Tu contraseña"
+                      placeholder={t("shared.password.yours")}
                       value={password}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                       autoFocus
                     />
                     <div className="flex gap-2 w-full">
                       <button type="submit" disabled={isLoading} className="gf-glass-button text-white text-xs rounded-full px-4 py-2 grow">
-                        {isLoading ? <Spin /> : "Continuar"}
+                        {isLoading ? <Spin /> : t("common.continue")}
                       </button>
                       <button type="button" className="text-[11px] text-gf-text-muted underline" onClick={() => { setSetupStep(null); setPassword(""); }}>
-                        Cancelar
+                        {t("shared.cancel")}
                       </button>
                     </div>
                   </form>
@@ -487,7 +491,7 @@ function TwoFactorPanel(): React.JSX.Element {
                   className="gf-glass-button text-white text-xs rounded-full px-4 py-2"
                   onClick={() => handleRegenerateBackupCodesSecurely()}
                 >
-                  {isLoading ? <Spin /> : "Regenerar códigos de respaldo"}
+                  {isLoading ? <Spin /> : t("web.regenerate.backup.codes")}
                 </button>
               )}
             </div>

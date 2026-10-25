@@ -5,6 +5,9 @@ import { Tooltip } from "antd";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
+import { InfoTip } from "../InfoTip";
+import { useT, useInfo } from "@/i18n/client";
+
 export interface ProjectionRow {
   monthName: string;
   year?: number;
@@ -33,9 +36,9 @@ export interface ProjectionsViewProps {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  actual: "Closed",
-  estimate: "Estimate",
-  current: "In progress",
+  actual: "web.closed",
+  estimate: "web.estimate",
+  current: "web.in.progress.2",
 };
 
 function formatMoney(value?: number | null): string {
@@ -82,21 +85,23 @@ const getExpenseColorClass = (type?: string): string => {
 };
 
 function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
         <thead>
           <tr className="bg-purple-600 text-white">
-            <th className="py-2 px-3">Month</th>
-            <th className="py-2 px-3">Income</th>
-            <th className="py-2 px-3">Expense</th>
+            <th className="py-2 px-3"><span className="inline-flex items-center gap-1">{t("projections.table.month")}<InfoTip info={APP_INFO.c_mo_leer_esta_tabla} /></span></th>
+            <th className="py-2 px-3">{t("projections.income")}</th>
+            <th className="py-2 px-3">{t("projections.expense")}</th>
             <th className="py-2 px-3">
-              Net
-              <HeaderTooltip title="Income minus expense for that single month." />
+              {t("projections.table.net")}
+              <HeaderTooltip title={t("projections.table.netHelp")} />
             </th>
             <th className="py-2 px-3">
-              Balance
-              <HeaderTooltip title="Running account total from today forward. Past months show a dash unless you set one manually by clicking that month." />
+              {t("projections.table.balance")}
+              <HeaderTooltip title={t("projections.table.balanceHelp")} />
             </th>
           </tr>
         </thead>
@@ -115,7 +120,7 @@ function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.
                 <td className="py-2 px-3">
                   {row.monthName}
                   <span className="block text-[10px] text-gf-text-muted normal-case">
-                    {TYPE_LABEL[row.type]}
+                    {t(TYPE_LABEL[row.type])}
                   </span>
                 </td>
                 <td className={`py-2 px-3 ${getIncomeColorClass(row.type)}`}>
@@ -138,14 +143,14 @@ function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.
                     <>
                       {formatMoney(row.balance)}
                       {row.type === "actual" && row.manualBalance !== undefined && (
-                        <span className="block text-[9px] text-gf-text-muted normal-case">manually set</span>
+                        <span className="block text-[9px] text-gf-text-muted normal-case">{t("projections.table.manuallySet")}</span>
                       )}
                     </>
                   ) : row.estimatedBalance != null ? (
-                    <Tooltip title="Basado en tus transacciones reales donde existen, y en tu ingreso/gasto aproximado el resto del tiempo - no un valor exacto.">
+                    <Tooltip title={t("projections.table.basis")}>
                       <span className="text-gf-text-muted font-normal">
                         {formatMoney(row.estimatedBalance)}
-                        <span className="block text-[9px] normal-case">aproximado</span>
+                        <span className="block text-[9px] normal-case">{t("projections.table.approx")}</span>
                       </span>
                     </Tooltip>
                   ) : (
@@ -158,8 +163,7 @@ function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.
         </tbody>
       </table>
       <p className="text-xs text-gf-text-muted mt-2 px-1">
-        Balance is anchored to your accounts&apos; current totals (as of today) and may not
-        reflect every past transaction if account balances aren&apos;t kept up to date.
+        {t("projections.table.balanceAnchor")}
       </p>
     </div>
   );

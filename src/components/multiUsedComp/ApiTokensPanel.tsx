@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { Spin } from "antd";
 import dayjs from "dayjs";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "./CategoIcon";
+import { useT, useInfo } from "@/i18n/client";
 
 // Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
 const TypedCategoIcon = CategoIcon as React.ComponentType<{
@@ -30,6 +33,8 @@ export interface ApiTokensPanelProps {
 // agent connectors (Claude, later ChatGPT). See
 // .mds/AI_AGENT_CONNECTOR_PLAN.md for the full architecture this feeds.
 function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const tr = useT();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [tokens, setTokens] = useState<ApiTokenItem[]>([]);
@@ -94,21 +99,19 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h2 className="text-xl text-purple-300 font-normal">Connector access tokens</h2>
+        <div className="flex items-center gap-2"><h2 className="text-xl text-purple-300 font-normal">{tr("shared.tokens.title")}</h2><InfoTip info={APP_INFO.tokens_de_acceso} /></div>
         <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
         <div className="mt-3">
           <p className="text-xs text-gf-text-muted mb-3">
-            Personal tokens for AI agent connectors (Claude, ChatGPT) to create transactions on
-            your behalf. Each one is shown only once at creation - store it wherever the
-            connector asks for it, then it can&apos;t be viewed again (only revoked).
+            {tr("shared.tokens.help")}
           </p>
 
           {justCreatedToken && (
             <div className="bg-gf-surface border-2 border-purple-400 rounded-2xl p-3 mb-4">
               <p className="text-xs font-semibold text-purple-300 mb-1">
-                Copy this token now - it won&apos;t be shown again:
+                {tr("shared.tokens.copyNow")}
               </p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 text-xs bg-gf-accent-soft-bg rounded-xl px-2 py-2 break-all">
@@ -119,10 +122,10 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
                   className="shrink-0 gf-glass-button text-white text-xs rounded-full px-3 py-2"
                   onClick={() => {
                     navigator.clipboard.writeText(justCreatedToken);
-                    runNotify("ok", "Copied to clipboard 🤓");
+                    runNotify("ok", tr("shared.copiedOne"));
                   }}
                 >
-                  Copy
+                  {tr("shared.tokens.copy")}
                 </button>
               </div>
               <button
@@ -130,14 +133,14 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
                 className="text-[11px] text-gf-text-muted underline mt-2"
                 onClick={() => setJustCreatedToken(null)}
               >
-                Done, hide this
+                {tr("shared.tokens.doneHide")}
               </button>
             </div>
           )}
 
           <ul className="flex flex-col gap-2 mb-4">
             {tokens.length === 0 ? (
-              <li className="text-xs text-gf-text-muted italic">No tokens yet.</li>
+              <li className="text-xs text-gf-text-muted italic">{tr("shared.tokens.none")}</li>
             ) : (
               tokens.map((t: ApiTokenItem) => (
                 <li
@@ -147,8 +150,7 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
                   <div className="flex flex-col">
                     <p className="text-purple-300">{t.name}</p>
                     <p className="text-xs text-gf-text-muted">
-                      Created {dayjs(t.createdAt).format("DD/MM/YYYY")} · Last used{" "}
-                      {t.lastUsedAt ? dayjs(t.lastUsedAt).format("DD/MM/YYYY HH:mm") : "never"}
+                      {tr("shared.tokens.meta", { p1: dayjs(t.createdAt).format("DD/MM/YYYY"), p2: t.lastUsedAt ? dayjs(t.lastUsedAt).format("DD/MM/YYYY HH:mm") : "never" })}
                     </p>
                   </div>
                   <div
@@ -167,12 +169,12 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
             className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">
-              <p className="label-tfp mb-1">Name</p>
+              <p className="label-tfp mb-1">{tr("shared.name")}</p>
               <input
                 type="text"
                 value={newTokenName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTokenName(e.target.value)}
-                placeholder="e.g. Claude connector"
+                placeholder={tr("shared.tokens.namePlaceholder")}
                 required
               />
             </div>
@@ -180,7 +182,7 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
               type="submit"
               className="gf-glass-button text-white rounded-full px-4 py-2"
             >
-              {isLoading ? <Spin /> : "Generate token"}
+              {isLoading ? <Spin /> : tr("web.generate.token")}
             </button>
           </form>
         </div>

@@ -3,6 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import Tag, { type ITag } from "@/model/Tag";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface RemoveTagRequestBody {
   id?: string;
@@ -20,8 +21,9 @@ export type RemoveTagResponse = RemoveTagSuccessResponse;
 export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<RemoveTagResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from REMOVE TAG");
+    if (!request) throw new Error(t("errors.no.request.received.from.remove"));
     const { id } = (await request.json()) as RemoveTagRequestBody;
 
     // Security fix: this route previously lacked session verification and called
@@ -29,20 +31,20 @@ export async function POST(
     // any caller to delete any user's tags. We now verify the caller's session via
     // auth.api.getSession and scope the deletion to the user's account and wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on REMOVE TAG");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.remove.7"));
 
     const removedTag = await Tag.findOneAndDelete({
       _id: id,
       user: userFound._id,
       wallet: userFound.wallet,
     });
-    if (!removedTag) throw new Error("No Tag was removed 🤕");
+    if (!removedTag) throw new Error(t("errors.no.tag.was.removed"));
     return NextResponse.json({
-      message: `${removedTag.name} was removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: removedTag.name }),
       data: removedTag,
       ok: true,
       status: 201,

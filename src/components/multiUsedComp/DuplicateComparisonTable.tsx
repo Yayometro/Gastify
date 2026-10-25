@@ -4,6 +4,7 @@ import UniversalCategoIcon from "./UniversalCategoIcon";
 import DeletePreviewRow, {
   type DeletePreviewRowTransaction,
 } from "./DeletePreviewRow";
+import { useT } from "@/i18n/client";
 
 export interface DuplicatePair {
   original?: DeletePreviewRowTransaction | null;
@@ -24,8 +25,9 @@ function DuplicateComparisonTable({
   selectedIds,
   onToggleSelect,
 }: DuplicateComparisonTableProps): React.JSX.Element {
+  const t = useT();
   if (!pairs || pairs.length === 0) {
-    return <p className="text-xs text-gf-text-muted italic text-center py-4">No duplicate pairs to compare</p>;
+    return <p className="text-xs text-gf-text-muted italic text-center py-4">{t("movements.compare.noPairs")}</p>;
   }
 
   // Support both selectedTrans array or selectedIds Set/array
@@ -37,17 +39,17 @@ function DuplicateComparisonTable({
       <div className="bg-amber-500/15 border-b border-amber-200 px-3 py-2 text-[11px] text-amber-400 flex items-center gap-2">
         <span className="text-sm">☑️</span>
         <span>
-          <b>Checked items</b> will be permanently deleted when you confirm. Uncheck any duplicate you want to keep, or check an original if you want to delete it too.
+          <b>{t("movements.dup.checked")}</b> {t("movements.dup.willDelete")}
         </span>
       </div>
       <div className="grid grid-cols-2 bg-gf-surface-2 border-b border-gf-border py-2 px-3 font-semibold text-xs text-gf-text-muted">
         <div className="flex items-center gap-1.5 text-green-400 truncate">
           <UniversalCategoIcon type="md/MdCheckCircle" siz={15} />
-          <span>ORIGINAL (TO KEEP)</span>
+          <span>{t("movements.dup.original")}</span>
         </div>
         <div className="flex items-center gap-1.5 text-red-400 truncate">
           <UniversalCategoIcon type="md/MdDelete" siz={15} />
-          <span>DUPLICATE (TO DELETE)</span>
+          <span>{t("movements.dup.duplicate")}</span>
         </div>
       </div>
       <div className="max-h-[50vh] overflow-y-auto divide-y divide-slate-200">
@@ -67,7 +69,7 @@ function DuplicateComparisonTable({
                   checked={isOrigChecked}
                   onChange={() => pair.original && onToggleSelect && onToggleSelect(pair.original._id)}
                   className="w-4 h-4 text-red-400 rounded border-gf-border focus:ring-red-500 cursor-pointer flex-shrink-0"
-                  title="Check to also delete this original transaction"
+                  title={t("movements.dup.checkOriginal")}
                 />
                 <div className={`min-w-0 flex-1 transition-all ${isOrigChecked ? "opacity-40 line-through grayscale" : ""}`}>
                   <DeletePreviewRow transaction={pair.original} />
@@ -81,7 +83,7 @@ function DuplicateComparisonTable({
                   checked={isDupChecked}
                   onChange={() => pair.duplicate && onToggleSelect && onToggleSelect(pair.duplicate._id)}
                   className="w-4 h-4 text-red-400 rounded border-gf-border focus:ring-red-500 cursor-pointer flex-shrink-0"
-                  title="Uncheck to keep this transaction instead of deleting it"
+                  title={t("movements.dup.uncheckKeep")}
                 />
                 <div className={`min-w-0 flex-1 transition-all ${!isDupChecked ? "opacity-60 border-2 border-green-500/30 rounded-xl" : ""}`}>
                   <DeletePreviewRow transaction={pair.duplicate} />

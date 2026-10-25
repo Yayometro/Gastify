@@ -1,0 +1,227 @@
+{
+  "namespace": "auth",
+  "entries": [
+    {
+      "key": "auth.error.identityNotVerified",
+      "source": "No pudimos verificar tu identidad, así que cerramos tu sesión por seguridad. Inicia sesión de nuevo.",
+      "es": "No pudimos verificar tu identidad, así que cerramos tu sesión por seguridad. Inicia sesión de nuevo.",
+      "en": "We could not verify your identity, so we signed you out for security. Please sign in again."
+    },
+    {
+      "key": "auth.error.codeAttemptsExceeded",
+      "source": "No pudimos verificar tu código después de 3 intentos. Intenta iniciar sesión de nuevo.",
+      "es": "No pudimos verificar tu código después de 3 intentos. Intenta iniciar sesión de nuevo.",
+      "en": "We could not verify your code after 3 attempts. Try signing in again."
+    },
+    {
+      "key": "auth.setup.working",
+      "source": "We are working to set everything up for you",
+      "es": "Estamos preparando todo para ti",
+      "en": "We are working to set everything up for you"
+    },
+    {
+      "key": "auth.setup.wait",
+      "source": "Please wait a moment 🤓",
+      "es": "Espera un momento 🤓",
+      "en": "Please wait a moment 🤓"
+    },
+    {
+      "key": "auth.account.created",
+      "source": "¡Tu cuenta se creó correctamente! Inicia sesión para continuar.",
+      "es": "¡Tu cuenta se creó correctamente! Inicia sesión para continuar.",
+      "en": "Your account was created! Sign in to continue."
+    },
+    {
+      "key": "auth.twoFactor.prompt",
+      "source": "Esta cuenta tiene verificación en dos pasos activada. Ingresa el código de tu app autenticadora.",
+      "es": "Esta cuenta tiene verificación en dos pasos activada. Ingresa el código de tu app autenticadora.",
+      "en": "This account has two-step verification turned on. Enter the code from your authenticator app."
+    },
+    {
+      "key": "auth.twoFactor.codeLabel",
+      "source": "Código de 6 dígitos",
+      "es": "Código de 6 dígitos",
+      "en": "6-digit code"
+    },
+    {
+      "key": "auth.verify",
+      "source": "Verificar",
+      "es": "Verificar",
+      "en": "Verify"
+    },
+    {
+      "key": "auth.cancel",
+      "source": "Cancelar",
+      "es": "Cancelar",
+      "en": "Cancel"
+    },
+    {
+      "key": "auth.email.label",
+      "source": "Email address",
+      "es": "Correo electrónico",
+      "en": "Email address"
+    },
+    {
+      "key": "auth.email.privacy",
+      "source": "We will never share your email with anyone else.",
+      "es": "Nunca compartiremos tu correo con nadie más.",
+      "en": "We will never share your email with anyone else."
+    },
+    {
+      "key": "auth.password.label",
+      "source": "Password",
+      "es": "Contraseña",
+      "en": "Password"
+    },
+    {
+      "key": "auth.password.privacy",
+      "source": "We will never share your password with anyone else.",
+      "es": "Nunca compartiremos tu contraseña con nadie más.",
+      "en": "We will never share your password with anyone else."
+    },
+    {
+      "key": "auth.submit",
+      "source": "Submit",
+      "es": "Enviar",
+      "en": "Submit"
+    },
+    {
+      "key": "auth.google",
+      "source": "Google",
+      "es": "Google",
+      "en": "Google"
+    },
+    {
+      "key": "auth.passkey.signIn",
+      "source": "Sign in with a passkey",
+      "es": "Entrar con passkey",
+      "en": "Sign in with a passkey"
+    },
+    {
+      "key": "auth.noAccount",
+      "source": "You do not have an account? - Click here",
+      "es": "¿No tienes cuenta? - Regístrate aquí",
+      "en": "You do not have an account? - Click here"
+    },
+    {
+      "key": "auth.dashboard.building",
+      "source": "We are building up your dashboard and data",
+      "es": "Estamos armando tu panel y tus datos",
+      "en": "We are building up your dashboard and data"
+    },
+    {
+      "key": "auth.register.submit",
+      "source": "Register",
+      "es": "Registrarme",
+      "en": "Register"
+    },
+    {
+      "key": "auth.fullName.label",
+      "source": "Fullname or nickname",
+      "es": "Nombre completo o apodo",
+      "en": "Full name or nickname"
+    },
+    {
+      "key": "auth.fullName.hint",
+      "source": "Type your full name or alias.",
+      "es": "Escribe tu nombre completo o tu alias.",
+      "en": "Type your full name or alias."
+    },
+    {
+      "key": "auth.password.ruleLength",
+      "source": "The password must have at least 8 characters.",
+      "es": "La contraseña debe tener al menos 8 caracteres.",
+      "en": "The password must have at least 8 characters."
+    },
+    {
+      "key": "auth.password.ruleUppercase",
+      "source": "The password must have at least one capital letter.",
+      "es": "La contraseña debe tener al menos una letra mayúscula.",
+      "en": "The password must have at least one capital letter."
+    },
+    {
+      "key": "auth.terms.agree",
+      "source": "I agree to terms and conditions",
+      "es": "Acepto los términos y condiciones",
+      "en": "I agree to terms and conditions"
+    },
+    {
+      "key": "auth.haveAccount",
+      "source": "You have an account already? - Login here",
+      "es": "¿Ya tienes cuenta? - Inicia sesión aquí",
+      "en": "You have an account already? - Login here"
+    },
+    {
+      "key": "auth.passkey.added",
+      "source": "Passkey added 🤓",
+      "es": "Passkey agregada 🤓",
+      "en": "Passkey added 🤓"
+    },
+    {
+      "key": "auth.passkey.removed",
+      "source": "Passkey removed 🤓",
+      "es": "Passkey eliminada 🤓",
+      "en": "Passkey removed 🤓"
+    },
+    {
+      "key": "auth.passkey.removedNote",
+      "source": "Removed from Gastify. Your device or password manager may still keep its own copy - delete it there too if you don't want it anymore.",
+      "es": "Se quitó de Gastify. Tu dispositivo o tu administrador de contraseñas puede seguir guardando su copia: bórrala allá también si ya no la quieres.",
+      "en": "Removed from Gastify. Your device or password manager may still keep its own copy - delete it there too if you don't want it anymore."
+    },
+    {
+      "key": "auth.passkeys.title",
+      "source": "Passkeys",
+      "es": "Passkeys",
+      "en": "Passkeys"
+    },
+    {
+      "key": "auth.passkey.explain",
+      "source": "Sign in with Face ID, Touch ID, Windows Hello, or a security key instead of your password - Gastify never sees or stores the biometric/PIN itself, only proof it unlocked your device.",
+      "es": "Entra con Face ID, Touch ID, Windows Hello o una llave de seguridad en vez de tu contraseña. Gastify nunca ve ni guarda tu huella ni tu PIN, solo la prueba de que tu dispositivo se desbloqueó.",
+      "en": "Sign in with Face ID, Touch ID, Windows Hello, or a security key instead of your password - Gastify never sees or stores the biometric/PIN itself, only proof it unlocked your device."
+    },
+    {
+      "key": "auth.loading",
+      "source": "Loading…",
+      "es": "Cargando…",
+      "en": "Loading…"
+    },
+    {
+      "key": "auth.passkey.none",
+      "source": "No passkeys yet.",
+      "es": "Todavía no tienes passkeys.",
+      "en": "No passkeys yet."
+    },
+    {
+      "key": "auth.passkey.addedBadge",
+      "source": "Added",
+      "es": "Agregada",
+      "en": "Added"
+    },
+    {
+      "key": "auth.passkey.nameLabel",
+      "source": "Name",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "auth.passkey.namePlaceholder",
+      "source": "e.g. My iPhone",
+      "es": "p. ej. Mi iPhone",
+      "en": "e.g. My iPhone"
+    },
+    {
+      "key": "auth.passkey.addedOn",
+      "source": "Added {date}",
+      "es": "Agregada el {date}",
+      "en": "Added {date}"
+    },
+    {
+      "key": "auth.passkey.unnamed",
+      "source": "Unnamed passkey",
+      "es": "Passkey sin nombre",
+      "en": "Unnamed passkey"
+    }
+  ]
+}

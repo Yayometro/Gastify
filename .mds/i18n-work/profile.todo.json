@@ -1,0 +1,71 @@
+{
+  "namespace": "profile",
+  "entries": [
+    {
+      "key": "profile.avatar.saved",
+      "source": "Your new avatar was successfully uploaded into our database, now SAVE THE CHANGES to finally apply changes 🤓",
+      "es": "Tu nuevo avatar se subió correctamente a nuestra base de datos. Ahora GUARDA LOS CAMBIOS para aplicarlo 🤓",
+      "en": "Your new avatar was successfully uploaded into our database, now SAVE THE CHANGES to finally apply changes 🤓"
+    },
+    {
+      "key": "profile.toggle.off",
+      "source": "Off",
+      "es": "Apagado",
+      "en": "Off"
+    },
+    {
+      "key": "profile.fullName.label",
+      "source": "Full name:",
+      "es": "Nombre completo:",
+      "en": "Full name:"
+    },
+    {
+      "key": "profile.mail.label",
+      "source": "Mail:",
+      "es": "Correo:",
+      "en": "Mail:"
+    },
+    {
+      "key": "profile.password.label",
+      "source": "Password:",
+      "es": "Contraseña:",
+      "en": "Password:"
+    },
+    {
+      "key": "profile.image.label",
+      "source": "Image:",
+      "es": "Imagen:",
+      "en": "Image:"
+    },
+    {
+      "key": "profile.phone.label",
+      "source": "Phone:",
+      "es": "Teléfono:",
+      "en": "Phone:"
+    },
+    {
+      "key": "profile.changePassword.label",
+      "source": "Change password?:",
+      "es": "¿Cambiar contraseña?:",
+      "en": "Change password?:"
+    },
+    {
+      "key": "profile.password.placeholder",
+      "source": "input password",
+      "es": "escribe la contraseña",
+      "en": "Enter the password"
+    },
+    {
+      "key": "profile.confirmPassword.label",
+      "source": "Confirm password:",
+      "es": "Confirmar contraseña:",
+      "en": "Confirm password:"
+    },
+    {
+      "key": "profile.image.upload",
+      "source": "Upload an Image",
+      "es": "Subir una imagen",
+      "en": "Upload an image"
+    }
+  ]
+}

@@ -5,8 +5,11 @@ import { APIError, createAuthMiddleware, getSessionFromCtx, isAPIError } from "b
 import { ObjectId } from "mongodb";
 import { FACTOR_CHANGE_PATHS, requiresFreshStepUp, STEP_UP_REQUIRED_CODE } from "./factorChangePolicy";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { expo } from "@better-auth/expo";
 import { passkey } from "@better-auth/passkey";
 import { twoFactor } from "better-auth/plugins/two-factor";
+import { buildTrustedOrigins } from "./trustedOrigins";
+import { passkeyOrigins } from "./mobileApp";
 import { provisionNewUserData } from "./provisionNewUserData";
 import { getSharedMongoClient } from "@/lib/db/mongoClient";
 
@@ -56,6 +59,9 @@ const STEP_UP_PROOF_PATHS = new Set([
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
+  // The mobile app (apps/mobile) signs in from a native URL scheme, not a web origin; see
+  // trustedOrigins.ts for what is trusted in production versus development.
+  trustedOrigins: buildTrustedOrigins(process.env.NODE_ENV),
   secret: process.env.BETTER_AUTH_SECRET,
   database: mongodbAdapter(db, { client }),
   // Reuses the existing `users` collection and its existing field names -
@@ -72,6 +78,12 @@ export const auth = betterAuth({
     fields: {
       email: "mail",
       name: "fullName",
+    },
+    // The language chosen on the account (the profile). Read with the session, so the layouts know it without another query.
+    // `input: false`: clients change it only through the app's profile route, never through Better Auth.
+    additionalFields: {
+      language: { type: "string", required: false, input: false },
+      country: { type: "string", required: false, input: false },
     },
   },
   // `stepUpVerifiedAt` is the app's own step-up-freshness marker (see
@@ -193,8 +205,15 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    // Lets the mobile app (Expo) use the same sessions: it stores the session cookie in the
+    // phone's secure storage and sends the app's scheme as the request origin.
+    expo(),
     passkey({
       rpName: "Gastify",
+      // Only set when an Android signing fingerprint is configured (ANDROID_CERT_SHA256): then the
+      // Android app's passkeys, which report an apk-key-hash origin, are accepted next to the web
+      // origin. Otherwise undefined = the plugin's default, exactly as before.
+      origin: passkeyOrigins(process.env.BETTER_AUTH_URL, process.env.ANDROID_CERT_SHA256),
       authenticatorSelection: {
         // Face ID / Touch ID / Windows Hello by default - a physical
         // security key still works if the browser offers one, this just

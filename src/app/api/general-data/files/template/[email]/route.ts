@@ -9,6 +9,7 @@ import xlsxPopulate from "xlsx-populate";
 import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, TEMPLATE_NOTE } from "@/lib/files/gastifyTemplate";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface TemplateErrorResponse {
   error?: string;
@@ -18,18 +19,19 @@ export interface TemplateErrorResponse {
 export async function GET(
   request: NextRequest | Request
 ): Promise<NextResponse | Response> {
+  const t = await serverT(["errors"]);
   try {
     // Security fix: this route previously lacked session authentication and trusted
     // params.email from the URL to fetch user accounts, categories, and wallet config (IDOR).
     // We now verify auth.api.getSession, resolve user identity exclusively from the session,
     // and query categories, subcategories, accounts, and wallet scoped to the session user.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found for template generation");
+    if (!userFound) throw new Error(t("errors.user.not.found.for.template"));
 
     const [categories, subCategories, accounts, wallet] = await Promise.all([
       Category.find({
@@ -97,7 +99,7 @@ export async function GET(
         allowBlank: true,
         showErrorMessage: true,
         errorTitle: "Invalid Type",
-        error: 'Please enter "Bill" or "Income". Leaving blank defaults to Bill.',
+        error: t("errors.please.enter.bill.or.income"),
         formula1: '"Bill,Income"',
       });
 
@@ -107,7 +109,7 @@ export async function GET(
           allowBlank: true,
           showErrorMessage: true,
           errorTitle: "Invalid Currency",
-          error: `Please select one of: ${SUPPORTED_CURRENCIES.join(", ")}`,
+          error: t("errors.api.selectOneOf", { p1: SUPPORTED_CURRENCIES.join(", ") }),
           formula1: `_data!$E$1:$E$${SUPPORTED_CURRENCIES.length}`,
         });
       });
@@ -118,7 +120,7 @@ export async function GET(
           allowBlank: true,
           showErrorMessage: true,
           errorTitle: "Invalid Category",
-          error: "Please select a category from the list",
+          error: t("errors.please.select.a.category.from"),
           formula1: `_data!$A$1:$A$${catNames.length}`,
         });
       }
@@ -129,7 +131,7 @@ export async function GET(
           allowBlank: true,
           showErrorMessage: true,
           errorTitle: "Invalid SubCategory",
-          error: "Please select a subcategory from the list",
+          error: t("errors.please.select.a.subcategory.from"),
           formula1: `_data!$B$1:$B$${subCatNames.length}`,
         });
       }
@@ -140,7 +142,7 @@ export async function GET(
           allowBlank: true,
           showErrorMessage: true,
           errorTitle: "Invalid Account",
-          error: "Please select an account from the list",
+          error: t("errors.please.select.an.account.from"),
           formula1: `_data!$D$1:$D$${accountNames.length}`,
         });
       }

@@ -1,12 +1,15 @@
 "use client";
 
 import React from "react";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import { Skeleton, Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import TabsToggler, { TabsTogglerComponentItem } from "./TabsComponents/TabsToggler";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface TopElementContainerViewProps {
   isLoading?: boolean;
@@ -32,26 +35,28 @@ function TopElementContainerView({
   getValueFromSelecter,
   getValueFromItems,
 }: TopElementContainerViewProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   return (
     <div className="gf-glass-card w-full h-full rounded-[32px] p-4">
-      <h1 className="text-center font-bold">Top {elementsToDisplay} elements by month</h1>
+      <div className="flex items-center justify-center gap-1.5"><h1 className="text-center font-bold">{t("dashboard.top.byMonth", { p1: elementsToDisplay })}</h1><InfoTip info={APP_INFO.los_m_s_grandes} /></div>
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs ">
-          From:{" "}
+          {t("dashboard.from")}{" "}
           <b>
             {!timePeriod[0]
-              ? "No time selected"
+              ? t("web.no.time.selected")
               : getDateInYearMonthDay(timePeriod[0] as string | number | Date)}
           </b>{" "}
-          to :{" "}
+          {t("dashboard.to")}{" "}
           <b>
             {!timePeriod[1]
-              ? "No time selected"
+              ? t("web.no.time.selected")
               : getDateInYearMonthDay(timePeriod[1] as string | number | Date)}
           </b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-          <Tooltip title="Filter the date by a generic filter or by selecting a specific range 🤓">
+          <Tooltip title={t("dashboard.dateTip")}>
             <div className="text-gf-text w-[10px]">
               <UniversalCategoIcon
                 type={`${"fa/FaRegQuestionCircle"}`}
@@ -88,10 +93,10 @@ function TopElementContainerView({
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler
-          tabs={["Bills", "Incomes"]}
+          tabs={[t("web.bills"), t("web.incomes")]}
           compontentsArray={components}
-          tooltip={"Select the tab that you want to see 😎"}
-          contentStyle={"grid grid-cols-1 md:grid-cols-2 gap-4 items-start"}
+          tooltip={t("dashboard.top.tabHelp")}
+          contentStyle={"grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"}
         />
       )}
     </div>

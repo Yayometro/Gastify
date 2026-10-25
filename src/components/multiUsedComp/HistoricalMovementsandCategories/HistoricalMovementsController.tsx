@@ -31,6 +31,7 @@ import type { PeriodComparisonState } from "@/hooks/usePeriodComparison";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { TabsTogglerComponentItem } from "../TabsComponents/TabsToggler";
 import type { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
+import { useT } from "@/i18n/client";
 
 export interface MonthBucket<T = unknown> {
   index?: number;
@@ -109,6 +110,7 @@ function sliceTopCategoryMonths<T extends TransactionLike = TransactionLike>(
 }
 
 function HistoricalMovementsController({ periodState }: HistoricalMovementsControllerProps): React.JSX.Element {
+  const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [elementsToDisplay, setElementsToDisplay] = useState<number>(6);
   const [transactionsLocal, setTransactionsLocal] = useState<MonthBucket[][]>([]);
@@ -256,7 +258,7 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
       tab: "bills",
       props: {
         items: transactionsLocal[1],
-        title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Transactions</h1>,
+        title: <h1 className={styleChildTopMontContainer}>{t("movements.compare.topTransactions", { p1: elementsToDisplay })}</h1>,
         mode: "transaction",
       },
       Component: TopMonthContainer as unknown as React.ComponentType<object>,
@@ -265,7 +267,7 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
       tab: "incomes",
       props: {
         items: transactionsLocal[0],
-        title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Transactions</h1>,
+        title: <h1 className={styleChildTopMontContainer}>{t("movements.compare.topTransactions", { p1: elementsToDisplay })}</h1>,
         mode: "transaction",
       },
       Component: TopMonthContainer as unknown as React.ComponentType<object>,
@@ -274,7 +276,7 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
       tab: "bills",
       props: {
         items: transactionCategories[1],
-        title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Categories</h1>,
+        title: <h1 className={styleChildTopMontContainer}>{t("movements.compare.topCategories", { p1: elementsToDisplay })}</h1>,
         mode: "category",
       },
       Component: TopMonthContainer as unknown as React.ComponentType<object>,
@@ -283,14 +285,14 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
       tab: "incomes",
       props: {
         items: transactionCategories[0],
-        title: <h1 className={styleChildTopMontContainer}>Top {elementsToDisplay} Categories</h1>,
+        title: <h1 className={styleChildTopMontContainer}>{t("movements.compare.topCategories", { p1: elementsToDisplay })}</h1>,
         mode: "category",
       },
       Component: TopMonthContainer as unknown as React.ComponentType<object>,
     },
   ];
 
-  const tabs: string[] = ["Bills", "Incomes"];
+  const tabs: string[] = [t("web.bills"), t("web.incomes")];
   if (compareEnabled && compareTables) {
     components.push(
       {
@@ -316,7 +318,7 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
         Component: TopElementsCompareTable as unknown as React.ComponentType<object>,
       }
     );
-    tabs.push("Compare bills", "Compare incomes");
+    tabs.push(t("web.compare.bills"), t("web.compare.incomes"));
   }
 
   // FUNCTIONS

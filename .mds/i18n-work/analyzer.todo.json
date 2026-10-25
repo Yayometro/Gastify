@@ -1,0 +1,851 @@
+{
+  "namespace": "analyzer",
+  "entries": [
+    {
+      "key": "analyzer.title",
+      "source": "Wallet Analyzer",
+      "es": "Analizador de tu cartera",
+      "en": "Wallet Analyzer"
+    },
+    {
+      "key": "analyzer.loading",
+      "source": "Cargando Wallet Analyzer…",
+      "es": "Cargando Wallet Analyzer…",
+      "en": "Loading Wallet Analyzer…"
+    },
+    {
+      "key": "analyzer.highlights",
+      "source": "Lo más destacado del periodo",
+      "es": "Lo más destacado del periodo",
+      "en": "Highlights of the period"
+    },
+    {
+      "key": "analyzer.vsPrevious",
+      "source": "vs. periodo anterior equivalente",
+      "es": "vs. periodo anterior equivalente",
+      "en": "vs. the equivalent previous period"
+    },
+    {
+      "key": "analyzer.previousHelp",
+      "source": "Mismo número de días, justo antes de este periodo",
+      "es": "Mismo número de días, justo antes de este periodo",
+      "en": "Same number of days, right before this period"
+    },
+    {
+      "key": "analyzer.previous",
+      "source": "Anterior",
+      "es": "Anterior",
+      "en": "Previous"
+    },
+    {
+      "key": "analyzer.change",
+      "source": "Cambio",
+      "es": "Cambio",
+      "en": "Change"
+    },
+    {
+      "key": "analyzer.incomes",
+      "source": "Ingresos",
+      "es": "Ingresos",
+      "en": "Income"
+    },
+    {
+      "key": "analyzer.bills",
+      "source": "Gastos",
+      "es": "Gastos",
+      "en": "Bills"
+    },
+    {
+      "key": "analyzer.balance",
+      "source": "Balance",
+      "es": "Balance",
+      "en": "Balance"
+    },
+    {
+      "key": "analyzer.savingsRate",
+      "source": "Tasa de ahorro",
+      "es": "Tasa de ahorro",
+      "en": "Savings rate"
+    },
+    {
+      "key": "analyzer.transactions",
+      "source": "Transacciones",
+      "es": "Transacciones",
+      "en": "Transactions"
+    },
+    {
+      "key": "analyzer.trend",
+      "source": "Tendencia",
+      "es": "Tendencia",
+      "en": "Trend"
+    },
+    {
+      "key": "analyzer.trend.vsPrevious",
+      "source": "Ingresos vs. gastos por periodo anterior equivalente",
+      "es": "Ingresos vs. gastos por periodo anterior equivalente",
+      "en": "Income vs. bills against the equivalent previous period"
+    },
+    {
+      "key": "analyzer.avgPerPeriod",
+      "source": "Promedio por periodo",
+      "es": "Promedio por periodo",
+      "en": "Average per period"
+    },
+    {
+      "key": "analyzer.avg.incomes",
+      "source": "Promedio · Ingresos",
+      "es": "Promedio · Ingresos",
+      "en": "Average · Income"
+    },
+    {
+      "key": "analyzer.avg.bills",
+      "source": "Promedio · Gastos",
+      "es": "Promedio · Gastos",
+      "en": "Average · Bills"
+    },
+    {
+      "key": "analyzer.avg.transactions",
+      "source": "Promedio · Transacciones",
+      "es": "Promedio · Transacciones",
+      "en": "Average · Transactions"
+    },
+    {
+      "key": "analyzer.topItems",
+      "source": "Elementos en Top categorías y Top transacciones",
+      "es": "Elementos en Top categorías y Top transacciones",
+      "en": "Items in Top categories and Top transactions"
+    },
+    {
+      "key": "analyzer.topCategories",
+      "source": "Top {p1}categorías",
+      "es": "Top {p1} categorías",
+      "en": "Top {p1} categories"
+    },
+    {
+      "key": "analyzer.noBillsPrevious",
+      "source": "Sin gastos en el periodo anterior.",
+      "es": "Sin gastos en el periodo anterior.",
+      "en": "No bills in the previous period."
+    },
+    {
+      "key": "analyzer.noBills",
+      "source": "Sin gastos en este periodo.",
+      "es": "Sin gastos en este periodo.",
+      "en": "No bills in this period."
+    },
+    {
+      "key": "analyzer.topTransactions",
+      "source": "Top {p1}transacciones",
+      "es": "Top {p1} transacciones",
+      "en": "Top {p1} transactions"
+    },
+    {
+      "key": "analyzer.noTxPrevious",
+      "source": "Sin transacciones en el periodo anterior.",
+      "es": "Sin transacciones en el periodo anterior.",
+      "en": "No transactions in the previous period."
+    },
+    {
+      "key": "analyzer.noTx",
+      "source": "Sin transacciones en este periodo.",
+      "es": "Sin transacciones en este periodo.",
+      "en": "No transactions in this period."
+    },
+    {
+      "key": "analyzer.budgets.title",
+      "source": "Presupuestos · cumplimiento y rachas",
+      "es": "Presupuestos · cumplimiento y rachas",
+      "en": "Budgets · compliance and streaks"
+    },
+    {
+      "key": "analyzer.budgets.help",
+      "source": "Qué tan cerca estuviste de tus límites mensuales - toca una fila para ver el detalle",
+      "es": "Qué tan cerca estuviste de tus límites mensuales - toca una fila para ver el detalle",
+      "en": "How close you were to your monthly limits — tap a row to see the detail"
+    },
+    {
+      "key": "analyzer.budgets.none",
+      "source": "No tienes presupuestos de gasto configurados.",
+      "es": "No tienes presupuestos de gasto configurados.",
+      "en": "You have no spending budgets set up."
+    },
+    {
+      "key": "analyzer.big.title",
+      "source": "Grandes gastos",
+      "es": "Grandes gastos",
+      "en": "Big expenses"
+    },
+    {
+      "key": "analyzer.big.help",
+      "source": "Dónde está tu gasto más grande en este periodo, y si hay un patrón detrás",
+      "es": "Dónde está tu gasto más grande en este periodo, y si hay un patrón detrás",
+      "en": "Where your biggest expense is in this period, and whether there is a pattern behind it"
+    },
+    {
+      "key": "analyzer.big.transaction",
+      "source": "Transacción más grande",
+      "es": "Transacción más grande",
+      "en": "Largest transaction"
+    },
+    {
+      "key": "analyzer.big.category",
+      "source": "Categoría con más gasto",
+      "es": "Categoría con más gasto",
+      "en": "Category with the most spending"
+    },
+    {
+      "key": "analyzer.big.percentOfTotal",
+      "source": "{p1}% de tu gasto total",
+      "es": "{p1}% de tu gasto total",
+      "en": "{p1}% of your total spending"
+    },
+    {
+      "key": "analyzer.big.subcategory",
+      "source": "Subcategoría con más gasto",
+      "es": "Subcategoría con más gasto",
+      "en": "Subcategory with the most spending"
+    },
+    {
+      "key": "analyzer.tapCard",
+      "source": "Toca una tarjeta para ver el detalle mes por mes",
+      "es": "Toca una tarjeta para ver el detalle mes por mes",
+      "en": "Tap a card to see the month-by-month detail"
+    },
+    {
+      "key": "analyzer.analysis",
+      "source": "Análisis",
+      "es": "Análisis",
+      "en": "Analysis"
+    },
+    {
+      "key": "analyzer.leaderByMonth",
+      "source": "Categoría líder por mes",
+      "es": "Categoría líder por mes",
+      "en": "Leading category by month"
+    },
+    {
+      "key": "analyzer.leaderByMonth.help",
+      "source": "Qué categoría concentró más gasto, mes a mes, dentro de este periodo",
+      "es": "Qué categoría concentró más gasto, mes a mes, dentro de este periodo",
+      "en": "Which category concentrated the most spending, month by month, within this period"
+    },
+    {
+      "key": "analyzer.noBillsMonth",
+      "source": "Sin gastos ese mes",
+      "es": "Sin gastos ese mes",
+      "en": "No spending that month"
+    },
+    {
+      "key": "analyzer.subscriptions",
+      "source": "Suscripciones recurrentes",
+      "es": "Suscripciones recurrentes",
+      "en": "Recurring subscriptions"
+    },
+    {
+      "key": "analyzer.subscriptions.help",
+      "source": "Detectadas por nombre y frecuencia mensual",
+      "es": "Detectadas por nombre y frecuencia mensual",
+      "en": "Detected by name and monthly frequency"
+    },
+    {
+      "key": "analyzer.subscriptions.none",
+      "source": "No se detectaron suscripciones recurrentes.",
+      "es": "No se detectaron suscripciones recurrentes.",
+      "en": "No recurring subscriptions were detected."
+    },
+    {
+      "key": "analyzer.badge.new",
+      "source": "nueva",
+      "es": "nueva",
+      "en": "new"
+    },
+    {
+      "key": "analyzer.badge.duplicate",
+      "source": "posible duplicado",
+      "es": "posible duplicado",
+      "en": "possible duplicate"
+    },
+    {
+      "key": "analyzer.fx.title",
+      "source": "Exposición multi-moneda",
+      "es": "Exposición multi-moneda",
+      "en": "Multi-currency exposure"
+    },
+    {
+      "key": "analyzer.fx.help",
+      "source": "Valor de tus saldos en otras monedas",
+      "es": "Valor de tus saldos en otras monedas",
+      "en": "Value of your balances in other currencies"
+    },
+    {
+      "key": "analyzer.fx.loading",
+      "source": "Consultando tipo de cambio…",
+      "es": "Consultando tipo de cambio…",
+      "en": "Checking exchange rate…"
+    },
+    {
+      "key": "analyzer.fx.allSame",
+      "source": "Todas tus cuentas están en {p1}.",
+      "es": "Todas tus cuentas están en {p1}.",
+      "en": "All your accounts are in {p1}."
+    },
+    {
+      "key": "analyzer.fx.currency",
+      "source": "Moneda",
+      "es": "Moneda",
+      "en": "Currency"
+    },
+    {
+      "key": "analyzer.fx.balance",
+      "source": "Saldo",
+      "es": "Saldo",
+      "en": "Balance"
+    },
+    {
+      "key": "analyzer.fx.inCurrency",
+      "source": "En {p1}",
+      "es": "En {p1}",
+      "en": "In {p1}"
+    },
+    {
+      "key": "analyzer.pace.title",
+      "source": "Ritmo de gasto",
+      "es": "Ritmo de gasto",
+      "en": "Spending pace"
+    },
+    {
+      "key": "analyzer.seeDetail",
+      "source": "Ver detalle →",
+      "es": "Ver detalle →",
+      "en": "See detail →"
+    },
+    {
+      "key": "analyzer.pace.help",
+      "source": "Comparado con tu propio promedio a esta misma altura de periodos anteriores",
+      "es": "Comparado con tu propio promedio a esta misma altura de periodos anteriores",
+      "en": "Compared with your own average at this same point in previous periods"
+    },
+    {
+      "key": "analyzer.pace.spent",
+      "source": "Llevas gastado",
+      "es": "Llevas gastado",
+      "en": "You have spent"
+    },
+    {
+      "key": "analyzer.pace.today",
+      "source": "al día",
+      "es": "al día",
+      "en": "so far"
+    },
+    {
+      "key": "analyzer.pace.ofPeriod",
+      "source": "de este periodo",
+      "es": "de este periodo",
+      "en": "of this period"
+    },
+    {
+      "key": "analyzer.pace.vsAverage",
+      "source": "— {p1}que tu promedio de {p2}para esta misma altura en periodos anteriores ({p3}%).",
+      "es": "— {p1} que tu promedio de {p2} para esta misma altura en periodos anteriores ({p3}%).",
+      "en": "— {p1} than your average of {p2} at this same point in previous periods ({p3}%)."
+    },
+    {
+      "key": "analyzer.weekday.title",
+      "source": "Patrones por día de la semana",
+      "es": "Patrones por día de la semana",
+      "en": "Weekday patterns"
+    },
+    {
+      "key": "analyzer.weekday.help",
+      "source": "Promedio de gasto por día, en este periodo",
+      "es": "Promedio de gasto por día, en este periodo",
+      "en": "Average spending per day, in this period"
+    },
+    {
+      "key": "analyzer.compare.title",
+      "source": "Comparativo entre periodos",
+      "es": "Comparativo entre periodos",
+      "en": "Comparison between periods"
+    },
+    {
+      "key": "analyzer.compare.vs",
+      "source": "{p1}vs. {p2}",
+      "es": "{p1} vs. {p2}",
+      "en": "{p1} vs. {p2}"
+    },
+    {
+      "key": "analyzer.compare.topBills",
+      "source": "Top {p1}categorías · gastos",
+      "es": "Top {p1} categorías · gastos",
+      "en": "Top {p1} categories · bills"
+    },
+    {
+      "key": "analyzer.compare.noBills",
+      "source": "Sin gastos en estos periodos.",
+      "es": "Sin gastos en estos periodos.",
+      "en": "No bills in these periods."
+    },
+    {
+      "key": "analyzer.compare.topIncomes",
+      "source": "Top {p1}categorías · ingresos",
+      "es": "Top {p1} categorías · ingresos",
+      "en": "Top {p1} categories · income"
+    },
+    {
+      "key": "analyzer.compare.noIncomes",
+      "source": "Sin ingresos en estos periodos.",
+      "es": "Sin ingresos en estos periodos.",
+      "en": "No income in these periods."
+    },
+    {
+      "key": "analyzer.budgetsChange.title",
+      "source": "Presupuestos · cambios entre periodos",
+      "es": "Presupuestos · cambios entre periodos",
+      "en": "Budgets · changes between periods"
+    },
+    {
+      "key": "analyzer.budgetsChange.help",
+      "source": "Gasto acumulado contra el límite de cada presupuesto ({p1}→ {p2}) - toca una fila para ver el detalle mes a mes",
+      "es": "Gasto acumulado contra el límite de cada presupuesto ({p1}→ {p2}) - toca una fila para ver el detalle mes a mes",
+      "en": "Accumulated spending against each budget's limit ({p1}→ {p2}) — tap a row to see the month-by-month detail"
+    },
+    {
+      "key": "analyzer.budgetsChange.none",
+      "source": "No hay presupuestos con datos en estos periodos.",
+      "es": "No hay presupuestos con datos en estos periodos.",
+      "en": "There are no budgets with data in these periods."
+    },
+    {
+      "key": "analyzer.prevMonth",
+      "source": "Mes anterior",
+      "es": "Mes anterior",
+      "en": "Previous month"
+    },
+    {
+      "key": "analyzer.nextMonth",
+      "source": "Mes siguiente",
+      "es": "Mes siguiente",
+      "en": "Next month"
+    },
+    {
+      "key": "analyzer.monthCompare",
+      "source": "Comparativo del mes contra el periodo anterior",
+      "es": "Comparativo del mes contra el periodo anterior",
+      "en": "This month compared with the previous period"
+    },
+    {
+      "key": "analyzer.trend6",
+      "source": "Tendencia · 6 meses",
+      "es": "Tendencia · 6 meses",
+      "en": "Trend · 6 months"
+    },
+    {
+      "key": "analyzer.trend6.help",
+      "source": "Ingresos vs. gastos por mes — pasa el cursor o toca un mes para ver el detalle",
+      "es": "Ingresos vs. gastos por mes — pasa el cursor o toca un mes para ver el detalle",
+      "en": "Income vs. bills by month — hover or tap a month to see the detail"
+    },
+    {
+      "key": "analyzer.monthlyAvg",
+      "source": "Promedio mensual",
+      "es": "Promedio mensual",
+      "en": "Monthly average"
+    },
+    {
+      "key": "analyzer.monthlyAvg.incomes",
+      "source": "Promedio mensual · Ingresos",
+      "es": "Promedio mensual · Ingresos",
+      "en": "Monthly average · Income"
+    },
+    {
+      "key": "analyzer.monthlyAvg.bills",
+      "source": "Promedio mensual · Gastos",
+      "es": "Promedio mensual · Gastos",
+      "en": "Monthly average · Bills"
+    },
+    {
+      "key": "analyzer.monthlyAvg.transactions",
+      "source": "Promedio mensual · Transacciones",
+      "es": "Promedio mensual · Transacciones",
+      "en": "Monthly average · Transactions"
+    },
+    {
+      "key": "analyzer.noBillsLastMonth",
+      "source": "Sin gastos el mes pasado.",
+      "es": "Sin gastos el mes pasado.",
+      "en": "No bills last month."
+    },
+    {
+      "key": "analyzer.noBillsThisMonth",
+      "source": "Sin gastos este mes.",
+      "es": "Sin gastos este mes.",
+      "en": "No bills this month."
+    },
+    {
+      "key": "analyzer.noTxLastMonth",
+      "source": "Sin transacciones el mes pasado.",
+      "es": "Sin transacciones el mes pasado.",
+      "en": "No transactions last month."
+    },
+    {
+      "key": "analyzer.noTxThisMonth",
+      "source": "Sin transacciones este mes.",
+      "es": "Sin transacciones este mes.",
+      "en": "No transactions this month."
+    },
+    {
+      "key": "analyzer.budgetsMonth.help",
+      "source": "Qué tan cerca estuviste de tus límites mensuales — toca una fila para ver el detalle",
+      "es": "Qué tan cerca estuviste de tus límites mensuales — toca una fila para ver el detalle",
+      "en": "How close you were to your monthly limits — tap a row to see the detail"
+    },
+    {
+      "key": "analyzer.big.lastMonths",
+      "source": "Grandes gastos · últimos {p1}meses",
+      "es": "Grandes gastos · últimos {p1} meses",
+      "en": "Big expenses · last {p1} months"
+    },
+    {
+      "key": "analyzer.big.help2",
+      "source": "Dónde está tu gasto más grande, y si hay un patrón detrás",
+      "es": "Dónde está tu gasto más grande, y si hay un patrón detrás",
+      "en": "Where your biggest expense is, and whether there is a pattern behind it"
+    },
+    {
+      "key": "analyzer.vsLabel",
+      "source": "vs. {p1}",
+      "es": "vs. {p1}",
+      "en": "vs. {p1}"
+    },
+    {
+      "key": "analyzer.pace.monthHelp",
+      "source": "Comparado con tu propio promedio a esta altura del mes",
+      "es": "Comparado con tu propio promedio a esta altura del mes",
+      "en": "Compared with your own average at this point in the month"
+    },
+    {
+      "key": "analyzer.pace.monthVsAverage",
+      "source": "— {p1}que tu promedio de {p2}para esta altura del mes en los últimos meses ({p3}%).",
+      "es": "— {p1} que tu promedio de {p2} para esta altura del mes en los últimos meses ({p3}%).",
+      "en": "— {p1} than your average of {p2} at this point in the month over recent months ({p3}%)."
+    },
+    {
+      "key": "analyzer.dailyAvgThisMonth",
+      "source": "Promedio de gasto por día, este mes",
+      "es": "Promedio de gasto por día, este mes",
+      "en": "Average spending per day, this month"
+    },
+    {
+      "key": "analyzer.budgetMonthlyOf",
+      "source": "Presupuesto mensual de",
+      "es": "Presupuesto mensual de",
+      "en": "Monthly budget of"
+    },
+    {
+      "key": "analyzer.for",
+      "source": "para",
+      "es": "para",
+      "en": "for"
+    },
+    {
+      "key": "analyzer.streak.current",
+      "source": "Racha actual:",
+      "es": "Racha actual:",
+      "en": "Current streak:"
+    },
+    {
+      "key": "analyzer.streak.month",
+      "source": "mes",
+      "es": "mes",
+      "en": "month"
+    },
+    {
+      "key": "analyzer.streak.underBudget",
+      "source": "bajo presupuesto.",
+      "es": "bajo presupuesto.",
+      "en": "under budget."
+    },
+    {
+      "key": "analyzer.avgOfLast",
+      "source": "Promedio de los últimos",
+      "es": "Promedio de los últimos",
+      "en": "Average of the last"
+    },
+    {
+      "key": "analyzer.avgOfLast.months",
+      "source": "meses (sin contar este mes):",
+      "es": "meses (sin contar este mes):",
+      "en": "months (not counting this month):"
+    },
+    {
+      "key": "analyzer.avgOfLast.needThree",
+      "source": ". Se necesitan al menos 3 meses de historial para calcularlo.",
+      "es": ". Se necesitan al menos 3 meses de historial para calcularlo.",
+      "en": ". At least 3 months of history are needed to calculate it."
+    },
+    {
+      "key": "analyzer.thisMonth",
+      "source": "Este mes",
+      "es": "Este mes",
+      "en": "This month"
+    },
+    {
+      "key": "analyzer.subscriptions.rule",
+      "source": "Detectada porque el mismo nombre se repite en al menos 2 de los últimos 3 meses con un monto que varía menos de 15% — categoría",
+      "es": "Detectada porque el mismo nombre se repite en al menos 2 de los últimos 3 meses con un monto que varía menos de 15% — categoría",
+      "en": "Detected because the same name repeats in at least 2 of the last 3 months with an amount that varies by less than 15% — category"
+    },
+    {
+      "key": "analyzer.months",
+      "source": "meses:",
+      "es": "meses:",
+      "en": "months:"
+    },
+    {
+      "key": "analyzer.ofIncome",
+      "source": "de ingresos,",
+      "es": "de ingresos,",
+      "en": "of income,"
+    },
+    {
+      "key": "analyzer.ofBills",
+      "source": "de gastos, y",
+      "es": "de gastos, y",
+      "en": "of bills, and"
+    },
+    {
+      "key": "analyzer.txPerMonth",
+      "source": "transacciones por mes.",
+      "es": "transacciones por mes.",
+      "en": "transactions per month."
+    },
+    {
+      "key": "analyzer.detailOf",
+      "source": "Detalle de {p1}— útil en pantallas donde no hay hover, como celular.",
+      "es": "Detalle de {p1} — útil en pantallas donde no hay hover, como celular.",
+      "en": "Detail of {p1} — useful on screens without hover, like a phone."
+    },
+    {
+      "key": "analyzer.savingsRate.formula",
+      "source": "Tasa de ahorro = balance del mes ÷ ingresos del mes.",
+      "es": "Tasa de ahorro = balance del mes ÷ ingresos del mes.",
+      "en": "Savings rate = the month's balance ÷ the month's income."
+    },
+    {
+      "key": "analyzer.bestMonth.intro",
+      "source": "De todos los meses dentro de este periodo,",
+      "es": "De todos los meses dentro de este periodo,",
+      "en": "Of all the months within this period,"
+    },
+    {
+      "key": "analyzer.bestMonth.outro",
+      "source": "fue el que más gasto acumuló.",
+      "es": "fue el que más gasto acumuló.",
+      "en": "was the one that accumulated the most spending."
+    },
+    {
+      "key": "analyzer.bestMonth.compare",
+      "source": "Comparación entre el mes de mayor gasto de este periodo y el del periodo anterior equivalente.",
+      "es": "Comparación entre el mes de mayor gasto de este periodo y el del periodo anterior equivalente.",
+      "en": "Comparison between the month with the most spending in this period and the one in the equivalent previous period."
+    },
+    {
+      "key": "analyzer.bestQuarter.intro",
+      "source": "De todos los trimestres dentro de este periodo,",
+      "es": "De todos los trimestres dentro de este periodo,",
+      "en": "Of all the quarters within this period,"
+    },
+    {
+      "key": "analyzer.pace.explain",
+      "source": "Compara cuánto llevas gastado este mes (al día {p1}) contra cuánto habías gastado, para ese mismo día del mes, en cada uno de los últimos {p2}meses.",
+      "es": "Compara cuánto llevas gastado este mes (al día {p1}) contra cuánto habías gastado, para ese mismo día del mes, en cada uno de los últimos {p2} meses.",
+      "en": "Compares how much you have spent this month (as of day {p1}) with how much you had spent by that same day of the month in each of the last {p2} months."
+    },
+    {
+      "key": "analyzer.budget.noData",
+      "source": "Sin datos para este presupuesto en este periodo.",
+      "es": "Sin datos para este presupuesto en este periodo.",
+      "en": "No data for this budget in this period."
+    },
+    {
+      "key": "analyzer.budget.monthsMet",
+      "source": "{p1}· {p2}de {p3}meses cumplidos",
+      "es": "{p1} · {p2} de {p3} meses cumplidos",
+      "en": "{p1} · {p2} of {p3} months met"
+    },
+    {
+      "key": "analyzer.table.month",
+      "source": "Mes",
+      "es": "Mes",
+      "en": "Month"
+    },
+    {
+      "key": "analyzer.table.actual",
+      "source": "Real",
+      "es": "Real",
+      "en": "Actual"
+    },
+    {
+      "key": "analyzer.table.limit",
+      "source": "Límite",
+      "es": "Límite",
+      "en": "Limit"
+    },
+    {
+      "key": "analyzer.table.result",
+      "source": "Resultado",
+      "es": "Resultado",
+      "en": "Result"
+    },
+    {
+      "key": "analyzer.compliance.title",
+      "source": "Comparativo de cumplimiento entre periodos",
+      "es": "Comparativo de cumplimiento entre periodos",
+      "en": "Compliance comparison between periods"
+    },
+    {
+      "key": "analyzer.projectedVsActual",
+      "source": "Proyectado vs. Real",
+      "es": "Proyectado vs. Real",
+      "en": "Projected vs. actual"
+    },
+    {
+      "key": "analyzer.income",
+      "source": "Ingreso",
+      "es": "Ingreso",
+      "en": "Income"
+    },
+    {
+      "key": "analyzer.projected",
+      "source": "Proyectado: {p1}",
+      "es": "Proyectado: {p1}",
+      "en": "Projected: {p1}"
+    },
+    {
+      "key": "analyzer.bill",
+      "source": "Gasto",
+      "es": "Gasto",
+      "en": "Bill"
+    },
+    {
+      "key": "analyzer.incomesValue",
+      "source": "Ingresos: {p1}",
+      "es": "Ingresos: {p1}",
+      "en": "Income: {p1}"
+    },
+    {
+      "key": "analyzer.billsValue",
+      "source": "Gastos: {p1}",
+      "es": "Gastos: {p1}",
+      "en": "Bills: {p1}"
+    },
+    {
+      "key": "analyzer.txCount",
+      "source": "{p1}transacci{p2}",
+      "es": "{p1} transacci{p2}",
+      "en": "{p1} transaction{p2}"
+    },
+    {
+      "key": "analyzer.weekday.detail",
+      "source": "Patrones por día de la semana — detalle",
+      "es": "Patrones por día de la semana — detalle",
+      "en": "Weekday patterns — detail"
+    },
+    {
+      "key": "analyzer.weekday.topWeek",
+      "source": "Semana con más gasto",
+      "es": "Semana con más gasto",
+      "en": "Week with the most spending"
+    },
+    {
+      "key": "analyzer.weekday.txCount",
+      "source": "{p1}transacciones",
+      "es": "{p1} transacciones",
+      "en": "{p1} transactions"
+    },
+    {
+      "key": "analyzer.weekday.method",
+      "source": "Para llegar a esto, se suma el gasto de cada día de la semana (todos los lunes, todos los martes, etc.) a lo largo del mes, y se divide entre cuántas veces cayó ese día — un mes puede tener 4 o 5 de cada uno, así que dividir hace la comparación justa. Ese promedio entre semana fue",
+      "es": "Para llegar a esto, se suma el gasto de cada día de la semana (todos los lunes, todos los martes, etc.) a lo largo del mes, y se divide entre cuántas veces cayó ese día — un mes puede tener 4 o 5 de cada uno, así que dividir hace la comparación justa. Ese promedio entre semana fue",
+      "en": "To get this, the spending of each weekday (every Monday, every Tuesday, etc.) is added up across the month and divided by how many times that day fell — a month can have 4 or 5 of each, so dividing makes the comparison fair. That weekday average was"
+    },
+    {
+      "key": "analyzer.weekday.weekend",
+      "source": "y el de fin de semana",
+      "es": "y el de fin de semana",
+      "en": "and the weekend average"
+    },
+    {
+      "key": "analyzer.weekday.dayByDay",
+      "source": "Detalle día por día",
+      "es": "Detalle día por día",
+      "en": "Day-by-day detail"
+    },
+    {
+      "key": "analyzer.projections",
+      "source": "Proyecciones",
+      "es": "Proyecciones",
+      "en": "Projections"
+    },
+    {
+      "key": "analyzer.projections.help",
+      "source": "Ingreso, gasto y balance proyectado mes a mes, para el rango elegido arriba",
+      "es": "Ingreso, gasto y balance proyectado mes a mes, para el rango elegido arriba",
+      "en": "Income, bills and projected balance month by month, for the range chosen above"
+    },
+    {
+      "key": "analyzer.projections.loading",
+      "source": "Cargando proyecciones…",
+      "es": "Cargando proyecciones…",
+      "en": "Loading projections…"
+    },
+    {
+      "key": "analyzer.projections.none",
+      "source": "Sin datos de proyección para este periodo.",
+      "es": "Sin datos de proyección para este periodo.",
+      "en": "No projection data for this period."
+    },
+    {
+      "key": "analyzer.projections.method",
+      "source": "Calculado a partir de tu historial - sin llamadas a IA",
+      "es": "Calculado a partir de tu historial - sin llamadas a IA",
+      "en": "Calculated from your history — no AI calls"
+    },
+    {
+      "key": "analyzer.unusualNone",
+      "source": "Nada fuera de lo común este mes.",
+      "es": "Nada fuera de lo común este mes.",
+      "en": "Nothing out of the ordinary this month."
+    },
+    {
+      "key": "analyzer.summaryTitle",
+      "source": "Wallet Analyzer — resumen del mes",
+      "es": "Wallet Analyzer — resumen del mes",
+      "en": "Wallet Analyzer — month summary"
+    },
+    {
+      "key": "analyzer.seeFull",
+      "source": "Ver análisis completo",
+      "es": "Ver análisis completo",
+      "en": "See full analysis"
+    },
+    {
+      "key": "analyzer.averageValue",
+      "source": "Promedio: {p1}",
+      "es": "Promedio: {p1}",
+      "en": "Average: {p1}"
+    },
+    {
+      "key": "analyzer.totalValue",
+      "source": "Total: {p1}· {p2}transacci{p3}",
+      "es": "Total: {p1} · {p2} transacci{p3}",
+      "en": "Total: {p1} · {p2} transaction{p3}"
+    },
+    {
+      "key": "analyzer.percentOfYear",
+      "source": "{p1}% del total de los 12 meses",
+      "es": "{p1}% del total de los 12 meses",
+      "en": "{p1}% of the total for the 12 months"
+    }
+  ]
+}

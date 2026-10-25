@@ -71,7 +71,7 @@ describe("transfer POST - validation", () => {
     }));
     const body = await res.json();
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/No session/);
+    expect(body.message).toMatch(/No hay sesión activa/);
   });
 
   it("rejects when source and destination Accounts are the same", async () => {
@@ -81,7 +81,7 @@ describe("transfer POST - validation", () => {
     }));
     const body = await res.json();
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/must be different/);
+    expect(body.message).toMatch(/La cuenta de origen y la de destino/);
   });
 
   it("rejects a same-currency \"transfer\" between Accounts of different currencies", async () => {
@@ -95,7 +95,7 @@ describe("transfer POST - validation", () => {
     }));
     const body = await res.json();
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/use an exchange/);
+    expect(body.message).toMatch(/Una transferencia requiere que ambas/);
   });
 
   it("rejects an Account that does not belong to this user/Wallet", async () => {
@@ -109,7 +109,7 @@ describe("transfer POST - validation", () => {
     }));
     const body = await res.json();
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/Source Account not found/);
+    expect(body.message).toMatch(/No encontramos la cuenta de origen/);
   });
 });
 
@@ -176,7 +176,7 @@ describe("transfer POST - happy paths", () => {
     const body = await res.json();
 
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/Exchange-rate estimate unavailable/);
+    expect(body.message).toMatch(/No hay un tipo de cambio disponible/);
     expect(TransactionMock).not.toHaveBeenCalled();
   });
 });

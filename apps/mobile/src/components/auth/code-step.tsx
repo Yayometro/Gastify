@@ -1,0 +1,85 @@
+import { useState } from 'react';
+import { Pressable, Text } from 'react-native';
+
+import { authClient } from '@/auth-client';
+import { FormError } from '@/components/auth/auth-layout';
+import { GradientButton } from '@/components/ui/gradient-button';
+import { TextField } from '@/components/ui/text-field';
+import { useT } from "@/i18n/client";
+
+// Same limit as the web's /verify-2fa: three wrong codes and the session is closed.
+const MAX_ATTEMPTS = 3;
+
+// Asks for the second factor: the 6-digit code of the authenticator app, or a backup code.
+// Used right after the password and again when an open session has been idle too long.
+export function CodeStep({ onVerified, onGiveUp }: { onVerified: () => void; onGiveUp: () => void }) {
+  const t = useT();
+  const [code, setCode] = useState('');
+  const [useBackup, setUseBackup] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const verify = async () => {
+    const value = code.trim();
+    if (!value) return;
+    setError(null);
+    setLoading(true);
+    try {
+      const result = useBackup
+        ? await authClient.twoFactor.verifyBackupCode({ code: value })
+        : await authClient.twoFactor.verifyTotp({ code: value });
+      if (!result.error) {
+        // The session stored by the second factor is not read again on its own in the app: tell the
+        // auth client to re-read it, so the screens waiting for the session move on (as passkey does).
+        authClient.$store.notify('$sessionSignal');
+        onVerified();
+        return;
+      }
+      const next = attempts + 1;
+      setAttempts(next);
+      setCode('');
+      if (next >= MAX_ATTEMPTS) {
+        // Close the session, like the web does after three failed attempts.
+        await authClient.signOut();
+        onGiveUp();
+        return;
+      }
+      setError(t("mobile.auth.wrongCode", { p1: MAX_ATTEMPTS - next }));
+    } catch {
+      setError(t("mobile.no.pudimos.conectar.con.el"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <TextField
+        label={useBackup ? t("shared.backup.code") : t("shared.verify.appCode")}
+        value={code}
+        onChangeText={setCode}
+        placeholder={useBackup ? 'xxxxx-xxxxx' : t("mobile.6.digitos")}
+        keyboardType={useBackup ? 'default' : 'number-pad'}
+        maxLength={useBackup ? 20 : 6}
+        autoComplete="one-time-code"
+        textContentType="oneTimeCode"
+        onSubmitEditing={verify}
+        autoFocus
+      />
+      <FormError message={error} />
+      <GradientButton label={t("mobile.verificar")} onPress={verify} loading={loading} disabled={!code.trim()} />
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          setUseBackup((value) => !value);
+          setCode('');
+          setError(null);
+        }}>
+        <Text className="text-center font-inter-medium text-sm text-gf-accent-soft-text">
+          {useBackup ? t("mobile.usar.el.codigo.de.mi.app") : t("mobile.usar.un.codigo.de.respaldo")}
+        </Text>
+      </Pressable>
+    </>
+  );
+}

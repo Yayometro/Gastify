@@ -3,11 +3,13 @@ import TransResumeChart from "./TransResumeChart";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { useT } from "@/i18n/client";
 
 // Typed bridge for unmigrated child component
 interface TransResumeChartProps {
   trchTransactions?: TransactionData[];
   trchIsBill?: boolean;
+  trchFill?: boolean;
 }
 
 const TypedTransResumeChart = TransResumeChart as React.ComponentType<TransResumeChartProps>;
@@ -15,38 +17,44 @@ const TypedTransResumeChart = TransResumeChart as React.ComponentType<TransResum
 export interface TransactionsResumeContProps {
   trcIncomes?: TransactionData[];
   trcBills?: TransactionData[];
+  // Controlled by the card above (Gastos / Ingresos): when given, the chart's own switch is hidden.
+  bill?: boolean;
+  // Inside the card the chart fills the card's height instead of its own fixed one.
+  fill?: boolean;
 }
 
-function TransactionsResumeCont({ trcIncomes, trcBills }: TransactionsResumeContProps): React.JSX.Element {
-  const [isBillTab, setIsBillTab] = useState<boolean>(true);
+function TransactionsResumeCont({ trcIncomes, trcBills, bill, fill }: TransactionsResumeContProps): React.JSX.Element {
+  const t = useT();
+  const [ownBill, setOwnBill] = useState<boolean>(true);
+  const isBillTab = bill ?? ownBill;
   const handleTab = (budType: string) => {
     if (budType === "bill") {
-      setIsBillTab(true);
+      setOwnBill(true);
     } else {
-      setIsBillTab(false);
+      setOwnBill(false);
     }
   };
 
   return (
     <div className="trc-container w-full h-full">
-      <div className="bc-tab-headers-cont w-full text-center flex justify-center items-center gap-2">
+      <div className={`bc-tab-headers-cont mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 rounded-full gf-glass-inset p-1.5 ${bill === undefined ? "" : "hidden"}`}>
         <div
           onClick={() => handleTab("bill")}
-          className={`tab-budget p-4 cursor-pointer hover:text-purple-400 ${
-            isBillTab ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-budget px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Bills Details
+          {t("movements.details.bills")}
         </div>
         <div
           onClick={() => handleTab("")}
-          className={`tab-saving p-4 cursor-pointer hover:text-purple-400 ${
-            !isBillTab ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-saving px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            !isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Income details
+          {t("movements.details.incomes")}
         </div>
-        <Tooltip title="The needle indicator shows your actual state regarding your budget or saving 🤓">
+        <Tooltip title={t("movements.details.needleTip")}>
           <div className="">
             <UniversalCategoIcon
               type={`${"fa/FaRegQuestionCircle"}`}
@@ -56,10 +64,10 @@ function TransactionsResumeCont({ trcIncomes, trcBills }: TransactionsResumeCont
         </Tooltip>
       </div>
       <div className={`trc-container-sub w-full h-full ${isBillTab ? "" : "hidden"}`}>
-        <TypedTransResumeChart trchTransactions={trcBills} trchIsBill={true} />
+        <TypedTransResumeChart trchTransactions={trcBills} trchIsBill={true} trchFill={fill} />
       </div>
       <div className={`trc-container-sub w-full h-full ${isBillTab ? "hidden" : ""}`}>
-        <TypedTransResumeChart trchTransactions={trcIncomes} trchIsBill={false} />
+        <TypedTransResumeChart trchTransactions={trcIncomes} trchIsBill={false} trchFill={fill} />
       </div>
     </div>
   );

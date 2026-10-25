@@ -14,6 +14,7 @@ import { fetchCategories, type CategoryData } from "@/lib/features/categoriesSli
 import { fetchUser, type UserData } from "@/lib/features/userSlice";
 import { fetchSubCat, type SubCategoryData } from "@/lib/features/subCategorySlice";
 import type { AppDispatch, RootState } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 export interface CategoriesClientProps {
   ccData?: unknown;
@@ -21,6 +22,7 @@ export interface CategoriesClientProps {
 }
 
 function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Element {
+  const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -72,7 +74,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
       <div className="w-full h-full relative">
           <div className="w-full profile-img py-4 text-center text-white">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
-              {nameGeneral || ""} Categories
+              {t("categories.list.title", { p1: nameGeneral || "" })}
             </h1>
           </div>
           <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">
@@ -83,7 +85,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                   setOnEdition('creation');
                 }}
               >
-                <p className="">Create new</p>
+                <p className="">{t("categories.create")}</p>
                 <UniversalCategoIcon
                   type={`md/MdAddCircleOutline`}
                   siz={30}
@@ -94,7 +96,7 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search categories..."
+                placeholder={t("categories.search")}
                 className="w-full max-w-[400px] h-10 rounded-3xl gf-glass-inset px-4 text-gf-text"
               />
               <SelectCategories>
@@ -110,20 +112,20 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
               </SelectCategories>
               <div className="cc-categoryList-cont-suv flex gap-2 flex-col flex-wrap">
                 <div className="category-list-container">
-                  <h1 className="text-2xl font-thin py-2">Your Categories List</h1>
+                  <h1 className="text-2xl font-thin py-2">{t("categories.list.yours")}</h1>
                   {categoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No categories to show. Ad a new category or try again later... 🤕`}
+                      emMessage={t("categories.emptyCategories")}
                     />
                   ) : (
                     <CategoryList clCategories={filteredCategoriesData} clUser={userData}/>
                   )}
                 </div>
                 <div className="category-list-container">
-                  <h1 className="text-2xl font-thin py-2">Your Sub Categories List</h1>
+                  <h1 className="text-2xl font-thin py-2">{t("categories.list.yoursSub")}</h1>
                   {subCategoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No subcategory to show. Ad a new subcategory or try again later... 🤕`}
+                      emMessage={t("categories.emptySubcategories")}
                     />
                   ) : (
                     <SubCategoryList sclSubCategory={filteredSubCategoriesData} clUser={userData} sclCategories={categoriesData} />
@@ -131,11 +133,11 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                 </div>
                 <div className="category-list-container">
                   <h1 className="text-2xl font-thin py-2">
-                    Default Categories
+                    {t("categories.list.defaults")}
                   </h1>
                   {defCategoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No categories to show. Ad a new category or try again later... 🤕`}
+                      emMessage={t("categories.emptyCategories")}
                     />
                   ) : (
                     <CategoryList clCategories={filteredDefCategoriesData} clUser={userData}/>
@@ -143,11 +145,11 @@ function CategoriesClient({ ccSession }: CategoriesClientProps): React.JSX.Eleme
                 </div>
                 <div className="category-list-container">
                   <h1 className="text-2xl font-thin py-2">
-                    Default Sub Categories
+                    {t("categories.list.defaultsSub")}
                   </h1>
                   {defSubCategoriesData.length === 0 ? (
                     <EmptyModule
-                      emMessage={`Ups! No subcategory to show. Ad a new subcategory or try again later... 🤕`}
+                      emMessage={t("categories.emptySubcategories")}
                     />
                   ) : (
                     <SubCategoryList sclSubCategory={filteredDefSubCategoriesData} clUser={userData} sclCategories={categoriesData} />

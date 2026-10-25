@@ -1,4 +1,7 @@
 "use client";
+import { monthName, monthTitle } from "@gastify/core/i18n/dates";
+import type { Locale } from "@gastify/core/i18n/locales";
+import { useWalletText } from "@/i18n/client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { buildWalletAnalyzerSnapshot } from "@/helpers/transformers/walletAnalyzer";
@@ -110,15 +113,16 @@ export interface WalletAnalyzerTrendItem {
   [key: string]: unknown;
 }
 
-const SPANISH_MONTHS = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
-const SPANISH_MONTHS_SHORT = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 const EMPTY_ARRAY: never[] = [];
 
-function formatMonthLabel(date: Date): string {
-  return `${SPANISH_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+function formatMonthLabel(date: Date, locale: Locale): string {
+  return monthTitle(date, locale);
+}
+
+// The short name of a month ("Oct" / "oct"), in the language.
+function shortMonthLabel(month: number, locale: Locale): string {
+  const name = monthName(month, locale, "short");
+  return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 // Self-contained like ResumeTabsTrans/TopElementsContainer/CategoryTreemap's
@@ -133,6 +137,7 @@ function formatMonthLabel(date: Date): string {
 // stomped by the parent filter, and a later parent-filter change is
 // ignored once the user has picked their own month.
 function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): React.JSX.Element | null {
+  const text = useWalletText();
   const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
   const storedBudgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
   const accounts: AccountData[] = useSelector((state: RootState) => state.accountsReducer?.data) || EMPTY_ARRAY;
@@ -156,8 +161,8 @@ function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): Re
   }, [timePeriodFromFather]);
 
   const snapshot = useMemo(
-    () => buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: referenceMonth, topN }),
-    [transactions, budgets, referenceMonth, topN]
+    () => buildWalletAnalyzerSnapshot({ text, transactions, budgets, referenceDate: referenceMonth, topN }),
+    [transactions, budgets, referenceMonth, topN, text]
   );
 
   const fxExposure = useAccountsFxExposure(accounts, walletPrimaryCurrency, referenceMonth);
@@ -169,9 +174,9 @@ function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): Re
     () =>
       snapshot.trend.map((m: WalletAnalyzerTrendItem, i: number) => {
         const monthDate = new Date(referenceMonth.getFullYear(), referenceMonth.getMonth() - (snapshot.trend.length - 1 - i), 1);
-        return { ...m, label: formatMonthLabel(monthDate), shortLabel: SPANISH_MONTHS_SHORT[monthDate.getMonth()] };
+        return { ...m, label: formatMonthLabel(monthDate, text.locale), shortLabel: shortMonthLabel(monthDate.getMonth(), text.locale) };
       }),
-    [snapshot.trend, referenceMonth]
+    [snapshot.trend, referenceMonth, text.locale]
   );
 
   // Everything below feeds the "Proyectado vs. Real" card - same data
@@ -326,8 +331,8 @@ function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): Re
   return (
     <WalletAnalyzerView
       referenceMonth={referenceMonth}
-      referenceMonthLabel={formatMonthLabel(referenceMonth)}
-      previousMonthLabel={formatMonthLabel(previousMonth)}
+      referenceMonthLabel={formatMonthLabel(referenceMonth, text.locale)}
+      previousMonthLabel={formatMonthLabel(previousMonth, text.locale)}
       onPrevMonth={() => {
         userHasSelectedMonth.current = true;
         setReferenceMonth((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));

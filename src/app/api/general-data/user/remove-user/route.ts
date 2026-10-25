@@ -23,6 +23,7 @@ import {
   recordDeleteAccountFailure,
 } from "@/lib/auth/deleteAccountGuard";
 import type { IUser } from "@/model/User";
+import { serverT } from "@/i18n/server";
 
 export interface RemoveUserRequestBody {
   // The 6-digit code from the authenticator app, or a backup code when
@@ -80,8 +81,9 @@ async function verifySecondFactor(
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveUserResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on REMOVE USER");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.21"));
 
     // Identity always comes from the session, never from the body (fix #43).
     const sesion = await getVerifiedSession(request.headers);
@@ -141,7 +143,7 @@ export async function POST(
     }
 
     const userToRemove = await User.findOne({ mail });
-    if (!userToRemove) throw new Error("User not removed, please verify the email");
+    if (!userToRemove) throw new Error(t("errors.user.not.removed.please.verify"));
     const userId = userToRemove._id;
 
     // The cascade spans many collections and cannot be one transaction, so the
@@ -188,11 +190,11 @@ export async function POST(
     } finally {
       await dbSession.endSession();
     }
-    if (!removedUser) throw new Error("User not removed, please verify the email");
+    if (!removedUser) throw new Error(t("errors.user.not.removed.please.verify"));
     const deletedUser: IUser = removedUser;
     return NextResponse.json<RemoveUserSuccessResponse>({
       data: toPublicUser(deletedUser) as PublicUser<IUser>,
-      message: `${deletedUser.fullName || "Your account"} removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: deletedUser.fullName || t("errors.api.yourAccount") }),
       status: 201,
       ok: true,
     });

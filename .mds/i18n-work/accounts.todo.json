@@ -1,0 +1,257 @@
+{
+  "namespace": "accounts",
+  "entries": [
+    {
+      "key": "accounts.noAction",
+      "source": "No action taked to perform a change",
+      "es": "No se hizo ninguna acción para realizar un cambio",
+      "en": "No action was taken to make a change"
+    },
+    {
+      "key": "accounts.titlePrefix",
+      "source": "{p1}Account 🪄",
+      "es": "{p1} cuenta 🪄",
+      "en": "{p1} account 🪄"
+    },
+    {
+      "key": "accounts.form.name",
+      "source": "Name",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "accounts.form.accountName",
+      "source": "Account Name",
+      "es": "Nombre de la cuenta",
+      "en": "Account name"
+    },
+    {
+      "key": "accounts.form.balance",
+      "source": "Current Balance",
+      "es": "Saldo actual",
+      "en": "Current balance"
+    },
+    {
+      "key": "accounts.form.currency",
+      "source": "Currency",
+      "es": "Moneda",
+      "en": "Currency"
+    },
+    {
+      "key": "accounts.form.bank",
+      "source": "Bank (optional)",
+      "es": "Banco (opcional)",
+      "en": "Bank (optional)"
+    },
+    {
+      "key": "accounts.form.searchBank",
+      "source": "Search bank…",
+      "es": "Buscar banco…",
+      "en": "Search bank…"
+    },
+    {
+      "key": "accounts.form.noBank",
+      "source": "No bank",
+      "es": "Sin banco",
+      "en": "No bank"
+    },
+    {
+      "key": "accounts.form.number",
+      "source": "Card or account number (optional)",
+      "es": "Número de tarjeta o cuenta (opcional)",
+      "en": "Card or account number (optional)"
+    },
+    {
+      "key": "accounts.form.numberHelp",
+      "source": "Only if you want it at hand",
+      "es": "Solo si lo quieres tener a la mano",
+      "en": "Only if you want it handy"
+    },
+    {
+      "key": "accounts.form.numberSafety",
+      "source": "Optional. We never ask for or store the CVV or PIN.",
+      "es": "Opcional. Nunca pedimos ni guardamos el CVV ni el NIP.",
+      "en": "Optional. We never ask for or store the CVV or PIN."
+    },
+    {
+      "key": "accounts.form.type",
+      "source": "Account Type",
+      "es": "Tipo de cuenta",
+      "en": "Account type"
+    },
+    {
+      "key": "accounts.type.debit",
+      "source": "Debit",
+      "es": "Débito",
+      "en": "Debit"
+    },
+    {
+      "key": "accounts.type.credit",
+      "source": "Credit",
+      "es": "Crédito",
+      "en": "Credit"
+    },
+    {
+      "key": "accounts.type.cash",
+      "source": "Cash",
+      "es": "Efectivo",
+      "en": "Cash"
+    },
+    {
+      "key": "accounts.type.savings",
+      "source": "Savings",
+      "es": "Ahorro",
+      "en": "Savings"
+    },
+    {
+      "key": "accounts.remove",
+      "source": "Remove account",
+      "es": "Quitar cuenta",
+      "en": "Remove account"
+    },
+    {
+      "key": "accounts.title",
+      "source": "Accounts",
+      "es": "Cuentas",
+      "en": "Accounts"
+    },
+    {
+      "key": "accounts.range.yesterday",
+      "source": "Yesterday",
+      "es": "Ayer",
+      "en": "Yesterday"
+    },
+    {
+      "key": "accounts.range.lastWeek",
+      "source": "Last week",
+      "es": "Última semana",
+      "en": "Last week"
+    },
+    {
+      "key": "accounts.range.15",
+      "source": "Last 15 days",
+      "es": "Últimos 15 días",
+      "en": "Last 15 days"
+    },
+    {
+      "key": "accounts.range.30",
+      "source": "Last 30 days",
+      "es": "Últimos 30 días",
+      "en": "Last 30 days"
+    },
+    {
+      "key": "accounts.range.60",
+      "source": "Last 60 days",
+      "es": "Últimos 60 días",
+      "en": "Last 60 days"
+    },
+    {
+      "key": "accounts.range.90",
+      "source": "Last 90 days",
+      "es": "Últimos 90 días",
+      "en": "Last 90 days"
+    },
+    {
+      "key": "accounts.dateTip",
+      "source": "Filter the date by a generic filter or by selecting a specific range 🤓",
+      "es": "Filtra la fecha con un filtro genérico o eligiendo un rango específico 🤓",
+      "en": "Filter the date by a generic filter or by selecting a specific range 🤓"
+    },
+    {
+      "key": "accounts.prev",
+      "source": "Previous account",
+      "es": "Cuenta anterior",
+      "en": "Previous account"
+    },
+    {
+      "key": "accounts.next",
+      "source": "Next account",
+      "es": "Cuenta siguiente",
+      "en": "Next account"
+    },
+    {
+      "key": "accounts.edit",
+      "source": "Edit Account",
+      "es": "Editar cuenta",
+      "en": "Edit account"
+    },
+    {
+      "key": "accounts.new",
+      "source": "New Account",
+      "es": "Nueva cuenta",
+      "en": "New account"
+    },
+    {
+      "key": "accounts.movements.title",
+      "source": "Account movements details",
+      "es": "Detalle de movimientos de la cuenta",
+      "en": "Account movements details"
+    },
+    {
+      "key": "accounts.from",
+      "source": "From:",
+      "es": "Desde:",
+      "en": "From:"
+    },
+    {
+      "key": "accounts.to",
+      "source": "to:",
+      "es": "hasta:",
+      "en": "to:"
+    },
+    {
+      "key": "accounts.dateTip2",
+      "source": "Filter by date using a preset range or selecting a specific range 🤓",
+      "es": "Filtra por fecha con un rango predefinido o eligiendo un rango específico 🤓",
+      "en": "Filter by date using a preset range or selecting a specific range 🤓"
+    },
+    {
+      "key": "accounts.delete.done",
+      "source": "Tu cuenta y todos tus datos fueron eliminados.",
+      "es": "Tu cuenta y todos tus datos fueron eliminados.",
+      "en": "Your account and all your data were deleted."
+    },
+    {
+      "key": "accounts.delete.button",
+      "source": "Eliminar mi cuenta",
+      "es": "Eliminar mi cuenta",
+      "en": "Delete my account"
+    },
+    {
+      "key": "accounts.delete.warning",
+      "source": "Esto borra tu cuenta y TODOS tus datos (movimientos, cuentas, categorías, presupuestos, etiquetas, passkeys y la app autenticadora). No se puede deshacer.",
+      "es": "Esto borra tu cuenta y TODOS tus datos (movimientos, cuentas, categorías, presupuestos, etiquetas, passkeys y la app autenticadora). No se puede deshacer.",
+      "en": "This deletes your account and ALL your data (transactions, accounts, categories, budgets, tags, passkeys and the authenticator app). It cannot be undone."
+    },
+    {
+      "key": "accounts.delete.needFactor",
+      "source": "Para eliminar tu cuenta primero registra un passkey o activa una app autenticadora (TOTP) en la sección de verificación en dos pasos de arriba.",
+      "es": "Para eliminar tu cuenta primero registra un passkey o activa una app autenticadora (TOTP) en la sección de verificación en dos pasos de arriba.",
+      "en": "To delete your account, first register a passkey or turn on an authenticator app (TOTP) in the two-step verification section above."
+    },
+    {
+      "key": "accounts.close",
+      "source": "Cerrar",
+      "es": "Cerrar",
+      "en": "Close"
+    },
+    {
+      "key": "accounts.delete.confirmMail",
+      "source": "Escribe tu correo ({p1}) para confirmar",
+      "es": "Escribe tu correo ({p1}) para confirmar",
+      "en": "Type your email ({p1}) to confirm"
+    },
+    {
+      "key": "accounts.delete.passkeyNote",
+      "source": "Al confirmar te pediremos tu passkey (huella / Face ID) para verificar que eres tú.",
+      "es": "Al confirmar te pediremos tu passkey (huella / Face ID) para verificar que eres tú.",
+      "en": "When you confirm, we will ask for your passkey (fingerprint / Face ID) to verify it is you."
+    },
+    {
+      "key": "accounts.cancel",
+      "source": "Cancelar",
+      "es": "Cancelar",
+      "en": "Cancel"
+    }
+  ]
+}

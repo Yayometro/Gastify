@@ -3,6 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
 import Account from "@/model/Account";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface ReorderAccountsRequestBody {
   orderedIds?: string[];
@@ -21,11 +22,12 @@ export type ReorderAccountsResponse = ReorderAccountsSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<ReorderAccountsResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on ACCOUNTS REORDER POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.8"));
     const { orderedIds } = (await request.json()) as ReorderAccountsRequestBody;
     if (!Array.isArray(orderedIds) || orderedIds.length === 0)
-      throw new Error("No orderedIds provided on ACCOUNTS REORDER POST");
+      throw new Error(t("errors.no.orderedids.provided.on.accounts"));
     // Security fix: this route had zero session verification - it trusted
     // whatever `mail` the client sent in the body to resolve the wallet to
     // reorder, and this endpoint (unlike dashboard pages) isn't covered by
@@ -34,11 +36,11 @@ export async function POST(
     // always sends its own session's email, so deriving it server-side
     // instead closes the hole with no change to any legitimate behavior.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on ACCOUNTS REORDER POST");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.accounts"));
     const walletId = userFound.wallet;
 
     // Scoped to this user's own wallet - a client can only ever reorder its
@@ -50,7 +52,7 @@ export async function POST(
     );
 
     return NextResponse.json({
-      message: "Accounts reordered successfully 🤓",
+      message: t("errors.accounts.reordered.successfully"),
       status: 201,
       ok: true,
     });

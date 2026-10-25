@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import TabsTrans from "./TabsTrans";
 import { Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
@@ -15,6 +17,7 @@ import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
+import { useT, useInfo } from "@/i18n/client";
 
 const today = new Date();
 
@@ -24,6 +27,8 @@ export interface ResumeTabsTransProps {
 }
 
 function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const tr = useT();
   const [isBillTab, setIsBillTab] = useState(true);
   const [allBills, setAllBills] = useState<TransactionData[]>([]);
   const [allIncomes, setAllIncomes] = useState<TransactionData[]>([]);
@@ -78,18 +83,21 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
 
   return (
     <div className="rtt-cont gf-glass-card w-full h-full rounded-[32px] p-4">
-      <h1 className="text-2xl text-center font-semibold pt-3">
-        Transactions Resume
-      </h1>
+      <div className="flex items-center justify-center gap-1.5 pt-3">
+        <h1 className="text-2xl text-center font-semibold">
+          {tr("movements.resume.title")}
+        </h1>
+        <InfoTip info={APP_INFO.resumen_de_transacciones} />
+      </div>
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs">
-          From:{" "}
-          <b>{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : "No time selected"}</b>
-          {" "}to:{" "}
-          <b>{timePeriod[1] ? getDateInYearMonthDay(timePeriod[1]) : "No time selected"}</b>
+          {tr("movements.from")}{" "}
+          <b>{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : tr("web.no.time.selected")}</b>
+          {" "}{tr("movements.to")}{" "}
+          <b>{timePeriod[1] ? getDateInYearMonthDay(timePeriod[1]) : tr("web.no.time.selected")}</b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-          <Tooltip title="Filter by date using a preset range or selecting a specific range 🤓">
+          <Tooltip title={tr("movements.filter.dateTip2")}>
             <div className="text-gf-text w-[10px]">
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
             </div>
@@ -103,22 +111,22 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
           <TimeRange rpDate={handleRangeDate} />
         </div>
       </div>
-      <div className="bc-tab-headers-cont w-full text-center flex justify-center items-center gap-2 mt-2">
+      <div className="bc-tab-headers-cont mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 rounded-full gf-glass-inset p-1.5 mt-2">
         <div
           onClick={() => handleTab("bill")}
-          className={`tab-rtt-bill p-4 cursor-pointer hover:text-purple-400 ${
-            isBillTab ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-rtt-bill px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Bills Resume
+          {tr("movements.resume.bills")}
         </div>
         <div
           onClick={() => handleTab("")}
-          className={`tab-rtt-inc p-4 cursor-pointer hover:text-purple-400 ${
-            !isBillTab ? "border-b-2 border-purple-600 text-purple-600 " : ""
+          className={`tab-rtt-inc px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
+            !isBillTab ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"
           }`}
         >
-          Income Resume
+          {tr("movements.resume.incomes")}
         </div>
       </div>
       <div className="rtt-content-cont mt-3">
@@ -126,7 +134,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
           {allBills.length <= 0 ? (
             <div className="w-full py-[20px]">
               <EmptyModule
-                emMessage="Ups... Nothing here 🤔. No bills found for this time period. Try a wider range like Last 6 months or All 2025."
+                emMessage={tr("movements.resume.noBills")}
               />
             </div>
           ) : (
@@ -137,7 +145,7 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
           {allIncomes.length <= 0 ? (
             <div className="w-full py-[20px]">
               <EmptyModule
-                emMessage="Ups... Nothing here 🤔. No incomes found for this time period. Try a wider range like Last 6 months or All 2025."
+                emMessage={tr("movements.resume.noIncomes")}
               />
             </div>
           ) : (

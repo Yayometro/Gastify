@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo } from "react";
+import Link from "next/link";
 import { useSelector } from "react-redux";
 import { buildWalletAnalyzerSnapshot } from "@/helpers/transformers/walletAnalyzer";
 import WalletAnalyzerInsightsStrip from "./WalletAnalyzerInsightsStrip";
@@ -9,6 +10,9 @@ import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurren
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { WalletAnalyzerSnapshotData } from "./WalletAnalyzerView";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 const EMPTY_ARRAY: never[] = [];
 
@@ -31,6 +35,9 @@ export interface WalletAnalyzerTeaserProps {
 // with, so it just always follows the parent - one atomic, prop-driven
 // piece instead of owning its own navigation state.
 function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProps): React.JSX.Element | null {
+  const text = useWalletText();
+  const { APP_INFO } = useInfo();
+  const t = useT();
   const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
   const storedBudgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
   const walletPrimaryCurrency: string = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
@@ -38,17 +45,9 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
 
   const today = useMemo(() => new Date(), []);
   const snapshot = useMemo<WalletAnalyzerSnapshotData>(
-    () => buildWalletAnalyzerSnapshot({ transactions, budgets, referenceDate: timePeriodFromFather?.[0] ? new Date(timePeriodFromFather[0]) : today }),
-    [transactions, budgets, timePeriodFromFather, today]
+    () => buildWalletAnalyzerSnapshot({ text, transactions, budgets, referenceDate: timePeriodFromFather?.[0] ? new Date(timePeriodFromFather[0]) : today }),
+    [transactions, budgets, timePeriodFromFather, today, text]
   );
-
-  function scrollToFullAnalyzer(): void {
-    // "smooth" scroll animation isn't reliably driven in every browser
-    // context (confirmed hanging at scrollY 0 in this session's automated
-    // pane) - "auto" (an instant jump) is the safe choice since this is a
-    // navigational shortcut, not a decorative animation.
-    document.getElementById("wallet-analyzer-full")?.scrollIntoView({ behavior: "auto", block: "start" });
-  }
 
   if (transactions.length === 0) return null;
 
@@ -59,19 +58,14 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
         walletPrimaryCurrency={walletPrimaryCurrency}
         transactions={transactions}
         currentRange={snapshot.currentRange}
-        title="Wallet Analyzer — resumen del mes"
+        title={t("analyzer.summaryTitle")}
       />
-      <p className="text-xs text-gf-text mt-3">
-        Hay mucho más por descubrir sobre tus gastos este mes 👀 — tendencias, presupuestos, suscripciones y patrones de
-        gasto te esperan en el análisis completo.
-      </p>
-      <button
-        type="button"
-        onClick={scrollToFullAnalyzer}
-        className="mt-1.5 text-sm font-bold text-purple-300 hover:text-white transition-colors flex items-center gap-1"
-      >
-        Ver análisis completo ↓
-      </button>
+      <div className="mt-3 flex items-center justify-end gap-2">
+        <Link href="/dashboard/analyzer" className="flex items-center gap-1 text-sm font-bold text-purple-300 transition-colors hover:text-white">
+          {t("analyzer.seeFull")} <span aria-hidden="true">→</span>
+        </Link>
+        <InfoTip info={APP_INFO.an_lisis_del_periodo} />
+      </div>
     </div>
   );
 }

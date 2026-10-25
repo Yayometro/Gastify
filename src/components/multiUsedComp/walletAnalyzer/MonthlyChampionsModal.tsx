@@ -10,11 +10,12 @@ import type {
   WalletAnalyzerChampionMonthCategory,
   WalletAnalyzerChampionMonthSubcategory,
 } from "./WalletAnalyzerView";
+import { useT } from "@/i18n/client";
 
 const TITLES: Record<"transaction" | "category" | "subCategory", string> = {
-  transaction: "Transacción más grande por mes",
-  category: "Categoría con más gasto por mes",
-  subCategory: "Subcategoría con más gasto por mes",
+  transaction: "web.largest.transaction.per.month",
+  category: "web.category.with.the.most.spending.per.month",
+  subCategory: "web.subcategory.with.the.most.spending.per.month",
 };
 
 export type ChampionItem =
@@ -49,6 +50,7 @@ function MonthlyChampionsModal({
   onSelectMonth,
   walletPrimaryCurrency,
 }: MonthlyChampionsModalProps): React.JSX.Element | null {
+  const t = useT();
   if (!kind) return null;
 
   const rows: MonthlyChampionsRow[] = (months || [])
@@ -77,7 +79,7 @@ function MonthlyChampionsModal({
       footer={null}
       className="gf-antd-modal-glass"
       zIndex={20000}
-      title={<span className="text-purple-300 font-semibold text-base">{TITLES[kind]}</span>}
+      title={<span className="text-purple-300 font-semibold text-base">{t(TITLES[kind])}</span>}
     >
       <div className="flex flex-col max-h-[420px] overflow-y-auto pr-1">
         {rows.map(({ entry, champion }) => (
@@ -115,11 +117,10 @@ function MonthlyChampionsModal({
               <p className="text-[13px] font-semibold text-gf-text truncate">{champion.name}</p>
               {kind !== "transaction" && (
                 <p className="text-[11px] text-gf-text-muted">
-                  {Math.round(
+                  {t("analyzer.percentOfYear", { p1: Math.round(
                     (champion as WalletAnalyzerChampionMonthCategory | WalletAnalyzerChampionMonthSubcategory)
                       .pctOfWindowTotal as number
-                  )}
-                  % del total de los 12 meses
+                  ) })}
                 </p>
               )}
             </div>

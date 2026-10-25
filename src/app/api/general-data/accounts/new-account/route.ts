@@ -4,13 +4,17 @@ import Wallet from "@/model/Wallet";
 import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { SUPPORTED_CURRENCIES, majorToMinor } from "@gastify/core/money/currencies";
+import { bankById, normalizeCardNumber } from "@gastify/core/banks/banks";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface NewAccountRequestBody {
   name?: string;
   amount?: number;
   accountType?: string;
   currency?: string;
+  bankId?: string | null;
+  cardNumber?: string | number | null;
   [key: string]: unknown;
 }
 
@@ -26,9 +30,10 @@ export type NewAccountResponse = NewAccountSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<NewAccountResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on NEW-ACCOUNT POST");
-    const { name, amount, accountType, currency } =
+    if (!request) throw new Error(t("errors.no.data.in.request.on.6"));
+    const { name, amount, accountType, currency, bankId, cardNumber } =
       (await request.json()) as NewAccountRequestBody;
     // Security fix: this route had zero session check - it created the
     // new Account under whatever userId/walletId the client sent in the
@@ -39,10 +44,10 @@ export async function POST(
     // trusted from the body. The only real call site
     // (EditAccountModal.jsx) always sends the caller's own ids anyway.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on NEW-ACCOUNT POST");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.new.2"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
     //
@@ -63,8 +68,12 @@ export async function POST(
       resolvedCurrency = parentWallet?.primaryCurrency || "MXN";
     }
     if (!SUPPORTED_CURRENCIES.includes(resolvedCurrency)) {
-      throw new Error(`Unsupported currency: ${resolvedCurrency}`);
+      throw new Error(t("errors.api.unsupportedCurrency", { p1: resolvedCurrency }));
     }
+    // Optional bank and card/account number: validated here, not trusted from the client.
+    if (bankId && !bankById(bankId)) throw new Error(t("errors.api.unknownBank", { p1: bankId }));
+    const card = normalizeCardNumber(cardNumber);
+    if (!card.ok) throw new Error(card.message ? t(card.message) : t("errors.api.invalidCardNumber"));
     const resolvedAmount = !amount ? 0 : amount;
     //
     const newAccount = new Account({
@@ -76,13 +85,15 @@ export async function POST(
       currency: resolvedCurrency,
       balanceMinor: majorToMinor(resolvedAmount, resolvedCurrency),
       balanceUpdatedAt: new Date(),
+      bankId: bankId || null,
+      cardNumber: card.value,
     });
     const savedAccount = await newAccount.save();
     if (!savedAccount)
-      throw new Error(`No Account: ${newAccount.name} was saved`);
+      throw new Error(t("errors.api.accountNotSaved", { p1: newAccount.name }));
 
     return NextResponse.json({
-      message: `${newAccount.name} created successfully 🤓`,
+      message: t("errors.api.created", { p1: newAccount.name }),
       data: savedAccount,
       status: 201,
       ok: true,

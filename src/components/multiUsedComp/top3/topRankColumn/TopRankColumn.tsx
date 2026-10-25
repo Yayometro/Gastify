@@ -13,6 +13,7 @@ import ModalContentTopMonthItem, {
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
+import { useT } from "@/i18n/client";
 
 export interface RankRowItem extends PrimaryAmountItem {
   name?: string;
@@ -33,6 +34,8 @@ export interface RankRowProps<T extends RankRowItem = RankRowItem> {
   item: T;
   currency?: string | unknown;
   onClick: () => void;
+  // How many transactions the row holds; only the category rows pass it.
+  count?: number;
 }
 
 export interface TopRankColumnStyle {
@@ -44,17 +47,26 @@ export interface TopRankColumnProps<T extends RankRowItem = RankRowItem> {
   items?: T[] | null;
   style?: TopRankColumnStyle;
   title?: React.ReactNode;
+  // Category rows: each one says how many transactions it holds, under its name.
+  showCount?: boolean;
 }
 
 // One ranked row - same visual language as WalletAnalyzerView's RankRow
 // (numbered, icon circle, name + amount) so "Top elements by month" reads
 // as the same design family as the Wallet Analyzer's own Top 12 section,
 // instead of the old AtomicTop tile-strip look.
-function RankRow<T extends RankRowItem = RankRowItem>({ index, item, currency, onClick }: RankRowProps<T>): React.JSX.Element {
-  const name = item.name || item.type || "No name";
+function RankRow<T extends RankRowItem = RankRowItem>({ index, item, currency, onClick, count }: RankRowProps<T>): React.JSX.Element {
+  const t = useT();
+  const name = item.name || item.type || t("web.no.name.2");
   const color = item?.color || item.category?.color || "#DADADA";
   const icon = item.icon || item.category?.icon;
-  const subtitle = item.category?.name && item.name ? item.category.name : null;
+  // A category row says how many transactions it holds; a transaction row says which category it belongs to.
+  const subtitle =
+    count !== undefined
+      ? `${count} ${count === 1 ? "transacción" : "transacciones"}`
+      : item.category?.name && item.name
+        ? item.category.name
+        : null;
 
   return (
     <div
@@ -84,7 +96,8 @@ function RankRow<T extends RankRowItem = RankRowItem>({ index, item, currency, o
   );
 }
 
-function TopRankColumn<T extends RankRowItem = RankRowItem>({ items, style, title }: TopRankColumnProps<T>): React.JSX.Element {
+function TopRankColumn<T extends RankRowItem = RankRowItem>({ items, style, title, showCount = false }: TopRankColumnProps<T>): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const { close, handleClose, renderModal, modalContent } = useModal();
   function renderModalContent(item: unknown) {
@@ -97,7 +110,7 @@ function TopRankColumn<T extends RankRowItem = RankRowItem>({ items, style, titl
         {title}
         <div className="w-full flex flex-col mt-2">
           {!items || items.length <= 0 ? (
-            <p className="text-xs text-gf-text-muted text-center">No items to display...</p>
+            <p className="text-xs text-gf-text-muted text-center">{t("dashboard.top.none")}</p>
           ) : (
             items.map((item, i) => (
               <RankRow
@@ -106,6 +119,7 @@ function TopRankColumn<T extends RankRowItem = RankRowItem>({ items, style, titl
                 item={item}
                 currency={walletPrimaryCurrency}
                 onClick={() => renderModalContent(item)}
+                count={showCount ? (Array.isArray(item.children) ? item.children.length : 0) : undefined}
               />
             ))
           )}

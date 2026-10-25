@@ -8,6 +8,7 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { RootState } from "@/lib/store";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import { percentOf } from "@gastify/core/format/percent";
+import { useT } from "@/i18n/client";
 
 export interface TransCategoryRef {
   _id?: string;
@@ -44,9 +45,12 @@ export interface SunburstNode {
 export interface TransResumeChartProps {
   trchTransactions?: (TransactionData | TransResumeTransaction)[];
   trchIsBill?: boolean;
+  // Inside the breakdown card the chart takes the card's height instead of its own fixed one.
+  trchFill?: boolean;
 }
 
-function TransResumeChart({ trchTransactions, trchIsBill }: TransResumeChartProps): React.JSX.Element {
+function TransResumeChart({ trchTransactions, trchIsBill, trchFill }: TransResumeChartProps): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const [dataCat, setDataCat] = useState<SunburstNode>({});
   const [drilldownData, setDrilldownData] = useState<SunburstNode | null>(null);
@@ -170,18 +174,28 @@ const handleSelect = (node: ComputedDatum<SunburstNode>) => {
 const resetDrilldown = () => {
     setDrilldownData(null); // Restablecer a los datos originales
 }
+  // The reset button sits in the title row, or in the chart's corner when the chart fills the card.
+  const resetButton = (
+    <div
+      className={`return p-2 text-gf-text border-2 border-purple-500 rounded-2xl flex items-center justify-center text-center cursor-pointer ${trchFill ? "absolute right-2 top-2 z-10" : ""}`}
+      onClick={resetDrilldown}
+    >
+      <IoMdRefresh size={20}/>
+    </div>
+  );
   return (
-    <div className="trch-container w-full h-full">
-      <div className="trch-Content-title pt-5 flex justify-center items-center gap-3">
-        <h1 className="wallet-budget-title text-2xl text-center font-bold">
-          Category {trchIsBill ? "Bills" : "Incomes"} Details
-        </h1>
-        <div className="return p-2 text-gf-text border-2 border-purple-500 rounded-2xl flex items-center justify-cente text-center cursor-pointer " onClick={resetDrilldown}>
-          <IoMdRefresh size={20}/>
+    <div className={trchFill ? "trch-container flex h-full w-full flex-col" : "trch-container w-full h-full"}>
+      {!trchFill && (
+        <div className="trch-Content-title pt-5 flex justify-center items-center gap-3">
+          <h1 className="wallet-budget-title text-2xl text-center font-bold">
+            {t("movements.resume.categoryDetailsP", { p1: trchIsBill ? t("web.bills") : t("web.incomes") })}
+          </h1>
+          {resetButton}
         </div>
-      </div>
-      <div className="trch-content w-full h-full">
-        <div className="trhc-ResponsiveSunburst-cont w-[100%] h-[500px] sm:h-[600px]">
+      )}
+      <div className={trchFill ? "trch-content relative min-h-0 w-full flex-1" : "trch-content w-full h-full"}>
+        {trchFill && resetButton}
+        <div className={trchFill ? "absolute inset-0" : "trhc-ResponsiveSunburst-cont w-[100%] h-[500px] sm:h-[600px]"}>
           <ResponsiveSunburst<SunburstNode>
             animate
             data={drilldownData || dataCat}
@@ -245,16 +259,16 @@ const resetDrilldown = () => {
                     <div className="flex flex-col text-[13px] font-semibold">
                       <div className="flex gap-2">
                         <p className="font-semibold">
-                          {trchIsBill ? "Total spent:" : "Total earned:"}
+                          {trchIsBill ? t("web.total.spent") : t("web.total.earned")}
                         </p>
                         {formatMoneyMajor(totalValueOn, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
-                        <p className="font-semibold">Amount:</p>
+                        <p className="font-semibold">{t("movements.resume.amount")}</p>
                         {formatMoneyMajor(dataa.value, walletPrimaryCurrency)}
                       </div>
                       <div className="flex gap-2">
-                        <p className="font-semibold">Percentage:</p>
+                        <p className="font-semibold">{t("movements.resume.percentage")}</p>
                         {percentOf(dataa.value, totalValueOn)}%
                       </div>
                     </div>

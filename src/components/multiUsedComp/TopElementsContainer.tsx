@@ -24,6 +24,7 @@ import TopRankColumn, { type RankRowItem } from "./top3/topRankColumn/TopRankCol
 import TopElementContainerView from "./TopElementContainerView";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { TabsTogglerComponentItem } from "./TabsComponents/TabsToggler";
+import { useT } from "@/i18n/client";
 
 const today = new Date();
 
@@ -72,6 +73,7 @@ export interface ContainerTransactionItem {
 }
 
 function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProps): React.JSX.Element {
+  const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [elementsToDisplay, setElementsToDisplay] = useState<number>(6);
   const [transactionsLocal, setTransactionsLocal] = useState<RankRowItem[][]>([]);
@@ -173,10 +175,10 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
   // thing next to the Wallet Analyzer's identical-looking [3,6,12,24] toggle.
   const topRankTitle = (label: string, total: string | number) => (
     <>
-      <p className="text-[10.5px] font-bold uppercase tracking-wide text-fuchsia-400">
-        Top {elementsToDisplay} {label}
+      <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-400">
+        {t("dashboard.top.title", { p1: elementsToDisplay, p2: label })}
       </p>
-      <p className="text-[15px] font-extrabold text-gf-text mb-2">Total: {total}</p>
+      <p className="text-[15px] font-extrabold text-gf-text mb-2">{t("dashboard.total", { p1: total })}</p>
     </>
   );
   const components: TabsTogglerComponentItem<object>[] = [
@@ -184,7 +186,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       tab: "bills",
       props: {
         items: transactionsLocal[1],
-        title: topRankTitle("Transactions", totalTransactionsLocal.bills),
+        title: topRankTitle(t("web.transactions"), totalTransactionsLocal.bills),
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
@@ -192,7 +194,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       tab: "incomes",
       props: {
         items: transactionsLocal[0],
-        title: topRankTitle("Transactions", totalTransactionsLocal.income),
+        title: topRankTitle(t("web.transactions"), totalTransactionsLocal.income),
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
@@ -200,7 +202,9 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       tab: "bills",
       props: {
         items: transactionCategories.bills.children,
-        title: topRankTitle("Categories", transactionCategories.bills.total),
+        title: topRankTitle(t("web.categories"), transactionCategories.bills.total),
+        // Each category row says how many transactions it holds.
+        showCount: true,
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
@@ -208,7 +212,8 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       tab: "incomes",
       props: {
         items: transactionCategories.incomes.children,
-        title: topRankTitle("Categories", transactionCategories.incomes.total),
+        title: topRankTitle(t("web.categories"), transactionCategories.incomes.total),
+        showCount: true,
       },
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },

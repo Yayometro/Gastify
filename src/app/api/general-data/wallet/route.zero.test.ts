@@ -54,6 +54,6 @@ describe("POST wallet - 0 and false are real values (bug 124)", () => {
 
   it("error messages name the wallet, not another route", async () => {
     walletFindById.mockResolvedValue(null);
-    await expect(POST(req({ cash: 1 }))).rejects.toThrow("No Wallet was identified to update");
+    await expect(POST(req({ cash: 1 }))).rejects.toThrow("No se identificó la cartera a actualizar");
   });
 });

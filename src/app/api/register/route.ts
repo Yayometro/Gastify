@@ -3,6 +3,7 @@ import dbConnection from "../dbConnection";
 import { auth } from "@/lib/auth/betterAuth";
 
 import User from "@/model/User";
+import { serverT } from "@/i18n/server";
 
 export interface RegisterBody {
   fullName: string;
@@ -35,6 +36,7 @@ export type RegisterResponse = RegisterSuccessResponse | RegisterErrorResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RegisterResponse>> {
+  const t = await serverT(["errors"]);
   try {
     await dbConnection();
     const dataFront: RegisterBody = await request.json();
@@ -42,7 +44,7 @@ export async function POST(
     const mailUsed = await User.findOne({ mail: dataFront.mail }).lean();
     if (mailUsed) {
       return NextResponse.json({
-        error: `This mail(${mailUsed.mail}) is already registered with us. Please set up a new email account.`,
+        error: t("errors.api.mailRegistered", { p1: mailUsed.mail }),
         errorUser: true,
       });
     }
@@ -55,11 +57,11 @@ export async function POST(
         image: dataFront.image || undefined,
       },
     });
-    if (!user) throw new Error("No USER was saved creating a NEW USER ❌");
+    if (!user) throw new Error(t("errors.no.user.was.saved.creating"));
 
     return NextResponse.json({
       data: user,
-      message: `New user "${dataFront.fullName}" was created successfully`,
+      message: t("errors.api.userCreated", { p1: dataFront.fullName }),
       userCreatedStatus: true,
       status: 201,
     });

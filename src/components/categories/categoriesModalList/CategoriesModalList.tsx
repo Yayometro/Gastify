@@ -1,8 +1,10 @@
+"use client";
 import React, { useContext } from "react";
 import { SelectCategoryContext, type CategoryItem } from "../SelectCategoryProvider/SelectCategoryProvider";
 import CategoryCircle from "../categoryCircle/CategoryCircle";
 import CategoryCircleWithChilds from "../categoryCircleWithChilds/CategoryCircleWithChilds";
 import EmptyModule from "@/components/multiUsedComp/EmptyModule";
+import { useT } from "@/i18n/client";
 
 export interface CategoriesModalListProps {
   onSelect?: (category: CategoryItem) => void;
@@ -10,17 +12,18 @@ export interface CategoriesModalListProps {
 }
 
 function CategoriesModalList({ onSelect, onlyFathers = false }: CategoriesModalListProps): React.JSX.Element {
+  const t = useT();
   const { newCategories } = useContext(SelectCategoryContext);
   const categories = newCategories as CategoryItem[];
   return (
     <>
       {!categories || categories.length <= 0 ? (
         <div className="w-full h-full flex justify-center items-center">
-          <EmptyModule emMessage={`No categories to display 🤔`} />
+          <EmptyModule emMessage={t("categories.emptyList")} />
         </div>
       ) : (
         <>
-          <h1 className="py-3">{onlyFathers ? "Select a Category:" : "Categories without sub-categories:"}</h1>
+          <h1 className="py-3">{onlyFathers ? t("web.select.a.category") : t("web.categories.without.subcategories")}</h1>
           <div className="w-full flex justify-center items-center gap-2 flex-wrap">
             {categories.filter(c => !c.children || c.children.length === 0).map((cat) => (
               <CategoryCircle
@@ -49,7 +52,7 @@ function CategoriesModalList({ onSelect, onlyFathers = false }: CategoriesModalL
           </div>
           {!onlyFathers && (
             <>
-              <h1 className="py-3">Father categories: </h1>
+              <h1 className="py-3">{t("categories.parents")} </h1>
               <div className="w-full flex flex-col justify-center items-center gap-2 flex-wraps">
                 {categories.filter(c => c.children && c.children.length > 0).map((cat) => (
                   <CategoryCircleWithChilds

@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { months } from "@gastify/core/time/timeFunctions";
+import { useT } from "@/i18n/client";
 
 export interface MonthInfo {
   name: string;
@@ -30,6 +31,7 @@ function TimeRange({
   startDateValue,
   endDateValue,
 }: TimeRangeProps): React.JSX.Element {
+  const t = useT();
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const isControlled = startDateValue !== undefined || endDateValue !== undefined;
@@ -128,7 +130,7 @@ function TimeRange({
 
   return (
     <div className={`w-fit flex items-center gap-1 ${!styles ? "gf-glass-card px-1.5 py-0.5 rounded-full" : styles}`}>
-      <Tooltip title={`Go to previous month: ${prevInfo.label}`}>
+      <Tooltip title={t("shared.timeRange.prevMonth", { p1: prevInfo.label })}>
         <button
           type="button"
           onClick={handlePrevMonth}
@@ -150,7 +152,7 @@ function TimeRange({
             onChange={onChangeStart}
             className="ant-date-picker-range3"
             format={dateFormat}
-            placeholder="Start"
+            placeholder={t("shared.start")}
           />
         </div>
         <div className="unit-date-enc3">
@@ -160,12 +162,12 @@ function TimeRange({
             onChange={onChangeEnd}
             format={dateFormat}
             className="ant-date-picker-range3"
-            placeholder="End"
+            placeholder={t("shared.end")}
           />
         </div>
       </Space>
 
-      <Tooltip title={`Go to next month: ${nextInfo.label}`}>
+      <Tooltip title={t("shared.timeRange.nextMonth", { p1: nextInfo.label })}>
         <button
           type="button"
           onClick={handleNextMonth}

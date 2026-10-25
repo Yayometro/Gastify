@@ -5,6 +5,8 @@ export interface IUser extends mongoose.Document {
     mail: string;
     image?: string;
     phone?: number;
+    language?: "es" | "en" | null;
+    country?: string | null;
     wallet: mongoose.Types.ObjectId;
     apiTokens: {
         name: string;
@@ -21,6 +23,10 @@ const userSchema = new Schema<IUser>({
     mail: {type: String, require: true, unique: true},
     image: {type: String},
     phone: {type: Number},
+    // The language and the country the person chose in the profile. Declared here so Mongoose keeps them on update (strict
+    // mode drops any field the schema does not know). null means automatic: the language follows the country.
+    language: {type: String, enum: ["es", "en", null], default: null},
+    country: {type: String, default: null},
     wallet: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Wallet",

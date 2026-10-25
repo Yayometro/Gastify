@@ -8,6 +8,7 @@ import "@/model/Category";
 import "@/model/SubCategory";
 import "@/model/Account";
 import "@/model/Tag";
+import { serverT } from "@/i18n/server";
 
 export interface NewBudgetGetStatusResponse {
   mes: string;
@@ -48,8 +49,9 @@ export async function GET(): Promise<NextResponse<NewBudgetGetStatusResponse>> {
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<NewBudgetResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No data in request on NEW BUDGET POST");
+    if (!request) throw new Error(t("errors.no.data.in.request.on.9"));
     const {
       name,
       goalAmount,
@@ -74,10 +76,10 @@ export async function POST(
     // instead. The only real call site (BudgetEditModal.jsx) already sends
     // the caller's own ids anyway.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on NEW BUDGET");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.new.4"));
     const user = userFound._id;
     const wallet = userFound.wallet;
     // FIND WALLET
@@ -111,11 +113,11 @@ export async function POST(
       newBudget.categories = categories;
     }
     //IF ERROR
-    if (!newBudget) throw new Error(`No Budget was identified 🤕`);
+    if (!newBudget) throw new Error(t("errors.api.budgetNotIdentified"));
     // SAVE
     const savedBudget = await newBudget.save();
     //IF ERROR
-    if (!savedBudget) throw new Error("New Budget was not saved 🤕");
+    if (!savedBudget) throw new Error(t("errors.new.budget.was.not.saved"));
     await savedBudget.populate([
       { path: "category", strictPopulate: false },
       { path: "subCategory", strictPopulate: false },
@@ -125,7 +127,7 @@ export async function POST(
       { path: "linkedTags", strictPopulate: false },
     ]);
     return NextResponse.json({
-      message: `${savedBudget.name} was created successfully 🤓`,
+      message: t("errors.api.created", { p1: savedBudget.name }),
       data: savedBudget,
       status: 201,
       ok: true,

@@ -73,7 +73,7 @@ describe("new-account currency defaulting", () => {
   it("rejects an unsupported explicit currency before constructing the Account", async () => {
     await expect(
       POST(mockRequest({ currency: "GBP" }))
-    ).rejects.toThrow(/Unsupported currency/);
+    ).rejects.toThrow(/Moneda no soportada/);
 
     expect(Account).not.toHaveBeenCalled();
   });

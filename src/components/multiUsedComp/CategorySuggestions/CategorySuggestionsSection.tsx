@@ -5,11 +5,13 @@ import { Tooltip } from "antd";
 import fetcher from "@/helpers/fetcher";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import ToolsModal from "@/components/multiUsedComp/ToolsModal";
+import { useT } from "@/i18n/client";
 
-// Movements-specific, always-visible entry point for the same category-suggestion
-// tool the floating Tools button opens globally - this page gets its own section
-// instead of the suggestion being hidden behind a click.
+// The Transaction Categorizer on the Movements page: the same tool the floating Tools button opens. It shows how many
+// transactions have a suggested category, and opens the Tools window on that tool. "card" is the whole section (wide
+// screens, next to the transactions); "button" is a pill for narrow screens.
 
+const TOOLTIP_TEXT = "web.scans.your.uncategorized.transactions.and.suggests.a.cat";
 
 interface SuggestApiResponse {
   ok?: boolean;
@@ -18,9 +20,11 @@ interface SuggestApiResponse {
 
 export interface CategorySuggestionsSectionProps {
   mail?: string | null;
+  variant?: "card" | "button";
 }
 
-function CategorySuggestionsSection({ mail }: CategorySuggestionsSectionProps): React.JSX.Element {
+function CategorySuggestionsSection({ mail, variant = "card" }: CategorySuggestionsSectionProps): React.JSX.Element {
+  const t = useT();
   const [count, setCount] = useState<number | null>(null); // null = still loading
   const [showModal, setShowModal] = useState<boolean>(false);
   const toFetch = fetcher();
@@ -41,11 +45,33 @@ function CategorySuggestionsSection({ mail }: CategorySuggestionsSectionProps): 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mail]);
 
+  const modal = showModal && <ToolsModal mail={mail} onClose={() => setShowModal(false)} />;
+
+  if (variant === "button") {
+    return (
+      <>
+        <Tooltip title={t(TOOLTIP_TEXT)}>
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 rounded-full gf-glass-card px-4 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110"
+          >
+            {t("movements.categorizer.title")}
+            {count !== null && count > 0 && (
+              <span className="rounded-full bg-purple-600 px-2 py-0.5 text-[11px] font-bold text-white">{count}</span>
+            )}
+          </button>
+        </Tooltip>
+        {modal}
+      </>
+    );
+  }
+
   return (
     <div className="gf-glass-card py-6 my-2 px-[30px] rounded-[60px] w-full h-full max-w-[900px] flex flex-col items-center justify-center gap-2">
       <div className="flex items-center gap-1">
-        <h1 className="text-xl font-light">Transaction Categorizer</h1>
-        <Tooltip title="Scans your uncategorized transactions and suggests a category based on your saved rules (merchant name, amount). Nothing changes until you review and apply.">
+        <h1 className="text-xl font-light">{t("movements.categorizer.title")}</h1>
+        <Tooltip title={t(TOOLTIP_TEXT)}>
           <div className="text-purple-400 cursor-help">
             <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={14} />
           </div>
@@ -53,29 +79,24 @@ function CategorySuggestionsSection({ mail }: CategorySuggestionsSectionProps): 
       </div>
 
       {count === null ? (
-        <p className="text-xs text-gf-text-muted">Checking for suggestions...</p>
+        <p className="text-xs text-gf-text-muted">{t("movements.categorizer.checking")}</p>
       ) : count === 0 ? (
-        <p className="text-xs text-gf-text-muted">No suggestions right now — you&apos;re all caught up! 🎉</p>
+        <p className="text-xs text-gf-text-muted">{t("movements.categorizer.none")}</p>
       ) : (
         <>
           <p className="text-sm text-gf-text-muted">
-            💡 {count} transaction{count !== 1 ? "s" : ""} have a suggested category
+            {t("movements.categorizer.count", { p1: count, p2: count !== 1 ? "s" : "" })}
           </p>
           <button
             onClick={() => setShowModal(true)}
             className="mt-1 px-5 py-2 rounded-full text-sm font-medium gf-glass-button text-white transition-colors"
           >
-            Review suggestions
+            {t("movements.categorizer.review")}
           </button>
         </>
       )}
 
-      {showModal && (
-        <ToolsModal
-          mail={mail}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+      {modal}
     </div>
   );
 }

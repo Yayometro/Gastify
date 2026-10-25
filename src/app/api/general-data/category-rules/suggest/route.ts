@@ -17,6 +17,7 @@ import {
   type WithDisplayMoney,
 } from "@/lib/money/server/transactionReadService";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface SuggestRequestBody {
   mail?: string | null;
@@ -53,9 +54,11 @@ export type SuggestResponse = SuggestSuccessResponse;
 export async function POST(
   request: NextRequest | Request,
 ): Promise<NextResponse<SuggestResponse>> {
+  const t = await serverT(["errors"]);
+  const tr = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on CATEGORY RULES SUGGEST POST");
+      throw new Error(tr("errors.no.data.in.request.on.26"));
     const { transactionIds } = (await request.json()) as SuggestRequestBody;
 
     // Security fix: previously this route relied on client-supplied `mail` without
@@ -63,13 +66,13 @@ export async function POST(
     // transactions and category rules. We now authenticate via auth.api.getSession,
     // ignore client-sent `mail`, and scope all lookups to the session user and wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(tr("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided");
+      throw new Error(tr("errors.user.not.found.review.the.3"));
     const walletId = userFound.wallet;
 
     const transactionQuery =
@@ -131,7 +134,7 @@ export async function POST(
       .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
     return NextResponse.json({
-      message: `${suggestions.length} suggestion(s) found`,
+      message: t("errors.api.suggestionsFound", { p1: suggestions.length }),
       data: suggestions,
       status: 201,
       ok: true,

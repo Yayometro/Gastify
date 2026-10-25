@@ -1,0 +1,389 @@
+{
+  "namespace": "dashboard",
+  "entries": [
+    {
+      "key": "dashboard.bulk.rename",
+      "source": "Rename",
+      "es": "Renombrar",
+      "en": "Rename"
+    },
+    {
+      "key": "dashboard.bulk.date",
+      "source": "Date",
+      "es": "Fecha",
+      "en": "Date"
+    },
+    {
+      "key": "dashboard.bulk.type",
+      "source": "Type",
+      "es": "Tipo",
+      "en": "Type"
+    },
+    {
+      "key": "dashboard.bulk.category",
+      "source": "Category",
+      "es": "Categoría",
+      "en": "Category"
+    },
+    {
+      "key": "dashboard.bulk.account",
+      "source": "Account",
+      "es": "Cuenta",
+      "en": "Account"
+    },
+    {
+      "key": "dashboard.bulk.tags",
+      "source": "Tags",
+      "es": "Etiquetas",
+      "en": "Tags"
+    },
+    {
+      "key": "dashboard.detail",
+      "source": "{p1}Detail",
+      "es": "Detalle de {p1}",
+      "en": "{p1} detail"
+    },
+    {
+      "key": "dashboard.deselectAll",
+      "source": "Deselect all",
+      "es": "Quitar selección de todo",
+      "en": "Deselect all"
+    },
+    {
+      "key": "dashboard.selectedCount",
+      "source": "{p1}selected",
+      "es": "{p1} seleccionados",
+      "en": "{p1} selected"
+    },
+    {
+      "key": "dashboard.delete",
+      "source": "Delete",
+      "es": "Borrar",
+      "en": "Delete"
+    },
+    {
+      "key": "dashboard.bulk.help",
+      "source": "Edit all fields at once. Blank fields keep their original value.",
+      "es": "Edita todos los campos a la vez. Los campos en blanco conservan su valor original.",
+      "en": "Edit all fields at once. Blank fields keep their original value."
+    },
+    {
+      "key": "dashboard.bulk.general",
+      "source": "General",
+      "es": "General",
+      "en": "General"
+    },
+    {
+      "key": "dashboard.dup.criteria",
+      "source": "Match criteria:",
+      "es": "Criterios de coincidencia:",
+      "en": "Match criteria:"
+    },
+    {
+      "key": "dashboard.dup.name",
+      "source": "Name",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "dashboard.dup.amount",
+      "source": "Amount",
+      "es": "Monto",
+      "en": "Amount"
+    },
+    {
+      "key": "dashboard.dup.subcategory",
+      "source": "Subcategory",
+      "es": "Subcategoría",
+      "en": "Subcategory"
+    },
+    {
+      "key": "dashboard.dup.dateToleranceTip",
+      "source": "Allow this many days of difference between dates to still count as duplicates",
+      "es": "Permite esta cantidad de días de diferencia entre fechas y aun así contar como duplicados",
+      "en": "Allow this many days of difference between dates to still count as duplicates"
+    },
+    {
+      "key": "dashboard.dup.dateTolerance",
+      "source": "Date tolerance:",
+      "es": "Tolerancia de fecha:",
+      "en": "Date tolerance:"
+    },
+    {
+      "key": "dashboard.dup.exact",
+      "source": "Exact (same day)",
+      "es": "Exacta (mismo día)",
+      "en": "Exact (same day)"
+    },
+    {
+      "key": "dashboard.dup.d1",
+      "source": "±1 day",
+      "es": "±1 día",
+      "en": "±1 day"
+    },
+    {
+      "key": "dashboard.dup.d3",
+      "source": "±3 days",
+      "es": "±3 días",
+      "en": "±3 days"
+    },
+    {
+      "key": "dashboard.dup.d7",
+      "source": "±7 days",
+      "es": "±7 días",
+      "en": "±7 days"
+    },
+    {
+      "key": "dashboard.dup.d30",
+      "source": "±30 days",
+      "es": "±30 días",
+      "en": "±30 days"
+    },
+    {
+      "key": "dashboard.dup.amountTip",
+      "source": "Allow this amount difference (in your currency) between two transactions to still count as duplicates",
+      "es": "Permite esta diferencia de monto (en tu moneda) entre dos movimientos y aun así contarlos como duplicados",
+      "en": "Allow this amount difference (in your currency) between two transactions to still count as duplicates"
+    },
+    {
+      "key": "dashboard.dup.amountTolerance",
+      "source": "Amount tolerance:",
+      "es": "Tolerancia de monto:",
+      "en": "Amount tolerance:"
+    },
+    {
+      "key": "dashboard.dup.refreshTip",
+      "source": "Reset to default criteria (Name + Date + Amount, exact match)",
+      "es": "Vuelve a los criterios por defecto (Nombre + Fecha + Monto, coincidencia exacta)",
+      "en": "Reset to default criteria (Name + Date + Amount, exact match)"
+    },
+    {
+      "key": "dashboard.dup.refresh",
+      "source": "Refresh defaults",
+      "es": "Restablecer valores",
+      "en": "Refresh defaults"
+    },
+    {
+      "key": "dashboard.dup.selectPossible",
+      "source": "Select possible duplicates ({p1})",
+      "es": "Seleccionar posibles duplicados ({p1})",
+      "en": "Select possible duplicates ({p1})"
+    },
+    {
+      "key": "dashboard.dup.clearSelection",
+      "source": "Clear selection",
+      "es": "Quitar selección",
+      "en": "Clear selection"
+    },
+    {
+      "key": "dashboard.dup.compare",
+      "source": "Compare in detail",
+      "es": "Comparar a detalle",
+      "en": "Compare in detail"
+    },
+    {
+      "key": "dashboard.dup.deleteSelected",
+      "source": "Delete {p1}selected",
+      "es": "Borrar {p1} seleccionados",
+      "en": "Delete {p1} selected"
+    },
+    {
+      "key": "dashboard.sortBy",
+      "source": "Sort by:",
+      "es": "Ordenar por:",
+      "en": "Sort by:"
+    },
+    {
+      "key": "dashboard.dup.none",
+      "source": "No duplicates found among these transactions.",
+      "es": "No se encontraron duplicados entre estos movimientos.",
+      "en": "No duplicates found among these transactions."
+    },
+    {
+      "key": "dashboard.delete.irreversible",
+      "source": "This action cannot be undone. Are you sure you want to permanently delete",
+      "es": "Esta acción no se puede deshacer. ¿Seguro que quieres borrar para siempre",
+      "en": "This action cannot be undone. Are you sure you want to permanently delete"
+    },
+    {
+      "key": "dashboard.cancel",
+      "source": "Cancel",
+      "es": "Cancelar",
+      "en": "Cancel"
+    },
+    {
+      "key": "dashboard.dup.compareTitle",
+      "source": "Duplicate Comparison Detail",
+      "es": "Detalle de la comparación de duplicados",
+      "en": "Duplicate Comparison Detail"
+    },
+    {
+      "key": "dashboard.delete.elements",
+      "source": "Delete {p1}elements",
+      "es": "Borrar {p1} elementos",
+      "en": "Delete {p1} elements"
+    },
+    {
+      "key": "dashboard.mode",
+      "source": "Mode:",
+      "es": "Modo:",
+      "en": "Mode:"
+    },
+    {
+      "key": "dashboard.dup.reviewNote",
+      "source": ". Review what will be kept vs deleted before proceeding.",
+      "es": ". Revisa qué se conserva y qué se borra antes de continuar.",
+      "en": ". Review what will be kept vs deleted before proceeding."
+    },
+    {
+      "key": "dashboard.prevMonth",
+      "source": "Mes anterior: {p1}",
+      "es": "Mes anterior: {p1}",
+      "en": "Previous month: {p1}"
+    },
+    {
+      "key": "dashboard.actual",
+      "source": "Actual: {p1}",
+      "es": "Real: {p1}",
+      "en": "Actual: {p1}"
+    },
+    {
+      "key": "dashboard.accounts.yours",
+      "source": "Tus cuentas",
+      "es": "Tus cuentas",
+      "en": "Your accounts"
+    },
+    {
+      "key": "dashboard.accounts.none",
+      "source": "No accounts yet",
+      "es": "Todavía no tienes cuentas",
+      "en": "No accounts yet"
+    },
+    {
+      "key": "dashboard.summary",
+      "source": "Resumen",
+      "es": "Resumen",
+      "en": "Summary"
+    },
+    {
+      "key": "dashboard.incomes",
+      "source": "Incomes:",
+      "es": "Ingresos:",
+      "en": "Income:"
+    },
+    {
+      "key": "dashboard.noAmount",
+      "source": "No amount...",
+      "es": "Sin monto…",
+      "en": "No amount…"
+    },
+    {
+      "key": "dashboard.bills",
+      "source": "Expenses:",
+      "es": "Gastos:",
+      "en": "Expenses:"
+    },
+    {
+      "key": "dashboard.balance",
+      "source": "Balance:",
+      "es": "Balance:",
+      "en": "Balance:"
+    },
+    {
+      "key": "dashboard.range",
+      "source": "From {p1}to {p2}.",
+      "es": "Desde {p1} hasta {p2}.",
+      "en": "From {p1} to {p2}."
+    },
+    {
+      "key": "dashboard.vsPrevious",
+      "source": "Vs. mes anterior",
+      "es": "Vs. mes anterior",
+      "en": "Vs. previous month"
+    },
+    {
+      "key": "dashboard.wallet",
+      "source": "Wallet",
+      "es": "Cartera",
+      "en": "Wallet"
+    },
+    {
+      "key": "dashboard.previous",
+      "source": "Previous",
+      "es": "Anterior",
+      "en": "Previous"
+    },
+    {
+      "key": "dashboard.next",
+      "source": "Next",
+      "es": "Siguiente",
+      "en": "Next"
+    },
+    {
+      "key": "dashboard.dateTip",
+      "source": "Filter the date by a generic filter or by selecting a specific range 🤓",
+      "es": "Filtra la fecha con un filtro genérico o eligiendo un rango específico 🤓",
+      "en": "Filter the date by a generic filter or by selecting a specific range 🤓"
+    },
+    {
+      "key": "dashboard.top.byMonth",
+      "source": "Top {p1}elements by month",
+      "es": "Top {p1} elementos por mes",
+      "en": "Top {p1} elements by month"
+    },
+    {
+      "key": "dashboard.from",
+      "source": "From:",
+      "es": "Desde:",
+      "en": "From:"
+    },
+    {
+      "key": "dashboard.to",
+      "source": "to :",
+      "es": "hasta:",
+      "en": "to:"
+    },
+    {
+      "key": "dashboard.top.tabHelp",
+      "source": "Select the tab that you want to see 😎",
+      "es": "Elige la pestaña que quieres ver 😎",
+      "en": "Select the tab you want to see 😎"
+    },
+    {
+      "key": "dashboard.top.title",
+      "source": "Top {p1}{p2}",
+      "es": "Top {p1}{p2}",
+      "en": "Top {p1}{p2}"
+    },
+    {
+      "key": "dashboard.total",
+      "source": "Total: {p1}",
+      "es": "Total: {p1}",
+      "en": "Total: {p1}"
+    },
+    {
+      "key": "dashboard.top.help",
+      "source": "In each month you can see the highest bills or transactions according to the time-period selected and the number of elements to display",
+      "es": "Cada mes puedes ver los gastos o movimientos más altos según el periodo elegido y la cantidad de elementos que quieres mostrar",
+      "en": "In each month you can see the highest bills or transactions according to the time-period selected and the number of elements to display"
+    },
+    {
+      "key": "dashboard.value",
+      "source": "Value:",
+      "es": "Valor:",
+      "en": "Value:"
+    },
+    {
+      "key": "dashboard.accountsResume",
+      "source": "Accounts resume",
+      "es": "Resumen de cuentas",
+      "en": "Accounts summary"
+    },
+    {
+      "key": "dashboard.top.none",
+      "source": "No items to display...",
+      "es": "No hay elementos para mostrar...",
+      "en": "No items to display..."
+    }
+  ]
+}

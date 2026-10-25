@@ -1,6 +1,8 @@
+"use client";
 import React, { useContext } from "react";
 import SelectCategoryBtn from "../../selectCategoryBtn/SelectCategoryBtn";
 import { SelectCategoryContext } from "@/components/categories/SelectCategoryProvider/SelectCategoryProvider";
+import { useT } from "@/i18n/client";
 
 export interface SelectedCategoryFather {
   name?: string;
@@ -19,6 +21,7 @@ export interface BtnSelectCategoryContextProps {
 }
 
 function BtnSelectCategoryContext({ onClose }: BtnSelectCategoryContextProps): React.JSX.Element {
+  const t = useT();
   const { itemSelected } = useContext(SelectCategoryContext);
   const selected = itemSelected as SelectedCategoryItem | null;
 
@@ -26,12 +29,12 @@ function BtnSelectCategoryContext({ onClose }: BtnSelectCategoryContextProps): R
     <>
       <span className="flex flex-col pl-2">
         <span className="flex items-center gap-2">
-          <p className="text-sm text-purple-300">Selected: </p>
+          <p className="text-sm text-purple-300">{t("categories.selected")} </p>
           <p className="text-sm text-purple-300 font-bold">{selected?.name || "Nothing..."}</p>
         </span>
         {selected?.fatherCategory && (
           <p className="text-[10px] text-gf-text-muted leading-tight">
-            in {selected.fatherCategory?.name || ""}
+            {t("categories.inCurrency", { p1: selected.fatherCategory?.name || "" })}
           </p>
         )}
       </span>

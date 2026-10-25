@@ -22,6 +22,7 @@ import BasicModal from "../modals/basicModal/BasicModal";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
 import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
+import { useT } from "@/i18n/client";
 
 const TypedBtnSelectCategoryContext = BtnSelectCategoryContext as React.ComponentType<{
   onClose?: () => void;
@@ -84,6 +85,7 @@ interface EditManyResponse {
 }
 
 function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalInnerProps): React.JSX.Element {
+  const tr = useT();
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
   const dispatch = useDispatch<AppDispatch>();
@@ -204,7 +206,7 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
         handleClean();
         onClose();
       } else {
-        runNotify("error", response.message || "Something went wrong");
+        runNotify("error", response.message || tr("web.something.went.wrong"));
       }
     } catch (err) {
       runNotify("error", String(err));
@@ -216,7 +218,7 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-black/50 backdrop-blur-md flex items-center justify-center">
+    <div className="fixed top-0 left-0 w-full h-full z-[10000] bg-black/50 backdrop-blur-md flex items-center justify-center" onClick={(event) => { if (event.target === event.currentTarget) handleClose(); }}>
       <div className="content gf-glass-violet flex flex-col w-full max-w-[500px] max-h-[90vh] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
         {isLoading && (
           <div className="absolute top-0 left-0 bg-gf-surface/70 flex justify-center items-center w-full h-full z-[10001]">
@@ -225,11 +227,11 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
         )}
 
         <h1 className="text-center py-[10px] text-2xl text-white">
-          Edit {Array.isArray(trans) ? trans.length : 0} Transactions 🪄
+          {tr("movements.bulk.editTitle", { p1: Array.isArray(trans) ? trans.length : 0 })}
         </h1>
         <div className="w-full px-4 pb-2">
           <div className="bg-yellow-500/15 border border-yellow-300 text-yellow-800 text-[11px] rounded-xl px-3 py-2 text-center leading-relaxed">
-            ⚠️ Everything you fill in here will overwrite <b>all {Array.isArray(trans) ? trans.length : 0} selected transactions</b>. Fields you leave blank will keep their original values.
+            {tr("movements.bulk.warn")} <b>{tr("movements.bulk.warnAll", { p1: Array.isArray(trans) ? trans.length : 0 })}</b>{tr("movements.bulk.warnBlank")}
           </div>
         </div>
 
@@ -237,22 +239,22 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
           onSubmit={handleSubmit}
           className="form-trans-edit w-full h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20 overflow-y-scroll"
         >
-          <p className="label-tfp">Name</p>
+          <p className="label-tfp">{tr("movements.columns.name")}</p>
           <input
             type="text"
             name="name"
             value={transactionInfo.name}
             onChange={handleChange}
-            placeholder="Leave blank to keep original"
+            placeholder={tr("movements.bulk.blank")}
           />
 
-          <p className="label-tfp">Amount</p>
+          <p className="label-tfp">{tr("movements.columns.amount")}</p>
           <input
             type="number"
             name="amount"
             value={transactionInfo.amount}
             onChange={handleChange}
-            placeholder="Leave blank to keep original"
+            placeholder={tr("movements.bulk.blank")}
           />
 
           <div className="switchers-cont flex gap-3">
@@ -263,22 +265,22 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
             >
               <Space direction={"" as "horizontal"} size={12}>
                 <div className="switch-int-cont">
-                  <p className="label-tfp">Is Income:</p>
+                  <p className="label-tfp">{tr("movements.edit.isIncome")}</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "income")} value={transactionInfo.isIncome} />
                 </div>
                 <div className="switch-int-cont">
-                  <p className="label-tfp">Is Bill:</p>
+                  <p className="label-tfp">{tr("movements.edit.isBill")}</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "bill")} value={transactionInfo.isBill} />
                 </div>
                 <div className="switch-int-cont">
-                  <p className="label-tfp">Is Readable:</p>
+                  <p className="label-tfp">{tr("movements.edit.isReadable")}</p>
                   <Switch onChange={(v) => onChangeSwitch(v, "readable")} value={transactionInfo.isReadable} />
                 </div>
               </Space>
             </ConfigProvider>
           </div>
 
-          <p className="label-tfp">Date</p>
+          <p className="label-tfp">{tr("movements.columns.date")}</p>
           <div className="date-container w-full h-[100px]">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["MobileDateTimePicker"]}>
@@ -305,7 +307,7 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
             </LocalizationProvider>
           </div>
 
-          <p className="label-tfp">Category</p>
+          <p className="label-tfp">{tr("movements.columns.category")}</p>
           <TypedBtnSelectCategoryContext onClose={handleClose} />
           {close && (
             <BasicModal
@@ -317,24 +319,24 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
             />
           )}
 
-          <p className="label-tfp">Tags</p>
+          <p className="label-tfp">{tr("movements.edit.tags")}</p>
           <input
             type="text"
             name="tags"
             value={transactionInfo.tags}
             onChange={handleChange}
-            placeholder="Tags (separated by comma)"
+            placeholder={tr("movements.edit.tagsHint")}
           />
 
-          <p className="label-tfp">Account</p>
+          <p className="label-tfp">{tr("movements.bulk.account")}</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               value={transactionInfo.account === null ? NO_ACCOUNT_VALUE : transactionInfo.account}
               onChange={handleDefAccount}
             >
-              <option value="">Keep current account</option>
-              <option value={NO_ACCOUNT_VALUE}>No account</option>
+              <option value="">{tr("movements.bulk.keepAccount")}</option>
+              <option value={NO_ACCOUNT_VALUE}>{tr("movements.edit.noAccount")}</option>
               {accounts?.map((acc) => (
                 <option value={acc._id} key={acc._id}>{acc.name}</option>
               ))}
@@ -345,7 +347,7 @@ function EditMultipleTransModalInner({ trans, onClose }: EditMultipleTransModalI
             className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
-            {isLoading ? <Spin /> : "Save changes"}
+            {isLoading ? <Spin /> : tr("web.save.changes")}
           </button>
         </form>
 

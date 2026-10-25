@@ -8,6 +8,9 @@ import runNotify from "@/helpers/gastifyNotifier";
 import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
 import CategoIcon from "./CategoIcon";
 
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT, useInfo } from "@/i18n/client";
+
 // Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
 const TypedCategoIcon = CategoIcon as React.ComponentType<{
   type: string;
@@ -27,6 +30,8 @@ interface PasskeyItem {
 // this account. `useListPasskeys` is the auto-generated React hook for
 // Better Auth's `listPasskeys` atom (see @better-auth/passkey/client).
 function PasskeysPanel(): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [newPasskeyName, setNewPasskeyName] = useState<string>("");
@@ -39,11 +44,11 @@ function PasskeysPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.passkey.addPasskey({ name: newPasskeyName.trim() });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
-        runNotify("error", error.message || "Could not register that passkey 🤕");
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
+        runNotify("error", error.message || t("web.could.not.register.that.passkey"));
         return;
       }
-      runNotify("ok", "Passkey added 🤓");
+      runNotify("ok", t("auth.passkey.added"));
       setNewPasskeyName("");
     } catch (err) {
       runNotify("error", String(err));
@@ -57,17 +62,17 @@ function PasskeysPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.passkey.deletePasskey({ id });
       if (error) {
-        if (redirectIfStepUpRequired(error)) return;
-        runNotify("error", error.message || "Could not remove that passkey 🤕");
+        if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
+        runNotify("error", error.message || t("web.could.not.remove.that.passkey"));
         return;
       }
-      runNotify("ok", "Passkey removed 🤓");
+      runNotify("ok", t("auth.passkey.removed"));
       // Gastify can only forget its half: the copy kept by the device or
       // password manager (iCloud Keychain, Google Password Manager...) stays
       // until the user removes it there.
       runNotify(
         "info",
-        "Removed from Gastify. Your device or password manager may still keep its own copy - delete it there too if you don't want it anymore."
+        t("auth.passkey.removedNote")
       );
     } catch (err) {
       runNotify("error", String(err));
@@ -82,22 +87,20 @@ function PasskeysPanel(): React.JSX.Element {
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h2 className="text-xl text-purple-300 font-normal">Passkeys</h2>
+        <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 font-normal">{t("auth.passkeys.title")}</h2><InfoTip info={APP_INFO.passkeys} /></span>
         <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
         <div className="mt-3">
           <p className="text-xs text-gf-text-muted mb-3">
-            Sign in with Face ID, Touch ID, Windows Hello, or a security key instead of your
-            password - Gastify never sees or stores the biometric/PIN itself, only proof it
-            unlocked your device.
+            {t("auth.passkey.explain")}
           </p>
 
           <ul className="flex flex-col gap-2 mb-4">
             {isPending ? (
-              <li className="text-xs text-gf-text-muted italic">Loading…</li>
+              <li className="text-xs text-gf-text-muted italic">{t("auth.loading")}</li>
             ) : !passkeys || passkeys.length === 0 ? (
-              <li className="text-xs text-gf-text-muted italic">No passkeys yet.</li>
+              <li className="text-xs text-gf-text-muted italic">{t("auth.passkey.none")}</li>
             ) : (
               (passkeys as PasskeyItem[]).map((p: PasskeyItem) => (
                 <li
@@ -105,9 +108,9 @@ function PasskeysPanel(): React.JSX.Element {
                   className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
                 >
                   <div className="flex flex-col">
-                    <p className="text-purple-300">{p.name || "Unnamed passkey"}</p>
+                    <p className="text-purple-300">{p.name || t("auth.passkey.unnamed")}</p>
                     <p className="text-xs text-gf-text-muted">
-                      Added {dayjs(p.createdAt).format("DD/MM/YYYY")}
+                      {t("auth.passkey.addedOn", { date: dayjs(p.createdAt).format("DD/MM/YYYY") })}
                     </p>
                   </div>
                   <div
@@ -126,12 +129,12 @@ function PasskeysPanel(): React.JSX.Element {
             className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">
-              <p className="label-tfp mb-1">Name</p>
+              <p className="label-tfp mb-1">{t("auth.passkey.nameLabel")}</p>
               <input
                 type="text"
                 value={newPasskeyName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPasskeyName(e.target.value)}
-                placeholder="e.g. My iPhone"
+                placeholder={t("auth.passkey.namePlaceholder")}
                 required
               />
             </div>
@@ -139,7 +142,7 @@ function PasskeysPanel(): React.JSX.Element {
               type="submit"
               className="gf-glass-button text-white rounded-full px-4 py-2"
             >
-              {isLoading ? <Spin /> : "Add passkey"}
+              {isLoading ? <Spin /> : t("web.add.passkey")}
             </button>
           </form>
         </div>

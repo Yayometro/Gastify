@@ -4,6 +4,7 @@ import SubCategory from "@/model/SubCategory";
 import "@/model/Category";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface GetSubCategoriesSuccessResponse {
   data: {
@@ -20,8 +21,9 @@ export type GetSubCategoriesResponse = GetSubCategoriesSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<GetSubCategoriesResponse>> {
+  const t = await serverT(["errors"]);
   try {
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     // Security fix: this used to trust whatever mail the client sent in the
     // body, letting any caller (this endpoint isn't covered by
     // middleware.ts's matcher) read another user's sub-categories - an
@@ -29,13 +31,13 @@ export async function POST(
     // get-categories. The only real call site (subCategorySlice.ts's
     // fetchSubCat) always sends its own session's email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     //DB
     await dbConnection();
     // User find
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
     //
@@ -61,7 +63,7 @@ export async function POST(
       });
     if (!subCategoriesFounded)
       throw new Error(
-        "No categories found, review the user and wallet id on GENERAL-DATA POST"
+        t("errors.no.categories.found.review.the")
       );
     // console.log(subCategoriesFounded)
     //FIND DEFUALT CATEGORIES
@@ -84,7 +86,7 @@ export async function POST(
     // console.log(defaultSubCategoriesFounded)
     if (!defaultSubCategoriesFounded)
       throw new Error(
-        "No SubCategories found, review the user and wallet id on GENERAL-DATA POST"
+        t("errors.no.subcategories.found.review.the")
       );
     // console.log(defaultSubCategoriesFounded)
     const dataFull = {
@@ -93,7 +95,7 @@ export async function POST(
     };
     return NextResponse.json({
       data: dataFull,
-      message: "SubCategories founded",
+      message: t("errors.subcategories.founded"),
       status: 201,
       ok: true,
     });

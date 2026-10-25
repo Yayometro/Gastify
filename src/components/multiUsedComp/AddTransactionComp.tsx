@@ -6,7 +6,7 @@ import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
-import { Switch, ConfigProvider, Space, Spin } from "antd";
+import { Spin } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/lib/store";
@@ -15,8 +15,6 @@ import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { addNewTransacction, type TransactionData } from "@/lib/features/transacctionsSlice";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
-import useModal from "@/hooks/useModalBasic";
-import BasicModal from "../modals/basicModal/BasicModal";
 import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
@@ -25,10 +23,15 @@ import useTransactionAmountEquivalent from "@/hooks/money/useTransactionAmountEq
 import AmountEquivalentPreview from "./AmountEquivalentPreview";
 import ChargedElsewhereSection from "./ChargedElsewhereSection";
 import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 export interface AddTransactionCompProps {
   initialBudgetId?: string;
+  // Starts as an income (the "+" offers Gasto and Ingreso as two choices).
+  defaultIncome?: boolean;
   onCreated?: (data?: TransactionData | unknown) => void;
+  // Inside a panel that already scrolls (the "+" window): no scroll box and no title of its own.
+  inline?: boolean;
 }
 
 export interface TransactionFormState {
@@ -93,14 +96,15 @@ export interface CategorySelection {
 
 
 
-function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionCompProps): React.JSX.Element {
+function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCreated, inline = false }: AddTransactionCompProps): React.JSX.Element {
+  const tr = useT();
   const [isLoading, setIsLoading] = useState(false);
   const toFetch = fetcher();
   const [transactionInfo, setTransactionInfo] = useState<TransactionFormState>({
     name: "",
     amount: "",
-    isIncome: false,
-    isBill: false,
+    isIncome: defaultIncome,
+    isBill: !defaultIncome,
     isReadable: true,
     isForSaving: false,
     date: new Date(),
@@ -123,7 +127,8 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
   const [amountTouchedManually, setAmountTouchedManually] = useState(false);
   const [merchantQuoting, setMerchantQuoting] = useState(false);
 
-  const { close, handleClose } = useModal();
+  // The category list opens in place, under its button (no window of its own).
+  const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
   //REDUX
   const { user, wallet, accounts, budgets = [] } = useGetDataFromProvider() as ProviderData;
   const projectBudgets = budgets.filter((budget) => !budget.archived && isProjectBudget(budget));
@@ -199,25 +204,9 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
     setTransactionInfo({ ...transactionInfo, [name]: value });
   };
 
-  const onChangeSwitch = (checked: boolean, typeBoolean: string) => {
-    if (typeBoolean === "income") {
-      setTransactionInfo({
-        ...transactionInfo,
-        isIncome: checked,
-        isBill: !checked,
-      });
-    } else if (typeBoolean === "bill") {
-      setTransactionInfo({
-        ...transactionInfo,
-        isBill: checked,
-        isIncome: !checked,
-      });
-    } else if (typeBoolean === "readable") {
-      setTransactionInfo({
-        ...transactionInfo,
-        isReadable: checked,
-      });
-    }
+  // Gasto or Ingreso, as in the app: the two flags the API receives always agree with the choice.
+  const setType = (income: boolean) => {
+    setTransactionInfo((current) => ({ ...current, isIncome: income, isBill: !income }));
   };
   const handleDefAccount = (event: React.ChangeEvent<HTMLSelectElement>) => {
     // The "No account" option has an empty value (a null value made React warn, bug 164).
@@ -316,7 +305,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
 
   const projectSelector = (
     <>
-      <p className="label-tfp">Project (optional)</p>
+      <p className="label-tfp">{tr("movements.new.project")}</p>
       <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
         <select
           className="bg-transparent appearance-none w-full pr-4"
@@ -324,7 +313,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
           value={transactionInfo.budget || ""}
           onChange={handleChange}
         >
-          <option value="">No project</option>
+          <option value="">{tr("movements.new.noProject")}</option>
           {projectBudgets.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}
         </select>
       </div>
@@ -332,7 +321,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
   );
 
   return (
-    <div className="w-full h-full overflow-y-scroll relative">
+    <div className={inline ? "relative w-full" : "relative h-full w-full overflow-y-scroll"}>
       <div
         className={`loader-add-trans absolute w-full h-full bg-gf-surface/90  items-center justify-center z-[100] rounded-t-2xl ${
           isLoading ? "flex" : "hidden"
@@ -343,26 +332,30 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
       <div className="w-full h-full flex justify-center items-center">
           <form
             onSubmit={handleSubmit}
-            className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]`}
+            className={inline
+              ? "form-trans-edit flex w-full max-w-[800px] flex-col gap-2 items-start justify-start pb-4"
+              : "form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]"}
           >
-            <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
-              Add New Transaction
-            </h1>
-            <p className="label-tfp ">Name</p>
+            {!inline && (
+              <h1 className=" text-xl min-[450px]:text-2xl font-light text-center w-full">
+                {tr("movements.new.title")}
+              </h1>
+            )}
+            <p className="label-tfp ">{tr("movements.new.name")}</p>
             <input
               type="text"
               name="name"
               value={transactionInfo.name}
               onChange={handleChange}
-              placeholder="Transaction Name"
+              placeholder={tr("movements.new.nameHelp")}
             />
-            <p className="label-tfp ">Amount ({accountCurrency})</p>
+            <p className="label-tfp ">{tr("movements.new.amount", { p1: accountCurrency })}</p>
             <input
               type="number"
               name="amount"
               value={transactionInfo.amount}
               onChange={handleChange}
-              placeholder="Amount"
+              placeholder="0.00"
             />
             <AmountEquivalentPreview quote={amountEquivalent} />
             <ChargedElsewhereSection
@@ -374,44 +367,29 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
               onMerchantCurrencyChange={setMerchantCurrency}
               quoting={merchantQuoting}
             />
-            <div className="switchers-cont flex gap-3">
-              <label>
-                <ConfigProvider
-                  theme={{
-                    token: {
-                      // Seed Token
-                      colorPrimary: "#9700FF",
-                      borderRadius: 2,
-                    },
-                  }}
-                >
-                  <Space direction={("" as unknown) as "horizontal"} size={12}>
-                    <div className="switch-int-cont">
-                      <p className="label-tfp ">Is Income:</p>
-                      <Switch
-                        onChange={(value) => onChangeSwitch(value, "income")}
-                        value={transactionInfo?.isIncome}
-                      />
-                    </div>
-                    <div className="switch-int-cont">
-                      <p className="label-tfp ">Is Bill:</p>
-                      <Switch
-                        onChange={(value) => onChangeSwitch(value, "bill")}
-                        value={transactionInfo?.isBill}
-                      />
-                    </div>
-                    <div className="switch-int-cont">
-                      <p className="label-tfp ">Is Readable:</p>
-                      <Switch
-                        onChange={(value) => onChangeSwitch(value, "readable")}
-                        value={transactionInfo?.isReadable}
-                      />
-                    </div>
-                  </Space>
-                </ConfigProvider>
-              </label>
+            <p className="label-tfp ">{tr("movements.new.type")}</p>
+            <div className="flex w-full gap-2" role="group" aria-label={tr("movements.new.typeLabel")}>
+              {[
+                { income: false, label: tr("movements.new.bill") },
+                { income: true, label: tr("movements.new.income") },
+              ].map((option) => {
+                const selected = transactionInfo.isIncome === option.income;
+                return (
+                  <button
+                    key={option.label}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setType(option.income)}
+                    className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${
+                      selected ? "gf-glass-button text-white" : "gf-glass-button-neutral text-purple-200"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
             </div>
-            <p className="label-tfp ">Date</p>
+            <p className="label-tfp ">{tr("movements.new.date")}</p>
             <div className="date-container w-full h-[100px] ">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoContainer components={["MobileDateTimePicker"]}>
@@ -443,29 +421,24 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
                 </DemoContainer>
               </LocalizationProvider>
             </div>
-            <p className="label-tfp ">Category</p>
-              <BtnSelectCategoryContext onClose={handleClose} />
-              {close && (
-                <BasicModal
-                  close={handleClose}
-                  zIndexClass="z-[20000]"
-                  renderContent={
-                    <ModalCategoryContent
-                      close={handleClose}
-                      getSelected={handleCategory}
-                    />
-                  }
+            <p className="label-tfp ">{tr("movements.new.category")}</p>
+              <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
+              {isCategoryPickerOpen && (
+                <ModalCategoryContent
+                  inline
+                  close={() => setIsCategoryPickerOpen(false)}
+                  getSelected={handleCategory}
                 />
               )}
-            <p className="label-tfp ">Tags</p>
+            <p className="label-tfp ">{tr("movements.new.tags")}</p>
             <input
               type="text"
               name="tags"
               value={transactionInfo.tags || ""}
               onChange={handleChange}
-              placeholder="Tags (separated by comma)"
+              placeholder={tr("movements.new.tagsPlaceholder")}
             />
-            <p className="label-tfp ">Account</p>
+            <p className="label-tfp ">{tr("movements.new.account")}</p>
             <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center">
               <select
                 className=" bg-transparent appearance-none w-full pr-4"
@@ -473,7 +446,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
                 value={transactionInfo?.account || ""}
                 onChange={handleDefAccount}
               >
-                <option value="">No account</option>
+                <option value="">{tr("movements.new.noAccount")}</option>
                 {accounts && accounts.length > 0 ? (
                   accounts.map((acc) => (
                     <option value={acc._id} key={`option-acc-${acc._id}`}>
@@ -481,7 +454,7 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
                     </option>
                   ))
                 ) : (
-                  <div>No accounts loaded...</div>
+                  <option value="" disabled>{tr("movements.new.createAccountFirst")}</option>
                 )}
               </select>
             </div>
@@ -490,14 +463,14 @@ function AddTransactionComp({ initialBudgetId = "", onCreated }: AddTransactionC
               className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
               type="submit"
             >
-              {isLoading ? <Spin /> : "Submit"}
+              {isLoading ? <Spin /> : tr("web.save.transaction")}
             </button>
             <button
               type="button"
               className="clearForm w-full p-2 gf-glass-button-neutral text-red-300 text-center rounded-full cursor-pointer mb-4"
               onClick={clearForm}
             >
-              Clear Form
+              {tr("movements.new.clear")}
             </button>
           </form>
       </div>

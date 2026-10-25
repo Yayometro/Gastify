@@ -7,6 +7,7 @@ import IncomeSource, {
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
+import { serverT } from "@/i18n/server";
 
 export interface UpdateIncomeSourceGetStatusResponse {
   mes: string;
@@ -39,23 +40,24 @@ export async function GET(): Promise<NextResponse<UpdateIncomeSourceGetStatusRes
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UpdateIncomeSourceResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on UPDATE INCOME SOURCE POST");
+      throw new Error(t("errors.no.data.in.request.on.14"));
     const { id, name, amount, currency, recurrence, anchorDate, active } =
       ((await request.json()) || {}) as UpdateIncomeSourceRequestBody;
     // NO ID FILTER
-    if (!id) throw new Error(`No ID was provided to update income source 🤕`);
+    if (!id) throw new Error(t("errors.api.noIdUpdateIncome"));
 
     // Security fix: this route previously lacked session verification and
     // performed IncomeSource.findById(id) directly with zero ownership check (IDOR).
     // We now verify the caller's session via auth.api.getSession, find the
     // session user in the database, and scope the query to the user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found...");
+    if (!userFound) throw new Error(t("errors.user.not.found.2"));
 
     const updateIncomeSource = await IncomeSource.findOne({
       _id: id,
@@ -63,7 +65,7 @@ export async function POST(
     });
     //IF ERROR
     if (!updateIncomeSource)
-      throw new Error(`No Income Source was identified to update 🤕`);
+      throw new Error(t("errors.api.incomeNotIdentifiedUpdate"));
     // VERSION HISTORY if amount/recurrence is actually changing
     // `amount` was tested for truthiness, so a change TO 0 was read as "not sent"
     // and neither saved nor recorded in the history (bugs 42 and 43).
@@ -98,9 +100,9 @@ export async function POST(
     // SAVE
     const savedIncomeSource = await updateIncomeSource.save();
     //IF ERROR
-    if (!savedIncomeSource) throw new Error("Updated Income Source was not saved 🤕");
+    if (!savedIncomeSource) throw new Error(t("errors.updated.income.source.was.not"));
     return NextResponse.json({
-      message: `${savedIncomeSource.name} was updated successfully 🤓`,
+      message: t("errors.api.updated", { p1: savedIncomeSource.name }),
       data: savedIncomeSource,
       status: 200, // matches the real HTTP status (it said 201 while answering 200, bug 44)
       ok: true,

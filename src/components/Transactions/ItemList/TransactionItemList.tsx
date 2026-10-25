@@ -1,4 +1,5 @@
 "use client";
+import { shortDate } from "@gastify/core/i18n/dates";
 
 import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
@@ -8,6 +9,7 @@ import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
 import dayjs from "dayjs";
 import { Tooltip } from "antd";
 import { formatMoneyMinor } from "@gastify/core/money/currencies";
+import { useLocale, useT } from "@/i18n/client";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
@@ -89,6 +91,8 @@ function TransactionItemList({
   selected,
   onSelect,
 }: TransactionItemListProps): React.JSX.Element {
+  const t = useT();
+  const locale = useLocale();
   // displayMoney is attached server-side (transactionReadService) by every
   // read route this component's data comes through. Fall back to the plain
   // legacy amount for any caller that hasn't been updated yet, rather than
@@ -105,16 +109,16 @@ function TransactionItemList({
 
   const fxTooltipTitle = hasFxDetail ? (
     <div className="flex flex-col gap-0.5 text-[11px]">
-      {merchant && <div>Merchant: {formatMoneyMinor(merchant.amountMinor, merchant.currency)}</div>}
-      {native && <div>Account: {formatMoneyMinor(native.amountMinor, native.currency)}</div>}
+      {merchant && <div>{t("movements.row.merchant", { p1: formatMoneyMinor(merchant.amountMinor, merchant.currency) })}</div>}
+      {native && <div>{t("movements.row.account", { p1: formatMoneyMinor(native.amountMinor, native.currency) })}</div>}
       {primary ? (
         <>
-          <div>Reported ({primary.currency}): {formatMoneyMinor(primary.amountMinor, primary.currency)}</div>
-          <div>Rate: {primary.rate} ({primary.source})</div>
-          <div>{new Date(primary.effectiveDate as string | number | Date).toLocaleDateString()} — {primary.estimated ? "estimated" : "exact"}{primary.stale ? ", stale" : ""}</div>
+          <div>{t("movements.row.reported", { p1: primary.currency, p2: formatMoneyMinor(primary.amountMinor, primary.currency) })}</div>
+          <div>{t("movements.row.rate", { p1: primary.rate, p2: primary.source })}</div>
+          <div>{shortDate(new Date(primary.effectiveDate as string | number | Date), locale)} — {primary.estimated ? t("web.estimated") : t("web.exact")}{primary.stale ? t("web.stale") : ""}</div>
         </>
       ) : (
-        <div>Exchange-rate estimate unavailable</div>
+        <div>{t("movements.row.rateUnavailable")}</div>
       )}
     </div>
   ) : null;
@@ -150,21 +154,21 @@ function TransactionItemList({
         </div>
         <div className="center-cont min-w-0 overflow-hidden flex flex-col">
           <div className="tra-text font-medium min-w-0 overflow-hidden">
-            <Tooltip title={movement?.name || "No name. Assign one..."} placement="top">
+            <Tooltip title={movement?.name || t("web.no.name.assign.one")} placement="top">
               <p className="tra-name text-start truncate cursor-default text-[15px]">
-                {movement?.name || "No name. Assign one..."}
+                {movement?.name || t("web.no.name.assign.one")}
               </p>
             </Tooltip>
           </div>
           <div className="tra-acount-cont text-[10px] font-normal">
             <p className=" text-start">
-              {movement.account?.name || "No account..."}
+              {movement.account?.name || t("web.no.account")}
             </p>
           </div>
           <div className="tra-tag-cont flex flex-wrap gap-1 items-center justify-start text-[10px] font-thin">
-            <p className="font-light">Tags: </p>
+            <p className="font-light">{t("movements.row.tagsLabel")} </p>
             {!movement.tags ? (
-              <p>No tags...</p>
+              <p>{t("movements.row.noTags")}</p>
             ) : (
               movement.tags.map((tag) => (
                 <Tag tag={tag} key={tag._id} size={8} />
@@ -176,7 +180,7 @@ function TransactionItemList({
       <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end">
         <div className="flex flex-col items-end">
           <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-400" : movement.isBill ? "text-red-400" : "text-green-400"} flex gap-1 items-center font-medium`}>
-            <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? "Currency exchange" : "Transfer"} — not counted as income or spending` : ""}>
+            <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? t("web.currency.exchange") : t("web.transfer")} — ${t("web.not.counted.as.income.or.spending")}` : ""}>
               <span className="flex items-center">
                 <TypedCategoIcon type={isTransferLeg ? "MdSwapHoriz" : movement.isBill ? "MdKeyboardDoubleArrowDown" : "MdKeyboardDoubleArrowUp"} />
               </span>
@@ -185,7 +189,7 @@ function TransactionItemList({
             {hasFxDetail && (
               <Tooltip title={fxTooltipTitle}>
                 <span className="ml-1 text-[9px] font-bold text-purple-500 border border-purple-300 rounded px-1 cursor-default">
-                  FX
+                  {t("movements.row.fx")}
                 </span>
               </Tooltip>
             )}

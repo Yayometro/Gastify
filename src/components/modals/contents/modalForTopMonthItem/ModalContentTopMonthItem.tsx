@@ -37,6 +37,8 @@ import {
   getDuplicatePairs,
   type DuplicateTransaction,
 } from "@/helpers/transformers/transactionDuplicates";
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 export interface QuickActionItem {
   key: string;
@@ -44,13 +46,14 @@ export interface QuickActionItem {
   icon: string;
 }
 
-const QUICK_ACTIONS: QuickActionItem[] = [
-  { key: "name",     label: "Rename",   icon: "MdDriveFileRenameOutline" },
-  { key: "date",     label: "Date",     icon: "MdCalendarMonth" },
-  { key: "type",     label: "Type",     icon: "MdSwapVert" },
-  { key: "category", label: "Category", icon: "MdCategory" },
-  { key: "account",  label: "Account",  icon: "MdAccountBalance" },
-  { key: "tags",     label: "Tags",     icon: "MdLocalOffer" },
+// The quick actions on a row, named in the person's language (a function: it needs the translator).
+const quickActionsFor = (t: TranslateFn): QuickActionItem[] => [
+  { key: "name", label: t("dashboard.bulk.rename"), icon: "MdDriveFileRenameOutline" },
+  { key: "date", label: t("dashboard.bulk.date"), icon: "MdCalendarMonth" },
+  { key: "type", label: t("dashboard.bulk.type"), icon: "MdSwapVert" },
+  { key: "category", label: t("dashboard.bulk.category"), icon: "MdCategory" },
+  { key: "account", label: t("dashboard.bulk.account"), icon: "MdAccountBalance" },
+  { key: "tags", label: t("dashboard.bulk.tags"), icon: "MdLocalOffer" },
 ];
 
 export interface ModalCategoryRef {
@@ -114,6 +117,10 @@ interface ItemWithCategory extends TransactionData {
 }
 
 function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthItemProps) {
+  const t = useT();
+  // The name of a movement with no category, for display only (the comparison below uses the stored value).
+  const noCategoryName = t("web.no.category");
+  const tr = useT();
   const dispatch = useDispatch<AppDispatch>();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
   const toFetch = fetcher();
@@ -151,7 +158,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
           const catId = item._id;
           const catName = item.type || item.name;
           const tCatId = itemWithCat.category?._id;
-          const tCatName = itemWithCat.category?.name || "No category";
+          const tCatName = itemWithCat.category?.name || noCategoryName;
           if (catId && catId !== "No category" && tCatId) {
             return String(tCatId) === String(catId);
           }
@@ -250,10 +257,10 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
       );
       if (res.ok !== false) {
         dispatch(removeOneTransacction(id));
-        runNotify("ok", res.message || "Transaction deleted");
+        runNotify("ok", res.message || t("web.transaction.deleted"));
         removeLocal([id]);
       } else {
-        runNotify("error", res.message || "Error deleting transaction");
+        runNotify("error", res.message || t("web.error.deleting.transaction"));
       }
     } catch (e) {
       runNotify("error", String(e));
@@ -274,7 +281,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
         runNotify("ok", res.message || `${ids.length} transaction(s) deleted`);
         removeLocal(ids);
       } else {
-        runNotify("error", res.message || "Error deleting transactions");
+        runNotify("error", res.message || t("web.error.deleting.transactions"));
       }
     } catch (e) {
       runNotify("error", String(e));
@@ -320,9 +327,9 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 colore="#fff"
               />
             </span>
-            <Tooltip title={`${item?.name || item?.type || "No name..."} Detail`} placement="bottom">
+            <Tooltip title={t("analyzer.topItemDetail", { p1: item?.name || item?.type || t("analyzer.noName") })} placement="bottom">
               <h1 className="truncate max-w-[65%]">
-                {item?.name || item?.type || "No name..."} Detail
+                {tr("dashboard.detail", { p1: item?.name || item?.type || t("analyzer.noName") })}
               </h1>
             </Tooltip>
           </span>
@@ -330,7 +337,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
             <p className="text-sm text-white/80 -mt-1">{item.category.name}{item.subCategory?.name ? ` · ${item.subCategory.name}` : ""}</p>
           )}
           <p className="font-semibold">
-            <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency) || "No total info..."}</b>
+            <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency) || t("web.no.total.info")}</b>
           </p>
 
           {/* Selection controls — only when multiple items */}
@@ -346,7 +353,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                     type={allSelected ? "MdCheckBox" : "MdCheckBoxOutlineBlank"}
                     siz={14}
                   />
-                  {allSelected ? "Deselect all" : "Select all"}
+                  {allSelected ? t("web.deselect.all") : t("web.select.all")}
                 </button>
                 {selectionCount > 0 && !allSelected && (
                   <button
@@ -354,11 +361,11 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                     className="flex items-center gap-1 text-xs text-white/80 hover:text-white border border-white/30 rounded-lg px-2 py-0.5 transition-colors"
                   >
                     <CategoIcon type="MdCheckBoxOutlineBlank" siz={14} />
-                    Deselect all
+                    {tr("dashboard.deselectAll")}
                   </button>
                 )}
                 {selectionCount > 0 && (
-                  <span className="text-xs text-white/70">{selectionCount} selected</span>
+                  <span className="text-xs text-white/70">{tr("dashboard.selectedCount", { p1: selectionCount })}</span>
                 )}
                 {selectionCount > 0 && (
                   <button
@@ -366,7 +373,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                     className="ml-auto flex items-center gap-1 text-xs text-white/80 hover:text-red-300 border border-white/30 hover:border-red-400 rounded-lg px-2 py-0.5 transition-colors"
                   >
                     <CategoIcon type="MdDelete" siz={14} />
-                    Delete
+                    {tr("dashboard.delete")}
                   </button>
                 )}
                 <button
@@ -381,14 +388,14 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                   }`}
                 >
                   <CategoIcon type="MdOutlineFindInPage" siz={14} />
-                  {dupMode ? "Exit duplicates" : "Find duplicates"}
+                  {dupMode ? t("web.exit.duplicates") : t("web.find.duplicates")}
                 </button>
               </div>
 
               {/* Row 2: quick-edit + general edit — only when ≥1 selected */}
               {selectionCount > 0 && (
                 <div className="flex flex-wrap gap-1 pb-0.5">
-                  {QUICK_ACTIONS.map((action) => (
+                  {quickActionsFor(tr).map((action) => (
                     <button
                       key={action.key}
                       onClick={() => setQuickEditField(action.key)}
@@ -398,13 +405,13 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                       {action.label}
                     </button>
                   ))}
-                  <Tooltip title="Edit all fields at once. Blank fields keep their original value.">
+                  <Tooltip title={tr("dashboard.bulk.help")}>
                     <button
                       onClick={() => setGeneralEditOpen(true)}
                       className="flex items-center gap-1 bg-gf-surface/10 hover:bg-gf-surface/20 text-white/70 hover:text-white text-xs rounded-lg px-2 py-0.5 border border-white/20"
                     >
                       <CategoIcon type="MdOutlineCreate" siz={12} />
-                      General
+                      {tr("dashboard.bulk.general")}
                     </button>
                   </Tooltip>
                 </div>
@@ -414,13 +421,13 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 <div className="flex flex-col gap-2.5 w-full bg-purple-950/80 border border-purple-400/50 rounded-2xl p-3 my-1 text-xs text-white shadow-md">
                   {/* Row 1: Criteria Checkboxes */}
                   <div className="flex flex-wrap items-center gap-3 border-b border-purple-400/20 pb-2">
-                    <span className="text-white/70 font-medium">Match criteria:</span>
+                    <span className="text-white/70 font-medium">{tr("dashboard.dup.criteria")}</span>
                     {[
-                      { key: "name",        label: "Name" },
-                      { key: "date",        label: "Date" },
-                      { key: "amount",      label: "Amount" },
-                      { key: "category",    label: "Category" },
-                      { key: "subcategory", label: "Subcategory" },
+                      { key: "name",        label: tr("dashboard.dup.name") },
+                      { key: "date",        label: tr("dashboard.bulk.date") },
+                      { key: "amount",      label: tr("dashboard.dup.amount") },
+                      { key: "category",    label: tr("dashboard.bulk.category") },
+                      { key: "subcategory", label: tr("dashboard.dup.subcategory") },
                     ].map(({ key, label }) => (
                       <label key={key} className="flex items-center gap-1 cursor-pointer text-white/90 hover:text-white select-none">
                         <input
@@ -437,24 +444,24 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                   {/* Row 2: Tolerance Controls */}
                   <div className="flex flex-wrap items-center gap-4 border-b border-purple-400/20 pb-2">
                     <div className="flex items-center gap-2">
-                      <Tooltip title="Allow this many days of difference between dates to still count as duplicates">
-                        <label className="text-white/80 select-none cursor-help">Date tolerance:</label>
+                      <Tooltip title={tr("dashboard.dup.dateToleranceTip")}>
+                        <label className="text-white/80 select-none cursor-help">{tr("dashboard.dup.dateTolerance")}</label>
                       </Tooltip>
                       <select
                         value={dupDateTolerance}
                         onChange={(e) => setDupDateTolerance(Number(e.target.value))}
                         className="bg-purple-900 border border-purple-400/60 text-white rounded-lg px-2 py-0.5 outline-none focus:border-purple-300"
                       >
-                        <option value={0}>Exact (same day)</option>
-                        <option value={1}>±1 day</option>
-                        <option value={3}>±3 days</option>
-                        <option value={7}>±7 days</option>
-                        <option value={30}>±30 days</option>
+                        <option value={0}>{tr("dashboard.dup.exact")}</option>
+                        <option value={1}>{tr("dashboard.dup.d1")}</option>
+                        <option value={3}>{tr("dashboard.dup.d3")}</option>
+                        <option value={7}>{tr("dashboard.dup.d7")}</option>
+                        <option value={30}>{tr("dashboard.dup.d30")}</option>
                       </select>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Tooltip title="Allow this amount difference (in your currency) between two transactions to still count as duplicates">
-                        <label className="text-white/80 select-none cursor-help">Amount tolerance:</label>
+                      <Tooltip title={tr("dashboard.dup.amountTip")}>
+                        <label className="text-white/80 select-none cursor-help">{tr("dashboard.dup.amountTolerance")}</label>
                       </Tooltip>
                       <input
                         type="number"
@@ -466,7 +473,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                         placeholder="0.00"
                       />
                     </div>
-                    <Tooltip title="Reset to default criteria (Name + Date + Amount, exact match)">
+                    <Tooltip title={tr("dashboard.dup.refreshTip")}>
                       <button
                         onClick={() => {
                           setDupCriteria({ name: true, date: true, amount: true, category: false, subcategory: false });
@@ -476,7 +483,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                         className="ml-auto text-white/80 hover:text-white border border-white/20 hover:border-white/40 px-2.5 py-0.5 rounded-lg transition-colors flex items-center gap-1"
                       >
                         <UniversalCategoIcon type="md/MdRefresh" siz={13} />
-                        Refresh defaults
+                        {tr("dashboard.dup.refresh")}
                       </button>
                     </Tooltip>
                   </div>
@@ -493,18 +500,16 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                         }}
                         className="bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1 rounded-lg font-medium transition-colors border border-purple-400/50 shadow-2xs"
                       >
-                        Select possible duplicates ({
-                          dupDeleteAll
+                        {tr("dashboard.dup.selectPossible", { p1: dupDeleteAll
                             ? getAllMatchingIds(localItems as unknown as DuplicateTransaction[], dupCriteria, dupDateTolerance, dupAmountTolerance).length
-                            : getDuplicatesToDelete(localItems as unknown as DuplicateTransaction[], dupCriteria, dupDateTolerance, dupAmountTolerance).length
-                        })
+                            : getDuplicatesToDelete(localItems as unknown as DuplicateTransaction[], dupCriteria, dupDateTolerance, dupAmountTolerance).length })}
                       </button>
 
                       <Tooltip
                         title={
                           dupDeleteAll
-                            ? "All matching items will be selected (nothing is kept)"
-                            : "One original per group is kept — only extras are selected"
+                            ? t("web.all.matching.items.will.be.selected.nothing.is.kept")
+                            : t("web.one.original.per.group.is.kept.only.extras.are.selected")
                         }
                       >
                         <button
@@ -516,7 +521,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                           }`}
                         >
                           <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={13} />
-                          {dupDeleteAll ? "Delete all matches" : "Delete only duplicates"}
+                          {dupDeleteAll ? t("web.delete.all.matches") : t("web.delete.only.duplicates")}
                         </button>
                       </Tooltip>
 
@@ -526,13 +531,13 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                             onClick={() => setSelected(new Set())}
                             className="bg-gf-surface-2 hover:bg-gf-surface text-white px-2 py-1 rounded-lg transition-colors border border-gf-border"
                           >
-                            Clear selection
+                            {tr("dashboard.dup.clearSelection")}
                           </button>
                           <button
                             onClick={() => setComparing(true)}
                             className="bg-purple-600/80 hover:bg-purple-500 text-white px-2 py-1 rounded-lg transition-colors border border-purple-400/50"
                           >
-                            Compare in detail
+                            {tr("dashboard.dup.compare")}
                           </button>
                         </>
                       )}
@@ -543,7 +548,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                         onClick={handleDeleteSelected}
                         className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-lg font-medium transition-colors shadow-2xs border border-red-400/50"
                       >
-                        Delete {selectionCount} selected
+                        {tr("dashboard.dup.deleteSelected", { p1: selectionCount })}
                       </button>
                     )}
                   </div>
@@ -559,14 +564,14 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
         <div className="w-full h-full overflow-y-scroll mb-[10px]">
           {isMulti && (
             <div className="w-full flex items-center justify-end gap-1.5 px-2 pt-1.5 pb-0.5 text-xs text-gf-text-muted">
-              <span>Sort by:</span>
+              <span>{tr("dashboard.sortBy")}</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-gf-surface border border-gf-border rounded-lg px-1.5 py-0.5 text-xs outline-none"
               >
-                <option value="amount">Amount</option>
-                <option value="date">Date</option>
+                <option value="amount">{tr("dashboard.dup.amount")}</option>
+                <option value="date">{tr("dashboard.bulk.date")}</option>
               </select>
               <button
                 type="button"
@@ -574,14 +579,14 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 className="flex items-center gap-0.5 bg-gf-surface border border-gf-border hover:border-purple-300 rounded-lg px-1.5 py-0.5 text-xs text-gf-text-muted"
               >
                 <CategoIcon type={sortDir === "desc" ? "MdArrowDownward" : "MdArrowUpward"} siz={12} />
-                {sortDir === "desc" ? "Highest first" : "Lowest first"}
+                {sortDir === "desc" ? t("web.highest.first") : t("web.lowest.first")}
               </button>
             </div>
           )}
           <section className="w-full h-full flex flex-col items-center gap-1 p-1">
             {dupMode && displayItems.length === 0 && (
               <div className="w-full text-center py-4 text-gf-text-muted text-sm font-light">
-                No duplicates found among these transactions.
+                {tr("dashboard.dup.none")}
               </div>
             )}
             {sortedDisplayItems.map((transaction) => (
@@ -649,19 +654,19 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
 
       {/* Declarative confirmation modal — avoids Ant Design static Modal.confirm minified chunk issues in Vercel */}
       {confirmDelete && createPortal(
-        <div className="fixed inset-0 z-[30000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[30000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={(event) => { if (event.target === event.currentTarget) close?.(); }}>
           <div className={`gf-glass-black rounded-2xl ${dupMode && confirmDelete.type === "many" ? "max-w-3xl" : "max-w-lg"} w-full p-6 flex flex-col gap-4`}>
             <div className="flex items-center gap-3 text-red-400">
               <CategoIcon type="MdWarning" siz={24} />
               <h3 className="font-bold text-lg text-gf-text">
                 {confirmDelete.type === "many"
                   ? `Delete ${confirmDelete.ids.length} transaction${confirmDelete.ids.length !== 1 ? "s" : ""}?`
-                  : "Delete transaction?"}
+                  : t("web.delete.transaction")}
               </h3>
             </div>
             <p className="text-sm text-gf-text-muted">
-              This action cannot be undone. Are you sure you want to permanently delete{" "}
-              <b>{confirmDelete.type === "many" ? `${confirmDelete.ids.length} transactions` : "this transaction"}</b>?
+              {tr("dashboard.delete.irreversible")}{" "}
+              <b>{confirmDelete.type === "many" ? `${confirmDelete.ids.length} transactions` : t("web.this.transaction")}</b>?
             </p>
             <div className="max-h-[360px] overflow-y-auto pr-1 flex flex-col gap-1 my-1">
               {confirmDelete.type === "single" ? (
@@ -706,7 +711,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 onClick={() => setConfirmDelete(null)}
                 className="px-4 py-2 rounded-xl text-sm font-medium gf-glass-button-neutral text-gf-text"
               >
-                Cancel
+                {tr("dashboard.cancel")}
               </button>
               <button
                 type="button"
@@ -722,7 +727,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 }}
                 className="px-4 py-2 rounded-xl text-sm font-medium gf-glass-button-danger text-white"
               >
-                {deleting ? "Deleting..." : "Confirm delete"}
+                {deleting ? "Deleting..." : t("web.confirm.delete")}
               </button>
             </div>
           </div>
@@ -739,12 +744,12 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
           title={
             <div className="flex items-center gap-2 text-purple-300 font-semibold text-base">
               <UniversalCategoIcon type="md/MdOutlineCompare" siz={18} />
-              Duplicate Comparison Detail
+              {tr("dashboard.dup.compareTitle")}
             </div>
           }
           footer={[
             <Button key="cancel" onClick={() => setComparing(false)}>
-              Cancel
+              {tr("dashboard.cancel")}
             </Button>,
             <Button
               key="delete"
@@ -757,13 +762,12 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
               }}
               disabled={selected.size === 0}
             >
-              Delete {selected.size} elements
+              {tr("dashboard.delete.elements", { p1: selected.size })}
             </Button>,
           ]}
         >
           <p className="text-xs text-gf-text-muted mb-3">
-            Mode: <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>.
-            Review what will be kept vs deleted before proceeding.
+            {tr("dashboard.mode")} <b>{dupDeleteAll ? t("web.delete.all.matches") : t("web.delete.only.duplicates.keep.1.original")}</b>{tr("dashboard.dup.reviewNote")}
           </p>
           <div className="max-h-[60vh] overflow-y-auto pr-1">
             <DuplicateComparisonTable

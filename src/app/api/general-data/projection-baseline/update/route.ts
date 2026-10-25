@@ -10,6 +10,7 @@ import User from "@/model/User";
 import Wallet from "@/model/Wallet";
 import { majorToMinor, SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 const updateProjectionBaselineBodySchema = z
   .object({
@@ -50,9 +51,10 @@ export async function GET(): Promise<
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<UpdateProjectionBaselineResponse>> {
+  const t = await serverT(["errors"]);
   try {
     if (!request)
-      throw new Error("No data in request on UPDATE PROJECTION BASELINE POST");
+      throw new Error(t("errors.no.data.in.request.on.11"));
 
     // Security fix: this used to trust whatever mail the client sent in the
     // body, letting any caller (this endpoint isn't covered by middleware.ts's
@@ -62,7 +64,7 @@ export async function POST(
     // We now verify the caller's session via auth.api.getSession and derive the user
     // from sesion.user.email.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     const rawBody = (await request.json()) || {};
     const parsed = updateProjectionBaselineBodySchema.safeParse(rawBody);
@@ -72,26 +74,24 @@ export async function POST(
     const { kind, entryId, effectiveFrom, effectiveTo, amount, currency } = body;
 
     if (!effectiveFrom || !kind)
-      throw new Error(
-        `No mail/kind/effectiveFrom was provided to update the projection baseline 🤕`
-      );
+      throw new Error(t("errors.api.baselineUpdateNoParams"));
     if (kind !== "income" && kind !== "expense")
-      throw new Error(`kind must be "income" or "expense" 🤕`);
+      throw new Error(t("errors.api.kindInvalid"));
     if (currency && !SUPPORTED_CURRENCIES.includes(currency))
-      throw new Error(`Unsupported currency: ${currency} 🤕`);
+      throw new Error(t("errors.api.unsupportedCurrencyEmoji", { p1: currency }));
     // Unparseable dates used to slip through (every comparison with an Invalid Date is false)
     // and were saved as Invalid Date (bug 77).
     if (Number.isNaN(new Date(effectiveFrom).getTime()))
-      throw new Error(`effectiveFrom is not a valid date 🤕`);
+      throw new Error(t("errors.api.effectiveFromInvalid"));
     if (effectiveTo && Number.isNaN(new Date(effectiveTo).getTime()))
-      throw new Error(`effectiveTo is not a valid date 🤕`);
+      throw new Error(t("errors.api.effectiveToInvalid"));
     if (effectiveTo && new Date(effectiveTo) <= new Date(effectiveFrom))
-      throw new Error(`effectiveTo must be after effectiveFrom 🤕`);
+      throw new Error(t("errors.api.effectiveToAfter"));
 
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found, review the email provided in GENERAL-DATA POST");
+      throw new Error(t("errors.user.not.found.review.the"));
     const userId = userFound._id;
     const walletId = userFound.wallet;
     const parentWallet = (await (
@@ -141,9 +141,7 @@ export async function POST(
         baseline[field] as Array<{ _id?: unknown }>
       ).find((entry) => String(entry._id) === String(entryId));
       if (!existing)
-        throw new Error(
-          `No ${kind} baseline entry was found with that id to edit 🤕`
-        );
+        throw new Error(t("errors.api.baselineEntryNotFound", { p1: kind }));
       Object.assign(existing, newValues);
     } else {
       (
@@ -159,9 +157,9 @@ export async function POST(
     const savedBaseline = await baseline.save();
 
     if (!savedBaseline)
-      throw new Error("Projection Baseline was not saved 🤕");
+      throw new Error(t("errors.projection.baseline.was.not.saved"));
     return NextResponse.json({
-      message: `Projection Baseline was updated successfully 🤓`,
+      message: t("errors.api.baselineUpdated"),
       data: savedBaseline,
       status: 201,
       ok: true,

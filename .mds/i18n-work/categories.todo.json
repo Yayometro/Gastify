@@ -1,0 +1,359 @@
+{
+  "namespace": "categories",
+  "entries": [
+    {
+      "key": "categories.error",
+      "source": "Something went wrong, please try again later 🤕",
+      "es": "Algo salió mal, inténtalo más tarde 🤕",
+      "en": "Something went wrong, please try again later 🤕"
+    },
+    {
+      "key": "categories.form.name",
+      "source": "Name",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "categories.form.categoryName",
+      "source": "CategoryName",
+      "es": "Nombre de la categoría",
+      "en": "Category name"
+    },
+    {
+      "key": "categories.form.color",
+      "source": "Color",
+      "es": "Color",
+      "en": "Color"
+    },
+    {
+      "key": "categories.form.icon",
+      "source": "Icon",
+      "es": "Ícono",
+      "en": "Icon"
+    },
+    {
+      "key": "categories.form.isSub",
+      "source": "Is sub category?",
+      "es": "¿Es subcategoría?",
+      "en": "Is sub category?"
+    },
+    {
+      "key": "categories.form.fatherSelected",
+      "source": "Selected Father Category:",
+      "es": "Categoría principal elegida:",
+      "en": "Selected parent category:"
+    },
+    {
+      "key": "categories.form.remove",
+      "source": "Remove {p1}",
+      "es": "Quitar {p1}",
+      "en": "Remove {p1}"
+    },
+    {
+      "key": "categories.form.clear",
+      "source": "Clear Form",
+      "es": "Limpiar formulario",
+      "en": "Clear form"
+    },
+    {
+      "key": "categories.list.title",
+      "source": "{p1}Categories",
+      "es": "{p1} categorías",
+      "en": "{p1} categories"
+    },
+    {
+      "key": "categories.create",
+      "source": "Create new",
+      "es": "Crear nueva",
+      "en": "Create new"
+    },
+    {
+      "key": "categories.search",
+      "source": "Search categories...",
+      "es": "Buscar categorías…",
+      "en": "Search categories..."
+    },
+    {
+      "key": "categories.list.yours",
+      "source": "Your Categories List",
+      "es": "Tus categorías",
+      "en": "Your categories"
+    },
+    {
+      "key": "categories.list.yoursSub",
+      "source": "Your Sub Categories List",
+      "es": "Tus subcategorías",
+      "en": "Your subcategories"
+    },
+    {
+      "key": "categories.list.defaults",
+      "source": "Default Categories",
+      "es": "Categorías por defecto",
+      "en": "Default categories"
+    },
+    {
+      "key": "categories.list.defaultsSub",
+      "source": "Default Sub Categories",
+      "es": "Subcategorías por defecto",
+      "en": "Default subcategories"
+    },
+    {
+      "key": "categories.row.txn",
+      "source": "{p1}txn{p2}· {p3}%",
+      "es": "{p1} trans.{p2} · {p3}%",
+      "en": "{p1} txn{p2} · {p3}%"
+    },
+    {
+      "key": "categories.row.account",
+      "source": "Cuenta: {p1}",
+      "es": "Cuenta: {p1}",
+      "en": "Account: {p1}"
+    },
+    {
+      "key": "categories.row.ofTotal",
+      "source": "{p1}% del total",
+      "es": "{p1}% del total",
+      "en": "{p1}% of total"
+    },
+    {
+      "key": "categories.row.transactions",
+      "source": "{p1}transaccion{p2}",
+      "es": "{p1} transacci{p2}",
+      "en": "{p1} transaction{p2}"
+    },
+    {
+      "key": "categories.detail.title",
+      "source": "Category {p1}Details",
+      "es": "Detalle de {p1} por categoría",
+      "en": "Category {p1} details"
+    },
+    {
+      "key": "categories.back",
+      "source": "Back one level",
+      "es": "Subir un nivel",
+      "en": "Back one level"
+    },
+    {
+      "key": "categories.transactionsSuffix",
+      "source": "· Transacciones",
+      "es": "· Transacciones",
+      "en": "· Transactions"
+    },
+    {
+      "key": "categories.row.txnOfTotal",
+      "source": "{p1}transaccion{p2}· {p3}% del total",
+      "es": "{p1} transacci{p2} · {p3}% del total",
+      "en": "{p1} transaction{p2} · {p3}% of total"
+    },
+    {
+      "key": "categories.total",
+      "source": "Total:",
+      "es": "Total:",
+      "en": "Total:"
+    },
+    {
+      "key": "categories.closeDetail",
+      "source": "Close transaction detail",
+      "es": "Cerrar detalle del movimiento",
+      "en": "Close transaction detail"
+    },
+    {
+      "key": "categories.total2",
+      "source": "Total",
+      "es": "Total",
+      "en": "Total"
+    },
+    {
+      "key": "categories.vs",
+      "source": "VS",
+      "es": "VS",
+      "en": "VS"
+    },
+    {
+      "key": "categories.none",
+      "source": "No categories",
+      "es": "Sin categorías",
+      "en": "No categories"
+    },
+    {
+      "key": "categories.compare.help",
+      "source": "Each side ranks its own top {p1}categories independently - row 1 on the left and row 1 on the right don't have to be the same category.",
+      "es": "Cada lado ordena sus propias {p1} categorías principales por separado: la fila 1 de la izquierda y la de la derecha no tienen que ser la misma categoría.",
+      "en": "Each side ranks its own top {p1} categories independently — row 1 on the left and row 1 on the right don't have to be the same category."
+    },
+    {
+      "key": "categories.colors.classic",
+      "source": "Los de siempre",
+      "es": "Los de siempre",
+      "en": "The classics"
+    },
+    {
+      "key": "categories.colors.more",
+      "source": "Más colores",
+      "es": "Más colores",
+      "en": "More colors"
+    },
+    {
+      "key": "categories.colors.hex",
+      "source": "Color exacto (hexadecimal)",
+      "es": "Color exacto (hexadecimal)",
+      "en": "Exact color (hex)"
+    },
+    {
+      "key": "categories.colors.hexHelp",
+      "source": "Usa un color como #F57C00 o F57C00.",
+      "es": "Usa un color como #F57C00 o F57C00.",
+      "en": "Use a color like #F57C00 or F57C00."
+    },
+    {
+      "key": "categories.chart.bills",
+      "source": "Category Bills",
+      "es": "Gastos por categoría",
+      "en": "Category bills"
+    },
+    {
+      "key": "categories.chart.incomes",
+      "source": "Category Incomes",
+      "es": "Ingresos por categoría",
+      "en": "Category incomes"
+    },
+    {
+      "key": "categories.chart.bubbleTip",
+      "source": "How to navigate 🤔? It's really simple just HOVER over the circle to see the description and amount. And if you want to see some circles with more detail, just click to zoom in or click in the father of the circle nested to zoom out.",
+      "es": "¿Cómo navegar? Es muy sencillo: pasa el cursor sobre el círculo para ver la descripción y el monto. Si quieres ver los círculos con más detalle, haz clic para acercarte, o haz clic en el círculo que lo contiene para alejarte.",
+      "en": "How to navigate 🤔? It's really simple just HOVER over the circle to see the description and amount. And if you want to see some circles with more detail, just click to zoom in or click in the father of the circle nested to zoom out."
+    },
+    {
+      "key": "categories.chart.treemapTip",
+      "source": "How to navigate 🤔? Hover over a tile to see the description and amount. Click a tile to zoom into its sub-categories.",
+      "es": "¿Cómo navegar? Pasa el cursor sobre un cuadro para ver la descripción y el monto. Haz clic en un cuadro para acercarte a sus subcategorías.",
+      "en": "How to navigate 🤔? Hover over a tile to see the description and amount. Click a tile to zoom into its sub-categories."
+    },
+    {
+      "key": "categories.chart.treemap",
+      "source": "Mapa",
+      "es": "Mapa",
+      "en": "Map"
+    },
+    {
+      "key": "categories.chart.bubbles",
+      "source": "Burbujas",
+      "es": "Burbujas",
+      "en": "Bubbles"
+    },
+    {
+      "key": "categories.chart.ring",
+      "source": "Anillo",
+      "es": "Anillo",
+      "en": "Ring"
+    },
+    {
+      "key": "categories.summary.title",
+      "source": "Resumen de transacciones",
+      "es": "Resumen de transacciones",
+      "en": "Transactions summary"
+    },
+    {
+      "key": "categories.summary.bills",
+      "source": "Gastos",
+      "es": "Gastos",
+      "en": "Bills"
+    },
+    {
+      "key": "categories.summary.incomes",
+      "source": "Ingresos",
+      "es": "Ingresos",
+      "en": "Income"
+    },
+    {
+      "key": "categories.summary.seeAll",
+      "source": "Ver todas las transacciones de {p1}›",
+      "es": "Ver todas las transacciones de {p1} ›",
+      "en": "See all transactions of {p1} ›"
+    },
+    {
+      "key": "categories.summary.none",
+      "source": "Sin movimientos en este periodo.",
+      "es": "Sin movimientos en este periodo.",
+      "en": "No transactions in this period."
+    },
+    {
+      "key": "categories.summary.seeSub",
+      "source": "Ver subcategorías ›",
+      "es": "Ver subcategorías ›",
+      "en": "See subcategories ›"
+    },
+    {
+      "key": "categories.summary.movements",
+      "source": "{p1}movimiento{p2}",
+      "es": "{p1} movimiento{p2}",
+      "en": "{p1} transaction{p2}"
+    },
+    {
+      "key": "categories.amount",
+      "source": "Amount:",
+      "es": "Monto:",
+      "en": "Amount:"
+    },
+    {
+      "key": "categories.percentage",
+      "source": "Percentage:",
+      "es": "Porcentaje:",
+      "en": "Percentage:"
+    },
+    {
+      "key": "categories.subs.title",
+      "source": "{p1}Sub Categories:",
+      "es": "Subcategorías de {p1}:",
+      "en": "{p1} subcategories:"
+    },
+    {
+      "key": "categories.subs.none",
+      "source": "This component hasn't sub-categories...",
+      "es": "Este componente no tiene subcategorías…",
+      "en": "This component has no subcategories…"
+    },
+    {
+      "key": "categories.loading",
+      "source": "Loading...",
+      "es": "Cargando…",
+      "en": "Loading…"
+    },
+    {
+      "key": "categories.parents",
+      "source": "Father categories:",
+      "es": "Categorías principales:",
+      "en": "Parent categories:"
+    },
+    {
+      "key": "categories.compare.title",
+      "source": "Categories comparative",
+      "es": "Comparativo de categorías",
+      "en": "Categories comparison"
+    },
+    {
+      "key": "categories.tabHelp",
+      "source": "Select the tab that you want to see 😎",
+      "es": "Elige la pestaña que quieres ver 😎",
+      "en": "Select the tab you want to see 😎"
+    },
+    {
+      "key": "categories.selected",
+      "source": "Selected:",
+      "es": "Seleccionado:",
+      "en": "Selected:"
+    },
+    {
+      "key": "categories.inCurrency",
+      "source": "in {p1}",
+      "es": "en {p1}",
+      "en": "in {p1}"
+    },
+    {
+      "key": "categories.selectedCount",
+      "source": "{p1}Selected",
+      "es": "{p1} seleccionados",
+      "en": "{p1} selected"
+    }
+  ]
+}

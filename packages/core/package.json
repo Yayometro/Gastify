@@ -4,6 +4,7 @@
   "private": true,
   "description": "Pure TypeScript shared by the Gastify web app (Next.js) and the mobile app (Expo). No React, no DOM, no Node, no Next.",
   "dependencies": {
+    "@reduxjs/toolkit": "^2.0.1",
     "decimal.js": "^10.6.0"
   }
 }

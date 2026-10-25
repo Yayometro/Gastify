@@ -1,0 +1,797 @@
+{
+  "namespace": "budgets",
+  "entries": [
+    {
+      "key": "budgets.type.spending",
+      "source": "Spending",
+      "es": "Gasto",
+      "en": "Spending"
+    },
+    {
+      "key": "budgets.type.saving",
+      "source": "Saving",
+      "es": "Ahorro",
+      "en": "Saving"
+    },
+    {
+      "key": "budgets.type.project",
+      "source": "Project",
+      "es": "Proyecto",
+      "en": "Project"
+    },
+    {
+      "key": "budgets.back",
+      "source": "← Back",
+      "es": "← Volver",
+      "en": "← Back"
+    },
+    {
+      "key": "budgets.form.name",
+      "source": "Name",
+      "es": "Nombre",
+      "en": "Name"
+    },
+    {
+      "key": "budgets.project.alreadySpent",
+      "source": "You already spent",
+      "es": "Ya gastaste",
+      "en": "You already spent"
+    },
+    {
+      "key": "budgets.project.linkedNote",
+      "source": ". The linked movements will count toward this project.",
+      "es": ". Los movimientos vinculados contarán para este proyecto.",
+      "en": ". The linked movements will count toward this project."
+    },
+    {
+      "key": "budgets.form.type",
+      "source": "Type",
+      "es": "Tipo",
+      "en": "Type"
+    },
+    {
+      "key": "budgets.form.currencyHelp",
+      "source": "The currency this limit is written in. Reports and projections convert it to your primary currency at today's rate. Doesn't move any money.",
+      "es": "La moneda en la que está escrito este límite. Los reportes y las proyecciones la convierten a tu moneda principal al tipo de cambio de hoy. No mueve dinero.",
+      "en": "The currency this limit is written in. Reports and projections convert it to your primary currency at today's rate. Doesn't move any money."
+    },
+    {
+      "key": "budgets.saving.manualLabel",
+      "source": "Current amount saved (manual)",
+      "es": "Monto ahorrado actual (manual)",
+      "en": "Current amount saved (manual)"
+    },
+    {
+      "key": "budgets.saving.linkBalances",
+      "source": "🔗 Or link account balances",
+      "es": "🔗 O vincula saldos de cuentas",
+      "en": "🔗 Or link account balances"
+    },
+    {
+      "key": "budgets.saving.linkedNote",
+      "source": "The selected balances track progress; no money is moved.",
+      "es": "Los saldos seleccionados siguen el avance; no se mueve dinero.",
+      "en": "The selected balances track progress; no money is moved."
+    },
+    {
+      "key": "budgets.saving.noAccounts",
+      "source": "No accounts available",
+      "es": "No hay cuentas disponibles",
+      "en": "No accounts available"
+    },
+    {
+      "key": "budgets.project.icon",
+      "source": "Project icon",
+      "es": "Ícono del proyecto",
+      "en": "Project icon"
+    },
+    {
+      "key": "budgets.project.window",
+      "source": "Project window",
+      "es": "Periodo del proyecto",
+      "en": "Project window"
+    },
+    {
+      "key": "budgets.project.windowHelp",
+      "source": "Informational and fully editable. Linked expenses count even if their purchase date falls outside this window.",
+      "es": "Solo es informativo y se puede editar. Los gastos vinculados cuentan aunque su fecha de compra quede fuera de este periodo.",
+      "en": "Informational and fully editable. Linked expenses count even if their purchase date falls outside this window."
+    },
+    {
+      "key": "budgets.project.tags",
+      "source": "Related tags (suggestions only)",
+      "es": "Etiquetas relacionadas (solo sugerencias)",
+      "en": "Related tags (suggestions only)"
+    },
+    {
+      "key": "budgets.project.tagsHelp",
+      "source": "Tags help find candidate movements. They never add spending automatically.",
+      "es": "Las etiquetas ayudan a encontrar movimientos candidatos. Nunca suman gastos automáticamente.",
+      "en": "Tags help find candidate movements. They never add spending automatically."
+    },
+    {
+      "key": "budgets.project.noTags",
+      "source": "No tags found in your movements yet.",
+      "es": "Todavía no hay etiquetas en tus movimientos.",
+      "en": "No tags found in your movements yet."
+    },
+    {
+      "key": "budgets.form.period",
+      "source": "Time Period",
+      "es": "Periodo",
+      "en": "Time period"
+    },
+    {
+      "key": "budgets.period.monthly",
+      "source": "Monthly",
+      "es": "Mensual",
+      "en": "Monthly"
+    },
+    {
+      "key": "budgets.period.quarterly",
+      "source": "Quarterly (3 months)",
+      "es": "Trimestral (3 meses)",
+      "en": "Quarterly (3 months)"
+    },
+    {
+      "key": "budgets.period.biannual",
+      "source": "Biannual (6 months)",
+      "es": "Semestral (6 meses)",
+      "en": "Biannual (6 months)"
+    },
+    {
+      "key": "budgets.period.yearly",
+      "source": "Yearly (12 months)",
+      "es": "Anual (12 meses)",
+      "en": "Yearly (12 months)"
+    },
+    {
+      "key": "budgets.categoriesCount",
+      "source": "Categories ({p1})",
+      "es": "Categorías ({p1})",
+      "en": "Categories ({p1})"
+    },
+    {
+      "key": "budgets.coverage.exists",
+      "source": "This coverage already exists",
+      "es": "Esta cobertura ya existe",
+      "en": "This coverage already exists"
+    },
+    {
+      "key": "budgets.coverage.alsoBy",
+      "source": "Also covered by {p1}.",
+      "es": "También cubierto por {p1}.",
+      "en": "Also covered by {p1}."
+    },
+    {
+      "key": "budgets.deleteThis",
+      "source": "Delete this {p1}",
+      "es": "Borrar este {p1}",
+      "en": "Delete this {p1}"
+    },
+    {
+      "key": "budgets.movement.edit",
+      "source": "Edit movement",
+      "es": "Editar movimiento",
+      "en": "Edit movement"
+    },
+    {
+      "key": "budgets.movement.delete",
+      "source": "Delete movement",
+      "es": "Borrar movimiento",
+      "en": "Delete movement"
+    },
+    {
+      "key": "budgets.movement.deleted",
+      "source": "Movement deleted successfully!",
+      "es": "¡Movimiento borrado correctamente!",
+      "en": "Movement deleted successfully!"
+    },
+    {
+      "key": "budgets.close",
+      "source": "Close",
+      "es": "Cerrar",
+      "en": "Close"
+    },
+    {
+      "key": "budgets.unbudgeted.title",
+      "source": "Unbudgeted spending",
+      "es": "Gasto sin presupuesto",
+      "en": "Unbudgeted spending"
+    },
+    {
+      "key": "budgets.unbudgeted.outside",
+      "source": "Outside budgets",
+      "es": "Fuera de presupuestos",
+      "en": "Outside budgets"
+    },
+    {
+      "key": "budgets.unbudgeted.share",
+      "source": "Share of spending",
+      "es": "Parte del gasto",
+      "en": "Share of spending"
+    },
+    {
+      "key": "budgets.unbudgeted.help",
+      "source": "These movements are not covered by any active spending budget. Open a category to review its movements or include it in your plan.",
+      "es": "Estos movimientos no están cubiertos por ningún presupuesto de gasto activo. Abre una categoría para revisar sus movimientos o inclúyela en tu plan.",
+      "en": "These movements are not covered by any active spending budget. Open a category to review its movements or include it in your plan."
+    },
+    {
+      "key": "budgets.unbudgeted.covered",
+      "source": "Everything is covered 🎉",
+      "es": "Todo está cubierto 🎉",
+      "en": "Everything is covered 🎉"
+    },
+    {
+      "key": "budgets.unbudgeted.none",
+      "source": "No unbudgeted movements were found in this period.",
+      "es": "No hay movimientos sin presupuesto en este periodo.",
+      "en": "No unbudgeted movements were found in this period."
+    },
+    {
+      "key": "budgets.project.treatTitle",
+      "source": "Treat these expenses as part of a project",
+      "es": "Tratar estos gastos como parte de un proyecto",
+      "en": "Treat these expenses as part of a project"
+    },
+    {
+      "key": "budgets.project.groupHelp",
+      "source": "Projects group specific movements, independently of their categories or purchase dates.",
+      "es": "Los proyectos agrupan movimientos específicos, sin importar sus categorías ni sus fechas de compra.",
+      "en": "Projects group specific movements, independently of their categories or purchase dates."
+    },
+    {
+      "key": "budgets.project.create",
+      "source": "Create project",
+      "es": "Crear proyecto",
+      "en": "Create project"
+    },
+    {
+      "key": "budgets.project.addTo",
+      "source": "Add to project…",
+      "es": "Agregar a proyecto…",
+      "en": "Add to project…"
+    },
+    {
+      "key": "budgets.add",
+      "source": "Add",
+      "es": "Agregar",
+      "en": "Add"
+    },
+    {
+      "key": "budgets.unbudgeted.assignFirst",
+      "source": "Review these movements and assign a category before creating a budget.",
+      "es": "Revisa estos movimientos y asígnales una categoría antes de crear un presupuesto.",
+      "en": "Review these movements and assign a category before creating a budget."
+    },
+    {
+      "key": "budgets.create",
+      "source": "Create new budget",
+      "es": "Crear presupuesto nuevo",
+      "en": "Create new budget"
+    },
+    {
+      "key": "budgets.addToExisting",
+      "source": "Add to existing…",
+      "es": "Agregar a uno existente…",
+      "en": "Add to existing…"
+    },
+    {
+      "key": "budgets.unbudgeted.otherCategories",
+      "source": "Other categories without a budget ({p1})",
+      "es": "Otras categorías sin presupuesto ({p1})",
+      "en": "Other categories without a budget ({p1})"
+    },
+    {
+      "key": "budgets.movement.confirmTitle",
+      "source": "⚠️ Delete this movement?",
+      "es": "⚠️ ¿Borrar este movimiento?",
+      "en": "⚠️ Delete this movement?"
+    },
+    {
+      "key": "budgets.movement.confirmText",
+      "source": "This removes the transaction permanently.",
+      "es": "Esto borra el movimiento para siempre.",
+      "en": "This removes the transaction permanently."
+    },
+    {
+      "key": "budgets.movement.confirmQuestion",
+      "source": "Delete this movement?",
+      "es": "¿Borrar este movimiento?",
+      "en": "Delete this movement?"
+    },
+    {
+      "key": "budgets.movement.deleteError",
+      "source": "Error removing transaction.",
+      "es": "No se pudo borrar el movimiento.",
+      "en": "Error removing transaction."
+    },
+    {
+      "key": "budgets.budgetSubtitle",
+      "source": "{p1}({p2}) • {p3}based",
+      "es": "{p1} ({p2}) • basado en {p3}",
+      "en": "{p1} ({p2}) • {p3} based"
+    },
+    {
+      "key": "budgets.percentOf",
+      "source": "{p1}% of {p2}",
+      "es": "{p1}% de {p2}",
+      "en": "{p1}% of {p2}"
+    },
+    {
+      "key": "budgets.chart.spendingByCategory",
+      "source": "Spending Distribution by Category",
+      "es": "Distribución del gasto por categoría",
+      "en": "Spending Distribution by Category"
+    },
+    {
+      "key": "budgets.movement.detailed",
+      "source": "Detailed Movements ({p1})",
+      "es": "Movimientos detallados ({p1})",
+      "en": "Detailed Movements ({p1})"
+    },
+    {
+      "key": "budgets.linkedTo",
+      "source": "Linked to",
+      "es": "Vinculado a",
+      "en": "Linked to"
+    },
+    {
+      "key": "budgets.account",
+      "source": "account",
+      "es": "cuenta",
+      "en": "account"
+    },
+    {
+      "key": "budgets.saving.manualSet",
+      "source": "Manual saving progress set:",
+      "es": "Avance de ahorro manual definido:",
+      "en": "Manual saving progress set:"
+    },
+    {
+      "key": "budgets.noName",
+      "source": "No name. Asign one...",
+      "es": "Sin nombre. Asígnale uno…",
+      "en": "No name. Assign one…"
+    },
+    {
+      "key": "budgets.movement.cat",
+      "source": "Cat:",
+      "es": "Cat.:",
+      "en": "Cat:"
+    },
+    {
+      "key": "budgets.movement.sub",
+      "source": "Sub:",
+      "es": "Sub:",
+      "en": "Sub:"
+    },
+    {
+      "key": "budgets.movement.acc",
+      "source": "Acc:",
+      "es": "Cta.:",
+      "en": "Acc:"
+    },
+    {
+      "key": "budgets.movement.tags",
+      "source": "Tags:",
+      "es": "Etiquetas:",
+      "en": "Tags:"
+    },
+    {
+      "key": "budgets.movement.noTags",
+      "source": "No tags...",
+      "es": "Sin etiquetas…",
+      "en": "No tags…"
+    },
+    {
+      "key": "budgets.transaction.delete",
+      "source": "Delete transaction",
+      "es": "Borrar movimiento",
+      "en": "Delete transaction"
+    },
+    {
+      "key": "budgets.transaction.edit",
+      "source": "Edit transaction",
+      "es": "Editar movimiento",
+      "en": "Edit transaction"
+    },
+    {
+      "key": "budgets.movement.none",
+      "source": "No movements found for this budget in the selected time period 🤓",
+      "es": "No hay movimientos de este presupuesto en el periodo elegido 🤓",
+      "en": "No movements found for this budget in the selected time period 🤓"
+    },
+    {
+      "key": "budgets.edit",
+      "source": "Edit Budget ✏️",
+      "es": "Editar presupuesto ✏️",
+      "en": "Edit Budget ✏️"
+    },
+    {
+      "key": "budgets.title",
+      "source": "Budgets",
+      "es": "Presupuestos",
+      "en": "Budgets"
+    },
+    {
+      "key": "budgets.currencyNote",
+      "source": "Every amount on this page is shown in this currency unless a budget sets its own.",
+      "es": "Todos los montos de esta página se muestran en esta moneda, salvo que un presupuesto tenga la suya.",
+      "en": "Every amount on this page is shown in this currency unless a budget sets its own."
+    },
+    {
+      "key": "budgets.period.current",
+      "source": "Time period currently being considered for budgets",
+      "es": "Periodo que se está considerando para los presupuestos",
+      "en": "Time period currently being considered for budgets"
+    },
+    {
+      "key": "budgets.period.backToNow",
+      "source": "Click to return time to current month 🤓",
+      "es": "Toca para volver al mes actual 🤓",
+      "en": "Click to return time to current month 🤓"
+    },
+    {
+      "key": "budgets.reset",
+      "source": "Reset",
+      "es": "Restablecer",
+      "en": "Reset"
+    },
+    {
+      "key": "budgets.period.help",
+      "source": "Filter by a preset period or pick a specific range; the left/right arrows jump to the previous/next month. 🤓",
+      "es": "Filtra por un periodo predefinido o elige un rango; las flechas izquierda y derecha saltan al mes anterior o siguiente. 🤓",
+      "en": "Filter by a preset period or pick a specific range; the left/right arrows jump to the previous/next month. 🤓"
+    },
+    {
+      "key": "budgets.new",
+      "source": "New Budget",
+      "es": "Nuevo presupuesto",
+      "en": "New Budget"
+    },
+    {
+      "key": "budgets.spending.title",
+      "source": "Spending budgets",
+      "es": "Presupuestos de gasto",
+      "en": "Spending budgets"
+    },
+    {
+      "key": "budgets.planned",
+      "source": "Planned",
+      "es": "Planeado",
+      "en": "Planned"
+    },
+    {
+      "key": "budgets.totalSpent",
+      "source": "Total spent",
+      "es": "Total gastado",
+      "en": "Total spent"
+    },
+    {
+      "key": "budgets.unbudgeted",
+      "source": "Unbudgeted",
+      "es": "Sin presupuesto",
+      "en": "Unbudgeted"
+    },
+    {
+      "key": "budgets.spending.none",
+      "source": "No spending budgets yet. Create one 🤓",
+      "es": "Todavía no hay presupuestos de gasto. Crea uno 🤓",
+      "en": "No spending budgets yet. Create one 🤓"
+    },
+    {
+      "key": "budgets.projects",
+      "source": "Projects",
+      "es": "Proyectos",
+      "en": "Projects"
+    },
+    {
+      "key": "budgets.projects.help",
+      "source": "One-time plans made from specific movements. Their dates and details can be changed at any time.",
+      "es": "Planes de una sola vez hechos con movimientos específicos. Sus fechas y detalles se pueden cambiar en cualquier momento.",
+      "en": "One-time plans made from specific movements. Their dates and details can be changed at any time."
+    },
+    {
+      "key": "budgets.projects.none",
+      "source": "No project budgets yet. Create one for a trip, renovation, or event ✈️",
+      "es": "Todavía no hay presupuestos de proyecto. Crea uno para un viaje, una remodelación o un evento ✈️",
+      "en": "No project budgets yet. Create one for a trip, renovation, or event ✈️"
+    },
+    {
+      "key": "budgets.savings",
+      "source": "Savings",
+      "es": "Ahorros",
+      "en": "Savings"
+    },
+    {
+      "key": "budgets.savings.none",
+      "source": "No savings budgets yet. Create one 🤓",
+      "es": "Todavía no hay presupuestos de ahorro. Crea uno 🤓",
+      "en": "No savings budgets yet. Create one 🤓"
+    },
+    {
+      "key": "budgets.projectSubtitle",
+      "source": "Project budget • {p1}based",
+      "es": "Presupuesto de proyecto • basado en {p1}",
+      "en": "Project budget • {p1} based"
+    },
+    {
+      "key": "budgets.datesEditable",
+      "source": "{p1}· dates are editable",
+      "es": "{p1} · las fechas se pueden editar",
+      "en": "{p1}· dates are editable"
+    },
+    {
+      "key": "budgets.spent",
+      "source": "Spent",
+      "es": "Gastado",
+      "en": "Spent"
+    },
+    {
+      "key": "budgets.limit",
+      "source": "Limit",
+      "es": "Límite",
+      "en": "Limit"
+    },
+    {
+      "key": "budgets.usedNote",
+      "source": "{p1}% used · counts linked expenses from any purchase date",
+      "es": "{p1}% usado · cuenta los gastos vinculados sin importar su fecha de compra",
+      "en": "{p1}% used · counts linked expenses from any purchase date"
+    },
+    {
+      "key": "budgets.suggestionTags",
+      "source": "Suggestion tags",
+      "es": "Etiquetas sugeridas",
+      "en": "Suggestion tags"
+    },
+    {
+      "key": "budgets.project.edit",
+      "source": "Edit project",
+      "es": "Editar proyecto",
+      "en": "Edit project"
+    },
+    {
+      "key": "budgets.project.addExisting",
+      "source": "Add existing movement",
+      "es": "Agregar movimiento existente",
+      "en": "Add existing movement"
+    },
+    {
+      "key": "budgets.project.createMovement",
+      "source": "Create movement",
+      "es": "Crear movimiento",
+      "en": "Create movement"
+    },
+    {
+      "key": "budgets.project.searchExpenses",
+      "source": "Search expenses…",
+      "es": "Buscar gastos…",
+      "en": "Search expenses…"
+    },
+    {
+      "key": "budgets.project.tagFirst",
+      "source": "Movements sharing a project tag are shown first.",
+      "es": "Primero se muestran los movimientos con una etiqueta del proyecto.",
+      "en": "Movements sharing a project tag are shown first."
+    },
+    {
+      "key": "budgets.project.noExpenses",
+      "source": "No available expenses found.",
+      "es": "No hay gastos disponibles.",
+      "en": "No available expenses found."
+    },
+    {
+      "key": "budgets.project.linked",
+      "source": "Linked movements",
+      "es": "Movimientos vinculados",
+      "en": "Linked movements"
+    },
+    {
+      "key": "budgets.project.remove",
+      "source": "Remove from project",
+      "es": "Quitar del proyecto",
+      "en": "Remove from project"
+    },
+    {
+      "key": "budgets.project.noLinked",
+      "source": "No movements linked yet",
+      "es": "Todavía no hay movimientos vinculados",
+      "en": "No movements linked yet"
+    },
+    {
+      "key": "budgets.project.addHelp",
+      "source": "Add an existing expense or create one for this project.",
+      "es": "Agrega un gasto existente o crea uno para este proyecto.",
+      "en": "Add an existing expense or create one for this project."
+    },
+    {
+      "key": "budgets.project.newMovement",
+      "source": "New project movement",
+      "es": "Nuevo movimiento del proyecto",
+      "en": "New project movement"
+    },
+    {
+      "key": "budgets.walletTitle",
+      "source": "Wallet Budgets",
+      "es": "Presupuestos de tu cartera",
+      "en": "Wallet Budgets"
+    },
+    {
+      "key": "budgets.walletHelp",
+      "source": "Filter by time to see your current progress in a specific time period. As well as change between tabs to see progress in Budgets or Savings. 🤓",
+      "es": "Filtra por tiempo para ver tu avance en un periodo específico, y cambia entre pestañas para ver el avance de Presupuestos o Ahorros. 🤓",
+      "en": "Filter by time to see your current progress in a specific time period. As well as change between tabs to see progress in Budgets or Savings. 🤓"
+    },
+    {
+      "key": "budgets.billsTitle",
+      "source": "Budget Bills",
+      "es": "Presupuestos de gasto",
+      "en": "Budget Bills"
+    },
+    {
+      "key": "budgets.summary",
+      "source": "Spending summary",
+      "es": "Resumen de gastos",
+      "en": "Spending summary"
+    },
+    {
+      "key": "budgets.summary.help",
+      "source": "Planned vs. spent, by budget",
+      "es": "Planeado vs. gastado, por presupuesto",
+      "en": "Planned vs. spent, by budget"
+    },
+    {
+      "key": "budgets.summary.none",
+      "source": "No spending budgets yet.",
+      "es": "Todavía no hay presupuestos de gasto.",
+      "en": "No spending budgets yet."
+    },
+    {
+      "key": "budgets.summary.unbudgeted",
+      "source": "Unbudgeted, by category",
+      "es": "Sin presupuesto, por categoría",
+      "en": "Unbudgeted, by category"
+    },
+    {
+      "key": "budgets.monthsMet",
+      "source": "{p1}- {p2}· {p3}of {p4}months met",
+      "es": "{p1}-{p2} · {p3} de {p4} meses cumplidos",
+      "en": "{p1}-{p2} · {p3} of {p4} months met"
+    },
+    {
+      "key": "budgets.comparative.month",
+      "source": "Month",
+      "es": "Mes",
+      "en": "Month"
+    },
+    {
+      "key": "budgets.comparative.actual",
+      "source": "Actual",
+      "es": "Real",
+      "en": "Actual"
+    },
+    {
+      "key": "budgets.comparative.goal",
+      "source": "Goal",
+      "es": "Meta",
+      "en": "Goal"
+    },
+    {
+      "key": "budgets.comparative.result",
+      "source": "Result",
+      "es": "Resultado",
+      "en": "Result"
+    },
+    {
+      "key": "budgets.comparative.estimateNote",
+      "source": "Predates this budget's earliest known goal - compared against that earliest goal as an estimate.",
+      "es": "Es anterior a la primera meta conocida de este presupuesto: se compara contra esa meta como estimado.",
+      "en": "Predates this budget's earliest known goal - compared against that earliest goal as an estimate."
+    },
+    {
+      "key": "budgets.comparative.estimateFootnote",
+      "source": "* Estimated - predates this budget's earliest known goal, compared against that earliest goal.",
+      "es": "* Estimado: es anterior a la primera meta conocida de este presupuesto, y se compara contra esa meta.",
+      "en": "* Estimated - predates this budget's earliest known goal, compared against that earliest goal."
+    },
+    {
+      "key": "budgets.comparative.title",
+      "source": "Budgets comparative",
+      "es": "Comparativo de presupuestos",
+      "en": "Budgets comparative"
+    },
+    {
+      "key": "budgets.from",
+      "source": "From:",
+      "es": "Desde:",
+      "en": "From:"
+    },
+    {
+      "key": "budgets.to",
+      "source": "to :",
+      "es": "hasta:",
+      "en": "to :"
+    },
+    {
+      "key": "budgets.comparative.help",
+      "source": "See how your spending budgets performed month by month across this range - which ones you usually meet, which ones you usually exceed 🤓",
+      "es": "Mira cómo le fue a tus presupuestos de gasto mes a mes en este rango: cuáles sueles cumplir y cuáles sueles superar 🤓",
+      "en": "See how your spending budgets performed month by month across this range - which ones you usually meet, which ones you usually exceed 🤓"
+    },
+    {
+      "key": "budgets.comparative.none",
+      "source": "No spending budgets tracked in this range 🤔",
+      "es": "No hay presupuestos de gasto en este rango 🤔",
+      "en": "No spending budgets tracked in this range 🤔"
+    },
+    {
+      "key": "budgets.of",
+      "source": "of",
+      "es": "de",
+      "en": "of"
+    },
+    {
+      "key": "budgets.monthsMetWord",
+      "source": "months met",
+      "es": "meses cumplidos",
+      "en": "months met"
+    },
+    {
+      "key": "budgets.estimatedTag",
+      "source": "· {p1}estimated",
+      "es": "· {p1}estimado",
+      "en": "· {p1}estimated"
+    },
+    {
+      "key": "budgets.actualLabel",
+      "source": "Actual:",
+      "es": "Real:",
+      "en": "Actual:"
+    },
+    {
+      "key": "budgets.goalLabel",
+      "source": "Goal:",
+      "es": "Meta:",
+      "en": "Goal:"
+    },
+    {
+      "key": "budgets.basedSubtitle",
+      "source": "{p1}• {p2}• {p3}based",
+      "es": "{p1} • {p2} • basado en {p3}",
+      "en": "{p1}• {p2}• {p3}based"
+    },
+    {
+      "key": "budgets.howDoing",
+      "source": "How this budget is doing",
+      "es": "Cómo va este presupuesto",
+      "en": "How this budget is doing"
+    },
+    {
+      "key": "budgets.ofParams",
+      "source": "of {p1}{p2}",
+      "es": "de {p1}{p2}",
+      "en": "of {p1}{p2}"
+    },
+    {
+      "key": "budgets.type.spendingCopy",
+      "source": "A recurring limit for categories",
+      "es": "Un límite recurrente para categorías",
+      "en": "A recurring limit for categories"
+    },
+    {
+      "key": "budgets.type.savingCopy",
+      "source": "Track progress toward a savings goal",
+      "es": "Sigue tu avance hacia una meta de ahorro",
+      "en": "Track progress toward a savings goal"
+    },
+    {
+      "key": "budgets.type.projectCopy",
+      "source": "A one-time plan made of specific movements",
+      "es": "Un plan de una sola vez hecho con movimientos específicos",
+      "en": "A one-time plan made of specific movements"
+    }
+  ]
+}

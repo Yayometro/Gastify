@@ -1,18 +1,72 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { Inter_200ExtraLight, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, useFonts } from '@expo-google-fonts/inter';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { useEffect } from 'react';
+import { LogBox, View, useColorScheme } from 'react-native';
+import { Provider } from 'react-redux';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import '@/global.css';
+
+import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
+import { AuthGate } from '@/components/auth/auth-gate';
+import { ToastProvider } from '@/components/toast';
+import { I18nProvider } from '@/i18n/client';
+import { Colors } from '@/constants/theme';
+import { applyThemeMode, loadThemeMode } from '@/lib/theme-mode';
+import { store } from '@/store';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
+// Development only: React's "state update on a component that hasn't mounted yet" warning opened the red error box on
+// every start. It is hidden from the box here; the rest of the warnings still show.
+if (__DEV__) {
+  LogBox.ignoreLogs([/Can't perform a React state update on a component that hasn't mounted yet/]);
+}
+
+export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
+
+  // The navigation screens use the Gastify palette instead of React Navigation's default colors.
+  const baseTheme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
+  const theme = {
+    ...baseTheme,
+    // Dark mode: transparent screens, the mesh drawn once by the root view below shows through them.
+    colors: { ...baseTheme.colors, background: colorScheme === 'dark' ? 'transparent' : colors.background, card: colors.backgroundElement, text: colors.text, border: colors.border },
+  };
+
+  // Inter, the same typeface as the web app. The splash screen stays until it is loaded.
+  const [fontsLoaded] = useFonts({ Inter_200ExtraLight, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold });
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  // The saved light / dark choice ("system" by default) is applied once at start.
+  useEffect(() => {
+    loadThemeMode().then(applyThemeMode);
+  }, []);
+
+  if (!fontsLoaded) return null;
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <Provider store={store}>
+      <I18nProvider>
+      <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? DARK_BASE : colors.background }}>
+        <AmbientBackground />
+        <ThemeProvider value={theme}>
+          <ToastProvider>
+            <AuthGate>
+              {/* The tabs are one screen of this stack; notifications is a screen above them, so it opens and closes on top of the
+                  page the person was on (as a tab, it bounced back to Inicio). */}
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="notifications" />
+              </Stack>
+            </AuthGate>
+          </ToastProvider>
+        </ThemeProvider>
+      </View>
+      </I18nProvider>
+    </Provider>
   );
 }

@@ -16,7 +16,6 @@ import {
 import BtnSelectCategoryContext from "@/components/buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalCategoryContent from "@/components/modals/contents/selectCategory/ModalCategoryContent";
-import useModal from "@/hooks/useModalBasic";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import { addNewBudget, updateBudget, removeBudget, type BudgetData } from "@/lib/features/budgetSlice";
 import { updateTransaction, type TransactionData } from "@/lib/features/transacctionsSlice";
@@ -29,6 +28,8 @@ import type { RootState, AppDispatch } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
 import "@/components/multiUsedComp/css/muliUsed.css";
+import { useT } from "@/i18n/client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 export interface BudgetTypeOption {
   value: string;
@@ -37,10 +38,11 @@ export interface BudgetTypeOption {
   icon: string;
 }
 
-const typeOptions: BudgetTypeOption[] = [
-  { value: BUDGET_TYPES.SPENDING, title: "Spending", copy: "A recurring limit for categories", icon: "fluent/credit-card" },
-  { value: BUDGET_TYPES.SAVING, title: "Saving", copy: "Track progress toward a savings goal", icon: "fluent/money-bag" },
-  { value: BUDGET_TYPES.PROJECT, title: "Project", copy: "A one-time plan made of specific movements", icon: "fluent/airplane" },
+// The three kinds of budget, with their texts in the person's language (a function: it needs the translator).
+const typeOptions = (t: TranslateFn): BudgetTypeOption[] => [
+  { value: BUDGET_TYPES.SPENDING, title: t("budgets.type.spending"), copy: t("budgets.type.spendingCopy"), icon: "fluent/credit-card" },
+  { value: BUDGET_TYPES.SAVING, title: t("budgets.type.saving"), copy: t("budgets.type.savingCopy"), icon: "fluent/money-bag" },
+  { value: BUDGET_TYPES.PROJECT, title: t("budgets.type.project"), copy: t("budgets.type.projectCopy"), icon: "fluent/airplane" },
 ];
 
 const DEFAULT_PROJECT_ICON = "fluent/airplane";
@@ -167,6 +169,10 @@ export interface BudgetEditFormProps {
   budget?: BudgetModalItem | null;
   onClose: () => void;
   onBack?: (() => void) | null;
+  // Opens on this type (spending, saving or project) when creating.
+  initialType?: string;
+  // Inside a panel of the "+" window: no window of its own, and no × (the panel has its own).
+  inline?: boolean;
 }
 
 export type BudgetEditModalProps = BudgetEditFormProps;
@@ -177,13 +183,15 @@ interface ProviderData {
   [key: string]: unknown;
 }
 
-function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps): React.JSX.Element {
+function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = false }: BudgetEditFormProps): React.JSX.Element {
+  const tr = useT();
+  const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [form, setForm] = useState<BudgetEditFormState>({
     name: "",
     goalAmount: "",
     savingAmount: "",
-    budgetType: BUDGET_TYPES.SPENDING,
+    budgetType: initialType ?? BUDGET_TYPES.SPENDING,
     category: "",
     subCategory: "",
     period: "monthly",
@@ -195,10 +203,10 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
     icon: DEFAULT_PROJECT_ICON,
     currency: "MXN",
   });
-  const [isIconMenuOpen, setIsIconMenuOpen] = useState<boolean>(false);
+  // The category list opens in place, under its button (no window of its own).
+  const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState<boolean>(false);
   const toFetch = fetcher();
   const dispatch = useDispatch<AppDispatch>();
-  const { close, handleClose } = useModal();
   const { setItemSelected } = useContext(SelectCategoryContext);
   const { transacciones = [], wallet } = useGetDataFromProvider() as ProviderData;
   const ccAccounts = useSelector((state: RootState) => (state.accountsReducer?.data || []) as AccountData[]);
@@ -228,7 +236,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
           return {
             category: categoryId,
             subCategory: subCategoryId,
-            name: catObj?.name || (c.name as string) || "Category",
+            name: catObj?.name || (c.name as string) || tr("web.category"),
             color: catObj?.color || (c.color as string) || "#DADADA",
             icon: catObj?.icon || null,
           };
@@ -240,7 +248,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
         initialCategories = [{
           category: categoryRef?._id || (typeof budget.category === "string" ? budget.category : "") || "",
           subCategory: subCategoryRef?._id || (typeof budget.subCategory === "string" ? budget.subCategory : "") || "",
-          name: catObj?.name || "Category",
+          name: catObj?.name || tr("web.category"),
           color: catObj?.color || "#DADADA",
           icon: catObj?.icon || null,
         }];
@@ -357,7 +365,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
         ? await toFetch.post("general-data/budget/update", { ...payload, id: budget?._id })
         : await toFetch.post("general-data/budget/new", { ...payload, user: budget?.user, wallet: budget?.wallet });
 
-      if (!res.ok || !res.data) throw new Error(res.message || "Operation failed 🤕");
+      if (!res.ok || !res.data) throw new Error(res.message || tr("web.operation.failed"));
       if (mode === "edition") dispatch(updateBudget(res.data));
       else dispatch(addNewBudget(res.data));
 
@@ -381,7 +389,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
     try {
       setIsLoading(true);
       const res = await toFetch.post("general-data/budget/remove", { id: budget?._id });
-      if (!res.ok) throw new Error(res.message || "Could not delete budget");
+      if (!res.ok) throw new Error(res.message || tr("web.could.not.delete.budget"));
       if (budget?._id) dispatch(removeBudget(budget._id));
       if (getBudgetType(budget) === BUDGET_TYPES.PROJECT) {
         transacciones
@@ -407,32 +415,35 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
   const isSaving = form.budgetType === BUDGET_TYPES.SAVING;
   const isSpending = form.budgetType === BUDGET_TYPES.SPENDING;
 
-  return <BasicModal close={onClose} renderContent={
-    <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[500px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl">
+  // Inside the "+" window the form is the panel: no card, no header and no × of its own.
+  const panel = (
+    <div className={inline ? "relative flex w-full flex-col" : "content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[500px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl"}>
       {isLoading && <div className="absolute inset-0 bg-gf-surface/70 backdrop-blur-sm flex justify-center items-center z-[1002]"><Spin size="large" /></div>}
-      <div className="relative pt-6 pb-5 px-4 text-center text-white shrink-0">
-        {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors text-xs font-semibold">← Back</button>}
-        <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"><CategoIcon type="MdClose" siz={18} /></button>
-        <h1 className="text-2xl font-bold">{mode === "edition" ? "Edit" : "Create"} {isProject ? "Project" : "Budget"} 🪄</h1>
-      </div>
-      <div className="flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8">
+      {!inline && (
+        <div className="relative pt-6 pb-5 px-4 text-center text-white shrink-0">
+          {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors text-xs font-semibold">{t("budgets.back")}</button>}
+          <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"><CategoIcon type="MdClose" siz={18} /></button>
+          <h1 className="text-2xl font-bold">{mode === "edition" ? tr("web.edit") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")} 🪄</h1>
+        </div>
+      )}
+      <div className={inline ? "w-full" : "flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8"}>
         <form onSubmit={handleSubmit} className="form-trans-edit flex flex-col gap-3">
-          <p className="label-tfp">Name</p>
-          <input type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? "e.g. Japan 2027" : "Budget name"} required className="w-full" />
-          {mode === "creation" && Number(budget?.referenceSpent) > 0 && <p className="text-xs text-amber-400 bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2">You already spent <strong>{usdFormatChanger(budget?.referenceSpent)}</strong>. The linked movements will count toward this project.</p>}
+          <p className="label-tfp">{t("budgets.form.name")}</p>
+          <input type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? tr("web.e.g.japan.2027") : tr("web.budget.name")} required className="w-full" />
+          {mode === "creation" && Number(budget?.referenceSpent) > 0 && <p className="text-xs text-amber-400 bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2">{tr("budgets.project.alreadySpent")} <strong>{usdFormatChanger(budget?.referenceSpent)}</strong>{tr("budgets.project.linkedNote")}</p>}
 
-          <p className="label-tfp mt-1">Type</p>
+          <p className="label-tfp mt-1">{t("budgets.form.type")}</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {typeOptions.map((option) => <button key={option.value} type="button" onClick={() => setForm((prev) => ({ ...prev, budgetType: option.value }))} className={`text-left rounded-2xl border p-3 transition-colors ${form.budgetType === option.value ? "border-purple-500 bg-gf-accent-soft-bg text-purple-300" : "border-gf-border bg-gf-surface text-gf-text-muted hover:border-purple-200"}`}>
+            {typeOptions(t).map((option) => <button key={option.value} type="button" onClick={() => setForm((prev) => ({ ...prev, budgetType: option.value }))} className={`text-left rounded-2xl border p-3 transition-colors ${form.budgetType === option.value ? "border-purple-500 bg-gf-accent-soft-bg text-purple-300" : "border-gf-border bg-gf-surface text-gf-text-muted hover:border-purple-200"}`}>
               <UniversalCategoIcon type={option.icon} siz={18} />
               <p className="font-bold text-xs mt-1">{option.title}</p><p className="text-[10px] leading-tight mt-0.5">{option.copy}</p>
             </button>)}
           </div>
 
-          <p className="label-tfp mt-1">{isSaving ? "Savings target" : isProject ? "Project spending limit" : "Spending limit"}</p>
+          <p className="label-tfp mt-1">{isSaving ? tr("web.savings.target") : isProject ? tr("web.project.spending.limit") : tr("web.spending.limit")}</p>
           <div className="flex items-stretch gap-2">
             <input type="number" min="0" name="goalAmount" value={form.goalAmount} onChange={handleChange} required className="flex-1 min-w-0" />
-            <Tooltip title="The currency this limit is written in. Reports and projections convert it to your primary currency at today's rate. Doesn't move any money.">
+            <Tooltip title={t("budgets.form.currencyHelp")}>
               <select
                 name="currency"
                 value={form.currency}
@@ -449,35 +460,24 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
           </div>
 
           {isSaving && <>
-            <p className="label-tfp mt-1">Current amount saved (manual)</p>
+            <p className="label-tfp mt-1">{t("budgets.saving.manualLabel")}</p>
             <input type="number" min="0" name="savingAmount" value={form.savingAmount} onChange={handleChange} placeholder="0" className="w-full" />
-            <div className="flex items-center gap-1"><p className="label-tfp">🔗 Or link account balances</p><Tooltip title="The selected balances track progress; no money is moved."><span className="text-purple-500"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} /></span></Tooltip></div>
+            <div className="flex items-center gap-1"><p className="label-tfp">{t("budgets.saving.linkBalances")}</p><Tooltip title={t("budgets.saving.linkedNote")}><span className="text-purple-500"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} /></span></Tooltip></div>
             <div className="flex flex-col gap-2">{ccAccounts.length ? ccAccounts.map((acc) => {
               const selected = form.linkedAccounts.includes(String(acc._id));
               return <button key={acc._id} type="button" onClick={() => toggleListValue("linkedAccounts", acc._id)} className={`flex justify-between rounded-xl border px-3 py-2 text-xs ${selected ? "bg-blue-600 border-blue-600 text-white" : "bg-gf-surface border-gf-border"}`}><span>{acc.name}</span><strong>{formatMoneyMajor(acc.amount || 0, acc.currency || walletPrimaryCurrency, { showCode: true })}</strong></button>;
-            }) : <p className="text-xs text-gf-text-muted italic">No accounts available</p>}</div>
+            }) : <p className="text-xs text-gf-text-muted italic">{t("budgets.saving.noAccounts")}</p>}</div>
           </>}
 
           {isProject && <div className="flex flex-col gap-3 bg-gf-surface border border-gf-border rounded-2xl p-4 mt-1">
             <div>
-              <p className="label-tfp mb-1">Project icon</p>
-              <button
-                type="button"
-                onClick={() => setIsIconMenuOpen(true)}
-                className="w-full flex items-center gap-3 rounded-2xl border-2 border-purple-300 bg-gf-accent-soft-bg px-3 py-2 text-left hover:border-purple-500 transition-colors"
-              >
-                <span className="w-10 h-10 rounded-full bg-gf-surface text-purple-300 flex items-center justify-center shadow-sm shrink-0">
-                  <UniversalCategoIcon type={form.icon || DEFAULT_PROJECT_ICON} siz={24} />
-                </span>
-                <span><span className="block text-xs font-bold text-purple-300">Selected icon</span><span className="block text-[10px] text-gf-text-muted">Click to choose another icon</span></span>
-              </button>
+              <p className="label-tfp mb-1">{t("budgets.project.icon")}</p>
               <IconDisplayerMenu
-                idmActive={isIconMenuOpen}
+                idmValue={form.icon || DEFAULT_PROJECT_ICON}
                 idmIcon={(icon: string) => setForm((prev) => ({ ...prev, icon }))}
-                idmClose={setIsIconMenuOpen}
               />
             </div>
-            <div><p className="font-bold text-sm text-purple-300">Project window</p><p className="text-[11px] text-gf-text-muted">Informational and fully editable. Linked expenses count even if their purchase date falls outside this window.</p></div>
+            <div><p className="font-bold text-sm text-purple-300">{t("budgets.project.window")}</p><p className="text-[11px] text-gf-text-muted">{t("budgets.project.windowHelp")}</p></div>
             <TimeRange
               startDateValue={localDateFromInput(form.eventStartDate)}
               endDateValue={localDateFromInput(form.eventEndDate)}
@@ -489,30 +489,31 @@ function BudgetEditForm({ mode, budget, onClose, onBack }: BudgetEditFormProps):
               rpResponse=""
               styles="w-full flex items-center justify-center gap-1 bg-gf-surface-2 border border-gf-border px-2 py-2 rounded-full"
             />
-            <div><p className="label-tfp">Related tags (suggestions only)</p><p className="text-[10px] text-gf-text-muted mb-2">Tags help find candidate movements. They never add spending automatically.</p>
+            <div><p className="label-tfp">{t("budgets.project.tags")}</p><p className="text-[10px] text-gf-text-muted mb-2">{t("budgets.project.tagsHelp")}</p>
               {availableTags.length ? <div className="flex flex-wrap gap-1.5">{availableTags.map((tag) => {
                 const selected = form.linkedTags.includes(String(tag._id));
                 return <button key={tag._id} type="button" onClick={() => toggleListValue("linkedTags", tag._id)} className={`rounded-full px-2.5 py-1 text-xs border ${selected ? "bg-purple-600 border-purple-600 text-white" : "bg-gf-surface-2 border-gf-border text-gf-text-muted"}`}>#{tag.name}</button>;
-              })}</div> : <p className="text-xs text-gf-text-muted italic">No tags found in your movements yet.</p>}
+              })}</div> : <p className="text-xs text-gf-text-muted italic">{t("budgets.project.noTags")}</p>}
             </div>
           </div>}
 
           {isSpending && <>
-            <p className="label-tfp mt-1">Time Period</p>
-            <select name="period" value={form.period} onChange={handleChange} className="etm-selector bg-gf-surface"><option value="monthly">Monthly</option><option value="quarterly">Quarterly (3 months)</option><option value="biannual">Biannual (6 months)</option><option value="yearly">Yearly (12 months)</option></select>
-            <p className="label-tfp mt-1">Categories ({form.categories.length})</p>
+            <p className="label-tfp mt-1">{t("budgets.form.period")}</p>
+            <select name="period" value={form.period} onChange={handleChange} className="etm-selector bg-gf-surface"><option value="monthly">{t("budgets.period.monthly")}</option><option value="quarterly">{t("budgets.period.quarterly")}</option><option value="biannual">{t("budgets.period.biannual")}</option><option value="yearly">{t("budgets.period.yearly")}</option></select>
+            <p className="label-tfp mt-1">{t("budgets.categoriesCount", { p1: form.categories.length })}</p>
             {!!form.categories.length && <div className="flex flex-wrap gap-1.5">{form.categories.map((c, index) => <div key={`${c.category}:${c.subCategory}:${index}`} className="flex items-center gap-1 bg-gf-accent-soft-bg text-purple-300 rounded-full px-2.5 py-1 text-xs"><span>{c.name}</span><button type="button" onClick={() => setForm((prev) => ({ ...prev, categories: prev.categories.filter((_, i) => i !== index) }))}>×</button></div>)}</div>}
-            {!!categoryConflicts.length && <div className="bg-amber-500/15 border border-amber-300 text-amber-400 rounded-2xl px-3 py-2 text-xs"><p className="font-bold">This coverage already exists</p><p>Also covered by {(categoryConflicts as BudgetData[]).map((item) => item.name || "Unnamed budget").join(", ")}.</p></div>}
-            <BtnSelectCategoryContext onClose={handleClose} />
-            {close && <BasicModal close={handleClose} renderContent={<ModalCategoryContent close={handleClose} getSelected={handleCategory} />} />}
+            {!!categoryConflicts.length && <div className="bg-amber-500/15 border border-amber-300 text-amber-400 rounded-2xl px-3 py-2 text-xs"><p className="font-bold">{t("budgets.coverage.exists")}</p><p>{t("budgets.coverage.alsoBy", { p1: (categoryConflicts as BudgetData[]).map((item) => item.name || tr("web.unnamed.budget")).join(", ") })}</p></div>}
+            <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
+            {isCategoryPickerOpen && <ModalCategoryContent inline close={() => setIsCategoryPickerOpen(false)} getSelected={handleCategory} />}
           </>}
 
-          {mode === "edition" && <button type="button" onClick={handleDelete} className="mt-2 w-full cursor-pointer gf-glass-button-danger text-white text-center rounded-full p-2">Delete this {isProject ? "project" : "budget"}</button>}
-          <button type="submit" className="mt-3 cursor-pointer w-full gf-glass-button text-white text-center rounded-full p-2">{mode === "edition" ? "Update" : "Create"} {isProject ? "Project" : "Budget"}</button>
+          {mode === "edition" && <button type="button" onClick={handleDelete} className="mt-2 w-full cursor-pointer gf-glass-button-danger text-white text-center rounded-full p-2">{t("budgets.deleteThis", { p1: isProject ? "project" : "budget" })}</button>}
+          <button type="submit" className="mt-3 cursor-pointer w-full gf-glass-button text-white text-center rounded-full p-2">{mode === "edition" ? tr("web.update") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")}</button>
         </form>
       </div>
     </div>
-  } />;
+  );
+  return inline ? panel : <BasicModal close={onClose} renderContent={panel} />;
 }
 
 export default function BudgetEditModal(props: BudgetEditModalProps): React.JSX.Element {

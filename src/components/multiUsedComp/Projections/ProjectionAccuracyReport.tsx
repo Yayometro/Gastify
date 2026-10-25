@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import UniversalCategoIcon from "../UniversalCategoIcon";
+import React from "react";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import type { ProjectionAccuracyRow } from "@/hooks/useProjectionTable";
-import ProjectionAccuracyInfoModal from "./ProjectionAccuracyInfoModal";
+
+import { InfoTip } from "../InfoTip";
 import ProjectionVarianceCell from "./ProjectionVarianceCell";
+import { useT, useInfo } from "@/i18n/client";
 
 export interface ProjectionAccuracyReportProps {
   rows?: ProjectionAccuracyRow[] | null;
@@ -20,32 +21,26 @@ export interface ProjectionAccuracyReportProps {
 // dimensiones numéricas por mes (proyectado y real) que no caben como una
 // sola columna más en la tabla existente.
 function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReportProps): React.JSX.Element | null {
-  const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
+  const { APP_INFO } = useInfo();
+  const t = useT();
   if (!rows || rows.length === 0) return null;
 
   return (
     <div className="w-full mt-6">
-      <h2 className="text-purple-300 text-lg mb-2 flex items-center">
-        Precisión de tus proyecciones
-        <button
-          type="button"
-          aria-label="How to read this table"
-          className="inline-block ml-1 align-middle cursor-pointer text-purple-500"
-          onClick={() => setShowInfoModal(true)}
-        >
-          <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={14} />
-        </button>
+      <h2 className="text-purple-300 text-lg mb-2 flex items-center gap-1">
+        {t("projections.accuracy.title")}
+        <InfoTip info={APP_INFO.c_mo_leer_esta_tabla_2} />
       </h2>
       <div className="w-full overflow-x-auto">
         <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
           <thead>
             <tr className="bg-purple-600 text-white">
-              <th className="py-2 px-3">Mes</th>
-              <th className="py-2 px-3">Ingreso proyectado</th>
-              <th className="py-2 px-3">Ingreso real</th>
-              <th className="py-2 px-3">Gasto proyectado</th>
-              <th className="py-2 px-3">Gasto real</th>
-              <th className="py-2 px-3">Desajuste</th>
+              <th className="py-2 px-3">{t("projections.accuracy.month")}</th>
+              <th className="py-2 px-3">{t("projections.accuracy.projectedIncome")}</th>
+              <th className="py-2 px-3">{t("projections.accuracy.realIncome")}</th>
+              <th className="py-2 px-3">{t("projections.accuracy.projectedExpense")}</th>
+              <th className="py-2 px-3">{t("projections.accuracy.realExpense")}</th>
+              <th className="py-2 px-3">{t("projections.accuracy.gap")}</th>
             </tr>
           </thead>
           <tbody>
@@ -71,14 +66,14 @@ function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReport
                 <td className="py-2 px-3">
                   <div className="flex flex-col leading-tight text-xs items-start mx-auto w-fit">
                     <ProjectionVarianceCell
-                      label="Ingreso"
+                      label={t("projections.accuracy.income")}
                       actual={row.actualIncome}
                       projected={row.projectedIncome}
                       value={row.varianceIncome}
                       betterWhenPositive
                     />
                     <ProjectionVarianceCell
-                      label="Gasto"
+                      label={t("projections.accuracy.expense")}
                       actual={row.actualExpense}
                       projected={row.projectedExpense}
                       value={row.varianceExpense}
@@ -92,9 +87,8 @@ function ProjectionAccuracyReport({ rows, onRowClick }: ProjectionAccuracyReport
         </table>
       </div>
       <p className="text-xs text-gf-text-muted mt-2 px-1">
-        Solo se muestran meses cerrados con un historial de proyección registrado.
+        {t("projections.accuracy.help")}
       </p>
-      {showInfoModal && <ProjectionAccuracyInfoModal onClose={() => setShowInfoModal(false)} />}
     </div>
   );
 }

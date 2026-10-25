@@ -3,6 +3,7 @@ import dbConnection from "@/app/api/dbConnection";
 import Category, { type ICategory } from "@/model/Category";
 import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 export interface RemoveCategorySuccessResponse {
   message: string;
@@ -18,9 +19,10 @@ export type RemoveCategoryResponse = RemoveCategorySuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<RemoveCategoryResponse>> {
+  const t = await serverT(["errors"]);
   try {
     console.log("first");
-    if (!request) throw new Error("No request received from NEW CATEGORY");
+    if (!request) throw new Error(t("errors.no.request.received.from.new"));
     const id = (await request.json()) as string;
     console.log(id);
     // Security fix: this used to delete the Category by id alone, with
@@ -29,18 +31,18 @@ export async function POST(
     // user's category. Now deletion is scoped to the caller's own
     // wallet (session-derived).
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
     await dbConnection();
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
-    if (!userFound) throw new Error("User not found on REMOVE CATEGORY");
+    if (!userFound) throw new Error(t("errors.user.not.found.on.remove.4"));
     const removedCatego = await Category.findOneAndDelete({
       _id: id,
       wallet: userFound.wallet,
     });
-    if (!removedCatego) throw new Error("NO category REMOVED 🤕");
+    if (!removedCatego) throw new Error(t("errors.no.category.removed"));
     //
     return NextResponse.json({
-      message: `${removedCatego.name} was removed successfully 🤓`,
+      message: t("errors.api.removed", { p1: removedCatego.name }),
       data: {
         categoRemoved: removedCatego,
       },

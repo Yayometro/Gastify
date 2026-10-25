@@ -1,8 +1,10 @@
+"use client";
 import React from "react";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
 import dayjs from "dayjs";
 import { formatMoneyMinor } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 export interface DeletePreviewRowCategory {
   color?: string;
@@ -51,6 +53,7 @@ export interface DeletePreviewRowProps {
 }
 
 function DeletePreviewRow({ transaction }: DeletePreviewRowProps): React.JSX.Element | null {
+  const t = useT();
   if (!transaction) return null;
   const native = transaction.displayMoney?.native;
   const amountLabel = native
@@ -70,13 +73,13 @@ function DeletePreviewRow({ transaction }: DeletePreviewRowProps): React.JSX.Ele
           )}
         </div>
         <div className="min-w-0 flex flex-col">
-          <p className="font-medium text-gf-text truncate text-xs">{transaction.name || "No name"}</p>
+          <p className="font-medium text-gf-text truncate text-xs">{transaction.name || t("web.no.name.2")}</p>
           <div className="text-[10px] text-gf-text-muted flex items-center gap-1.5 flex-wrap">
-            <span>Cat: <b className="font-medium text-gf-text-muted">{transaction.category?.name || "—"}</b></span>
+            <span>{t("shared.cat")} <b className="font-medium text-gf-text-muted">{transaction.category?.name || "—"}</b></span>
             {transaction.subCategory?.name && (
-              <span>• Sub: <b className="font-medium text-gf-text-muted">{transaction.subCategory.name}</b></span>
+              <span>{t("shared.sub")} <b className="font-medium text-gf-text-muted">{transaction.subCategory.name}</b></span>
             )}
-            <span>• Acc: <b className="font-medium text-gf-text-muted">{transaction.account?.name || "—"}</b></span>
+            <span>{t("shared.acc")} <b className="font-medium text-gf-text-muted">{transaction.account?.name || "—"}</b></span>
           </div>
         </div>
       </div>

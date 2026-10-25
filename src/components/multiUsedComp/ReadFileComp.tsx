@@ -1,4 +1,5 @@
 "use client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 import React, { useState } from "react";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
@@ -22,6 +23,9 @@ import type { UserData } from "@/lib/features/userSlice";
 import useGetUserSession from "@/hooks/useGetUserSession";
 import type { AppDispatch, RootState } from "@/lib/store";
 
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT, useInfo } from "@/i18n/client";
+
 export type UploadStatusKey = "idle" | "uploading" | "processing" | "done" | "error";
 
 interface StatusBadgeInfo {
@@ -30,13 +34,13 @@ interface StatusBadgeInfo {
   spin: boolean;
 }
 
-const STATUS: Record<UploadStatusKey, StatusBadgeInfo | null> = {
+const statusFor = (t: TranslateFn): Record<UploadStatusKey, StatusBadgeInfo | null> => ({
   idle: null,
-  uploading: { label: "Uploading file...", color: "text-purple-500", spin: true },
-  processing: { label: "Reading and creating transactions...", color: "text-purple-500", spin: true },
-  done: { label: "Done!", color: "text-green-400", spin: false },
-  error: { label: "Something went wrong", color: "text-red-500", spin: false },
-};
+  uploading: { label: t("movements.import.uploading"), color: "text-purple-500", spin: true },
+  processing: { label: t("movements.import.reading"), color: "text-purple-500", spin: true },
+  done: { label: t("movements.import.done"), color: "text-green-400", spin: false },
+  error: { label: t("movements.import.error"), color: "text-red-500", spin: false },
+});
 
 function SpinnerIcon(): React.JSX.Element {
   return (
@@ -48,7 +52,8 @@ function SpinnerIcon(): React.JSX.Element {
 }
 
 function StatusBadge({ status }: { status: UploadStatusKey }): React.JSX.Element | null {
-  const s = STATUS[status];
+  const t = useT();
+  const s = statusFor(t)[status];
   if (!s) return null;
   return (
     <p className={`text-xs flex items-center gap-1 ${s.color} transition-all`}>
@@ -104,6 +109,9 @@ export interface ReadFileCompProps {
 }
 
 function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
+  const t = useT();
+  const { APP_INFO } = useInfo();
+  const tr = useT();
   const [isExcel, setIsExcel] = useState<boolean>(true);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [uploadStatus, setUploadStatus] = useState<UploadStatusKey>("idle");
@@ -132,7 +140,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       const response = await fetch(
         toFetch.getFullPath(`general-data/files/template/${userEmail}`)
       );
-      if (!response.ok) throw new Error("Template generation failed");
+      if (!response.ok) throw new Error(t("web.template.generation.failed"));
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -143,7 +151,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      runNotify("error", "Could not download template, please try again 🤕");
+      runNotify("error", tr("movements.import.templateError"));
     } finally {
       setIsDownloading(false);
     }
@@ -152,7 +160,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
   const customRequest: NonNullable<UploadProps["customRequest"]> = async ({ file, onSuccess, onError }) => {
     const userEmail = ccUser.mail || email;
     if (!userEmail) {
-      onError?.(new Error("User not available yet, please try again"));
+      onError?.(new Error(t("web.user.not.available.yet.please.try.again")));
       return;
     }
     setUploadStatus("uploading");
@@ -182,15 +190,15 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
         if (!res?.ok) {
           setUploadStatus("error");
           if (res?.versionMismatch) {
-            runNotify("error", `Your template is outdated. Please click "Download format" to get the latest template and try again 📥`);
+            runNotify("error", t("movements.templateOutdated"));
           } else {
-            runNotify("error", res?.message || "Something went wrong, please try again 🤕");
+            runNotify("error", res?.message || t("web.something.went.wrong.please.try.again"));
           }
           return;
         }
         setUploadStatus("done");
         const created = res.data?.length ?? 0;
-        runNotify("ok", `${created} transactions have been processed and created from the file 😎`);
+        runNotify("ok", t("movements.importProcessed", { p1: created }));
         if (created > 0 && res.data) {
           reduxDispatch(addNewTransacctions(res.data));
           fetchSuggestionsFor(
@@ -206,7 +214,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
         const errMsg =
           (info.file.response as UploadApiResponse | undefined)?.message ||
           info.file.error?.message ||
-          "The file couldn't be processed, please try again 🤕";
+          t("web.the.file.couldn.t.be.processed.please.try.again");
         runNotify("error", errMsg);
         setTimeout(() => setUploadStatus("idle"), 3000);
       }
@@ -216,7 +224,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
   const dedupRequest: NonNullable<UploadProps["customRequest"]> = async ({ file, onSuccess, onError }) => {
     const userEmail = ccUser.mail || email;
     if (!userEmail) {
-      onError?.(new Error("User not available yet, please try again"));
+      onError?.(new Error(t("web.user.not.available.yet.please.try.again")));
       return;
     }
     setDedupLoading(true);
@@ -248,13 +256,13 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       if (info.file.status === "done") {
         const res = info.file.response as DedupPreviewData | undefined;
         if (!res?.ok) {
-          runNotify("error", res?.message || "Could not process deduplication 🤕");
+          runNotify("error", res?.message || t("web.could.not.process.deduplication"));
           return;
         }
         // Show preview modal — user must confirm before deleting
         setDedupPreview(res);
       } else if (info.file.status === "error") {
-        runNotify("error", "Deduplication failed, please try again 🤕");
+        runNotify("error", tr("movements.dup.failed"));
         setDedupLoading(false);
       }
     },
@@ -273,12 +281,12 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       if (res?.ok !== false) {
         reduxDispatch(removeManyTransactions(idsToDelete));
         setDedupResult({ removed: idsToDelete.length, scanned: dedupPreview?.scanned });
-        runNotify("ok", `Removed ${idsToDelete.length} duplicate transaction(s) 🧹`);
+        runNotify("ok", t("movements.dedupRemoved", { p1: idsToDelete.length }));
       } else {
-        runNotify("error", res?.message || "Could not delete transactions 🤕");
+        runNotify("error", res?.message || t("web.could.not.delete.transactions"));
       }
     } catch {
-      runNotify("error", "Could not delete transactions 🤕");
+      runNotify("error", tr("movements.delete.failed"));
     } finally {
       setDedupConfirming(false);
       setDedupPreview(null);
@@ -309,13 +317,13 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       };
       if (res.ok && res.data) {
         reduxDispatch(updateManyTransactions(res.data));
-        runNotify("ok", `${res.data.length} transaction(s) categorized 🏷️`);
+        runNotify("ok", t("categories.categorizedCount", { p1: res.data.length }));
         return true;
       }
-      runNotify("error", res?.message || "Could not apply suggestions 🤕");
+      runNotify("error", res?.message || t("web.could.not.apply.suggestions"));
       return false;
     } catch {
-      runNotify("error", "Could not apply suggestions 🤕");
+      runNotify("error", tr("movements.categorizer.applyFailed"));
       return false;
     } finally {
       setSuggestionsApplying(false);
@@ -329,9 +337,9 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
 
       {/* ── Description ── */}
       <div className="text-center">
-        <h1 className="text-2xl font-light">Import from Excel</h1>
+        <h1 className="text-2xl font-light">{tr("movements.import.title")}</h1>
         <p className="text-xs text-gf-text-muted mt-1 max-w-[300px] mx-auto leading-relaxed">
-          Download the Gastify template, fill it with your transactions (date, concept, amount, currency, type) and upload it here. Categories, tags, accounts and account currencies are auto-resolved from your existing ones.
+          {tr("movements.import.intro")}
         </p>
       </div>
 
@@ -341,7 +349,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           className="flex items-center gap-2 text-purple-500 hover:text-purple-400 w-fit cursor-pointer text-sm"
           onClick={() => setIsExcel(!isExcel)}
         >
-          <p>{isExcel ? "Excel file" : "XML file"}</p>
+          <p>{isExcel ? t("web.excel.file") : t("web.xml.file")}</p>
           {isExcel ? <PiMicrosoftExcelLogoFill size={18} /> : <BsFiletypeXml size={18} />}
         </div>
 
@@ -353,7 +361,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
               disabled={isUploading}
               className="gf-glass-button !border-0 !text-white"
             >
-              {isUploading ? "Processing..." : "Upload file"}
+              {isUploading ? "Processing..." : t("web.upload.file")}
             </Button>
           </Upload>
         </div>
@@ -366,14 +374,14 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
               <p className="font-semibold">
                 {uploadResult.count > 0
                   ? `${uploadResult.count} transaction${uploadResult.count !== 1 ? "s" : ""} imported successfully`
-                  : "File processed — no new transactions found"}
+                  : t("web.file.processed.no.new.transactions.found")}
               </p>
-              <p className="text-green-500 mt-[2px]">Ready to use in your dashboard</p>
+              <p className="text-green-500 mt-[2px]">{tr("movements.import.readyTitle")}</p>
             </div>
             <button
               onClick={() => setUploadResult(null)}
               className="text-green-400 hover:text-green-300 text-base leading-none shrink-0 mt-[1px]"
-              aria-label="Dismiss"
+              aria-label={tr("movements.import.dismiss")}
             >
               ×
             </button>
@@ -385,7 +393,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           onClick={handleDownloadTemplate}
         >
           <MdFormatAlignLeft size={16} />
-          <span>{isDownloading ? "Generating template..." : "Download format"}</span>
+          <span className="inline-flex items-center gap-1.5"><span>{isDownloading ? t("web.generating.template") : t("web.download.format")}</span><InfoTip info={APP_INFO.plantilla} /></span>
         </div>
       </div>
 
@@ -399,13 +407,13 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           className="flex items-center gap-2 text-sm text-gf-text-muted hover:text-purple-500 transition-colors cursor-pointer"
         >
           <MdOutlineCleaningServices size={18} />
-          <span>{showDedup ? "Hide" : "Remove duplicates from Excel"}</span>
+          <span>{showDedup ? t("web.hide") : t("web.remove.duplicates.from.excel")}</span>
         </button>
 
         {showDedup && (
           <div className="flex flex-col items-center gap-3 w-full">
             <p className="text-xs text-gf-text-muted text-center max-w-[280px] leading-relaxed">
-              Upload the same Excel you already imported. Transactions that share the exact <b>date</b>, <b>name</b>, <b>amount</b> and <b>currency</b> will be processed according to the mode below.
+              {tr("movements.dup.intro1")} <b>{tr("movements.dup.word.date")}</b>, <b>{tr("movements.dup.word.name")}</b>, <b>{tr("movements.dup.word.amount")}</b> {tr("movements.dup.word.and")} <b>{tr("movements.dup.word.currency")}</b> {tr("movements.dup.intro2")}
             </p>
 
             {/* Toggle delete mode */}
@@ -418,7 +426,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
                     : "text-gf-text-muted hover:text-gf-text-muted"
                 }`}
               >
-                Keep one original
+                {tr("movements.dup.keepOne")}
               </button>
               <button
                 onClick={() => setDedupDeleteAll(true)}
@@ -428,13 +436,13 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
                     : "text-gf-text-muted hover:text-gf-text-muted"
                 }`}
               >
-                Delete all matches
+                {tr("movements.dup.deleteAll")}
               </button>
             </div>
             <p className="text-[10px] text-gf-text-muted text-center max-w-[260px] -mt-1 leading-relaxed">
               {dedupDeleteAll
-                ? "Every transaction matching a row in the file will be deleted — nothing is kept."
-                : "One record is always kept per group — only the extra copies are removed."}
+                ? t("web.every.transaction.matching.a.row.in.the.file.will.be.del")
+                : t("web.one.record.is.always.kept.per.group.only.the.extra.copie")}
             </p>
 
             <div onClick={(e) => e.stopPropagation()}>
@@ -444,7 +452,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
                   loading={dedupLoading}
                   className={`text-xs ${dedupDeleteAll ? "!border-red-400 !text-red-400 hover:!border-red-500" : ""}`}
                 >
-                  {dedupLoading ? "Scanning for duplicates..." : "Upload & Clean"}
+                  {dedupLoading ? t("web.scanning.for.duplicates") : t("web.upload.clean")}
                 </Button>
               </Upload>
             </div>
@@ -454,17 +462,17 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
                 <div className="flex-1 text-center">
                   {dedupResult.removed > 0 ? (
                     <>
-                      <p className="font-semibold">Removed {dedupResult.removed} duplicate{dedupResult.removed > 1 ? "s" : ""}</p>
-                      <p className={dedupResult.removed > 0 ? "text-green-500" : ""}>{dedupResult.scanned} rows scanned</p>
+                      <p className="font-semibold">{tr("movements.dup.removed", { p1: dedupResult.removed, p2: dedupResult.removed > 1 ? "s" : "" })}</p>
+                      <p className={dedupResult.removed > 0 ? "text-green-500" : ""}>{tr("movements.dup.rowsScanned", { p1: dedupResult.scanned })}</p>
                     </>
                   ) : (
-                    <p>No duplicates found in {dedupResult.scanned} rows</p>
+                    <p>{tr("movements.dup.noneIn", { p1: dedupResult.scanned })}</p>
                   )}
                 </div>
                 <button
                   onClick={() => setDedupResult(null)}
                   className={`text-base leading-none shrink-0 mt-[1px] ${dedupResult.removed > 0 ? "text-green-400 hover:text-green-300" : "text-gf-text-muted hover:text-gf-text-muted"}`}
-                  aria-label="Dismiss"
+                  aria-label={tr("movements.import.dismiss")}
                 >
                   ×
                 </button>

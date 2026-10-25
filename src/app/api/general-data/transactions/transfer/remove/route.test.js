@@ -55,7 +55,7 @@ describe("transfer/remove", () => {
     const body = await res.json();
 
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/No session/);
+    expect(body.message).toMatch(/No hay sesión activa/);
     expect(Transaction.deleteMany).not.toHaveBeenCalled();
   });
 
@@ -68,7 +68,7 @@ describe("transfer/remove", () => {
     const body = await res.json();
 
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/User not found/);
+    expect(body.message).toMatch(/No encontramos tu usuario/);
     expect(Transaction.deleteMany).not.toHaveBeenCalled();
   });
 
@@ -101,7 +101,7 @@ describe("transfer/remove", () => {
     const body = await res.json();
 
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/No transfer\/exchange found/);
+    expect(body.message).toMatch(/No encontramos la transferencia o cambio/);
     expect(Transaction.deleteMany).not.toHaveBeenCalled();
   });
 });

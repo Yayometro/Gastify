@@ -3,6 +3,7 @@
 import React from "react";
 import { Switch } from "antd";
 import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
+import { useT } from "@/i18n/client";
 
 export interface ChargedElsewhereSectionProps {
   enabled?: boolean;
@@ -31,22 +32,23 @@ function ChargedElsewhereSection({
   onMerchantCurrencyChange,
   quoting,
 }: ChargedElsewhereSectionProps): React.JSX.Element {
+  const t = useT();
   return (
     <div className="w-full flex flex-col gap-1">
       <div className="flex items-center gap-2">
         <Switch checked={enabled} onChange={onToggle} size="small" />
-        <p className="label-tfp !mb-0">Charged in another currency</p>
+        <p className="label-tfp !mb-0">{t("shared.charged.otherCurrency")}</p>
       </div>
       {enabled && (
         <div className="w-full flex flex-col gap-2 bg-gf-accent-soft-bg border border-purple-200 rounded-xl p-2">
-          <p className="label-tfp">Charged amount</p>
+          <p className="label-tfp">{t("shared.charged.amount")}</p>
           <div className="flex gap-2 w-full">
             <input
               type="number"
               step="0.01"
               value={merchantAmount}
               onChange={(e) => onMerchantAmountChange(e.target.value)}
-              placeholder="Amount"
+              placeholder={t("shared.amountWord")}
               className="flex-1"
             />
             <select
@@ -63,8 +65,8 @@ function ChargedElsewhereSection({
           </div>
           <p className="text-[11px] text-gf-text-muted">
             {quoting
-              ? "Estimating the equivalent…"
-              : "The Amount field above fills in automatically from a live estimate - adjust it if you know the exact amount that was charged."}
+              ? t("web.estimating.the.equivalent")
+              : t("web.the.amount.field.above.fills.in.automatically.from.a.liv")}
           </p>
         </div>
       )}

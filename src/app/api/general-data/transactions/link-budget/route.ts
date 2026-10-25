@@ -10,6 +10,7 @@ import "@/model/Account";
 import "@/model/Category";
 import "@/model/SubCategory";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
+import { serverT } from "@/i18n/server";
 
 // Not exported: a Next.js route file may only export handlers. Kept as the source of the request-body type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -36,10 +37,11 @@ export type LinkBudgetResponse = LinkBudgetSuccessResponse;
 export async function POST(
   request: NextRequest | Request
 ): Promise<NextResponse<LinkBudgetResponse>> {
+  const t = await serverT(["errors"]);
   try {
     const { transactionId, budgetId } =
       ((await request.json()) || {}) as LinkBudgetRequestBody;
-    if (!transactionId) throw new Error("Transaction id is required");
+    if (!transactionId) throw new Error(t("errors.transaction.id.is.required"));
 
     // Security fix: this route previously lacked session verification and
     // performed Transaction.findById(transactionId) directly with zero ownership check (IDOR).
@@ -47,19 +49,19 @@ export async function POST(
     // session user in the database, and scope transaction and budget queries
     // to the user's wallet.
     const sesion = await getVerifiedSession(request.headers);
-    if (!sesion) throw new Error("No session");
+    if (!sesion) throw new Error(t("errors.no.session"));
 
     await dbConnection();
 
     const userFound = await User.findOne({ mail: sesion.user.email }).lean();
     if (!userFound)
-      throw new Error("User not found on LINK BUDGET");
+      throw new Error(t("errors.user.not.found.on.link"));
 
     const transaction = await Transaction.findOne({
       _id: transactionId,
       wallet: userFound.wallet,
     });
-    if (!transaction) throw new Error("Transaction was not found");
+    if (!transaction) throw new Error(t("errors.transaction.was.not.found"));
 
     if (budgetId) {
       const budget = await Budget.findOne({
@@ -72,7 +74,7 @@ export async function POST(
         !budget ||
         (budget.budgetType || (budget.isSaving ? "saving" : "spending")) !== "project"
       ) {
-        throw new Error("Project budget was not found");
+        throw new Error(t("errors.project.budget.was.not.found.2"));
       }
       transaction.budget = budget._id as mongoose.Types.ObjectId;
     } else {

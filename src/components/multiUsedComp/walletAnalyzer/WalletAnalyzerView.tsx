@@ -1,3 +1,6 @@
+"use client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
+
 import React, { useMemo, useState } from "react";
 import { ConfigProvider, DatePicker } from "antd";
 import esES from "antd/locale/es_ES";
@@ -10,6 +13,8 @@ import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
 import UniversalCategoIcon from "../UniversalCategoIcon";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import WalletAnalyzerTrendChart from "./WalletAnalyzerTrendChart";
 import WalletAnalyzerWeekdayChart from "./WalletAnalyzerWeekdayChart";
 import InsightDetailModal from "./InsightDetailModal";
@@ -19,6 +24,7 @@ import MonthlyChampionsModal from "./MonthlyChampionsModal";
 import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerTrendItem } from "./WalletAnalyzer";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 interface ModalContentTopMonthItemProps {
@@ -161,6 +167,8 @@ export interface WalletAnalyzerMonthlyAverages {
   avgIncome: number;
   avgExpense: number;
   avgTransactionCount: number;
+  // The months the averages cover (the trend: the chosen month and the ones before it).
+  monthsCount?: number;
   [key: string]: unknown;
 }
 
@@ -363,9 +371,10 @@ export interface ActiveInsightData {
 // direction (red) - for income/balance/savings-rate/FX-value, up is the
 // good direction (green), so those pass invert to flip the colors.
 export function ChangePill({ changePct, isNew, unit = "%", invert = false }: ChangePillProps): React.JSX.Element {
+  const tr = useT();
   if (isNew) {
     return (
-      <span className="text-[11px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>
+      <span className="text-[11px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">{tr("analyzer.badge.new")}</span>
     );
   }
   if (changePct === null || changePct === undefined) {
@@ -429,7 +438,7 @@ export function RankRow({ index, item, currency, subtitle, onClick }: RankRowPro
 // bullets - every claim here is a direct readout of a computed boolean/
 // percentage, not an inference, so it stays consistent with the rest of
 // Wallet Analyzer's "no AI" rule-based approach.
-export function buildSpendPatternAnalysis(patterns: BiggestSpendPatternsData): string[] {
+export function buildSpendPatternAnalysis(patterns: BiggestSpendPatternsData, tr: TranslateFn): string[] {
   const { biggestTransaction, biggestCategory, biggestSubcategory, mostCommonCategoryTag, analysis } = patterns;
   const bullets: string[] = [];
 
@@ -459,8 +468,8 @@ export function buildSpendPatternAnalysis(patterns: BiggestSpendPatternsData): s
     bullets.push(
       `El tag más frecuente en ${biggestCategory.name} es "${mostCommonCategoryTag.name}" (${mostCommonCategoryTag.count} transacciones)` +
         (analysis.transactionSharesTopCategoryTag
-          ? ` — y la transacción más grande también lo tiene.`
-          : `, pero la transacción más grande no lo tiene.`)
+          ? ` — ${tr("web.and.the.largest.transaction.has.it.too")}`
+          : `, ${tr("web.but.the.largest.transaction.does.not")}`)
     );
   }
 
@@ -484,6 +493,9 @@ function WalletAnalyzerView({
   transactions,
   projectionComparison,
 }: WalletAnalyzerViewProps): React.JSX.Element {
+  const text = useWalletText();
+  const { APP_INFO } = useInfo();
+  const tr = useT();
   const {
     currentTotals,
     previousTotals,
@@ -552,7 +564,7 @@ function WalletAnalyzerView({
   }
 
   function openCategoryModal(item: { name: string; icon?: string; color?: string; amount?: number }, range: { start: Date; end: Date }, onBack?: () => void) {
-    const children = getCategoryTransactions(transactions || [], item.name, true, range);
+    const children = getCategoryTransactions(text, transactions || [], item.name, true, range);
     renderModal(
       <TypedModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill: true, value: item.amount, children }}
@@ -587,12 +599,12 @@ function WalletAnalyzerView({
   return (
     <div className="wallet-analyzer-container w-full flex flex-col gap-4">
       <div className="flex flex-col items-center gap-2">
-        <h1 className="wallet-analyzer-title text-2xl text-center font-bold text-gf-text">Wallet Analyzer</h1>
+        <h1 className="wallet-analyzer-title text-2xl text-center font-bold text-gf-text">{tr("analyzer.title")}</h1>
         <div className="flex items-center gap-1.5 bg-gf-surface border border-gf-border rounded-full px-1.5 shadow-sm" style={{ height: 32 }}>
           <button
             type="button"
             onClick={onPrevMonth}
-            aria-label="Mes anterior"
+            aria-label={tr("analyzer.prevMonth")}
             className="w-6 h-6 flex items-center justify-center rounded-full text-gf-text-muted hover:bg-gf-surface-2 transition-colors"
           >
             ‹
@@ -632,7 +644,7 @@ function WalletAnalyzerView({
           <button
             type="button"
             onClick={onNextMonth}
-            aria-label="Mes siguiente"
+            aria-label={tr("analyzer.nextMonth")}
             disabled={!canGoNext}
             className="w-6 h-6 flex items-center justify-center rounded-full text-gf-text-muted hover:bg-gf-surface-2 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
           >
@@ -656,20 +668,20 @@ function WalletAnalyzerView({
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* Month vs month */}
         <div className="md:col-span-2 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">{referenceMonthLabel} vs. {previousMonthLabel}</p>
-          <p className="text-xs text-gf-text-muted mb-3">Comparativo del mes contra el periodo anterior</p>
+          <p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.compare.vs", { p1: referenceMonthLabel, p2: previousMonthLabel })}</p>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.monthCompare")}</p>
           <table className="w-full text-[13px]">
             <thead>
               <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
                 <th className="text-left font-bold pb-2"></th>
                 <th className="text-right font-bold pb-2 text-gf-text-muted">{previousMonthLabel.split(" ")[0]}</th>
                 <th className="text-right font-bold pb-2">{referenceMonthLabel.split(" ")[0]}</th>
-                <th className="text-right font-bold pb-2">Cambio</th>
+                <th className="text-right font-bold pb-2">{tr("analyzer.change")}</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="py-2 text-gf-text-muted">Ingresos</td>
+                <td className="py-2 text-gf-text-muted">{tr("analyzer.incomes")}</td>
                 <td className="py-2 text-right text-gf-text-muted">{formatMoneyMajor(previousTotals.income, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right font-semibold text-gf-text">
                   {formatMoneyMajor(currentTotals.income, walletPrimaryCurrency)}
@@ -679,7 +691,7 @@ function WalletAnalyzerView({
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Gastos</td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">{tr("analyzer.bills")}</td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{formatMoneyMajor(previousTotals.expense, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">
                   {formatMoneyMajor(currentTotals.expense, walletPrimaryCurrency)}
@@ -689,7 +701,7 @@ function WalletAnalyzerView({
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Balance</td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">{tr("analyzer.balance")}</td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{formatMoneyMajor(previousTotals.balance, walletPrimaryCurrency)}</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">
                   {formatMoneyMajor(currentTotals.balance, walletPrimaryCurrency)}
@@ -699,7 +711,7 @@ function WalletAnalyzerView({
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Tasa de ahorro</td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">{tr("analyzer.savingsRate")}</td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{Math.round(previousTotals.savingsRate * 100)}%</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">
                   {Math.round(currentTotals.savingsRate * 100)}%
@@ -709,7 +721,7 @@ function WalletAnalyzerView({
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-gf-text-muted border-t border-gf-border">Transacciones</td>
+                <td className="py-2 text-gf-text-muted border-t border-gf-border">{tr("analyzer.transactions")}</td>
                 <td className="py-2 text-right text-gf-text-muted border-t border-gf-border">{previousTotals.transactionCount}</td>
                 <td className="py-2 text-right font-semibold text-gf-text border-t border-gf-border">{currentTotals.transactionCount}</td>
                 <td className="py-2 text-right border-t border-gf-border">
@@ -728,14 +740,14 @@ function WalletAnalyzerView({
 
         {/* Trend */}
         <div className="md:col-span-3 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Tendencia · 6 meses</p>
-          <p className="text-xs text-gf-text-muted mb-3">Ingresos vs. gastos por mes — pasa el cursor o toca un mes para ver el detalle</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.trend6")}</p><InfoTip info={APP_INFO.tendencia_2} /></div>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.trend6.help")}</p>
           <div
             onClick={() =>
               setActiveInsight({
                 icon: "📅",
                 tone: "info",
-                title: "Promedio mensual",
+                title: tr("analyzer.monthlyAvg"),
                 type: "monthly_average",
                 data: { avgIncome: monthlyAverages.avgIncome, avgExpense: monthlyAverages.avgExpense, avgTransactionCount: monthlyAverages.avgTransactionCount, trend },
               })
@@ -747,7 +759,7 @@ function WalletAnalyzerView({
                 setActiveInsight({
                   icon: "📅",
                   tone: "info",
-                  title: "Promedio mensual",
+                  title: tr("analyzer.monthlyAvg"),
                   type: "monthly_average",
                   data: { avgIncome: monthlyAverages.avgIncome, avgExpense: monthlyAverages.avgExpense, avgTransactionCount: monthlyAverages.avgTransactionCount, trend },
                 });
@@ -756,15 +768,15 @@ function WalletAnalyzerView({
             className="grid grid-cols-3 gap-3 mb-4 cursor-pointer group"
           >
             <div className="rounded-xl bg-green-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">Promedio mensual · Ingresos</p>
+              <div className="flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">{tr("analyzer.monthlyAvg.incomes")}</p><InfoTip info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount ?? 6)} /></div>
               <p className="text-lg font-extrabold text-green-400">{formatMoneyMajor(monthlyAverages.avgIncome, walletPrimaryCurrency)}</p>
             </div>
             <div className="rounded-xl bg-red-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-red-400/70">Promedio mensual · Gastos</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-red-400/70">{tr("analyzer.monthlyAvg.bills")}</p>
               <p className="text-lg font-extrabold text-red-400">{formatMoneyMajor(monthlyAverages.avgExpense, walletPrimaryCurrency)}</p>
             </div>
             <div className="rounded-xl bg-gf-accent-soft-bg px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300/70">Promedio mensual · Transacciones</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300/70">{tr("analyzer.monthlyAvg.transactions")}</p>
               <p className="text-lg font-extrabold text-purple-300">{Math.round(monthlyAverages.avgTransactionCount)}</p>
             </div>
           </div>
@@ -780,7 +792,7 @@ function WalletAnalyzerView({
 
       {/* Item-count control - governs both Top categories and Top transactions below */}
       <div className="flex items-center justify-between px-1 flex-wrap gap-2">
-        <p className="text-xs font-semibold text-gf-text-muted">Elementos en Top categorías y Top transacciones</p>
+        <div className="flex items-center gap-1.5"><p className="text-xs font-semibold text-gf-text-muted">{tr("analyzer.topItems")}</p><InfoTip info={APP_INFO.analyzer(topN)} /></div>
         <div className="flex items-center gap-1 bg-gf-surface border border-gf-border rounded-full p-1 shadow-sm">
           {[3, 6, 12, 24].map((n) => (
             <button
@@ -800,10 +812,10 @@ function WalletAnalyzerView({
       {/* Top categories - previous month left, current month right, mirroring top transactions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías</p>
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topCategories", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousMonthLabel}</p>
           {topCategoriesBillsPrevious.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Sin gastos el mes pasado.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.noBillsLastMonth")}</p>
           ) : (
             topCategoriesBillsPrevious.map((c, i) => (
               <RankRow
@@ -817,10 +829,10 @@ function WalletAnalyzerView({
           )}
         </div>
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} categorías</p>
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topCategories", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{referenceMonthLabel}</p>
           {topCategoriesBills.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Sin gastos este mes.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.noBillsThisMonth")}</p>
           ) : (
             topCategoriesBills.map((c, i) => (
               <RankRow
@@ -838,10 +850,10 @@ function WalletAnalyzerView({
       {/* Top transactions - previous month left, current month right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} transacciones</p>
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topTransactions", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousMonthLabel}</p>
           {topTransactionsBills.previous.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Sin transacciones el mes pasado.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.noTxLastMonth")}</p>
           ) : (
             topTransactionsBills.previous.map((t, i) => (
               <RankRow
@@ -856,10 +868,10 @@ function WalletAnalyzerView({
           )}
         </div>
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">Top {topN} transacciones</p>
+          <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topTransactions", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{referenceMonthLabel}</p>
           {topTransactionsBills.current.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Sin transacciones este mes.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.noTxThisMonth")}</p>
           ) : (
             topTransactionsBills.current.map((t, i) => (
               <RankRow
@@ -877,10 +889,10 @@ function WalletAnalyzerView({
 
       {/* Budgets */}
       <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-        <p className="text-[15px] font-extrabold text-gf-text">Presupuestos · cumplimiento y rachas</p>
-        <p className="text-xs text-gf-text-muted mb-3">Qué tan cerca estuviste de tus límites mensuales — toca una fila para ver el detalle</p>
+        <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.budgets.title")}</p><InfoTip info={APP_INFO.presupuestos_del_analizador} /></div>
+        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.budgetsMonth.help")}</p><InfoTip info={APP_INFO.cumplimiento_del_presupuesto} className="mt-px" /></div>
         {budgetRows.length === 0 ? (
-          <p className="text-xs text-gf-text-muted">No tienes presupuestos de gasto configurados.</p>
+          <p className="text-xs text-gf-text-muted">{tr("analyzer.budgets.none")}</p>
         ) : (
           <div className="flex flex-col">
             {budgetRows.map((b) => {
@@ -892,7 +904,7 @@ function WalletAnalyzerView({
                     setActiveInsight({
                       icon: b.status === "over" ? "⚠️" : "📊",
                       tone: "info",
-                      title: `${b.category} — cumplimiento`,
+                      title: tr("web.p1.compliance", { p1: b.category }),
                       type: "budget",
                       data: b,
                     })
@@ -901,7 +913,7 @@ function WalletAnalyzerView({
                   tabIndex={0}
                   onKeyDown={(e: React.KeyboardEvent) => {
                     if (e.key === "Enter" || e.key === " ") {
-                      setActiveInsight({ icon: "📊", tone: "info", title: `${b.category} — cumplimiento`, type: "budget", data: b });
+                      setActiveInsight({ icon: "📊", tone: "info", title: tr("web.p1.compliance", { p1: b.category }), type: "budget", data: b });
                     }
                   }}
                   className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 cursor-pointer gf-hover-glass transition-colors"
@@ -921,7 +933,7 @@ function WalletAnalyzerView({
                       b.status === "over" ? "text-red-400 bg-red-500/15" : b.status === "warning" ? "text-amber-400 bg-amber-500/15" : "text-green-400 bg-green-500/15"
                     }`}
                   >
-                    {b.streakMonths >= 2 ? `${b.streakMonths} meses ✅` : `${Math.round(b.pct)}%`}
+                    {b.streakMonths >= 2 ? tr("web.p1.months", { p1: b.streakMonths }) : `${Math.round(b.pct)}%`}
                   </span>
                 </div>
               );
@@ -933,8 +945,8 @@ function WalletAnalyzerView({
       {/* Biggest spend patterns */}
       {biggestSpendPatterns && (
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Grandes gastos · últimos {biggestSpendPatterns.monthsBack} meses</p>
-          <p className="text-xs text-gf-text-muted mb-3">Dónde está tu gasto más grande, y si hay un patrón detrás</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.big.lastMonths", { p1: biggestSpendPatterns.monthsBack })}</p><InfoTip info={APP_INFO.grandes_gastos_2} /></div>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.big.help2")}</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
             <div
               onClick={() => setChampionsModalKind("transaction")}
@@ -945,7 +957,7 @@ function WalletAnalyzerView({
               }}
               className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
             >
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Transacción más grande</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">{tr("analyzer.big.transaction")}</p>
               <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestTransaction.name}</p>
               <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestTransaction.amount, walletPrimaryCurrency)}</p>
               <p className="text-[11px] text-gf-text-muted truncate">
@@ -966,10 +978,10 @@ function WalletAnalyzerView({
               }}
               className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
             >
-              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Categoría con más gasto</p>
+              <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">{tr("analyzer.big.category")}</p>
               <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestCategory.name}</p>
               <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestCategory.total, walletPrimaryCurrency)}</p>
-              <p className="text-[11px] text-gf-text-muted">{Math.round(biggestSpendPatterns.analysis.categoryShareOfTotal)}% de tu gasto total</p>
+              <p className="text-[11px] text-gf-text-muted">{tr("analyzer.big.percentOfTotal", { p1: Math.round(biggestSpendPatterns.analysis.categoryShareOfTotal) })}</p>
             </div>
 
             {biggestSpendPatterns.biggestSubcategory && (
@@ -982,19 +994,19 @@ function WalletAnalyzerView({
                 }}
                 className="rounded-xl border border-gf-border p-3.5 cursor-pointer transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
               >
-                <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">Subcategoría con más gasto</p>
+                <p className="text-[10.5px] font-bold uppercase tracking-wide text-gf-text-muted">{tr("analyzer.big.subcategory")}</p>
                 <p className="text-[13px] font-bold text-gf-text truncate mt-1">{biggestSpendPatterns.biggestSubcategory.name}</p>
                 <p className="text-lg font-extrabold text-gf-text">{formatMoneyMajor(biggestSpendPatterns.biggestSubcategory.total, walletPrimaryCurrency)}</p>
                 <p className="text-[11px] text-gf-text-muted">{biggestSpendPatterns.biggestSubcategory.categoryName}</p>
               </div>
             )}
           </div>
-          <p className="text-[11px] text-gf-text-muted -mt-2 mb-2">Toca una tarjeta para ver el detalle mes por mes</p>
+          <p className="text-[11px] text-gf-text-muted -mt-2 mb-2">{tr("analyzer.tapCard")}</p>
 
           <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300 mb-1.5">Análisis</p>
+            <div className="mb-1.5 flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.analysis")}</p><InfoTip info={APP_INFO.de_d_nde_sale_este_an_lisis} /></div>
             <ul className="list-disc pl-4 space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
-              {buildSpendPatternAnalysis(biggestSpendPatterns).map((bullet, i) => (
+              {buildSpendPatternAnalysis(biggestSpendPatterns, tr).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
               ))}
             </ul>
@@ -1005,10 +1017,10 @@ function WalletAnalyzerView({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Subscriptions */}
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Suscripciones recurrentes</p>
-          <p className="text-xs text-gf-text-muted mb-3">Detectadas por nombre y frecuencia mensual</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.subscriptions")}</p><InfoTip info={APP_INFO.suscripciones_recurrentes} /></div>
+          <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.subscriptions.help")}</p><InfoTip info={APP_INFO.pagos_recurrentes} className="mt-px" /></div>
           {subscriptions.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">No se detectaron suscripciones recurrentes.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.subscriptions.none")}</p>
           ) : (
             <div className="flex flex-col">
               {subscriptions.map((s) => (
@@ -1036,7 +1048,7 @@ function WalletAnalyzerView({
                     <p className="text-[12.5px] font-semibold text-gf-text truncate">{s.name}</p>
                     <p className="text-[10.5px] text-gf-text-muted">{s.categoryName}</p>
                   </div>
-                  {s.isNew && <span className="text-[10px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">nueva</span>}
+                  {s.isNew && <span className="text-[10px] font-bold text-purple-600 bg-gf-accent-soft-bg px-2 py-0.5 rounded-full">{tr("analyzer.badge.new")}</span>}
                   <span className="text-[12.5px] font-bold text-gf-text shrink-0">
                     {formatMoneyMajor(s.amount, walletPrimaryCurrency)}
                   </span>
@@ -1048,20 +1060,20 @@ function WalletAnalyzerView({
 
         {/* FX exposure */}
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">Exposición multi-moneda</p>
-          <p className="text-xs text-gf-text-muted mb-3">Valor de tus saldos en otras monedas</p>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.fx.title")}</p><InfoTip info={APP_INFO.exposici_n_multimoneda} /></div>
+          <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.fx.help")}</p>
           {fxExposure.loading ? (
-            <p className="text-xs text-gf-text-muted">Consultando tipo de cambio…</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.fx.loading")}</p>
           ) : fxExposure.rows.length === 0 ? (
-            <p className="text-xs text-gf-text-muted">Todas tus cuentas están en {walletPrimaryCurrency}.</p>
+            <p className="text-xs text-gf-text-muted">{tr("analyzer.fx.allSame", { p1: walletPrimaryCurrency })}</p>
           ) : (
             <table className="w-full text-[13px]">
               <thead>
                 <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
-                  <th className="text-left font-bold pb-2">Moneda</th>
-                  <th className="text-right font-bold pb-2">Saldo</th>
-                  <th className="text-right font-bold pb-2">En {walletPrimaryCurrency}</th>
-                  <th className="text-right font-bold pb-2">vs. {previousMonthLabel.split(" ")[0]}</th>
+                  <th className="text-left font-bold pb-2">{tr("analyzer.fx.currency")}</th>
+                  <th className="text-right font-bold pb-2">{tr("analyzer.fx.balance")}</th>
+                  <th className="text-right font-bold pb-2">{tr("analyzer.fx.inCurrency", { p1: walletPrimaryCurrency })}</th>
+                  <th className="text-right font-bold pb-2">{tr("analyzer.vsLabel", { p1: previousMonthLabel.split(" ")[0] })}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1085,32 +1097,29 @@ function WalletAnalyzerView({
 
       {/* Pace */}
       <div
-        onClick={() => setActiveInsight({ icon: "🏃", tone: "info", title: "Ritmo de gasto", type: "spending_pace", data: pace })}
+        onClick={() => setActiveInsight({ icon: "🏃", tone: "info", title: tr("analyzer.pace.title"), type: "spending_pace", data: pace })}
         role="button"
         tabIndex={0}
         onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === "Enter" || e.key === " ") {
-            setActiveInsight({ icon: "🏃", tone: "info", title: "Ritmo de gasto", type: "spending_pace", data: pace });
+            setActiveInsight({ icon: "🏃", tone: "info", title: tr("analyzer.pace.title"), type: "spending_pace", data: pace });
           }
         }}
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <p className="text-[15px] font-extrabold text-gf-text">Ritmo de gasto</p>
-          <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.pace.title")}</p><InfoTip info={APP_INFO.ritmo_de_gasto} /></div>
+          <span className="text-[11px] font-semibold text-purple-600">{tr("analyzer.seeDetail")}</span>
         </div>
-        <p className="text-xs text-gf-text-muted mb-3">Comparado con tu propio promedio a esta altura del mes</p>
+        <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.pace.monthHelp")}</p>
         <div className="h-2.5 rounded-full bg-gf-surface-2 overflow-hidden">
           <div className="h-full rounded-full bg-purple-500" style={{ width: `${pacePct}%` }} />
         </div>
         <p className="text-xs text-gf-text-muted mt-2">
-          Llevas gastado {formatMoneyMajor(pace.spentSoFar, walletPrimaryCurrency)} al día {pace.dayOfMonth}
+          {tr("analyzer.pace.spent")} {formatMoneyMajor(pace.spentSoFar, walletPrimaryCurrency)} {tr("analyzer.pace.today")} {pace.dayOfMonth}
           {pace.deltaPct !== null && (
             <>
-              {" — "}
-              {pace.deltaPct > 0 ? "más" : "menos"} que tu promedio de{" "}
-              {formatMoneyMajor(pace.avgPaceForSameDay, walletPrimaryCurrency)} para esta altura del mes en los últimos
-              meses ({Math.abs(Math.round(pace.deltaPct))}%).
+              {tr("analyzer.pace.monthVsAverage", { p1: pace.deltaPct > 0 ? "más" : "menos", p2: formatMoneyMajor(pace.avgPaceForSameDay, walletPrimaryCurrency), p3: Math.abs(Math.round(pace.deltaPct)) })}
             </>
           )}
         </p>
@@ -1127,10 +1136,10 @@ function WalletAnalyzerView({
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between">
-          <p className="text-[15px] font-extrabold text-gf-text">Patrones por día de la semana</p>
-          <span className="text-[11px] font-semibold text-purple-600">Ver detalle →</span>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.weekday.title")}</p><InfoTip info={APP_INFO.patr_n_semanal} /></div>
+  <span className="text-[11px] font-semibold text-purple-600">{tr("analyzer.seeDetail")}</span>
         </div>
-        <p className="text-xs text-gf-text-muted mb-3">Promedio de gasto por día, este mes</p>
+        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.dailyAvgThisMonth")}</p><InfoTip info={APP_INFO.c_mo_se_calcula} className="mt-px" /></div>
         <WalletAnalyzerWeekdayChart days={weekdaySpending.days} walletPrimaryCurrency={walletPrimaryCurrency} />
         <p className="text-xs text-gf-text-muted mt-3">{weekdaySpending.insight}</p>
       </div>

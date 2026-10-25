@@ -19,6 +19,7 @@ import type { UserData } from "@/lib/features/userSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { FxQuotePostResponse } from "@/app/api/general-data/fx/quote/route";
 import type { TransferTransactionResponse } from "@/app/api/general-data/transactions/transfer/route";
+import { useT } from "@/i18n/client";
 
 export interface TransferExchangeFormState {
   name: string;
@@ -53,6 +54,7 @@ const getEmptyForm = (): TransferExchangeFormState => ({
 // treated as an "exchange" and gets a live rate suggestion the user can
 // override to reflect the exact rate their bank actually used.
 function TransferExchangeModal(): React.JSX.Element {
+  const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
   const { user, accounts = [] } = useGetDataFromProvider<ProviderData>();
@@ -128,11 +130,11 @@ function TransferExchangeModal(): React.JSX.Element {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!sourceAccount || !destinationAccount) {
-      runNotify("error", "Select both a source and destination account");
+      runNotify("error", t("movements.transfer.bothAccounts"));
       return;
     }
     if (sourceAccount._id === destinationAccount._id) {
-      runNotify("error", "Source and destination accounts must be different");
+      runNotify("error", t("movements.transfer.different"));
       return;
     }
     const sourceAmountMinor = majorToMinor(Number(form.sourceAmount) || 0, sourceCurrency);
@@ -143,13 +145,13 @@ function TransferExchangeModal(): React.JSX.Element {
       const typedSomething = Number(form.sourceAmount) > 0 && Number(form.destinationAmount) > 0;
       runNotify(
         "error",
-        typedSomething ? "That amount is smaller than the smallest unit of the currency" : "Enter both amounts"
+        typedSomething ? t("web.that.amount.is.smaller.than.the.smallest.unit.of.the.cur") : t("web.enter.both.amounts")
       );
       return;
     }
 
     if (!(user as UserData | null | undefined)?._id) {
-      runNotify("error", "Your profile is still loading, try again in a moment");
+      runNotify("error", t("movements.transfer.profileLoading"));
       return;
     }
 
@@ -171,7 +173,7 @@ function TransferExchangeModal(): React.JSX.Element {
         dispatch(addNewTransacctions([res.data.outgoing, res.data.incoming] as TransactionData[]));
         clearForm();
       } else {
-        runNotify("error", res.message || "Something went wrong");
+        runNotify("error", res.message || t("web.something.went.wrong"));
       }
     } catch (err) {
       runNotify("error", String(err));
@@ -195,18 +197,18 @@ function TransferExchangeModal(): React.JSX.Element {
           className="form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]"
         >
           <h1 className="text-xl min-[450px]:text-2xl font-light text-center w-full">
-            {isCrossCurrency ? "Currency Exchange" : "Transfer Between Accounts"}
+            {isCrossCurrency ? t("web.currency.exchange") : t("web.transfer.between.accounts")}
           </h1>
-          <p className="label-tfp">Name (optional)</p>
+          <p className="label-tfp">{t("movements.transfer.name")}</p>
           <input
             type="text"
             name="name"
             value={form.name}
             onChange={handleChange}
-            placeholder={isCrossCurrency ? "Currency exchange" : "Transfer between accounts"}
+            placeholder={isCrossCurrency ? t("web.currency.exchange") : t("web.transfer.between.accounts")}
           />
 
-          <p className="label-tfp">From account</p>
+          <p className="label-tfp">{t("movements.transfer.from")}</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
@@ -214,7 +216,7 @@ function TransferExchangeModal(): React.JSX.Element {
               value={form.sourceAccountId}
               onChange={handleChange}
             >
-              <option value="">Select account</option>
+              <option value="">{t("movements.transfer.selectAccount")}</option>
               {accounts.map((acc) => (
                 <option value={acc._id} key={`src-${acc._id}`}>
                   {acc.name} ({acc.currency || "MXN"})
@@ -222,17 +224,17 @@ function TransferExchangeModal(): React.JSX.Element {
               ))}
             </select>
           </div>
-          <p className="label-tfp">Amount ({sourceAccount ? sourceCurrency : "—"})</p>
+          <p className="label-tfp">{t("movements.edit.amount", { p1: sourceAccount ? sourceCurrency : "—" })}</p>
           <input
             type="number"
             step="0.01"
             name="sourceAmount"
             value={form.sourceAmount}
             onChange={handleChange}
-            placeholder="Amount"
+            placeholder={t("movements.columns.amount")}
           />
 
-          <p className="label-tfp">To account</p>
+          <p className="label-tfp">{t("movements.transfer.to")}</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
@@ -240,7 +242,7 @@ function TransferExchangeModal(): React.JSX.Element {
               value={form.destinationAccountId}
               onChange={handleChange}
             >
-              <option value="">Select account</option>
+              <option value="">{t("movements.transfer.selectAccount")}</option>
               {accounts.map((acc) => (
                 <option value={acc._id} key={`dst-${acc._id}`}>
                   {acc.name} ({acc.currency || "MXN"})
@@ -249,10 +251,10 @@ function TransferExchangeModal(): React.JSX.Element {
             </select>
           </div>
           <p className="label-tfp">
-            Amount received ({destinationAccount ? destinationCurrency : "—"}){" "}
+            {t("movements.transfer.receivedPrefix")}{destinationAccount ? destinationCurrency : "—"}){" "}
             {isCrossCurrency && (
-              <Tooltip title="Pre-filled from a live exchange-rate estimate - overwrite it with the exact amount your bank actually gave you.">
-                <span className="text-purple-500 cursor-help">{quoting ? "estimating…" : "(estimate, editable)"}</span>
+              <Tooltip title={t("movements.transfer.estimate")}>
+                <span className="text-purple-500 cursor-help">{quoting ? "estimating…" : t("web.estimate.editable")}</span>
               </Tooltip>
             )}
           </p>
@@ -262,10 +264,10 @@ function TransferExchangeModal(): React.JSX.Element {
             name="destinationAmount"
             value={form.destinationAmount}
             onChange={handleChange}
-            placeholder="Amount received"
+            placeholder={t("movements.transfer.received")}
           />
 
-          <p className="label-tfp">Date</p>
+          <p className="label-tfp">{t("movements.columns.date")}</p>
           <div className="date-container w-full h-[100px]">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["MobileDateTimePicker"]}>
@@ -292,14 +294,14 @@ function TransferExchangeModal(): React.JSX.Element {
             className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
-            {isLoading ? <Spin /> : isCrossCurrency ? "Exchange" : "Transfer"}
+            {isLoading ? <Spin /> : isCrossCurrency ? t("web.exchange") : t("web.transfer")}
           </button>
           <button
             type="button"
             className="clearForm w-full p-2 gf-glass-button-neutral text-red-300 text-center rounded-full cursor-pointer mb-2"
             onClick={clearForm}
           >
-            Clear Form
+            {t("movements.transfer.clear")}
           </button>
         </form>
       </div>

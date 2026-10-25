@@ -1,4 +1,5 @@
 "use client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 import React, { useState } from "react";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getCategoryTransactions } from "@/helpers/transformers/walletAnalyzer";
@@ -8,6 +9,9 @@ import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMo
 import InsightDetailModal from "./InsightDetailModal";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerInsightItem } from "./WalletAnalyzerView";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -110,14 +114,14 @@ export interface WalletAnalyzerInsightsStripProps {
 
 // Card one-liners are rendered here (not baked into the transformer)
 // because they need `currency` for proper $/comma formatting.
-export function renderInsightDetail(insight: WalletAnalyzerInsightItem, currency: string): string {
+export function renderInsightDetail(insight: WalletAnalyzerInsightItem, currency: string, t: TranslateFn): string {
   const { type, data } = insight;
   switch (type) {
     case "budget": {
       const d = data as BudgetInsightData;
       return d.status === "over"
         ? `${Math.round(d.pct)}% del límite — ${formatMoneyMajor(d.spent, currency)} de ${formatMoneyMajor(d.limit, currency)}`
-        : "Bajo presupuesto de forma consistente";
+        : t("web.consistently.under.budget");
     }
     case "category_anomaly": {
       const d = data as CategoryAnomalyInsightData;
@@ -162,13 +166,17 @@ function WalletAnalyzerInsightsStrip({
   walletPrimaryCurrency,
   transactions,
   currentRange,
-  title = "Lo más destacado del mes",
+  title: titleProp,
 }: WalletAnalyzerInsightsStripProps): React.JSX.Element {
+  const text = useWalletText();
+  const { APP_INFO } = useInfo();
+  const t = useT();
+  const title = titleProp ?? t("web.highlights.of.the.month");
   const { close, handleClose, renderModal, modalContent } = useModal();
   const [activeInsight, setActiveInsight] = useState<WalletAnalyzerInsightItem | null>(null);
 
   function openCategoryModal(item: CategoryModalItem, range?: { start: Date | string; end: Date | string } | null) {
-    const children = getCategoryTransactions(transactions || [], item.name, true, range as { start: Date; end: Date });
+    const children = getCategoryTransactions(text, transactions || [], item.name, true, range as { start: Date; end: Date });
     renderModal(
       <ModalContentTopMonthItem
         item={{ name: item.name, icon: item.icon, color: item.color, isBill: true, value: item.amount, children }}
@@ -188,10 +196,10 @@ function WalletAnalyzerInsightsStrip({
 
   return (
     <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-      <p className="text-[15px] font-extrabold text-gf-text mb-0.5">{title}</p>
-      <p className="text-xs text-gf-text-muted mb-4">Calculado a partir de tu historial - sin llamadas a IA</p>
+      <div className="mb-0.5 flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{title}</p><InfoTip info={APP_INFO.lo_m_s_destacado} /></div>
+      <p className="text-xs text-gf-text-muted mb-4">{t("analyzer.projections.method")}</p>
       {insights.length === 0 ? (
-        <p className="text-xs text-gf-text-muted">Nada fuera de lo común este mes.</p>
+        <p className="text-xs text-gf-text-muted">{t("analyzer.unusualNone")}</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {insights.map((insight, i) => (
@@ -211,7 +219,7 @@ function WalletAnalyzerInsightsStrip({
                 {insight.icon}
               </span>
               <p className="text-xs font-bold text-gf-text leading-tight">{insight.title}</p>
-              <p className="text-[11px] text-gf-text-muted leading-snug">{renderInsightDetail(insight, walletPrimaryCurrency)}</p>
+              <p className="text-[11px] text-gf-text-muted leading-snug">{renderInsightDetail(insight, walletPrimaryCurrency, t)}</p>
             </div>
           ))}
         </div>

@@ -69,7 +69,7 @@ describe("edit-many authentication and scoping", () => {
     const body = await res.json();
 
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/No session/);
+    expect(body.message).toMatch(/No hay sesión activa/);
     expect(Transaction.findOne).not.toHaveBeenCalled();
   });
 
@@ -100,7 +100,7 @@ describe("bulk account reassignment currency safety", () => {
     const body = await res.json();
 
     expect(body.ok).toBe(false);
-    expect(body.message).toMatch(/Bulk account reassignment blocked/);
+    expect(body.message).toMatch(/Reasignación masiva bloqueada/);
   });
 
   it("allows the batch when every selected Transaction already matches the destination currency", async () => {

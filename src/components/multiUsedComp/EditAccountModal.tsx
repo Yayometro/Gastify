@@ -1,3 +1,4 @@
+"use client";
 import { Spin, Tooltip } from "antd";
 import React, { useEffect, useState } from "react";
 import CategoIcon from "./CategoIcon";
@@ -5,7 +6,12 @@ import runNotify from "@/helpers/gastifyNotifier";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
 import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/accountsSlice";
-import { SUPPORTED_CURRENCIES, CURRENCY_META } from "@gastify/core/money/currencies";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, currencyName } from "@gastify/core/money/currencies";
+import { BANKS, bankById } from "@gastify/core/banks/banks";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import { useT, useInfo, useLocale } from "@/i18n/client";
 
 export type EditAccountModalMode = "edition" | "creation" | boolean | string | null | undefined;
 
@@ -33,6 +39,8 @@ export interface FormAccountState {
   amount?: number | string;
   accountType?: string;
   currency?: string;
+  bankId?: string | null;
+  cardNumber?: string | null;
   userId?: unknown;
   walletId?: unknown;
   [key: string]: unknown;
@@ -43,9 +51,14 @@ export interface EditAccountModalProps {
   eamAccount?: EditAccountModalAccount | null;
   eamWallet?: EditAccountModalWallet | null;
   eamClose: (state: boolean) => void;
+  // Inside a panel (the "+" window): no full-screen overlay of its own.
+  eamInline?: boolean;
 }
 
-function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAccountModalProps): React.JSX.Element {
+function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline = false }: EditAccountModalProps): React.JSX.Element {
+  const { APP_INFO } = useInfo();
+  const t = useT();
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [active, setActive] = useState<unknown>(false);
   const [formAccount, setFormAccount] = useState<FormAccountState>({
@@ -54,7 +67,11 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
     amount: 0,
     accountType: "debit",
     currency: "MXN",
+    bankId: null,
+    cardNumber: "",
   });
+  const [bankQuery, setBankQuery] = useState<string>("");
+  const [showNumber, setShowNumber] = useState<boolean>(false);
   const toFetch = fetcher();
   //REDUX
   const dispatch = useDispatch();
@@ -72,6 +89,8 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
           amount: eamAccount.amount || 0,
           accountType: eamAccount.accountType || "debit",
           currency: eamAccount.currency || "MXN",
+          bankId: (eamAccount.bankId as string) || null,
+          cardNumber: (eamAccount.cardNumber as string) || "",
         });
       } else if (eamMode === "creation") {
         console.log(eamMode);
@@ -81,6 +100,8 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
           amount: 0,
           accountType: "debit",
           currency: eamWallet?.primaryCurrency || "MXN",
+          bankId: null,
+          cardNumber: "",
           userId: eamAccount.user,
           walletId: eamAccount.wallet,
         });
@@ -145,7 +166,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
         };
         res = await toFetch.post("general-data/accounts/new-account", newAcc);
       } else {
-        runNotify("warning", "No action taked to perform a change");
+        runNotify("warning", t("accounts.noAction"));
         setIsLoading(false);
         handleClose();
         return null;
@@ -175,11 +196,15 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
 
   return (
     <div
-      className={`fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[5000] bg-black/50 backdrop-blur-md ${
-        !active ? "hidden" : "flex"
-      } items-center justify-center`}
+      className={
+        eamInline
+          ? "w-full flex justify-center"
+          : `fixed top-[-0%] right-[-0%] w-[100%] h-[100%] z-[5000] bg-black/50 backdrop-blur-md ${
+              !active ? "hidden" : "flex"
+            } items-center justify-center`
+      }
     >
-      <div className="content gf-glass-violet flex flex-col w-[350px] h-[650px] relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden">
+      <div className={eamInline ? "relative flex w-full max-w-[460px] flex-col" : "content gf-glass-violet flex flex-col w-[350px] h-[820px] max-h-[95vh] overflow-y-auto relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden"}>
         <div
           className={`${
             isLoading ? "absolute" : "hidden"
@@ -187,28 +212,32 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
         >
           <Spin size="large" />
         </div>
-        <h1 className="text-center py-[20px] text-2xl text-white">
-          {eamMode === "edition" ? "Edit" : "Create"} Account 🪄
-        </h1>
+        {!eamInline && (
+          <h1 className="text-center py-[20px] text-2xl text-white">
+            {t("accounts.titlePrefix", { p1: eamMode === "edition" ? t("web.edit") : t("web.create") })}
+          </h1>
+        )}
         <form
           onSubmit={handleSubmit}
-          className={`form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20`}
+          className={eamInline ? "form-trans-edit flex w-full flex-col gap-2 items-start justify-start pb-2" : "form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20"}
         >
-          <div
-            className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer"
-            onClick={handleClose}
-          >
-            <CategoIcon type={"MdClose"} siz={20} />
-          </div>
-          <p className="label-tfp ">Name</p>
+          {!eamInline && (
+            <div
+              className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer"
+              onClick={handleClose}
+            >
+              <CategoIcon type={"MdClose"} siz={20} />
+            </div>
+          )}
+          <p className="label-tfp ">{t("accounts.form.name")}</p>
           <input
             type="text"
             name="name"
             value={formAccount.name}
             onChange={handleChange}
-            placeholder="Account Name"
+            placeholder={t("accounts.form.accountName")}
           />
-          <p className="label-tfp ">Current Balance</p>
+          <p className="label-tfp ">{t("accounts.form.balance")}</p>
           <input
             type="number"
             name="amount"
@@ -216,12 +245,12 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
             onChange={handleChange}
             placeholder="0.00"
           />
-          <p className="label-tfp ">Currency</p>
+          <p className="label-tfp ">{t("accounts.form.currency")}</p>
           <Tooltip
             title={
               hasLinkedTransactions
-                ? "Currency can't be changed once transactions are linked to this account. Create a new account in the target currency instead."
-                : "Each account has exactly one native currency."
+                ? t("web.the.currency.can.t.be.changed.once.transactions.are.link")
+                : t("web.each.account.has.exactly.one.native.currency")
             }
           >
             <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
@@ -234,13 +263,56 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
               >
                 {SUPPORTED_CURRENCIES.map((code) => (
                   <option key={code} value={code}>
-                    {code} ({CURRENCY_META[code].symbol}) - {CURRENCY_META[code].label}
+                    {code} ({CURRENCY_META[code].symbol}) - {currencyName(code, locale)}
                   </option>
                 ))}
               </select>
             </div>
           </Tooltip>
-          <p className="label-tfp ">Account Type</p>
+          <p className="label-tfp ">{t("accounts.form.bank")}<InfoTip info={APP_INFO.banco_y_n_mero} /></p>
+          <input
+            type="text"
+            value={bankQuery}
+            onChange={(e) => setBankQuery(e.target.value)}
+            placeholder={t("accounts.form.searchBank")}
+          />
+          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
+            <select
+              className="bg-transparent appearance-none w-full pr-4"
+              name="bankId"
+              value={formAccount.bankId || ""}
+              onChange={(e) => setFormAccount({ ...formAccount, bankId: e.target.value || null })}
+            >
+              <option value="">{t("accounts.form.noBank")}</option>
+              {BANKS.filter((b) => b.id === formAccount.bankId || !bankQuery.trim() || b.name.toLowerCase().includes(bankQuery.trim().toLowerCase())).map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {bankById(formAccount.bankId) ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`/banks/${formAccount.bankId}.webp`} alt="" className="bg-white rounded-xl p-1 w-10 h-10 object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+          ) : null}
+          <p className="label-tfp ">{t("accounts.form.number")}</p>
+          <div className="flex items-center gap-2 w-full">
+            <input
+              type={showNumber ? "text" : "password"}
+              inputMode="numeric"
+              name="cardNumber"
+              value={formAccount.cardNumber || ""}
+              onChange={(e) => setFormAccount({ ...formAccount, cardNumber: e.target.value.replace(/[^\d\s-]/g, "") })}
+              placeholder={t("accounts.form.numberHelp")}
+              maxLength={23}
+              autoComplete="off"
+            />
+            <button type="button" className="text-white text-xl" onClick={() => setShowNumber((v) => !v)} aria-label={showNumber ? t("web.hide.number") : t("web.show.number")}>
+              {showNumber ? <MdVisibilityOff /> : <MdVisibility />}
+            </button>
+          </div>
+          <p className="text-[10px] text-white/70">{t("accounts.form.numberSafety")}</p>
+          <p className="label-tfp ">{t("accounts.form.type")}</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
             <select
               className="bg-transparent appearance-none w-full pr-4"
@@ -248,10 +320,10 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
               value={formAccount.accountType}
               onChange={handleChange}
             >
-              <option value="debit">Debit</option>
-              <option value="credit">Credit</option>
-              <option value="cash">Cash</option>
-              <option value="savings">Savings</option>
+              <option value="debit">{t("accounts.type.debit")}</option>
+              <option value="credit">{t("accounts.type.credit")}</option>
+              <option value="cash">{t("accounts.type.cash")}</option>
+              <option value="savings">{t("accounts.type.savings")}</option>
             </select>
           </div>
           {eamMode === "edition" ? (
@@ -260,7 +332,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
               className="w-full p-2 gf-glass-button-danger text-white text-center rounded-full mt-2"
               onClick={() => handleDeletation()}
             >
-              Remove account
+              {t("accounts.remove")}
             </button>
           ) : (
             ""
@@ -270,7 +342,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose }: EditAcco
             className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
-            {isLoading ? <Spin /> : "Submit"}
+            {isLoading ? <Spin /> : t("web.submit")}
           </button>
         </form>
       </div>
