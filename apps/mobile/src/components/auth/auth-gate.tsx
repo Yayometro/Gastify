@@ -46,7 +46,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   // Either an authenticator app or a passkey counts as the account's second factor.
   if (!status.hasTwoFactor && !status.hasPasskey) return <NoTwoFactorScreen email={status.email} onRetry={refresh} />;
   if (status.stepUp !== 'fresh') {
-    return <TwoFactorScreen onVerified={refresh} hasTwoFactor={status.hasTwoFactor} hasPasskey={status.hasPasskey} />;
+    return <TwoFactorScreen onVerified={refresh} hasTwoFactor={status.hasTwoFactor} hasPasskey={status.hasPasskey} reason={status.stepUp} />;
   }
   return <>{children}</>;
 }

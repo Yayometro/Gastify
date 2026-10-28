@@ -1,20 +1,28 @@
 import { cookies, headers } from "next/headers";
-import { DEFAULT_LOCALE, LOCALE_COOKIE, localeFromAcceptLanguage, localeFromCountry, isLocale, type Locale } from "@gastify/core/i18n/locales";
+import { chooseLocale, LOCALE_COOKIE, type Locale } from "@gastify/core/i18n/locales";
 import { loadMessages, type Namespace } from "@gastify/core/i18n/catalogs";
 import { createTranslator, type TranslateFn } from "@gastify/core/i18n/translate";
 
-// The language of this request: the choice the person saved (cookie), or else the language the browser asks for.
-export async function currentLocale(): Promise<Locale> {
+// The country the request comes from, as the hosting platform reports it (Vercel, Cloudflare, CloudFront, or a proxy that sets X-Country-Code).
+const COUNTRY_HEADERS = ["x-vercel-ip-country", "cf-ipcountry", "cloudfront-viewer-country", "x-country-code"];
+
+// The language of this request: the one saved on the person's account (`account`, from the session) if they chose one; else the
+// choice this browser remembers (cookie); else where they are: the country the person chose on their account (`accountCountry`),
+// else the country the network reports; else the browser's language; else Spanish.
+export async function currentLocale(account?: string | null, accountCountry?: string | null): Promise<Locale> {
   try {
-    const saved = (await cookies()).get(LOCALE_COOKIE)?.value;
-    if (isLocale(saved)) return saved;
+    const cookieStore = await cookies();
     const requestHeaders = await headers();
-    const countryLocale = localeFromCountry(requestHeaders.get("x-vercel-ip-country"));
-    if (countryLocale) return countryLocale;
-    return localeFromAcceptLanguage(requestHeaders.get("accept-language"));
+    const networkCountry = COUNTRY_HEADERS.map((name) => requestHeaders.get(name)).find((value) => Boolean(value)) ?? null;
+    return chooseLocale({
+      account,
+      device: cookieStore.get(LOCALE_COOKIE)?.value,
+      country: accountCountry || networkCountry,
+      language: requestHeaders.get("accept-language"),
+    });
   } catch {
-    // Outside a request (a script, or a test that calls a route directly) there is no cookie to read: the default language.
-    return DEFAULT_LOCALE;
+    // Outside a request (a script, or a test that calls a route directly) there are no headers to read: the account or the default.
+    return chooseLocale({ account, country: accountCountry });
   }
 }
 

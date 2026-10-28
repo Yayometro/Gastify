@@ -78,7 +78,7 @@ function IconDisplayerMenu({ idmValue, idmIcon, showCatalogSummary = false, init
               {t("shared.demo.iconLibrarySummary", { p1: icons.length.toLocaleString() })}
             </p>
           )}
-          <p className="text-xs text-gf-text-muted">{found.length === 1 ? "1 ícono" : `${found.length} íconos`}</p>
+          <p className="text-xs text-gf-text-muted">{found.length === 1 ? t("web.1.icon") : t("web.icons.count", { p1: found.length })}</p>
           {matches.length === 0 ? (
             <p className="text-sm text-gf-text-muted">{t("navbar.icons.none")}</p>
           ) : (

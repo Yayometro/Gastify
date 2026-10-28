@@ -42,24 +42,36 @@ interface RingNode {
   id: string;
   name: string;
   color: string;
+  // A movement (the deepest level): the bubbles draw it in a darker shade of its category's colour.
+  movement: boolean;
   value?: number;
   children?: RingNode[];
 }
 
-// Parents take the sum of their children, so only the leaves carry a value of their own.
-function toRingNode(slice: BreakdownSlice): RingNode {
+// A darker shade of a #rrggbb colour, so a movement reads apart from the subcategory it sits in (both can share a colour).
+function darkerShade(color: string, amount = 0.3): string {
+  const match = /^#([0-9a-f]{6})$/i.exec(color);
+  if (!match) return color;
+  const value = parseInt(match[1], 16);
+  const channel = (shift: number) => Math.round(((value >> shift) & 0xff) * (1 - amount));
+  return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`;
+}
+
+// Parents take the sum of their children, so only the leaves carry a value of their own. `level` is the level the slice sits at.
+function toRingNode(slice: BreakdownSlice, level: number): RingNode {
   const isLeaf = slice.children.length === 0;
   return {
     id: slice.key,
     name: slice.name,
     color: slice.color,
+    movement: level === 2,
     value: isLeaf ? slice.value : undefined,
-    children: slice.children.map(toRingNode),
+    children: slice.children.map((child) => toRingNode(child, level + 1)),
   };
 }
 
-function rootNode(title: string, slices: BreakdownSlice[]): RingNode {
-  return { id: ROOT_ID, name: title, color: ROOT_COLOR, children: slices.map(toRingNode) };
+function rootNode(title: string, slices: BreakdownSlice[], level: number): RingNode {
+  return { id: ROOT_ID, name: title, color: ROOT_COLOR, movement: false, children: slices.map((slice) => toRingNode(slice, level)) };
 }
 
 // Every slice of this level, and every slice inside it, points at the slice of this level it belongs to: a tap anywhere in a
@@ -101,7 +113,7 @@ function FillBox({ children }: { children: React.ReactNode }): React.JSX.Element
 
 export function BreakdownRing({ slices, total, level, title, currency, onSelect, onBack }: BreakdownChartProps): React.JSX.Element {
   const owner = useMemo(() => ownerKeys(slices), [slices]);
-  const data = useMemo(() => rootNode(title, slices), [title, slices]);
+  const data = useMemo(() => rootNode(title, slices, level), [title, slices, level]);
   const tap = tapHandler(owner, level > 0, onSelect, onBack);
   return (
     <FillBox>
@@ -134,7 +146,7 @@ export function BreakdownRing({ slices, total, level, title, currency, onSelect,
 
 export function BreakdownBubbles({ slices, total, level, title, currency, onSelect, onBack }: BreakdownChartProps): React.JSX.Element {
   const owner = useMemo(() => ownerKeys(slices), [slices]);
-  const data = useMemo(() => rootNode(title, slices), [title, slices]);
+  const data = useMemo(() => rootNode(title, slices, level), [title, slices, level]);
   const tap = tapHandler(owner, level > 0, onSelect, onBack);
   return (
     <FillBox>
@@ -144,7 +156,7 @@ export function BreakdownBubbles({ slices, total, level, title, currency, onSele
         value="value"
         margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
         padding={10}
-        colors={(node) => String(node.data.color)}
+        colors={(node) => (node.data.movement ? darkerShade(String(node.data.color)) : String(node.data.color))}
         childColor={{ from: "color" }}
         borderWidth={1}
         borderColor={{ from: "color", modifiers: [["darker", 0.5]] }}

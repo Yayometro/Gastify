@@ -1,11 +1,16 @@
 export type BudgetOrder = 'spent' | 'ratio' | 'goal' | 'name';
 
-export const BUDGET_ORDERS: { id: BudgetOrder; label: string }[] = [
-  { id: 'spent', label: 'Mayor gasto' },
-  { id: 'ratio', label: 'Más cerca del límite' },
-  { id: 'goal', label: 'Meta más grande' },
-  { id: 'name', label: 'Nombre (A–Z)' },
-];
+import { tNow } from '@/i18n/now';
+
+// The orders the list can take, with their names in the language on screen.
+export function budgetOrders(): { id: BudgetOrder; label: string }[] {
+  return [
+    { id: 'spent', label: tNow("mobile.mayor.gasto") },
+    { id: 'ratio', label: tNow("mobile.mas.cerca.del.limite") },
+    { id: 'goal', label: tNow("mobile.meta.mas.grande") },
+    { id: 'name', label: tNow("mobile.nombre.a.z") },
+  ];
+}
 
 type SortableRow = { spent: number; goal: number; ratio: number; budget: { name?: string | null } };
 

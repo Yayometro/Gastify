@@ -13,6 +13,8 @@ export interface BudgetAlert {
   tone: AlertTone;
   title: string;
   message: string;
+  // When the notice first showed up on this device (see alertTimes.ts); null or missing when it is not known.
+  createdAt?: string | null;
 }
 
 export interface BudgetAlertInput {

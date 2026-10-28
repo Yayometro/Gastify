@@ -112,8 +112,8 @@ function HistoryClient({ email, readOnly = false, demoBudgets, demoRatesToMxn }:
         <div className="loader">
           {isLoading && (
             <TypedDashboardLoadingMessage
-              message={`We are building up your dashboard and data`}
-              subMessage={`Please wait a moment 🤓`}
+              message={t("web.we.are.building.up.your.dashboard.and.data")}
+              subMessage={t("web.please.wait.a.moment")}
               setLoading={toggleIsLoading}
             />
           )}

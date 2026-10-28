@@ -1,4 +1,5 @@
 "use client";
+import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 import React, { useMemo, useState } from "react";
 import { ConfigProvider, DatePicker } from "antd";
@@ -437,7 +438,7 @@ export function RankRow({ index, item, currency, subtitle, onClick }: RankRowPro
 // bullets - every claim here is a direct readout of a computed boolean/
 // percentage, not an inference, so it stays consistent with the rest of
 // Wallet Analyzer's "no AI" rule-based approach.
-export function buildSpendPatternAnalysis(patterns: BiggestSpendPatternsData): string[] {
+export function buildSpendPatternAnalysis(patterns: BiggestSpendPatternsData, tr: TranslateFn): string[] {
   const { biggestTransaction, biggestCategory, biggestSubcategory, mostCommonCategoryTag, analysis } = patterns;
   const bullets: string[] = [];
 
@@ -467,8 +468,8 @@ export function buildSpendPatternAnalysis(patterns: BiggestSpendPatternsData): s
     bullets.push(
       `El tag más frecuente en ${biggestCategory.name} es "${mostCommonCategoryTag.name}" (${mostCommonCategoryTag.count} transacciones)` +
         (analysis.transactionSharesTopCategoryTag
-          ? ` — y la transacción más grande también lo tiene.`
-          : `, pero la transacción más grande no lo tiene.`)
+          ? ` — ${tr("web.and.the.largest.transaction.has.it.too")}`
+          : `, ${tr("web.but.the.largest.transaction.does.not")}`)
     );
   }
 
@@ -903,7 +904,7 @@ function WalletAnalyzerView({
                     setActiveInsight({
                       icon: b.status === "over" ? "⚠️" : "📊",
                       tone: "info",
-                      title: `${b.category} — cumplimiento`,
+                      title: tr("web.p1.compliance", { p1: b.category }),
                       type: "budget",
                       data: b,
                     })
@@ -912,7 +913,7 @@ function WalletAnalyzerView({
                   tabIndex={0}
                   onKeyDown={(e: React.KeyboardEvent) => {
                     if (e.key === "Enter" || e.key === " ") {
-                      setActiveInsight({ icon: "📊", tone: "info", title: `${b.category} — cumplimiento`, type: "budget", data: b });
+                      setActiveInsight({ icon: "📊", tone: "info", title: tr("web.p1.compliance", { p1: b.category }), type: "budget", data: b });
                     }
                   }}
                   className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-lg border-t border-gf-border first:border-t-0 cursor-pointer gf-hover-glass transition-colors"
@@ -932,7 +933,7 @@ function WalletAnalyzerView({
                       b.status === "over" ? "text-red-400 bg-red-500/15" : b.status === "warning" ? "text-amber-400 bg-amber-500/15" : "text-green-400 bg-green-500/15"
                     }`}
                   >
-                    {b.streakMonths >= 2 ? `${b.streakMonths} meses ✅` : `${Math.round(b.pct)}%`}
+                    {b.streakMonths >= 2 ? tr("web.p1.months", { p1: b.streakMonths }) : `${Math.round(b.pct)}%`}
                   </span>
                 </div>
               );
@@ -1005,7 +1006,7 @@ function WalletAnalyzerView({
           <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
             <div className="mb-1.5 flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.analysis")}</p><InfoTip info={APP_INFO.de_d_nde_sale_este_an_lisis} /></div>
             <ul className="list-disc pl-4 space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
-              {buildSpendPatternAnalysis(biggestSpendPatterns).map((bullet, i) => (
+              {buildSpendPatternAnalysis(biggestSpendPatterns, tr).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
               ))}
             </ul>

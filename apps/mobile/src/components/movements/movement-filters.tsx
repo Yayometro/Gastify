@@ -19,6 +19,7 @@ import { EMPTY_FILTERS, type MovementFilters, type ReadableFilter, type TypeFilt
 
 import { useT, useInfo } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
+import { tNow } from '@/i18n/now';
 
 const READABLE = (t: TranslateFn): { id: ReadableFilter; label: string }[] => ([
   { id: 'all', label: t("mobile.todos") },
@@ -227,7 +228,7 @@ function DuplicateSubfilters({
         <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.restablecer.valores")}</Text>
       </Pressable>
       <Text className="font-inter text-sm text-gf-text-muted">
-        {count === 0 ? 'No encontramos repetidos.' : `${count} movimientos se repiten.`}
+        {count === 0 ? t("mobile.no.encontramos.repetidos") : tNow("mobile.movimientos.repiten", { count: count, p1: count })}
       </Text>
       {count > 0 && (
         <Pressable accessibilityRole="button" onPress={onSelect}>

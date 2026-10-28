@@ -8,9 +8,10 @@ import type { MonthTotals } from '@gastify/core/transactions/monthSummary';
 import { useT, useInfo } from "@/i18n/client";
 
 // Income, spending and what is left of a month. Same numbers as the web's dashboard.
-export function TotalsCard({ totals, currency, title = 'Este mes' }: { totals: MonthTotals; currency: string; title?: string }) {
+export function TotalsCard({ totals, currency, title: titleProp }: { totals: MonthTotals; currency: string; title?: string }) {
   const { APP_INFO } = useInfo();
   const t = useT();
+  const title = titleProp ?? t("analyzer.thisMonth");
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const balanceColor = totals.balance < 0 ? colors.expense : colors.text;

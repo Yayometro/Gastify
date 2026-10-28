@@ -94,7 +94,7 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories, readOnly = fal
                 </div>
                 <div className="cc-list-content-subCategory w-full flex items-center justify-center truncate">
                   <p className="w-full min-[400px]:text-lg min-[600px]:text-xl truncate px-2">
-                    {subCategory?.name || "No name..."}
+                    {subCategory?.name || t("web.no.name")}
                   </p>
                 </div>
               </button>

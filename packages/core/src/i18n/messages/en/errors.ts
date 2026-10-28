@@ -2,6 +2,8 @@ import type errors from "../es/errors";
 
 // English for the "errors" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof errors, string> = {
+  "errors.api.languageInvalid": "Invalid language",
+  "errors.api.countryInvalid": "Invalid country",
   "errors.api.bulkReassignBlocked": "Bulk account reassignment blocked: destination account is {p1} but at least one selected transaction is {p2}. Reassign mismatched-currency transactions individually instead.",
   "errors.api.exchangeRateUnavailable": "Exchange-rate estimate unavailable to convert {p1} -> {p2}. Try again in a moment.",
   "errors.api.currencyChoiceRequired": "Changing to an Account in a different currency ({p1} -> {p2}) requires an explicit choice: convert, reinterpret, or manual.",
@@ -81,6 +83,7 @@ const en: Record<keyof typeof errors, string> = {
   "errors.no.data.in.request.on": "No data in the request",
   "errors.no.params.id.send.to": "No ID was sent to update the transaction",
   "errors.no.session": "No active session",
+  "errors.stepUp.factorChange": "Confirm your identity again to change your verification factors.",
   "errors.user.not.found.on.update": "User not found to update the transaction",
   "errors.no.transactions.found.work.on": "The transaction to update was not found",
   "errors.no.wallet.found.for.this": "No wallet found for this transaction",
@@ -238,7 +241,8 @@ const en: Record<keyof typeof errors, string> = {
   "errors.date.must.be.a.valid": "The date must be a valid ISO date, not in the future",
   "errors.exchange.rate.estimate.unavailable": "Exchange-rate estimate unavailable",
   "errors.fx.quote.resolved": "Exchange-rate quote resolved",
-  "errors.no.user.was.saved.creating": "No user was saved when creating the new user ❌"
+  "errors.no.user.was.saved.creating": "No user was saved when creating the new user ❌",
+
 };
 
 export default en;

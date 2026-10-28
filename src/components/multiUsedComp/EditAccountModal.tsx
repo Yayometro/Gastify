@@ -214,7 +214,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
         </div>
         {!eamInline && (
           <h1 className="text-center py-[20px] text-2xl text-white">
-            {t("accounts.titlePrefix", { p1: eamMode === "edition" ? "Edit" : "Create" })}
+            {t("accounts.titlePrefix", { p1: eamMode === "edition" ? t("web.edit") : t("web.create") })}
           </h1>
         )}
         <form
@@ -249,8 +249,8 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
           <Tooltip
             title={
               hasLinkedTransactions
-                ? "Currency can't be changed once transactions are linked to this account. Create a new account in the target currency instead."
-                : "Each account has exactly one native currency."
+                ? t("web.the.currency.can.t.be.changed.once.transactions.are.link")
+                : t("web.each.account.has.exactly.one.native.currency")
             }
           >
             <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
@@ -307,7 +307,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
               maxLength={23}
               autoComplete="off"
             />
-            <button type="button" className="text-white text-xl" onClick={() => setShowNumber((v) => !v)} aria-label={showNumber ? "Hide number" : "Show number"}>
+            <button type="button" className="text-white text-xl" onClick={() => setShowNumber((v) => !v)} aria-label={showNumber ? t("web.hide.number") : t("web.show.number")}>
               {showNumber ? <MdVisibilityOff /> : <MdVisibility />}
             </button>
           </div>
@@ -342,7 +342,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
             className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
-            {isLoading ? <Spin /> : "Submit"}
+            {isLoading ? <Spin /> : t("web.submit")}
           </button>
         </form>
       </div>

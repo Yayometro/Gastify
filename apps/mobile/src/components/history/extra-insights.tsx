@@ -12,6 +12,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { computeMonthlyChampions, detectSubscriptions, findBiggestSpendPatterns } from '@gastify/core/transformers/walletAnalyzer';
 
 import { useT, useInfo, useWalletText } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 export function HistoryExtraInsights({ movements, currency, end, compareEnd }: { movements: TransactionData[]; currency: string; end: Date; compareEnd?: Date }) {
   const text = useWalletText();
@@ -19,12 +20,12 @@ export function HistoryExtraInsights({ movements, currency, end, compareEnd }: {
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const anchor = useMemo(() => end < new Date() ? end : new Date(), [end]);
-  const patterns = useMemo(() => findBiggestSpendPatterns(text, movements, anchor, 12), [movements, anchor]);
+  const patterns = useMemo(() => findBiggestSpendPatterns(text, movements, anchor, 12), [movements, anchor, text]);
   // With a comparison, the same 12-month reading is made ending at the compared period, to put beside the first.
   const compareAnchor = useMemo(() => (compareEnd ? (compareEnd < new Date() ? compareEnd : new Date()) : null), [compareEnd]);
-  const comparePatterns = useMemo(() => (compareAnchor ? findBiggestSpendPatterns(text, movements, compareAnchor, 12) : null), [movements, compareAnchor]);
-  const champions = useMemo(() => computeMonthlyChampions(text, movements, anchor, 12), [movements, anchor]);
-  const subscriptions = useMemo(() => detectSubscriptions(text, movements, anchor, 3, 6), [movements, anchor]);
+  const comparePatterns = useMemo(() => (compareAnchor ? findBiggestSpendPatterns(text, movements, compareAnchor, 12) : null), [movements, compareAnchor, text]);
+  const champions = useMemo(() => computeMonthlyChampions(text, movements, anchor, 12), [movements, anchor, text]);
+  const subscriptions = useMemo(() => detectSubscriptions(text, movements, anchor, 3, 6), [movements, anchor, text]);
   const [kind, setKind] = useState<ChampionKind | null>(null);
   const [analysis, setAnalysis] = useState(false);
   const [openSubscription, setOpenSubscription] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function HistoryExtraInsights({ movements, currency, end, compareEnd }: {
           <Text className="font-inter-semibold text-sm text-gf-text">{money(item.amount)}</Text>
         </Pressable>)}
       </Card>
-      <DetailSheet visible={Boolean(selected)} title={selected?.name ?? ''} subtitle={selected ? `${selected.occurrences.length} cargos encontrados` : undefined} onClose={() => setOpenSubscription(null)}>
+      <DetailSheet visible={Boolean(selected)} title={selected?.name ?? ''} subtitle={selected ? tNow("mobile.cargos.encontrados", { count: selected.occurrences.length, p1: selected.occurrences.length }) : undefined} onClose={() => setOpenSubscription(null)}>
         {selected?.isNew && <Text className="font-inter text-sm" style={{ color: colors.accent }}>{t("mobile.nuevo.en.este.periodo")}</Text>}
         {selected?.possibleDuplicateInMonth && <Text className="font-inter text-sm" style={{ color: colors.expense }}>{t("mobile.hay.un.posible.cargo.duplicado")}</Text>}
         {selected?.occurrences.map((occurrence, index) => <Pressable key={`${String(occurrence.date)}-${index}`} accessibilityRole="button" disabled={!occurrence._id} onPress={() => { setOpenSubscription(null); router.push({ pathname: '/movements/[id]', params: { id: String(occurrence._id), returnTo: '/more/history' } }); }} className="flex-row justify-between border-t border-gf-border py-2.5"><Text className="font-inter text-sm text-gf-text-muted">{new Date(occurrence.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</Text><Text className="font-inter-semibold text-sm text-gf-text">{money(occurrence.amount)} ›</Text></Pressable>)}

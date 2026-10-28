@@ -63,3 +63,40 @@ describe("phone sent as a number (bug 2)", () => {
     );
   });
 });
+
+describe("language and country chosen in the profile", () => {
+  it("saves the language and the country on the account", async () => {
+    await POST(req({ language: "en", country: "mx" }));
+    expect(userModel.findOneAndUpdate).toHaveBeenCalledWith(
+      { mail: "me@example.com" },
+      { $set: expect.objectContaining({ language: "en", country: "MX" }) },
+      { new: true }
+    );
+  });
+
+  it("clears them with null (automatic)", async () => {
+    await POST(req({ language: null, country: null }));
+    expect(userModel.findOneAndUpdate).toHaveBeenCalledWith(
+      { mail: "me@example.com" },
+      { $set: expect.objectContaining({ language: null, country: null }) },
+      { new: true }
+    );
+  });
+
+  it("leaves them alone when the request does not carry them", async () => {
+    await POST(req({ fullName: "Me" }));
+    const [, update] = userModel.findOneAndUpdate.mock.calls[0];
+    expect(update.$set).not.toHaveProperty("language");
+    expect(update.$set).not.toHaveProperty("country");
+  });
+
+  it("refuses a country that is not one of the codes", async () => {
+    await expect(POST(req({ country: "XX" }))).rejects.toThrow();
+    expect(userModel.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it("refuses a language that is not es or en", async () => {
+    await expect(POST(req({ language: "fr" }))).rejects.toThrow();
+    expect(userModel.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+});

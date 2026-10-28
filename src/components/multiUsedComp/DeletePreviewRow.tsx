@@ -73,7 +73,7 @@ function DeletePreviewRow({ transaction }: DeletePreviewRowProps): React.JSX.Ele
           )}
         </div>
         <div className="min-w-0 flex flex-col">
-          <p className="font-medium text-gf-text truncate text-xs">{transaction.name || "No name"}</p>
+          <p className="font-medium text-gf-text truncate text-xs">{transaction.name || t("web.no.name.2")}</p>
           <div className="text-[10px] text-gf-text-muted flex items-center gap-1.5 flex-wrap">
             <span>{t("shared.cat")} <b className="font-medium text-gf-text-muted">{transaction.category?.name || "—"}</b></span>
             {transaction.subCategory?.name && (

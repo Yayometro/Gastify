@@ -69,7 +69,7 @@ function BudgetHistoricalComparativeRow({
             <UniversalCategoIcon type={defaultCate?.icon || "md/MdCategory"} siz={18} />
           </div>
           <div className="flex flex-col">
-            <p className="text-purple-300 hover:underline">{budget.name || "Unnamed budget"}</p>
+            <p className="text-purple-300 hover:underline">{budget.name || tr("web.unnamed.budget")}</p>
             <p className="text-[10px] text-gf-text-muted">
               {monthsMet} {tr("budgets.of")} {monthsTracked} {tr("budgets.monthsMetWord")}
               {monthsEstimated > 0 && (
@@ -83,7 +83,7 @@ function BudgetHistoricalComparativeRow({
             </p>
           </div>
         </div>
-        <p className={`text-sm font-bold ${pctColor}`}>{hasRate ? `${pct}% compliance` : "No data yet"}</p>
+        <p className={`text-sm font-bold ${pctColor}`}>{hasRate ? `${pct}% compliance` : tr("web.no.data.yet")}</p>
       </div>
       <div className="w-full" style={{ height: 200 }}>
         <ComparativeColumnChart {...chartProps} />

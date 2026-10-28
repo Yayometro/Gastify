@@ -65,8 +65,8 @@ function ChargedElsewhereSection({
           </div>
           <p className="text-[11px] text-gf-text-muted">
             {quoting
-              ? "Estimating the equivalent…"
-              : "The Amount field above fills in automatically from a live estimate - adjust it if you know the exact amount that was charged."}
+              ? t("web.estimating.the.equivalent")
+              : t("web.the.amount.field.above.fills.in.automatically.from.a.liv")}
           </p>
         </div>
       )}

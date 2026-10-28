@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { tNow } from '@/i18n/now';
 
 // Screens opened from another section (a movement opened from Historial or from an account, the account's
 // movements) receive `returnTo`: the path they came from. Going back returns there instead of to a default
@@ -16,10 +17,10 @@ export function goBackTo(returnTo: string | undefined, fallback: () => void): vo
 // The label of the back button for a `returnTo` path.
 export function returnLabel(returnTo: string | undefined, fallback: string): string {
   if (!returnTo) return fallback;
-  if (returnTo === '/') return 'Inicio';
-  if (returnTo.startsWith('/more/history')) return 'Historial';
-  if (returnTo.startsWith('/more/analyzer')) return 'Analizador de cartera';
-  if (returnTo.startsWith('/more/accounts/')) return 'Cuenta';
-  if (returnTo.startsWith('/budgets/')) return 'Presupuesto';
+  if (returnTo === '/') return tNow("mobile.inicio");
+  if (returnTo.startsWith('/more/history')) return tNow("mobile.historial");
+  if (returnTo.startsWith('/more/analyzer')) return tNow("mobile.analizador.de.cartera");
+  if (returnTo.startsWith('/more/accounts/')) return tNow("dashboard.bulk.account");
+  if (returnTo.startsWith('/budgets/')) return tNow("budgets.alert.defaultName");
   return fallback;
 }

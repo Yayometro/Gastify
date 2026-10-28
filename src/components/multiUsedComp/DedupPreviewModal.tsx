@@ -71,6 +71,7 @@ export interface DeleteRowProps {
 }
 
 function DeleteRow({ transaction, selected, onToggle }: DeleteRowProps): React.JSX.Element {
+  const t = useT();
   const id = String(transaction._id);
   return (
     <div
@@ -83,7 +84,7 @@ function DeleteRow({ transaction, selected, onToggle }: DeleteRowProps): React.J
           checked={selected}
           onChange={() => onToggle(id)}
           className="w-4 h-4 cursor-pointer accent-red-500"
-          title={selected ? "Uncheck to skip deletion" : "Check to include in deletion"}
+          title={selected ? t("web.uncheck.to.skip.deletion") : t("web.check.to.include.in.deletion")}
         />
       </div>
       <div className="min-w-0">
@@ -238,8 +239,8 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
           {effective.length > 0
             ? `${effective.length} transaction${effective.length !== 1 ? "s" : ""} will be permanently deleted.${skipped > 0 ? ` ${skipped} unchecked will be kept.` : ""}`
             : toDelete.length > 0
-            ? "All items unchecked — nothing will be deleted."
-            : "No duplicates found — nothing to delete."}
+            ? t("web.all.items.unchecked.nothing.will.be.deleted")
+            : t("web.no.duplicates.found.nothing.to.delete")}
         </p>
 
         {/* Actions */}
@@ -262,7 +263,7 @@ function DedupPreviewModal({ preview, deleteAll, onConfirm, onCancel, confirming
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
             )}
-            {confirming ? "Deleting…" : `Delete ${effective.length}`}
+            {confirming ? "Deleting…" : t("web.delete.p1", { p1: effective.length })}
           </button>
         </div>
       </div>

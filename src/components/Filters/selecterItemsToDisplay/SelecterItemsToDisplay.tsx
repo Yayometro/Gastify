@@ -1,6 +1,7 @@
 "use client";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import React, { useState } from "react";
+import { useT } from "@/i18n/client";
 
 export interface SelecterDisplayItem {
   value: string | number;
@@ -21,6 +22,7 @@ function SelecterItemsToDisplay({
   itemFromFather,
   styles,
 }: SelecterItemsToDisplayProps): React.JSX.Element {
+  const t = useT();
   const items: SelecterDisplayItem[] = itemsOverride || [
     { value: 2, name: "2 items" },
     { value: 3, name: "3 items" },
@@ -52,7 +54,7 @@ function SelecterItemsToDisplay({
         onChange={handleItemsChange}
       >
         {items.length <= 0
-          ? "No items to display..."
+          ? t("web.no.items.to.show")
           : items.map((item, index) => (
               <option
                 key={`${item.name}-${item.value}-${index}`}

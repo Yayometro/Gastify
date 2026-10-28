@@ -8,6 +8,7 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
 import type { PrimaryAmountItem } from "@gastify/core/time/timeFunctions";
 import type { RootState } from "@/lib/store";
+import { useT } from "@/i18n/client";
 
 const TypedUniversalCategoIcon = UniversalCategoIcon as React.ComponentType<{
   type?: string;
@@ -40,6 +41,7 @@ export interface TopCategoryRowProps {
 // as its sibling - same row shape, just with a rank number for "this is the
 // #1/#2/... category".
 function TopCategoryRow({ item, index, onClick }: TopCategoryRowProps): React.JSX.Element {
+  const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
 
   return (
@@ -61,7 +63,7 @@ function TopCategoryRow({ item, index, onClick }: TopCategoryRowProps): React.JS
           <TypedUniversalCategoIcon type={item.icon || "md/MdFilterNone"} siz={10} />
         </div>
         <p className="truncate text-start text-[15px] font-medium">
-          {item.type || item.name || "No category"}
+          {item.type || item.name || t("web.no.category")}
         </p>
       </div>
       <div className={`flex gap-1 items-center shrink-0 ${item.isBill ? "text-red-500" : "text-green-500"}`}>

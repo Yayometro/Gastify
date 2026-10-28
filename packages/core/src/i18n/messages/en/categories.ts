@@ -64,6 +64,8 @@ const en: Record<keyof typeof categories, string> = {
   "categories.summary.seeAll": "See all transactions of {p1} ›",
   "categories.summary.none": "No transactions in this period.",
   "categories.summary.seeSub": "See subcategories ›",
+  "categories.summary.back": "Back",
+  "categories.summary.forward": "Forward",
   "categories.summary.movements": "{p1} transaction{p2}",
   "categories.amount": "Amount:",
   "categories.percentage": "Percentage:",

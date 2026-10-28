@@ -93,8 +93,9 @@ interface CategoryTransitionChipProps {
 }
 
 function CategoryTransitionChip({ transaction, suggestion }: CategoryTransitionChipProps): React.JSX.Element {
-  const currentLabel = transaction.category?.name || transaction.subCategory?.name || "No category";
-  const suggestedLabel = suggestion.subCategory?.name || suggestion.category?.name || "Uncategorized";
+  const t = useT();
+  const currentLabel = transaction.category?.name || transaction.subCategory?.name || t("web.no.category");
+  const suggestedLabel = suggestion.subCategory?.name || suggestion.category?.name || t("web.uncategorized");
   const isLowConfidence = suggestion.confidence === "low";
 
   return (
@@ -140,6 +141,7 @@ interface SuggestionEntryProps {
 }
 
 function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }: SuggestionEntryProps): React.JSX.Element {
+  const t = useT();
   const id = String(entry.transaction._id);
   return (
     <div className={`flex items-center gap-2 transition-opacity ${selected ? "" : "opacity-40"}`}>
@@ -148,7 +150,7 @@ function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }: Sugges
         checked={selected}
         onChange={() => onToggle(id)}
         className="gf-checkbox-round"
-        title={selected ? "Uncheck to skip this suggestion" : "Check to apply this suggestion"}
+        title={selected ? t("web.uncheck.to.skip.this.suggestion") : t("web.check.to.apply.this.suggestion")}
       />
 
       <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:border sm:border-gf-border sm:rounded-2xl sm:p-2">
@@ -187,8 +189,9 @@ interface FetcherDeleteResponse {
   [key: string]: unknown;
 }
 
-function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel, confirming, cancelLabel = "Skip" }: SuggestionsListProps): React.JSX.Element {
+function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel, confirming, cancelLabel: cancelLabelProp }: SuggestionsListProps): React.JSX.Element {
   const t = useT();
+  const cancelLabel = cancelLabelProp ?? t("web.skip");
   const [items, setItems] = useState<CategorySuggestionEntry[]>(initialSuggestions);
   const [deselected, setDeselected] = useState<Set<string>>(new Set());
   const [editingTrans, setEditingTrans] = useState<EditSingleTransItem | null>(null);
@@ -224,10 +227,10 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
   const handleDelete = (transactionId?: string) => {
     Modal.confirm({
       title: t("movements.delete.confirm"),
-      content: "Are you sure you want to remove this transaction?",
-      okText: "Yes, delete",
+      content: t("web.are.you.sure.you.want.to.remove.this.transaction"),
+      okText: t("web.yes.delete"),
       okType: "danger",
-      cancelText: "Cancel",
+      cancelText: t("web.cancel"),
       zIndex: 4000, // above this component's own modal wrapper (z-[3000])
       onOk: async () => {
         try {
@@ -287,7 +290,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
       <p className="text-xs text-center text-gf-text-muted bg-gf-surface-2 rounded-xl py-2 px-3">
         {effective.length > 0
           ? `${effective.length} transaction${effective.length !== 1 ? "s" : ""} will be categorized.`
-          : "All items unchecked — nothing will change."}
+          : t("web.all.items.unchecked.nothing.will.change")}
       </p>
 
       <div className="flex gap-3 justify-end">
@@ -311,7 +314,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
           )}
-          {confirming ? "Applying…" : `Apply ${effective.length}`}
+          {confirming ? "Applying…" : t("web.apply.p1", { p1: effective.length })}
         </button>
       </div>
 

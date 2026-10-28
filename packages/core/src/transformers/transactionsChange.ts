@@ -8,6 +8,13 @@ import type { PrimaryAmountItem } from "@gastify/core/time/timeFunctions";
 import { formatInPrimaryCurrency } from "@gastify/core/money/displayCurrency";
 import { minorToMajor } from "@gastify/core/money/currencies";
 
+// The labels the rows show for a movement without a category and for the hierarchy totals (the app sets them in the language on
+// screen; they are English until then, and they are also the keys of the groups).
+let labels = { noCategory: "No category", totalExpenses: "Total expenses", totalIncomes: "Total incomes" };
+export function setTransactionLabels(next: Partial<typeof labels>): void {
+  labels = { ...labels, ...next };
+}
+
 // Dates from the stored fields, which may be missing (Invalid Date, as before).
 const asDate = (value: unknown): Date => new Date(value as string | number | Date);
 
@@ -222,15 +229,15 @@ export function reduceAndTransforToCategories<T extends TransactionLike>(
     const category = trans.category;
     const amount = getPrimaryAmount(trans);
     // Grouped by category id (two different categories with the same name are
-    // two rows, bug 94); a movement with no category goes to one "No category" row.
-    const groupKey = category?._id ? `id:${String(category._id)}` : `name:${category?.name ?? "No category"}`;
+    // two rows, bug 94); a movement with no category goes to one labels.noCategory row.
+    const groupKey = category?._id ? `id:${String(category._id)}` : `name:${category?.name ?? labels.noCategory}`;
     if (acc[groupKey]) {
       acc[groupKey].value += amount;
       acc[groupKey].children = [...acc[groupKey].children, trans];
     } else {
       acc[groupKey] = {
-        name: category?.name || "No category",
-        type: category?.name || "No category",
+        name: category?.name || labels.noCategory,
+        type: category?.name || labels.noCategory,
         icon: category?.icon || "md/MdFilterNone",
         color: category?.color || "#ABABAB",
         value: amount,
@@ -259,12 +266,12 @@ export function reduceAndTransforToCategories<T extends TransactionLike>(
 // and its parent category's total; a transaction with only a category (no
 // subCategory) contributes directly to that category with no children; a
 // transaction with neither is grouped under a single synthetic
-// "No category" bucket.
+// labels.noCategory bucket.
 export function buildCategoryHierarchy<T extends TransactionLike>(
   transactions: T[] | null | undefined,
   isBill?: boolean
 ): CategoryHierarchyRoot<T> {
-  const rootName = isBill ? "Total expenses" : "Total incomes";
+  const rootName = isBill ? labels.totalExpenses : labels.totalIncomes;
   const rootColor = isBill ? "#FF9797" : "#A7E295";
   if (!transactions || transactions.length === 0) {
     return { name: rootName, color: rootColor, icon: "md/MdMonetizationOn", children: [] };
@@ -276,7 +283,7 @@ export function buildCategoryHierarchy<T extends TransactionLike>(
 
   const cateFaseOne: CategoryHierarchyInput<T>[] = transNoCategory.map((t) => ({
     fatherId: "Generic-1",
-    name: "No category",
+    name: labels.noCategory,
     loc: getPrimaryAmount(t),
     color: "#ABABAB",
     icon: "MdFilterNone",
@@ -545,7 +552,7 @@ export function reduceTransCategoriesSliced<T extends TransactionLike>(arr: T[])
   if (!(arr instanceof Array))
     throw new Error("the element should be an instance of Array");
   const reduceObj = arr.reduce((acc: Record<string, CategoryValueSliced<T>>, transaction) => {
-    const categoryName = transaction?.category?.name || "No category";
+    const categoryName = transaction?.category?.name || labels.noCategory;
     const value = getPrimaryAmount(transaction);
     const icon = transaction.category?.icon || "MdFilterNone";
     if (acc[categoryName]) {
@@ -556,7 +563,7 @@ export function reduceTransCategoriesSliced<T extends TransactionLike>(arr: T[])
       ];
     } else {
       acc[categoryName] = {
-        _id: transaction.category?._id || "No category",
+        _id: transaction.category?._id || labels.noCategory,
         type: categoryName,
         value: value,
         icon: icon,
@@ -600,8 +607,8 @@ export function transactionsToCategories(arr: TransactionLike[]): CategoryValueE
     );
   return arr.map((transaction) => {
     return {
-      _id: transaction.category?._id || "No category",
-      type: transaction?.category?.name || "No category",
+      _id: transaction.category?._id || labels.noCategory,
+      type: transaction?.category?.name || labels.noCategory,
       value: getPrimaryAmount(transaction),
       icon: transaction.category?.icon || "MdFilterNone",
       color: transaction.category?.color || "#ABABAB",

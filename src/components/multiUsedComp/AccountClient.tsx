@@ -341,7 +341,7 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                       />
                     </button>
                     <h1 className="text-[30px] min-[350px]:text-[40px] sm:text-[60px] font-light">
-                      {finalAccounts[carruselCurrent]?.name || "No name data..."}
+                      {finalAccounts[carruselCurrent]?.name || t("web.no.name.data")}
                     </h1>
                     <button
                       type="button"
@@ -401,9 +401,9 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                     <div className="filters flex flex-col justify-center items-center mb-2">
                       <span className="text-xs">
                         {t("accounts.from")}{" "}
-                        <b>{treemapTimePeriod[0] ? getDateInYearMonthDay(treemapTimePeriod[0]) : "No time selected"}</b>
+                        <b>{treemapTimePeriod[0] ? getDateInYearMonthDay(treemapTimePeriod[0]) : t("web.no.time.selected")}</b>
                         {" "}{t("accounts.to")}{" "}
-                        <b>{treemapTimePeriod[1] ? getDateInYearMonthDay(treemapTimePeriod[1]) : "No time selected"}</b>
+                        <b>{treemapTimePeriod[1] ? getDateInYearMonthDay(treemapTimePeriod[1]) : t("web.no.time.selected")}</b>
                       </span>
                       <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
                         <Tooltip title={t("accounts.dateTip2")}>

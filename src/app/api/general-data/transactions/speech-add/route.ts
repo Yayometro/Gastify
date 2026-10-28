@@ -42,7 +42,6 @@ export async function POST(
   try {
     if (!request) throw new Error(t("errors.no.data.in.request.on"));
     const transObj = ((await request.json()) || {}) as SpeechAddRequestBody;
-    console.log(transObj);
 
     // Security fix: this route previously lacked session verification and trusted
     // whatever user id was passed in the request body (IDOR), creating transactions
@@ -81,19 +80,11 @@ export async function POST(
     const categoryMatch = text.match(categoryRegex);
     const accountMatch = text.match(accountRegex);
     //CLG
-    console.log(titleMatch);
-    console.log(amountMatch);
-    console.log(dateMatch);
-    console.log(timeMatch);
-    console.log(categoryMatch);
-    console.log(accountMatch);
     //Validating escential data
     if (!titleMatch) {
-      console.log(titleMatch);
       throw new Error(t("errors.title.of.transaction.data.is"));
     }
     if (!amountMatch) {
-      console.log(amountMatch);
       throw new Error(t("errors.amount.of.transaction.data.is"));
     }
 
@@ -148,12 +139,9 @@ export async function POST(
       const typesRegex =
         /(create|new|add|generate) (a|an|one)(.*?) (expense|income|bill|transaction)/i;
       const typesMatch = text.match(typesRegex);
-      console.log(typesMatch);
       if (typesMatch) {
         transaction.isBill = /expense|bill/.test(typesMatch[4]);
-        console.log(transaction.isBill); // Ahora debería reflejar correctamente si es un bill
         transaction.isIncome = /income/.test(typesMatch[4]);
-        console.log(transaction.isIncome); // Y esto si es un ingreso
       }
     } else if (transObj.lang === "Spanish") {
       // Integración en español para determinar el tipo de transacción
@@ -166,13 +154,11 @@ export async function POST(
       }
     }
 
-    console.log(transaction);
 
     await dbConnection();
     const findUser = await User.findOne({ mail: sesion.user.email }).lean();
     if (!findUser)
       throw new Error(t("errors.no.user.id.found.to"));
-    console.log(findUser);
     const newTransaction = new Transaction({
       user: findUser._id,
       wallet: findUser.wallet,
@@ -185,29 +171,23 @@ export async function POST(
       account: null,
       category: null,
     });
-    console.log(newTransaction);
     if (transaction.category) {
       const categoryFound = await Category.findOne({
         name: new RegExp(`^${transaction.category}$`, "i"),
         user: findUser._id,
       });
-      console.log(categoryFound);
       if (!categoryFound) {
-        console.log(categoryFound);
         newTransaction.category = null as unknown as mongoose.Types.ObjectId;
       } else {
         newTransaction.category = categoryFound._id as mongoose.Types.ObjectId;
       }
     }
     if (transaction.account) {
-      console.log(transaction.account);
       const accountFound = await Account.findOne({
         name: new RegExp(`^${transaction.account}$`, "i"),
         user: findUser._id,
       });
-      console.log(accountFound);
       if (!accountFound) {
-        console.log(accountFound);
         newTransaction.account = null as unknown as mongoose.Types.ObjectId;
       } else {
         newTransaction.account = accountFound._id as mongoose.Types.ObjectId;
@@ -256,7 +236,6 @@ export async function POST(
       throw new Error(
         t("errors.new.transactions.could.not.be.2")
       );
-    console.log(savedTransacction);
     const finalTransaction = await Transaction.findById(savedTransacction._id)
       .populate({
         path: "tags",
@@ -284,7 +263,6 @@ export async function POST(
       ok: true,
     });
   } catch (e) {
-    console.log(e);
     throw new Error(e as string);
   }
 }

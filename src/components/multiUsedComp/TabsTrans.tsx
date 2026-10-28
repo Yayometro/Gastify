@@ -78,7 +78,7 @@ function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
       const createNewOrder = ttTrans.map((trans) => {
         const category = trans.category as TabsTransCategoryRef | null | undefined;
         return {
-          type: category ? (category.name as string) : "No category",
+          type: category ? (category.name as string) : t("web.no.category"),
           value: getPrimaryAmount(trans),
           idCategory: category ? (category._id as string) : "ID-nocategory",
           color: (category && category.color) || "#ABABAB",
@@ -102,7 +102,7 @@ function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
   return (
     <div className="tt-tabs-cont w-[100%] h-[400px] min-h-[300px] max-h-[600px] flex flex-col">
       <span className="text-center text-xs shrink-0 pb-1">
-        {ttIsbill ? "Total spent" : "Total earned"}:{" "}
+        {ttIsbill ? t("web.total.spent.2") : t("web.total.earned.2")}:{" "}
         <b>{formatMoneyMajor(visibleTotal, walletPrimaryCurrency)}</b>
       </span>
       <div className="flex-1 min-h-0">
@@ -137,7 +137,7 @@ function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
           tickSize: 0,
           tickPadding: 5,
           tickRotation: 0,
-          legend: "Categories",
+          legend: t("web.categories"),
           legendPosition: "middle",
           legendOffset: 40,
           truncateTickAt: 3,
@@ -146,7 +146,7 @@ function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
           tickSize: 5,
           tickPadding: 5,
           tickRotation: 0,
-          legend: "Amount",
+          legend: t("web.amount"),
           legendPosition: "middle",
           legendOffset: -50,
           truncateTickAt: 0,
@@ -216,7 +216,7 @@ function TabsTrans({ ttTrans, ttIsbill }: TabsTransProps): React.JSX.Element {
                 <div className="flex flex-col text-[13px] font-semibold">
                   <div className="flex gap-2">
                     <p className="font-semibold">
-                      {ttIsbill ? "Total spent:" : "Total earned:"}
+                      {ttIsbill ? t("web.total.spent") : t("web.total.earned")}
                     </p>
                     {formatMoneyMajor(visibleTotal, walletPrimaryCurrency, { showCode: false })}
                   </div>

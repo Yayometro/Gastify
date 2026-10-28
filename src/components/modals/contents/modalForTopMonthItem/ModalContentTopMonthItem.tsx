@@ -118,6 +118,8 @@ interface ItemWithCategory extends TransactionData {
 
 function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthItemProps) {
   const t = useT();
+  // The name of a movement with no category, for display only (the comparison below uses the stored value).
+  const noCategoryName = t("web.no.category");
   const tr = useT();
   const dispatch = useDispatch<AppDispatch>();
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
@@ -156,7 +158,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
           const catId = item._id;
           const catName = item.type || item.name;
           const tCatId = itemWithCat.category?._id;
-          const tCatName = itemWithCat.category?.name || "No category";
+          const tCatName = itemWithCat.category?.name || noCategoryName;
           if (catId && catId !== "No category" && tCatId) {
             return String(tCatId) === String(catId);
           }
@@ -255,10 +257,10 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
       );
       if (res.ok !== false) {
         dispatch(removeOneTransacction(id));
-        runNotify("ok", res.message || "Transaction deleted");
+        runNotify("ok", res.message || t("web.transaction.deleted"));
         removeLocal([id]);
       } else {
-        runNotify("error", res.message || "Error deleting transaction");
+        runNotify("error", res.message || t("web.error.deleting.transaction"));
       }
     } catch (e) {
       runNotify("error", String(e));
@@ -279,7 +281,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
         runNotify("ok", res.message || `${ids.length} transaction(s) deleted`);
         removeLocal(ids);
       } else {
-        runNotify("error", res.message || "Error deleting transactions");
+        runNotify("error", res.message || t("web.error.deleting.transactions"));
       }
     } catch (e) {
       runNotify("error", String(e));
@@ -335,7 +337,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
             <p className="text-sm text-white/80 -mt-1">{item.category.name}{item.subCategory?.name ? ` · ${item.subCategory.name}` : ""}</p>
           )}
           <p className="font-semibold">
-            <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency) || "No total info..."}</b>
+            <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency) || t("web.no.total.info")}</b>
           </p>
 
           {/* Selection controls — only when multiple items */}
@@ -351,7 +353,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                     type={allSelected ? "MdCheckBox" : "MdCheckBoxOutlineBlank"}
                     siz={14}
                   />
-                  {allSelected ? "Deselect all" : "Select all"}
+                  {allSelected ? t("web.deselect.all") : t("web.select.all")}
                 </button>
                 {selectionCount > 0 && !allSelected && (
                   <button
@@ -386,7 +388,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                   }`}
                 >
                   <CategoIcon type="MdOutlineFindInPage" siz={14} />
-                  {dupMode ? "Exit duplicates" : "Find duplicates"}
+                  {dupMode ? t("web.exit.duplicates") : t("web.find.duplicates")}
                 </button>
               </div>
 
@@ -506,8 +508,8 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                       <Tooltip
                         title={
                           dupDeleteAll
-                            ? "All matching items will be selected (nothing is kept)"
-                            : "One original per group is kept — only extras are selected"
+                            ? t("web.all.matching.items.will.be.selected.nothing.is.kept")
+                            : t("web.one.original.per.group.is.kept.only.extras.are.selected")
                         }
                       >
                         <button
@@ -519,7 +521,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                           }`}
                         >
                           <UniversalCategoIcon type={dupDeleteAll ? "md/MdSelectAll" : "md/MdFilterAlt"} siz={13} />
-                          {dupDeleteAll ? "Delete all matches" : "Delete only duplicates"}
+                          {dupDeleteAll ? t("web.delete.all.matches") : t("web.delete.only.duplicates")}
                         </button>
                       </Tooltip>
 
@@ -577,7 +579,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 className="flex items-center gap-0.5 bg-gf-surface border border-gf-border hover:border-purple-300 rounded-lg px-1.5 py-0.5 text-xs text-gf-text-muted"
               >
                 <CategoIcon type={sortDir === "desc" ? "MdArrowDownward" : "MdArrowUpward"} siz={12} />
-                {sortDir === "desc" ? "Highest first" : "Lowest first"}
+                {sortDir === "desc" ? t("web.highest.first") : t("web.lowest.first")}
               </button>
             </div>
           )}
@@ -659,12 +661,12 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
               <h3 className="font-bold text-lg text-gf-text">
                 {confirmDelete.type === "many"
                   ? `Delete ${confirmDelete.ids.length} transaction${confirmDelete.ids.length !== 1 ? "s" : ""}?`
-                  : "Delete transaction?"}
+                  : t("web.delete.transaction")}
               </h3>
             </div>
             <p className="text-sm text-gf-text-muted">
               {tr("dashboard.delete.irreversible")}{" "}
-              <b>{confirmDelete.type === "many" ? `${confirmDelete.ids.length} transactions` : "this transaction"}</b>?
+              <b>{confirmDelete.type === "many" ? `${confirmDelete.ids.length} transactions` : t("web.this.transaction")}</b>?
             </p>
             <div className="max-h-[360px] overflow-y-auto pr-1 flex flex-col gap-1 my-1">
               {confirmDelete.type === "single" ? (
@@ -725,7 +727,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 }}
                 className="px-4 py-2 rounded-xl text-sm font-medium gf-glass-button-danger text-white"
               >
-                {deleting ? "Deleting..." : "Confirm delete"}
+                {deleting ? "Deleting..." : t("web.confirm.delete")}
               </button>
             </div>
           </div>
@@ -765,7 +767,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
           ]}
         >
           <p className="text-xs text-gf-text-muted mb-3">
-            {tr("dashboard.mode")} <b>{dupDeleteAll ? "Delete all matches" : "Delete only duplicates (keep 1 original)"}</b>{tr("dashboard.dup.reviewNote")}
+            {tr("dashboard.mode")} <b>{dupDeleteAll ? t("web.delete.all.matches") : t("web.delete.only.duplicates.keep.1.original")}</b>{tr("dashboard.dup.reviewNote")}
           </p>
           <div className="max-h-[60vh] overflow-y-auto pr-1">
             <DuplicateComparisonTable

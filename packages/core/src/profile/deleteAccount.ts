@@ -13,12 +13,12 @@ export interface DeleteAccountInput {
 // A typo in the e-mail must not cost a request (or a failed-attempt count on the server).
 export function validateDeleteAccount(input: DeleteAccountInput): string | null {
   if (input.confirmMail.trim().toLowerCase() !== input.accountEmail.trim().toLowerCase()) {
-    return "El correo escrito no coincide con el de tu cuenta.";
+    return "profile.delete.mailMismatch";
   }
   if (!input.code.trim()) {
-    return input.method === "backup" ? "Escribe un código de respaldo." : "Escribe el código de tu app autenticadora.";
+    return input.method === "backup" ? "profile.delete.backupRequired" : "profile.delete.appCodeRequired";
   }
-  if (input.method === "totp" && !/^\d{6}$/.test(input.code.trim())) return "El código de tu app tiene 6 dígitos.";
+  if (input.method === "totp" && !/^\d{6}$/.test(input.code.trim())) return "profile.delete.codeDigits";
   return null;
 }
 
@@ -29,9 +29,11 @@ export interface RemoveUserAnswer {
   retryAfterMinutes?: number;
 }
 
-export function deleteAccountErrorText(answer: RemoveUserAnswer | null | undefined): string {
-  const base = answer?.message || "No se pudo eliminar la cuenta.";
-  if (typeof answer?.attemptsLeft === "number") return `${base} Te quedan ${answer.attemptsLeft} intento(s).`;
-  if (answer?.retryAfterMinutes) return `${base} Intenta de nuevo en ${answer.retryAfterMinutes} min.`;
+// The text of the server’s answer. The server writes its own message in the language of the request; the fallback and the
+// attempts are the app’s, so they come from the catalog through `t`.
+export function deleteAccountErrorText(answer: RemoveUserAnswer | null | undefined, t: (key: string, params?: Record<string, string | number>) => string): string {
+  const base = answer?.message || t("profile.delete.failed");
+  if (typeof answer?.attemptsLeft === "number") return `${base} ${t("profile.delete.attemptsLeft", { p1: answer.attemptsLeft })}`;
+  if (answer?.retryAfterMinutes) return `${base} ${t("profile.delete.retryIn", { p1: answer.retryAfterMinutes })}`;
   return base;
 }

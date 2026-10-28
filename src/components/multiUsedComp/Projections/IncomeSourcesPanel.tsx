@@ -35,10 +35,10 @@ export interface IncomeSourcesPanelProps {
 }
 
 const RECURRENCE_LABELS: Record<string, string> = {
-  monthly: "Monthly",
-  semimonthly: "Semimonthly (fixed paydays, ~2/mo)",
-  biweekly: "Biweekly (every 14 days)",
-  weekly: "Weekly",
+  monthly: "web.monthly",
+  semimonthly: "web.semimonthly.fixed.paydays.about.2.a.month",
+  biweekly: "web.biweekly.every.14.days",
+  weekly: "web.weekly",
 };
 
 const getEmptyForm = (currency?: string): IncomeSourceFormData => ({
@@ -177,7 +177,7 @@ function IncomeSourcesPanel({
                 <div className="flex flex-col">
                   <p className="text-purple-300">{source.name}</p>
                   <p className="text-xs text-gf-text-muted">
-                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence as string] ?? source.recurrence ?? "Custom"}
+                    {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence as string] ?? source.recurrence ?? t("web.custom")}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -242,9 +242,9 @@ function IncomeSourcesPanel({
                 value={form.recurrence}
                 onChange={handleChange}
               >
-                {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
+                {Object.entries(RECURRENCE_LABELS).map(([value, labelKey]) => (
                   <option key={value} value={value}>
-                    {label}
+                    {t(labelKey)}
                   </option>
                 ))}
               </select>
@@ -282,7 +282,7 @@ function IncomeSourcesPanel({
               type="submit"
               className="gf-glass-button text-white rounded-full px-4 py-2"
             >
-              {isLoading ? <Spin /> : editingId ? "Save" : "Add"}
+              {isLoading ? <Spin /> : editingId ? t("web.save") : t("web.add")}
             </button>
             {editingId && (
               <button type="button" className="gf-glass-button-neutral text-gf-text rounded-full px-4 py-2" onClick={resetForm}>

@@ -1,5 +1,6 @@
 import type { BudgetData } from '@gastify/core/features/budgetSlice';
 import { isProjectBudget, isSavingBudget } from '@gastify/core/transformers/budgetTypes';
+import { tNow } from '@/i18n/now';
 
 export type BudgetLook = { icon?: string | null; color?: string | null };
 
@@ -20,15 +21,15 @@ export function lookOf(budget: BudgetData, fallbackColor: string): BudgetLook {
 
 // The suffix the web shows after the limit: "/mes", "/año"...; a project is a single total.
 export function periodSuffix(budget: BudgetData): string {
-  if (isProjectBudget(budget)) return 'en total';
+  if (isProjectBudget(budget)) return tNow("mobile.en.total.2");
   switch (budget.period) {
     case 'yearly':
-      return '/año';
+      return tNow("mobile.ano");
     case 'quarterly':
-      return '/trimestre';
+      return tNow("mobile.trimestre");
     case 'biannual':
-      return '/6 meses';
+      return tNow("mobile.6.meses");
     default:
-      return '/mes';
+      return tNow("mobile.mes.2");
   }
 }

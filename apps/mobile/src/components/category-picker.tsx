@@ -41,7 +41,7 @@ export function CategoryPicker({
   subCategories,
   value,
   onChange,
-  allLabel = 'Todas',
+  allLabel: allLabelProp,
 }: {
   categories: CategoryData[];
   subCategories: SubCategoryData[];
@@ -50,6 +50,7 @@ export function CategoryPicker({
   allLabel?: string;
 }) {
   const t = useT();
+  const allLabel = allLabelProp ?? t("mobile.todas");
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];
@@ -61,9 +62,9 @@ export function CategoryPicker({
   const catEntries = useMemo<Entry[]>(
     () =>
       categories
-        .map((category) => ({ kind: 'cat' as const, id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color, parentId: '', parentLabel: '' }))
+        .map((category) => ({ kind: 'cat' as const, id: idOf(category), label: category.name || t("dashboard.bulk.category"), icon: category.icon, color: category.color, parentId: '', parentLabel: '' }))
         .sort((a, b) => byName(a.label, b.label)),
-    [categories]
+    [categories, t]
   );
   const subEntries = useMemo<Entry[]>(
     () =>
@@ -71,10 +72,10 @@ export function CategoryPicker({
         .map((sub) => {
           const parentId = idOf(sub.fatherCategory);
           const parent = categories.find((category) => idOf(category) === parentId);
-          return { kind: 'sub' as const, id: idOf(sub), label: sub.name || 'Subcategoría', icon: sub.icon, color: sub.color, parentId, parentLabel: parent?.name || '' };
+          return { kind: 'sub' as const, id: idOf(sub), label: sub.name || t("dashboard.dup.subcategory"), icon: sub.icon, color: sub.color, parentId, parentLabel: parent?.name || '' };
         })
         .filter((entry) => entry.parentId),
-    [subCategories, categories]
+    [subCategories, categories, t]
   );
 
   const searching = normalizeText(query) !== '';
@@ -112,7 +113,7 @@ export function CategoryPicker({
       at += heightOf(row);
     }
     return { rows: flat, offsets: offs, letterOffset: letterAt };
-  }, [catEntries, subEntries, query]);
+  }, [catEntries, subEntries, query, t]);
 
   // Dragging on the rail: the letter under the finger (or the nearest one that has categories) is shown and the
   // list jumps to it.

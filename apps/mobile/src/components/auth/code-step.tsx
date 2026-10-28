@@ -56,10 +56,10 @@ export function CodeStep({ onVerified, onGiveUp }: { onVerified: () => void; onG
   return (
     <>
       <TextField
-        label={useBackup ? 'Código de respaldo' : 'Código de tu app autenticadora'}
+        label={useBackup ? t("shared.backup.code") : t("shared.verify.appCode")}
         value={code}
         onChangeText={setCode}
-        placeholder={useBackup ? 'xxxxx-xxxxx' : '6 dígitos'}
+        placeholder={useBackup ? 'xxxxx-xxxxx' : t("mobile.6.digitos")}
         keyboardType={useBackup ? 'default' : 'number-pad'}
         maxLength={useBackup ? 20 : 6}
         autoComplete="one-time-code"
@@ -77,7 +77,7 @@ export function CodeStep({ onVerified, onGiveUp }: { onVerified: () => void; onG
           setError(null);
         }}>
         <Text className="text-center font-inter-medium text-sm text-gf-accent-soft-text">
-          {useBackup ? 'Usar el código de mi app' : 'Usar un código de respaldo'}
+          {useBackup ? t("mobile.usar.el.codigo.de.mi.app") : t("mobile.usar.un.codigo.de.respaldo")}
         </Text>
       </Pressable>
     </>

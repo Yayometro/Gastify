@@ -57,7 +57,7 @@ function CompareCell({ column, mode, onOpenItem }: CompareCellProps): React.JSX.
   if (!column || column.childrens.length === 0) {
     return (
       <div className="flex flex-col gap-1 min-w-0">
-        <p className="text-[11px] text-gf-text-muted text-center">{column?.monthLabel || "No data"}</p>
+        <p className="text-[11px] text-gf-text-muted text-center">{column?.monthLabel || t("web.no.data")}</p>
         <p className="text-xs text-gray-300 italic">{t("history.nothingMonth")}</p>
       </div>
     );

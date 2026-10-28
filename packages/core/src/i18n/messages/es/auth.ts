@@ -1,5 +1,13 @@
 // Texts of the "auth" namespace. Spanish is the source text.
 const auth = {
+  // Why the second factor is asked again. {p1} is the window in minutes (hours for max-age). Said plainly, with what to do next,
+  // so nobody thinks the app broke or that their data is gone.
+  "auth.stepUp.idle": "Por seguridad, te pedimos confirmar tu identidad después de {p1} minutos sin actividad. Tus datos están seguros. Confirma y sigues donde estabas; si estabas guardando algo, vuelve a enviarlo.",
+  "auth.stepUp.maxAge": "Por seguridad, te pedimos confirmar tu identidad cada {p1} horas, aunque estés usando la app. Confirma y sigues donde estabas; si estabas guardando algo, vuelve a enviarlo.",
+  "auth.stepUp.neverVerified": "Tu sesión todavía no ha confirmado tu segundo factor (por ejemplo, si entraste con Google). Confírmalo para usar tu cuenta.",
+  "auth.stepUp.generic": "Confirma tu identidad para continuar.",
+  "auth.stepUp.reauth": "Para cambiar tus factores de verificación (passkeys, app autenticadora o códigos de respaldo) te pedimos confirmar tu identidad cada {p1} minutos.",
+  "auth.stepUp.howTo": "Pon tu huella, Face ID o código del dispositivo para continuar.",
   "auth.stepUp": "Por seguridad, confirma tu identidad otra vez para continuar 🔒",
   "auth.error.identityNotVerified": "No pudimos verificar tu identidad, así que cerramos tu sesión por seguridad. Inicia sesión de nuevo.",
   "auth.error.codeAttemptsExceeded": "No pudimos verificar tu código después de 3 intentos. Intenta iniciar sesión de nuevo.",
@@ -37,7 +45,23 @@ const auth = {
   "auth.passkey.nameLabel": "Nombre",
   "auth.passkey.namePlaceholder": "p. ej. Mi iPhone",
   "auth.passkey.addedOn": "Agregada el {date}",
-  "auth.passkey.unnamed": "Passkey sin nombre"
+  "auth.passkey.unnamed": "Passkey sin nombre",
+  "auth.could.not.sign.in.with.that.passkey": "No pudimos entrar con ese passkey 🤕",
+  "auth.something.went.wrong.please.verify.your.username.or.try": "Algo salió mal; revisa tu usuario o inténtalo más tarde 🤕",
+  "auth.enter.your.verification.code": "Ingresa tu código de verificación",
+  "auth.log.in.to.use.gastify": "Inicia sesión para usar Gastify 💸",
+  "auth.the.password.must.have.at.least.one.special.character": "La contraseña debe tener al menos un carácter especial \"!@#$%^&*(),.?\":{}|<>\".",
+  "auth.accept.the.terms.and.conditions": "Acepta los términos y condiciones",
+  "auth.verify.that.the.password.is.longer.than.8.characters.inc": "Verifica que la contraseña tenga más de 8 caracteres, al menos una mayúscula y al menos un carácter especial",
+  "auth.email.already.exists": "El correo ya existe",
+  "auth.we.couldn.t.register.the.passkey": "No se pudo registrar el passkey 🤕",
+  "auth.we.couldn.t.start.the.setup": "No se pudo iniciar la configuración 🤕",
+  "auth.incorrect.code.try.again": "Código incorrecto, intenta de nuevo 🤕",
+  "auth.you.closed.the.passkey.prompt.you.can.try.again.or.use.a": "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo o usar un código de tu app autenticadora.",
+  "auth.you.closed.the.passkey.prompt.you.can.try.again": "Cerraste el cuadro del passkey. Puedes intentarlo de nuevo.",
+  "auth.done.taking.you.to.your.wallet": "¡Listo! Llevándote a tu Wallet…",
+  "auth.verifying.your.identity": "Verificando tu identidad…",
+  "auth.incorrect.code.you.have.p1.attempt.s.left": "Código incorrecto. Te quedan {p1} intento(s).",
 } as const;
 
 export default auth;

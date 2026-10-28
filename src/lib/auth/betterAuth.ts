@@ -12,6 +12,9 @@ import { buildTrustedOrigins } from "./trustedOrigins";
 import { passkeyOrigins } from "./mobileApp";
 import { provisionNewUserData } from "./provisionNewUserData";
 import { getSharedMongoClient } from "@/lib/db/mongoClient";
+import { chooseLocale, LOCALE_COOKIE } from "@gastify/core/i18n/locales";
+import { loadMessages } from "@gastify/core/i18n/catalogs";
+import { createTranslator } from "@gastify/core/i18n/translate";
 
 // Reuses the exact same MongoClient/connection pool that Mongoose's own
 // dbConnection() uses (see src/lib/db/mongoClient.js), instead of opening a
@@ -57,6 +60,15 @@ const STEP_UP_PROOF_PATHS = new Set([
   "/passkey/verify-registration",
 ]);
 
+// The step-up message in the person's language, with the same order as the pages: the language saved on the account, then the one
+// this browser chose (cookie), then the country and the browser's language. Spanish when nothing says otherwise.
+async function stepUpMessage(account: string | null | undefined, country: string | null | undefined, headers?: Headers): Promise<string> {
+  const device = headers?.get("cookie")?.match(new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE}=(\\w+)`))?.[1];
+  const locale = chooseLocale({ account, device, country, language: headers?.get("accept-language") });
+  const t = createTranslator(locale, await loadMessages(locale, ["errors"]));
+  return t("errors.stepUp.factorChange");
+}
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   // The mobile app (apps/mobile) signs in from a native URL scheme, not a web origin; see
@@ -78,6 +90,12 @@ export const auth = betterAuth({
     fields: {
       email: "mail",
       name: "fullName",
+    },
+    // The language chosen on the account (the profile). Read with the session, so the layouts know it without another query.
+    // `input: false`: clients change it only through the app's profile route, never through Better Auth.
+    additionalFields: {
+      language: { type: "string", required: false, input: false },
+      country: { type: "string", required: false, input: false },
     },
   },
   // `stepUpVerifiedAt` is the app's own step-up-freshness marker (see
@@ -169,7 +187,7 @@ export const auth = betterAuth({
       if (needsFresh) {
         throw APIError.from("FORBIDDEN", {
           code: STEP_UP_REQUIRED_CODE,
-          message: "Confirma tu identidad otra vez para cambiar tus factores de verificación.",
+          message: await stepUpMessage(current.user.language, current.user.country, ctx.headers),
         });
       }
     }),

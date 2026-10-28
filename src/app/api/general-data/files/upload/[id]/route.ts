@@ -10,7 +10,7 @@ import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
 import dbConnection from "@/app/api/dbConnection";
 import User from "@/model/User";
-import { TEMPLATE_VERSION, COLUMNS } from "@/lib/files/gastifyTemplate";
+import { TEMPLATE_VERSION, COLUMNS, TEMPLATE_INCOME_WORDS } from "@/lib/files/gastifyTemplate";
 import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
 import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyService";
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
@@ -291,9 +291,10 @@ export async function POST(
       const subCatName = cell(COLUMNS.SUB_CATEGORY);
       const tagsRaw = cell(COLUMNS.TAGS);
 
+      // The Type column comes in the language of the template: "Income" or "Ingreso" mean income, anything else a bill.
       const type = typeRaw ? String(typeRaw).trim().toLowerCase() : "bill";
-      const isBill = type !== "income";
-      const isIncome = type === "income";
+      const isIncome = TEMPLATE_INCOME_WORDS.includes(type);
+      const isBill = !isIncome;
 
       let finalCategoryId: unknown = null;
       let finalSubCategoryId: unknown = null;

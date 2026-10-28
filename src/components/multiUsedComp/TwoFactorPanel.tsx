@@ -128,7 +128,7 @@ function TwoFactorPanel(): React.JSX.Element {
           if (currentPassword) runNotify("error", t("shared.password.wrong"));
           setSetupStep("password-enable");
         } else {
-          runNotify("error", error.message || "No se pudo iniciar la configuración 🤕");
+          runNotify("error", error.message || t("web.we.couldn.t.start.the.setup"));
         }
         return;
       }
@@ -151,7 +151,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.twoFactor.verifyTotp({ code });
       if (error) {
-        runNotify("error", error.message || "Código incorrecto 🤕");
+        runNotify("error", error.message || t("web.incorrect.code"));
         return;
       }
       runNotify("ok", t("shared.twoStep.on"));
@@ -177,7 +177,7 @@ function TwoFactorPanel(): React.JSX.Element {
           if (currentPassword) runNotify("error", t("shared.password.wrong"));
           setSetupStep("password-disable");
         } else {
-          runNotify("error", error.message || "No se pudo desactivar 🤕");
+          runNotify("error", error.message || t("web.we.couldn.t.turn.it.off"));
         }
         return;
       }
@@ -207,7 +207,7 @@ function TwoFactorPanel(): React.JSX.Element {
           if (currentPassword) runNotify("error", t("shared.password.wrong"));
           setSetupStep("password-regenerate");
         } else {
-          runNotify("error", error.message || "No se pudieron regenerar los códigos 🤕");
+          runNotify("error", error.message || t("web.we.couldn.t.regenerate.the.codes"));
         }
         return;
       }
@@ -239,7 +239,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.signIn.passkey();
       if (error) {
-        runNotify("error", error.message || "No se pudo verificar tu passkey 🤕");
+        runNotify("error", error.message || t("web.we.couldn.t.verify.your.passkey.2"));
         return;
       }
     } catch (err) {
@@ -257,7 +257,7 @@ function TwoFactorPanel(): React.JSX.Element {
       setIsLoading(true);
       const { error } = await authClient.signIn.passkey();
       if (error) {
-        runNotify("error", error.message || "No se pudo verificar tu passkey 🤕");
+        runNotify("error", error.message || t("web.we.couldn.t.verify.your.passkey.2"));
         return;
       }
     } catch (err) {
@@ -284,7 +284,7 @@ function TwoFactorPanel(): React.JSX.Element {
           {!setupStep && (
             <div className="bg-gf-surface rounded-2xl p-3 flex justify-between items-center">
               <p className="text-sm text-gf-text">
-                {t("shared.twoStep.status")} <span className={twoFactorEnabled ? "text-green-400 font-semibold" : "text-gf-text-muted"}>{twoFactorEnabled ? "Activada" : "No activada"}</span>
+                {t("shared.twoStep.status")} <span className={twoFactorEnabled ? "text-green-400 font-semibold" : "text-gf-text-muted"}>{twoFactorEnabled ? t("web.on") : t("web.off")}</span>
               </p>
               {twoFactorEnabled ? (
                 <button
@@ -293,7 +293,7 @@ function TwoFactorPanel(): React.JSX.Element {
                   className="gf-glass-button-danger text-white text-xs rounded-full px-4 py-2"
                   onClick={() => handleDisableSecurely()}
                 >
-                  {isLoading ? <Spin /> : "Desactivar"}
+                  {isLoading ? <Spin /> : t("web.turn.off")}
                 </button>
               ) : (
                 <button
@@ -302,7 +302,7 @@ function TwoFactorPanel(): React.JSX.Element {
                   className="gf-glass-button text-white text-xs rounded-full px-4 py-2"
                   onClick={() => handleStartSetup()}
                 >
-                  {isLoading ? <Spin /> : "Activar"}
+                  {isLoading ? <Spin /> : t("web.turn.on")}
                 </button>
               )}
             </div>
@@ -325,7 +325,7 @@ function TwoFactorPanel(): React.JSX.Element {
                 />
                 <div className="flex gap-2 w-full">
                   <button type="submit" disabled={isLoading} className="gf-glass-button text-white text-xs rounded-full px-4 py-2 grow">
-                    {isLoading ? <Spin /> : "Continuar"}
+                    {isLoading ? <Spin /> : t("common.continue")}
                   </button>
                   <button type="button" className="text-[11px] text-gf-text-muted underline" onClick={() => { setSetupStep(null); setPassword(""); }}>
                     {t("shared.cancel")}
@@ -355,7 +355,7 @@ function TwoFactorPanel(): React.JSX.Element {
                 />
                 <div className="flex gap-2 w-full">
                   <button type="submit" disabled={isLoading} className="gf-glass-button-danger text-white text-xs rounded-full px-4 py-2 grow">
-                    {isLoading ? <Spin /> : "Desactivar"}
+                    {isLoading ? <Spin /> : t("web.turn.off")}
                   </button>
                   <button type="button" className="text-[11px] text-gf-text-muted underline" onClick={() => { setSetupStep(null); setPassword(""); }}>
                     {t("shared.cancel")}
@@ -383,7 +383,7 @@ function TwoFactorPanel(): React.JSX.Element {
                   required
                 />
                 <button type="submit" className="gf-glass-button text-white text-xs rounded-full px-4 py-2">
-                  {isLoading ? <Spin /> : "Confirmar"}
+                  {isLoading ? <Spin /> : t("common.confirm")}
                 </button>
               </form>
             </div>
@@ -476,7 +476,7 @@ function TwoFactorPanel(): React.JSX.Element {
                     />
                     <div className="flex gap-2 w-full">
                       <button type="submit" disabled={isLoading} className="gf-glass-button text-white text-xs rounded-full px-4 py-2 grow">
-                        {isLoading ? <Spin /> : "Continuar"}
+                        {isLoading ? <Spin /> : t("common.continue")}
                       </button>
                       <button type="button" className="text-[11px] text-gf-text-muted underline" onClick={() => { setSetupStep(null); setPassword(""); }}>
                         {t("shared.cancel")}
@@ -491,7 +491,7 @@ function TwoFactorPanel(): React.JSX.Element {
                   className="gf-glass-button text-white text-xs rounded-full px-4 py-2"
                   onClick={() => handleRegenerateBackupCodesSecurely()}
                 >
-                  {isLoading ? <Spin /> : "Regenerar códigos de respaldo"}
+                  {isLoading ? <Spin /> : t("web.regenerate.backup.codes")}
                 </button>
               )}
             </div>

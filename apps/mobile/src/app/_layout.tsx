@@ -1,5 +1,5 @@
 import { Inter_200ExtraLight, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, useFonts } from '@expo-google-fonts/inter';
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { LogBox, View, useColorScheme } from 'react-native';
@@ -8,7 +8,6 @@ import { Provider } from 'react-redux';
 import '@/global.css';
 
 import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
-import AppTabs from '@/components/app-tabs';
 import { AuthGate } from '@/components/auth/auth-gate';
 import { ToastProvider } from '@/components/toast';
 import { I18nProvider } from '@/i18n/client';
@@ -57,7 +56,12 @@ export default function RootLayout() {
         <ThemeProvider value={theme}>
           <ToastProvider>
             <AuthGate>
-              <AppTabs />
+              {/* The tabs are one screen of this stack; notifications is a screen above them, so it opens and closes on top of the
+                  page the person was on (as a tab, it bounced back to Inicio). */}
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="notifications" />
+              </Stack>
             </AuthGate>
           </ToastProvider>
         </ThemeProvider>

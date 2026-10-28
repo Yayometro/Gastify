@@ -42,17 +42,43 @@ export function localeFromAcceptLanguage(header?: string | null): Locale {
   return DEFAULT_LOCALE;
 }
 
-// Vercel includes the visitor's ISO country code on incoming requests. Use it
-// only for the first visit: an explicit language cookie always takes priority.
-// Countries where Spanish is the primary public language map to Spanish; other
-// known countries use English, and unknown/missing codes fall back to the
-// browser's Accept-Language header in the request layer.
-const SPANISH_SPEAKING_COUNTRIES = new Set([
+// The countries whose people read Spanish with us. Any other country gets English: the app has no third language.
+const SPANISH_COUNTRIES = new Set([
   "AR", "BO", "CL", "CO", "CR", "CU", "DO", "EC", "ES", "GQ", "GT", "HN", "MX", "NI", "PA", "PE", "PR", "PY", "SV", "UY", "VE",
 ]);
+// What the networks send when they do not know the country (XX) or it is a Tor exit (T1): not a place to go by.
+const NO_COUNTRY = new Set(["XX", "T1"]);
 
+// The country of a language tag: "es-MX" -> "MX", "en_US" -> "US", "en" -> null.
+export function countryOf(tag?: string | null): string | null {
+  if (!tag) return null;
+  const region = tag.trim().replace("_", "-").split("-").slice(1).find((part) => /^[A-Za-z]{2}$/.test(part));
+  return region ? region.toUpperCase() : null;
+}
+
+// The language of a country: Spanish where Spanish is the language of the day, English anywhere else. null when there is
+// no country to go by.
 export function localeFromCountry(country?: string | null): Locale | null {
-  const code = country?.trim().toUpperCase();
-  if (!code || !/^[A-Z]{2}$/.test(code)) return null;
-  return SPANISH_SPEAKING_COUNTRIES.has(code) ? "es" : "en";
+  if (!country || !/^[A-Za-z]{2}$/.test(country)) return null;
+  const code = country.toUpperCase();
+  if (NO_COUNTRY.has(code)) return null;
+  return SPANISH_COUNTRIES.has(code) ? "es" : "en";
+}
+
+// Where the person is and what they chose, in the order it counts. `account` is the language saved on their account (the
+// profile); `device` is the choice this device remembers (a cookie or the phone's store); `country` is where they are; `language`
+// is what the browser or the phone asks for. Null or missing values are skipped.
+export interface LocaleSources {
+  account?: string | null;
+  device?: string | null;
+  country?: string | null;
+  language?: string | null;
+}
+
+export function chooseLocale(sources: LocaleSources): Locale {
+  if (isLocale(sources.account)) return sources.account;
+  if (isLocale(sources.device)) return sources.device;
+  const fromCountry = localeFromCountry(sources.country);
+  if (fromCountry) return fromCountry;
+  return localeFromAcceptLanguage(sources.language);
 }

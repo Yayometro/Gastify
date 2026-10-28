@@ -31,6 +31,7 @@ const common = {
   "common.language": "Idioma",
   "common.languageSpanish": "Español",
   "common.languageEnglish": "Inglés",
+  "common.metaDescription": "Toma el control de tus ingresos y gastos",
 } as const;
 
 export default common;

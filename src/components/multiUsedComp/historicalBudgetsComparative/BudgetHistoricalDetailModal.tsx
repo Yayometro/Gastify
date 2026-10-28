@@ -30,7 +30,7 @@ function BudgetHistoricalDetailModal({
   return (
     <div className="content absolute gf-glass-violet flex flex-col w-full h-full max-w-[640px] max-h-[80%] rounded-2xl items-center overflow-hidden z-[1001]">
       <header className="w-full text-white px-6 py-4">
-        <p className="text-lg">{budget.name || "Unnamed budget"}</p>
+        <p className="text-lg">{budget.name || t("web.unnamed.budget")}</p>
         <p className="text-xs text-white/80">
           {t("budgets.monthsMet", { p1: monthlySeries[0]?.label, p2: monthlySeries[monthlySeries.length - 1]?.label, p3: monthsMet, p4: monthsTracked })}
         </p>
@@ -62,7 +62,7 @@ function BudgetHistoricalDetailModal({
                 <td className="text-right py-2.5">{formatMoneyMajor(m.actual, walletPrimaryCurrency)}</td>
                 <td className="text-right py-2.5">{formatMoneyMajor(m.goal, walletPrimaryCurrency)}</td>
                 <td className={`text-right py-2.5 font-medium ${m.met ? "text-green-400" : "text-red-400"}`}>
-                  {m.met ? "Met" : "Exceeded"}
+                  {m.met ? t("web.met") : t("web.exceeded")}
                 </td>
               </tr>
             ))}

@@ -80,7 +80,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const present = useCallback((message: string, mood: AlertMood, options?: ToastOptions) => {
     setPresented({ mood, title: options?.title ?? TONES(t)[mood].title, message, href: options?.href });
-  }, []);
+  }, [t]);
 
   const value = useMemo(() => ({ show, present }), [show, present]);
 

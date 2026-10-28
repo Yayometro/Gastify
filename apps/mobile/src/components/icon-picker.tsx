@@ -8,6 +8,7 @@ import { getApiBaseUrl } from '@gastify/core/api/client';
 import { FLUENT_PREFIX } from '@gastify/core/icons/fluentIcons';
 import { loadFluentManifest, searchFluentIcons, type FluentManifestIcon } from '@gastify/core/icons/fluentManifest';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // The Fluent icon library (the same one the web picker uses): a search box (Spanish or English) and the
 // matching icons, a page at a time with "Mostrar más". The list is loaded once, when the picker opens.
@@ -44,7 +45,7 @@ export function IconPicker({ value, onChange }: { value: string; onChange: (icon
       />
       {icons !== null && !failed && (
         <Text className="font-inter text-sm text-gf-text-muted">
-          {found.length === 1 ? '1 ícono' : `${found.length} íconos`}
+          {found.length === 1 ? t("mobile.1.icono") : tNow("mobile.iconos.conteo", { count: found.length, p1: found.length })}
         </Text>
       )}
       {failed ? (

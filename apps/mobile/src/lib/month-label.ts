@@ -1,14 +1,21 @@
-const MONTHS: Record<string, string> = {
-  January: 'Enero', February: 'Febrero', March: 'Marzo', April: 'Abril', May: 'Mayo', June: 'Junio', July: 'Julio',
-  August: 'Agosto', September: 'Septiembre', October: 'Octubre', November: 'Noviembre', December: 'Diciembre',
-  Jan: 'Ene', Feb: 'Feb', Mar: 'Mar', Apr: 'Abr', Jun: 'Jun', Jul: 'Jul', Aug: 'Ago', Sep: 'Sep', Sept: 'Sep', Oct: 'Oct', Nov: 'Nov', Dec: 'Dic',
+import { monthName } from '@gastify/core/i18n/dates';
+
+import { currentLocale } from '@/i18n/now';
+
+// The English names the shared calculations write, with the month they stand for (0 = January).
+const MONTH_OF: Record<string, number> = {
+  january: 0, february: 1, march: 2, april: 3, may: 4, june: 5, july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+  jan: 0, feb: 1, mar: 2, apr: 3, jun: 5, jul: 6, aug: 7, sep: 8, sept: 8, oct: 9, nov: 10, dec: 11,
 };
 
-// The analyzer's month labels come out of the shared calculations in English ("October 2026", "Oct"); the phone shows
-// them in Spanish.
-export function esMonthLabel(label: string | undefined | null): string {
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+// "October 2026" or "Oct" -> the same month in the language on screen: "octubre 2026" / "Oct" in Spanish, the same in English.
+export function localMonthLabel(label: string | undefined | null): string {
+  const locale = currentLocale();
   return String(label ?? '').replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\b/gi, (match) => {
-    const key = match[0].toUpperCase() + match.slice(1).toLowerCase();
-    return MONTHS[key] ?? match;
+    const index = MONTH_OF[match.toLowerCase()];
+    if (index === undefined) return match;
+    return capitalize(monthName(index, locale, match.length > 4 ? 'long' : 'short'));
   });
 }

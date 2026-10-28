@@ -92,9 +92,9 @@ function ResumeTabsTrans({ timePeriodFromFather, rttTrans }: ResumeTabsTransProp
       <div className="filters flex flex-col justify-center items-center">
         <span className="text-xs">
           {tr("movements.from")}{" "}
-          <b>{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : "No time selected"}</b>
+          <b>{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : tr("web.no.time.selected")}</b>
           {" "}{tr("movements.to")}{" "}
-          <b>{timePeriod[1] ? getDateInYearMonthDay(timePeriod[1]) : "No time selected"}</b>
+          <b>{timePeriod[1] ? getDateInYearMonthDay(timePeriod[1]) : tr("web.no.time.selected")}</b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
           <Tooltip title={tr("movements.filter.dateTip2")}>

@@ -119,7 +119,7 @@ function MovementsGuideModal({ open, onClose }: MovementsGuideModalProps): React
               <Control name="Categoría o subcategoría (botón con el nombre)">
                 <p>{t("movements.guide.category")}</p>
               </Control>
-              <Control name="Find duplicates">
+              <Control name={t("web.find.duplicates")}>
                 <p>
                   {t("movements.guide.duplicates")}
                 </p>

@@ -1,8 +1,8 @@
 import React from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/betterAuth";
-import { STEP_UP_TTL_MS } from "@/lib/auth/stepUpConfig";
+import { auth, recordSessionActivity } from "@/lib/auth/betterAuth";
+import { evaluateApiStepUp } from "@/lib/auth/stepUpPolicy";
 import DashboardBackdrop from "@/components/multiUsedComp/DashboardBackdrop";
 import Navbar from "@/components/Navbar";
 import AllDataProvider from "@/components/Providers/AllDataProvider";
@@ -33,20 +33,19 @@ async function DashboardLayout({
   // of stuck state that must instead just land on /login.
   if (!sesion || !sesion.user?.email) redirect("/login");
 
-  // Step-up freshness gate - the authoritative half (see
-  // src/lib/auth/stepUpConfig.js and IdleStepUpGuard.jsx for the client-
-  // side proactive half). A valid, logged-in session alone isn't enough to
-  // reach the Wallet: it also has to have proven a passkey/TOTP/backup-code
-  // check within the last STEP_UP_TTL_MS, on every request - not just once
-  // at login - so a device left open (or picked up by someone else) can't
-  // sit unlocked indefinitely.
-  const stepUpAt = sesion.session.stepUpVerifiedAt ? new Date(sesion.session.stepUpVerifiedAt).getTime() : 0;
-  if (Date.now() - stepUpAt > STEP_UP_TTL_MS) {
-    redirect("/verify-2fa");
+  // Step-up gate: the same rule the API applies (stepUpPolicy.ts). A second factor must have passed, the session must have
+  // been active within the last 15 minutes, and the last proof must be under 12 hours old. The reason travels to the
+  // verification screen, which explains it, so the person knows why they are asked again.
+  const stepUp = evaluateApiStepUp(sesion.session);
+  if ("reason" in stepUp) {
+    redirect(`/verify-2fa?reason=${stepUp.reason}`);
   }
+  // Opening a page counts as activity, so an open dashboard does not time out while it is in use.
+  if (stepUp.shouldRecordActivity) await recordSessionActivity(sesion.session.token).catch(() => {});
 
   // The language of the wallet and its texts: the screens below read them with useT() and useInfo().
-  const locale = await currentLocale();
+  // The account's language (saved in the profile) wins over the device's choice and the country.
+  const locale = await currentLocale(sesion.user.language, sesion.user.country);
   const messages = await messagesFor(locale, WALLET_NAMESPACES);
 
   return (

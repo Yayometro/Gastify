@@ -88,7 +88,7 @@ function LoginComponent(): React.JSX.Element {
       setLoading(true);
       const { error } = await signInWithPasskeyOnce();
       if (error) {
-        runNotify("error", error.message || "Could not sign in with that passkey 🤕");
+        runNotify("error", error.message || t("auth.could.not.sign.in.with.that.passkey"));
         setLoading(false);
         return;
       }
@@ -114,7 +114,7 @@ function LoginComponent(): React.JSX.Element {
         console.log(error);
         runNotify(
           "error",
-          error.message || "Something went wrong, please verify your username or try again later 🤕"
+          error.message || t("auth.something.went.wrong.please.verify.your.username.or.try")
         );
         setLoading(false);
         return;
@@ -153,7 +153,7 @@ function LoginComponent(): React.JSX.Element {
           setLoading(false);
           return;
         }
-        runNotify("error", error.message || `Código incorrecto. Te quedan ${MAX_TWO_FACTOR_ATTEMPTS - nextAttempts} intento(s).`);
+        runNotify("error", error.message || t("auth.incorrect.code.you.have.p1.attempt.s.left", { p1: MAX_TWO_FACTOR_ATTEMPTS - nextAttempts }));
         setLoading(false);
         return;
       }
@@ -180,7 +180,7 @@ function LoginComponent(): React.JSX.Element {
       </div>
       <div className="pb-4 pt-10">
         <h1 className="text-center text-white text-2xl font-normal">
-          {pendingTwoFactor ? "Ingresa tu código de verificación" : "Login to use Gastify 💸"}
+          {pendingTwoFactor ? t("auth.enter.your.verification.code") : t("auth.log.in.to.use.gastify")}
         </h1>
       </div>
       {email && !pendingTwoFactor && (

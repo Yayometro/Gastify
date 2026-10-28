@@ -12,6 +12,7 @@ import { ACCOUNT_CURRENCIES, ACCOUNT_TYPES, validateAccount, type AccountErrors 
 import { bankCountryForCurrency, normalizeCardNumber } from '@gastify/core/banks/banks';
 import { parseSignedMoneyText } from '@gastify/core/transactions/movementForm';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 export type AccountSubmit = { name: string; amount: number; accountType: string; currency: string; bankId: string | null; cardNumber: string | null };
 
@@ -68,7 +69,7 @@ export function AccountForm({
         <ChipPicker items={ACCOUNT_TYPES.map((type) => ({ id: type.value, label: t(type.label) }))} value={accountType} onChange={setAccountType} />
       </View>
       <View className="gap-2">
-        <Text className="font-inter-medium text-sm text-gf-text-muted">{currencyLocked ? `Moneda: ${currency} (no se cambia)` : 'Moneda (no se cambia después)'}</Text>
+        <Text className="font-inter-medium text-sm text-gf-text-muted">{currencyLocked ? tNow("mobile.moneda.p1.no.se.cambia", { p1: currency }) : t("mobile.moneda.no.se.cambia.despues")}</Text>
         {!currencyLocked && <ChipPicker items={ACCOUNT_CURRENCIES.map((code) => ({ id: code, label: code }))} value={currency} onChange={setCurrency} moreAfter={99} />}
       </View>
       <View className="gap-2">
@@ -84,7 +85,7 @@ export function AccountForm({
           <View className="flex-1">
             <TextField label={t("mobile.numero.de.tarjeta.o.de")} value={cardNumber} onChangeText={(text) => setCardNumber(text.replace(/[^\d\s-]/g, ''))} placeholder={t("mobile.solo.si.quieres.tenerlo.a")} keyboardType="number-pad" maxLength={23} secureTextEntry={!showNumber} />
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel={showNumber ? 'Ocultar el número' : 'Mostrar el número'} onPress={() => setShowNumber((value) => !value)} className="h-12 w-12 items-center justify-center rounded-2xl border border-gf-border" hitSlop={6}>
+          <Pressable accessibilityRole="button" accessibilityLabel={showNumber ? t("mobile.ocultar.el.numero") : t("mobile.mostrar.el.numero")} onPress={() => setShowNumber((value) => !value)} className="h-12 w-12 items-center justify-center rounded-2xl border border-gf-border" hitSlop={6}>
             <Ionicons name={showNumber ? 'eye-off-outline' : 'eye-outline'} size={22} color="#c084fc" />
           </Pressable>
         </View>

@@ -7,13 +7,16 @@ export type Params = Readonly<Record<string, string | number>>;
 export type TranslateFn = (key: string, params?: Params) => string;
 
 const PLURAL_RULES = new Map<Locale, Intl.PluralRules>();
-function pluralRules(locale: Locale): Intl.PluralRules {
+// The plural form of a count. Some JavaScript engines (the phone's, for one) have no Intl.PluralRules: there, a whole number is
+// "one" only when it is 1 and "other" otherwise, which is the rule of Spanish and English for whole numbers.
+function pluralForm(locale: Locale, count: number): string {
+  if (typeof Intl === "undefined" || typeof Intl.PluralRules !== "function") return count === 1 ? "one" : "other";
   let rules = PLURAL_RULES.get(locale);
   if (!rules) {
     rules = new Intl.PluralRules(locale === "en" ? "en-US" : "es-MX");
     PLURAL_RULES.set(locale, rules);
   }
-  return rules;
+  return rules.select(count);
 }
 
 // The text of a key in the person's language. If the key is missing there, it falls back to Spanish (the source), and if it is
@@ -21,7 +24,7 @@ function pluralRules(locale: Locale): Intl.PluralRules {
 export function translate(dict: Dict, fallback: Dict, locale: Locale, key: string, params?: Params): string {
   let template: string | undefined;
   if (params && typeof params.count === "number") {
-    const form = pluralRules(locale).select(params.count);
+    const form = pluralForm(locale, params.count);
     template = dict[`${key}_${form}`] ?? dict[`${key}_other`] ?? fallback[`${key}_${form}`] ?? fallback[`${key}_other`];
   }
   template ??= dict[key] ?? fallback[key] ?? fallback[`${key}_other`];

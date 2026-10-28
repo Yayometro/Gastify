@@ -14,6 +14,7 @@ import { buildBudgetHistoricalComparative } from '@gastify/core/transformers/bud
 import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurrency';
 
 import { useT, useInfo, useWalletText } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // Budgets against the period, month by month: how many months each one stayed within its limit (the web's
 // "compliance"), with a small strip of months (green kept, red exceeded) and a tap for each month's figures.
@@ -37,7 +38,7 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
         startDate: start,
         endDate: end,
       }),
-    [budgets, transactions, currency, rates, start, end]
+    [budgets, transactions, currency, rates, start, end, text.locale]
   );
   const comparedRows = useMemo(() => {
     if (!compareStart || !compareEnd) return [];
@@ -47,7 +48,7 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
       startDate: compareStart,
       endDate: compareEnd,
     });
-  }, [budgets, transactions, currency, rates, compareStart, compareEnd]);
+  }, [budgets, transactions, currency, rates, compareStart, compareEnd, text.locale]);
   const comparedById = new Map(comparedRows.map((row) => [idOf(row.budget as never), row]));
   const money = (value: number) => formatMoneyMajor(value, currency);
   const chosen = rows.find((row) => idOf(row.budget as never) === open);
@@ -64,13 +65,13 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
         return (
           <Pressable key={id} accessibilityRole="button" onPress={() => setOpen(id)} className="gap-2">
             <View className="flex-row items-center justify-between gap-3">
-              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{String(row.budget.name ?? 'Presupuesto')}</Text>
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{String(row.budget.name ?? t("budgets.alert.defaultName"))}</Text>
               <Text className="font-inter-semibold text-sm text-gf-text">
                 {row.monthsMet}/{row.monthsTracked}
                 {row.complianceRate !== null ? ` · ${Math.round(row.complianceRate * 100)}%` : ''}
               </Text>
             </View>
-            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.gasto.del.periodo.p1.p2", { p1: money(spent), p2: priorSpent !== undefined ? ` · comparado: ${money(priorSpent)}` : '' })}</Text>
+            <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.gasto.del.periodo.p1.p2", { p1: money(spent), p2: priorSpent !== undefined ? tNow("mobile.comparado.p1", { p1: money(priorSpent) }) : '' })}</Text>
             {prior && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.periodo.comparado.p1.p2.meses", { p1: prior.monthsMet, p2: prior.monthsTracked, p3: prior.complianceRate !== null ? ` · ${Math.round(prior.complianceRate * 100)}%` : '' })}</Text>}
             <View className="flex-row gap-1">
               {row.monthlySeries.map((month, index) => (
@@ -81,13 +82,13 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
         );
       })}
 
-      <DetailSheet visible={Boolean(chosen)} onClose={() => setOpen(null)} title={String(chosen?.budget.name ?? '')} subtitle={chosen ? `${chosen.monthsMet} de ${chosen.monthsTracked} meses dentro del límite` : undefined}>
+      <DetailSheet visible={Boolean(chosen)} onClose={() => setOpen(null)} title={String(chosen?.budget.name ?? '')} subtitle={chosen ? tNow("mobile.p1.de.p2.meses.dentro.del.limite", { p1: chosen.monthsMet, p2: chosen.monthsTracked }) : undefined}>
         <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.periodo.elegido")}</Text>
         {chosen?.monthlySeries.map((month, index) => (
           <View key={`${month.label}-${index}`} className="flex-row items-center justify-between gap-3">
             <Text className="flex-1 font-inter text-base text-gf-text">{month.label}{month.estimated ? ' ≈' : ''}</Text>
             <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.p1.de.p2", { p1: money(month.actual), p2: money(month.goal) })}</Text>
-            <Text className="font-inter-semibold text-sm" style={{ color: month.met ? colors.income : colors.expense }}>{month.met ? 'Cumplido' : 'Excedido'}</Text>
+            <Text className="font-inter-semibold text-sm" style={{ color: month.met ? colors.income : colors.expense }}>{month.met ? t("mobile.cumplido") : t("mobile.excedido")}</Text>
           </View>
         ))}
         {chosenPrevious && <Text className="pt-3 font-inter-semibold text-sm text-gf-text">{t("mobile.periodo.comparado")}</Text>}
@@ -95,7 +96,7 @@ export function BudgetsComparative({ start, end, compareStart, compareEnd }: { s
           <View key={`previous-${month.label}-${index}`} className="flex-row items-center justify-between gap-3">
             <Text className="flex-1 font-inter text-base text-gf-text">{month.label}{month.estimated ? ' ≈' : ''}</Text>
             <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.p1.de.p2", { p1: money(month.actual), p2: money(month.goal) })}</Text>
-            <Text className="font-inter-semibold text-sm" style={{ color: month.met ? colors.income : colors.expense }}>{month.met ? 'Cumplido' : 'Excedido'}</Text>
+            <Text className="font-inter-semibold text-sm" style={{ color: month.met ? colors.income : colors.expense }}>{month.met ? t("mobile.cumplido") : t("mobile.excedido")}</Text>
           </View>
         ))}
       </DetailSheet>

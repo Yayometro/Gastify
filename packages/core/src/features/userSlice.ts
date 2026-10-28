@@ -20,6 +20,10 @@ export interface UserData {
   }[];
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  // The language the person chose for their account; null or missing means automatic (where they are).
+  language?: "es" | "en" | null;
+  // The country the person chose (an ISO code); null or missing means automatic (where the phone or the network says they are).
+  country?: string | null;
   [key: string]: unknown;
 }
 

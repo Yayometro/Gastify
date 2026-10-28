@@ -76,8 +76,8 @@ export function TopRanking({
   const previousCategories = useMemo(() => orderByHighestValue(reduceTransCategoriesSliced(previousList)).slice(0, size), [previousList, size]);
   const previousBiggest = useMemo(() => [...previousList].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, size), [previousList, size]);
   const categoryMovements = useMemo(
-    () => (openCategory === null ? [] : (openCategory.previous ? previousList : list).filter((movement) => (movement.category?.name || 'No category') === openCategory.name).sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))),
-    [openCategory, list, previousList]
+    () => (openCategory === null ? [] : (openCategory.previous ? previousList : list).filter((movement) => (movement.category?.name || t("history.noCategory")) === openCategory.name).sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))),
+    [openCategory, list, previousList, t]
   );
   // Wide screens, History: a period of a few months is also shown month by month, in columns side by side so the months compare at a glance.
   const tablet = useWindowDimensions().width >= TABLET_MIN_WIDTH;
@@ -98,7 +98,7 @@ export function TopRanking({
         biggest: [...monthList].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, size),
       };
     });
-  }, [showComparison, tablet, preset, range, movements, kind, size]);
+  }, [showComparison, tablet, preset, range, movements, kind, size, locale]);
 
   const sizeOptions = TOP_SIZES.map((n) => ({ value: String(n) as `${TopSize}`, label: String(n) }));
 
@@ -141,7 +141,7 @@ export function TopRanking({
             <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
             <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
               <CategoryBadge icon={row.icon} color={row.color} size={44} />
-              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
               <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
             </Pressable>
@@ -169,7 +169,7 @@ export function TopRanking({
             <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
             <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
               <CategoryBadge icon={row.icon} color={row.color} size={44} />
-              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
               <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
             </Pressable>
@@ -200,7 +200,7 @@ export function TopRanking({
                     <RankedRow key={row.type} rank={index + 1} last={index === column.categories.length - 1}>
                       <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-2 py-1">
                         <CategoryBadge icon={row.icon} color={row.color} size={30} />
-                        <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
+                        <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
                         <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
                       </Pressable>
                     </RankedRow>
@@ -222,7 +222,7 @@ export function TopRanking({
             <RankedRow key={row.type} rank={index + 1} last={index === previousCategories.length - 1}>
             <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: true })} className="flex-row items-center gap-3 py-1">
               <CategoryBadge icon={row.icon} color={row.color} size={32} />
-              <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === 'No category' ? 'Sin categoría' : row.type}</Text>
+              <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
               <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
             </Pressable>
             </RankedRow>
@@ -236,8 +236,8 @@ export function TopRanking({
 
       <CategoryDetailSheet
         visible={openCategory !== null}
-        name={openCategory?.name === 'No category' ? 'Sin categoría' : openCategory?.name ?? ''}
-        prefix={openCategory?.previous ? 'Periodo anterior' : undefined}
+        name={openCategory?.name === t("history.noCategory") ? t("history.noCategory") : openCategory?.name ?? ''}
+        prefix={openCategory?.previous ? t("history.compare.previous") : undefined}
         movements={categoryMovements}
         currency={currency}
         onOpenMovement={(movement) => {

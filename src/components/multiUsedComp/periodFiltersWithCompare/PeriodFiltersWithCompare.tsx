@@ -29,7 +29,7 @@ export interface PeriodFiltersWithCompareProps {
 const FILTER_PILL_STYLE =
   "gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative min-[400px]:py-[2px] min-[640px]:py-[4px]";
 
-const COMPARE_TOOLTIP = "Compare this time period against another one, side by side";
+const COMPARE_TOOLTIP_KEY = "web.compare.this.time.period.against.another.one.side.by.sid";
 
 // Shared by every "compare vs another period" section on the History page
 // (Transactions History, Categories comparative, Top elements) - was three
@@ -71,10 +71,10 @@ function PeriodFiltersWithCompare({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCompareEnabled?.(e.target.checked)}
             className="appearance-none w-4 h-4 rounded-full border-2 border-purple-300 checked:bg-purple-600 checked:border-purple-600 cursor-pointer transition-colors"
           />
-          <Tooltip title={COMPARE_TOOLTIP}>
+          <Tooltip title={t(COMPARE_TOOLTIP_KEY)}>
             <span className="text-purple-300 font-medium">{t("history.compare")}</span>
           </Tooltip>
-          <Tooltip title={COMPARE_TOOLTIP}>
+          <Tooltip title={t(COMPARE_TOOLTIP_KEY)}>
             <span className="text-purple-400 flex items-center">
               <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
             </span>
@@ -91,10 +91,10 @@ function PeriodFiltersWithCompare({
           <span className="text-xs">
             {t("history.from")}{" "}
             <b>
-              {!timePeriod?.[0] ? "No time selected" : getDateInYearMonthDay(timePeriod[0])}
+              {!timePeriod?.[0] ? t("web.no.time.selected") : getDateInYearMonthDay(timePeriod[0])}
             </b>{" "}
             {t("history.to")}{" "}
-            <b>{!timePeriod?.[1] ? "No time selected" : getDateInYearMonthDay(timePeriod[1])}</b>
+            <b>{!timePeriod?.[1] ? t("web.no.time.selected") : getDateInYearMonthDay(timePeriod[1])}</b>
           </span>
           <div className="flex items-center justify-center flex-wrap gap-2">
             <InfoTip info={APP_INFO.periodo} />
@@ -125,11 +125,11 @@ function PeriodFiltersWithCompare({
               <span className="text-xs">
                 {t("history.from")}{" "}
                 <b>
-                  {!comparePeriod?.[0] ? "No time selected" : getDateInYearMonthDay(comparePeriod[0])}
+                  {!comparePeriod?.[0] ? t("web.no.time.selected") : getDateInYearMonthDay(comparePeriod[0])}
                 </b>{" "}
                 {t("history.to")}{" "}
                 <b>
-                  {!comparePeriod?.[1] ? "No time selected" : getDateInYearMonthDay(comparePeriod[1])}
+                  {!comparePeriod?.[1] ? t("web.no.time.selected") : getDateInYearMonthDay(comparePeriod[1])}
                 </b>
               </span>
               <div className="flex items-center justify-center flex-wrap gap-2">

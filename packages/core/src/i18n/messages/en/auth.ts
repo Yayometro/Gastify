@@ -2,6 +2,12 @@ import type auth from "../es/auth";
 
 // English for the "auth" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof auth, string> = {
+  "auth.stepUp.idle": "For your security, we ask you to confirm your identity after {p1} minutes without activity. Your data is safe. Confirm and you pick up where you left off; if you were saving something, send it again.",
+  "auth.stepUp.maxAge": "For your security, we ask you to confirm your identity every {p1} hours, even while you use the app. Confirm and you pick up where you left off; if you were saving something, send it again.",
+  "auth.stepUp.neverVerified": "Your session has not confirmed your second factor yet (for example, if you signed in with Google). Confirm it to use your account.",
+  "auth.stepUp.generic": "Confirm your identity to continue.",
+  "auth.stepUp.reauth": "To change your verification factors (passkeys, authenticator app or backup codes) we ask you to confirm your identity every {p1} minutes.",
+  "auth.stepUp.howTo": "Use your fingerprint, Face ID or your device code to continue.",
   "auth.stepUp": "For your security, confirm your identity again to continue 🔒",
   "auth.error.identityNotVerified": "We could not verify your identity, so we signed you out for security. Please sign in again.",
   "auth.error.codeAttemptsExceeded": "We could not verify your code after 3 attempts. Try signing in again.",
@@ -39,7 +45,23 @@ const en: Record<keyof typeof auth, string> = {
   "auth.passkey.nameLabel": "Name",
   "auth.passkey.namePlaceholder": "e.g. My iPhone",
   "auth.passkey.addedOn": "Added {date}",
-  "auth.passkey.unnamed": "Unnamed passkey"
+  "auth.passkey.unnamed": "Unnamed passkey",
+  "auth.could.not.sign.in.with.that.passkey": "Could not sign in with that passkey 🤕",
+  "auth.something.went.wrong.please.verify.your.username.or.try": "Something went wrong, please verify your username or try again later 🤕",
+  "auth.enter.your.verification.code": "Enter your verification code",
+  "auth.log.in.to.use.gastify": "Log in to use Gastify 💸",
+  "auth.the.password.must.have.at.least.one.special.character": "The password must have at least one special character \"!@#$%^&*(),.?\":{}|<>\".",
+  "auth.accept.the.terms.and.conditions": "Accept the terms and conditions",
+  "auth.verify.that.the.password.is.longer.than.8.characters.inc": "Verify that the password is longer than 8 characters, includes at least one capital letter and at least one special character",
+  "auth.email.already.exists": "Email already exists",
+  "auth.we.couldn.t.register.the.passkey": "We couldn't register the passkey 🤕",
+  "auth.we.couldn.t.start.the.setup": "We couldn't start the setup 🤕",
+  "auth.incorrect.code.try.again": "Incorrect code, try again 🤕",
+  "auth.you.closed.the.passkey.prompt.you.can.try.again.or.use.a": "You closed the passkey prompt. You can try again or use a code from your authenticator app.",
+  "auth.you.closed.the.passkey.prompt.you.can.try.again": "You closed the passkey prompt. You can try again.",
+  "auth.done.taking.you.to.your.wallet": "Done! Taking you to your Wallet…",
+  "auth.verifying.your.identity": "Verifying your identity…",
+  "auth.incorrect.code.you.have.p1.attempt.s.left": "Incorrect code. You have {p1} attempt(s) left.",
 };
 
 export default en;

@@ -62,6 +62,8 @@ const categories = {
   "categories.summary.seeAll": "Ver todas las transacciones de {p1} ›",
   "categories.summary.none": "Sin movimientos en este periodo.",
   "categories.summary.seeSub": "Ver subcategorías ›",
+  "categories.summary.back": "Atrás",
+  "categories.summary.forward": "Adelante",
   "categories.summary.movements": "{p1} movimiento{p2}",
   "categories.amount": "Monto:",
   "categories.percentage": "Porcentaje:",

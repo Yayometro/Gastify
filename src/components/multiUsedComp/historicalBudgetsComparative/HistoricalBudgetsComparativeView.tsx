@@ -45,10 +45,10 @@ function HistoricalBudgetsComparativeView({
         <span className="text-xs">
           {tr("budgets.from")}{" "}
           <b>
-            {!timePeriod[0] ? "No time selected" : getDateInYearMonthDay(timePeriod[0])}
+            {!timePeriod[0] ? tr("web.no.time.selected") : getDateInYearMonthDay(timePeriod[0])}
           </b>{" "}
           {tr("budgets.to")}{" "}
-          <b>{!timePeriod[1] ? "No time selected" : getDateInYearMonthDay(timePeriod[1])}</b>
+          <b>{!timePeriod[1] ? tr("web.no.time.selected") : getDateInYearMonthDay(timePeriod[1])}</b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
           <Tooltip title={t("budgets.comparative.help")}>

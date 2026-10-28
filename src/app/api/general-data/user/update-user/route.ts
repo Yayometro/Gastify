@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth/betterAuth";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { toPublicUser, type PublicUser } from "@/lib/auth/publicUser";
 import { serverT } from "@/i18n/server";
+import { isLocale } from "@gastify/core/i18n/locales";
+import { normalizeCountry } from "@gastify/core/i18n/countries";
 // export async function POST(request){
 //     try{
 
@@ -24,6 +26,10 @@ export interface UpdateUserRequestBody {
   image?: string;
   phone?: string | number;
   password?: string;
+  // The language of the account: "es" or "en", or null to follow where the person is.
+  language?: string | null;
+  // The country the person chose: an ISO code, or null to take it from where the phone or the network says they are.
+  country?: string | null;
   [key: string]: unknown;
 }
 
@@ -97,6 +103,19 @@ export async function POST(
     }
 
     // const userUpdated = await userFounded.save();
+    // The language of the account: only written when the request carries it (null means "where I am").
+    const accountChange: { language?: string | null; country?: string | null } = {};
+    if (dataRequest.language !== undefined) {
+      if (dataRequest.language !== null && !isLocale(dataRequest.language)) throw new Error(t("errors.api.languageInvalid"));
+      accountChange.language = dataRequest.language;
+    }
+    // The country: only written when the request carries it (null means "where I am"). An unknown code is refused.
+    if (dataRequest.country !== undefined) {
+      const country = dataRequest.country === null ? null : normalizeCountry(dataRequest.country);
+      if (dataRequest.country !== null && !country) throw new Error(t("errors.api.countryInvalid"));
+      accountChange.country = country;
+    }
+
     const userUpdated = await User.findOneAndUpdate(
       { mail: userFounded.mail },
       {
@@ -105,6 +124,7 @@ export async function POST(
           mail: dataRequest.mail || userFounded.mail,
           image: dataRequest.image || userFounded.image,
           phone: parsedPhone || userFounded.phone,
+          ...accountChange,
         },
       },
       { new: true } // Devuelve el documento modificado

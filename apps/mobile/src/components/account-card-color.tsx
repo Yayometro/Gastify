@@ -38,7 +38,7 @@ export function CardColorPicker({ account }: { account: AccountData }) {
   const id = idOf(account);
   const [color, setColor] = useState(account.cardColor ?? DEFAULT_CARD_COLOR);
   const [pattern, setPattern] = useState(account.cardPattern ?? DEFAULT_CARD_PATTERN);
-  const [autoFrom, autoTo] = accountGradient(id || 'cuenta');
+  const [autoFrom, autoTo] = accountGradient(id || t("budgets.account"));
 
   // The account is the source of truth: when it reloads (here or on another device's change), the picker follows it.
   useEffect(() => {

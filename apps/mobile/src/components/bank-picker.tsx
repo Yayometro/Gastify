@@ -7,6 +7,7 @@ import { Colors } from '@/constants/theme';
 import { normalizeText } from '@gastify/core/search/normalizeText';
 import { banksForCountry, type Bank } from '@gastify/core/banks/banks';
 import { useT } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // The banks of a country as small tiles, the main ones first and the rest below. Each group is one row that scrolls sideways,
 // with a button that opens all of its banks at once. Tapping the chosen one again clears it (the bank is optional).
@@ -45,7 +46,7 @@ export function BankPicker({ country, value, onChange }: { country: string; valu
           <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{title}</Text>
           {banks.length > 4 && needle.length === 0 ? (
             <Pressable accessibilityRole="button" onPress={() => setOpenAll((current) => ({ ...current, [key]: !current[key] }))} hitSlop={8}>
-              <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? 'Ver menos ‹' : `Ver todos (${banks.length}) ›`}</Text>
+              <Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{expanded ? t("mobile.ver.menos") : tNow("mobile.ver.todos.p1.2", { p1: banks.length })}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -61,8 +62,8 @@ export function BankPicker({ country, value, onChange }: { country: string; valu
     <View className="gap-4">
       <TextField label={t("mobile.buscar.banco")} value={query} onChangeText={setQuery} onClear={() => setQuery('')} placeholder={t("mobile.por.ejemplo.nu.o.bbva")} />
       {main.length === 0 && other.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.ningun.banco.coincide.con.p1", { p1: query })}</Text>}
-      {group('main', 'Principales', main)}
-      {group('other', 'Otros bancos y digitales', other)}
+      {group('main', t("mobile.principales"), main)}
+      {group('other', t("mobile.otros.bancos.y.digitales"), other)}
     </View>
   );
 }

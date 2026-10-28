@@ -4,6 +4,8 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 
 import { useBudgetAlertList } from '@/hooks/use-budget-alerts';
 import { Colors } from '@/constants/theme';
+import { useT } from '@/i18n/client';
+import { tNow } from '@/i18n/now';
 
 // The bell icon with the count of notices that apply right now, when there are any. It has no touch of its own: the
 // button around it opens the notifications.
@@ -24,9 +26,10 @@ export function NotificationsGlyph({ size = 26, color }: { size?: number; color?
 
 // The bell of the Inicio header: a round button that opens the notifications.
 export function NotificationsBell({ size = 44 }: { size?: number }) {
+  const t = useT();
   const count = useBudgetAlertList().length;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={count > 0 ? `Notificaciones, ${count} nuevas` : 'Notificaciones'} onPress={() => router.navigate('/notifications')} hitSlop={8} style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+    <Pressable accessibilityRole="button" accessibilityLabel={count > 0 ? tNow("mobile.notificaciones.p1.nuevas", { p1: count }) : t("mobile.notificaciones")} onPress={() => router.navigate('/notifications')} hitSlop={8} style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       <NotificationsGlyph size={size * 0.5} />
     </Pressable>
   );

@@ -8,7 +8,7 @@ import { MovementRow } from '@/components/movements/movement-row';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
 import { Colors } from '@/constants/theme';
-import { esMonthLabel } from '@/lib/month-label';
+import { localMonthLabel } from '@/lib/month-label';
 import { messageOf, sendWrite } from '@/lib/write';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
@@ -19,6 +19,7 @@ import { getExpectedOccurrencesInMonth, getMonthBucketBreakdown, type YearProjec
 import { filterBillsOrIncomes, getTransactionsFromTimeRange } from '@gastify/core/transformers/transactionsChange';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 type AnyRecord = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -95,7 +96,7 @@ export function ProjectionMonthSheet({
             .filter(Boolean)
         : spending.filter((budget) => !budget.archived);
     return getMonthBucketBreakdown(bills as never[], forChart as never[], buffers?.unexpectedBuffer ?? 0, { budget: t("budgets.alert.defaultName"), unexpected: t("projections.unexpectedRow") });
-  }, [row, range, monthTransactions, budgets, buffers]);
+  }, [row, range, monthTransactions, budgets, buffers, t]);
 
   const expected = useMemo(() => {
     if (!row || !range || row.type === 'actual') return [];
@@ -117,7 +118,7 @@ export function ProjectionMonthSheet({
         : { year, monthBalance: { month: monthIndex, balance: Number(balance) } };
       const next = await sendWrite<AnyRecord>('general-data/projections/update', body);
       if (next) onSaved(next);
-      setMessage({ text: kind === 'buffers' ? 'Topes guardados.' : 'Saldo del mes guardado.', error: false });
+      setMessage({ text: kind === 'buffers' ? t("mobile.topes.guardados") : t("mobile.saldo.del.mes.guardado"), error: false });
     } catch (error) {
       setMessage({ text: messageOf(error), error: true });
     } finally {
@@ -140,12 +141,12 @@ export function ProjectionMonthSheet({
     <DetailSheet
       visible={row !== null}
       onClose={onClose}
-      title={row ? `${esMonthLabel(row.monthName)} ${year}` : ''}
-      subtitle={row ? (row.type === 'actual' ? 'Mes cerrado: con tus movimientos reales.' : row.type === 'estimate' ? 'Mes futuro: estimado con tus presupuestos y fuentes de ingreso.' : 'Mes en curso: arranca como estimado y se llena con lo real conforme pasa el mes.') : undefined}
+      title={row ? `${localMonthLabel(row.monthName)} ${year}` : ''}
+      subtitle={row ? (row.type === 'actual' ? t("mobile.mes.cerrado.con.tus.movimientos.reales") : row.type === 'estimate' ? t("mobile.mes.futuro.estimado.con.tus.presupuestos.y.fuentes.de.ingres") : t("mobile.mes.en.curso.arranca.como.estimado.y.se.llena.con.lo.real.co")) : undefined}
       info={APP_INFO.c_mo_leer_este_mes}>
       {range && (
         <Pressable accessibilityRole="button" accessibilityState={{ expanded: showMovements }} onPress={() => setShowMovements((open) => !open)} className="items-center rounded-full border border-gf-border py-2.5">
-          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{showMovements ? 'Ocultar movimientos' : `Ver movimientos del mes (${monthTransactions.length})`}</Text>
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{showMovements ? t("mobile.ocultar.movimientos") : tNow("mobile.ver.movimientos.del.mes.p1", { p1: monthTransactions.length })}</Text>
         </Pressable>
       )}
       {showMovements && (
@@ -160,20 +161,20 @@ export function ProjectionMonthSheet({
 
       {row?.type === 'current' && (
         <View className="flex-row gap-3">
-          {tile('Ingresos', row.projectedIncome ?? 0, colors.income, `real hasta hoy: ${money(row.actualIncome ?? 0)} · esperado: ${money(row.shadowIncome ?? 0)}`)}
-          {tile('Gastos', row.projectedExpense ?? 0, colors.expense, `real hasta hoy: ${money(row.actualExpense ?? 0)} · presupuestado: ${money(row.shadowExpense ?? 0)}`)}
+          {tile(t("analyzer.incomes"), row.projectedIncome ?? 0, colors.income, tNow("mobile.real.hasta.hoy.p1.esperado.p2", { p1: money(row.actualIncome ?? 0), p2: money(row.shadowIncome ?? 0) }))}
+          {tile(t("analyzer.bills"), row.projectedExpense ?? 0, colors.expense, tNow("mobile.real.hasta.hoy.p1.presupuestado.p2", { p1: money(row.actualExpense ?? 0), p2: money(row.shadowExpense ?? 0) }))}
         </View>
       )}
       {row?.type === 'estimate' && (
         <View className="flex-row gap-3">
-          {tile('Ingreso estimado', row.income ?? 0, colors.income)}
-          {tile('Gasto estimado', row.expense ?? 0, colors.expense)}
+          {tile(t("projections.estimatedIncome"), row.income ?? 0, colors.income)}
+          {tile(t("projections.estimatedExpense"), row.expense ?? 0, colors.expense)}
         </View>
       )}
       {row?.type === 'actual' && (
         <View className="flex-row gap-3">
-          {tile('Ingreso real', row.income ?? 0, colors.income, row.historicalIncome !== undefined ? `esperado entonces: ${money(row.historicalIncome)}` : undefined)}
-          {tile('Gasto real', row.expense ?? 0, colors.expense, row.historicalExpense !== undefined ? `presupuestado entonces: ${money(row.historicalExpense)}` : undefined)}
+          {tile(t("projections.realIncome"), row.income ?? 0, colors.income, row.historicalIncome !== undefined ? tNow("mobile.esperado.entonces.p1", { p1: money(row.historicalIncome) }) : undefined)}
+          {tile(t("projections.realExpense"), row.expense ?? 0, colors.expense, row.historicalExpense !== undefined ? tNow("mobile.presupuestado.entonces.p1", { p1: money(row.historicalExpense) }) : undefined)}
         </View>
       )}
 
@@ -189,7 +190,7 @@ export function ProjectionMonthSheet({
           {chart.map((item) => (
             <View key={item.label} className="gap-1 border-t border-gf-border pt-2">
               <View className="flex-row justify-between gap-3">
-                <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{item.label === 'Unexpected/Other' ? 'Otros / inesperado' : item.label}</Text>
+                <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{item.label === 'Unexpected/Other' ? t("mobile.otros.inesperado") : item.label}</Text>
                 <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.p1.de.p2", { p1: money(item.actual), p2: money(item.budgeted) })}</Text>
               </View>
               <View className="h-2 overflow-hidden rounded-full bg-gf-surface"><View style={{ width: `${(item.budgeted / maxBar) * 100}%`, height: '100%', backgroundColor: '#a78bfa' }} /></View>

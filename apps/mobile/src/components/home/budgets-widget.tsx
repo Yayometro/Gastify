@@ -18,6 +18,7 @@ import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // The most budgets the dashboard shows; the rest are one tap away on «Ver todos».
 export const MAX_DASHBOARD_BUDGETS = 10;
@@ -60,7 +61,7 @@ export function BudgetsWidget() {
           <Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.presupuestos")}</Text>
         </Pressable>
         <View className="flex-row items-center gap-3">
-          <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{rows.length > shown.length ? `Ver todos (${rows.length})` : 'Ver todos'}</Text></Pressable>
+          <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{rows.length > shown.length ? tNow("mobile.ver.todos.p1", { p1: rows.length }) : t("mobile.ver.todos")}</Text></Pressable>
           <InfoTip info={APP_INFO.presupuestos} />
         </View>
       </View>

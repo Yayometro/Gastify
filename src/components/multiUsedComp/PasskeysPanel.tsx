@@ -45,7 +45,7 @@ function PasskeysPanel(): React.JSX.Element {
       const { error } = await authClient.passkey.addPasskey({ name: newPasskeyName.trim() });
       if (error) {
         if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
-        runNotify("error", error.message || "Could not register that passkey 🤕");
+        runNotify("error", error.message || t("web.could.not.register.that.passkey"));
         return;
       }
       runNotify("ok", t("auth.passkey.added"));
@@ -63,7 +63,7 @@ function PasskeysPanel(): React.JSX.Element {
       const { error } = await authClient.passkey.deletePasskey({ id });
       if (error) {
         if (redirectIfStepUpRequired(error, t("auth.stepUp"))) return;
-        runNotify("error", error.message || "Could not remove that passkey 🤕");
+        runNotify("error", error.message || t("web.could.not.remove.that.passkey"));
         return;
       }
       runNotify("ok", t("auth.passkey.removed"));
@@ -142,7 +142,7 @@ function PasskeysPanel(): React.JSX.Element {
               type="submit"
               className="gf-glass-button text-white rounded-full px-4 py-2"
             >
-              {isLoading ? <Spin /> : "Add passkey"}
+              {isLoading ? <Spin /> : t("web.add.passkey")}
             </button>
           </form>
         </div>

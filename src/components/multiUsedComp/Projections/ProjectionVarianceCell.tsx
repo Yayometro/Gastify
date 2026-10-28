@@ -38,13 +38,13 @@ function ProjectionVarianceCell({
   const sign = value > 0 ? "+" : "";
   const verb = betterWhenPositive ? "ganaste" : "gastaste";
   const comparison = value >= 0 ? "más" : "menos";
-  const verdict = isNeutral ? "igual a lo esperado" : isBetter ? "mejor de lo esperado" : "peor de lo esperado";
+  const verdict = isNeutral ? t("web.as.expected") : isBetter ? t("web.better.than.expected") : t("web.worse.than.expected");
   const tooltip = (
     <>
       {label} {t("projections.real")}{usdFormatChanger(actual)}) − {label.toLowerCase()} {t("projections.projected")}{usdFormatChanger(projected)}) = {sign}{usdFormatChanger(value)}.
       <br />
       {isNeutral
-        ? `Sin variación respecto a lo que proyectabas — ${verdict}.`
+        ? t("web.no.variance.from.what.you.projected.p1", { p1: verdict })
         : `${verb.charAt(0).toUpperCase() + verb.slice(1)} ${usdFormatChanger(Math.abs(value))} ${comparison} de lo que proyectabas — ${verdict}.`}
     </>
   );

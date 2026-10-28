@@ -23,7 +23,7 @@ function CategoriesModalList({ onSelect, onlyFathers = false }: CategoriesModalL
         </div>
       ) : (
         <>
-          <h1 className="py-3">{onlyFathers ? "Select a Category:" : "Categories without sub-categories:"}</h1>
+          <h1 className="py-3">{onlyFathers ? t("web.select.a.category") : t("web.categories.without.subcategories")}</h1>
           <div className="w-full flex justify-center items-center gap-2 flex-wrap">
             {categories.filter(c => !c.children || c.children.length === 0).map((cat) => (
               <CategoryCircle

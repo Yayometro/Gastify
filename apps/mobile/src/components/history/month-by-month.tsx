@@ -15,6 +15,7 @@ import { isInRange } from '@gastify/core/transactions/movementFilters';
 import { topSpendingCategories } from '@gastify/core/transactions/monthSummary';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 const BAR_AREA = 150;
 const TABLET_BAR_AREA = 230;
@@ -109,7 +110,7 @@ export function MonthByMonth({ summary, compareSummary, currency, movements }: {
         visible={current !== null}
         onClose={() => setOpen(null)}
         title={currentLabel}
-        subtitle={previous ? `Comparado con ${previousLabel}` : undefined}
+        subtitle={previous ? tNow("mobile.comparado.con.p1", { p1: previousLabel }) : undefined}
         info={APP_INFO.detalle_del_mes(Boolean(previous))}>
         {current && (() => {
           const rowsData = [

@@ -7,6 +7,7 @@ import {
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import React, { useContext } from "react";
 import { BiSolidCategory } from "react-icons/bi";
+import { useT } from "@/i18n/client";
 
 export interface ModalCategoryContentProps {
   getSelected?: (category: unknown) => void;
@@ -22,6 +23,7 @@ function ModalCategoryContent({
   onlyFathers = false,
   inline = false,
 }: ModalCategoryContentProps): React.JSX.Element {
+  const t = useT();
   const { handleSelect } = useContext(SelectCategoryContext);
 
   const list = (
@@ -55,7 +57,7 @@ function ModalCategoryContent({
       <header className="pt-2 w-full h-fit flex flex-col justify-between items-center text-white sticky top-0 z-10">
         <span className="w-full flex gap-2 items-center justify-center font-bold text-3xl ">
           <BiSolidCategory size={40} className="hidden sm:inline" />
-          <h1>{onlyFathers ? "Select Father" : "Select Category"}</h1>
+          <h1>{onlyFathers ? t("web.select.parent") : t("web.select.category")}</h1>
         </span>
         <div className="footer-eader w-full h-3 rounded-t-3xl mt-4"></div>
       </header>

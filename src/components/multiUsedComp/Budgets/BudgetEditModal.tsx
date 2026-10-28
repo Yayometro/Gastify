@@ -236,7 +236,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
           return {
             category: categoryId,
             subCategory: subCategoryId,
-            name: catObj?.name || (c.name as string) || "Category",
+            name: catObj?.name || (c.name as string) || tr("web.category"),
             color: catObj?.color || (c.color as string) || "#DADADA",
             icon: catObj?.icon || null,
           };
@@ -248,7 +248,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         initialCategories = [{
           category: categoryRef?._id || (typeof budget.category === "string" ? budget.category : "") || "",
           subCategory: subCategoryRef?._id || (typeof budget.subCategory === "string" ? budget.subCategory : "") || "",
-          name: catObj?.name || "Category",
+          name: catObj?.name || tr("web.category"),
           color: catObj?.color || "#DADADA",
           icon: catObj?.icon || null,
         }];
@@ -365,7 +365,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         ? await toFetch.post("general-data/budget/update", { ...payload, id: budget?._id })
         : await toFetch.post("general-data/budget/new", { ...payload, user: budget?.user, wallet: budget?.wallet });
 
-      if (!res.ok || !res.data) throw new Error(res.message || "Operation failed 🤕");
+      if (!res.ok || !res.data) throw new Error(res.message || tr("web.operation.failed"));
       if (mode === "edition") dispatch(updateBudget(res.data));
       else dispatch(addNewBudget(res.data));
 
@@ -389,7 +389,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
     try {
       setIsLoading(true);
       const res = await toFetch.post("general-data/budget/remove", { id: budget?._id });
-      if (!res.ok) throw new Error(res.message || "Could not delete budget");
+      if (!res.ok) throw new Error(res.message || tr("web.could.not.delete.budget"));
       if (budget?._id) dispatch(removeBudget(budget._id));
       if (getBudgetType(budget) === BUDGET_TYPES.PROJECT) {
         transacciones
@@ -423,13 +423,13 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         <div className="relative pt-6 pb-5 px-4 text-center text-white shrink-0">
           {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors text-xs font-semibold">{t("budgets.back")}</button>}
           <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"><CategoIcon type="MdClose" siz={18} /></button>
-          <h1 className="text-2xl font-bold">{mode === "edition" ? "Edit" : "Create"} {isProject ? "Project" : "Budget"} 🪄</h1>
+          <h1 className="text-2xl font-bold">{mode === "edition" ? tr("web.edit") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")} 🪄</h1>
         </div>
       )}
       <div className={inline ? "w-full" : "flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8"}>
         <form onSubmit={handleSubmit} className="form-trans-edit flex flex-col gap-3">
           <p className="label-tfp">{t("budgets.form.name")}</p>
-          <input type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? "e.g. Japan 2027" : "Budget name"} required className="w-full" />
+          <input type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? tr("web.e.g.japan.2027") : tr("web.budget.name")} required className="w-full" />
           {mode === "creation" && Number(budget?.referenceSpent) > 0 && <p className="text-xs text-amber-400 bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2">{tr("budgets.project.alreadySpent")} <strong>{usdFormatChanger(budget?.referenceSpent)}</strong>{tr("budgets.project.linkedNote")}</p>}
 
           <p className="label-tfp mt-1">{t("budgets.form.type")}</p>
@@ -440,7 +440,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
             </button>)}
           </div>
 
-          <p className="label-tfp mt-1">{isSaving ? "Savings target" : isProject ? "Project spending limit" : "Spending limit"}</p>
+          <p className="label-tfp mt-1">{isSaving ? tr("web.savings.target") : isProject ? tr("web.project.spending.limit") : tr("web.spending.limit")}</p>
           <div className="flex items-stretch gap-2">
             <input type="number" min="0" name="goalAmount" value={form.goalAmount} onChange={handleChange} required className="flex-1 min-w-0" />
             <Tooltip title={t("budgets.form.currencyHelp")}>
@@ -502,13 +502,13 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
             <select name="period" value={form.period} onChange={handleChange} className="etm-selector bg-gf-surface"><option value="monthly">{t("budgets.period.monthly")}</option><option value="quarterly">{t("budgets.period.quarterly")}</option><option value="biannual">{t("budgets.period.biannual")}</option><option value="yearly">{t("budgets.period.yearly")}</option></select>
             <p className="label-tfp mt-1">{t("budgets.categoriesCount", { p1: form.categories.length })}</p>
             {!!form.categories.length && <div className="flex flex-wrap gap-1.5">{form.categories.map((c, index) => <div key={`${c.category}:${c.subCategory}:${index}`} className="flex items-center gap-1 bg-gf-accent-soft-bg text-purple-300 rounded-full px-2.5 py-1 text-xs"><span>{c.name}</span><button type="button" onClick={() => setForm((prev) => ({ ...prev, categories: prev.categories.filter((_, i) => i !== index) }))}>×</button></div>)}</div>}
-            {!!categoryConflicts.length && <div className="bg-amber-500/15 border border-amber-300 text-amber-400 rounded-2xl px-3 py-2 text-xs"><p className="font-bold">{t("budgets.coverage.exists")}</p><p>{t("budgets.coverage.alsoBy", { p1: (categoryConflicts as BudgetData[]).map((item) => item.name || "Unnamed budget").join(", ") })}</p></div>}
+            {!!categoryConflicts.length && <div className="bg-amber-500/15 border border-amber-300 text-amber-400 rounded-2xl px-3 py-2 text-xs"><p className="font-bold">{t("budgets.coverage.exists")}</p><p>{t("budgets.coverage.alsoBy", { p1: (categoryConflicts as BudgetData[]).map((item) => item.name || tr("web.unnamed.budget")).join(", ") })}</p></div>}
             <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
             {isCategoryPickerOpen && <ModalCategoryContent inline close={() => setIsCategoryPickerOpen(false)} getSelected={handleCategory} />}
           </>}
 
           {mode === "edition" && <button type="button" onClick={handleDelete} className="mt-2 w-full cursor-pointer gf-glass-button-danger text-white text-center rounded-full p-2">{t("budgets.deleteThis", { p1: isProject ? "project" : "budget" })}</button>}
-          <button type="submit" className="mt-3 cursor-pointer w-full gf-glass-button text-white text-center rounded-full p-2">{mode === "edition" ? "Update" : "Create"} {isProject ? "Project" : "Budget"}</button>
+          <button type="submit" className="mt-3 cursor-pointer w-full gf-glass-button text-white text-center rounded-full p-2">{mode === "edition" ? tr("web.update") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")}</button>
         </form>
       </div>
     </div>

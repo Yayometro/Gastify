@@ -69,7 +69,7 @@ function TopMonthItem<T = unknown>({
         <section className="">
           <h1 className="text-gf-accent-soft-text font-semibold">{name}</h1>
           {!value ? (
-            "No value"
+            t("web.no.value")
           ) : (
             <p>
               {t("dashboard.value")} <b>{value}</b>
@@ -78,7 +78,7 @@ function TopMonthItem<T = unknown>({
         </section>
         <div className="w-full flex flex-col gap-1 mt-1">
           {!childs || childs.length <= 0
-            ? "No childs to display..."
+            ? t("web.no.child.items.to.show")
             : childs.map((item, i) =>
                 mode === "category" ? (
                   <TopCategoryRow

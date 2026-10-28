@@ -2,14 +2,18 @@ import React from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth, countUserPasskeys } from "@/lib/auth/betterAuth";
-import { FACTOR_CHANGE_STEP_UP_TTL_MS, STEP_UP_TTL_MS } from "@/lib/auth/stepUpConfig";
+import { FACTOR_CHANGE_STEP_UP_TTL_MS } from "@/lib/auth/stepUpConfig";
+import { evaluateApiStepUp } from "@/lib/auth/stepUpPolicy";
 import { safeNextPath } from "@/lib/auth/factorChangePolicy";
+import type { StepUpReason } from "@gastify/core/auth/sessionStatus";
 import Verify2FAClient from "@/components/Verify2FAClient";
 
 export const dynamic = "force-dynamic";
 
+const STEP_UP_REASONS: readonly StepUpReason[] = ["never-verified", "max-age", "idle"];
+
 export interface Verify2FAPageProps {
-  searchParams?: Promise<{ reauth?: string; next?: string }> | { reauth?: string; next?: string };
+  searchParams?: Promise<{ reauth?: string; next?: string; reason?: string }> | { reauth?: string; next?: string; reason?: string };
 }
 
 async function Verify2FAPage({ searchParams }: Verify2FAPageProps = {}): Promise<React.JSX.Element> {
@@ -23,11 +27,16 @@ async function Verify2FAPage({ searchParams }: Verify2FAPageProps = {}): Promise
   // straight back to the dashboard and the user could never refresh it.
   const reauth = params.reauth === "1";
   const nextPath = safeNextPath(params.next);
+  // Why the person was sent here (the dashboard or the API). The screen says it in plain words.
+  const reason = STEP_UP_REASONS.find((known) => known === params.reason) ?? null;
 
   // Already fresh - nothing to verify, don't make them do it again.
-  const stepUpAt = sesion.session.stepUpVerifiedAt ? new Date(sesion.session.stepUpVerifiedAt).getTime() : 0;
-  const freshWindow = reauth ? FACTOR_CHANGE_STEP_UP_TTL_MS : STEP_UP_TTL_MS;
-  if (Date.now() - stepUpAt <= freshWindow) redirect(reauth && nextPath ? nextPath : "/dashboard");
+  if (reauth) {
+    const stepUpAt = sesion.session.stepUpVerifiedAt ? new Date(sesion.session.stepUpVerifiedAt).getTime() : 0;
+    if (Date.now() - stepUpAt <= FACTOR_CHANGE_STEP_UP_TTL_MS) redirect(nextPath ?? "/dashboard");
+  } else if (evaluateApiStepUp(sesion.session).allowed) {
+    redirect(nextPath ?? "/dashboard");
+  }
 
   // What the account really has, straight from the server. The client used to
   // infer it from cached lists, which can still hold ANOTHER account's passkeys
@@ -39,7 +48,7 @@ async function Verify2FAPage({ searchParams }: Verify2FAPageProps = {}): Promise
 
   return (
     <div className="bg-gf-bg p-4 w-full h-screen flex justify-center items-center bg-origin-border bg-center" style={{ backgroundImage: "url('/infoTwo.jpg')" }}>
-      <Verify2FAClient nextPath={nextPath} reauth={reauth} hasPasskey={hasPasskey} hasTotp={hasTotp} />
+      <Verify2FAClient nextPath={nextPath} reauth={reauth} reason={reason} hasPasskey={hasPasskey} hasTotp={hasTotp} />
     </div>
   );
 }

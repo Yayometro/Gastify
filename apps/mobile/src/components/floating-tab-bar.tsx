@@ -1,4 +1,5 @@
 import { Tabs, router, usePathname } from 'expo-router';
+import { useT } from '@/i18n/client';
 import { Fragment, type ComponentProps, type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,15 +18,16 @@ const WIDE_BAR_MIN_WIDTH = 428;
 // Where each tab opens: a second tap on a tab already open goes back to this page, scrolls up and refreshes.
 const LANDING: Record<string, string> = { index: '/', movements: '/movements', budgets: '/budgets', more: '/more' };
 
-// The two extra sections of the wide bar. Both live under "Más", so the bar marks them by path and not by the tab.
-const EXTRA = {
-  projections: { href: '/more/projections', label: 'Proyecciones', glyph: (color: string) => NAV_ICON.projections(color, 24) },
-  analyzer: { href: '/more/analyzer', label: 'Analizador de cartera', glyph: (color: string) => NAV_ICON.analyzer(color, 24) },
-} as const;
 
 // Gastify's bottom bar: a rounded bar floating above the bottom edge with icons only, like the web app's mobile navbar.
 // Wide bar order: Inicio, Movimientos, Proyecciones, "+", Presupuestos, Analizador, Más (always the last, at the right).
-export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
+export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: TabBarProps) {
+  const t = useT();
+  // The two extra sections of the wide bar. Both live under "Más", so the bar marks them by path and not by the tab.
+  const EXTRA = {
+    projections: { href: '/more/projections', label: t("analyzer.projections"), glyph: (color: string) => NAV_ICON.projections(color, 24) },
+    analyzer: { href: '/more/analyzer', label: t("mobile.analizador.de.cartera"), glyph: (color: string) => NAV_ICON.analyzer(color, 24) },
+  } as const;
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const colors = Colors[isDark ? 'dark' : 'light'];
@@ -85,7 +87,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
             const focused = state.index === index && !(route.name === 'more' && anyExtra);
             const landing = LANDING[route.name];
             const onPress = () => {
-              const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+              const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
               if (event.defaultPrevented) return;
               // Tapping the section that is already open: back to its top and a refresh.
               if (focused && landing && pathname === landing) {
@@ -94,11 +96,11 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
               }
               // A tab always opens its landing page, even when a detail in that tab was opened
               // from another section. Merely navigating to the tab preserves its nested stack.
-              if (route.name === 'movements' || route.name === 'budgets' || route.name === 'more') {
-                navigation.navigate(route.name, { screen: 'index' });
+              if (landing && (route.name === 'movements' || route.name === 'budgets' || route.name === 'more')) {
+                router.navigate(landing as never);
                 return;
               }
-              if (!focused) navigation.navigate(route.name, route.params);
+              if (!focused) navigateToTab(route.key);
             };
 
             return (

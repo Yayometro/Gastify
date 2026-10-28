@@ -46,22 +46,23 @@ export function CategoryForm({
   const [icon, setIcon] = useState(initial?.icon ?? 'fluent/label');
   const [color, setColor] = useState<string>(initial?.color ?? CATEGORY_COLORS[0]);
   const parentItems: ChipItem[] = [
-    { id: NEW_PARENT, label: name.trim() || 'Esta categoría' },
-    ...existing.map((category) => ({ id: idOf(category), label: category.name || 'Categoría', icon: category.icon, color: category.color })),
+    { id: NEW_PARENT, label: name.trim() || t("mobile.esta.categoria") },
+    ...existing.map((category) => ({ id: idOf(category), label: category.name || t("dashboard.bulk.category"), icon: category.icon, color: category.color })),
   ];
   const [nameError, setNameError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    const problem = validateCategoryName(name);
+    const problemKey = validateCategoryName(name);
+    const problem = problemKey ? t(problemKey) : null;
     setNameError(problem);
     setFormError(null);
     setSubError(null);
     if (problem) return;
     // A sub-category needs a name and a category to hang from: without them the form does not create it.
-    if (withSub && !subName.trim()) return setSubError('Escribe el nombre de la subcategoría.');
-    if (withSub && !parent) return setSubError('Elige la categoría donde va la subcategoría.');
+    if (withSub && !subName.trim()) return setSubError(t("mobile.escribe.el.nombre.de.la.subcategoria"));
+    if (withSub && !parent) return setSubError(t("mobile.elige.la.categoria.donde.va.la.subcategoria"));
     setSaving(true);
     try {
       await onSubmit({

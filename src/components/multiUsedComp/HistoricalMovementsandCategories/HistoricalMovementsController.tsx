@@ -292,7 +292,7 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
     },
   ];
 
-  const tabs: string[] = ["Bills", "Incomes"];
+  const tabs: string[] = [t("web.bills"), t("web.incomes")];
   if (compareEnabled && compareTables) {
     components.push(
       {
@@ -318,7 +318,7 @@ function HistoricalMovementsController({ periodState }: HistoricalMovementsContr
         Component: TopElementsCompareTable as unknown as React.ComponentType<object>,
       }
     );
-    tabs.push("Compare bills", "Compare incomes");
+    tabs.push(t("web.compare.bills"), t("web.compare.incomes"));
   }
 
   // FUNCTIONS

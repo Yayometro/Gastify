@@ -12,6 +12,7 @@ import { updateWallet } from '@gastify/core/features/walletSlice';
 import { CURRENCY_META, SUPPORTED_CURRENCIES } from '@gastify/core/money/currencies';
 
 import { useT, useInfo } from "@/i18n/client";
+import { tNow } from '@/i18n/now';
 
 // The main currency, as the web's selector: every total and report is shown in it. It only changes how things are
 // presented: each account keeps its own balance in its own currency.
@@ -37,7 +38,7 @@ export function CurrencyCard() {
           try {
             const wallet = await sendWrite<Record<string, unknown>>('general-data/wallet', { walletId, primaryCurrency: next });
             dispatch(updateWallet(wallet as never));
-            toast.show(`Moneda principal: ${next}`);
+            toast.show(tNow("mobile.moneda.principal.p1", { p1: next }));
           } catch (e) {
             setError(messageOf(e));
           } finally {

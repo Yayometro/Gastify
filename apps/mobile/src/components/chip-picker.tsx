@@ -24,11 +24,13 @@ function ChipsRow({
   isSelected,
   onPress,
   multiple,
-  title = 'Elegir',
-  emptyText = 'Todavía no hay opciones.',
+  title: titleProp,
+  emptyText: emptyProp,
   moreAfter = 4,
 }: Common & { isSelected: (id: string) => boolean; onPress: (id: string) => void; multiple: boolean }) {
   const t = useT();
+  const title = titleProp ?? t("mobile.elegir");
+  const emptyText = emptyProp ?? t("mobile.todavia.no.hay.opciones");
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const [open, setOpen] = useState(false);

@@ -15,7 +15,7 @@ export function CategoryTable({
   currency,
   selectedKey,
   disabled = false,
-  firstColumn = 'Categoría',
+  firstColumn: firstColumnProp,
   limit,
   onPressRow,
   drillLabel,
@@ -32,6 +32,7 @@ export function CategoryTable({
   drillLabel?: string;
 }) {
   const t = useT();
+  const firstColumn = firstColumnProp ?? t("dashboard.bulk.category");
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const shown = limit ? rows.slice(0, limit) : rows;
   return (

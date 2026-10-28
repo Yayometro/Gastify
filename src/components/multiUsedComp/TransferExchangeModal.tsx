@@ -145,7 +145,7 @@ function TransferExchangeModal(): React.JSX.Element {
       const typedSomething = Number(form.sourceAmount) > 0 && Number(form.destinationAmount) > 0;
       runNotify(
         "error",
-        typedSomething ? "That amount is smaller than the smallest unit of the currency" : "Enter both amounts"
+        typedSomething ? t("web.that.amount.is.smaller.than.the.smallest.unit.of.the.cur") : t("web.enter.both.amounts")
       );
       return;
     }
@@ -173,7 +173,7 @@ function TransferExchangeModal(): React.JSX.Element {
         dispatch(addNewTransacctions([res.data.outgoing, res.data.incoming] as TransactionData[]));
         clearForm();
       } else {
-        runNotify("error", res.message || "Something went wrong");
+        runNotify("error", res.message || t("web.something.went.wrong"));
       }
     } catch (err) {
       runNotify("error", String(err));
@@ -197,7 +197,7 @@ function TransferExchangeModal(): React.JSX.Element {
           className="form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]"
         >
           <h1 className="text-xl min-[450px]:text-2xl font-light text-center w-full">
-            {isCrossCurrency ? "Currency Exchange" : "Transfer Between Accounts"}
+            {isCrossCurrency ? t("web.currency.exchange") : t("web.transfer.between.accounts")}
           </h1>
           <p className="label-tfp">{t("movements.transfer.name")}</p>
           <input
@@ -205,7 +205,7 @@ function TransferExchangeModal(): React.JSX.Element {
             name="name"
             value={form.name}
             onChange={handleChange}
-            placeholder={isCrossCurrency ? "Currency exchange" : "Transfer between accounts"}
+            placeholder={isCrossCurrency ? t("web.currency.exchange") : t("web.transfer.between.accounts")}
           />
 
           <p className="label-tfp">{t("movements.transfer.from")}</p>
@@ -254,7 +254,7 @@ function TransferExchangeModal(): React.JSX.Element {
             {t("movements.transfer.receivedPrefix")}{destinationAccount ? destinationCurrency : "—"}){" "}
             {isCrossCurrency && (
               <Tooltip title={t("movements.transfer.estimate")}>
-                <span className="text-purple-500 cursor-help">{quoting ? "estimating…" : "(estimate, editable)"}</span>
+                <span className="text-purple-500 cursor-help">{quoting ? "estimating…" : t("web.estimate.editable")}</span>
               </Tooltip>
             )}
           </p>
@@ -294,7 +294,7 @@ function TransferExchangeModal(): React.JSX.Element {
             className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >
-            {isLoading ? <Spin /> : isCrossCurrency ? "Exchange" : "Transfer"}
+            {isLoading ? <Spin /> : isCrossCurrency ? t("web.exchange") : t("web.transfer")}
           </button>
           <button
             type="button"

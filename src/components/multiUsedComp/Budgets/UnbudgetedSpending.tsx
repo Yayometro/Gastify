@@ -49,7 +49,7 @@ function MovementRow({ movement, onEdit, onDelete, readOnly = false }: MovementR
     <div className="flex items-center justify-between gap-3 gf-glass-row rounded-2xl px-3 py-2">
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold text-gf-text truncate">
-          {movement.name || "Unnamed movement"}
+          {movement.name || t("web.unnamed.movement")}
         </p>
         <p className="text-[10px] text-gf-text-muted truncate">
           {dayjs(movement.date || movement.createdAt).format("DD MMM YYYY")}
@@ -94,6 +94,7 @@ export interface UnbudgetedSpendingCardProps {
 }
 
 export function UnbudgetedSpendingCard({ coverage: coverageProp, onClick, compact = false }: UnbudgetedSpendingCardProps): React.JSX.Element {
+  const t = useT();
   const coverage = coverageProp as BudgetCoverageResult;
   const hasSpending = coverage.unbudgetedSpent > 0;
   const percentage = Math.round(coverage.unbudgetedPercentage);
@@ -120,12 +121,12 @@ export function UnbudgetedSpendingCard({ coverage: coverageProp, onClick, compac
           </div>
           <div className="min-w-0">
             <p className={`font-bold ${hasSpending ? "text-amber-400" : "text-emerald-400"}`}>
-              {hasSpending ? "Unbudgeted spending" : "All your spending is covered"}
+              {hasSpending ? t("web.unbudgeted.spending") : t("web.all.your.spending.is.covered")}
             </p>
             <p className="text-[11px] text-gf-text-muted truncate">
               {hasSpending
                 ? `${coverage.groups.length} ${coverage.groups.length === 1 ? "category" : "categories"} • ${coverage.uncovered.length} ${coverage.uncovered.length === 1 ? "movement" : "movements"} • ${percentage}% of spending`
-                : "No movements outside your active budgets in this period."}
+                : t("web.no.movements.outside.your.active.budgets.in.this.period")}
             </p>
           </div>
         </div>
@@ -197,7 +198,7 @@ export function UnbudgetedSpendingModal({
     setIsDeleting(true);
     try {
       const res = await toFetch.post(`general-data/transactions/remove-transaction/${deletingMovementId}`);
-      if (!res.ok) throw new Error(res.message || "Could not delete movement");
+      if (!res.ok) throw new Error(res.message || t("web.could.not.delete.movement"));
       dispatch(removeOneTransacction(deletingMovementId));
       runNotify("ok", t("budgets.movement.deleted"));
       setDeletingMovementId(null);
@@ -345,7 +346,7 @@ export function UnbudgetedSpendingModal({
                                         <option key={budget._id} value={budget._id}>{budget.name}</option>
                                       ))}
                                     </select>
-                                    <Tooltip title={selectedBudgetId ? "Review the budget before saving" : "Choose a budget first"}>
+                                    <Tooltip title={selectedBudgetId ? t("web.review.the.budget.before.saving") : t("web.choose.a.budget.first")}>
                                       <button
                                         type="button"
                                         disabled={!selectedBudgetId}
@@ -424,8 +425,8 @@ export function UnbudgetedSpendingModal({
         onOk={confirmDeleteMovement}
         onCancel={() => setDeletingMovementId(null)}
         confirmLoading={isDeleting}
-        okText="Yes, delete"
-        cancelText="Cancel"
+        okText={t("web.yes.delete")}
+        cancelText={t("web.cancel")}
         okButtonProps={{ className: "gf-glass-button-danger !border-0 !text-white" }}
         cancelButtonProps={{ className: "gf-glass-button-neutral !border-0 !text-gf-text" }}
         title={<span className="text-red-400 font-semibold flex items-center gap-1">{t("budgets.movement.confirmTitle")}</span>}

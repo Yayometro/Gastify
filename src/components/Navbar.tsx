@@ -31,6 +31,17 @@ import { IoNotificationsOutline } from "react-icons/io5";
 
 export type NavbarSession = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
 
+// The text beside each item. On the phone it is the label under the icon. On the desktop, hovering the item opens a bubble with
+// the name and what the section is; on the page the person is on, the bubble starts with "You are here".
+function NavTooltip({ label, hint, here = null, hidden = false }: { label: string; hint: string; here?: string | null; hidden?: boolean }): React.JSX.Element {
+  return (
+    <p className={`${hidden ? "hidden" : "sm:hidden"} hoverTooltip`}>
+      {label}
+      <span className="navHint">{here ? `${here}. ${hint}` : hint}</span>
+    </p>
+  );
+}
+
 export interface NavbarProps {
   sesion?: NavbarSession;
   demoMode?: boolean;
@@ -59,6 +70,8 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
     return target === "/demo" ? pathname === target : pathname === target || pathname.startsWith(`${target}/`);
   };
   const navItemClass = (href: string): string => `gf-nav-item ${isActive(href) ? "gf-nav-active" : ""}`;
+  // "You are here" for the page the person is on, nothing for the rest.
+  const here = (href: string): string | null => (isActive(href) ? t("navbar.youAreHere") : null);
   const handleToggleNav = (): void => {
     setToggleNav(!toggleNav);
   };
@@ -85,47 +98,45 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
           toggleNav ? "is-open" : "hidden"
         }`}
       >
-        <li className={`demo-nav-brand flex flex-row items-center justify-center micro-pulse sm:px-2 ${demoMode ? navItemClass("/dashboard/profile") : ""}`}>
-          <Link href={destination("/dashboard/profile")} aria-current={demoMode && isActive("/dashboard/profile") ? "page" : undefined}>
+        <li className="flex flex-row items-center justify-center micro-pulse sm:px-2">
+          <Link href={destination("/dashboard")} aria-current={isActive("/dashboard") ? "page" : undefined}>
             <Image
-              className="rounded-full border-[1px] border-purple-500 m-auto w-[60px]  sm:w-[40px]"
-              src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
-              alt={t("navbar.profileAlt", { p1: ccUser?.fullName })}
-              width={50}
-              height={50}
+              className="m-auto h-[56px] w-[56px] sm:h-[44px] sm:w-[44px]"
+              src={themeMode === "dark" ? "/brand/gastify-icon-g-dolar-white.svg" : "/brand/gastify-icon-g-dolar-black.svg"}
+              alt="Gastify"
+              width={240}
+              height={240}
             />
-            <p className="demo-nav-label text-[10px] sm:text-[8px] w-[45px] break-word text-ellipsis overflow-hidden group truncate">{ccUser?.fullName}</p>
-            <p className="hidden hoverTooltip">{t("navbar.profile")}</p>
           </Link>
         </li>
         <li className={navItemClass("/dashboard/movements")}>
           <Link href={destination("/dashboard/movements")} aria-current={isActive("/dashboard/movements") ? "page" : undefined}>
             <FaMoneyBillTransfer size={30} className="hidden sm:inline" />
-            <p className="demo-nav-label sm:hidden hoverTooltip">{t("navbar.movements")}</p>
+            <NavTooltip label={t("navbar.movements")} hint={t("navbar.hint.movements")} here={here("/dashboard/movements")} />
           </Link>
         </li>
         <li className={navItemClass("/dashboard")}>
           <Link href={destination("/dashboard")} aria-current={isActive("/dashboard") ? "page" : undefined}>
             <FaWallet size={27} className="hidden sm:inline" />
-            <p className="demo-nav-label sm:hidden hoverTooltip">{t("navbar.wallet")}</p>
+            <NavTooltip label={t("navbar.wallet")} hint={t("navbar.hint.wallet")} here={here("/dashboard")} />
           </Link>
         </li>
         <li className={navItemClass("/dashboard/budgets")}>
           <Link href={destination("/dashboard/budgets")} aria-current={isActive("/dashboard/budgets") ? "page" : undefined}>
             <MdSavings size={30} className="hidden sm:inline" />
-            <p className="demo-nav-label sm:hidden hoverTooltip">{t("navbar.budgets")}</p>
+            <NavTooltip label={t("navbar.budgets")} hint={t("navbar.hint.budgets")} here={here("/dashboard/budgets")} />
           </Link>
         </li>
         <li className={navItemClass("/dashboard/projections")}>
           <Link href={destination("/dashboard/projections")} aria-current={isActive("/dashboard/projections") ? "page" : undefined}>
             <MdAutoGraph size={30} className="hidden sm:inline" />
-            <p className="demo-nav-label sm:hidden hoverTooltip">{t("navbar.projections")}</p>
+            <NavTooltip label={t("navbar.projections")} hint={t("navbar.hint.projections")} here={here("/dashboard/projections")} />
           </Link>
         </li>
         <li className={navItemClass("/dashboard/analyzer")}>
           <Link href={destination("/dashboard/analyzer")} aria-current={isActive("/dashboard/analyzer") ? "page" : undefined}>
             <FaMagnifyingGlassChart size={27} className="hidden sm:inline" />
-            <p className="demo-nav-label sm:hidden hoverTooltip">{t("navbar.analyzer")}</p>
+            <NavTooltip label={t("navbar.analyzer")} hint={t("navbar.hint.analyzer")} here={here("/dashboard/analyzer")} />
           </Link>
         </li>
         <li >
@@ -133,7 +144,7 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
               <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
                 <IoAdd size={30} />
               </button>
-              <p className="hidden hoverTooltip">{t("navbar.addTransaction")}</p>
+              <NavTooltip hidden label={t("navbar.addTransaction")} hint={t("navbar.hint.addTransaction")} />
             </div>
             {
               (isAddTrans && !demoMode && <AddTransactionModal close={toogleAddTrans}/>)
@@ -142,20 +153,20 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
         <li className={navItemClass("/dashboard/accounts")}>
           <Link href={destination("/dashboard/accounts")} aria-current={isActive("/dashboard/accounts") ? "page" : undefined}>
             <MdAccountBalance size={30} className="hidden sm:inline" />
-            <p className="demo-nav-label sm:hidden hoverTooltip">{t("navbar.accounts")}</p>
+            <NavTooltip label={t("navbar.accounts")} hint={t("navbar.hint.accounts")} here={here("/dashboard/accounts")} />
           </Link>
         </li>
-        
+
         <li className={navItemClass("/dashboard/history")}>
           <Link href={destination("/dashboard/history")} aria-current={isActive("/dashboard/history") ? "page" : undefined}>
             <FaHistory size={30} className="hidden sm:inline"  />
-            <p className="demo-nav-label sm:hidden hoverTooltip">{t("navbar.history")}</p>
+            <NavTooltip label={t("navbar.history")} hint={t("navbar.hint.history")} here={here("/dashboard/history")} />
           </Link>
         </li>
         <li className={navItemClass("/dashboard/categories")}>
           <Link href={destination("/dashboard/categories")} aria-current={isActive("/dashboard/categories") ? "page" : undefined}>
             <BiSolidCategory size={30} className="hidden sm:inline" />
-            <p className="demo-nav-label sm:hidden hoverTooltip">{t("navbar.categories")}</p>
+            <NavTooltip label={t("navbar.categories")} hint={t("navbar.hint.categories")} here={here("/dashboard/categories")} />
           </Link>
         </li>
         <li className="gf-nav-item">
@@ -165,7 +176,7 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
             ) : (
               <MdDarkMode size={26} className="hidden sm:inline" />
             )}
-            <p className="demo-nav-label sm:hidden hoverTooltip">{themeMode === "dark" ? "Light mode" : "Dark mode"}</p>
+            <NavTooltip label={themeMode === "dark" ? t("web.light.mode") : t("web.dark.mode")} hint={t("navbar.hint.theme")} />
           </button>
         </li>
         <li className="gf-nav-item">
@@ -176,6 +187,19 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
               {demoNotificationCount > 0 && <span aria-hidden="true" className="demo-navbar-notification-count absolute -right-2 -top-1 grid h-[17px] min-w-[17px] place-items-center rounded-full border border-[#2b1a3d] bg-rose-300 px-1 text-[9px] font-bold leading-none text-rose-950">{demoNotificationCount}</span>}
             </button>
           ) : <NotificationsBell />}
+        </li>
+        <li className="flex flex-row items-center justify-center micro-pulse sm:px-2">
+          <Link href={destination("/dashboard/profile")} aria-current={isActive("/dashboard/profile") ? "page" : undefined}>
+            <Image
+              className="rounded-full border-[1px] border-purple-500 m-auto w-[60px]  sm:w-[40px]"
+              src={ccUser?.image || '/img/profile/user-non-profile.jpg'}
+              alt={t("navbar.profileAlt", { p1: ccUser?.fullName })}
+              width={50}
+              height={50}
+            />
+            <p className="text-[10px] sm:text-[8px] w-[45px] break-word text-ellipsis overflow-hidden group truncate">{ccUser?.fullName}</p>
+            <NavTooltip hidden label={t("navbar.profile")} hint={t("navbar.hint.profile")} here={here("/dashboard/profile")} />
+          </Link>
         </li>
       </ul>
       <ul className="gf-nav-surface text-gf-text mb-3 n-mobile w-[93%] flex flex-row justify-between py-2 px-3 items-center rounded-full shadow-xl z-[1002] fadeInUp md:hidden">
@@ -198,7 +222,7 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
               <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
                 <IoAdd size={30} />
               </button>
-              <p className="hidden hoverTooltip">{t("navbar.addTransaction")}</p>
+              <NavTooltip hidden label={t("navbar.addTransaction")} hint={t("navbar.hint.addTransaction")} />
             {
               (isAddTrans && !demoMode && <AddTransactionModal close={toogleAddTrans}/>)
             }

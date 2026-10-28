@@ -1,4 +1,6 @@
 "use client";
+import type { Locale } from "@gastify/core/i18n/locales";
+import { monthTitle } from "@gastify/core/i18n/dates";
 
 import React, { useState } from "react";
 import { ConfigProvider, DatePicker, Spin } from "antd";
@@ -13,7 +15,7 @@ import { formatMoneyMajor, isSupportedCurrency, minorToMajor, SUPPORTED_CURRENCI
 import type { ProjectionBaselineData } from "@/hooks/useProjectionTable";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT, useInfo } from "@/i18n/client";
+import { useLocale, useT, useInfo } from "@/i18n/client";
 
 export interface BaselineTimelineEntry {
   _id?: string;
@@ -56,10 +58,10 @@ function safeMinorToMajor(amountMinor: number, currency: unknown): number {
   return isSupportedCurrency(currency) ? minorToMajor(amountMinor, currency) : 0;
 }
 
-function formatMonthYear(date?: string | number | Date | null): string {
+function formatMonthYear(date: string | number | Date | null | undefined, locale: Locale, unknownLabel: string): string {
   const parsed = date ? new Date(date) : null;
-  if (!parsed || Number.isNaN(parsed.getTime())) return "fecha desconocida";
-  return parsed.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+  if (!parsed || Number.isNaN(parsed.getTime())) return unknownLabel;
+  return monthTitle(parsed, locale);
 }
 
 const pickerTheme = { token: { colorPrimary: "#9333ea", borderRadius: 999 } };
@@ -83,6 +85,7 @@ function BaselineTimelineEditor({
   onChange,
 }: BaselineTimelineEditorProps): React.JSX.Element {
   const t = useT();
+  const locale = useLocale();
   const defaultCurrency = walletPrimaryCurrency || "MXN";
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [editingId, setEditingId] = useState<string | null | undefined>(null);
@@ -173,8 +176,8 @@ function BaselineTimelineEditor({
               className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
             >
               <p className="text-purple-300 capitalize">
-                {t("projections.reference.from")} {formatMonthYear(entry.effectiveFrom)}
-                {entry.effectiveTo ? ` hasta ${formatMonthYear(entry.effectiveTo)}` : " (en curso)"}
+                {t("projections.reference.from")} {formatMonthYear(entry.effectiveFrom, locale, t("web.unknown.date"))}
+                {entry.effectiveTo ? t("web.until.p1", { p1: formatMonthYear(entry.effectiveTo, locale, t("web.unknown.date")) }) : t("web.in.progress")}
                 <span className="text-xs text-gf-text-muted normal-case ml-2">
                   ~{formatMoneyMajor(
                     safeMinorToMajor(entry[moneyField]?.amountMinor || 0, entry[moneyField]?.currency || defaultCurrency),
@@ -261,7 +264,7 @@ function BaselineTimelineEditor({
           type="submit"
           className="gf-glass-button text-white rounded-full px-4 py-2 shrink-0"
         >
-          {isLoading ? <Spin /> : editingId ? "Guardar" : "Agregar"}
+          {isLoading ? <Spin /> : editingId ? t("common.save") : t("budgets.add")}
         </button>
         {editingId && (
           <button type="button" className="gf-glass-button-neutral text-gf-text rounded-full px-4 py-2 shrink-0" onClick={resetForm}>

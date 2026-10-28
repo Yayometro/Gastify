@@ -177,7 +177,7 @@ function BudgetDetailModal({
           const amount = getPrimaryAmount(t);
           spent += amount;
 
-          const catName = t.subCategory?.name || t.category?.name || "Other";
+          const catName = t.subCategory?.name || t.category?.name || tr("web.other");
           const catColor = t.subCategory?.color || t.category?.color || "#DADADA";
           const catIcon = t.subCategory?.icon || t.category?.icon || "md/MdFilterNone";
 
@@ -231,32 +231,32 @@ function BudgetDetailModal({
     const toGo = goalAmount - effectiveAmount;
     remainingText =
       toGo <= 0
-        ? "Goal reached 🎉"
+        ? tr("web.goal.reached")
         : `${usdFormatChanger(toGo)} to go`;
   } else {
     const remain = goalAmount - effectiveAmount;
     remainingText =
       remain >= 0
-        ? `${usdFormatChanger(remain)} remaining`
-        : `Exceeded limit by ${usdFormatChanger(Math.abs(remain))}`;
+        ? tr("web.p1.remaining", { p1: usdFormatChanger(remain) })
+        : tr("web.exceeded.limit.by.p1", { p1: usdFormatChanger(Math.abs(remain)) });
   }
 
   const periodLabel = budget.period
     ? ` / ${budget.period === "yearly" ? "year" : budget.period === "quarterly" ? "quarter" : budget.period === "biannual" ? "6m" : "month"}`
-    : " / month";
+    : tr("web.month");
 
   const getEmojiTooltipMessage = (r: number, saving: boolean): string => {
     const safeRatio = Number.isFinite(r) ? r : 0;
     if (saving) {
-      if (safeRatio >= 0.85) return "🤩 Amazing! You are at or very close to your savings goal!";
-      if (safeRatio >= 0.35) return "🙂 Good progress! Keep saving toward your goal.";
-      return "😟 Just starting. Keep pushing toward your savings goal!";
+      if (safeRatio >= 0.85) return tr("web.amazing.you.are.at.or.very.close.to.your.savings.goal");
+      if (safeRatio >= 0.35) return tr("web.good.progress.keep.saving.toward.your.goal");
+      return tr("web.just.starting.keep.pushing.toward.your.savings.goal");
     }
-    if (safeRatio > 1) return "🔥 Watch out! You have exceeded the limit for this budget.";
-    if (safeRatio >= 0.85) return "😰 Cuidado, estás muy cerca de tu límite.";
-    if (safeRatio >= 0.6) return "😐 Halfway there. Keep an eye on your remaining limit.";
-    if (safeRatio >= 0.3) return "🙂 Doing well! Spendings are moderate.";
-    return "🤩 Excellent! Very little spent so far.";
+    if (safeRatio > 1) return tr("web.watch.out.you.have.exceeded.the.limit.for.this.budget");
+    if (safeRatio >= 0.85) return tr("web.careful.you.are.very.close.to.your.limit");
+    if (safeRatio >= 0.6) return tr("web.halfway.there.keep.an.eye.on.your.remaining.limit");
+    if (safeRatio >= 0.3) return tr("web.doing.well.spending.is.moderate");
+    return tr("web.excellent.very.little.spent.so.far");
   };
 
   const emojiTooltip = getEmojiTooltipMessage(ratio, isSaving);
@@ -269,10 +269,10 @@ function BudgetDetailModal({
       // so deleting from here could never be confirmed.
       zIndex: 10000,
       title: tr("budgets.movement.confirmQuestion"),
-      content: "Are you sure you want to remove this transaction?",
-      okText: "Yes, delete",
+      content: tr("web.are.you.sure.you.want.to.remove.this.transaction"),
+      okText: tr("web.yes.delete"),
       okType: "danger",
-      cancelText: "Cancel",
+      cancelText: tr("web.cancel"),
       onOk: async () => {
         try {
           // `fetcher` is a factory: it used to be called as `fetcher.post`, which
@@ -314,7 +314,7 @@ function BudgetDetailModal({
               <div className="flex items-start justify-between gap-3 pr-12">
                 <div>
                   <h2 className="text-2xl font-bold text-purple-300">
-                    {budget.name || "Unnamed Budget"}
+                    {budget.name || tr("web.unnamed.budget")}
                   </h2>
                   <p className="text-xs text-gf-text-muted mt-0.5">
                     {tr("budgets.budgetSubtitle", { p1: isSaving ? "Savings goal" : "Spending budget", p2: budget.period || "monthly", p3: budgetCurrency })}
@@ -363,7 +363,7 @@ function BudgetDetailModal({
                           : "text-red-300"
                         : "text-gf-text"
                     }`}
-                    title={isExceeded ? `Exceeded limit/goal! (${pctNum}%)` : `${pctNum}% of goal/limit`}
+                    title={isExceeded ? tr("web.exceeded.limit.goal.p1", { p1: pctNum }) : tr("web.p1.of.goal.limit", { p1: pctNum })}
                   >
                     <span>{pctNum}%</span>
                   </div>

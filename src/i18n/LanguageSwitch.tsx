@@ -6,7 +6,7 @@ import { LOCALE_COOKIE, LOCALES, type Locale } from "@gastify/core/i18n/locales"
 import { useLocale, useT } from "@/i18n/client";
 
 // The language names are written in their own language, so each one is readable from anywhere.
-const NAMES: Record<Locale, string> = { es: "Español", en: "English" };
+const NAMES: Record<Locale, string> = { es: "common.languageSpanish", en: "common.languageEnglish" };
 
 // Two pills, Español and English. The choice goes into a cookie (a year) and the page is refreshed so the server sends the
 // texts of the new language.
@@ -30,7 +30,7 @@ export default function LanguageSwitch({ className = "" }: { className?: string 
           onClick={() => choose(locale)}
           className={`rounded-full px-3 py-1 text-sm font-semibold transition-all ${locale === current ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"}`}
         >
-          {NAMES[locale]}
+          {t(NAMES[locale])}
         </button>
       ))}
     </div>

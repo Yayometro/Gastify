@@ -36,9 +36,9 @@ export interface ProjectionsViewProps {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  actual: "Closed",
-  estimate: "Estimate",
-  current: "In progress",
+  actual: "web.closed",
+  estimate: "web.estimate",
+  current: "web.in.progress.2",
 };
 
 function formatMoney(value?: number | null): string {
@@ -120,7 +120,7 @@ function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.
                 <td className="py-2 px-3">
                   {row.monthName}
                   <span className="block text-[10px] text-gf-text-muted normal-case">
-                    {TYPE_LABEL[row.type]}
+                    {t(TYPE_LABEL[row.type])}
                   </span>
                 </td>
                 <td className={`py-2 px-3 ${getIncomeColorClass(row.type)}`}>
