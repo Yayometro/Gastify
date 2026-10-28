@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/betterAuth";
 import WalletAnalyzer from "@/components/multiUsedComp/walletAnalyzer/WalletAnalyzer";
+import GrowthOpportunityTeaser from "@/components/opportunities/GrowthOpportunityTeaser";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,10 @@ async function page(): Promise<React.JSX.Element> {
 
   return (
     <div className="w-full h-full min-[768px]:pl-[80px]">
-      <WalletAnalyzer mail={sesion.user.email} />
+      <div className="flex flex-col gap-5">
+        <GrowthOpportunityTeaser />
+        <WalletAnalyzer mail={sesion.user.email} />
+      </div>
     </div>
   );
 }

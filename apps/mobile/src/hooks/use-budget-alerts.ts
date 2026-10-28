@@ -18,6 +18,9 @@ import { getExplicitBudgetId, isProjectBudget, isSavingBudget } from '@gastify/c
 import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChange';
 import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange';
 import { useT } from '@/i18n/client';
+import { goalScheduleReminder } from '@gastify/core/goals/reminders';
+import { majorToMinor } from '@gastify/core/money/currencies';
+import { findOverlappingSavingAccounts, isEligibleGoalFundingAccountType } from '@gastify/core/goals/progress';
 
 const STORE_KEY = 'budget_alerts_shown';
 
@@ -51,7 +54,11 @@ export function useBudgetAlertList(): BudgetAlert[] {
     const bounds = monthBounds(now.getFullYear(), now.getMonth());
     const periodKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const out: BudgetAlert[] = [];
-    for (const budget of convertBudgetsToPrimary(budgets.filter((b) => !b.archived), currency, rates)) {
+    const convertedBudgets = convertBudgetsToPrimary(budgets.filter((b) => !b.archived), currency, rates);
+    const fundingConflicts = findOverlappingSavingAccounts(convertedBudgets.filter((budget) => isSavingBudget(budget)).map((budget) => ({
+      id: idOf(budget), name: budget.name, linkedAccountIds: (budget.linkedAccounts || []).map(idOf).filter(Boolean),
+    })));
+    for (const budget of convertedBudgets) {
       const goal = Number(budget.goalAmount) || 0;
       if (goal <= 0) continue;
       const id = idOf(budget);
@@ -60,7 +67,25 @@ export function useBudgetAlertList(): BudgetAlert[] {
       if (isSavingBudget(budget)) {
         kind = 'saving';
         const linked = (budget.linkedAccounts || []).map(idOf).filter(Boolean);
-        value = linked.length > 0 ? totalInPrimary(accounts.filter((account) => linked.includes(idOf(account))), currency, rates).total : Number(budget.savingAmount) || 0;
+        if (fundingConflicts.has(id) || budget.conversionUnavailable) continue;
+        const linkedAccounts = accounts.filter((account) => linked.includes(idOf(account)));
+        if (linkedAccounts.some((account) => !isEligibleGoalFundingAccountType(account.accountType))) continue;
+        const total = totalInPrimary(linkedAccounts, currency, rates);
+        if (linked.length > 0 && total.missingCurrencies.length > 0) continue;
+        value = linked.length > 0 ? total.total : Number(budget.savingAmount) || 0;
+        if (budget.goalDetails && id) {
+          const reminder = goalScheduleReminder({
+            budgetId: id,
+            name: budget.name || t('budgets.alert.defaultName'),
+            targetMinor: majorToMinor(goal, currency),
+            savedMinor: majorToMinor(value, currency),
+            currency,
+            details: budget.goalDetails,
+            revision: budget.revision,
+            t,
+          });
+          if (reminder) out.push(reminder);
+        }
       } else if (isProjectBudget(budget)) {
         kind = 'project';
         value = transactions.filter((tx) => tx.isBill && !tx.isIncome && getExplicitBudgetId(tx) === id).reduce((sum, tx) => sum + getPrimaryAmount(tx), 0);

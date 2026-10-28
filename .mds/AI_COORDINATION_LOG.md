@@ -1755,3 +1755,127 @@ When taking over this task, Claude should perform the following steps:
 - **Merge:** se integró `origin/main` en `codex/public-dashboard-demo`, conservando el aislamiento de solo lectura y combinando el Navbar/perfil del demo con los componentes recientes de la aplicación.
 - **Verificación:** `npm run typecheck`, `npm run lint -- --quiet`, `npx vitest run --reporter=dot` (117 archivos / 818 pruebas) y `git diff --check` pasan. No se ejecutó build en esta integración.
 - **Publicación:** autorizado por el usuario: subir la rama `codex/public-dashboard-demo` e integrarla a `main`. La investigación de monetización se publica en su rama separada; no se mezclan cambios del dashboard administrativo.
+
+### Entry #73 - Codex - 2026-10-28 (08:28 AM America/Mexico_City) - Plan de Objetivos y Oportunidades de crecimiento
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** analizar oportunidades basadas en gastos y objetivos financieros personalizables; decidir cómo encajan con Savings/Projects, documentar un plan y preparar una rama independiente.
+- **Phase:** diseño y planeación; **sin implementación funcional**.
+- **Actions Taken:**
+  1. Revisados modelos Budget, Transaction, IncomeSource, adaptadores monetarios, formularios, alertas web/móvil, carga progresiva de historial, rutas de presupuesto y demo. Leídas reglas de coordinación; usada guía de arquitectura para conservar Next Route Handlers, MongoDB y core compartido.
+  2. Propuesta: enriquecer `Budget` de tipo `saving` con `goalDetails`, reutilizando meta/ahorro; conservar Projects como control de gastos y vincularlos solo por contexto. No nueva colección Goal ni duplicación de saldos.
+  3. Especificados flujos, plantillas, escenarios de gasto, porcentaje de redirección, simulaciones de inversión por fechas, financiación exclusiva, multimoneda, recordatorios in-app, privacidad, fases, archivos y checklist de aceptación. Rendimientos solo ilustrativos, sin tasas comerciales consultadas ni garantías.
+  4. Consultadas fuentes oficiales Investor.gov/CONDUSEF, documentando apertura correcta frente a resultados de búsqueda cuyo fetch falló. No se consultaron ni modificaron cuentas personales.
+  5. Creado worktree aislado y rama `codex/growth-opportunities-goals` desde `origin/main` actualizado, SHA `eaba906deb0943783c5766cb6722bceb4304974d`. El checkout principal `feat/tutorial` y sus cambios locales de Claude quedaron intactos; su entrada #72 está aún sin commit en ese checkout y no se copió aquí.
+- **Files Created / Modified:**
+  - Created: [GOALS_GROWTH_OPPORTUNITIES_PLAN.md](GOALS_GROWTH_OPPORTUNITIES_PLAN.md).
+  - Modified: [AI_COORDINATION_LOG.md](AI_COORDINATION_LOG.md), solo esta entrada.
+- **Verification:** revisadas rutas actuales, enlaces locales Markdown, bloques de código y aritmética de ejemplos; `git diff --check` sin errores. No se ejecutaron pruebas de aplicación/build: solo cambian documentos. Sin staging, commit, push, merge, deploy ni escrituras de BD.
+- **Next Steps / Hand-Off Notes:** revisar el plan; después implementar por fases empezando con objetivos manuales y calendario. Antes de integrar, incorporar de forma revisada el avance de main/tutorial; no sobrescribir sus cambios ni catalogar el problema previo de demo como resuelto por esta tarea. El plan permanece local en `/Users/luisjairvazqueznavarrete/.codex/worktrees/growth-goals/Gastify`.
+
+### Entry #74 - Codex - 2026-10-28 (09:44 AM America/Mexico_City) - MVP de Objetivos y Oportunidades
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** implementar el plan de Goals + Growth Opportunities de cabo a rabo en rama secundaria, sin usar `localhost:3000`.
+- **Branch / Isolation:** `codex/growth-opportunities-goals`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/growth-goals/Gastify`. Basada en `origin/main` (`eaba906deb0943783c5766cb6722bceb4304974d`). El checkout principal `feat/tutorial` y los cambios locales de Cloud/Claude se preservaron intactos.
+- **Implemented:**
+  1. Goals reutiliza Savings (`Budget` tipo `saving`) con metadata de objetivo, plantillas, target/enganche, calendario de ahorro, fuente de financiación exclusiva, icono/color/contexto, estados, edición y archivo. `Project` sigue representando gasto; no se modificaron las proyecciones existentes.
+  2. Claims únicos evitan contar la misma cuenta de financiación en más de un Savings/Goal. APIs existentes de alta/edición/eliminación validan propiedad, montos, moneda, fechas y revisión; limpieza de claims en borrado de cuenta/presupuesto/usuario. La actualización multiparte usa compensación, no transacción Mongo.
+  3. Growth Opportunities filtra gastos por periodo, categoría/subcategoría, tag o concepto; detalla operaciones incluidas y calidad de FX/historial; compara el mismo principal entre viaje/meta de enganche/inversión hipotética. Fees/refunds separados; no se infiere tabaco a partir de OXXO ni se ejecutan movimientos de dinero.
+  4. Web: `/dashboard/goals`, `/dashboard/goals/[id]`, `/dashboard/opportunities`, integración con Budgets, modal real, Dashboard, Analyzer, History y notificaciones in-app con deep link. Móvil: `/budgets/goals` y `/budgets/opportunities`, además de formulario/detalle/alertas compartidos con `@gastify/core`. Demo: `/demo/goals` y `/demo/opportunities`, datos ficticios e interacción local sin persistencia Mongo.
+  5. ES/EN, pruebas nuevas de validación estructurada de montos, y plan actualizado en [GOALS_GROWTH_OPPORTUNITIES_PLAN.md](GOALS_GROWTH_OPPORTUNITIES_PLAN.md). No se implementaron push/WhatsApp, depósitos automáticos, reconciliación de reembolsos ni inversión comercial/recomendación.
+- **Files:** ver inventario detallado de §16 del plan; abarca core, rutas/API, modelo Budget y GoalFundingClaim, web, móvil, catálogos, demo y pruebas. El `AGENTS.md` raíz es generado por Next en dev y no se incluye como parte de la feature.
+- **Verification:** web `npm run typecheck` pasa; Mobile `cd apps/mobile && npx tsc --noEmit` pasa; Vitest completo: 122 archivos / 838 pruebas; `npm run lint -- --quiet` pasa para web; ESLint focalizado de archivos móviles de la feature pasa. `npx expo lint` hereda la configuración root que ignora `apps/**`; el lint móvil global tiene dos errores preexistentes en `apps/mobile/src/components/home/tablet-wallet-header.tsx`. `git diff --check` pasa. No se ejecutó build por las reglas del repo.
+- **Preview:** servidor dev activo en `http://localhost:3001` (no se tocó 3000). `/`, `/demo/goals`, `/demo/opportunities` devuelven 200; rutas privadas sin sesión redirigen a login. Navegador integrado abierto en `/demo/opportunities`; el usuario puede probar `/demo/goals` y volver a Opportunities. El usuario todavía debe validar visualmente y probar móvil.
+- **Release:** cambios locales sin staging/commit/push/merge/deploy. No integrar hasta que el usuario valide y se revise de nuevo el estado de `main` y los cambios concurrentes.
+- **Next steps:** esperar QA visual/funcional del usuario en `localhost:3001`; ajustar hallazgos, luego con autorización sincronizar branch y revisar conflictos. El plan/checklist conserva escenarios de aceptación manual pendientes y documenta las limitaciones actuales.
+
+### Entry #75 - Codex - 2026-10-28 (09:49 AM America/Mexico_City) - Diagnóstico de Mongo URI faltante en el preview
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** diagnosticar el runtime error `Please add your MongoDB URI to env.local` que aparece al salir de la demo hacia login/dashboard.
+- **Evidence:** el servidor `localhost:3001` pertenece al worktree `codex/growth-opportunities-goals`, que no contiene `.env`, `.env.local` ni archivos de entorno de desarrollo. Su stdout confirma `GET /login 500` y stack de importación `src/lib/db/mongoClient.ts` → `src/lib/auth/betterAuth.ts` → `/login/page.tsx`; `mongoClient.ts` comprueba `process.env.DB_URI` durante evaluación del módulo. Las rutas `/demo/goals` y `/demo/opportunities` sí dan 200 porque sus datos son de muestra. El checkout principal de `localhost:3000` sí tiene `DB_URI` local no vacío y la pestaña Chrome ya abierta estaba renderizando Projections; `/`, `/login` dieron 200 y dashboard sin sesión redirigió a login. No se imprimieron valores secretos ni se alteró ningún `.env`.
+- **Cause:** la rama/worktree secundaria se creó sin copiar secretos (bien para aislar el trabajo), pero no se comunicó con suficiente claridad que eso limita la autenticación en el puerto 3001. Por eso el demo funciona y la aplicación autenticada en ese preview no.
+- **Files:** plan actualizado con la limitación de entorno; sin cambios de código funcional.
+- **Verification:** consultas locales read-only de puertos, cwd, presencia de variables por nombre/estado, HTTP, AX del tab existente y logs de Next. No se reinició ni modificó el servidor `localhost:3000`; `localhost:3001` sigue disponible para el demo.
+- **Safety / Next step:** no enlazar el preview nuevo a la base configurada en el checkout principal sin confirmar que es una base de desarrollo, porque eso podría exponer datos reales o permitir escrituras. Solicitar una URI de desarrollo separada o autorización explícita y confirmación del entorno antes de configurar `DB_URI` en un archivo gitignored del worktree.
+- **Follow-up previo a resolución:** la autorización inicial para reusar la URI estaba condicionada a confirmar que fuese de pruebas. El chequeo de metadatos no permitió confirmar eso (remota, sin marcador explícito), así que no se conectó en ese momento. Después el usuario indicó usar la configuración habitual del `.env`, que se resolvió cargándola solo en el proceso actual de 3001 sin copiar secretos.
+- **Resolution:** el usuario aclaró que debe usarse el `.env` habitual. La diferencia era el cwd: los puertos anteriores corrían desde el checkout principal, mientras que 3001 vive en el worktree y no hereda archivos ignorados. Se reinició solo 3001, cargando `.env` del checkout principal en memoria con `@next/env` y pasando esas variables al proceso hijo. Sin archivo/symlink nuevo y sin imprimir secretos. `/login` y `/api/auth/get-session` ahora responden 200; la pestaña quedó de nuevo en `/demo/goals`. El servidor 3000 no se reinició ni modificó.
+
+### Seguimiento - 2026-10-28 - Dashboard autenticado bloqueado en skeleton en `localhost:3001`
+
+- **Síntoma:** el usuario abría `/dashboard` en 3001 y varios paneles se quedaban cargando, mientras la app de 3000 sí funcionaba.
+- **Causa confirmada:** al heredar el `.env` habitual, `NEXT_PUBLIC_API_ROUTE`, `BETTER_AUTH_URL` y `NEXTAUTH_URL` conservaban `http://localhost:3000`. El dashboard de 3001 hacía POST JSON al API de 3000 (origen distinto por el puerto). El `OPTIONS` de esa ruta devolvió 204 sin `Access-Control-Allow-Origin`, por lo que el navegador bloqueaba el POST antes de ejecutar el handler. Evidencia adicional: Dashboard solo quita su `loading` cuando `fetchTrans` se cumple; al fallar la petición queda el skeleton sin un error visible.
+- **Resolución operativa:** se reinició únicamente el proceso de 3001 y se sobrescribieron variables *en memoria* antes de iniciar Next: `NEXT_PUBLIC_API_ROUTE` vacío (mismo origen) y URLs de auth apuntando a 3001. No se editó ningún `.env`, no se cambió código y no se tocó 3000.
+- **Verificación:** Chrome en `http://localhost:3001/dashboard` terminó de renderizar el dashboard; los requests de usuario, cuentas, wallet, categorías, subcategorías, presupuestos, movimientos y cotizaciones FX aparecen con HTTP 200 en stdout de 3001. `git diff --check` pasa.
+- **Seguridad de datos:** ambas instancias siguen cargando el mismo `DB_URI` del `.env` habitual. Esta revisión solo leyó datos; crear, editar o borrar desde el dashboard autenticado en 3001 también modificaría la base compartida con 3000. Usar `/demo/*` para probar interacciones sin escrituras reales.
+- **Nota pendiente:** conviene corregir por separado el estado visual de error/reintento del Dashboard cuando falla la carga de movimientos; no se hizo cambio funcional en este diagnóstico.
+
+### Entry #76 - Codex - 2026-10-28 (10:36 AM America/Mexico_City) - Pulido de navegación y claridad de Oportunidades
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** mostrar Objetivos de ahorro y Oportunidades de crecimiento en la navegación; quitar el brillo de hover no usado por Gastify; aclarar filtros, porcentajes y escenarios; respetar estilos compartidos y aprovechar el ancho.
+- **Branch / Isolation:** `codex/growth-opportunities-goals`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/growth-goals/Gastify`. No se tocó el checkout principal ni `localhost:3000`.
+- **Actions Taken:**
+  1. Navbar: objetivo con `GiArcheryTarget` justo después de Analizador de cartera y Oportunidades antes del selector de tema; rutas adaptadas a `/demo/*`. Se ajustó el tamaño dinámico de iconos/espaciado para que los 15 elementos quepan en ventanas cortas sin cortar los globos de ayuda; en móvil, el menú completo es desplazable.
+  2. Oportunidades/Goals: las tarjetas informativas dejaron de usar `gf-glass-row` y no cambian de brillo al pasar el cursor. El Dashboard muestra tres alternativas compactas del mismo monto y ahora tiene `InfoTip` que abre la explicación completa.
+  3. Oportunidades: controles usan `form-trans-edit`, `etm-selector`, `gf-glass-inset` y `gf-glass-button`; contenido ancho hasta 1800 px. Texto visible explica rango, qué mide el porcentaje y cómo el mismo monto se interpreta en las tres tarjetas. Se añadió ejemplo 22% de $1,000 = $220 y ayudas contextuales para periodo, porcentaje, tasa, plazo y meta de viaje. Las explicaciones detalladas están en `APP_INFO` en español e inglés.
+  4. Mantiene las simulaciones hipotéticas; no guarda depósitos ni toca movimientos, presupuestos o saldos.
+- **Files Created / Modified:** `src/components/Navbar.tsx`, `src/components/styles/NavbarStyle.css`, `src/components/goals/GoalsClient.tsx`, `src/components/opportunities/OpportunitiesClient.tsx`, `src/components/opportunities/GrowthOpportunityTeaser.tsx`, `src/components/demo/DemoGoalGrowth.tsx`, `packages/core/src/i18n/messages/{es,en}/{navbar,opportunities}.ts`, `packages/core/src/info/{appInfo.ts,en/appInfo.ts}`, y este log.
+- **Verification:** `npm run typecheck`; ESLint focalizado para los componentes TSX; Vitest de info/goals/opportunities (5 archivos, 16 pruebas); `git diff --check` pasan. Revisión visual de `/demo/opportunities` y del menú móvil desplazable en 3001: las dos rutas nuevas aparecen y el demo sigue aislado con datos ficticios. No se ingresaron credenciales ni se hicieron escrituras de BD. La ruta protegida `/dashboard/opportunities` no se visualizó en esta sesión del navegador, que estaba sin sesión.
+- **Release:** sin staging, commit, push, merge ni deploy. `localhost:3001` queda como preview para que el usuario pruebe; no se tocó `localhost:3000`.
+
+### Entry #77 - Codex - 2026-10-28 - QA visual del dashboard real y ajuste de icono de objetivos
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** además de revisar la demo, verificar en Chrome cómo luce la aplicación web real, usando la sesión disponible.
+- **Branch / Isolation:** `codex/growth-opportunities-goals`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/growth-goals/Gastify`. El checkout principal `feat/tutorial` y sus cambios de Cloud permanecieron intactos.
+- **Visual QA:** se abrió en Chrome la página autenticada de `localhost:3001/dashboard/opportunities` y `localhost:3001/dashboard/goals`. Se observó que el bloque «Monto de partida» ya se acomoda verticalmente en la tarjeta estrecha de inversión; los objetivos muestran el icono de blanco. La lectura fue de solo visualización y accesibilidad; no se crearon ni editaron datos de usuario.
+- **Fixes:** los objetivos antiguos que guardaban `fluent/flag` ahora usan visualmente el icono existente `fluent/bullseye`; el formulario de objetivos también normaliza ese alias al editar y usa bullseye por defecto. Se retiraron imports y variables/helpers sin uso del formulario.
+- **Safety:** el dashboard autenticado usa el entorno habitual y una base compartida con otras instancias locales; por eso no se probaron acciones que escriben en Mongo. La prueba interactiva de cambios de datos debe hacerse desde `/demo/*`.
+- **Verification:** screenshot de Chrome y árbol de accesibilidad confirman las páginas renderizadas; `npm run typecheck`, ESLint focalizado, Vitest de info/goals/opportunities/iconos (6 archivos, 29 pruebas) y `git diff --check` pasan. ESLint no reporta errores; mantiene 6 warnings de hooks relacionados con `setState` en effects y una dependencia `tr` en `Dashboard.tsx` y el formulario.
+- **Release:** cambios siguen locales en la rama secundaria; sin staging, commit, push, merge ni deploy. No se tocó `localhost:3000`.
+
+### Entry #78 - Codex - 2026-10-28 - Simplificación de ayudas y claridad de metas compartidas
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** reducir los `InfoTip` repetidos y hacer que cada uno explique un concepto distinto; igualar alturas de los paneles de periodo/escenarios; mostrar claramente el avance de metas enlazadas a cuentas compartidas; ampliar la explicación de Objetivos y ahorro; poner los tres escenarios de Oportunidades en horizontal.
+- **Branch / Isolation:** `codex/growth-opportunities-goals`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/growth-goals/Gastify`. No se modificó el checkout principal ni se usó `localhost:3000`.
+- **Actions Taken:**
+  1. Se consolidaron las ayudas: una por encabezado/concepto relevante (periodo, gasto observado, alternativas, inversión, viaje y meta), retirando las repetidas de párrafos, etiquetas y controles. Los textos ahora son específicos y bilingües.
+  2. Los paneles de periodo y escenarios se estiran a la misma altura; las tarjetas de inversión, viaje y meta se distribuyen horizontalmente en pantallas amplias.
+  3. En Objetivos y ahorro se quitó el encabezado duplicado y se amplió su explicación. Las metas heredadas que comparten cuentas muestran el saldo/barra en ámbar como **provisional**, con advertencia de posible doble conteo, en vez de ocultar todo el avance. La asignación exclusiva sigue siendo necesaria para considerar el saldo como definitivo; no se cambió la política de cálculos ni se escribieron datos.
+- **Files Modified:** `src/components/opportunities/OpportunitiesClient.tsx`, `src/components/goals/GoalsClient.tsx`, `packages/core/src/info/{appInfo.ts,en/appInfo.ts}`, `packages/core/src/i18n/messages/{es,en}/goals.ts`, y este log.
+- **Visual QA:** revisión en Chrome de `/dashboard/goals` y `/dashboard/opportunities` en `localhost:3001`; se confirmó una ayuda por concepto, la advertencia/progreso provisional de metas con cuentas compartidas y las tres alternativas en una fila amplia. No se ejecutaron operaciones de escritura sobre la base de datos.
+- **Verification:** `npm run typecheck`; ESLint focalizado en los dos componentes TSX; Vitest de info/goals/opportunities (5 archivos, 16 pruebas); `git diff --check` pasan.
+- **Release:** trabajo permanece local en rama secundaria. Sin commit, push, merge ni deploy; `localhost:3000` y la rama principal no se tocaron.
+
+### Entry #79 - Codex - 2026-10-28 - Detalle de objetivos, progreso visual y escenarios horizontales
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** separar la consulta del objetivo de su edición; al tocar nombre, barra u otra parte abrir un detalle completo; mostrar progreso al estilo Budgets; quitar el kicker duplicado de Oportunidades y desplegar horizontalmente Inversión, Viaje y Enganche/meta; completar las dos secciones en React Native y mantener un checklist de todos los puntos.
+- **Branch / Isolation:** `codex/growth-opportunities-goals`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/growth-goals/Gastify`. Sin cambios en el checkout principal ni en `localhost:3000`.
+- **Actions Taken:**
+  1. Web Goals: nombre, cuerpo y barra de una tarjeta abren `GoalDetailModal`; solo `Editar objetivo` abre el formulario. El detalle reúne saldo/objetivo/restante, porcentaje, fuentes, estado provisional de fondos compartidos, calendario/plan, fecha y movimientos contextuales distribuidos por categoría. Aclara que esos movimientos son contexto, no depósitos al objetivo.
+  2. El progreso de Goals usa la barra, cara, burbuja porcentual, monto actual y objetivo con el patrón de Budgets. Si faltan saldos, cuentas o conversión, no se presenta un cero como dato fiable.
+  3. Oportunidades conserva únicamente el título principal y muestra Inversión, Viaje y Enganche/meta como tarjetas en una fila horizontal; se puede desplazar lateralmente cuando el viewport es estrecho.
+  4. Mobile Goals separa el toque para abrir el detalle nativo `/budgets/[id]` del botón explícito de edición (`edit=1`). El detalle muestra progreso nativo, fuente/estado provisional, plan y movimientos contextuales. Se evita mostrar emoji de cero cuando no hay progreso fiable y no se celebra una meta alcanzada con saldo provisional.
+  5. Mobile Opportunities presenta sus alternativas en una fila desplazable y mantiene textos ES/EN. El checklist de aceptación correspondiente quedó en §17 de `.mds/GOALS_GROWTH_OPPORTUNITIES_PLAN.md`.
+- **Files Modified:** `src/components/goals/GoalDetailModal.tsx`, `src/components/goals/GoalsClient.tsx`, `src/components/opportunities/OpportunitiesClient.tsx`, `apps/mobile/src/app/(tabs)/budgets/goals.tsx`, `apps/mobile/src/app/(tabs)/budgets/[id].tsx`, catálogos ES/EN de goals, plan de la feature y este log.
+- **Verification:** `npm run typecheck`, `npm run lint -- --quiet` (web), `cd apps/mobile && npx tsc --noEmit`, ESLint focalizado en las dos rutas móviles, Vitest focalizado de info/goals/opportunities (5 archivos, 16 pruebas) y `git diff --check` pasan. La fila horizontal de Oportunidades se revisó en Chrome; no se pudo probar visualmente el modal de una meta existente ni una compilación de React Native en dispositivo/simulador en esta ronda.
+- **Data / Release:** solo lectura de la app; sin crear/editar objetivos ni escrituras de base de datos. Cambios locales, sin commit/push/merge/deploy. El usuario debe validar la interacción y el layout móvil en `localhost:3001` antes de integrar.
+
+### Entry #80 - Codex - 2026-10-28 - Colores de ahorro y desplazamiento del detalle
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** igualar saturación y degradado de las barras de Objetivos de ahorro con Budgets; usar azul al llegar/superar la meta, verde al avanzar, ampliar un poco las caritas; añadir un único tooltip general junto al nombre; hacer desplazable todo el modal y dejar fijo solamente Cerrar; mantener fecha/meta/plan de aportaciones dentro del scroll.
+- **Branch / Isolation:** `codex/growth-opportunities-goals`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/growth-goals/Gastify`. El checkout principal y `localhost:3000` siguen intactos.
+- **Actions Taken:**
+  1. Web Goal cards, modal de detalle y pantallas React Native llaman ahora directamente a `getBudgetBarColor` / `getBudgetBarGradient` con la semántica de ahorro existente: inicio coral, progreso medio verde, >=85% azul; superada la meta permanece azul. La advertencia de saldos compartidos sigue siendo ámbar como texto/estado, sin convertir la barra en naranja.
+  2. Se aumentó modestamente el tamaño de la cara en la lista y detalle (web y móvil).
+  3. Se agregó un solo `InfoTip` junto al título del objetivo web y al título de la pantalla móvil. Reutiliza `APP_INFO.objetivos_de_ahorro`, que describe saldo, objetivo, plan, cuentas, contexto y estados provisionales.
+  4. El modal web usa un único contenedor con scroll; nombre, moneda, fecha, plan y resto del detalle se desplazan juntos. El botón Cerrar permanece sticky en la parte superior del modal.
+  5. Se documentó esta segunda ronda de aceptación en §17.1 del plan.
+- **Files Modified:** `src/components/goals/GoalsClient.tsx`, `src/components/goals/GoalDetailModal.tsx`, `apps/mobile/src/app/(tabs)/budgets/goals.tsx`, `apps/mobile/src/app/(tabs)/budgets/[id].tsx`, `.mds/GOALS_GROWTH_OPPORTUNITIES_PLAN.md` y este log.
+- **Verification:** `npm run typecheck`, `npm run lint -- --quiet` (web), `cd apps/mobile && npx tsc --noEmit`, ESLint focalizado en las dos rutas móviles, Vitest `budgetHistory.test.ts` (1 archivo, 10 pruebas) y `git diff --check` pasan. La inspección inicial en Chrome confirmó que los saldos compartidos estaban pintando la barra naranja; después de recargar, la sesión local dejó de estar activa y no había metas para verificar visualmente el nuevo modal/scroll.
+- **Data / Release:** sin escrituras de usuario ni cambios en main. Sin commit, push, merge o deploy.

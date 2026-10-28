@@ -14,6 +14,7 @@ import CategoryRule from "@/model/CategoryRule";
 import IncomeSource from "@/model/IncomeSource";
 import ProjectionBaseline from "@/model/ProjectionBaseline";
 import ProjectionSettings from "@/model/ProjectionSettings";
+import GoalFundingClaim from "@/model/GoalFundingClaim";
 import { auth, countUserPasskeys } from "@/lib/auth/betterAuth";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { hasFreshStepUp, STEP_UP_REQUIRED_CODE } from "@/lib/auth/factorChangePolicy";
@@ -168,6 +169,7 @@ export async function POST(
     await IncomeSource.deleteMany({ user: userId });
     await ProjectionBaseline.deleteMany({ user: userId });
     await ProjectionSettings.deleteMany({ user: userId });
+    await GoalFundingClaim.deleteMany({ user: userId });
 
     // Step 2: everything that gives access to the account goes in ONE
     // transaction - all of it or none of it. Better Auth's own collections

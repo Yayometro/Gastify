@@ -17,6 +17,8 @@ import { IoAdd } from "react-icons/io5";
 import { MdAccountBalance } from "react-icons/md";
 import { BiSolidCategory } from "react-icons/bi";
 import { MdLightMode, MdDarkMode } from "react-icons/md";
+import { GiArcheryTarget } from "react-icons/gi";
+import { IoTrendingUpOutline } from "react-icons/io5";
 
 import "@/components/styles/NavbarStyle.css";
 import { useSelector } from "react-redux";
@@ -52,8 +54,6 @@ export interface NavbarProps {
   demoNotificationCount?: number;
 }
 
-// (`sesion` stays in NavbarProps - the layout still passes it - but nothing here reads it any more.)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemoNotifications, onDemoThemeToggle, demoNotificationCount = 0 }: NavbarProps): React.JSX.Element {
   const t = useT();
   const [toggleNav, setToggleNav] = useState<boolean>(false);
@@ -94,7 +94,7 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
   return (
     <nav className={`navbar w-full fixed flex flex-col items-center justify-center bottom-0 md:w-fit md:fixed md:top-0 z-[1000] ${demoMode ? "demo-navbar" : ""}`}>
       <ul
-        className={`nav-full pt-8 pb-12 -mb-6 w-[93%] flex flex-col items-center justify-center gap-4 gf-nav-surface z-[1001] rounded-t-[50px] text-center text-gf-text md:w-fit md:flex md:h-[95vh] md:inset-0  md:mb-0 md:rounded-3xl md:ml-2 md:justify-between shadow-xl ${
+        className={`nav-full max-h-[85vh] overflow-y-auto overscroll-contain scrollbar-none pt-8 pb-12 -mb-6 w-[93%] flex flex-col items-center justify-center gap-4 gf-nav-surface z-[1001] rounded-t-[50px] text-center text-gf-text md:max-h-[95vh] md:w-fit md:flex md:h-[95vh] md:inset-0  md:mb-0 md:rounded-3xl md:ml-2 md:justify-between shadow-xl ${
           toggleNav ? "is-open" : "hidden"
         }`}
       >
@@ -139,6 +139,12 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
             <NavTooltip label={t("navbar.analyzer")} hint={t("navbar.hint.analyzer")} here={here("/dashboard/analyzer")} />
           </Link>
         </li>
+        <li className={navItemClass("/dashboard/goals")}>
+          <Link href={destination("/dashboard/goals")} aria-current={isActive("/dashboard/goals") ? "page" : undefined}>
+            <GiArcheryTarget size={29} className="hidden sm:inline" aria-hidden="true" />
+            <NavTooltip label={t("navbar.goals")} hint={t("navbar.hint.goals")} here={here("/dashboard/goals")} />
+          </Link>
+        </li>
         <li >
           <div className="add-more sm:flex micro-pulse">
               <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
@@ -167,6 +173,12 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
           <Link href={destination("/dashboard/categories")} aria-current={isActive("/dashboard/categories") ? "page" : undefined}>
             <BiSolidCategory size={30} className="hidden sm:inline" />
             <NavTooltip label={t("navbar.categories")} hint={t("navbar.hint.categories")} here={here("/dashboard/categories")} />
+          </Link>
+        </li>
+        <li className={navItemClass("/dashboard/opportunities")}>
+          <Link href={destination("/dashboard/opportunities")} aria-current={isActive("/dashboard/opportunities") ? "page" : undefined}>
+            <IoTrendingUpOutline size={29} className="hidden sm:inline" aria-hidden="true" />
+            <NavTooltip label={t("navbar.opportunities")} hint={t("navbar.hint.opportunities")} here={here("/dashboard/opportunities")} />
           </Link>
         </li>
         <li className="gf-nav-item">

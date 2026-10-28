@@ -2,6 +2,8 @@
 import { shortDate } from "@gastify/core/i18n/dates";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
+import { IoFlagOutline, IoSparklesOutline } from "react-icons/io5";
 import { Skeleton, Tooltip } from "antd";
 import { useDispatch } from "react-redux";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
@@ -343,6 +345,14 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
             <CategoIcon type="MdAddCircleOutline" siz={22} />
             <p>{t("budgets.new")}</p>
           </div>}
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={readOnly ? "/demo/goals" : "/dashboard/goals"} className="inline-flex items-center gap-1.5 rounded-full border border-gf-border bg-gf-surface/60 px-3 py-2 text-xs font-semibold text-gf-text hover:border-purple-300/40">
+              <IoFlagOutline aria-hidden="true" />{t("goals.title")}
+            </Link>
+            <Link href={readOnly ? "/demo/opportunities" : "/dashboard/opportunities"} className="inline-flex items-center gap-1.5 rounded-full border border-purple-300/20 bg-purple-300/[.07] px-3 py-2 text-xs font-semibold text-purple-100 hover:bg-purple-300/[.12]">
+              <IoSparklesOutline aria-hidden="true" />{t("opportunities.open")}
+            </Link>
+          </div>
         </div>
 
         {loading ? (

@@ -32,6 +32,25 @@ export interface DeriveEffectiveRateParams {
   targetMoney: MoneyAmountParam;
 }
 
+/** Convert one stored minor-unit amount using a quoted major-unit rate (target units per source unit). */
+export function convertMinorAtRate(input: {
+  amountMinor: number;
+  fromCurrency: string;
+  toCurrency: string;
+  rate: Decimal.Value;
+}): number {
+  assertSupportedCurrency(input.fromCurrency);
+  assertSupportedCurrency(input.toCurrency);
+  if (!Number.isSafeInteger(input.amountMinor)) throw new Error("convertMinorAtRate: amount must be a safe integer");
+  const rate = new Decimal(input.rate);
+  if (!rate.isFinite() || rate.lte(0)) throw new Error("convertMinorAtRate: rate must be positive and finite");
+  const sourceMajor = new Decimal(input.amountMinor).dividedBy(new Decimal(10).pow(getMinorUnits(input.fromCurrency)));
+  const targetMinor = sourceMajor.times(rate).times(new Decimal(10).pow(getMinorUnits(input.toCurrency)));
+  const result = targetMinor.toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toNumber();
+  if (!Number.isSafeInteger(result)) throw new Error("convertMinorAtRate: converted amount is outside the safe integer range");
+  return result;
+}
+
 // ECB publishes "units of X per 1 EUR". Cross rate from -> to is:
 //   rate(from -> to) = rates[to] / rates[from]
 // because both sides are already expressed per-EUR.

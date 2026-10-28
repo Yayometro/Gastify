@@ -49,13 +49,13 @@ type Row = {
   ratio: number;
 };
 
-function NewButton({ label, kind }: { label: string; kind: 'spending' | 'saving' | 'project' }) {
+function NewButton({ label, kind, goal }: { label: string; kind: 'spending' | 'saving' | 'project'; goal?: boolean }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={() => router.push({ pathname: '/budgets/new', params: { kind } })}
+      onPress={() => router.push({ pathname: '/budgets/new', params: { kind, ...(goal ? { goal: '1' } : {}) } })}
       className="flex-1 items-center rounded-2xl border border-gf-border bg-gf-surface px-2 py-3">
       <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>
         + {label}
@@ -209,6 +209,15 @@ export default function BudgetsScreen() {
         <NewButton label={t("mobile.presupuesto")} kind="spending" />
         <NewButton label={t("mobile.ahorro")} kind="saving" />
         <NewButton label={t("mobile.proyecto")} kind="project" />
+      </View>
+      <View className="flex-row gap-2">
+        <NewButton label={t("goals.new")} kind="saving" goal />
+        <Pressable accessibilityRole="button" onPress={() => router.push('/budgets/goals')} className="flex-1 items-center rounded-2xl border border-gf-border bg-gf-surface px-2 py-3">
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("goals.title")}</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/budgets/opportunities')} className="flex-1 items-center rounded-2xl border border-gf-border bg-gf-surface px-2 py-3">
+          <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("opportunities.title")}</Text>
+        </Pressable>
       </View>
 
       {/* The period: arrows move by month, tapping the month picks any month; "Personalizado" takes a range. */}

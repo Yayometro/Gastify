@@ -1,5 +1,7 @@
 import { idOf } from "../categories/categoryForm";
 import { dateText, parseDateText, parseMoneyText, parseSignedMoneyText } from "../transactions/movementForm";
+import { majorToMinor } from "../money/currencies";
+import type { GoalDetails } from "../goals/types";
 
 // Rules for the budget forms (new and edit). Three kinds, like the web: "spending" (a goal for some
 // categories over a period), "saving" (a goal fed by linked accounts or a saved amount) and "project"
@@ -35,6 +37,9 @@ export interface BudgetValues {
   startDate: string;
   endDate: string;
   icon: string;
+  color: string;
+  goalDetails: GoalDetails | null;
+  revision?: number;
 }
 
 export type BudgetErrors = Partial<Record<"name" | "goalAmount" | "categoryIds" | "savingAmount" | "endDate", string>>;
@@ -53,6 +58,8 @@ export function emptyBudgetValues(kind: BudgetKind, currency = "MXN", today: Dat
     startDate: dateText(today),
     endDate: dateText(end),
     icon: "fluent/airplane",
+    color: "#9B7CFF",
+    goalDetails: null,
   };
 }
 
@@ -64,6 +71,14 @@ export function validateBudget(values: BudgetValues): BudgetErrors {
   if (values.kind === "spending" && values.categoryIds.length === 0) errors.categoryIds = "budgets.error.categories";
   if (values.kind === "saving" && values.linkedAccountIds.length === 0 && parseSignedMoneyText(values.savingAmount) === null) {
     errors.savingAmount = "budgets.error.saving";
+  }
+  if (values.kind === "saving" && values.goalDetails) {
+    if (values.linkedAccountIds.length > 0 && (parseSignedMoneyText(values.savingAmount) || 0) > 0) errors.savingAmount = "goals.chooseOneFundingSource";
+    if (values.goalDetails.schedule && !values.goalDetails.targetDate) errors.endDate = "goals.scheduleNeedsDate";
+    if (values.goalDetails.targetMode === "down_payment" &&
+        (!values.goalDetails.assetPriceMoney || values.goalDetails.assetPriceMoney.currency !== values.currency)) errors.goalAmount = "goals.downPaymentNeedsPrice";
+    if (values.goalDetails.schedule?.mode === "fixed_contribution" &&
+        (!values.goalDetails.schedule.fixedContributionMoney || values.goalDetails.schedule.fixedContributionMoney.currency !== values.currency)) errors.goalAmount = "goals.fixedContribution";
   }
   if (values.kind === "project") {
     const start = parseDateText(values.startDate);
@@ -95,6 +110,14 @@ export function buildBudgetBody(values: BudgetValues, id?: string): Record<strin
     body.eventStartDate = (parseDateText(values.startDate) ?? new Date()).toISOString();
     body.eventEndDate = (parseDateText(values.endDate) ?? new Date()).toISOString();
   }
+  if (kind === "saving" && values.goalDetails) {
+    body.goalDetails = values.goalDetails;
+    body.goalMoney = { amountMinor: majorToMinor(body.goalAmount as number, values.currency), currency: values.currency };
+    body.savingMoney = { amountMinor: majorToMinor(body.savingAmount as number, values.currency), currency: values.currency };
+    body.icon = values.icon || "fluent/flag";
+    body.color = values.color;
+    if (values.revision !== undefined) body.expectedRevision = values.revision;
+  }
   if (id) body.id = id;
   return body;
 }
@@ -114,6 +137,9 @@ interface BudgetLike {
   eventStartDate?: Date | string | null;
   eventEndDate?: Date | string | null;
   icon?: string | null;
+  color?: string | null;
+  goalDetails?: GoalDetails | null;
+  revision?: number;
 }
 
 // An existing budget as form values (for the edit screen).
@@ -133,5 +159,8 @@ export function budgetToValues(budget: BudgetLike, today: Date = new Date()): Bu
     startDate: budget.eventStartDate ? dateText(new Date(budget.eventStartDate)) : base.startDate,
     endDate: budget.eventEndDate ? dateText(new Date(budget.eventEndDate)) : base.endDate,
     icon: budget.icon || base.icon,
+    color: budget.color || base.color,
+    goalDetails: budget.goalDetails || null,
+    revision: budget.revision,
   };
 }

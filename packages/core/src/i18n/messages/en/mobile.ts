@@ -99,6 +99,7 @@ const en: Record<keyof typeof mobile, string> = {
   "mobile.borrar.esta.categoria": "Delete this category",
   "mobile.sus.movimientos.quedan.sin.categoria": "Its transactions will have no category. This cannot be undone.",
   "mobile.cancelar": "Cancel",
+  "mobile.continuar": "Convert amounts",
   "mobile.borrar": "Delete",
   "mobile.borrar.esta.subcategoria": "Delete this subcategory",
   "mobile.no.se.puede.deshacer": "This cannot be undone.",
@@ -942,6 +943,7 @@ const en: Record<keyof typeof mobile, string> = {
   "mobile.este.passkey": "this passkey",
   "mobile.total.de.gastos": "Total expenses",
   "mobile.total.de.ingresos": "Total incomes",
+  "mobile.quitar.fecha": "Remove date",
 };
 
 export default en;

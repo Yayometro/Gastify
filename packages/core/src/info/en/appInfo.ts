@@ -354,5 +354,124 @@ export const APP_INFO = {
   'saldo_real_del_mes': { title: 'Actual balance for the month', text: 'The app cannot calculate past balances on its own. If you know how much you had in your accounts at the end of this month, record it here: it is used as the starting point in the balance column of the projection.' },
   'tope_de_gasto_inesperado': { title: 'Unexpected expense limit', text: 'A manual amount that is added to your expense estimate, for expenses that do not have their own budget.' },
   'tope_de_ingreso_inesperado': { title: 'Unexpected income limit', text: 'A manual amount that is added to your income estimate, for money that comes in and is not tied to a recurring income source.' },
+  'periodo_de_oportunidades': {
+    title: 'How to choose the analysis period',
+    text: 'The period defines the dates of observed expenses. The filters below narrow that selection; they do not change saved movements.',
+    sections: [
+      { label: 'What is included', blocks: [
+        { kind: 'bullets', items: [
+          'Current month, quarter and year start at the beginning of that period and end today.',
+          'Custom analyzes only the start and end dates you choose.',
+          'Then filter that range by category, subcategory, tag or concept text.',
+          'Only completed expenses recorded in Gastify are included; the page flags missing movements or conversions.',
+        ] },
+        { kind: 'p', text: 'The observed figure is the sum of matching expenses in your main currency. Changing a period or filter does not edit or delete data.' },
+      ] },
+    ],
+  },
+  'tres_alternativas_de_ese_monto': {
+    title: 'Three alternatives for the same amount',
+    text: 'These cards place the same reference amount in three contexts to help you imagine options. They are not three separate amounts and are not added together.',
+    sections: [
+      { label: 'How to read each card', blocks: [
+        { kind: 'table', head: ['Alternative', 'What it shows', 'What it does not do'], rows: [
+          ['Illustrative investment', 'Two mathematical calculations with an editable rate and term.', 'It is not a real investment, offer or guaranteed return.'],
+          ['Trip', 'What share of an editable target the amount could cover.', 'It does not search prices, quote or book a trip.'],
+          ['Down payment or another goal', 'How progress toward your goal would change in a simulation only.', 'It does not deposit money or change the saved goal.'],
+        ] },
+      ] },
+    ],
+  },
+  'viaje_en_oportunidades': {
+    title: 'How the sample trip is compared',
+    text: 'The card divides the reference amount by the estimated cost you enter. The result is a mathematical proportion, not a quote or spending recommendation.',
+    sections: [
+      { label: 'Reading the bar', blocks: [
+        { kind: 'equation', left: 'Estimated coverage', right: 'Reference amount ÷ trip target × 100' },
+        { kind: 'p', text: 'If the result exceeds 100%, the bar fills, although the displayed percentage can exceed the target. Change the sample amount to compare another scenario; the edit only exists on this screen.' },
+      ] },
+    ],
+  },
+  'oportunidades_de_crecimiento': {
+    title: 'How to read Growth Opportunities',
+    text: 'This analysis does not claim you should have spent less or that the money is still available. It is a thought exercise that adds context to expenses you already recorded and explores possible alternatives.',
+    sections: [
+      { label: '1. Period and filters', blocks: [
+        { kind: 'p', text: 'The period determines which dates are reviewed. Month, quarter and year-to-date end today; Custom uses the dates you choose. “Analyze by” filters those movements by category, subcategory, tag or matching concept text. It does not change, edit or create transactions.' },
+        { kind: 'p', text: 'Only completed expenses recorded in Gastify within the range count. Transfers, non-completed movements and non-expense items are excluded. Amounts are shown in your primary currency; Gastify flags missing conversions or incomplete history.' },
+      ] },
+      { label: '2. Observed spending and percentage', blocks: [
+        { kind: 'equation', left: 'Observed spending', right: 'Sum of expenses matching the period and filters' },
+        { kind: 'equation', left: 'Alternative amount', right: 'Observed spending × selected share' },
+        { kind: 'p', text: 'The 25%, 50% and 100% buttons are not ratings, alerts or returns: they let you ask “what if I set aside this fraction of that spending?” The editable field accepts another share. For example, 25% of $1,000 equals $250. The three cards compare alternatives for that same amount; they are not added together.' },
+      ] },
+      { label: '3. Three alternatives, the same money', blocks: [
+        { kind: 'table', head: ['Alternative', 'What it represents', 'What it does not mean'], rows: [
+          ['Illustrative investment', 'A mathematical calculation using an annual rate and term you choose.', 'Not an offer, recommendation or guaranteed return. Fees and taxes are not included.'],
+          ['Trip or other purchase', 'The alternative amount compared with an editable sample goal.', 'Not a quote; nothing is booked or paid.'],
+          ['Personal goal', 'The alternative amount added only in this simulation to the progress of a selected savings goal.', 'It does not deposit money into your accounts or change the real goal.'],
+        ] },
+        { kind: 'p', text: 'The investment shows two different readings: “if this amount were available today” models it as a single deposit from today; “if you set aside each expense when it happened” keeps the original expense dates. That is why their results can differ.' },
+      ] },
+      { label: 'How to read an example', blocks: [
+        { kind: 'example', text: 'If observed spending is $10,000 and you choose 25%, the alternative amount is $2,500. The cards show separately what that amount would represent as a hypothetical investment, how much of a trip goal it would cover, and how much it would add to a personal goal. These are not three pots of money; they are three possible uses of the same amount.' },
+      ] },
+    ],
+  },
+  'parte_del_gasto': {
+    title: 'What the share means',
+    text: 'The large total is the observed spending that matches the period and filters. The share is a hypothesis you choose to explore an alternative, not an amount Gastify thinks you should have saved.',
+    sections: [
+      { label: 'Calculation', blocks: [
+        { kind: 'equation', left: 'Alternative amount', right: 'Observed spending × selected share' },
+        { kind: 'table', head: ['Selection', 'If observed spending were $1,000'], rows: [['25%', '$250'], ['50%', '$500'], ['100%', '$1,000']] },
+        { kind: 'p', text: 'The current selection appears as the highlighted amount and feeds all three alternatives. Changing it does not alter transactions or budgets.' },
+      ] },
+    ],
+  },
+  'inversion_ilustrativa': {
+    title: 'How to read the illustrative investment',
+    text: 'This is a compound-interest simulation, not an account or investment offer. The rate and term are editable assumptions to show how time and return affect the example.',
+    sections: [
+      { label: 'Two ways to model the same spending', blocks: [
+        { kind: 'table', head: ['Line', 'Assumption'], rows: [
+          ['If the amount were available today', 'The full alternative amount is treated as a single deposit made today and grows for the full term.'],
+          ['If each expense had been set aside when it happened', 'Each part of the alternative amount is treated as set aside on the expense date and grows from that date until today.'],
+        ] },
+        { kind: 'equation', left: 'Illustrative value', right: 'Modeled principal + hypothetical return' },
+        { kind: 'p', text: 'The green amount in parentheses is only the return produced by that assumption; the main amount includes principal. Changing the rate or term recalculates the example. A negative rate is also possible and may reduce the value.' },
+        { kind: 'p', text: 'Fees, taxes, inflation and actual market changes are not included. It does not predict results, recommend products or move money.' },
+      ] },
+    ],
+  },
+  'metas_en_oportunidades': {
+    title: 'How a goal is compared',
+    text: 'The comparison uses the savings goal you select and shows the change only as a hypothesis. Actual savings and linked accounts stay unchanged.',
+    sections: [
+      { label: 'What simulated progress means', blocks: [
+        { kind: 'equation', left: 'Simulated savings', right: 'Currently recognized savings + alternative amount' },
+        { kind: 'equation', left: 'Simulated coverage', right: 'Simulated savings ÷ goal target' },
+        { kind: 'p', text: 'Currently recognized savings comes from the balances of accounts linked to the goal, or from the recorded savings amount, depending on the goal setup. If an account conversion is unavailable or an account is shared across goals, the app avoids a potentially misleading comparison.' },
+        { kind: 'p', text: 'The added amount exists only in this calculation. It is not transferred to an account, does not change saved progress, and can exceed the target; the visual bar is capped at 100%.' },
+      ] },
+    ],
+  },
+  'objetivos_de_ahorro': {
+    title: 'How savings goals work',
+    text: 'A goal is a target you define (for example, a trip, a car or an emergency fund). It can have an amount, date, contribution plan, icon, color and context links.',
+    sections: [
+      { label: 'How progress is calculated and why it may be provisional', blocks: [
+        { kind: 'equation', left: 'Progress', right: 'Recognized savings ÷ goal target' },
+        { kind: 'bullets', items: [
+          'When you link eligible accounts, their balances are converted to the goal currency and added. If no accounts are linked, we use the savings amount you reported manually; the two sources are never combined.',
+          'An account should fund only one goal. If legacy savings share accounts, the page shows the linked balance provisionally and uses an amber warning. That balance may appear in more than one goal, so it is not exclusive progress until each account is assigned to one goal.',
+          'The savings bar keeps the same thresholds as Budgets: coral below 35%, green from 35% to under 85%, and blue at 85% or more. Reaching or exceeding the goal stays blue; the face reflects the same progress.',
+          'If an account or its conversion is missing, or the account is not eligible, the app does not guess progress. Review the funding source in “Edit goal”.',
+          'Related projects, expenses, categories, tags and income sources add context; they are not added to saved balances and do not record deposits automatically.',
+        ] },
+        { kind: 'p', text: 'Editing changes the goal setup; pausing or completing it changes its status. Growth Opportunities adds an amount only to a simulation and does not change this balance.' },
+      ] },
+    ],
+  },
   'totales': { title: 'Totals', text: 'Income = the sum of everything that came in during the period. Expenses = the sum of everything that went out. Balance = income − expenses (green if there is a surplus, red if there is a shortfall). It is calculated with the movements you see under the active filters, in your main currency; transfers between your accounts do not count, because they neither come in nor go out of your money.' },
 };
