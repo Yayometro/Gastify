@@ -7,7 +7,7 @@ import { getSessionCookie } from "better-auth/cookies";
 // did with NextAuth's own `getServerSession()` before - this middleware is
 // only here to bounce an obviously-logged-out visitor before the page even
 // renders, same as the old `next-auth/middleware` default export did.
-export function middleware(request: NextRequest): NextResponse {
+export function proxy(request: NextRequest): NextResponse {
   const sessionCookie = getSessionCookie(request);
   if (!sessionCookie) {
     return NextResponse.redirect(new URL("/login", request.url));

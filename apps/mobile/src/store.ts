@@ -3,6 +3,7 @@ import { configureApi } from '@gastify/core/api/client';
 import { rootReducer } from '@gastify/core/features/rootReducer';
 
 import { API_URL, authClient } from '@/auth-client';
+import { reportStepUp } from '@/lib/step-up-events';
 
 // The same Redux slices and API client as the web app (packages/core). Every request carries the
 // session cookie that the auth client keeps in secure storage; `credentials: "omit"` stops the
@@ -11,6 +12,7 @@ configureApi({
   baseUrl: API_URL,
   credentials: 'omit',
   getHeaders: async () => ({ Cookie: (await authClient.getCookie()) ?? '' }),
+  onStepUpRequired: reportStepUp,
 });
 
 // The serializable and immutability checks walk the whole state on every action: with a few thousand movements that

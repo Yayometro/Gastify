@@ -2,6 +2,7 @@
 // Client for the Gastify API (the routes under /api/). The web app and the mobile
 // app call configureApi() once at startup; slices use lazyApi(), which reads that
 // configuration when a request is made, not when the module is loaded.
+import type { SessionStatus, StepUpReason } from "../auth/sessionStatus";
 
 export interface ApiClient {
   get: <T = any>(path: string) => Promise<T>;
@@ -17,9 +18,16 @@ export interface ApiConfig {
   // Left out on the web (the browser default). The mobile app sets "omit": it sends the session
   // cookie by hand in the Cookie header and the platform cookie jar must not interfere.
   credentials?: "omit" | "same-origin" | "include";
+  // Called when a data route refuses the session because the second factor needs confirming again. The screen sends the
+  // person to the verification with the reason, so it can say why (see checkStepUp below).
+  onStepUpRequired?: (reason: StepUpReason) => void;
 }
 
 let config: ApiConfig = { baseUrl: "" };
+
+// The check runs at most this often: a burst of failing requests asks the server once, not once per request.
+const STEP_UP_CHECK_GAP_MS = 5_000;
+let lastStepUpCheck = 0;
 
 export function configureApi(next: Partial<ApiConfig>): void {
   config = { ...config, ...next };
@@ -31,7 +39,7 @@ export function getApiBaseUrl(): string {
 }
 
 export function createApiClient(overrides: Partial<ApiConfig> = {}): ApiClient {
-  const { baseUrl, getHeaders, credentials } = { ...config, ...overrides };
+  const { baseUrl, getHeaders, credentials, onStepUpRequired } = { ...config, ...overrides };
   const credentialsInit = credentials ? { credentials } : {};
   const fullPath = baseUrl.concat("/api/");
 
@@ -40,10 +48,25 @@ export function createApiClient(overrides: Partial<ApiConfig> = {}): ApiClient {
     ...((await getHeaders?.()) ?? {}),
   });
 
+  // A data route answers with an error once its session stops being accepted (see stepUpPolicy.ts). The error text says
+  // nothing about why, so ask the server for the status and report the reason. The caller still gets its own answer.
+  const checkStepUp = async (): Promise<void> => {
+    if (!onStepUpRequired || Date.now() - lastStepUpCheck < STEP_UP_CHECK_GAP_MS) return;
+    lastStepUpCheck = Date.now();
+    try {
+      const res = await fetch(fullPath.concat("session-status"), { method: "GET", headers: await headersFor(), ...credentialsInit });
+      const status = (await res.json()) as SessionStatus;
+      if (status.ok && status.signedIn && status.stepUp !== "fresh") onStepUpRequired(status.stepUp);
+    } catch {
+      // Offline or unreachable: the caller already has its own error to show.
+    }
+  };
+
   return {
     get: async function <T = any>(path: string): Promise<T> {
       try {
         const res = await fetch(fullPath.concat(path), { method: "GET", headers: await headersFor(), ...credentialsInit });
+        if (!res.ok) void checkStepUp();
         return (await res.json()) as T;
       } catch (e) {
         throw new Error(e as unknown as string);
@@ -58,6 +81,7 @@ export function createApiClient(overrides: Partial<ApiConfig> = {}): ApiClient {
           ...credentialsInit,
         });
         if (!res) throw new Error("No data from response");
+        if (!res.ok) void checkStepUp();
         return (await res.json()) as T;
       } catch (e) {
         // The caller decides what to show; this only rethrows, like the web fetcher always did.

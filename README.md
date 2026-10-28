@@ -34,3 +34,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Cuenta QA base
+
+Para pruebas generales de la app usa la cuenta QA base, que se conserva con datos y no se borra: `qa.movil.d6be4e@example.com`. Su contraseña y su código de 2FA los tiene el dueño del proyecto. Reglas y registro de cambios en [.mds/QA_ACCOUNT.md](.mds/QA_ACCOUNT.md).

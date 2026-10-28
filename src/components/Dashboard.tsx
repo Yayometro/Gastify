@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useThemeMode } from "@/app/ThemeProvider";
 import UniversalCategoIcon from "./multiUsedComp/UniversalCategoIcon";
 
 import "@/components/styles/animations.css";
@@ -47,7 +50,8 @@ import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
+import { monthTitle } from "@gastify/core/i18n/dates";
 
 interface DashboardProps {
   dataServ?: unknown;
@@ -57,6 +61,7 @@ interface DashboardProps {
 interface DashboardUser {
   fullName?: string;
   mail?: string;
+  image?: string;
   [key: string]: unknown;
 }
 
@@ -163,6 +168,7 @@ const today = new Date();
 function Wallet({ session }: DashboardProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
+  const locale = useLocale();
   const [user, setUser] = useState<DashboardUser>({});
   const [wallet, setWallet] = useState<DashboardWallet>({});
   const [accounts, setAccounts] = useState<DashboardAccount[]>([]);
@@ -223,6 +229,7 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
   // Redux
   const dispatch = useDispatch<AppDispatch>();
   const ccUser = useSelector((state: ReduxStoreState) => state.userReducer);
+  const { mode } = useThemeMode();
   const ccWallet = useSelector((state: ReduxStoreState) => state.walletReducer);
   const ccAccounts = useSelector((state: ReduxStoreState) => state.accountsReducer);
   const ccCategories = useSelector((state: ReduxStoreState) => state.categoriesReducer);
@@ -542,14 +549,41 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
     <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
       {user && wallet ? (
         <div className="walllet-header ">
-          <div className="wallet-header pt-5 pb-2 px-3 flex flex-col gap-4 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
+          <div className="wallet-header pt-4 pb-2 px-3 flex flex-col gap-3 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
             <div className="w-full">
-              <h2 className="text-white text-3xl sm:text-6xl font-thin text-center">
-                {!user.fullName ? <Spin size="large" /> : `${user.fullName} `}{" "}
-                {t("dashboard.wallet")}
-              </h2>
+              <div className="flex items-center gap-4 sm:gap-6">
+                {/* The wordmark, at the far left of the header: white on the dark theme, black on the light one. */}
+                <Image
+                  src={mode === "dark" ? "/brand/gastify-wordmark-white.svg" : "/brand/gastify-wordmark-black.svg"}
+                  alt="Gastify"
+                  width={1391}
+                  height={401}
+                  priority
+                  className="h-7 w-auto shrink-0 sm:h-10"
+                />
+                <div className="h-7 w-px shrink-0 bg-white/30 sm:h-10" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-white text-2xl font-bold sm:text-4xl">
+                    {!user.fullName ? <Spin size="large" /> : t("web.hola.p1", { p1: user.fullName.split(" ")[0] })}
+                  </h2>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <span className="hidden rounded-full gf-glass-inset px-3 py-1 text-sm font-semibold text-white sm:inline-flex">
+                    {monthTitle(new Date(), locale)}
+                  </span>
+                  <Link href="/dashboard/profile" className="micro-pulse">
+                    <Image
+                      className="h-10 w-10 rounded-full border border-purple-500 object-cover"
+                      src={ccUser.data?.image || "/img/profile/user-non-profile.jpg"}
+                      alt={t("navbar.profileAlt", { p1: user.fullName ?? "" })}
+                      width={40}
+                      height={40}
+                    />
+                  </Link>
+                </div>
+              </div>
 
-              <div className="hidden sm:grid sm:grid-cols-3 sm:gap-4 sm:items-stretch pt-6">
+              <div className="hidden sm:grid sm:grid-cols-3 sm:gap-4 sm:items-stretch pt-3">
                 {accountsPanel}
                 {summaryPanel}
                 {comparisonPanel}

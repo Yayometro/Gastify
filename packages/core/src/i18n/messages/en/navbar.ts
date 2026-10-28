@@ -25,7 +25,19 @@ const en: Record<keyof typeof navbar, string> = {
   "navbar.icons.more": "Show more ({p1} left)",
   "navbar.seeBudget": "See my budget",
   "navbar.tools.open": "Open tools",
-  "navbar.tools.drag": "Tools (drag it to another edge)"
+  "navbar.tools.drag": "Tools (drag it to another edge)",
+  "navbar.youAreHere": "You are here",
+  "navbar.hint.profile": "Your details, photo, language and country.",
+  "navbar.hint.movements": "Your expenses and income: search, filter and edit each one.",
+  "navbar.hint.wallet": "Your month at a glance: totals, biggest expenses and your accounts.",
+  "navbar.hint.budgets": "Budgets and savings: how far you are from your goal.",
+  "navbar.hint.projections": "What you expect to spend and earn, against what actually happened.",
+  "navbar.hint.analyzer": "Patterns in your money: subscriptions, big expenses and more.",
+  "navbar.hint.accounts": "Your accounts and cards, with their balance.",
+  "navbar.hint.history": "How your expenses and income changed month by month.",
+  "navbar.hint.categories": "The categories and subcategories you sort your transactions with.",
+  "navbar.hint.theme": "Switch between light and dark mode.",
+  "navbar.hint.addTransaction": "Record an expense, income, transfer, account or budget.",
 };
 
 export default en;

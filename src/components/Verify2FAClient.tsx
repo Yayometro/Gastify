@@ -9,7 +9,8 @@ import { authClient } from "@/lib/auth/authClient";
 import { signInWithPasskeyOnce } from "@/lib/auth/passkeyCeremony";
 import runNotify from "@/helpers/gastifyNotifier";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
-import { FACTOR_CHANGE_STEP_UP_TTL_MINUTES, STEP_UP_TTL_MINUTES } from "@/lib/auth/stepUpConfig";
+import { FACTOR_CHANGE_STEP_UP_TTL_MINUTES, STEP_UP_MAX_AGE_HOURS, STEP_UP_TTL_MINUTES } from "@/lib/auth/stepUpConfig";
+import type { StepUpReason } from "@gastify/core/auth/sessionStatus";
 import { store } from "@/lib/store";
 import { fetchUser } from "@/lib/features/userSlice";
 import { fetchWallet } from "@/lib/features/walletSlice";
@@ -106,19 +107,29 @@ type ThunkWithEmail = (email: string) => Parameters<AppDispatch>[0];
 //   passkey ceremony fires automatically the moment this mode is reached
 //   (no click needed first) - the fingerprint/Face ID/PIN prompt itself IS
 //   the security gate, an extra click in front of it doesn't add anything.
+// The sentence that says why the second factor is asked again (the reason comes from the dashboard or the API).
+const STEP_UP_REASON_TEXT = {
+  idle: "auth.stepUp.idle",
+  "max-age": "auth.stepUp.maxAge",
+  "never-verified": "auth.stepUp.neverVerified",
+  generic: "auth.stepUp.generic",
+} as const;
+
 export interface Verify2FAClientProps {
   // Where to go once verified (set when a profile factor change asked for it).
   nextPath?: string | null;
   // True when a factor change (profile) sent the user here: the proof is
   // asked for more often than for the dashboard, and the copy says so.
   reauth?: boolean;
+  // Why the dashboard or the API sent the person here (null when they came by themselves).
+  reason?: StepUpReason | null;
   // What the account has, as the server sees it. When given they decide the
   // starting screen; the cached client lists are only a fallback.
   hasPasskey?: boolean;
   hasTotp?: boolean;
 }
 
-function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasskey, hasTotp: serverHasTotp }: Verify2FAClientProps = {}): React.JSX.Element {
+function Verify2FAClient({ nextPath, reauth = false, reason = null, hasPasskey: serverHasPasskey, hasTotp: serverHasTotp }: Verify2FAClientProps = {}): React.JSX.Element {
   const tr = useT();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -532,9 +543,10 @@ function Verify2FAClient({ nextPath, reauth = false, hasPasskey: serverHasPasske
           <h1 className="text-white text-2xl font-normal text-center">{tr("shared.verify.title")}</h1>
           <p className="text-gf-text-muted text-sm text-center">
             {reauth
-              ? `Para cambiar tus factores de verificación (passkeys, app autenticadora o códigos de respaldo) te pedimos confirmar tu identidad cada ${FACTOR_CHANGE_STEP_UP_TTL_MINUTES} minutos. Pon tu huella, Face ID o código del dispositivo para continuar.`
-              : `Han pasado más de ${STEP_UP_TTL_MINUTES} minutos, o iniciaste sesión de una forma que aún no comprobamos con tu segundo factor. Pon tu huella, Face ID o código del dispositivo para continuar.`}
+              ? tr("auth.stepUp.reauth", { p1: FACTOR_CHANGE_STEP_UP_TTL_MINUTES })
+              : tr(STEP_UP_REASON_TEXT[reason ?? "generic"], { p1: reason === "max-age" ? STEP_UP_MAX_AGE_HOURS : STEP_UP_TTL_MINUTES })}
           </p>
+          <p className="text-gf-text-muted text-xs text-center">{tr("auth.stepUp.howTo")}</p>
           {passkeyNotice && <p className="text-xs text-amber-300 text-center">{passkeyNotice}</p>}
           <button type="button" disabled={loading} onClick={handleChallengePasskey} className="gf-glass-button text-white rounded-full px-4 py-3 w-full">
             {tr("shared.verify.passkey")}

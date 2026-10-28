@@ -9,16 +9,17 @@ import useGetUserSession from "@/hooks/useGetUserSession";
 import {
   filterBillsOrIncomes,
   get_total_value_of_all_transactions,
+  getPrimaryAmount,
   getTransactionsFromTimeRange,
   orderByHighestValue,
   reduceTransCategoriesSliced,
-  sortBasedOnValueProperty,
   type TransactionLike,
 } from "@/helpers/transformers/transactionsChange";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
+  type PrimaryAmountItem,
 } from "@gastify/core/time/timeFunctions";
 import TopRankColumn, { type RankRowItem } from "./top3/topRankColumn/TopRankColumn";
 import TopElementContainerView from "./TopElementContainerView";
@@ -70,6 +71,12 @@ export interface ContainerTransactionItem {
     [key: string]: unknown;
   } | null;
   [key: string]: unknown;
+}
+
+// The biggest transactions first, cut to the number the person picked. (sortBasedOnValueProperty sorts smallest first,
+// so it kept the smallest ones, and it reads `value` only, which the transactions do not always have.)
+function biggestTransactions<T extends ContainerTransactionItem>(list: T[], count: number): T[] {
+  return [...list].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, count);
 }
 
 function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProps): React.JSX.Element {
@@ -124,13 +131,13 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
           timePeriod[1] as unknown as Date
         )
       );
-      // Divide in bills or incomes
+      // Divide in bills or incomes, and keep the biggest of each
       const dividedTrans = filterBillsOrIncomes(transactionsOrdered);
-      const incomesTransactionsSlices = sortBasedOnValueProperty(elementsToDisplay, dividedTrans.incomes as unknown as { value: number }[]);
-      const billsTransactionsSlices = sortBasedOnValueProperty(elementsToDisplay, dividedTrans.bills as unknown as { value: number }[]);
+      const incomesTransactionsSlices = biggestTransactions(dividedTrans.incomes, elementsToDisplay);
+      const billsTransactionsSlices = biggestTransactions(dividedTrans.bills, elementsToDisplay);
 
-      const totalTransLocalBills = formatMoneyMajor(get_total_value_of_all_transactions(billsTransactionsSlices), walletPrimaryCurrency);
-      const totalTransLocalIncome = formatMoneyMajor(get_total_value_of_all_transactions(incomesTransactionsSlices), walletPrimaryCurrency);
+      const totalTransLocalBills = formatMoneyMajor(get_total_value_of_all_transactions(billsTransactionsSlices as unknown as PrimaryAmountItem[]), walletPrimaryCurrency);
+      const totalTransLocalIncome = formatMoneyMajor(get_total_value_of_all_transactions(incomesTransactionsSlices as unknown as PrimaryAmountItem[]), walletPrimaryCurrency);
 
       setTotalTransactionsLocal({ income: totalTransLocalIncome, bills: totalTransLocalBills });
       setTransactionsLocal([incomesTransactionsSlices as unknown as RankRowItem[], billsTransactionsSlices as unknown as RankRowItem[]]);
@@ -183,7 +190,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
   );
   const components: TabsTogglerComponentItem<object>[] = [
     {
-      tab: "bills",
+      tab: t("web.bills"),
       props: {
         items: transactionsLocal[1],
         title: topRankTitle(t("web.transactions"), totalTransactionsLocal.bills),
@@ -191,7 +198,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
     {
-      tab: "incomes",
+      tab: t("web.incomes"),
       props: {
         items: transactionsLocal[0],
         title: topRankTitle(t("web.transactions"), totalTransactionsLocal.income),
@@ -199,7 +206,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
     {
-      tab: "bills",
+      tab: t("web.bills"),
       props: {
         items: transactionCategories.bills.children,
         title: topRankTitle(t("web.categories"), transactionCategories.bills.total),
@@ -209,7 +216,7 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       Component: TopRankColumn as unknown as React.ComponentType<object>,
     },
     {
-      tab: "incomes",
+      tab: t("web.incomes"),
       props: {
         items: transactionCategories.incomes.children,
         title: topRankTitle(t("web.categories"), transactionCategories.incomes.total),

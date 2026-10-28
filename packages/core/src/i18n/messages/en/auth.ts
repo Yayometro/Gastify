@@ -2,6 +2,12 @@ import type auth from "../es/auth";
 
 // English for the "auth" namespace. Same keys as the Spanish catalog.
 const en: Record<keyof typeof auth, string> = {
+  "auth.stepUp.idle": "For your security, we ask you to confirm your identity after {p1} minutes without activity. Your data is safe. Confirm and you pick up where you left off; if you were saving something, send it again.",
+  "auth.stepUp.maxAge": "For your security, we ask you to confirm your identity every {p1} hours, even while you use the app. Confirm and you pick up where you left off; if you were saving something, send it again.",
+  "auth.stepUp.neverVerified": "Your session has not confirmed your second factor yet (for example, if you signed in with Google). Confirm it to use your account.",
+  "auth.stepUp.generic": "Confirm your identity to continue.",
+  "auth.stepUp.reauth": "To change your verification factors (passkeys, authenticator app or backup codes) we ask you to confirm your identity every {p1} minutes.",
+  "auth.stepUp.howTo": "Use your fingerprint, Face ID or your device code to continue.",
   "auth.stepUp": "For your security, confirm your identity again to continue 🔒",
   "auth.error.identityNotVerified": "We could not verify your identity, so we signed you out for security. Please sign in again.",
   "auth.error.codeAttemptsExceeded": "We could not verify your code after 3 attempts. Try signing in again.",

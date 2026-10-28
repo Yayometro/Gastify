@@ -13,6 +13,8 @@ export interface BreakdownSlice {
   children: BreakdownSlice[];
   // Only while building the breakdown: the movements of a subcategory, moved into `children` at the end.
   movements?: BreakdownSlice[];
+  // Only on a movement slice: the transaction itself, so a tap on it can open that transaction.
+  transaction?: TransactionLike;
 }
 
 export const NO_CATEGORY_NAME = "Sin categoría";
@@ -61,7 +63,7 @@ export function categoryBreakdown(movements: TransactionLike[], kind: "spending"
     // Each movement is also kept as a slice of its own, the third level of the drill-down (movement -> its amount).
     const named = movement as { _id?: unknown; name?: string | null; title?: string | null };
     const label = named.name || named.title || "Movimiento";
-    subSlice.movements = [...(subSlice.movements ?? []), { key: `${subKey}:${String(named._id ?? label)}:${subSlice.movements?.length ?? 0}`, name: label, icon: sub?.icon || slice.icon, color: sub?.color || slice.color, value, count: 1, children: [] }];
+    subSlice.movements = [...(subSlice.movements ?? []), { key: `${subKey}:${String(named._id ?? label)}:${subSlice.movements?.length ?? 0}`, name: label, icon: sub?.icon || slice.icon, color: sub?.color || slice.color, value, count: 1, children: [], transaction: movement }];
   }
 
   return [...categories.values()]
