@@ -10,6 +10,7 @@ import { fetchAccounts } from "@/lib/features/accountsSlice";
 import ReadFileComp from "./ReadFileComp";
 import ImportFromExcelButton from "./ImportFromExcelButton";
 import CategorySuggestionsSection from "./CategorySuggestions/CategorySuggestionsSection";
+import DemoMovementTools from "@/components/demo/DemoMovementTools";
 import type { AppDispatch, RootState } from "@/lib/store";
 import { useT } from "@/i18n/client";
 
@@ -18,6 +19,7 @@ const TypedMovements = Movements as React.ComponentType<{
   mail?: string | null;
   timePeriodFromFather?: Date[];
   embedded?: boolean;
+  readOnly?: boolean;
 }>;
 
 const TypedReadFileComp = ReadFileComp as React.ComponentType<Record<string, never>>;
@@ -49,9 +51,10 @@ function useIsWide(): boolean {
 export interface MovementsClientProps {
   mcData?: unknown;
   mcSession?: string | null;
+  readOnly?: boolean;
 }
 
-function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element {
+function MovementsClient({ mcSession, readOnly = false }: MovementsClientProps): React.JSX.Element {
   const t = useT();
   // Redux
   const dispatch = useDispatch<AppDispatch>();
@@ -82,22 +85,13 @@ function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element
 
   useEffect(() => {
     // User
-    if (ccUser.status === "idle") {
-      dispatch(fetchUser(mcSession));
+    if (!readOnly) {
+      if (ccUser.status === "idle") dispatch(fetchUser(mcSession));
+      if (ccategories.status === "idle") dispatch(fetchCategories(mcSession));
+      if (ccSubCategories.status === "idle") dispatch(fetchSubCat(mcSession));
+      if (ccAccounts.status === "idle") dispatch(fetchAccounts(mcSession));
     }
-    // Categories
-    if (ccategories.status === "idle") {
-      dispatch(fetchCategories(mcSession));
-    }
-    // Sub-categories
-    if (ccSubCategories.status === "idle") {
-      dispatch(fetchSubCat(mcSession));
-    }
-    if (ccAccounts.status === "idle") {
-      dispatch(fetchAccounts(mcSession));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [readOnly, dispatch, mcSession, ccUser.status, ccategories.status, ccSubCategories.status, ccAccounts.status]);
 
   return (
     <div className=" w-full h-full sm:pr-2">
@@ -114,7 +108,7 @@ function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element
           >
             {/* The tools: the two cards on wide screens (the categorizer takes the height left under the import), the two
                 buttons (each opens its tool) on narrow ones. */}
-            <div className={wide ? "flex min-w-0 flex-col gap-4" : "flex flex-wrap items-center justify-center gap-3"}>
+            {readOnly ? <DemoMovementTools /> : <div className={wide ? "flex min-w-0 flex-col gap-4" : "flex flex-wrap items-center justify-center gap-3"}>
               {wide ? (
                 <>
                   <div className="shrink-0">
@@ -130,11 +124,11 @@ function MovementsClient({ mcSession }: MovementsClientProps): React.JSX.Element
                   <TypedCategorySuggestionsSection mail={mcSession} variant="button" />
                 </>
               )}
-            </div>
+            </div>}
             {/* The transactions: on wide screens as tall as the split (the list scrolls inside), a fixed box on narrow ones. */}
             <div className={wide ? "relative min-w-0" : "relative h-[640px]"} style={wide ? { minHeight: splitHeight } : undefined}>
               <div className="gf-glass-frost absolute inset-0 flex flex-col rounded-[32px] p-4">
-                <TypedMovements mail={mcSession} embedded />
+                <TypedMovements mail={mcSession} embedded readOnly={readOnly} />
               </div>
             </div>
           </div>

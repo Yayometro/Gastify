@@ -16,7 +16,7 @@ import { getLastDayOfMonth, generate_timeperiod_ranges_array_for_dashboard } fro
 import SelecterFilter from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import { getBudgetCoverage } from "@/helpers/transformers/budgetCoverage";
-import { UnbudgetedSpendingCard } from "./Budgets/UnbudgetedSpending";
+import { UnbudgetedSpendingCard, UnbudgetedSpendingModal } from "./Budgets/UnbudgetedSpending";
 import { useRouter } from "next/navigation";
 import { getExplicitBudgetId, isProjectBudget, isSavingBudget, isSpendingBudget } from "@/helpers/transformers/budgetTypes";
 import { RootState, AppDispatch } from "@/lib/store";
@@ -27,12 +27,14 @@ export interface BudgetContProps {
   bTransactions?: unknown;
   bBudgets?: unknown;
   bcSession?: string | null | unknown;
+  readOnly?: boolean;
 }
 
 const initialToday = new Date();
 
 function BudgetCont({
   bcSession,
+  readOnly = false,
 }: BudgetContProps): React.JSX.Element {
   const t = useT();
   const router = useRouter();
@@ -47,6 +49,7 @@ function BudgetCont({
   const [editingBudget, setEditingBudget] = useState<BudgetData | null>(null);
   const [selectedDetailBudget, setSelectedDetailBudget] = useState<BudgetData | null>(null);
   const [returnToDetailBudget, setReturnToDetailBudget] = useState<BudgetData | null>(null);
+  const [showUnbudgetedDetail, setShowUnbudgetedDetail] = useState(false);
   //REDUX
   const dispatch = useDispatch<AppDispatch>();
   const ccBudget = useSelector((state: RootState) => state.budgetReducer);
@@ -62,10 +65,10 @@ function BudgetCont({
   );
   // USE EFFECTS
   useEffect(() => {
-    if(ccBudget.status == 'idle'){
+    if(!readOnly && ccBudget.status == 'idle'){
       dispatch(fetchBudget(bcSession as unknown as Parameters<typeof fetchBudget>[0]))
     }
-    if(ccTrans.status == 'idle'){
+    if(!readOnly && ccTrans.status == 'idle'){
       dispatch(fetchTrans(bcSession as unknown as Parameters<typeof fetchTrans>[0]))
     }
   }, [])
@@ -238,7 +241,7 @@ function BudgetCont({
             <UnbudgetedSpendingCard
               coverage={coverage}
               compact
-              onClick={() => router.push("/dashboard/budgets")}
+              onClick={() => readOnly ? setShowUnbudgetedDetail(true) : router.push("/dashboard/budgets")}
             />
             {projects.length > 0 && <><p className="text-lg text-purple-300 text-center mt-4">{t("budgets.projects")}</p>{projects.map((project) => {
               const actual = bcTrans.filter((transaction) => getExplicitBudgetId(transaction) === String(project._id) && transaction.isBill && !transaction.isIncome).reduce((sum, transaction) => sum + (Number(transaction.amount) || 0), 0);
@@ -253,6 +256,7 @@ function BudgetCont({
           transacciones={bcTrans as unknown as ProjectBudgetTransactionItem[]}
           onClose={() => setSelectedDetailBudget(null)}
           onEdit={openEditFromDetail as unknown as (budget: ProjectBudgetItem) => void}
+          readOnly={readOnly}
         />
       ) : selectedDetailBudget && (
         <BudgetDetailModal
@@ -262,6 +266,21 @@ function BudgetCont({
           endDate={endDate}
           onClose={() => setSelectedDetailBudget(null)}
           onEdit={openEditFromDetail as unknown as (budget: BudgetDetailItem) => void}
+          readOnly={readOnly}
+        />
+      )}
+      {readOnly && showUnbudgetedDetail && (
+        <UnbudgetedSpendingModal
+          coverage={coverage}
+          budgets={budgets}
+          projectBudgets={projects}
+          rangeLabel={`${startDate.toLocaleDateString()} – ${endDate.toLocaleDateString()}`}
+          onClose={() => setShowUnbudgetedDetail(false)}
+          onCreateBudget={() => undefined}
+          onAddToBudget={() => undefined}
+          onCreateProject={() => undefined}
+          onAddToProject={() => undefined}
+          readOnly
         />
       )}
       {editingBudget && (

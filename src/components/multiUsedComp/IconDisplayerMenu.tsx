@@ -16,6 +16,10 @@ export interface IconDisplayerMenuProps {
   idmValue?: string;
   // Receives the chosen icon as "fluent/<slug>".
   idmIcon: (icon: string) => void;
+  // Optional disclosure used in the public demo to make the size of Gastify's catalog explicit.
+  showCatalogSummary?: boolean;
+  // Let the demo show a larger first sample while keeping the real app's smaller initial page unchanged.
+  initialPageSize?: number;
 }
 
 // The icon picker of the form, as in the app: the whole Fluent Emoji library (1,285 icons) shown in place, with a search
@@ -23,12 +27,13 @@ export interface IconDisplayerMenuProps {
 // first time the picker appears. No window of its own: the form it sits in is the window.
 const PAGE = 60;
 
-function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React.JSX.Element {
+function IconDisplayerMenu({ idmValue, idmIcon, showCatalogSummary = false, initialPageSize = PAGE }: IconDisplayerMenuProps): React.JSX.Element {
   const t = useT();
   const [icons, setIcons] = useState<FluentManifestIcon[] | null>(null);
   const [failed, setFailed] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
-  const [limit, setLimit] = useState<number>(PAGE);
+  const [limit, setLimit] = useState<number>(initialPageSize);
+  const pageSize = Number.isFinite(initialPageSize) && initialPageSize > 0 ? Math.floor(initialPageSize) : PAGE;
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +59,7 @@ function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
-          setLimit(PAGE);
+          setLimit(pageSize);
         }}
         placeholder={t("navbar.icons.searchPlaceholder")}
         aria-label={t("navbar.icons.search")}
@@ -68,6 +73,11 @@ function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React
         </div>
       ) : (
         <>
+          {showCatalogSummary && (
+            <p className="text-xs leading-relaxed text-gf-text-muted">
+              {t("shared.demo.iconLibrarySummary", { p1: icons.length.toLocaleString() })}
+            </p>
+          )}
           <p className="text-xs text-gf-text-muted">{found.length === 1 ? "1 ícono" : `${found.length} íconos`}</p>
           {matches.length === 0 ? (
             <p className="text-sm text-gf-text-muted">{t("navbar.icons.none")}</p>
@@ -98,7 +108,7 @@ function IconDisplayerMenu({ idmValue, idmIcon }: IconDisplayerMenuProps): React
           {found.length > limit && (
             <button
               type="button"
-              onClick={() => setLimit((current) => current + 120)}
+              onClick={() => setLimit((current) => current + pageSize)}
               className="self-center py-2 text-sm font-semibold text-purple-300"
             >
               {t("navbar.icons.more", { p1: found.length - limit })}

@@ -14,6 +14,7 @@ import HistoricalWalletAnalyzer from "./HistoricalWalletAnalyzer/HistoricalWalle
 import HistoricalProjectionsTable from "./HistoricalWalletAnalyzer/HistoricalProjectionsTable";
 import usePeriodComparison from "@/hooks/usePeriodComparison";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import type { BudgetHistoricalInput } from "@/helpers/transformers/budgetHistoricalComparative";
 
 import { useT, useInfo } from "@/i18n/client";
 
@@ -32,10 +33,17 @@ const TypedTabsTogglerMontlyController = TabsTogglerMontlyController as React.Co
 
 const TypedHistoricalWalletAnalyzer = HistoricalWalletAnalyzer as React.ComponentType<{
   periodState: PeriodComparisonState;
+  readOnly?: boolean;
+  email?: string | null;
+  demoBudgets?: BudgetHistoricalInput[];
+  demoRatesToMxn?: Record<string, number>;
 }>;
 
 const TypedHistoricalProjectionsTable = HistoricalProjectionsTable as React.ComponentType<{
   periodState: PeriodComparisonState;
+  readOnly?: boolean;
+  email?: string | null;
+  demoRatesToMxn?: Record<string, number>;
 }>;
 
 const TypedHistoricalComparativeCategories = HistoricalComparativeCategories as React.ComponentType<{
@@ -44,13 +52,19 @@ const TypedHistoricalComparativeCategories = HistoricalComparativeCategories as 
 
 const TypedHistoricalBudgetsComparative = HistoricalBudgetsComparative as React.ComponentType<{
   periodState: PeriodComparisonState;
+  readOnly?: boolean;
+  email?: string | null;
+  demoBudgets?: BudgetHistoricalInput[];
 }>;
 
 export interface HistoryClientProps {
   email?: string | null;
+  readOnly?: boolean;
+  demoBudgets?: BudgetHistoricalInput[];
+  demoRatesToMxn?: Record<string, number>;
 }
 
-function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
+function HistoryClient({ email, readOnly = false, demoBudgets, demoRatesToMxn }: HistoryClientProps): React.JSX.Element {
   const { HISTORY_INFO } = useInfo();
   const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -67,6 +81,11 @@ function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
   // was before periodState existed.
   const walletAnalyzerPeriodState = usePeriodComparison();
   const projectionsPeriodState = usePeriodComparison();
+  const setWalletAnalyzerCompareEnabled = walletAnalyzerPeriodState.setCompareEnabled;
+
+  useEffect(() => {
+    if (readOnly) setWalletAnalyzerCompareEnabled(true);
+  }, [readOnly, setWalletAnalyzerCompareEnabled]);
 
   const dispatch = useDispatch<AppDispatch>();
   const ccUser = useSelector((state: RootState) => state.userReducer);
@@ -77,7 +96,7 @@ function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
 
   useEffect(() => {
     // User
-    if (ccUser.status == "idle" && email) {
+    if (!readOnly && ccUser.status == "idle" && email) {
       setIsLoading(true);
       dispatch(fetchUser(email));
     }
@@ -85,7 +104,7 @@ function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ccUser.status, email]);
+  }, [ccUser.status, email, readOnly]);
 
   return (
     <div className=" w-full h-full sm:pr-2">
@@ -109,16 +128,16 @@ function HistoryClient({ email }: HistoryClientProps): React.JSX.Element {
             <TypedTabsTogglerMontlyController periodState={periodState} />
           </HistoryGate>
           <HistoryGate className="w-full h-fulls pb-6 historical-wallet-analyzer" starts={[walletAnalyzerPeriodState.timePeriod[0], walletAnalyzerPeriodState.compareEnabled ? walletAnalyzerPeriodState.comparePeriod[0] : null]}>
-            <TypedHistoricalWalletAnalyzer periodState={walletAnalyzerPeriodState} />
+            <TypedHistoricalWalletAnalyzer periodState={walletAnalyzerPeriodState} readOnly={readOnly} email={email} demoBudgets={demoBudgets} demoRatesToMxn={demoRatesToMxn} />
           </HistoryGate>
           <HistoryGate className="w-full h-fulls pb-6 historical-projections-table" starts={[projectionsPeriodState.timePeriod[0], projectionsPeriodState.compareEnabled ? projectionsPeriodState.comparePeriod[0] : null]}>
-            <TypedHistoricalProjectionsTable periodState={projectionsPeriodState} />
+            <TypedHistoricalProjectionsTable periodState={projectionsPeriodState} readOnly={readOnly} email={email} demoRatesToMxn={demoRatesToMxn} />
           </HistoryGate>
           <HistoryGate className="w-full h-fulls pb-6 historical-comparative-categories" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <TypedHistoricalComparativeCategories periodState={periodState} />
           </HistoryGate>
           <HistoryGate className="w-full h-fulls pb-6 historical-budgets-comparative" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
-            <TypedHistoricalBudgetsComparative periodState={periodState} />
+            <TypedHistoricalBudgetsComparative periodState={periodState} readOnly={readOnly} email={email} demoBudgets={demoBudgets} />
           </HistoryGate>
           <HistoryGate className="w-full h-fulls historical-transactions-container" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <HistoricalMovementsController periodState={periodState} />

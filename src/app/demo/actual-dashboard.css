@@ -1,0 +1,183 @@
+.demo-app.demo-actual-shell {
+  display: block;
+  min-height: 100vh;
+  overflow-x: clip;
+  background:
+    radial-gradient(ellipse 42% 34% at 58% 0%, rgba(117, 76, 202, .24), transparent 75%),
+    radial-gradient(ellipse 31% 30% at 100% 35%, rgba(54, 109, 186, .17), transparent 77%),
+    radial-gradient(ellipse 32% 25% at 32% 82%, rgba(180, 49, 151, .13), transparent 80%),
+    #140e25;
+  color: #f5f1fc;
+}
+
+.demo-actual-shell .demo-main-column { min-width: 0; }
+.demo-actual-shell .demo-notice-bar { margin-left: 84px; }
+.demo-actual-shell .demo-navbar {
+  left: 0;
+  width: 84px !important;
+  height: 100vh;
+  pointer-events: none;
+}
+.demo-actual-shell .demo-navbar > ul { pointer-events: auto; }
+.demo-actual-shell .nav-full { list-style: none; }
+.demo-actual-shell .n-mobile { display: none; }
+.demo-actual-shell .wallet { min-height: 100vh; }
+.demo-actual-shell .demo-nav-brand { padding-top: 4px; }
+.demo-actual-shell .demo-nav-brand a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 58px;
+  min-height: 56px;
+  border-radius: 16px;
+}
+.demo-actual-shell .demo-nav-profile-image {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #a855f7;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.demo-actual-shell .demo-nav-profile-name {
+  max-width: 58px;
+  overflow: hidden;
+  color: var(--gf-text);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.demo-actual-shell .demo-nav-label { display: none; }
+.demo-actual-shell .demo-nav-brand .demo-nav-label { display: block; }
+.demo-actual-shell .demo-nav-create button {
+  display: grid;
+  place-items: center;
+  width: clamp(34px, calc((95vh - 100px) / 11), 50px);
+  height: clamp(34px, calc((95vh - 100px) / 11), 50px);
+  transition: transform .2s ease, filter .2s ease;
+}
+.demo-actual-shell .demo-nav-create button:hover,
+.demo-actual-shell .demo-mobile-nav-create button:hover { transform: scale(1.06); filter: brightness(1.08); }
+.demo-actual-shell .demo-mobile-nav-toggle button,
+.demo-actual-shell .demo-mobile-nav-item a,
+.demo-actual-shell .demo-mobile-nav-profile a {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--gf-text);
+  cursor: pointer;
+}
+.demo-actual-shell .demo-mobile-nav-create button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.demo-actual-shell .demo-mobile-nav-toggle button.is-open { background: rgba(168, 120, 240, .16); }
+.demo-actual-shell .demo-mobile-nav-toggle button svg { transition: transform .2s ease; }
+.demo-actual-shell .demo-mobile-nav-toggle button.is-open svg { transform: rotate(180deg); }
+.demo-actual-shell .demo-mobile-nav-item.is-active a {
+  background: linear-gradient(135deg, rgba(192, 132, 252, .38), rgba(126, 34, 206, .4));
+  box-shadow: 0 0 14px rgba(168, 85, 247, .32), inset 0 1px 0 rgba(255, 255, 255, .25);
+  color: #fff;
+}
+.demo-actual-shell .demo-mobile-nav-profile img {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #a855f7;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.demo-actual-shell .gf-backdrop { display: none; }
+.demo-actual-shell .demo-section-screen > .profile-component-container { padding-left: 0 !important; }
+.demo-actual-shell .movements .btns,
+.demo-actual-shell .movements .clear-allbtn,
+.demo-actual-shell .movements .editor-cont { display: none !important; }
+
+@media (max-width: 767px) {
+  .demo-actual-shell .demo-navbar {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100% !important;
+    height: auto;
+    pointer-events: auto;
+  }
+  .demo-actual-shell .demo-notice-bar { margin-left: 0; padding-inline: 16px; }
+  .demo-actual-shell .demo-notice-secondary { display: none; }
+  .demo-actual-shell .wallet { padding-bottom: 90px; }
+  .demo-actual-shell .nav-full { display: none !important; }
+  .demo-actual-shell .nav-full.is-open {
+    position: fixed;
+    z-index: 1001;
+    right: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    left: 12px;
+    display: flex !important;
+    width: auto;
+    max-height: min(62vh, 520px);
+    height: auto;
+    margin: 0;
+    padding: 14px;
+    overflow-y: auto;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 4px;
+    border-radius: 22px;
+    background: rgba(31, 22, 49, .96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    animation: fadeInUp .2s ease-out;
+  }
+  .demo-actual-shell .nav-full.is-open > li { width: 100%; justify-content: flex-start; }
+  .demo-actual-shell .nav-full.is-open .demo-nav-brand { display: none; }
+  .demo-actual-shell .nav-full.is-open .gf-nav-item > a {
+    width: 100%;
+    height: 44px;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 11px;
+    border-radius: 12px;
+  }
+  .demo-actual-shell .nav-full.is-open .gf-nav-item svg { width: 21px; height: 21px; }
+  .demo-actual-shell .nav-full.is-open .demo-nav-label { display: inline; font-size: 12px; }
+  .demo-actual-shell .nav-full.is-open .demo-nav-create { display: none; }
+  .demo-actual-shell .n-mobile { display: flex; }
+  .demo-actual-shell .n-mobile {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    justify-items: center;
+    justify-content: initial;
+    gap: 2px;
+    padding-inline: 7px;
+  }
+  .demo-actual-shell .demo-nav-label { display: none; }
+  .demo-actual-shell .nav-full.is-open .demo-nav-label { display: inline; }
+  .demo-actual-shell .demo-nav-mobile-create button { width: 44px; height: 44px; }
+  .demo-actual-shell .demo-notice-message { min-width: 0; }
+  .demo-actual-shell .demo-notice-actions { gap: 8px; }
+  .demo-actual-shell .demo-language-switch { flex: none; }
+}
+
+@media (max-width: 520px) {
+  .demo-actual-shell .demo-notice-bar { gap: 8px; padding-inline: 10px; }
+  .demo-actual-shell .demo-notice-message { font-size: 9px; line-height: 1.25; }
+  .demo-actual-shell .demo-notice-actions { gap: 6px; }
+  .demo-actual-shell .demo-language-switch { gap: 2px; padding: 2px; }
+  .demo-actual-shell .demo-language-switch button { padding: 4px 7px; font-size: 9px; }
+  .demo-actual-shell .demo-notice-actions > a { gap: 3px; font-size: 9px; }
+  .demo-actual-shell .n-mobile { width: calc(100% - 24px); }
+  .demo-actual-shell .demo-mobile-nav-toggle button,
+  .demo-actual-shell .demo-mobile-nav-item a,
+  .demo-actual-shell .demo-mobile-nav-profile a,
+  .demo-actual-shell .demo-mobile-nav-create button { width: 36px; height: 36px; }
+  .demo-actual-shell .demo-mobile-nav-create button svg { width: 25px; height: 25px; }
+}

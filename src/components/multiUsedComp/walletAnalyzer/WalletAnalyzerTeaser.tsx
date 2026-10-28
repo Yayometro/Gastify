@@ -18,6 +18,7 @@ const EMPTY_ARRAY: never[] = [];
 
 export interface WalletAnalyzerTeaserProps {
   timePeriodFromFather?: (Date | string)[] | null;
+  demoMode?: boolean;
 }
 
 // The full "Lo más destacado del mes" strip (every insight, full detail,
@@ -34,7 +35,7 @@ export interface WalletAnalyzerTeaserProps {
 // WalletAnalyzer.jsx, there's no local stepper here to "take the wheel"
 // with, so it just always follows the parent - one atomic, prop-driven
 // piece instead of owning its own navigation state.
-function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProps): React.JSX.Element | null {
+function WalletAnalyzerTeaser({ timePeriodFromFather, demoMode = false }: WalletAnalyzerTeaserProps): React.JSX.Element | null {
   const text = useWalletText();
   const { APP_INFO } = useInfo();
   const t = useT();
@@ -61,7 +62,7 @@ function WalletAnalyzerTeaser({ timePeriodFromFather }: WalletAnalyzerTeaserProp
         title={t("analyzer.summaryTitle")}
       />
       <div className="mt-3 flex items-center justify-end gap-2">
-        <Link href="/dashboard/analyzer" className="flex items-center gap-1 text-sm font-bold text-purple-300 transition-colors hover:text-white">
+        <Link href={demoMode ? "#demo-top" : "/dashboard/analyzer"} className="flex items-center gap-1 text-sm font-bold text-purple-300 transition-colors hover:text-white">
           {t("analyzer.seeFull")} <span aria-hidden="true">→</span>
         </Link>
         <InfoTip info={APP_INFO.an_lisis_del_periodo} />

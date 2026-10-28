@@ -4,7 +4,7 @@ import HistoryGate from "../loaders/HistoryGate";
 import React, { useMemo, useState } from "react";
 import { Skeleton, Tooltip } from "antd";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
-import useProjectionTable from "@/hooks/useProjectionTable";
+import useProjectionTable, { type ProjectionBaselineData } from "@/hooks/useProjectionTable";
 import fetcher from "@/helpers/fetcher";
 import CategoIcon from "../CategoIcon";
 import UniversalCategoIcon from "../UniversalCategoIcon";
@@ -32,6 +32,9 @@ import { useT, useInfo } from "@/i18n/client";
 
 export interface ProjectionsClientProps {
   mcSession?: string | null;
+  readOnly?: boolean;
+  demoRatesToMxn?: Record<string, number>;
+  demoProjectionBaseline?: ProjectionBaselineData | null;
 }
 
 export interface SelectedMonthDetails {
@@ -41,7 +44,7 @@ export interface SelectedMonthDetails {
   expenseCurrencyBreakdown: CurrencyBreakdownData | null;
 }
 
-function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Element {
+function ProjectionsClient({ mcSession, readOnly = false, demoRatesToMxn, demoProjectionBaseline }: ProjectionsClientProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
@@ -78,6 +81,8 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
     budgets,
     accounts,
     walletPrimaryCurrency,
+    demoRatesToMxn,
+    demoProjectionBaseline,
   });
 
   const selectedRow = rowsWithEstimates.find((r) => r.monthName === selectedMonthName) || null;
@@ -121,6 +126,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
   }, [selectedRow, monthRanges, transacciones, budgetsConverted, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency, t]);
 
   const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }: SaveBuffersPayload): Promise<void> => {
+    if (readOnly) return;
     const res = await toFetch.post("general-data/projections/update", {
       mail: mcSession,
       year,
@@ -134,6 +140,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
   };
 
   const handleSaveMonthBalance = async (balance: number): Promise<void> => {
+    if (readOnly) return;
     const res = await toFetch.post("general-data/projections/update", {
       mail: mcSession,
       year,
@@ -151,13 +158,13 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
           {t("projections.title")}<InfoTip info={APP_INFO.proyecciones} />
         </h1>
       </div>
-      <div className="w-full flex items-center justify-center pt-2">
+      {!readOnly && <div className="w-full flex items-center justify-center pt-2">
         <Tooltip title={t("projections.currency.help")}>
           <div>
             <PrimaryCurrencySelector pcsWallet={wallet as PrimaryCurrencySelectorWallet | null | undefined} />
           </div>
         </Tooltip>
-      </div>
+      </div>}
       <div className="content-profile-cont w-full h-full content-wallet-glass items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl px-4 sm:px-8 py-6">
         <div className="flex items-center justify-center gap-3 mb-2">
           <div className="cursor-pointer" onClick={() => setYear((y) => y - 1)}>
@@ -183,15 +190,15 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
           </Tooltip>
         </div>
 
-        <IncomeSourcesPanel
+        {!readOnly && <IncomeSourcesPanel
           incomeSources={incomeSources}
           userId={user?._id as string | undefined}
           walletId={wallet?._id as string | undefined}
           walletPrimaryCurrency={walletPrimaryCurrency}
           onChange={loadSettings}
-        />
+        />}
 
-        <HistoricalBaselinePanel
+        {!readOnly && <HistoricalBaselinePanel
           baseline={projectionBaseline}
           walletPrimaryCurrency={walletPrimaryCurrency}
           mail={mcSession || undefined}
@@ -201,7 +208,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
             (projectionBaseline?.expenseHistory?.length || 0) === 0 &&
             rowsWithEstimates.some((r) => r.type === "actual" && r.hasTransactions === false)
           }
-        />
+        />}
 
         {/* A year that starts before the movements loaded so far would show zeros until the rest of the history arrives. */}
         <HistoryGate starts={[new Date(year, 0, 1)]}>
@@ -237,6 +244,7 @@ function ProjectionsClient({ mcSession }: ProjectionsClientProps): React.JSX.Ele
             onSaveMonthBalance={handleSaveMonthBalance}
             onClose={() => setSelectedMonthName(null)}
             mail={mcSession || undefined}
+            readOnly={readOnly}
           />
         )}
 

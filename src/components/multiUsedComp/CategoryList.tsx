@@ -13,23 +13,25 @@ import { useT } from "@/i18n/client";
 export interface CategoryListProps {
   clCategories?: CategoryData[] | null;
   clUser?: UserData | Record<string, unknown> | null;
+  readOnly?: boolean;
+  onSelectCategory?: (category: CategoryData) => void;
 }
 
-function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.Element {
+function CategoryList({ clCategories, clUser, readOnly = false, onSelectCategory }: CategoryListProps): React.JSX.Element {
   const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryData>({});
 
   return (
     <div className="category-list-component w-full h-full flex gap-2 flex-wrap justify-center items-center">
-      <SelectCategories>
+      {!readOnly && <SelectCategories>
         <EditCategoryModal
           ecmMode={onEdition}
           ecmCategory={selectedCategory}
           ecmClose={(e) => setOnEdition(e)}
           ecmData={{ user: clUser, categories: clCategories }}
         />
-      </SelectCategories>
+      </SelectCategories>}
       {
         !clCategories ? (
           <div className="w-full h-full flex justify-center items-center">
@@ -48,11 +50,15 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
               title={`${category?.name || "No name..."}`}
               key={`cc-clist-key-cat-${category._id}`}
             >
-              <div
+              <button
+                type="button"
                 style={{ backgroundColor: category.color || "#ABABAB" }}
-                className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] flex flex-col justify-center items-center rounded-full px-2 py-1 hover:brightness-90 cursor-pointer`}
+                aria-label={t("shared.demo.categories.open", { p1: category?.name || t("categories.thisOne") })}
+                className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] flex flex-col justify-center items-center rounded-full px-2 py-1 transition ${readOnly ? "cursor-pointer hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200" : "hover:brightness-90 cursor-pointer"}`}
                 onClick={() => {
-                  if (category.isDefaultCatego) {
+                  if (readOnly) {
+                    onSelectCategory?.(category);
+                  } else if (category.isDefaultCatego) {
                     runNotify(
                       "warning",
                       t("categories.defaultCategory", { p1: category?.name || t("categories.thisOne") })
@@ -85,7 +91,7 @@ function CategoryList({ clCategories, clUser }: CategoryListProps): React.JSX.El
                     {category?.name || "No name..."}
                   </p>
                 </div>
-              </div>
+              </button>
             </Tooltip>
           ))
         )

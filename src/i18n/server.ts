@@ -1,5 +1,5 @@
 import { cookies, headers } from "next/headers";
-import { DEFAULT_LOCALE, LOCALE_COOKIE, localeFromAcceptLanguage, resolveLocale, type Locale } from "@gastify/core/i18n/locales";
+import { DEFAULT_LOCALE, LOCALE_COOKIE, localeFromAcceptLanguage, localeFromCountry, isLocale, type Locale } from "@gastify/core/i18n/locales";
 import { loadMessages, type Namespace } from "@gastify/core/i18n/catalogs";
 import { createTranslator, type TranslateFn } from "@gastify/core/i18n/translate";
 
@@ -7,8 +7,11 @@ import { createTranslator, type TranslateFn } from "@gastify/core/i18n/translate
 export async function currentLocale(): Promise<Locale> {
   try {
     const saved = (await cookies()).get(LOCALE_COOKIE)?.value;
-    if (saved) return resolveLocale(saved);
-    return localeFromAcceptLanguage((await headers()).get("accept-language"));
+    if (isLocale(saved)) return saved;
+    const requestHeaders = await headers();
+    const countryLocale = localeFromCountry(requestHeaders.get("x-vercel-ip-country"));
+    if (countryLocale) return countryLocale;
+    return localeFromAcceptLanguage(requestHeaders.get("accept-language"));
   } catch {
     // Outside a request (a script, or a test that calls a route directly) there is no cookie to read: the default language.
     return DEFAULT_LOCALE;

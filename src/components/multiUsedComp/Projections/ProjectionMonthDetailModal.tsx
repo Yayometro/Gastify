@@ -71,6 +71,7 @@ export interface ProjectionMonthDetailModalProps {
   onSaveMonthBalance: (balance: number) => Promise<void> | void;
   onClose: () => void;
   mail?: string;
+  readOnly?: boolean;
 }
 
 interface QuestionTooltipProps {
@@ -107,6 +108,7 @@ function ProjectionMonthDetailModal({
   onSaveMonthBalance,
   onClose,
   mail,
+  readOnly = false,
 }: ProjectionMonthDetailModalProps): React.JSX.Element | null {
   const { APP_INFO } = useInfo();
   const t = useT();
@@ -321,7 +323,7 @@ function ProjectionMonthDetailModal({
             </div>
           )}
 
-          <div className="form-trans-edit w-full flex flex-col gap-4 mt-2 pt-4 border-t border-gf-border">
+          {!readOnly && <div className="form-trans-edit w-full flex flex-col gap-4 mt-2 pt-4 border-t border-gf-border">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
               <div className="w-full">
                 <p className="label-tfp flex items-center mb-1">
@@ -380,7 +382,7 @@ function ProjectionMonthDetailModal({
                 </ul>
               </details>
             )}
-          </div>
+          </div>}
             </div>
 
             {showTransactions && monthDateRange && (
@@ -388,6 +390,7 @@ function ProjectionMonthDetailModal({
                 <Movements
                   mail={mail}
                   timePeriodFromFather={[monthDateRange.start, monthDateRange.end]}
+                  readOnly={readOnly}
                 />
               </div>
             )}

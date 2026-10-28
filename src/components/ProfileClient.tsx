@@ -24,6 +24,7 @@ import TwoFactorPanel from "./multiUsedComp/TwoFactorPanel";
 import DeleteAccountPanel from "./multiUsedComp/DeleteAccountPanel";
 import type { RootState, AppDispatch } from "@/lib/store";
 import { useT, useInfo } from "@/i18n/client";
+import DemoProfileSettings from "@/components/demo/DemoProfileSettings";
 
 // Typed bridge components for unmigrated JS components
 const TypedEmptyModule = EmptyModule as React.ComponentType<{
@@ -43,6 +44,7 @@ const TypedApiTokensPanel = ApiTokensPanel as React.ComponentType<{
 
 interface ProfileClientProps {
   pcSession?: string;
+  readOnly?: boolean;
 }
 
 interface ProfileUserInfo {
@@ -62,7 +64,7 @@ interface UpdateUserApiResponse {
   [key: string]: unknown;
 }
 
-function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
+function ProfileClient({ pcSession, readOnly = false }: ProfileClientProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
   const [onEdition, setOnEdition] = useState<boolean>(false);
@@ -86,11 +88,11 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
   //USE EFFECTS
   useEffect(() => {
     // User
-    if (ccUser.status == "idle") {
+    if (!readOnly && ccUser.status == "idle") {
       dispatch(fetchUser(pcSession));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [readOnly, dispatch, pcSession]);
   useEffect(() => {
     if (ccUser.status == "loading") {
       setIsLoading(true);
@@ -222,7 +224,35 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
   //
   return (
     <div className="profile-component-container w-full h-full sm:pr-2">
-      {!userData ? (
+      {readOnly ? (
+        <div className="w-full content-profile-cont content-wallet-glass rounded-t-[100px] rounded-b-2xl px-4 pb-12 pt-8 text-center">
+          <Image
+            className="rounded-full border border-purple-500 m-auto w-[110px] sm:w-[140px] shadow-md"
+            src={userData?.image || "/img/profile/user-non-profile.jpg"}
+            alt={t("navbar.profileAlt", { p1: userData?.fullName || "Alex Rivera" })}
+            width={150}
+            height={150}
+          />
+          <h1 className="pt-5 text-3xl">{userData?.fullName || "Alex Rivera"}</h1>
+          <p className="mt-1 text-sm text-gf-text-muted">{t("shared.demo.profileSubtitle")}</p>
+          <div className="mx-auto mt-8 flex w-full max-w-2xl flex-col items-start gap-5 rounded-3xl border border-purple-300/15 bg-black/10 p-5 text-left sm:p-7">
+            <div className="w-full">
+              <p className="text-[11px] text-gf-text-muted">{t("profile.fullName.label")}</p>
+              <div className="gf-profile-field mt-1 w-full truncate rounded-xl border border-purple-400/50 px-3 py-2 text-lg font-light">{userData?.fullName || "Alex Rivera"}</div>
+            </div>
+            <div className="w-full">
+              <p className="text-[11px] text-gf-text-muted">{t("profile.mail.label")}</p>
+              <div className="gf-profile-field mt-1 w-full truncate rounded-xl border border-purple-400/50 px-3 py-2 text-lg font-light">{userData?.mail || "alex@example.test"}</div>
+            </div>
+            <div className="w-full">
+              <p className="text-[11px] text-gf-text-muted">{t("profile.phone.label")}</p>
+              <div className="gf-profile-field mt-1 w-full truncate rounded-xl border border-purple-400/50 px-3 py-2 text-lg font-light">{userData?.phone || "+52 55 0000 0000"}</div>
+            </div>
+            <p className="w-full rounded-2xl border border-purple-200/15 bg-purple-300/5 px-4 py-3 text-xs leading-relaxed text-gf-text-muted">{t("shared.demo.createReadonly")}</p>
+          </div>
+          <DemoProfileSettings />
+        </div>
+      ) : !userData ? (
         <div className="flex justify-center items-center content-wallet-glass rounded-2xl h-screen">
           <TypedEmptyModule
             emMessage={t("profile.noUserData")}

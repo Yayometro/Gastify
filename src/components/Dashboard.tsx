@@ -9,6 +9,7 @@ import "@/components/multiUsedComp/css/muliUsed.css";
 import MultiCreditCard from "./multiUsedComp/MultiCreditCard";
 import Movements from "./multiUsedComp/Movements";
 import BudgetCont from "./multiUsedComp/BudgetCont";
+import DemoBudgetComparisonCard from "@/components/demo/DemoBudgetComparisonCard";
 //REDUX
 import { useDispatch, useSelector } from "react-redux";
 import { store } from "@/lib/store";
@@ -52,6 +53,10 @@ import { useT, useInfo } from "@/i18n/client";
 interface DashboardProps {
   dataServ?: unknown;
   session?: string;
+  /** Disable account ordering and movement/budget edits when showing the public sample wallet. */
+  readOnly?: boolean;
+  /** Fixed, explicitly illustrative rates used only by the public sample wallet. */
+  demoRatesToMxn?: Record<string, number>;
 }
 
 interface DashboardUser {
@@ -156,11 +161,13 @@ const MultiCreditCardComp = MultiCreditCard as React.ComponentType<{
   mccSession?: unknown;
   walletPrimaryCurrency?: string;
   mail?: string;
+  readOnly?: boolean;
+  demoRatesToMxn?: Record<string, number>;
 }>;
 
 const today = new Date();
 
-function Wallet({ session }: DashboardProps): React.JSX.Element {
+function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
   const [user, setUser] = useState<DashboardUser>({});
@@ -233,33 +240,35 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
 
   //
   useEffect(() => {
-    // User
-    if (ccUser.status == "idle") {
-      dispatch((fetchUser as unknown as ThunkWithSession)(session));
-    }
-    // Wallet
-    if (ccWallet.status == "idle") {
-      dispatch((fetchWallet as unknown as ThunkWithSession)(session));
-    }
-    // Account
-    if (ccAccounts.status == "idle") {
-      dispatch((fetchAccounts as unknown as ThunkWithSession)(session));
-    }
-    //Categories
-    if (ccCategories.status == "idle") {
-      dispatch((fetchCategories as unknown as ThunkWithSession)(session));
-    }
-    // //Sub-categories
-    if (ccSubCategories.status == "idle") {
-      dispatch((fetchSubCat as unknown as ThunkWithSession)(session));
-    }
-    //Transactions
-    if (ccTransacciones.status == "idle" && session) {
-      dispatch((fetchTrans as unknown as ThunkWithSession)(session));
-    }
-    //Budget
-    if (ccBudgets.status == "idle" && session) {
-      dispatch((fetchBudget as unknown as ThunkWithSession)(session));
+    if (!readOnly) {
+      // User
+      if (ccUser.status == "idle") {
+        dispatch((fetchUser as unknown as ThunkWithSession)(session));
+      }
+      // Wallet
+      if (ccWallet.status == "idle") {
+        dispatch((fetchWallet as unknown as ThunkWithSession)(session));
+      }
+      // Account
+      if (ccAccounts.status == "idle") {
+        dispatch((fetchAccounts as unknown as ThunkWithSession)(session));
+      }
+      // Categories
+      if (ccCategories.status == "idle") {
+        dispatch((fetchCategories as unknown as ThunkWithSession)(session));
+      }
+      // Sub-categories
+      if (ccSubCategories.status == "idle") {
+        dispatch((fetchSubCat as unknown as ThunkWithSession)(session));
+      }
+      // Transactions
+      if (ccTransacciones.status == "idle" && session) {
+        dispatch((fetchTrans as unknown as ThunkWithSession)(session));
+      }
+      // Budgets
+      if (ccBudgets.status == "idle" && session) {
+        dispatch((fetchBudget as unknown as ThunkWithSession)(session));
+      }
     }
     //
     const start = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -539,9 +548,9 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
   );
 
   return (
-    <div className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
+    <div id={readOnly ? "demo-dashboard" : undefined} className="wallet h-full md:pl-[85px] md:pr-[5px] md:pb-[20px] relative">
       {user && wallet ? (
-        <div className="walllet-header ">
+        <div className="walllet-header" id={readOnly ? "demo-summary" : undefined}>
           <div className="wallet-header pt-5 pb-2 px-3 flex flex-col gap-4 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
             <div className="w-full">
               <h2 className="text-white text-3xl sm:text-6xl font-thin text-center">
@@ -618,22 +627,27 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
             </div>
           </div>
           <HistoryGate starts={[startDate]} className="content-wallet content-wallet-glass px-2 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px] flex flex-col gap-8">
-            <WalletAnalyzerTeaser timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined} />
-            <div className="multi-container lg:flex lg:item">
+            <WalletAnalyzerTeaser
+              timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
+              demoMode={readOnly}
+            />
+            <div id={readOnly ? "demo-accounts" : undefined} className="multi-container lg:flex lg:item">
               <MultiCreditCardComp
                 timePeriod={[startDate, endDate]}
                 acc={accounts}
                 user={user.fullName}
                 trans={transactions}
                 mail={session}
+                readOnly={readOnly}
+                demoRatesToMxn={demoRatesToMxn}
               />
             </div>
-            <LazyMount className="w-full">
+            <LazyMount id={readOnly ? "demo-categories" : undefined} className="w-full">
               <CategoryBreakdownCard timePeriod={[startDate, endDate]} />
             </LazyMount>
-            <div className="top-3-general-container w-full">
+            <div id={readOnly ? "demo-top" : undefined} className="top-3-general-container w-full">
               <LazyMount className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
-                <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]}/>
+                <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]} demoMode={readOnly} />
               </LazyMount>
             </div>
             <div className="wallet-total-col-container grid w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-2">
@@ -668,14 +682,18 @@ function Wallet({ session }: DashboardProps): React.JSX.Element {
                 </div>
               </div> */}
               {/* Budgets on the left, Transactions details on the right: each one takes half of the screen on desktop. */}
-              <LazyMount className="budget w-full min-w-0">
-                <BudgetCont bcSession={session} />
+              <LazyMount id={readOnly ? "demo-budgets" : undefined} className="budget w-full min-w-0">
+                <div className="flex h-full flex-col gap-4">
+                  <BudgetCont bcSession={session} readOnly={readOnly} />
+                  {readOnly && <DemoBudgetComparisonCard startDate={startDate} endDate={endDate} context="dashboard" />}
+                </div>
               </LazyMount>
               {/* The card is as tall as the budgets beside it (on desktop); its list scrolls inside the card. */}
-              <LazyMount className="movements relative w-full min-w-0 h-[640px] lg:h-auto">
+              <LazyMount id={readOnly ? "demo-movements" : undefined} className="movements relative w-full min-w-0 h-[640px] lg:h-auto">
                 <div className="gf-glass-card absolute inset-0 flex flex-col rounded-[32px] p-5">
                   <Movements
                     embedded
+                    readOnly={readOnly}
                     timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
                   />
                 </div>

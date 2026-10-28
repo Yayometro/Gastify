@@ -19,6 +19,7 @@ import WalletAnalyzerView from "./WalletAnalyzerView";
 export interface WalletAnalyzerProps {
   timePeriodFromFather?: (Date | string)[] | null;
   mail?: string;
+  demoRatesToMxn?: Record<string, number>;
 }
 
 export interface IncomeSourceItem {
@@ -133,7 +134,7 @@ function formatMonthLabel(date: Date): string {
 // means navigating the ‹ › stepper or month picker here doesn't get
 // stomped by the parent filter, and a later parent-filter change is
 // ignored once the user has picked their own month.
-function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): React.JSX.Element | null {
+function WalletAnalyzer({ timePeriodFromFather, mail, demoRatesToMxn }: WalletAnalyzerProps): React.JSX.Element | null {
   const text = useWalletText();
   const transactions: TransactionData[] = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY_ARRAY;
   const storedBudgets: BudgetData[] = useSelector((state: RootState) => state.budgetReducer?.data) || EMPTY_ARRAY;
@@ -162,7 +163,7 @@ function WalletAnalyzer({ timePeriodFromFather, mail }: WalletAnalyzerProps): Re
     [transactions, budgets, referenceMonth, topN, text]
   );
 
-  const fxExposure = useAccountsFxExposure(accounts, walletPrimaryCurrency, referenceMonth);
+  const fxExposure = useAccountsFxExposure(accounts, walletPrimaryCurrency, referenceMonth, demoRatesToMxn);
 
   const previousMonth = new Date(referenceMonth.getFullYear(), referenceMonth.getMonth() - 1, 1);
   const canGoNext = referenceMonth < new Date(today.getFullYear(), today.getMonth(), 1);

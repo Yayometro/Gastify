@@ -15,23 +15,25 @@ export interface SubCategoryListProps {
   sclSubCategory?: SubCategoryData[] | null;
   clUser?: UserData | Record<string, unknown> | null;
   sclCategories?: CategoryData[] | null;
+  readOnly?: boolean;
+  onSelectSubcategory?: (category: SubCategoryData) => void;
 }
 
-function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryListProps): React.JSX.Element {
+function SubCategoryList({ sclSubCategory, clUser, sclCategories, readOnly = false, onSelectSubcategory }: SubCategoryListProps): React.JSX.Element {
   const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<SubCategoryData>({});
 
   return (
     <div className="category-list-component w-full h-full flex gap-2 flex-wrap justify-center items-center">
-      <SelectCategories>
+      {!readOnly && <SelectCategories>
         <EditCategoryModal
           ecmMode={onEdition}
           ecmCategory={selectedCategory}
           ecmClose={(e: string | boolean) => setOnEdition(e)}
           ecmData={{ user: clUser, categories: sclCategories }}
         />
-      </SelectCategories>
+      </SelectCategories>}
       {
         !sclSubCategory ? (
           <div className="w-full h-full flex justify-center items-center">
@@ -50,15 +52,19 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryL
               title={`${subCategory?.name || "No name..."}`}
               key={`cc-clist-key-sub${subCategory._id}`}
             >
-              <div
+              <button
+                type="button"
                 style={{
                   backgroundColor: subCategory.color || "#ABABAB",
                   border: `10px solid ${(subCategory.fatherCategory as CategoryData | undefined)?.color || "#ABABAB"}`,
                   "--gf-tile-border": "10px",
                 } as React.CSSProperties}
-                className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] border-[10px] sm:border-[20px]  flex flex-col justify-center items-center rounded-full px-2 py-1 hover:brightness-90 cursor-pointer`}
+                aria-label={t("shared.demo.categories.openSubcategory", { p1: subCategory?.name || t("categories.thisOne") })}
+                className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] border-[10px] sm:border-[20px] flex flex-col justify-center items-center rounded-full px-2 py-1 transition ${readOnly ? "cursor-pointer hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200" : "hover:brightness-90 cursor-pointer"}`}
                 onClick={() => {
-                  if (subCategory.isDefaultSubCatego) {
+                  if (readOnly) {
+                    onSelectSubcategory?.(subCategory);
+                  } else if (subCategory.isDefaultSubCatego) {
                     runNotify(
                       "warning",
                       t("categories.defaultSubCategory", { p1: subCategory?.name || t("categories.thisOne") })
@@ -91,7 +97,7 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories }: SubCategoryL
                     {subCategory?.name || "No name..."}
                   </p>
                 </div>
-              </div>
+              </button>
             </Tooltip>
           ))
         )

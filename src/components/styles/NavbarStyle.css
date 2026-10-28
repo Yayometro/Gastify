@@ -43,6 +43,9 @@
     top: 0%;
     left: 120%;
     display: inline;
+    z-index: 1100;
+    white-space: nowrap;
+    pointer-events: none;
     background-color: rgb(91, 45, 191);
     color: rgb(250, 244, 255);
     padding: 5px;
@@ -91,7 +94,9 @@
     gap: clamp(2px, 0.9vh, 16px) !important;
     padding-top: clamp(8px, 2vh, 32px) !important;
     padding-bottom: clamp(8px, 2vh, 48px) !important;
-    overflow: hidden;
+    /* The desktop rail's hover labels sit outside each item; clipping them here
+       made the text appear trapped inside the navigation capsule. */
+    overflow: visible;
   }
   .gf-nav-item > a,
   .gf-nav-item > button {

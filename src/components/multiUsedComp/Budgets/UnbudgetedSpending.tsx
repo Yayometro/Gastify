@@ -40,9 +40,10 @@ export interface MovementRowProps {
   movement: UnbudgetedMovement;
   onEdit: (movement: UnbudgetedMovement) => void;
   onDelete: (movementId?: string) => void;
+  readOnly?: boolean;
 }
 
-function MovementRow({ movement, onEdit, onDelete }: MovementRowProps): React.JSX.Element {
+function MovementRow({ movement, onEdit, onDelete, readOnly = false }: MovementRowProps): React.JSX.Element {
   const t = useT();
   return (
     <div className="flex items-center justify-between gap-3 gf-glass-row rounded-2xl px-3 py-2">
@@ -58,7 +59,7 @@ function MovementRow({ movement, onEdit, onDelete }: MovementRowProps): React.JS
       <p className="text-xs font-bold text-red-500 shrink-0">
         {usdFormatChanger(movement.amount || 0)}
       </p>
-      <div className="flex items-center gap-1 shrink-0">
+      {!readOnly && <div className="flex items-center gap-1 shrink-0">
         <button
           type="button"
           onClick={() => onEdit(movement)}
@@ -75,7 +76,7 @@ function MovementRow({ movement, onEdit, onDelete }: MovementRowProps): React.JS
         >
           <CategoIcon type="MdDelete" siz={15} />
         </button>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -153,6 +154,7 @@ export interface UnbudgetedSpendingModalProps {
   onAddToBudget: (group: CoverageGroup, budget: BudgetData) => void;
   onCreateProject: (group: CoverageGroup) => void;
   onAddToProject: (group: CoverageGroup, project: BudgetData) => void | Promise<void>;
+  readOnly?: boolean;
 }
 
 export function UnbudgetedSpendingModal({
@@ -166,6 +168,7 @@ export function UnbudgetedSpendingModal({
   onAddToBudget,
   onCreateProject,
   onAddToProject,
+  readOnly = false,
 }: UnbudgetedSpendingModalProps): React.JSX.Element {
   const t = useT();
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
@@ -190,6 +193,7 @@ export function UnbudgetedSpendingModal({
   const handleDelete = (movementId?: string) => setDeletingMovementId(movementId);
 
   const confirmDeleteMovement = async () => {
+    if (readOnly) return;
     setIsDeleting(true);
     try {
       const res = await toFetch.post(`general-data/transactions/remove-transaction/${deletingMovementId}`);
@@ -293,11 +297,12 @@ export function UnbudgetedSpendingModal({
                                   movement={movement as unknown as UnbudgetedMovement}
                                   onEdit={setEditingMovement}
                                   onDelete={handleDelete}
+                                  readOnly={readOnly}
                                 />
                               ))}
                             </div>
 
-                            <div className="bg-gf-accent-soft-bg border border-gf-border rounded-2xl p-3 mb-3">
+                            {!readOnly && <div className="bg-gf-accent-soft-bg border border-gf-border rounded-2xl p-3 mb-3">
                               <p className="text-xs font-bold text-purple-300 mb-1">{t("budgets.project.treatTitle")}</p>
                               <p className="text-[10px] text-gf-text-muted mb-2">{t("budgets.project.groupHelp")}</p>
                               <div className="flex flex-col sm:flex-row gap-2">
@@ -307,13 +312,13 @@ export function UnbudgetedSpendingModal({
                                   <button type="button" disabled={!selectedProjectId} onClick={() => { const selected = projectBudgets.find((project) => String(project._id) === String(selectedProjectId)); if (selected) onAddToProject(group, selected); }} className="rounded-full border border-purple-300 text-purple-300 text-xs font-bold px-3 py-2 disabled:opacity-40">{t("budgets.add")}</button>
                                 </div>}
                               </div>
-                            </div>
+                            </div>}
 
                             {group.type === "uncategorized" ? (
                               <div className="bg-amber-500/15 text-amber-400 rounded-xl p-3 text-xs">
                                 {t("budgets.unbudgeted.assignFirst")}
                               </div>
-                            ) : (
+                            ) : !readOnly ? (
                               <div className="flex flex-col sm:flex-row gap-2">
                                 <button
                                   type="button"
@@ -358,7 +363,7 @@ export function UnbudgetedSpendingModal({
                                   </div>
                                 )}
                               </div>
-                            )}
+                            ) : null}
                           </div>
                         )}
                       </div>
@@ -380,7 +385,7 @@ export function UnbudgetedSpendingModal({
                   {showCatalog && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {uncoveredCatalogCategories.map((category) => (
-                        <button
+                        readOnly ? <span key={category._id as string} className="bg-gf-surface border border-gf-border text-gf-text-muted rounded-full px-3 py-1.5 text-xs">{category.name}</span> : <button
                           type="button"
                           key={category._id as string}
                           onClick={() =>
@@ -409,10 +414,10 @@ export function UnbudgetedSpendingModal({
           </div>
         }
       />
-      {editingMovement && (
+      {!readOnly && editingMovement && (
         <EditSingleTransModal trans={editingMovement as unknown as EditSingleTransItem} onClose={() => setEditingMovement(null)} />
       )}
-      <Modal
+      {!readOnly && <Modal
         className="gf-antd-modal-glass"
         open={!!deletingMovementId}
         zIndex={20000}
@@ -426,7 +431,7 @@ export function UnbudgetedSpendingModal({
         title={<span className="text-red-400 font-semibold flex items-center gap-1">{t("budgets.movement.confirmTitle")}</span>}
       >
         <p className="text-gf-text-muted text-sm">{t("budgets.movement.confirmText")}</p>
-      </Modal>
+      </Modal>}
     </>
   );
 }

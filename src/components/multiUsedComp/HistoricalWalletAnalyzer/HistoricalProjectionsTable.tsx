@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
-import useGetUserSession from "@/hooks/useGetUserSession";
 import useProjectionTable from "@/hooks/useProjectionTable";
 import { getYearEndBalance } from "@/helpers/transformers/projectionsChange";
 import ProjectionsView from "../Projections/ProjectionsView";
@@ -84,6 +83,9 @@ const TypedProjectionsView = ProjectionsView as unknown as React.ComponentType<P
 
 export interface HistoricalProjectionsTableProps {
   periodState: PeriodStateProps;
+  readOnly?: boolean;
+  email?: string | null;
+  demoRatesToMxn?: Record<string, number>;
 }
 
 // Slices buildYearProjectionTable's output - via useProjectionTable, the
@@ -101,11 +103,10 @@ export interface HistoricalProjectionsTableProps {
 // modal's save handlers are tied to a single specific year, and History
 // can legitimately span two, so wiring it up here would need real new
 // design work beyond "show the numbers for this range."
-function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableProps): React.JSX.Element | null {
+function HistoricalProjectionsTable({ periodState, readOnly = false, email, demoRatesToMxn }: HistoricalProjectionsTableProps): React.JSX.Element | null {
   const { APP_INFO } = useInfo();
   const t = useT();
   const { timePeriod, getValueFromSelecter, timePeriodsForSelecter, handleRangeDate } = periodState;
-  const { email } = useGetUserSession();
   const { transacciones, budgets, accounts, wallet } = useGetDataFromProvider() as DataFromProvider;
   const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
 
@@ -114,22 +115,24 @@ function HistoricalProjectionsTable({ periodState }: HistoricalProjectionsTableP
   const secondYear = yearB && yearB !== yearA ? yearB : null;
 
   const tableA = useProjectionTable({
-    mail: email,
+    mail: readOnly ? null : email,
     year: yearA,
     transactions: transacciones,
     budgets,
     accounts,
     walletPrimaryCurrency,
+    demoRatesToMxn,
   }) as unknown as ProjectionTableResult;
   // The second year picks up where the first one closes, not from today's balance again.
   const tableB = useProjectionTable({
-    mail: email,
+    mail: readOnly ? null : email,
     year: secondYear,
     transactions: transacciones,
     budgets,
     accounts,
     walletPrimaryCurrency,
     startingBalanceOverride: getYearEndBalance(tableA.rows),
+    demoRatesToMxn,
   }) as unknown as ProjectionTableResult;
 
   const rows = useMemo(() => {

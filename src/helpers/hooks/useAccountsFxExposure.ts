@@ -35,7 +35,8 @@ function previousMonthEnd(referenceDate?: Date | string | number | null): Date {
 export function useAccountsFxExposure(
   accounts?: AccountData[] | null,
   walletPrimaryCurrency?: string,
-  referenceDate?: Date | string | number | null
+  referenceDate?: Date | string | number | null,
+  offlineRatesToMxn?: Record<string, number>
 ): FxExposureState {
   const foreignAccounts = (accounts || []).filter(
     (a) => (a?.currency || walletPrimaryCurrency) !== walletPrimaryCurrency
@@ -52,6 +53,16 @@ export function useAccountsFxExposure(
   useEffect(() => {
     if (currencies.length === 0) {
       setState({ rows: [], loading: false });
+      return;
+    }
+    if (offlineRatesToMxn) {
+      const targetRate = offlineRatesToMxn[walletPrimaryCurrency || "MXN"];
+      const rows = currencies.flatMap((currency): FxExposureRow[] => {
+        const sourceRate = offlineRatesToMxn[currency];
+        if (!sourceRate || !targetRate) return [];
+        return [{ currency, nativeAmount: nativeByCurrency[currency], valueInPrimary: nativeByCurrency[currency] * sourceRate / targetRate, changePct: null }];
+      });
+      setState({ rows, loading: false });
       return;
     }
     let cancelled = false;
@@ -103,7 +114,7 @@ export function useAccountsFxExposure(
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, walletPrimaryCurrency]);
+  }, [key, walletPrimaryCurrency, offlineRatesToMxn]);
 
   return state;
 }

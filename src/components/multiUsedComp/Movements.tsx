@@ -178,6 +178,7 @@ export interface DuplicatePairItem {
 export interface MovementsProps {
   timePeriodFromFather?: [Date, Date] | (Date | string | number)[] | null;
   mail?: string;
+  readOnly?: boolean;
   // Inside the dashboard's card: no violet header and no fixed max height; the list scrolls inside the card's box.
   embedded?: boolean;
   [key: string]: unknown;
@@ -185,7 +186,7 @@ export interface MovementsProps {
 
 const today = new Date();
 
-function MovementsContent({ timePeriodFromFather, mail, embedded = false }: MovementsProps): React.JSX.Element {
+function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOnly = false }: MovementsProps): React.JSX.Element {
   const t = useT();
   const { APP_INFO } = useInfo();
   const tr = useT();
@@ -276,17 +277,19 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   const timePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(today.getFullYear());
 
   useEffect(() => {
-    if (reduxAllTrans.status == "idle") {
-      reduxDispartcher(fetchTrans(mail));
-    }
-    if (reduxWallet.status == "idle") {
-      reduxDispartcher(fetchWallet(mail));
-    }
-    if (reduxCategories.status == "idle") {
-      reduxDispartcher(fetchCategories(mail));
-    }
-    if (reduxSubCategories.status == "idle") {
-      reduxDispartcher(fetchSubCat(mail));
+    if (!readOnly) {
+      if (reduxAllTrans.status == "idle") {
+        reduxDispartcher(fetchTrans(mail));
+      }
+      if (reduxWallet.status == "idle") {
+        reduxDispartcher(fetchWallet(mail));
+      }
+      if (reduxCategories.status == "idle") {
+        reduxDispartcher(fetchCategories(mail));
+      }
+      if (reduxSubCategories.status == "idle") {
+        reduxDispartcher(fetchSubCat(mail));
+      }
     }
   }, []);
 
@@ -499,6 +502,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   // Account misrepresenting a real gain/loss - both linked legs are always
   // removed together (plan section 13).
   const handleTransferRemove = async (transferGroupId: string): Promise<void> => {
+    if (readOnly) return;
     try {
       const linkedIds = (rdxTransactions || [])
         .filter((t) => t.transferGroupId === transferGroupId)
@@ -528,6 +532,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   };
 
   const handleTransactionRemove = async (id: string): Promise<void> => {
+    if (readOnly) return;
     const trans = getTransById(id);
     if (trans?.transferGroupId) {
       await handleTransferRemove(trans.transferGroupId);
@@ -560,6 +565,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   };
 
   const handleRemoveManyTransactions = async (transs: string[]): Promise<void> => {
+    if (readOnly) return;
     try {
       if (transs.length === 0) {
         runNotify("error", tr("movements.selection.needTwo"));
@@ -599,6 +605,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   };
 
   const handleTransEdit = (tra: MovementItem): void => {
+    if (readOnly) return;
     if (tra?.transferGroupId) {
       // Editing a transfer/exchange leg would silently desync it from its
       // counterpart leg - point the user at delete + recreate instead of
@@ -614,6 +621,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
   };
 
   const handleMultiTransEdit = (ids: string[]): void => {
+    if (readOnly) return;
     const editMultiTransMo = (
       <TypedEditMultipleTransModal
         hidden={editMultiModal}
@@ -888,7 +896,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                 <b className="mx-1">{timePeriod[1] ? getDateInYearMonthDay(timePeriod[1]) : "—"}</b>
               </span>
               <div className="filters flex items-center justify-center gap-2 flex-wrap">
-                <div
+                {!readOnly && <div
                   className={`clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer ${
                     isSelectionMode ? "text-purple-500" : ""
                   }`}
@@ -897,7 +905,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                   <p className="pr-2">{tr("movements.select.label", { p1: isSelectionMode ? "ON" : "" })}</p>
                   <InfoTip info={APP_INFO.seleccionar_movimientos} />
                   <HiMiniCursorArrowRipple size={15} />
-                </div>
+                </div>}
                 <Tooltip title={tr("movements.filter.dateTip")}>
                   <div className="text-gf-text w-[10px]">
                     <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
@@ -1007,7 +1015,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     </button>
                   )}
                 </div>
-                <Tooltip title={tr("movements.dup.findTip")}>
+                {!readOnly && <Tooltip title={tr("movements.dup.findTip")}>
                   <div
                     className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter] ${dupMode ? "text-orange-500 font-medium" : ""}`}
                     onClick={() => setDupFinderOpen(!dupFinderOpen)}
@@ -1015,8 +1023,8 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     <MdOutlineFindInPage size={15} />
                     <p>{tr("movements.dup.find", { p1: dupMode ? ` (${dupCount})` : "" })}</p>
                   </div>
-                </Tooltip>
-                <Tooltip title={tr("movements.export.tip")}>
+                </Tooltip>}
+                {!readOnly && <Tooltip title={tr("movements.export.tip")}>
                   <div
                     className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter] ${exportOpen ? "text-purple-500 font-medium" : ""}`}
                     onClick={() => setExportOpen(!exportOpen)}
@@ -1024,7 +1032,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                     <MdOutlineFileDownload size={15} />
                     <p>{tr("movements.export.button")}</p>
                   </div>
-                </Tooltip>
+                </Tooltip>}
                 <div
                   className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter]"
                   onClick={handleCleanFilter}
@@ -1359,7 +1367,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                 </div>
               </div>
             </div>
-            {isSelectionMode && (
+            {!readOnly && isSelectionMode && (
               <div className="selectionHeader flex flex-col gap-1 py-1.5 bg-gf-accent-soft-bg text-[13px] rounded-xl px-2">
                 {/* Row 1: selection controls */}
                 <div className="flex gap-2 justify-between items-center">
@@ -1436,7 +1444,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
             )}
 
             {/* Quick edit modal */}
-            {quickEditField && (
+            {!readOnly && quickEditField && (
               <QuickEditModal
                 field={quickEditField}
                 transIds={selectedTrans}
@@ -1572,7 +1580,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                           {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
                         </div>
                       </div>
-                    <div className="btns flex justify-between gap-2">
+                    {!readOnly && <div className="btns flex justify-between gap-2">
                       <button
                         onClick={() => showRemoveModal("", movement._id)}
                         className="hover:text-gf-text-muted micro-pulse"
@@ -1585,7 +1593,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false }: Move
                       >
                         <CategoIcon type={"MdOutlineCreate"} />
                       </button>
-                    </div>
+                    </div>}
                   </div>
                 </div>
               </div>

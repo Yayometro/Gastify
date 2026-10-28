@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import fetcher from "@/helpers/fetcher";
-import useGetUserSession from "@/hooks/useGetUserSession";
 import useModal from "@/hooks/useModalBasic";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
@@ -134,7 +133,13 @@ function CategoryCompareRow({ index, item, currency, onClick }: CategoryCompareR
 
 export interface HistoricalWalletAnalyzerProps {
   periodState: PeriodStateProps;
+  readOnly?: boolean;
+  email?: string | null;
+  demoBudgets?: BudgetData[];
+  demoRatesToMxn?: Record<string, number>;
 }
+
+const EMPTY_DEMO_BUDGETS: BudgetData[] = [];
 
 // History's Wallet Analyzer - the arbitrary-period sibling of the
 // Dashboard's own single-month one. Always renders the full single-period
@@ -147,20 +152,20 @@ export interface HistoricalWalletAnalyzerProps {
 // MonthlyChampionsModal, WeekdaySpendingDetailModal, ChangePill/RankRow/
 // buildSpendPatternAnalysis) so both Wallet Analyzers speak the exact same
 // visual language without a second copy of any of them.
-function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps): React.JSX.Element {
+function HistoricalWalletAnalyzer({ periodState, readOnly = false, email, demoBudgets, demoRatesToMxn }: HistoricalWalletAnalyzerProps): React.JSX.Element {
   const text = useWalletText();
   const { APP_INFO } = useInfo();
   const tr = useT();
   const { timePeriod, comparePeriod, compareEnabled, labelA, labelB, timePeriodsForSelecter } = periodState;
-  const [budgets, setBudgets] = useState<BudgetData[]>([]);
+  const [fetchedBudgets, setFetchedBudgets] = useState<BudgetData[]>([]);
   const [topN, setTopN] = useState<number>(6);
-  const { email } = useGetUserSession();
+  const budgets = readOnly ? demoBudgets || EMPTY_DEMO_BUDGETS : fetchedBudgets;
   const { accounts } = useGetDataFromProvider() as { accounts?: AccountData[] };
   const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
   const walletPrimaryCurrency =
     (useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) as string | undefined) || "MXN";
   const { close, modalContent, renderModal, handleClose } = useModal();
-  const fxExposure = useAccountsFxExposure(accounts, walletPrimaryCurrency, timePeriod?.[1]);
+  const fxExposure = useAccountsFxExposure(accounts, walletPrimaryCurrency, timePeriod?.[1], demoRatesToMxn);
 
   const [activeInsight, setActiveInsight] = useState<InsightDetailItem | null>(null);
   const [championsModalKind, setChampionsModalKind] = useState<ChampionsModalKind>(null);
@@ -170,16 +175,16 @@ function HistoricalWalletAnalyzer({ periodState }: HistoricalWalletAnalyzerProps
   // archived budgets, since an archived budget's past months still belong
   // to whichever period they fall into.
   useEffect(() => {
-    if (!email) return;
+    if (readOnly || !email) return;
     const toFetch = fetcher();
     toFetch
       .post("general-data/budget/get-historical", email)
       .then((res: unknown) => {
         const budgetRes = res as { ok?: boolean; data?: BudgetData[] } | undefined;
-        if (budgetRes?.ok) setBudgets(budgetRes.data || []);
+        if (budgetRes?.ok) setFetchedBudgets(budgetRes.data || []);
       })
       .catch(() => {});
-  }, [email]);
+  }, [email, readOnly]);
 
   const transactions: TransactionData[] = useMemo(() => ccTransacciones.data || [], [ccTransacciones.data]);
   const transactionsById = useMemo(() => {

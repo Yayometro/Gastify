@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { translate, createTranslator } from "./translate";
-import { resolveLocale, localeFromAcceptLanguage, DEFAULT_LOCALE } from "./locales";
+import { resolveLocale, localeFromAcceptLanguage, localeFromCountry, DEFAULT_LOCALE } from "./locales";
 import { formatDate, formatNumber } from "./format";
 import { NAMESPACES, catalogsFor, loadMessages } from "./catalogs";
 
@@ -37,6 +37,15 @@ describe("resolveLocale and Accept-Language", () => {
     expect(resolveLocale("es-MX")).toBe("es");
     expect(resolveLocale("fr-FR")).toBe(DEFAULT_LOCALE);
     expect(resolveLocale(undefined)).toBe("es");
+  });
+
+  it("maps Vercel's country code to Spanish or English and leaves unknown codes to the browser fallback", () => {
+    expect(localeFromCountry("MX")).toBe("es");
+    expect(localeFromCountry("es")).toBe("es");
+    expect(localeFromCountry("US")).toBe("en");
+    expect(localeFromCountry("JP")).toBe("en");
+    expect(localeFromCountry(null)).toBeNull();
+    expect(localeFromCountry("unknown")).toBeNull();
   });
 
   it("picks the first language the person can read from Accept-Language, by quality", () => {

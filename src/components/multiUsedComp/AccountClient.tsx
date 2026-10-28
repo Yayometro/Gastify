@@ -42,6 +42,7 @@ const TypedDisplayerCategoryTreemap = DisplayerCategoryTreemap as React.Componen
 
 export interface AccountClientProps {
   acSession?: string;
+  readOnly?: boolean;
 }
 
 export interface AccountTransaction {
@@ -73,7 +74,7 @@ export interface ExtendedAccount extends AccountData {
   [key: string]: unknown;
 }
 
-function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
+function AccountClient({ acSession, readOnly = false }: AccountClientProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
   const [onEdition, setOnEdition] = useState<EditAccountModalMode>(false);
@@ -116,24 +117,24 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
   // START USE EFFECTS
   useEffect(() => {
     // User
-    if (ccUser.status === "idle") {
+    if (!readOnly && ccUser.status === "idle") {
       dispatch(fetchUser(acSession));
     }
     // Wallet
-    if (ccWallet.status === "idle") {
+    if (!readOnly && ccWallet.status === "idle") {
       dispatch(fetchWallet(acSession));
     }
     // Account
-    if (ccAccounts.status === "idle") {
+    if (!readOnly && ccAccounts.status === "idle") {
       dispatch(fetchAccounts(acSession));
     }
     // Transactions
-    if (ccTransacciones.status === "idle") {
+    if (!readOnly && ccTransacciones.status === "idle") {
       // console.log('first')
       dispatch(fetchTrans(acSession));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [readOnly, dispatch, acSession, ccUser.status, ccWallet.status, ccAccounts.status, ccTransacciones.status]);
   // Use effect for range
   useEffect(() => {
     const todayDate = new Date();
@@ -295,7 +296,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
             </Tooltip>
           </div>
           <div className="filters flex items-center justify-center pt-2">
-            <PrimaryCurrencySelector pcsWallet={walletData} />
+            {!readOnly && <PrimaryCurrencySelector pcsWallet={walletData} />}
           </div>
           <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2">
             <h1 className="3xl w-full "></h1>
@@ -307,6 +308,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                   walletPrimaryCurrency={walletData?.primaryCurrency}
                   mail={acSession}
                   timePeriod={startDate && endDate ? [startDate, endDate] : null}
+                  readOnly={readOnly}
                 />
             </div>
             <div className="ac-dashboard-client w-full-h-full">
@@ -318,8 +320,9 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                 </div>
               ) : (
                 <div className="general-content-acc-ac w-full">
-                    <EditAccountModal eamMode={onEdition} eamAccount={finalAccounts[carruselCurrent] || null} eamWallet={walletData} eamClose={e => setOnEdition(e)}
+                    {!readOnly && <EditAccountModal eamMode={onEdition} eamAccount={finalAccounts[carruselCurrent] || null} eamWallet={walletData} eamClose={e => setOnEdition(e)}
                     />
+                    }
                   <div className="w-full flex justify-center items-center gap-3">
                     <button
                       type="button"
@@ -357,7 +360,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                       />
                     </button>
                   </div>
-                  <div className="w-full flex justify-center items-center gap-2 mb-6">
+                  {!readOnly && <div className="w-full flex justify-center items-center gap-2 mb-6">
                     <div
                         className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
                         onClick={() => setOnEdition("edition")}
@@ -376,7 +379,7 @@ function AccountClient({ acSession }: AccountClientProps): React.JSX.Element {
                           <CategoIcon type={`MdAddCircleOutline`} siz={25} />
                         </div>
                     </div>
-                  </div>
+                  </div>}
                   <div className="sub-resume-transactions-cont-tabs w-full h-full">
                     {
                       finalAccounts.length <= 0 ? (

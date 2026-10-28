@@ -122,6 +122,7 @@ export interface BudgetDetailModalProps {
   endDate?: Date | string | null;
   onClose: () => void;
   onEdit?: ((budget: BudgetDetailItem) => void) | null;
+  readOnly?: boolean;
 }
 
 function BudgetDetailModal({
@@ -131,6 +132,7 @@ function BudgetDetailModal({
   endDate,
   onClose,
   onEdit,
+  readOnly = false,
 }: BudgetDetailModalProps): React.JSX.Element | null {
   const { APP_INFO } = useInfo();
   const tr = useT();
@@ -542,7 +544,7 @@ function BudgetDetailModal({
                               {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
                             </div>
                           </div>
-                          <div className="btns flex justify-end gap-2 mt-1.5">
+                          {!readOnly && <div className="btns flex justify-end gap-2 mt-1.5">
                             <button
                               type="button"
                               onClick={() => handleRemoveTrans(movement._id)}
@@ -559,7 +561,7 @@ function BudgetDetailModal({
                             >
                               <CategoIcon type="MdOutlineCreate" />
                             </button>
-                          </div>
+                          </div>}
                         </div>
                       </div>
                     ))}
@@ -572,7 +574,7 @@ function BudgetDetailModal({
               </div>
 
               {/* Action Bar: Edit Budget Button */}
-              <div className="pt-2 border-t border-gf-border">
+              {!readOnly && <div className="pt-2 border-t border-gf-border">
                 <button
                   type="button"
                   onClick={() => {
@@ -584,12 +586,12 @@ function BudgetDetailModal({
                   <UniversalCategoIcon type="md/MdEdit" siz={18} />
                   <span>{tr("budgets.edit")}</span>
                 </button>
-              </div>
+              </div>}
             </div>
           </div>
         }
       />
-      {editingTrans && (
+      {!readOnly && editingTrans && (
         <TypedEditSingleTransModal
           key={editKey}
           trans={editingTrans}

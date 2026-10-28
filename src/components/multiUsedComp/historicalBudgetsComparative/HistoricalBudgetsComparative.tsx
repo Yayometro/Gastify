@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
-import useGetUserSession from "@/hooks/useGetUserSession";
 import useModal from "@/hooks/useModalBasic";
 import fetcher from "@/helpers/fetcher";
 import {
@@ -20,6 +19,9 @@ import type { PeriodComparisonState } from "@/hooks/usePeriodComparison";
 
 export interface HistoricalBudgetsComparativeProps {
   periodState: PeriodComparisonState;
+  readOnly?: boolean;
+  email?: string | null;
+  demoBudgets?: BudgetHistoricalInput[];
 }
 
 export interface HistoricalBudgetsApiResponse {
@@ -44,13 +46,16 @@ export interface HistoricalBudgetsApiResponse {
 // (period-vs-period budget changes live in HistoricalWalletAnalyzer instead).
 function HistoricalBudgetsComparative({
   periodState,
+  readOnly = false,
+  email,
+  demoBudgets,
 }: HistoricalBudgetsComparativeProps): React.JSX.Element {
   const text = useWalletText();
   const { timePeriod, timePeriodsForSelecter, getValueFromSelecter, handleRangeDate } = periodState;
-  const [budgets, setBudgets] = useState<BudgetHistoricalInput[]>([]);
+  const [fetchedBudgets, setFetchedBudgets] = useState<BudgetHistoricalInput[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { email } = useGetUserSession();
+  const budgets = readOnly ? demoBudgets || [] : fetchedBudgets;
   const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
   const walletPrimaryCurrency: string =
     useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
@@ -63,17 +68,17 @@ function HistoricalBudgetsComparative({
   }
 
   useEffect(() => {
-    if (!email) return;
+    if (readOnly || !email) return;
     setIsLoading(true);
     const toFetch = fetcher();
     toFetch
       .post("general-data/budget/get-historical", email)
       .then((res: HistoricalBudgetsApiResponse) => {
-        if (res.ok) setBudgets(res.data || []);
+        if (res.ok) setFetchedBudgets(res.data || []);
         setIsLoading(false);
       })
       .catch(() => setIsLoading(false));
-  }, [email]);
+  }, [email, readOnly]);
 
   const rows =
     ccTransacciones.data &&

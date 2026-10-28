@@ -162,6 +162,10 @@ export interface UseProjectionTableOptions {
   // Opening balance to use instead of the live sum of the accounts - for a
   // second calendar year chained after the first one's closing balance.
   startingBalanceOverride?: number | null;
+  /** Offline reference rates, expressed as units of MXN per one unit of currency. */
+  demoRatesToMxn?: Record<string, number>;
+  /** Fictional starting data for the public demo; never fetched or persisted. */
+  demoProjectionBaseline?: ProjectionBaselineData | null;
 }
 
 export interface UseProjectionTableReturn {
@@ -206,14 +210,19 @@ export default function useProjectionTable({
   accounts,
   walletPrimaryCurrency,
   startingBalanceOverride,
+  demoRatesToMxn,
+  demoProjectionBaseline,
 }: UseProjectionTableOptions): UseProjectionTableReturn {
   const [incomeSources, setIncomeSources] = useState<IncomeSourceItem[]>([]);
   const [projectionSettings, setProjectionSettings] = useState<ProjectionSettingsData | null>(null);
-  const [settingsLoading, setSettingsLoading] = useState<boolean>(Boolean(year));
-  const [projectionBaseline, setProjectionBaseline] = useState<ProjectionBaselineData | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState<boolean>(Boolean(year && mail));
+  const [projectionBaseline, setProjectionBaseline] = useState<ProjectionBaselineData | null>(demoProjectionBaseline ?? null);
 
   const loadSettings = async () => {
-    if (!mail || !year) return;
+    if (!mail || !year) {
+      setSettingsLoading(false);
+      return;
+    }
     setSettingsLoading(true);
     try {
       const toFetch = fetcher();
@@ -379,6 +388,12 @@ export default function useProjectionTable({
           total += acc.amount || 0;
           continue;
         }
+        if (demoRatesToMxn) {
+          const sourceRate = demoRatesToMxn[accountCurrency];
+          const targetRate = demoRatesToMxn[walletPrimaryCurrency || "MXN"];
+          if (sourceRate && targetRate) total += (acc.amount || 0) * sourceRate / targetRate;
+          continue;
+        }
         try {
           const res = await toFetch.post("general-data/fx/quote", {
             amountMinor: majorToMinor(acc.amount || 0, accountCurrency),
@@ -395,7 +410,7 @@ export default function useProjectionTable({
     return () => {
       cancelled = true;
     };
-  }, [year, accounts, walletPrimaryCurrency]);
+  }, [year, accounts, walletPrimaryCurrency, demoRatesToMxn]);
 
   const today = new Date();
   const rowsWithBalance = useMemo(() => {

@@ -18,6 +18,7 @@ import EmptyModule from "../EmptyModule";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import useBudgetsInPrimaryCurrency from "@/hooks/money/useBudgetsInPrimaryCurrency";
 import { getStoredBudget } from "@/helpers/transformers/budgetCurrency";
+import { normalizeBudgetCategoryCatalog } from "@/helpers/transformers/budgetCategoryCatalog";
 import BudgetBarRow, { type BudgetBarRowBudgetItem } from "./BudgetBarRow";
 import BudgetEditModal, {
   type BudgetModalItem,
@@ -51,7 +52,6 @@ import { updateTransaction, type TransactionData } from "@/lib/features/transacc
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { UserData } from "@/lib/features/userSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
-import type { CategoryData } from "@/lib/features/categoriesSlice";
 import type { AppDispatch } from "@/lib/store";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
@@ -59,6 +59,7 @@ import { useT, useInfo } from "@/i18n/client";
 
 export interface BudgetsClientProps {
   mcSession?: string | null;
+  readOnly?: boolean;
 }
 
 export type UnbudgetedGroup = CoverageGroup;
@@ -66,7 +67,7 @@ export type UnbudgetedGroup = CoverageGroup;
 const today = new Date();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
+function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
   const { transacciones, budgets, categories, user, wallet, loading } = useGetDataFromProvider();
@@ -101,14 +102,16 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   );
   const projectBudgets = useMemo(() => activeBudgets.filter(isProjectBudget), [activeBudgets]);
 
+  const categoryCatalog = useMemo(() => normalizeBudgetCategoryCatalog(categories), [categories]);
+
   const coverage = useMemo(
     () => getBudgetCoverage({ transactions: transacciones as TransactionData[], budgets: [...spendingBudgets, ...projectBudgets], startDate, endDate }),
     [transacciones, spendingBudgets, projectBudgets, startDate, endDate]
   );
 
   const uncoveredCatalogCategories = useMemo(
-    () => getUncoveredCatalogCategories(categories as unknown as CategoryData[], spendingBudgets),
-    [categories, spendingBudgets]
+    () => getUncoveredCatalogCategories(categoryCatalog, spendingBudgets),
+    [categoryCatalog, spendingBudgets]
   );
 
   const actualByBudgetId = useMemo(() => {
@@ -182,6 +185,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   };
 
   const openCreate = (): void => {
+    if (readOnly) return;
     setEditingBudget({ user: (user as UserData)?._id, wallet: (wallet as WalletData)?._id });
     setReturnToDetailBudget(null);
     setReturnToUnbudgeted(false);
@@ -192,12 +196,14 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   };
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const openEdit = (budget: BudgetModalItem): void => {
+    if (readOnly) return;
     setSelectedDetailBudget(null);
     setReturnToDetailBudget(null);
     setEditingBudget(getStoredBudget(budget as BudgetData) as BudgetModalItem);
     setModalMode("edition");
   };
   const openEditFromDetail = (budget: BudgetDetailItem | ProjectBudgetItem): void => {
+    if (readOnly) return;
     setSelectedDetailBudget(null);
     setReturnToDetailBudget(budget as BudgetDetailItem);
     setEditingBudget(getStoredBudget(budget as unknown as BudgetData) as BudgetModalItem);
@@ -233,6 +239,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   });
 
   const openCreateFromUnbudgeted = (group: UnbudgetedGroup): void => {
+    if (readOnly) return;
     setShowUnbudgeted(false);
     setReturnToUnbudgeted(true);
     setReturnToDetailBudget(null);
@@ -247,6 +254,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   };
 
   const openCreateProjectFromUnbudgeted = (group: UnbudgetedGroup): void => {
+    if (readOnly) return;
     const linkedTags = new Map<string, unknown>();
     (group.movements || []).forEach((movement) => ((movement as unknown as { tags?: Array<{ _id?: string; [key: string]: unknown }> }).tags || []).forEach((tag) => {
       if (tag?._id) linkedTags.set(String(tag._id), tag);
@@ -267,6 +275,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   };
 
   const addGroupToProject = async (group: UnbudgetedGroup, project: BudgetData): Promise<void> => {
+    if (readOnly) return;
     try {
       const results = await Promise.all((group.movements || []).map((transaction) =>
         toFetch.post("general-data/transactions/link-budget", { transactionId: transaction._id as string, budgetId: project._id })
@@ -283,6 +292,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
   };
 
   const openAddToBudget = (group: UnbudgetedGroup, budget: BudgetData): void => {
+    if (readOnly) return;
     setShowUnbudgeted(false);
     setReturnToUnbudgeted(true);
     setReturnToDetailBudget(null);
@@ -297,13 +307,13 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
           {t("budgets.title")}
         </h1>
       </div>
-      <div className="w-full flex items-center justify-center pt-2">
+      {!readOnly && <div className="w-full flex items-center justify-center pt-2">
         <Tooltip title={t("budgets.currencyNote")}>
           <div>
             <PrimaryCurrencySelector pcsWallet={wallet as PrimaryCurrencySelectorWallet} />
           </div>
         </Tooltip>
-      </div>
+      </div>}
       <div className="content-profile-cont w-full h-full content-wallet-glass items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl px-4 sm:px-8 py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
@@ -331,13 +341,13 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
               </div>
             </Tooltip>
           </div>
-          <div
+          {!readOnly && <div
             className="flex items-center gap-2 gf-glass-button text-white rounded-full px-4 py-2 cursor-pointer"
             onClick={openCreate}
           >
             <CategoIcon type="MdAddCircleOutline" siz={22} />
             <p>{t("budgets.new")}</p>
-          </div>
+          </div>}
         </div>
 
         {loading ? (
@@ -443,6 +453,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
             transacciones={transacciones as ProjectBudgetTransactionItem[]}
             onClose={() => setSelectedDetailBudget(null)}
             onEdit={openEditFromDetail}
+            readOnly={readOnly}
           />
         ) : selectedDetailBudget && (
           <BudgetDetailModal
@@ -452,10 +463,11 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
             endDate={endDate}
             onClose={() => setSelectedDetailBudget(null)}
             onEdit={openEditFromDetail}
+            readOnly={readOnly}
           />
         )}
 
-        {modalMode && (
+        {!readOnly && modalMode && (
           <BudgetEditModal
             mode={modalMode}
             budget={editingBudget}
@@ -476,6 +488,7 @@ function BudgetsClient({ mcSession }: BudgetsClientProps): React.JSX.Element {
             onAddToBudget={openAddToBudget}
             onCreateProject={openCreateProjectFromUnbudgeted}
             onAddToProject={addGroupToProject}
+            readOnly={readOnly}
           />
         )}
 

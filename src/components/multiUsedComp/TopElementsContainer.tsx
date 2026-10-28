@@ -30,6 +30,9 @@ const today = new Date();
 
 export interface TopElementsContainerProps {
   timePeriodFromFather?: [Date, Date] | (Date | string)[] | null;
+  /** Avoid starting the authentication session request on the public, fictional dashboard. */
+  demoMode?: boolean;
+  email?: string | null;
 }
 
 export interface TotalTransactionsLocalState {
@@ -72,7 +75,7 @@ export interface ContainerTransactionItem {
   [key: string]: unknown;
 }
 
-function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProps): React.JSX.Element {
+function TopElementsContainerData({ timePeriodFromFather, email }: TopElementsContainerProps): React.JSX.Element {
   const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [elementsToDisplay, setElementsToDisplay] = useState<number>(6);
@@ -97,8 +100,6 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
   const ccUser = useSelector((state: RootState) => state.userReducer);
   const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
-
-  const { email } = useGetUserSession();
 
   // USE EFFECTS:
   useEffect(() => {
@@ -253,6 +254,18 @@ function TopElementsContainer({ timePeriodFromFather }: TopElementsContainerProp
       getValueFromItems={getValueFromItems}
     />
   );
+}
+
+function SessionBackedTopElementsContainer({ timePeriodFromFather }: TopElementsContainerProps): React.JSX.Element {
+  const { email } = useGetUserSession();
+  return <TopElementsContainerData timePeriodFromFather={timePeriodFromFather} email={email} />;
+}
+
+function TopElementsContainer(props: TopElementsContainerProps): React.JSX.Element {
+  if (props.demoMode) {
+    return <TopElementsContainerData timePeriodFromFather={props.timePeriodFromFather} email={null} />;
+  }
+  return <SessionBackedTopElementsContainer timePeriodFromFather={props.timePeriodFromFather} />;
 }
 
 export default TopElementsContainer;

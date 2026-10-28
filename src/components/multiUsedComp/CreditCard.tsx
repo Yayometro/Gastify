@@ -62,6 +62,10 @@ export interface CreditCardProps {
   walletPrimaryCurrency?: string | null;
   // The period chosen at the top of the page (the same one every card follows).
   timePeriod?: [Date, Date] | null;
+  /** Supplied only on the public demo to avoid live FX/API requests. */
+  demoRatesToMxn?: Record<string, number>;
+  /** Keep account cards inside the public, read-only demo. */
+  readOnly?: boolean;
 }
 
 // A transaction's own native amount, in its own native currency - as
@@ -80,6 +84,8 @@ function CreditCard({
   trans,
   walletPrimaryCurrency: walletPrimaryCurrencyProp,
   timePeriod,
+  demoRatesToMxn,
+  readOnly = false,
 }: CreditCardProps): React.JSX.Element {
   const router = useRouter();
   const reduxWalletPrimaryCurrency = (useSelector((state: RootState) => state.walletReducer?.data) as { primaryCurrency?: string })?.primaryCurrency;
@@ -168,6 +174,7 @@ function CreditCard({
     setEquivalentQuote(null);
     if (!account?._id || !walletPrimaryCurrency) return;
     if (accountCurrency === walletPrimaryCurrency) return;
+    if (demoRatesToMxn) return;
 
     let cancelled = false;
     const toFetch = fetcher();
@@ -189,7 +196,7 @@ function CreditCard({
     return () => {
       cancelled = true;
     };
-  }, [account?._id, account?.amount, accountCurrency, walletPrimaryCurrency]);
+  }, [account?._id, account?.amount, accountCurrency, walletPrimaryCurrency, demoRatesToMxn]);
 
   const isForeignAccount = accountCurrency !== walletPrimaryCurrency;
 
@@ -197,9 +204,16 @@ function CreditCard({
   // went out in the period. The period is chosen right under it, not on the card.
   const incomeValue = isForeignAccount ? nativeTotalIncome : totalIncome;
   const spendingValue = isForeignAccount ? nativeTotalBill : totalBill;
-  const equivalentText = equivalentQuote
-    ? `≈ ${formatMoneyMinor(equivalentQuote.amountMinor as number, equivalentQuote.currency as string, { showCode: false })} ${equivalentQuote.currency}`
+  const demoRate = demoRatesToMxn?.[accountCurrency];
+  const primaryRate = demoRatesToMxn?.[walletPrimaryCurrency];
+  const demoEquivalent = demoRate && primaryRate
+    ? ((Number(account?.amount) || 0) * demoRate) / primaryRate
     : null;
+  const equivalentText = demoEquivalent !== null
+    ? `≈ ${formatMoneyMinor(majorToMinor(demoEquivalent, walletPrimaryCurrency), walletPrimaryCurrency, { showCode: false })} ${walletPrimaryCurrency}`
+    : equivalentQuote
+      ? `≈ ${formatMoneyMinor(equivalentQuote.amountMinor as number, equivalentQuote.currency as string, { showCode: false })} ${equivalentQuote.currency}`
+      : null;
   const savedAccount = account as CreditCardAccountRef & { accountType?: string | null; cardColor?: string | null; cardPattern?: string | null };
 
   return (
@@ -218,9 +232,9 @@ function CreditCard({
         incomes={incomeValue}
         spending={spendingValue}
         flowCurrency={isForeignAccount ? accountCurrency : walletPrimaryCurrency}
-        onOpen={() => {
+        onOpen={!readOnly ? () => {
           if (account?._id) router.push(`/dashboard/accounts?accountId=${account._id}`);
-        }}
+        } : undefined}
       />
     </div>
   );

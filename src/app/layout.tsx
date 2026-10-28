@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ReduxProvider from "@/lib/ReduxProvider";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
-import ThemeProvider from "./ThemeProvider";
 import { I18nProvider } from "@/i18n/client";
 import { currentLocale, messagesFor } from "@/i18n/server";
-// import AllDataProvider from "@/components/Providers/AllDataProvider";
+import RouteProviders from "./RouteProviders";
 import React from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -19,7 +16,7 @@ export const metadata: Metadata = {
 // Runs before React hydrates, so the light theme (when previously chosen)
 // paints on first frame instead of flashing dark-then-light. Dark needs no
 // entry here since it's already the plain :root default in globals.css.
-const themeInitScript = `(function(){try{if(localStorage.getItem("gf-theme")==="light"){document.documentElement.setAttribute("data-theme","light");}}catch(e){}})();`;
+const themeInitScript = `(function(){try{var p=location.pathname;if(p!=="/"&&!p.startsWith("/demo")&&localStorage.getItem("gf-theme")==="light"){document.documentElement.setAttribute("data-theme","light");}}catch(e){}})();`;
 
 export interface RootLayoutProps {
   children: React.ReactNode;
@@ -45,15 +42,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className={inter.className}>
-        <AntdRegistry>
-          <I18nProvider locale={locale} messages={messages}>
-            <ThemeProvider>
-              <ReduxProvider>
-                <main>{children}</main>
-              </ReduxProvider>
-            </ThemeProvider>
-          </I18nProvider>
-        </AntdRegistry>
+        <I18nProvider locale={locale} messages={messages}>
+          <RouteProviders><main>{children}</main></RouteProviders>
+        </I18nProvider>
       </body>
     </html>
   );

@@ -41,3 +41,18 @@ export function localeFromAcceptLanguage(header?: string | null): Locale {
   }
   return DEFAULT_LOCALE;
 }
+
+// Vercel includes the visitor's ISO country code on incoming requests. Use it
+// only for the first visit: an explicit language cookie always takes priority.
+// Countries where Spanish is the primary public language map to Spanish; other
+// known countries use English, and unknown/missing codes fall back to the
+// browser's Accept-Language header in the request layer.
+const SPANISH_SPEAKING_COUNTRIES = new Set([
+  "AR", "BO", "CL", "CO", "CR", "CU", "DO", "EC", "ES", "GQ", "GT", "HN", "MX", "NI", "PA", "PE", "PR", "PY", "SV", "UY", "VE",
+]);
+
+export function localeFromCountry(country?: string | null): Locale | null {
+  const code = country?.trim().toUpperCase();
+  if (!code || !/^[A-Z]{2}$/.test(code)) return null;
+  return SPANISH_SPEAKING_COUNTRIES.has(code) ? "es" : "en";
+}

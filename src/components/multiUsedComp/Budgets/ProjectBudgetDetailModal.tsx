@@ -57,6 +57,7 @@ export interface ProjectBudgetDetailModalProps {
   transacciones?: ProjectBudgetTransactionItem[];
   onClose: () => void;
   onEdit: (budget: ProjectBudgetItem) => void;
+  readOnly?: boolean;
 }
 
 interface EditSingleTransModalProps {
@@ -82,6 +83,7 @@ export default function ProjectBudgetDetailModal({
   transacciones = [],
   onClose,
   onEdit,
+  readOnly = false,
 }: ProjectBudgetDetailModalProps): React.JSX.Element {
   const tr = useT();
   const t = useT();
@@ -237,7 +239,7 @@ export default function ProjectBudgetDetailModal({
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-2 mt-5">
+              {!readOnly && <div className="flex flex-wrap gap-2 mt-5">
                 <button
                   type="button"
                   onClick={() => onEdit(budget)}
@@ -259,9 +261,9 @@ export default function ProjectBudgetDetailModal({
                 >
                   {t("budgets.project.createMovement")}
                 </button>
-              </div>
+              </div>}
 
-              {showAddExisting && (
+              {!readOnly && showAddExisting && (
                 <div className="mt-4 bg-gf-accent-soft-bg border border-gf-border rounded-2xl p-3">
                   <input
                     type="search"
@@ -323,22 +325,22 @@ export default function ProjectBudgetDetailModal({
                           </p>
                         </div>
                         <strong className="text-xs text-red-500">{usdFormatChanger(transaction.amount)}</strong>
-                        <button
+                        {!readOnly && <button
                           type="button"
                           title={t("budgets.movement.edit")}
                           onClick={() => setEditingMovement(transaction)}
                           className="text-gf-text-muted hover:text-purple-600"
                         >
                           <CategoIcon type="MdOutlineCreate" siz={16} />
-                        </button>
-                        <button
+                        </button>}
+                        {!readOnly && <button
                           type="button"
                           title={t("budgets.project.remove")}
                           onClick={() => linkMovement(transaction._id, false)}
                           className="text-gf-text-muted hover:text-red-400"
                         >
                           <UniversalCategoIcon type="md/MdLinkOff" siz={17} />
-                        </button>
+                        </button>}
                       </div>
                     ))
                   ) : (
@@ -355,10 +357,10 @@ export default function ProjectBudgetDetailModal({
           </div>
         }
       />
-      {editingMovement && (
+      {!readOnly && editingMovement && (
         <TypedEditSingleTransModal trans={editingMovement} onClose={() => setEditingMovement(null)} />
       )}
-      {showCreate && (
+      {!readOnly && showCreate && (
         <BasicModal
           close={() => setShowCreate(false)}
           renderContent={

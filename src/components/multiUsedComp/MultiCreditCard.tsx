@@ -43,6 +43,7 @@ export interface MultiCreditCardTransaction {
 export interface SortableCardProps {
   account: MultiCreditCardAccount;
   children: React.ReactNode;
+  disabled?: boolean;
 }
 
 export interface MultiCreditCardProps {
@@ -53,11 +54,14 @@ export interface MultiCreditCardProps {
   walletPrimaryCurrency?: string;
   mail?: string;
   timePeriod?: [Date, Date] | null;
+  readOnly?: boolean;
+  demoRatesToMxn?: Record<string, number>;
 }
 
-function SortableCard({ account, children }: SortableCardProps): React.JSX.Element {
+function SortableCard({ account, children, disabled = false }: SortableCardProps): React.JSX.Element {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: account._id,
+    disabled,
   });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -80,6 +84,8 @@ function MultiCreditCard({
   walletPrimaryCurrency,
   mail,
   timePeriod,
+  readOnly = false,
+  demoRatesToMxn,
 }: MultiCreditCardProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
@@ -157,10 +163,10 @@ function MultiCreditCard({
       </div>
       <div className="scrollbar-thin flex flex-row items-stretch gap-5 px-5 pb-6 overflow-x-auto">
         {accounts && accounts.length > 0 ? (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext sensors={readOnly ? [] : sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={accounts.map((a) => a._id)} strategy={horizontalListSortingStrategy}>
               {accounts.map((ac) => (
-                <SortableCard key={ac._id} account={ac}>
+                <SortableCard key={ac._id} account={ac} disabled={readOnly}>
                   <CreditCard
                     acc={ac}
                     user={userName}
@@ -168,6 +174,8 @@ function MultiCreditCard({
                     cardColor={cardColors[ac._id]}
                     walletPrimaryCurrency={walletPrimaryCurrency}
                     timePeriod={timePeriod}
+                    demoRatesToMxn={demoRatesToMxn}
+                    readOnly={readOnly}
                   />
                 </SortableCard>
               ))}
