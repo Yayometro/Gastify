@@ -83,6 +83,7 @@ const en: Record<keyof typeof errors, string> = {
   "errors.no.data.in.request.on": "No data in the request",
   "errors.no.params.id.send.to": "No ID was sent to update the transaction",
   "errors.no.session": "No active session",
+  "errors.stepUp.factorChange": "Confirm your identity again to change your verification factors.",
   "errors.user.not.found.on.update": "User not found to update the transaction",
   "errors.no.transactions.found.work.on": "The transaction to update was not found",
   "errors.no.wallet.found.for.this": "No wallet found for this transaction",

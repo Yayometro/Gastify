@@ -23,7 +23,20 @@ const navbar = {
   "navbar.icons.more": "Mostrar más ({p1} restantes)",
   "navbar.seeBudget": "Ver mi presupuesto",
   "navbar.tools.open": "Abrir herramientas",
-  "navbar.tools.drag": "Herramientas (arrástralo a otro borde)"
+  "navbar.tools.drag": "Herramientas (arrástralo a otro borde)",
+  // What each section is, shown under its name when the person hovers it on the desktop bar. "You are here" starts it on the page they are on.
+  "navbar.youAreHere": "Estás aquí",
+  "navbar.hint.profile": "Tus datos, tu foto, tu idioma y tu país.",
+  "navbar.hint.movements": "Tus gastos e ingresos: busca, filtra y edita cada movimiento.",
+  "navbar.hint.wallet": "El resumen de tu mes: totales, mayores gastos y tus cuentas.",
+  "navbar.hint.budgets": "Presupuestos y ahorros: cuánto llevas contra tu meta.",
+  "navbar.hint.projections": "Lo que esperas gastar y ganar, frente a lo que realmente pasó.",
+  "navbar.hint.analyzer": "Patrones de tu dinero: suscripciones, grandes gastos y más.",
+  "navbar.hint.accounts": "Tus cuentas y tarjetas, con su saldo.",
+  "navbar.hint.history": "Cómo cambiaron tus gastos e ingresos mes a mes.",
+  "navbar.hint.categories": "Las categorías y subcategorías con las que clasificas tus movimientos.",
+  "navbar.hint.theme": "Cambia entre modo claro y modo oscuro.",
+  "navbar.hint.addTransaction": "Registra un gasto, un ingreso, una transferencia, una cuenta o un presupuesto.",
 } as const;
 
 export default navbar;

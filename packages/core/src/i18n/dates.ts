@@ -57,3 +57,8 @@ export function dayLabel(date: Date, today: Date, locale: Locale, t: TranslateFn
 export function shortDate(date: Date, locale: Locale, twoDigitDay = false): string {
   return formatterFor(locale, { day: twoDigitDay ? "2-digit" : "numeric", month: "short", year: "numeric" }).format(date);
 }
+
+// "27 oct 2026, 10:30": a moment, not just a day, in the language. Used where a notice says when it appeared.
+export function dateTimeLabel(date: Date, locale: Locale): string {
+  return formatterFor(locale, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
+}

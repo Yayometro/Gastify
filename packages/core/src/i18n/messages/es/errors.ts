@@ -81,6 +81,7 @@ const errors = {
   "errors.no.data.in.request.on": "No llegaron datos en la solicitud",
   "errors.no.params.id.send.to": "No se envió el ID para actualizar el movimiento",
   "errors.no.session": "No hay sesión activa",
+  "errors.stepUp.factorChange": "Confirma tu identidad otra vez para cambiar tus factores de verificación.",
   "errors.user.not.found.on.update": "No encontramos tu usuario para actualizar el movimiento",
   "errors.no.transactions.found.work.on": "No encontramos el movimiento a actualizar",
   "errors.no.wallet.found.for.this": "No encontramos la cartera de este movimiento",

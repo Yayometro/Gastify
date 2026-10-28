@@ -275,6 +275,7 @@ const en: Record<keyof typeof web, string> = {
   "web.estimated.goal": "(estimated goal)",
   "web.estimated": "estimated",
   "web.exact": "exact",
+  "web.hola.p1": "Hello, {p1}",
 };
 
 export default en;

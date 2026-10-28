@@ -273,6 +273,7 @@ const web = {
   "web.estimated.goal": "(meta estimada)",
   "web.estimated": "estimado",
   "web.exact": "exacto",
+  "web.hola.p1": "Hola, {p1}",
 } as const;
 
 export default web;

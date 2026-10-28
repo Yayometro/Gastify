@@ -1,5 +1,13 @@
 // Texts of the "auth" namespace. Spanish is the source text.
 const auth = {
+  // Why the second factor is asked again. {p1} is the window in minutes (hours for max-age). Said plainly, with what to do next,
+  // so nobody thinks the app broke or that their data is gone.
+  "auth.stepUp.idle": "Por seguridad, te pedimos confirmar tu identidad después de {p1} minutos sin actividad. Tus datos están seguros. Confirma y sigues donde estabas; si estabas guardando algo, vuelve a enviarlo.",
+  "auth.stepUp.maxAge": "Por seguridad, te pedimos confirmar tu identidad cada {p1} horas, aunque estés usando la app. Confirma y sigues donde estabas; si estabas guardando algo, vuelve a enviarlo.",
+  "auth.stepUp.neverVerified": "Tu sesión todavía no ha confirmado tu segundo factor (por ejemplo, si entraste con Google). Confírmalo para usar tu cuenta.",
+  "auth.stepUp.generic": "Confirma tu identidad para continuar.",
+  "auth.stepUp.reauth": "Para cambiar tus factores de verificación (passkeys, app autenticadora o códigos de respaldo) te pedimos confirmar tu identidad cada {p1} minutos.",
+  "auth.stepUp.howTo": "Pon tu huella, Face ID o código del dispositivo para continuar.",
   "auth.stepUp": "Por seguridad, confirma tu identidad otra vez para continuar 🔒",
   "auth.error.identityNotVerified": "No pudimos verificar tu identidad, así que cerramos tu sesión por seguridad. Inicia sesión de nuevo.",
   "auth.error.codeAttemptsExceeded": "No pudimos verificar tu código después de 3 intentos. Intenta iniciar sesión de nuevo.",
