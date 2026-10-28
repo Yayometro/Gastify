@@ -1755,3 +1755,10 @@ When taking over this task, Claude should perform the following steps:
 - **Merge:** se integró `origin/main` en `codex/public-dashboard-demo`, conservando el aislamiento de solo lectura y combinando el Navbar/perfil del demo con los componentes recientes de la aplicación.
 - **Verificación:** `npm run typecheck`, `npm run lint -- --quiet`, `npx vitest run --reporter=dot` (117 archivos / 818 pruebas) y `git diff --check` pasan. No se ejecutó build en esta integración.
 - **Publicación:** autorizado por el usuario: subir la rama `codex/public-dashboard-demo` e integrarla a `main`. La investigación de monetización se publica en su rama separada; no se mezclan cambios del dashboard administrativo.
+
+### Entry #72 - Codex - 2026-10-28 - Consolidación de la investigación de monetización
+- **Documento:** se incorporó a [Obtención de ingresos Gastify](Obtención%20de%20ingresos%20Gastify.md) la continuación preparada en el checkout `feat/admin-dashboard`: registro de la investigación previa, dudas y decisiones, referencias, evaluación comparativa y top 10 independiente, además de los productos mexicanos solicitados.
+- **Aislamiento:** rama `codex/monetization-research`, creada desde el `main` actualizado. Solo se transfirió el cambio del documento de investigación; se dejó intacto el checkout principal con sus archivos administrativos y otros untracked. El log parte de `main` y se agregó esta entrada, sin copiar reversiones históricas del log de la otra rama.
+- **Alcance:** investigación y planificación solamente. No se crearon cuentas de prueba, no se aceptaron periodos de prueba de pago y no se cambiaron funciones de Gastify.
+- **Verificación:** el documento conserva el informe anterior y suma 1,990 líneas; `git diff --check` pasa. No requiere pruebas de aplicación.
+- **Publicación:** rama independiente para push; no fusionar la investigación a `main` en esta entrega.
