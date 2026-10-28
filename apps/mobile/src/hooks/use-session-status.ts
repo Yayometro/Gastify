@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 
 import type { SessionStatus } from '@gastify/core/auth/sessionStatus';
 import { API_URL, authClient } from '@/auth-client';
+import { onStepUp } from '@/lib/step-up-events';
 
 const POLL_MS = 60 * 1000;
 
@@ -32,9 +33,14 @@ export function useSessionStatus(enabled: boolean) {
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') refresh();
     });
+    // A data request was refused for the second factor: read the status now, so the code screen shows with its reason.
+    const unsubscribe = onStepUp(() => {
+      refresh();
+    });
     return () => {
       clearInterval(timer);
       subscription.remove();
+      unsubscribe();
     };
   }, [enabled, refresh]);
 

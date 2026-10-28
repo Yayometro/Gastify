@@ -11,7 +11,8 @@ import { dismissAlert } from '@/lib/alert-dismissals';
 import { alertMood, MOOD_COLOR, type AlertMood } from '@/lib/alert-presentation';
 import { useBudgetAlertList } from '@/hooks/use-budget-alerts';
 
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
+import { dateTimeLabel } from "@gastify/core/i18n/dates";
 
 const GLYPH: Record<AlertMood, 'sparkles' | 'alert-circle' | 'flame'> = { celebrate: 'sparkles', alarm: 'alert-circle', fire: 'flame' };
 
@@ -20,6 +21,7 @@ const GLYPH: Record<AlertMood, 'sparkles' | 'alert-circle' | 'flame'> = { celebr
 export default function NotificationsScreen() {
   const { APP_INFO } = useInfo();
   const t = useT();
+  const locale = useLocale();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const toast = useToast();
   const alerts = useBudgetAlertList();
@@ -61,6 +63,7 @@ export default function NotificationsScreen() {
               <View className="flex-1 gap-0.5">
                 <Text className="font-inter-semibold text-base text-gf-text">{alert.title}</Text>
                 <Text className="font-inter text-sm text-gf-text-muted">{alert.message}</Text>
+                {alert.createdAt && <Text className="font-inter text-xs text-gf-text-muted">{dateTimeLabel(new Date(alert.createdAt), locale)}</Text>}
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Pressable>

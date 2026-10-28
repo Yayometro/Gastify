@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { useToast } from '@/components/toast';
 import { useDismissedAlertKeys } from '@/lib/alert-dismissals';
+import { useAlertDates } from '@/lib/alert-times';
 import { alertMood } from '@/lib/alert-presentation';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
@@ -72,7 +73,10 @@ export function useBudgetAlertList(): BudgetAlert[] {
     return out;
   }, [ready, budgets, transactions, accounts, currency, rates, t]);
   // The notices the person swiped away stay away (for this budget and period).
-  return useMemo(() => all.filter((alert) => !dismissed.includes(alert.key)), [all, dismissed]);
+  const visible = useMemo(() => all.filter((alert) => !dismissed.includes(alert.key)), [all, dismissed]);
+  // The date of each notice: the moment this phone first saw it (see lib/alert-times.ts).
+  const dateOf = useAlertDates(visible.map((alert) => alert.key));
+  return useMemo(() => visible.map((alert) => ({ ...alert, createdAt: dateOf(alert.key) })), [visible, dateOf]);
 }
 
 // In-app notices about the budgets, saving goals and projects (70 / 80 / 90 / 100 %, congratulations, savings progress).

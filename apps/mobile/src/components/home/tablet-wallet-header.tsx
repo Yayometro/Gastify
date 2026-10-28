@@ -1,5 +1,9 @@
 import { Text, View, useColorScheme } from 'react-native';
+import { Image } from 'expo-image';
 import { NotificationsBell } from '@/components/notifications-bell';
+
+const WORDMARK_WHITE = require('../../../assets/images/brand/gastify-wordmark-white.png');
+const WORDMARK_BLACK = require('../../../assets/images/brand/gastify-wordmark-black.png');
 
 import { InfoTip, type InfoText } from '@/components/info-tip';
 import { Colors } from '@/constants/theme';
@@ -86,9 +90,16 @@ export function TabletWalletHeader({
   const sorted = [...accounts].sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0));
   return (
     <View className="gap-6 pb-1 pt-2">
-      <View className="flex-row items-center justify-center gap-4">
-        <Text className="font-inter-bold text-5xl text-gf-text">{name ? tNow("mobile.hola.p1", { p1: name.split(' ')[0] }) : t("shared.start")}</Text>
-        <NotificationsBell size={44} />
+      <View className="flex-row items-center gap-4">
+        {/* The wordmark, at the far left of the header: white on the dark theme, black on the light one. */}
+        <Image source={dark ? WORDMARK_WHITE : WORDMARK_BLACK} style={{ width: 115, height: 40 }} contentFit="contain" accessibilityLabel="Gastify" />
+        <View className="flex-1 items-center">
+          <Text className="font-inter-bold text-5xl text-gf-text">{name ? tNow("mobile.hola.p1", { p1: name.split(' ')[0] }) : t("shared.start")}</Text>
+        </View>
+        {/* The notifications bell, at the far right. Its box is as wide as the logo, so the greeting sits exactly in the middle. */}
+        <View style={{ width: 115, alignItems: 'flex-end' }}>
+          <NotificationsBell size={44} />
+        </View>
       </View>
       <View className="flex-row items-stretch gap-4">
         <Panel label={t("mobile.tus.cuentas")} info={HERO_INFO.accounts}>
