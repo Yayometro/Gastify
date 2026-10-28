@@ -42,12 +42,27 @@
     font-size: 15px;
     top: 0%;
     left: 120%;
-    display: inline;
+    display: block;
+    width: max-content;
+    max-width: 240px;
+    text-align: left;
     background-color: rgb(91, 45, 191);
     color: rgb(250, 244, 255);
-    padding: 5px;
-    border-radius: 30px;
+    padding: 8px 12px;
+    border-radius: 16px;
   }
+  /* The description under the name: only in the desktop bubble (the phone shows the label alone). */
+  .nav-full li:hover .navHint {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.35;
+    opacity: 0.9;
+  }
+}
+
+.navHint {
+  display: none;
 }
 
 
@@ -91,7 +106,8 @@
     gap: clamp(2px, 0.9vh, 16px) !important;
     padding-top: clamp(8px, 2vh, 32px) !important;
     padding-bottom: clamp(8px, 2vh, 48px) !important;
-    overflow: hidden;
+    /* Visible: the hover bubble of each item sits outside the bar. The items still fit by the clamps above. */
+    overflow: visible;
   }
   .gf-nav-item > a,
   .gf-nav-item > button {

@@ -5,11 +5,11 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Account from "@/model/Account";
 import Wallet from "@/model/Wallet";
-import xlsxPopulate from "xlsx-populate";
-import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
-import { TEMPLATE_VERSION, COLUMNS, HEADERS, COLUMN_WIDTHS, TEMPLATE_NOTE } from "@/lib/files/gastifyTemplate";
+import { createTranslator } from "@gastify/core/i18n/translate";
+import { TEMPLATE_VERSION } from "@/lib/files/gastifyTemplate";
+import { buildGastifyTemplate } from "@/lib/files/templateWorkbook";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
-import { serverT } from "@/i18n/server";
+import { currentLocale, messagesFor, serverT } from "@/i18n/server";
 
 export interface TemplateErrorResponse {
   error?: string;
@@ -44,134 +44,24 @@ export async function GET(
       Wallet.findById(userFound.wallet).lean(),
     ]);
 
-    const catNames = categories.map((c) => c.name).filter(Boolean);
-    const subCatNames = subCategories.map((s) => s.name).filter(Boolean);
-    const accountNames = accounts.map((a) => a.name).filter(Boolean);
-    const walletPrimaryCurrency = wallet?.primaryCurrency || "MXN";
+    // The template is written in the person's language: the one saved on their account, else the one their browser chose,
+    // else the country and the browser's language (the same order as the pages).
+    const locale = await currentLocale(sesion.user.language, sesion.user.country);
+    const tt = createTranslator(locale, await messagesFor(locale, ["errors", "template"]));
 
-    const workbook = await xlsxPopulate.fromBlankAsync();
-    const mainSheet = workbook.sheet(0);
-    mainSheet.name("Transactions");
-
-    // --- Headers (row 1) ---
-    HEADERS.forEach((h, i) => {
-      const cell = mainSheet.cell(1, i + 1);
-      cell.value(h);
-      cell.style({
-        bold: true,
-        fill: { type: "solid", color: "7C3AED" },
-        fontColor: "FFFFFF",
-      });
+    const buffer = await buildGastifyTemplate(tt, {
+      categories: categories.map((c) => c.name).filter(Boolean),
+      subCategories: subCategories.map((s) => s.name).filter(Boolean),
+      accounts: accounts.map((a) => a.name).filter(Boolean),
+      primaryCurrency: wallet?.primaryCurrency || "MXN",
     });
-
-    // --- Instruction note (row 2) ---
-    const noteCell = mainSheet.cell(2, 1);
-    noteCell.value(TEMPLATE_NOTE);
-    noteCell.style({
-      italic: true,
-      fill: { type: "solid", color: "FEF9C3" },
-      fontColor: "92400E",
-      wrapText: true,
-    });
-    mainSheet.range(2, 1, 2, HEADERS.length).merged(true);
-    mainSheet.row(2).height(48);
-
-    // --- Column widths ---
-    COLUMN_WIDTHS.forEach((w, i) => {
-      mainSheet.column(i + 1).width(w);
-    });
-
-    // --- Hidden _data sheet (categories, subcategories, version, accounts, currencies) ---
-    const dataSheet = workbook.addSheet("_data");
-    catNames.forEach((name, idx) => dataSheet.cell(idx + 1, 1).value(name));
-    subCatNames.forEach((name, idx) => dataSheet.cell(idx + 1, 2).value(name));
-    dataSheet.cell(1, 3).value(TEMPLATE_VERSION); // version stored here
-    accountNames.forEach((name, idx) => dataSheet.cell(idx + 1, 4).value(name));
-    SUPPORTED_CURRENCIES.forEach((code, idx) => dataSheet.cell(idx + 1, 5).value(code));
-    try { dataSheet.hidden(true); } catch {
-      // ignore
-    }
-
-    // --- Data validation rows 3-202 ---
-    for (let row = 3; row <= 202; row++) {
-      mainSheet.cell(row, COLUMNS.TYPE).dataValidation({
-        type: "list",
-        allowBlank: true,
-        showErrorMessage: true,
-        errorTitle: "Invalid Type",
-        error: t("errors.please.enter.bill.or.income"),
-        formula1: '"Bill,Income"',
-      });
-
-      [COLUMNS.ACCOUNT_CURRENCY, COLUMNS.MERCHANT_CURRENCY, COLUMNS.REPORTING_CURRENCY].forEach((col) => {
-        mainSheet.cell(row, col).dataValidation({
-          type: "list",
-          allowBlank: true,
-          showErrorMessage: true,
-          errorTitle: "Invalid Currency",
-          error: t("errors.api.selectOneOf", { p1: SUPPORTED_CURRENCIES.join(", ") }),
-          formula1: `_data!$E$1:$E$${SUPPORTED_CURRENCIES.length}`,
-        });
-      });
-
-      if (catNames.length > 0) {
-        mainSheet.cell(row, COLUMNS.CATEGORY).dataValidation({
-          type: "list",
-          allowBlank: true,
-          showErrorMessage: true,
-          errorTitle: "Invalid Category",
-          error: t("errors.please.select.a.category.from"),
-          formula1: `_data!$A$1:$A$${catNames.length}`,
-        });
-      }
-
-      if (subCatNames.length > 0) {
-        mainSheet.cell(row, COLUMNS.SUB_CATEGORY).dataValidation({
-          type: "list",
-          allowBlank: true,
-          showErrorMessage: true,
-          errorTitle: "Invalid SubCategory",
-          error: t("errors.please.select.a.subcategory.from"),
-          formula1: `_data!$B$1:$B$${subCatNames.length}`,
-        });
-      }
-
-      if (accountNames.length > 0) {
-        mainSheet.cell(row, COLUMNS.ACCOUNT).dataValidation({
-          type: "list",
-          allowBlank: true,
-          showErrorMessage: true,
-          errorTitle: "Invalid Account",
-          error: t("errors.please.select.an.account.from"),
-          formula1: `_data!$D$1:$D$${accountNames.length}`,
-        });
-      }
-    }
-
-    // --- Example row (row 3) ---
-    mainSheet.cell(3, COLUMNS.DATE).value(new Date()).style("numberFormat", "DD/MM/YYYY");
-    mainSheet.cell(3, COLUMNS.CONCEPT).value("Example transaction");
-    mainSheet.cell(3, COLUMNS.ACCOUNT_AMOUNT).value(100);
-    mainSheet.cell(3, COLUMNS.ACCOUNT_CURRENCY).value(walletPrimaryCurrency);
-    mainSheet.cell(3, COLUMNS.TYPE).value("Bill");
-    mainSheet.cell(3, COLUMNS.CATEGORY).value("");
-    mainSheet.cell(3, COLUMNS.SUB_CATEGORY).value(subCatNames[0] || "");
-    mainSheet.cell(3, COLUMNS.TAGS).value("tag1, tag2");
-    mainSheet.cell(3, COLUMNS.ACCOUNT).value(accountNames[0] || "");
-    mainSheet.cell(3, COLUMNS.MERCHANT_AMOUNT).value("");
-    mainSheet.cell(3, COLUMNS.MERCHANT_CURRENCY).value("");
-    mainSheet.cell(3, COLUMNS.REPORTING_AMOUNT).value("");
-    mainSheet.cell(3, COLUMNS.REPORTING_CURRENCY).value("");
-    mainSheet.cell(3, COLUMNS.FX_SOURCE).value("");
-
-    const buffer = await workbook.outputAsync();
 
     return new NextResponse(buffer as unknown as BodyInit, {
       status: 200,
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="gastify-template-v${TEMPLATE_VERSION}.xlsx"`,
+        "Content-Disposition": `attachment; filename="gastify-template-v${TEMPLATE_VERSION}-${locale}.xlsx"`,
       },
     });
   } catch (e) {

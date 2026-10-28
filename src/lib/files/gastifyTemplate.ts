@@ -32,6 +32,7 @@ export const COLUMNS = {
 export type ColumnsConfig = typeof COLUMNS;
 export type ColumnKey = keyof typeof COLUMNS;
 
+// The export keeps these English headers: it is a data export, not the template people fill in.
 export const HEADERS: string[] = [
   "Date *",
   "Concept *",
@@ -49,14 +50,28 @@ export const HEADERS: string[] = [
   "FX Source",
 ];
 
-export const COLUMN_WIDTHS: number[] = [18, 25, 16, 16, 18, 20, 20, 26, 20, 16, 16, 16, 16, 14];
+// The template's headers in column order, as catalog keys: the template is written in the language of the person who downloads it.
+export const TEMPLATE_HEADER_KEYS: readonly string[] = [
+  "template.header.date",
+  "template.header.concept",
+  "template.header.accountAmount",
+  "template.header.accountCurrency",
+  "template.header.type",
+  "template.header.category",
+  "template.header.subCategory",
+  "template.header.tags",
+  "template.header.account",
+  "template.header.merchantAmount",
+  "template.header.merchantCurrency",
+  "template.header.reportingAmount",
+  "template.header.reportingCurrency",
+  "template.header.fxSource",
+];
 
-export const TEMPLATE_NOTE: string =
-  "📌 REQUIRED: Date, Concept, Account Amount, Type (* = required). Type defaults to Bill if empty. " +
-  "Account Currency: required if no Account is selected (blank + no Account defaults to your Wallet's primary currency); when an Account is selected, it must match that Account's currency or be left blank. " +
-  "Fill Category OR SubCategory — not both. Merchant Amount needs a Merchant Currency (and vice versa) - only fill these if you were charged in a different currency than your Account. " +
-  "Reporting Amount is the exact equivalent in your Wallet's primary currency, if you already know it; its currency must equal your Wallet's primary currency. Leave both blank to let Gastify estimate it from historical exchange rates. " +
-  "FX Source: leave blank for an automatic estimate, or write \"manual\" if Reporting Amount is an exact value you're entering yourself.";
+// What the Type column may say for income, in each language the template is written in. Anything else counts as a bill (the default).
+export const TEMPLATE_INCOME_WORDS: readonly string[] = ["income", "ingreso"];
+
+export const COLUMN_WIDTHS: number[] = [18, 25, 16, 16, 18, 20, 20, 26, 20, 16, 16, 16, 16, 14];
 
 export const EXPORT_NOTE_PREFIX: string =
   "Columns A-N are re-importable with the v3.0 template. Reporting Amount/Currency/FX Source reflect the exact historical value recorded for each transaction.";

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { evaluateApiStepUp } from "./stepUpPolicy";
-import { STEP_UP_ACTIVITY_RECORD_INTERVAL_MS, STEP_UP_TTL_MS } from "./stepUpConfig";
+import { STEP_UP_ACTIVITY_RECORD_INTERVAL_MS, STEP_UP_MAX_AGE_MS, STEP_UP_TTL_MS } from "./stepUpConfig";
 
 const NOW = new Date("2026-10-16T12:00:00Z").getTime();
 const ago = (ms: number) => new Date(NOW - ms);
@@ -37,5 +37,15 @@ describe("evaluateApiStepUp", () => {
 
   it("an activity stamp can never revive a session that has no proof", () => {
     expect(evaluateApiStepUp({ lastApiActivityAt: ago(1000) }, NOW)).toEqual({ allowed: false, reason: "never-verified" });
+  });
+
+  it("refuses after 12 hours since the last proof, even with constant activity (the hard limit)", () => {
+    const busy = { stepUpVerifiedAt: ago(STEP_UP_MAX_AGE_MS + 1), lastApiActivityAt: ago(1000) };
+    expect(evaluateApiStepUp(busy, NOW)).toEqual({ allowed: false, reason: "max-age" });
+  });
+
+  it("still allows a session just under the 12-hour limit while it is active", () => {
+    const d = evaluateApiStepUp({ stepUpVerifiedAt: ago(STEP_UP_MAX_AGE_MS - 60_000), lastApiActivityAt: ago(1000) }, NOW);
+    expect(d).toEqual({ allowed: true, shouldRecordActivity: false });
   });
 });

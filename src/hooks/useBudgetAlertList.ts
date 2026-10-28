@@ -11,11 +11,33 @@ import { getExplicitBudgetId, isProjectBudget, isSavingBudget } from "@gastify/c
 import { getPrimaryAmount } from "@gastify/core/transformers/transactionsChange";
 import { monthBounds } from "@gastify/core/transactions/monthSummary";
 import { idOf } from "@gastify/core/categories/categoryForm";
+import { alertDate, seeNotices, type AlertTimes } from "@gastify/core/budgets/alertTimes";
 import { useT } from "@/i18n/client";
 
 const EMPTY: never[] = [];
 // The notices the person dismissed stay dismissed for this device (a notice is about one budget and one period).
 const STORE_KEY = "gf-budget-alerts-dismissed";
+// When each notice first showed up on this device (the rule is in packages/core alertTimes.ts). Null when there is no record yet.
+const TIMES_KEY = "gf-budget-alert-times";
+
+function readTimes(): AlertTimes | null {
+  try {
+    const raw = window.localStorage.getItem(TIMES_KEY);
+    if (raw === null) return null;
+    const parsed: unknown = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as AlertTimes) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeTimes(times: AlertTimes): void {
+  try {
+    window.localStorage.setItem(TIMES_KEY, JSON.stringify(times));
+  } catch {
+    // Not being able to remember it only means the date may not survive a reload.
+  }
+}
 
 function readDismissed(): string[] {
   try {
@@ -86,6 +108,24 @@ export default function useBudgetAlertList(): { alerts: BudgetAlert[]; dismiss: 
 
   const visible = useMemo(() => alerts.filter((alert) => !dismissed.includes(alert.key)), [alerts, dismissed]);
 
+  // The date of each notice: the moment this device first saw it. Read once, then kept up to date as notices appear.
+  const [times, setTimes] = useState<AlertTimes | null | undefined>(undefined);
+  useEffect(() => {
+    setTimes(readTimes());
+  }, []);
+  const visibleKeys = visible.map((alert) => alert.key);
+  const joinedKeys = visibleKeys.join("|");
+  useEffect(() => {
+    if (times === undefined) return;
+    const next = seeNotices(times, visibleKeys, new Date().toISOString());
+    if (JSON.stringify(next) === JSON.stringify(times)) return;
+    writeTimes(next);
+    setTimes(next);
+    // Keyed by the joined keys: the array itself changes on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [times, joinedKeys]);
+  const withDates = useMemo(() => visible.map((alert) => ({ ...alert, createdAt: alertDate(times ?? null, alert.key) })), [visible, times]);
+
   const dismiss = useCallback((key: string) => {
     setDismissed((current) => {
       const next = [...current, key];
@@ -103,5 +143,5 @@ export default function useBudgetAlertList(): { alerts: BudgetAlert[]; dismiss: 
     });
   }, [alerts]);
 
-  return { alerts: visible, dismiss, dismissAll };
+  return { alerts: withDates, dismiss, dismissAll };
 }

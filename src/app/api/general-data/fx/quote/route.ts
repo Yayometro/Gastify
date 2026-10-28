@@ -5,6 +5,7 @@ import "@/model/FxRateSnapshot";
 import { SUPPORTED_CURRENCIES, assertSupportedCurrency } from "@gastify/core/money/currencies";
 import { convert } from "@/lib/money/server/fxRateService";
 import { serverT } from "@/i18n/server";
+import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 
 const fxQuoteRequestSchema = z
   .object({
@@ -64,6 +65,10 @@ export async function POST(
   const t = await serverT(["errors"]);
   try {
     if (!request) throw new Error(t("errors.no.data.in.request.on.27"));
+    // Only a signed-in person with a fresh second factor converts money, like every data route. The rates are public, but an open
+    // endpoint lets anyone keep the server and its database busy for nothing.
+    const sesion = await getVerifiedSession(request.headers);
+    if (!sesion) throw new Error(t("errors.no.session"));
     const rawBody = (await request.json()) || {};
     const parsed = fxQuoteRequestSchema.safeParse(rawBody);
     const body: Partial<FxQuoteRequestBody> = parsed.success

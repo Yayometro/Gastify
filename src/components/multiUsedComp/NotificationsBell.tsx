@@ -10,7 +10,8 @@ import { InfoTip } from "./InfoTip";
 import AlertCelebration from "./notifications/AlertCelebration";
 
 import type { BudgetAlert } from "@gastify/core/budgets/budgetAlerts";
-import { useT, useInfo } from "@/i18n/client";
+import { useT, useInfo, useLocale } from "@/i18n/client";
+import { dateTimeLabel } from "@gastify/core/i18n/dates";
 
 // The bell of the navigation bar: the number of notices that apply now, and the list of them in a window (the same
 // notices the app shows). Swiping a notice away in the app is the × here; it leaves with an animation.
@@ -23,6 +24,7 @@ const TONE_CLASS: Record<BudgetAlert["tone"], string> = {
 function NotificationsBell(): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
+  const locale = useLocale();
   const { alerts, dismiss, dismissAll } = useBudgetAlertList();
   const [celebrating, setCelebrating] = useState<BudgetAlert | null>(null);
   const [clearing, setClearing] = useState<boolean>(false);
@@ -106,6 +108,7 @@ function NotificationsBell(): React.JSX.Element {
                             <div className="min-w-0">
                               <p className="text-sm font-bold text-white">{alert.title}</p>
                               <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-purple-100/90">{alert.message}</p>
+                              {alert.createdAt && <p className="mt-1.5 text-[11px] text-purple-100/70">{dateTimeLabel(new Date(alert.createdAt), locale)}</p>}
                             </div>
                             <button type="button" aria-label={t("shared.dismissAlert", { p1: alert.title })} onClick={(event) => { event.stopPropagation(); remove(alert.key); }} className="shrink-0 rounded-full p-1 text-purple-100 transition-transform hover:scale-125 hover:text-white">
                               <CategoIcon type={"MdClose"} siz={16} />
