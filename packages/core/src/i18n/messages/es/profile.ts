@@ -5,6 +5,7 @@ const profile = {
   "profile.language.hint": "Tu idioma se guarda en tu cuenta y te sigue en todos tus dispositivos.",
   "profile.section.profile": "Perfil",
   "profile.section.privacy": "Privacidad",
+  "profile.admin.link": "Panel de administración",
   "profile.privacy.soon": "Aquí van tus opciones de privacidad.",
   "profile.data.title": "Tus datos",
   "profile.data.name": "Nombre completo",

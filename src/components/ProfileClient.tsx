@@ -34,13 +34,15 @@ const TypedApiTokensPanel = ApiTokensPanel as React.ComponentType<{
 
 interface ProfileClientProps {
   pcSession?: string;
+  // Decided on the server (see app/dashboard/profile/page.tsx). Only a yes or a no: the list of admins never reaches the browser.
+  isAdmin?: boolean;
 }
 
 type Section = "profile" | "privacy";
 
 // The profile, the way the phone's settings are: a list of sections on the left (on a phone, a row of tabs on top) and the chosen
 // section on the right. "Perfil" is the account; "Privacidad" is reserved for the privacy options.
-function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
+function ProfileClient({ pcSession, isAdmin = false }: ProfileClientProps): React.JSX.Element {
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const ccUser = useSelector((state: RootState) => state.userReducer);
@@ -84,6 +86,15 @@ function ProfileClient({ pcSession }: ProfileClientProps): React.JSX.Element {
             </button>
           );
         })}
+        {/* Only the administrator sees this link. The panel itself still checks the session, the list and the second factor. */}
+        {isAdmin && (
+          <a
+            href="/admin"
+            className="gf-glass-card rounded-2xl px-4 py-3 text-left text-sm font-semibold text-purple-200 hover:text-white"
+          >
+            {t("profile.admin.link")}
+          </a>
+        )}
       </nav>
 
       {/* The chosen section sits in the middle of the room that is left next to the menu, as the settings of the big social networks do. */}

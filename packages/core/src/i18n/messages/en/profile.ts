@@ -7,6 +7,7 @@ const en: Record<keyof typeof profile, string> = {
   "profile.language.hint": "Your language is saved on your account and follows you to all your devices.",
   "profile.section.profile": "Profile",
   "profile.section.privacy": "Privacy",
+  "profile.admin.link": "Admin panel",
   "profile.privacy.soon": "Your privacy options will be here.",
   "profile.data.title": "Your details",
   "profile.data.name": "Full name",
