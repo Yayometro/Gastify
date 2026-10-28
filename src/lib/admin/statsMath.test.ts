@@ -160,8 +160,8 @@ describe("maskEmail", () => {
 
   it("copes with short names and missing values", () => {
     expect(maskEmail("a@x.com")).toBe("a***@x.com");
-    expect(maskEmail(undefined)).toBe("—");
-    expect(maskEmail("not-an-email")).toBe("—");
+    expect(maskEmail(undefined)).toBe("(sin correo)");
+    expect(maskEmail("not-an-email")).toBe("(correo no válido)");
   });
 });
 

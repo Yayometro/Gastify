@@ -184,9 +184,11 @@ export function histogramPercentile(counts: readonly number[], edges: readonly n
   return edges[edges.length - 1];
 }
 
-// "lu***@gmail.com": enough to tell accounts apart without printing the whole address.
+// "lu***@gmail.com": enough to tell accounts apart without printing the whole address. A value that is not an address (some
+// accounts were created with a plain username) is reported as such, not as a blank.
 export function maskEmail(email: string | null | undefined): string {
-  if (!email || !email.includes("@")) return "—";
+  if (!email) return "(sin correo)";
+  if (!email.includes("@")) return "(correo no válido)";
   const [local, domain] = email.split("@");
   const visible = local.slice(0, Math.min(2, local.length));
   return `${visible}***@${domain}`;

@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 
 const ACTION_LABELS: Record<string, string> = {
   revoke_sessions: "Cerrar todas las sesiones",
+  delete_account: "Borrar cuenta",
 };
 
 export default async function AdminAuditPage(): Promise<React.JSX.Element> {

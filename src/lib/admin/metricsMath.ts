@@ -61,7 +61,15 @@ export interface RouteSummary {
   p50: number | null;
   p95: number | null;
   maxMs: number;
+  // The histogram with its labels, so a row can show how its requests spread over the time buckets.
+  histogram: { label: string; count: number }[];
 }
+
+// "≤ 50 ms", ..., "> 6400 ms": the labels of the route buckets, in order.
+export const ROUTE_BUCKET_LABELS: string[] = [
+  ...ROUTE_EDGES.map((edge) => `≤ ${edge} ms`),
+  `> ${ROUTE_EDGES[ROUTE_EDGES.length - 1]} ms`,
+];
 
 // Per route, over the given documents: request count, share of 5xx or thrown errors, average, approximate p50 and p95.
 export function summarizeRoutes(docs: MetricDoc[]): RouteSummary[] {
@@ -85,6 +93,7 @@ export function summarizeRoutes(docs: MetricDoc[]): RouteSummary[] {
         p50: histogramPercentile(counts, ROUTE_EDGES, 50),
         p95: histogramPercentile(counts, ROUTE_EDGES, 95),
         maxMs,
+        histogram: counts.map((count, index) => ({ label: ROUTE_BUCKET_LABELS[index], count })),
       };
     })
     .sort((a, b) => b.requests - a.requests);

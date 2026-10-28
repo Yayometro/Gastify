@@ -2,7 +2,9 @@ import React from "react";
 import { getPerformance } from "@/lib/admin/platformStats";
 import { parseRange, RANGE_DAYS } from "@/lib/admin/statsMath";
 import { VITAL_SPECS, type VitalSummary } from "@/lib/admin/metricsMath";
+import { EXPLAIN } from "@/lib/admin/explanations";
 import { Card, Columns, RangeLinks, Stat, count, dateTimeText, Empty } from "@/components/admin/AdminUi";
+import InfoButton from "@/components/admin/InfoButton";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +13,8 @@ const VITAL_TITLES: Record<string, string> = {
   INP: "Respuesta a interacciones (INP)",
   CLS: "Estabilidad visual (CLS)",
 };
+
+const VITAL_EXPLAIN: Record<string, string> = { LCP: EXPLAIN.lcp, INP: EXPLAIN.inp, CLS: EXPLAIN.cls };
 
 function formatVital(metric: string, value: number | null): string {
   if (value === null) return "—";
@@ -22,26 +26,37 @@ function VitalCard({ vital }: { vital: VitalSummary }): React.JSX.Element {
   const spec = VITAL_SPECS[vital.metric];
   const goodLabel = vital.metric === "CLS" ? `≤ ${spec.good / 1000}` : `≤ ${spec.good} ms`;
   const poorLabel = vital.metric === "CLS" ? `> ${spec.poor / 1000}` : `> ${spec.poor} ms`;
+  const rows = [
+    { label: `Buena (${goodLabel})`, share: vital.goodShare, color: "from-emerald-500 to-emerald-300", explain: "Esta parte de las mediciones está dentro del umbral bueno de Google." },
+    { label: "Necesita mejora", share: vital.needsShare, color: "from-amber-500 to-amber-300", explain: "Entre el umbral bueno y el malo: se puede mejorar." },
+    { label: `Mala (${poorLabel})`, share: vital.poorShare, color: "from-rose-600 to-rose-400", explain: "Por encima del umbral malo: la página se siente lenta o inestable." },
+  ];
   return (
-    <Card title={VITAL_TITLES[vital.metric]} hint={`Mediana aproximada p75: ${formatVital(vital.metric, vital.p75)} · ${count(vital.samples)} mediciones`}>
+    <Card
+      title={VITAL_TITLES[vital.metric]}
+      hint={`p75 aproximado: ${formatVital(vital.metric, vital.p75)} · ${count(vital.samples)} mediciones`}
+      explain={VITAL_EXPLAIN[vital.metric]}
+    >
       {vital.samples === 0 ? (
-        <Empty>Todavía no hay mediciones en este periodo.</Empty>
+        <Empty>Todavía no hay mediciones en este periodo. Se miden una cuarta parte de las visitas con sesión iniciada.</Empty>
       ) : (
         <div className="flex flex-col gap-3 text-sm">
-          {[
-            { label: `Buena (${goodLabel})`, share: vital.goodShare, color: "from-emerald-500 to-emerald-300" },
-            { label: "Necesita mejora", share: vital.needsShare, color: "from-amber-500 to-amber-300" },
-            { label: `Mala (${poorLabel})`, share: vital.poorShare, color: "from-rose-600 to-rose-400" },
-          ].map((row) => (
-            <div key={row.label} className="flex flex-col gap-1">
-              <div className="flex justify-between text-gf-text">
+          {rows.map((row) => (
+            <InfoButton
+              key={row.label}
+              title={`${VITAL_TITLES[vital.metric]}: ${row.label}`}
+              hint={`${Math.round(row.share * 100)}% de las mediciones`}
+              body={<p>{row.explain}</p>}
+              className="flex w-full flex-col gap-1 px-1 py-1"
+            >
+              <span className="flex w-full justify-between text-gf-text">
                 <span>{row.label}</span>
                 <span className="tabular-nums text-gf-text-muted">{Math.round(row.share * 100)}%</span>
-              </div>
-              <span className="h-2 overflow-hidden rounded-full bg-white/10">
+              </span>
+              <span className="block h-2 w-full overflow-hidden rounded-full bg-white/10">
                 <span className={`block h-full rounded-full bg-gradient-to-r ${row.color}`} style={{ width: `${row.share * 100}%` }} />
               </span>
-            </div>
+            </InfoButton>
           ))}
         </div>
       )}
@@ -65,17 +80,22 @@ export default async function AdminPerformancePage({ searchParams }: { searchPar
         </a>
       </div>
       <p className="text-xs text-gf-text-muted">
-        Actualizado {dateTimeText(view.generatedAt)}. Las rutas de API se miden en el servidor; los vitals llegan de un cuarto de las
-        visitas de la billetera. Los percentiles son aproximados: cada uno es el límite del rango de tiempo que los contiene.
+        Actualizado {dateTimeText(view.generatedAt)}. Las rutas de API se miden en el servidor; los Web Vitals llegan de una cuarta parte de
+        las visitas. Pasa el cursor sobre un número para ver qué es; haz clic para ver el detalle.
       </p>
 
       <section className="grid gap-4 sm:grid-cols-3">
         <Stat label="Peticiones medidas" value={count(totalRequests)} hint={`en ${range} días, en las rutas instrumentadas`} />
-        <Stat label="Errores (5xx o excepción)" value={count(totalErrors)} hint={totalRequests > 0 ? `${Math.round((totalErrors / totalRequests) * 1000) / 10}% de las peticiones` : "sin peticiones"} />
+        <Stat
+          label="Errores (5xx o excepción)"
+          explain={EXPLAIN.errorRate}
+          value={count(totalErrors)}
+          hint={totalRequests > 0 ? `${Math.round((totalErrors / totalRequests) * 1000) / 10}% de las peticiones` : "sin peticiones"}
+        />
         <Stat label="Rutas instrumentadas" value={count(view.routes.length)} hint="session-status, transactions.list, wallet.get, files.upload" />
       </section>
 
-      <Card title="Rutas de API" hint="Peticiones, porcentaje de errores y tiempos. La mediana y el p95 son aproximados por histograma.">
+      <Card title="Rutas de API" hint="Peticiones, porcentaje de errores y tiempos. Haz clic en una ruta para ver cómo se reparten sus tiempos." explain={EXPLAIN.routes}>
         {view.routes.length === 0 ? (
           <Empty>Todavía no hay peticiones medidas en este periodo.</Empty>
         ) : (
@@ -95,7 +115,28 @@ export default async function AdminPerformancePage({ searchParams }: { searchPar
               <tbody>
                 {view.routes.map((route) => (
                   <tr key={route.route} className="border-t border-gf-border text-gf-text">
-                    <td className="py-2 pr-3 font-mono text-xs">{route.route}</td>
+                    <td className="py-2 pr-3">
+                      <InfoButton
+                        title={`Tiempos de ${route.route}`}
+                        hint={`${count(route.requests)} peticiones · p95 ${route.p95 === null ? "—" : `≤ ${route.p95} ms`}`}
+                        body={
+                          <>
+                            <p>Cuántas peticiones cayeron en cada rango de tiempo (de la más rápida a la más lenta):</p>
+                            <ul className="flex flex-col gap-1">
+                              {route.histogram.map((bucket) => (
+                                <li key={bucket.label} className="flex justify-between">
+                                  <span>{bucket.label}</span>
+                                  <span className="tabular-nums text-gf-text">{count(bucket.count)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        }
+                        className="font-mono text-xs"
+                      >
+                        <span>{route.route}</span>
+                      </InfoButton>
+                    </td>
                     <td className="py-2 pr-3 text-right">{count(route.requests)}</td>
                     <td className="py-2 pr-3 text-right">{Math.round(route.errorRate * 1000) / 10}%</td>
                     <td className="py-2 pr-3 text-right">{Math.round(route.averageMs)} ms</td>
@@ -116,10 +157,10 @@ export default async function AdminPerformancePage({ searchParams }: { searchPar
         ))}
       </section>
 
-      <Card title="Peticiones por día" hint="Cada columna es un día; el título indica peticiones y errores.">
+      <Card title="Peticiones por día" hint="Cada columna es un día. Haz clic para ver el número de errores de ese día." explain="Peticiones a las rutas instrumentadas, por día (UTC). El detalle de cada columna muestra también los errores.">
         <Columns
           label="Peticiones por día"
-          series={view.daily.map((entry) => ({ label: `${entry.day.slice(5)}: ${entry.requests} (${entry.errors} err.)`, count: entry.requests }))}
+          series={view.daily.map((entry) => ({ label: `${entry.day.slice(5)} · ${entry.errors} err.`, count: entry.requests }))}
         />
       </Card>
     </>

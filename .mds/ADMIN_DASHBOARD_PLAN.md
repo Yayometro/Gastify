@@ -96,3 +96,28 @@ Además la acción de cerrar sesiones **borra documentos** de la colección `ses
 - `tsc --noEmit` sin errores; eslint sin errores en el código nuevo.
 - Build de Next en copia limpia (regla del proyecto para cambios de rutas).
 - Verificado en Chrome con la cuenta admin: resumen, rendimiento, ingresos, auditoría, detalle (con el aviso de autoprotección). Sin sesión: redirige. Exportación sin sesión: 404. Vitals sin sesión: 401.
+
+## 8. Interfaz explicativa (2026-10-28, segunda ronda)
+
+- Cada número tiene **hover** (texto corto) y **clic** (modal con su explicación y cálculo). Componente: `src/components/admin/InfoButton.tsx`.
+- Textos en `src/lib/admin/explanations.ts`; son la única referencia de cómo se calcula cada cifra. Mantenerlos al día al cambiar un cálculo.
+- Cero transacciones: son cuentas que solo tienen la transacción de bienvenida que Gastify crea al registrarse. El panel no la cuenta.
+- Correos sin `@` (cuentas creadas con un nombre de usuario): se muestran como "(correo no válido)", no como guion.
+- Histograma por ruta en `/admin/rendimiento`: al hacer clic en una ruta se ve cómo se reparten sus tiempos.
+
+## 9. Borrado de cuentas (`src/lib/admin/accountDeletion.ts`)
+
+Reglas en código, no en la pantalla:
+1. Nunca se borra la cuenta del propio admin.
+2. Nunca se borra una cuenta de `ADMIN_EMAILS` (hay que quitarla de la lista, a propósito).
+3. Nunca se borra la cuenta QA base (`qa.movil.d6be4e@example.com`, ver `.mds/QA_ACCOUNT.md`).
+4. Hay que escribir el código de la cuenta (los últimos 6 caracteres de su identificador) para confirmar.
+5. La vista previa cuenta documentos sin cambiar nada; el borrado es una llamada aparte.
+
+Qué se borra por cuenta: transacciones, cuentas de la billetera, categorías, subcategorías, etiquetas, presupuestos, reglas de categorización, fuentes de ingreso, ajustes y bases de proyección, la billetera, métodos de acceso, sesiones, passkeys, 2FA y el documento de usuario. Cada borrado deja una línea en `admin_audit` con el número de documentos (sin datos personales).
+
+## 10. Decisiones pendientes
+
+- **Cuenta de administrador de prueba para ChatGPT o para otro agente**: no se ha creado. Un segundo admin con correo propio necesita también 2FA, y eso obliga a compartir el secreto TOTP. Alternativa más segura: un **token de API de solo lectura** para el panel (sin contraseña ni 2FA compartidos), revocable y registrado. Pendiente de decisión.
+- **Acceso directo al panel desde el perfil**: no se agrega. Motivo: el perfil es visible para la propia persona, y un enlace de administrador daría una pista a quien tome la cuenta. Recomendación: entrar por la URL `/admin` (guardada en marcadores). El acceso ya está protegido por la lista, el 404 y el 2FA.
+- **Cuentas a borrar**: lista propuesta y vista previa en la sección de la respuesta de la sesión; pendiente de confirmación.

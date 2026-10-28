@@ -3,7 +3,7 @@
 import { ObjectId } from "mongodb";
 import { adminDb, AUDIT_COLLECTION } from "./adminDb";
 
-export const AUDIT_ACTIONS = ["revoke_sessions"] as const;
+export const AUDIT_ACTIONS = ["revoke_sessions", "delete_account"] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
 export interface AuditEntry {

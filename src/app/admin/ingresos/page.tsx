@@ -2,6 +2,7 @@ import React from "react";
 import { getOverview } from "@/lib/admin/platformStats";
 import { parseRange, RANGE_DAYS } from "@/lib/admin/statsMath";
 import { RangeLinks, Stat, Card, count, Empty } from "@/components/admin/AdminUi";
+import { EXPLAIN } from "@/lib/admin/explanations";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function AdminRevenuePage({ searchParams }: { searchParams:
       </Empty>
 
       <section className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Cuentas" value={count(totalAccounts)} hint="todas las cuentas registradas" />
+        <Stat label="Cuentas" explain={EXPLAIN.revenue} value={count(totalAccounts)} hint="todas las cuentas registradas" />
         <Stat label="Cuentas Pro" value={count(pro?.accounts ?? 0)} hint="según el campo de plan (vacío = gratis)" />
         <Stat
           label="Ingreso mensual"
@@ -34,7 +35,7 @@ export default async function AdminRevenuePage({ searchParams }: { searchParams:
         />
       </section>
 
-      <Card title="Cuentas por plan" hint="Los precios se definen en src/lib/admin/plans.ts. Mientras sean null, el ingreso no se calcula.">
+      <Card title="Cuentas por plan" hint="Los precios se definen en src/lib/admin/plans.ts. Mientras sean null, el ingreso no se calcula." explain={EXPLAIN.revenue}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[420px] text-left text-sm tabular-nums">
             <thead className="text-xs uppercase tracking-wide text-gf-text-muted">

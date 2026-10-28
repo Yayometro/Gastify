@@ -3,7 +3,9 @@ import Link from "next/link";
 import { getOverview } from "@/lib/admin/platformStats";
 import { parseRange, RANGE_DAYS, RETENTION_HORIZONS } from "@/lib/admin/statsMath";
 import { USAGE_EVENTS } from "@/lib/admin/metrics";
+import { EXPLAIN } from "@/lib/admin/explanations";
 import { Card, Columns, BarList, RangeLinks, Stat, count, dateText, percentText, Empty } from "@/components/admin/AdminUi";
+import InfoButton from "@/components/admin/InfoButton";
 
 // Always fresh: the numbers are read from the database on every visit.
 export const dynamic = "force-dynamic";
@@ -39,33 +41,41 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
       </div>
       <p className="text-xs text-gf-text-muted">
         Actualizado {dateText(stats.generatedAt)}. Solo conteos y fechas: aquí no se leen montos, nombres de transacciones ni correos
-        completos. Los documentos de arranque de cada cuenta no se cuentan.
+        completos. Pasa el cursor sobre cualquier número para ver qué es; haz clic para ver el detalle.
       </p>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Usuarios" value={count(users.total)} hint={`+${count(users.newInRange)} en ${range} días · +${count(users.new7d)} en 7`} />
+        <Stat
+          label="Usuarios"
+          explain={EXPLAIN.users}
+          value={count(users.total)}
+          hint={`+${count(users.newInRange)} en ${range} días · +${count(users.new7d)} en 7`}
+        />
         <Stat
           label={`Activación (${range} días)`}
+          explain={EXPLAIN.activation}
           value={percentText(users.activation.rate)}
-          hint={`${count(users.activation.activated)} de ${count(users.activation.cohort)} altas añadieron una transacción en sus primeros 7 días`}
+          hint={`${count(users.activation.activated)} de ${count(users.activation.cohort)} altas guardaron una transacción en sus primeros 7 días`}
         />
         <Stat
           label="Activos al mes"
+          explain={EXPLAIN.mau}
           value={count(activity.mau)}
-          hint={`${count(activity.wau)} activos en la última semana · ${percentText(activity.stickiness)} de los mensuales vuelven cada semana`}
+          hint={`${count(activity.wau)} en la última semana · ${percentText(activity.stickiness)} de los mensuales vuelven cada semana`}
         />
         <Stat
-          label="Transacciones"
+          label="Transacciones propias"
+          explain={EXPLAIN.transactions}
           value={count(content.transactions)}
-          hint={`Mediana ${count(content.perUser.median)} por usuario · p90 ${count(content.perUser.p90)}`}
+          hint={`Mediana ${count(content.perUser.median)} por persona · p90 ${count(content.perUser.p90)}`}
         />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Card title="Altas por día" hint={`Últimos ${range} días`}>
+        <Card title="Altas por día" hint={`Últimos ${range} días`} explain={EXPLAIN.signupsByDay}>
           <Columns label="Altas por día" series={activity.signupsByDay.map((entry) => ({ label: entry.day.slice(5), count: entry.count }))} />
         </Card>
-        <Card title="Transacciones guardadas por día" hint={`Últimos ${range} días`}>
+        <Card title="Transacciones guardadas por día" hint={`Últimos ${range} días`} explain={EXPLAIN.transactionsByDay}>
           <Columns label="Transacciones por día" series={activity.transactionsByDay.map((entry) => ({ label: entry.day.slice(5), count: entry.count }))} />
         </Card>
       </section>
@@ -74,14 +84,18 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
         {USAGE_EVENTS.map((event) => {
           const usage = stats.usage.find((entry) => entry.event === event);
           return (
-            <Card key={event} title={USAGE_LABELS[event] ?? event} hint={`${count(usage?.total ?? 0)} en ${range} días`}>
+            <Card key={event} title={USAGE_LABELS[event] ?? event} hint={`${count(usage?.total ?? 0)} en ${range} días`} explain={EXPLAIN.usageEvents}>
               <Columns label={USAGE_LABELS[event] ?? event} height="h-20" series={(usage?.series ?? []).map((entry) => ({ label: entry.day.slice(5), count: entry.count }))} />
             </Card>
           );
         })}
       </section>
 
-      <Card title="Retención por semana de alta" hint="Cada fila es una semana de altas. Cada columna: de quienes se registraron esa semana, cuántos añadieron una transacción en su semana N después del alta. Vacío (—) mientras la ventana no termine.">
+      <Card
+        title="Retención por semana de alta"
+        hint="Cada fila es una semana de altas. Cada celda: de quienes se registraron esa semana, el porcentaje que guardó una transacción propia en su semana N."
+        explain={EXPLAIN.retention}
+      >
         {stats.cohorts.every((row) => row.signups === 0) ? (
           <Empty>Todavía no hay altas en las últimas 12 semanas.</Empty>
         ) : (
@@ -89,7 +103,7 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
             <table className="w-full min-w-[480px] text-left text-sm tabular-nums">
               <thead className="text-xs uppercase tracking-wide text-gf-text-muted">
                 <tr>
-                  <th className="py-2 pr-3">Semana</th>
+                  <th className="py-2 pr-3">Semana de alta</th>
                   <th className="py-2 pr-3 text-right">Altas</th>
                   {RETENTION_HORIZONS.map((horizon) => (
                     <th key={horizon} className="py-2 pr-3 text-right">Semana {horizon}</th>
@@ -101,14 +115,34 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
                   <tr key={row.week} className="border-t border-gf-border">
                     <td className="py-2 pr-3 text-gf-text">{row.week}</td>
                     <td className="py-2 pr-3 text-right text-gf-text">{count(row.signups)}</td>
-                    {row.retention.map((entry) => (
-                      <td key={entry.weeks} className="py-2 pr-3 text-right">
-                        <span className="inline-block min-w-[3.5rem] rounded-full px-2 py-0.5 text-center text-gf-text" style={{ background: entry.rate === null ? "transparent" : `rgba(168, 85, 247, ${0.12 + entry.rate * 0.5})` }}>
-                          {percentText(entry.rate)}
-                        </span>
-                        {entry.eligible > 0 && <span className="ml-1 text-xs text-gf-text-muted">n={entry.eligible}</span>}
-                      </td>
-                    ))}
+                    {row.retention.map((entry) => {
+                      const retained = entry.rate === null ? 0 : Math.round(entry.rate * entry.eligible);
+                      return (
+                        <td key={entry.weeks} className="py-2 pr-3 text-right">
+                          <InfoButton
+                            title={`Semana de alta ${row.week}, semana ${entry.weeks}`}
+                            hint={entry.rate === null ? "Todavía no termina la ventana" : `${retained} de ${entry.eligible} guardaron algo`}
+                            body={
+                              <ul className="flex flex-col gap-1">
+                                <li>Personas que se registraron esa semana: {count(row.signups)}</li>
+                                <li>De ellas, con la ventana ya terminada: {count(entry.eligible)}</li>
+                                <li>Guardaron una transacción propia en la semana {entry.weeks}: {count(retained)}</li>
+                                <li>Retención: {percentText(entry.rate)}</li>
+                              </ul>
+                            }
+                            className="inline-flex min-w-[3.5rem] justify-center rounded-full px-2 py-0.5 text-gf-text"
+                          >
+                            <span
+                              className="inline-block min-w-[3.5rem] rounded-full px-2 py-0.5 text-center text-gf-text"
+                              style={{ background: entry.rate === null ? "transparent" : `rgba(168, 85, 247, ${0.12 + entry.rate * 0.5})` }}
+                            >
+                              {percentText(entry.rate)}
+                            </span>
+                          </InfoButton>
+                          {entry.eligible > 0 && <span className="ml-1 text-xs text-gf-text-muted">n={entry.eligible}</span>}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
@@ -118,10 +152,10 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
       </Card>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Card title="Actividad semanal" hint="Personas distintas con al menos una transacción en cada una de las últimas 12 semanas.">
+        <Card title="Actividad semanal" hint="Personas distintas con al menos una transacción propia, por semana." explain={EXPLAIN.weeklyActive}>
           <Columns label="Actividad semanal" series={activity.weeklyActive.map((entry) => ({ label: entry.week.slice(5), count: entry.users }))} />
         </Card>
-        <Card title="Historial diario de totales" hint="Un registro por día, guardado cada vez que se abre el panel.">
+        <Card title="Historial diario de totales" hint="Un registro por día, guardado cada vez que se abre el panel." explain={EXPLAIN.snapshots}>
           {activity.snapshots.length === 0 ? (
             <Empty>Todavía no hay registros guardados en este periodo. Se guardan a partir de hoy.</Empty>
           ) : (
@@ -131,7 +165,7 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <Card title="Usuarios que añadieron datos" hint="Personas que guardaron una transacción en el periodo indicado.">
+        <Card title="Usuarios que añadieron datos" hint="Personas que guardaron una transacción propia en el periodo indicado." explain={EXPLAIN.addedData}>
           <BarList
             rows={[
               { label: "Último día", count: activity.addedData.d1 },
@@ -140,7 +174,7 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
             ]}
           />
         </Card>
-        <Card title="Sesiones activas" hint="Se borran al vencer o al cerrar sesión, así que esta cifra se queda corta hacia atrás.">
+        <Card title="Sesiones activas" hint="Personas con una sesión que usó la app." explain={EXPLAIN.sessions}>
           <BarList
             rows={[
               { label: "Último día", count: activity.sessions.d1 },
@@ -149,16 +183,22 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
             ]}
           />
         </Card>
-        <Card title="Qué tanto usan la app" hint="Transacciones por persona.">
-          <BarList rows={content.perUser.buckets.map((bucket) => ({ label: `${bucket.label} transacciones`, count: bucket.users }))} />
+        <Card title="Transacciones propias por persona" hint={`Mediana ${count(content.perUser.median)} · p90 ${count(content.perUser.p90)} · máximo ${count(content.perUser.max)}`} explain={EXPLAIN.transactionsPerUser}>
+          <BarList
+            rows={content.perUser.buckets.map((bucket) => ({
+              label: bucket.label === "0" ? "0 (solo la de bienvenida)" : `${bucket.label} transacciones`,
+              count: bucket.users,
+              explain: bucket.label === "0" ? EXPLAIN.zeroBucket : `Personas con entre ${bucket.label} transacciones propias.`,
+            }))}
+          />
         </Card>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <Card title="Qué tienen creado">
+        <Card title="Qué tienen creado" explain={EXPLAIN.created}>
           <BarList
             rows={[
-              { label: "Transacciones", count: content.transactions },
+              { label: "Transacciones propias", count: content.transactions },
               { label: "Categorías", count: content.categories },
               { label: "Subcategorías", count: content.subCategories },
               { label: "Cuentas", count: content.accounts },
@@ -167,7 +207,7 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
             ]}
           />
         </Card>
-        <Card title="Tipo de acceso" hint={`Con passkey ${count(users.withPasskey)} · con 2FA ${count(users.withTwoFactor)} · con token de API ${count(users.withApiToken)}`}>
+        <Card title="Tipo de acceso" hint={`Con passkey ${count(users.withPasskey)} · con 2FA ${count(users.withTwoFactor)} · con token de API ${count(users.withApiToken)}`} explain={EXPLAIN.access}>
           <BarList rows={users.byProvider} />
         </Card>
         <Card title="Idioma y país">
@@ -178,7 +218,7 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
         </Card>
       </section>
 
-      <Card title="Cuentas con actividad más reciente" hint="Toca una para ver su detalle y sus acciones.">
+      <Card title="Cuentas con actividad más reciente" hint="Toca una cuenta para ver su detalle y sus acciones.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-sm tabular-nums">
             <thead className="text-xs uppercase tracking-wide text-gf-text-muted">
