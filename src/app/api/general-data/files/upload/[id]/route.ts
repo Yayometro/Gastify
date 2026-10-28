@@ -16,6 +16,10 @@ import { buildTransactionMoney } from "@/lib/money/server/transactionMoneyServic
 import { attachDisplayMoneyToList } from "@/lib/money/server/transactionReadService";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { serverT } from "@/i18n/server";
+import { countUsageAfterResponse } from "@/lib/admin/metrics";
+import { withRouteTiming } from "@/lib/admin/timing";
+
+export const POST = withRouteTiming("files.upload", postUpload);
 
 export interface SkippedRow {
   row: number;
@@ -140,9 +144,10 @@ async function resolveTags(rawTags: unknown, userId: unknown, walletId: unknown)
   return tagIds;
 }
 
-export async function POST(
+async function postUpload(
   request: NextRequest | Request
 ): Promise<NextResponse<UploadResponse>> {
+  countUsageAfterResponse("template.upload");
   const t = await serverT(["errors"]);
   const tr = await serverT(["errors"]);
   let tmpFilePath: string | null = null;

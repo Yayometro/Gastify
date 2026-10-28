@@ -13,6 +13,9 @@ import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { createServerTimer } from "@/lib/perf/serverTiming";
 import { buildDateWindowFilter } from "@gastify/core/transactions/historyWindowQuery";
 import { serverT } from "@/i18n/server";
+import { withRouteTiming } from "@/lib/admin/timing";
+
+export const POST = withRouteTiming("transactions.list", postTransactions);
 
 export interface GetTransactionsSuccessResponse {
   data: unknown;
@@ -32,7 +35,7 @@ const POPULATE_FIELDS = {
 };
 
 
-export async function POST(
+async function postTransactions(
   request: NextRequest | Request
 ): Promise<NextResponse<GetTransactionsResponse>> {
   const t = await serverT(["errors"]);

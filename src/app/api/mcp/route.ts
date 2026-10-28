@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getUserFromApiToken, type ResolvedApiTokenAuth } from "@/lib/auth/apiTokens";
 import { handleGastifyMcpTransport } from "@/lib/mcp/buildGastifyMcpServer";
+import { countUsageAfterResponse } from "@/lib/admin/metrics";
 
 // Remote MCP server for Claude's custom connector (header-based auth) - see
 // .mds/AI_AGENT_CONNECTOR_PLAN.md. Runs on Gastify's own Vercel deployment
@@ -20,6 +21,7 @@ async function handleMcpRequest(request: Request | NextRequest): Promise<Respons
 }
 
 export async function POST(request: Request | NextRequest): Promise<Response> {
+  countUsageAfterResponse("mcp.call");
   return handleMcpRequest(request);
 }
 

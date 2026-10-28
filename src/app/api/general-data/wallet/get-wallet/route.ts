@@ -4,6 +4,9 @@ import User from "@/model/User";
 import Wallet from "@/model/Wallet";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { serverT } from "@/i18n/server";
+import { withRouteTiming } from "@/lib/admin/timing";
+
+export const POST = withRouteTiming("wallet.get", postWallet);
 
 export interface GetWalletSuccessResponse {
   data: unknown;
@@ -14,7 +17,7 @@ export interface GetWalletSuccessResponse {
 
 export type GetWalletResponse = GetWalletSuccessResponse;
 
-export async function POST(
+async function postWallet(
   request: NextRequest | Request
 ): Promise<NextResponse<GetWalletResponse>> {
   const t = await serverT(["errors"]);

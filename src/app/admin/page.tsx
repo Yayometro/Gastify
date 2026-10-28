@@ -1,172 +1,160 @@
 import React from "react";
-import { getPlatformStats, type PlatformStats, type UserRow } from "@/lib/admin/platformStats";
-import type { DayCount } from "@/lib/admin/statsMath";
+import Link from "next/link";
+import { getOverview } from "@/lib/admin/platformStats";
+import { parseRange, RANGE_DAYS, RETENTION_HORIZONS } from "@/lib/admin/statsMath";
+import { USAGE_EVENTS } from "@/lib/admin/metrics";
+import { Card, Columns, BarList, RangeLinks, Stat, count, dateText, percentText, Empty } from "@/components/admin/AdminUi";
 
 // Always fresh: the numbers are read from the database on every visit.
 export const dynamic = "force-dynamic";
 
-const number = (value: number): string => new Intl.NumberFormat("es-MX").format(Math.round(value));
-const percent = (rate: number): string => `${Math.round(rate * 100)}%`;
-const dateLabel = (iso: string | null): string => (iso ? new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(new Date(iso)) : "—");
+const USAGE_LABELS: Record<string, string> = {
+  "dashboard.visit": "Visitas a la billetera",
+  "template.upload": "Plantillas de Excel cargadas",
+  "mcp.call": "Llamadas de agentes (MCP)",
+};
 
-function Card({ title, children }: { title: string; children: React.ReactNode }): React.JSX.Element {
-  return (
-    <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-violet-200">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Stat({ label, value, hint }: { label: string; value: string; hint?: string }): React.JSX.Element {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-      <p className="text-sm text-violet-200/80">{label}</p>
-      <p className="mt-1 text-3xl font-extrabold tabular-nums">{value}</p>
-      {hint && <p className="mt-1 text-xs text-white/50">{hint}</p>}
-    </div>
-  );
-}
-
-// A list of labelled bars; each bar is a share of the biggest one.
-function BarList({ rows }: { rows: { label: string; count: number }[] }): React.JSX.Element {
-  const max = rows.reduce((top, row) => Math.max(top, row.count), 0) || 1;
-  if (rows.length === 0) return <p className="text-sm text-white/50">Sin datos todavía.</p>;
-  return (
-    <ul className="flex flex-col gap-2">
-      {rows.map((row) => (
-        <li key={row.label} className="flex items-center gap-3 text-sm">
-          <span className="w-28 shrink-0 truncate text-white/80">{row.label}</span>
-          <span className="h-3 flex-1 overflow-hidden rounded-full bg-white/10">
-            <span className="block h-full rounded-full bg-violet-400" style={{ width: `${(row.count / max) * 100}%` }} />
-          </span>
-          <span className="w-10 shrink-0 text-right tabular-nums text-white/80">{number(row.count)}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-// One column per day; the title of each column says the day and the count.
-function DayBars({ series }: { series: DayCount[] }): React.JSX.Element {
-  const max = series.reduce((top, entry) => Math.max(top, entry.count), 0) || 1;
-  return (
-    <div>
-      <div className="flex h-32 items-end gap-1">
-        {series.map((entry) => (
-          <div key={entry.day} title={`${entry.day}: ${entry.count}`} className="flex h-full flex-1 items-end">
-            <div className="w-full rounded-t bg-violet-400/80" style={{ height: `${Math.max(entry.count > 0 ? 4 : 1, (entry.count / max) * 100)}%` }} />
-          </div>
-        ))}
-      </div>
-      <div className="mt-1 flex justify-between text-xs text-white/50">
-        <span>{series[0]?.day.slice(5)}</span>
-        <span>{series[series.length - 1]?.day.slice(5)}</span>
-      </div>
-    </div>
-  );
-}
-
-function UsersTable({ rows }: { rows: UserRow[] }): React.JSX.Element {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[720px] text-left text-sm">
-        <thead className="text-xs uppercase tracking-wide text-white/50">
-          <tr>
-            <th className="py-2 pr-3">Cuenta</th>
-            <th className="py-2 pr-3">Alta</th>
-            <th className="py-2 pr-3">Última actividad</th>
-            <th className="py-2 pr-3">Acceso</th>
-            <th className="py-2 pr-3">País</th>
-            <th className="py-2 pr-3 text-right">Transacciones</th>
-            <th className="py-2 pr-3 text-right">Categorías</th>
-            <th className="py-2 pr-3 text-right">Cuentas</th>
-            <th className="py-2 text-right">Presupuestos</th>
-          </tr>
-        </thead>
-        <tbody className="tabular-nums">
-          {rows.map((row) => (
-            <tr key={row.id} className="border-t border-white/10">
-              <td className="py-2 pr-3 font-mono text-xs">{row.emailMasked}</td>
-              <td className="py-2 pr-3">{dateLabel(row.createdAt)}</td>
-              <td className="py-2 pr-3">{dateLabel(row.lastActivity)}</td>
-              <td className="py-2 pr-3">{row.providers.length > 0 ? row.providers.join(", ") : "—"}</td>
-              <td className="py-2 pr-3">{row.country ?? "—"}</td>
-              <td className="py-2 pr-3 text-right">{number(row.transactions)}</td>
-              <td className="py-2 pr-3 text-right">{number(row.categories)}</td>
-              <td className="py-2 pr-3 text-right">{number(row.accounts)}</td>
-              <td className="py-2 text-right">{number(row.budgets)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Overview({ stats }: { stats: PlatformStats }): React.JSX.Element {
+export default async function AdminOverviewPage({ searchParams }: { searchParams: Promise<{ range?: string }> }): Promise<React.JSX.Element> {
+  const { range: rawRange } = await searchParams;
+  const range = parseRange(rawRange);
+  const stats = await getOverview(range);
   const { users, activity, content } = stats;
+  const exportBase = `/api/admin/export?range=${range}&kind`;
+
   return (
-    <div className="flex flex-col gap-6">
-      <p className="text-sm text-white/50">
-        Actualizado: {new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeStyle: "short" }).format(new Date(stats.generatedAt))}.
-        Solo conteos y fechas: aquí no se leen montos, nombres de transacciones ni correos completos. Los documentos iniciales que se
-        crean con cada cuenta no se cuentan.
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <RangeLinks base="/admin" current={range} options={RANGE_DAYS} />
+        <div className="flex flex-wrap gap-2 text-sm">
+          <a className="gf-glass-inset rounded-full px-4 py-2 font-semibold text-purple-200 hover:text-white" href={`${exportBase}=daily`}>
+            CSV diario
+          </a>
+          <a className="gf-glass-inset rounded-full px-4 py-2 font-semibold text-purple-200 hover:text-white" href={`${exportBase}=cohorts`}>
+            CSV cohortes
+          </a>
+          <a className="gf-glass-inset rounded-full px-4 py-2 font-semibold text-purple-200 hover:text-white" href={`${exportBase}=routes`}>
+            CSV rutas
+          </a>
+        </div>
+      </div>
+      <p className="text-xs text-gf-text-muted">
+        Actualizado {dateText(stats.generatedAt)}. Solo conteos y fechas: aquí no se leen montos, nombres de transacciones ni correos
+        completos. Los documentos de arranque de cada cuenta no se cuentan.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Usuarios" value={number(users.total)} hint={`+${number(users.new7d)} en 7 días · +${number(users.new30d)} en 30 días`} />
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Stat label="Usuarios" value={count(users.total)} hint={`+${count(users.newInRange)} en ${range} días · +${count(users.new7d)} en 7`} />
         <Stat
-          label="Con al menos una transacción"
-          value={`${number(users.withTransactions)}`}
-          hint={users.total > 0 ? `${percent(users.withTransactions / users.total)} de los usuarios` : undefined}
+          label={`Activación (${range} días)`}
+          value={percentText(users.activation.rate)}
+          hint={`${count(users.activation.activated)} de ${count(users.activation.cohort)} altas añadieron una transacción en sus primeros 7 días`}
         />
         <Stat
-          label="Activación (30 días)"
-          value={percent(users.activation.rate)}
-          hint={`${number(users.activation.activated)} de ${number(users.activation.cohort)} altas añadieron una transacción en sus primeros 7 días`}
+          label="Activos al mes"
+          value={count(activity.mau)}
+          hint={`${count(activity.wau)} activos en la última semana · ${percentText(activity.stickiness)} de los mensuales vuelven cada semana`}
         />
-        <Stat label="Transacciones" value={number(content.transactions)} hint={`${number(content.perUser.average)} por usuario en promedio`} />
-      </div>
+        <Stat
+          label="Transacciones"
+          value={count(content.transactions)}
+          hint={`Mediana ${count(content.perUser.median)} por usuario · p90 ${count(content.perUser.p90)}`}
+        />
+      </section>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Altas por día (30 días)">
-          <DayBars series={activity.signupsByDay} />
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card title="Altas por día" hint={`Últimos ${range} días`}>
+          <Columns label="Altas por día" series={activity.signupsByDay.map((entry) => ({ label: entry.day.slice(5), count: entry.count }))} />
         </Card>
-        <Card title="Transacciones guardadas por día (30 días)">
-          <DayBars series={activity.transactionsByDay} />
+        <Card title="Transacciones guardadas por día" hint={`Últimos ${range} días`}>
+          <Columns label="Transacciones por día" series={activity.transactionsByDay.map((entry) => ({ label: entry.day.slice(5), count: entry.count }))} />
         </Card>
-      </div>
+      </section>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card title="Usuarios que añadieron datos">
+      <section className="grid gap-4 lg:grid-cols-3">
+        {USAGE_EVENTS.map((event) => {
+          const usage = stats.usage.find((entry) => entry.event === event);
+          return (
+            <Card key={event} title={USAGE_LABELS[event] ?? event} hint={`${count(usage?.total ?? 0)} en ${range} días`}>
+              <Columns label={USAGE_LABELS[event] ?? event} height="h-20" series={(usage?.series ?? []).map((entry) => ({ label: entry.day.slice(5), count: entry.count }))} />
+            </Card>
+          );
+        })}
+      </section>
+
+      <Card title="Retención por semana de alta" hint="Cada fila es una semana de altas. Cada columna: de quienes se registraron esa semana, cuántos añadieron una transacción en su semana N después del alta. Vacío (—) mientras la ventana no termine.">
+        {stats.cohorts.every((row) => row.signups === 0) ? (
+          <Empty>Todavía no hay altas en las últimas 12 semanas.</Empty>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[480px] text-left text-sm tabular-nums">
+              <thead className="text-xs uppercase tracking-wide text-gf-text-muted">
+                <tr>
+                  <th className="py-2 pr-3">Semana</th>
+                  <th className="py-2 pr-3 text-right">Altas</th>
+                  {RETENTION_HORIZONS.map((horizon) => (
+                    <th key={horizon} className="py-2 pr-3 text-right">Semana {horizon}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {stats.cohorts.map((row) => (
+                  <tr key={row.week} className="border-t border-gf-border">
+                    <td className="py-2 pr-3 text-gf-text">{row.week}</td>
+                    <td className="py-2 pr-3 text-right text-gf-text">{count(row.signups)}</td>
+                    {row.retention.map((entry) => (
+                      <td key={entry.weeks} className="py-2 pr-3 text-right">
+                        <span className="inline-block min-w-[3.5rem] rounded-full px-2 py-0.5 text-center text-gf-text" style={{ background: entry.rate === null ? "transparent" : `rgba(168, 85, 247, ${0.12 + entry.rate * 0.5})` }}>
+                          {percentText(entry.rate)}
+                        </span>
+                        {entry.eligible > 0 && <span className="ml-1 text-xs text-gf-text-muted">n={entry.eligible}</span>}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card title="Actividad semanal" hint="Personas distintas con al menos una transacción en cada una de las últimas 12 semanas.">
+          <Columns label="Actividad semanal" series={activity.weeklyActive.map((entry) => ({ label: entry.week.slice(5), count: entry.users }))} />
+        </Card>
+        <Card title="Historial diario de totales" hint="Un registro por día, guardado cada vez que se abre el panel.">
+          {activity.snapshots.length === 0 ? (
+            <Empty>Todavía no hay registros guardados en este periodo. Se guardan a partir de hoy.</Empty>
+          ) : (
+            <Columns label="Usuarios por día" series={activity.snapshots.map((entry) => ({ label: entry.day.slice(5), count: entry.users }))} />
+          )}
+        </Card>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Card title="Usuarios que añadieron datos" hint="Personas que guardaron una transacción en el periodo indicado.">
           <BarList
             rows={[
               { label: "Último día", count: activity.addedData.d1 },
-              { label: "7 días", count: activity.addedData.d7 },
-              { label: "30 días", count: activity.addedData.d30 },
+              { label: "Últimos 7 días", count: activity.addedData.d7 },
+              { label: "Últimos 30 días", count: activity.addedData.d30 },
             ]}
           />
         </Card>
-        <Card title="Usuarios con sesión activa">
+        <Card title="Sesiones activas" hint="Se borran al vencer o al cerrar sesión, así que esta cifra se queda corta hacia atrás.">
           <BarList
             rows={[
               { label: "Último día", count: activity.sessions.d1 },
-              { label: "7 días", count: activity.sessions.d7 },
-              { label: "30 días", count: activity.sessions.d30 },
+              { label: "Últimos 7 días", count: activity.sessions.d7 },
+              { label: "Últimos 30 días", count: activity.sessions.d30 },
             ]}
           />
-          <p className="mt-3 text-xs text-white/50">Las sesiones se borran al vencer o al cerrar sesión: esta cifra se queda corta hacia atrás.</p>
         </Card>
-        <Card title="Qué tanto usan la app (transacciones por usuario)">
-          <BarList rows={content.perUser.buckets.map((bucket) => ({ label: bucket.label, count: bucket.users }))} />
-          <p className="mt-3 text-xs text-white/50">
-            Mediana {number(content.perUser.median)} · p90 {number(content.perUser.p90)} · máximo {number(content.perUser.max)}
-          </p>
+        <Card title="Qué tanto usan la app" hint="Transacciones por persona.">
+          <BarList rows={content.perUser.buckets.map((bucket) => ({ label: `${bucket.label} transacciones`, count: bucket.users }))} />
         </Card>
-      </div>
+      </section>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-3">
         <Card title="Qué tienen creado">
           <BarList
             rows={[
@@ -179,28 +167,55 @@ function Overview({ stats }: { stats: PlatformStats }): React.JSX.Element {
             ]}
           />
         </Card>
-        <Card title="Tipo de acceso">
+        <Card title="Tipo de acceso" hint={`Con passkey ${count(users.withPasskey)} · con 2FA ${count(users.withTwoFactor)} · con token de API ${count(users.withApiToken)}`}>
           <BarList rows={users.byProvider} />
-          <p className="mt-3 text-xs text-white/50">
-            Con passkey: {number(users.withPasskey)} · con 2FA: {number(users.withTwoFactor)} · con token de API: {number(users.withApiToken)}
-          </p>
         </Card>
         <Card title="Idioma y país">
           <BarList rows={users.byLanguage} />
-          <div className="mt-4">
+          <div className="mt-5">
             <BarList rows={users.byCountry} />
           </div>
         </Card>
-      </div>
+      </section>
 
-      <Card title="Cuentas con actividad más reciente">
-        <UsersTable rows={stats.recentUsers} />
+      <Card title="Cuentas con actividad más reciente" hint="Toca una para ver su detalle y sus acciones.">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left text-sm tabular-nums">
+            <thead className="text-xs uppercase tracking-wide text-gf-text-muted">
+              <tr>
+                <th className="py-2 pr-3">Cuenta</th>
+                <th className="py-2 pr-3">Alta</th>
+                <th className="py-2 pr-3">Última actividad</th>
+                <th className="py-2 pr-3">Acceso</th>
+                <th className="py-2 pr-3">País</th>
+                <th className="py-2 pr-3">Plan</th>
+                <th className="py-2 pr-3 text-right">Transacciones</th>
+                <th className="py-2 pr-3 text-right">Categorías</th>
+                <th className="py-2 text-right">Presupuestos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats.recentUsers.map((row) => (
+                <tr key={row.id} className="border-t border-gf-border">
+                  <td className="py-2 pr-3">
+                    <Link href={`/admin/usuarios/${row.id}`} className="font-mono text-xs text-purple-200 underline-offset-4 hover:underline">
+                      {row.emailMasked}
+                    </Link>
+                  </td>
+                  <td className="py-2 pr-3 text-gf-text">{dateText(row.createdAt)}</td>
+                  <td className="py-2 pr-3 text-gf-text">{dateText(row.lastActivity)}</td>
+                  <td className="py-2 pr-3 text-gf-text-muted">{row.providers.join(", ") || "—"}</td>
+                  <td className="py-2 pr-3 text-gf-text-muted">{row.country ?? "—"}</td>
+                  <td className="py-2 pr-3 text-gf-text-muted">{row.plan === "pro" ? "Pro" : "Gratis"}</td>
+                  <td className="py-2 pr-3 text-right text-gf-text">{count(row.transactions)}</td>
+                  <td className="py-2 pr-3 text-right text-gf-text">{count(row.categories)}</td>
+                  <td className="py-2 text-right text-gf-text">{count(row.budgets)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
-    </div>
+    </>
   );
-}
-
-export default async function AdminPage(): Promise<React.JSX.Element> {
-  const stats = await getPlatformStats();
-  return <Overview stats={stats} />;
 }

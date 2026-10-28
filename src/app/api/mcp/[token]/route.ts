@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { resolveApiToken, type ResolvedApiTokenAuth } from "@/lib/auth/apiTokens";
 import { handleGastifyMcpTransport } from "@/lib/mcp/buildGastifyMcpServer";
+import { countUsageAfterResponse } from "@/lib/admin/metrics";
 
 // Remote MCP server for connectors that can't send a custom Authorization
 // header the way Claude's connector setup does (ChatGPT's Developer Mode is
@@ -29,6 +30,7 @@ export async function POST(
   request: Request | NextRequest,
   context: { params: Promise<{ token: string }> }
 ): Promise<Response> {
+  countUsageAfterResponse("mcp.call");
   return handleMcpRequest(request, context);
 }
 

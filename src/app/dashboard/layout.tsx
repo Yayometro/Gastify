@@ -10,6 +10,8 @@ import ToolsFab from "@/components/multiUsedComp/ToolsFab";
 import IdleStepUpGuard from "@/components/multiUsedComp/IdleStepUpGuard";
 import HistoryLoadingPill from "@/components/multiUsedComp/loaders/HistoryLoadingPill";
 import { I18nProvider } from "@/i18n/client";
+import { countUsageAfterResponse } from "@/lib/admin/metrics";
+import WebVitalsReporter from "@/components/admin/WebVitalsReporter";
 import { currentLocale, messagesFor } from "@/i18n/server";
 import { NAMESPACES } from "@gastify/core/i18n/catalogs";
 
@@ -42,6 +44,8 @@ async function DashboardLayout({
   }
   // Opening a page counts as activity, so an open dashboard does not time out while it is in use.
   if (stepUp.shouldRecordActivity) await recordSessionActivity(sesion.session.token).catch(() => {});
+  // Counts one visit to the wallet (a number per day, no person). Written after the response, so the page does not wait for it.
+  countUsageAfterResponse("dashboard.visit");
 
   // The language of the wallet and its texts: the screens below read them with useT() and useInfo().
   // The account's language (saved in the profile) wins over the device's choice and the country.
@@ -52,6 +56,7 @@ async function DashboardLayout({
     <I18nProvider locale={locale} messages={messages}>
     <AllDataProvider>
     <IdleStepUpGuard />
+    <WebVitalsReporter />
     <HistoryLoadingPill />
     <div
       className={`dashboard-layer-container walllet-bg h-full w-full flex flex-col flex-nowrap sm:flex-row m-0 p-0`}
