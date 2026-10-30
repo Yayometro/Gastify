@@ -1892,3 +1892,67 @@ When taking over this task, Claude should perform the following steps:
 - **Integración:** se incorpora el apéndice de Codex al informe de Claude en el mismo archivo `.mds/Obtención de ingresos Gastify.md`. Se preservan la entrada histórica #72 de monetización y las entradas #73–#80 de Goals; el único conflicto fue de orden al final del log, resuelto sin descartar entradas.
 - **Verificación:** cambio documental; `git diff --check`. No requiere pruebas de aplicación.
 - **Publicación:** al empujar `main`, Vercel debe crear un deployment de producción; estado por confirmar tras el push.
+
+### Entry #82 - Codex - 2026-10-30 (12:07 PM CST) - Continuación de Oportunidades web y móvil
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificable en este entorno.
+- **User Request:** aprobación del rediseño sencillo de Oportunidades y continuidad sin detenerse: intenciones para categorías que el usuario quiera reducir, excedentes de presupuestos sin doble conteo, ejemplos concretos con fuentes y paridad móvil.
+- **Branch / Isolation:** `codex/growth-opportunities-polish`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/monetization-research`. No se tocó el checkout principal ni el servidor 3000. Preview 3001 sigue activo.
+- **Actions Taken:** vista sencilla/avanzada y textos humanos; preferencia por wallet/categoría con sesión verificada y lectura/guardado web/móvil; cálculo compartido de excedentes con resolución de traslapes, vínculos explícitos e historia de límites; desglose por ciclo; ejemplo de precio de lista Hyundai con vencimiento automático y ejemplo de hospedaje JNTO expresado solo en JPY. Ver especificación y limitaciones en §17.2 de `GOALS_GROWTH_OPPORTUNITIES_PLAN.md`.
+- **Files Created / Modified:** web: `src/model/GrowthCategoryPreference.ts`, `src/app/api/general-data/growth-category-preferences/route.ts`, `src/hooks/useGrowthCategoryPreferences.ts`, `src/components/{multiUsedComp/CategoriesClient,opportunities/OpportunitiesClient,opportunities/GrowthOpportunityTeaser}.tsx`; mobile: `apps/mobile/src/hooks/use-growth-category-preferences.ts`, `apps/mobile/src/app/(tabs)/{budgets/opportunities,more/categories/index}.tsx`; core: `packages/core/src/opportunities/{budgetOverage,illustrativePrices,transactions}.ts` y pruebas, mensajes ES/EN, textos de ayuda; este log y el plan.
+- **Verification:** typecheck web/móvil, suite Vitest completa (125 archivos, 849 pruebas, incluidas autorización/propiedad del endpoint), ESLint focalizado web/móvil y `git diff --check` pasan; `/demo/opportunities` responde 200, endpoint nuevo sin sesión 401 y dashboard protegido 307. No se ejecutó build ni se escribió a MongoDB. La sesión de 3001 está en login/2FA, por lo que falta QA visual autenticada y prueba de guardado. `npx expo lint` general falla por configuración existente que ignora `apps/**`; el barrido directo de archivos cambiados pasa.
+- **Sources:** [Hyundai México](https://www.hyundai.com.mx/modelos/grand-i10-hb-2026/especificaciones) para precio de lista, [JNTO](https://www.japan.travel/en/guide/japan-on-a-budget/) para referencia de hospedaje; ambos son ilustrativos y se presentan con límites explícitos.
+- **Release:** sin staging, commit, push, merge ni deploy. Esperar prueba/validación de interfaz y autorización antes de integrar. `AGENTS.md` está sin seguimiento porque lo generó `next dev`; no se incluye en los cambios de producto.
+
+### Entry #83 - Codex - 2026-10-30 (12:52 PM CST) - Seguridad, dispositivos y autoplay en la landing
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** agregar a la landing secciones claras de seguridad y protocolos; mostrar Gastify en móvil, iPhone, Android, iPad/tabletas e instalación como web app; activar automáticamente el carrusel de la sección que está en el foco de lectura; y hacer que el demo interactivo se adapte al alto de la ventana.
+- **Branch / Isolation:** `codex/growth-opportunities-polish`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/monetization-research`. Preview existente en `localhost:3001`; no se tocó el checkout principal ni `localhost:3000`.
+- **Actions Taken:**
+  1. La sección de seguridad documenta passkeys/WebAuthn, privacidad de los datos biométricos gestionados por el dispositivo, 2FA con TOTP y códigos de respaldo, revalidación ante inactividad y comprobación reciente para cambios sensibles. Los límites de sesión reflejan los valores existentes (15 minutos de inactividad, máximo 12 horas; 5 minutos para cambios sensibles).
+  2. Se añadieron mockups ilustrativos de Gastify para Android, iPhone e iPad/tableta; la sección explica el uso adaptable y cómo añadir la web a la pantalla de inicio sin prometer modo offline.
+  3. Se agregó el botón contextual de instalación, el manifiesto PWA y los iconos de web y Apple; usa el aviso nativo del navegador cuando está disponible y ofrece instrucciones para iOS, Android y escritorio cuando no.
+  4. Cada carrusel avanza solo cuando su sección cruza la banda central visible, respeta la pausa manual, visibilidad de pestaña y `prefers-reduced-motion`; ya no se frena por hover. La banda se calcula en píxeles para adaptarse correctamente al viewport.
+  5. El bloque “Gastify interactivo” tiene una altura mínima de una ventana completa y crece si el contenido lo necesita.
+- **Files Modified / Created:** `src/app/HomeSections.tsx`, `src/app/page.tsx`, `src/app/layout.tsx`, `src/app/home-platform.css`; nuevos `src/app/HomeTrustAndDevices.tsx`, `src/app/HomeInstallButton.tsx`, `src/app/GastifyPwaArtwork.tsx`, `src/app/manifest.ts`, `src/app/icon.tsx`, `src/app/apple-icon.tsx`.
+- **Verification:** `npx tsc --noEmit --incremental false`, ESLint focalizado y `git diff --check` pasan. En `localhost:3001`, root, manifiesto e iconos responden 200; se revisó visualmente el demo, seguridad y mockups en 1440×900 y 390×844, y se confirmó que el carrusel de portada avanzó automáticamente tras 8.5 s. No se ejecutó `npm run build`.
+- **Release:** cambios locales; sin commit, push, merge ni deploy. Pendiente de revisión del usuario en `localhost:3001`.
+
+### Entry #84 - Codex - 2026-10-30 - Selectores compactos, modal de categorías e idioma de la landing
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificable en este entorno.
+- **User Request:** plegar los colores e iconos en crear/editar categorías, elegir categoría padre y categoría de transacción en modales buscables; verificar y aplicar en la landing el idioma basado en ubicación, con selector manual; hacer los mockups de iPhone, Android tipo Pixel e iPad más grandes y reconocibles.
+- **Branch / Isolation:** `codex/growth-opportunities-polish`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/monetization-research`; preview `localhost:3001`. No se usaron `localhost:3000` ni el checkout principal.
+- **Actions Taken:**
+  1. En el selector de color aparecen primero únicamente los diez colores habituales; “Más colores” despliega/contrae la paleta adicional y enseña su cantidad. Se mantiene el campo hexadecimal.
+  2. El selector de iconos empieza con dos renglones calculados según el ancho real del formulario; “Mostrar más (N restantes)” despliega el catálogo dentro de un área desplazable y “Mostrar menos” lo contrae. La búsqueda vuelve al estado compacto.
+  3. En crear/editar categorías, escoger categoría padre abre un modal encima del formulario que conserva la búsqueda y muestra solo categorías padre. En transacciones, escoger categoría abre el mismo modal de búsqueda con categorías y subcategorías. Se añadió semántica de diálogo y se mantiene la selección mediante el contexto existente; no se duplicó el selector.
+  4. Se confirmó que `currentLocale()` ya prioriza la preferencia guardada, después el país informado por los headers de la plataforma y luego `Accept-Language` (español como fallback). La landing antes solo actualizaba `<html lang>` y dejaba el contenido en español; ahora su navegación, mensajes principales, demo, seguridad, IA, instalación, dispositivos y metadatos siguen el locale. Se añadió el selector compacto ES/EN que recuerda la preferencia existente.
+  5. Se agrandaron los teléfonos y se añadieron rasgos visuales de hardware (cámaras/bezel/isla y laterales), junto con marco, cámara y perspectiva tridimensional moderada para tablet/iPad. Se revisó también en viewport móvil.
+- **Files Modified:** `src/components/multiUsedComp/{CategoryColorPicker,IconDisplayerMenu,EditCategoryModal,AddTransactionComp}.tsx`, `src/components/modals/contents/selectCategory/ModalCategoryContent.tsx`, `packages/core/src/i18n/messages/{es,en}/{categories,navbar}.ts`, `src/i18n/LanguageSwitch.tsx`, `src/app/{page,HomeSections,HomeProductRenders,HomeTrustAndDevices,HomeInstallButton}.tsx`, `src/app/home-platform.css` y este log.
+- **Verification:** `npx tsc --noEmit --incremental false`, ESLint focalizado con `--quiet` y `git diff --check` pasan. `curl` con `Accept-Language: en-US` devuelve `<html lang="en">` y copy inglés; `es-MX` devuelve `<html lang="es">` y copy español. Se revisó la landing en Chrome a 390×844 y escritorio, incluidos los mockups de dispositivos. El intento de abrir `/dashboard/categories` fue redirigido al login, así que no se pudo probar la interacción autenticada allí; no se guardó ni modificó ningún dato. Se conservó la muestra inicial ampliada de iconos de la demo; los formularios normales muestran dos filas. No se ejecutó build.
+- **Release:** cambios locales en la misma rama; sin commit, push, merge ni deploy. Landing abierta para revisión en `localhost:3001`.
+
+### Entry #85 - Codex - 2026-10-30 - Rejilla horizontal de iconos y flotación de paneles
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** corregir el selector para que los iconos se lean horizontalmente en filas de izquierda a derecha (dos filas al inicio y más al expandir); separar mejor el botón de instalación sobre la galería de dispositivos; dar flotación sutil a las ventanas ilustrativas de toda la landing.
+- **Branch / Isolation:** `codex/growth-opportunities-polish`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/monetization-research`; preview `localhost:3001`. Sin cambios en el checkout principal ni en `localhost:3000`.
+- **Actions Taken:**
+  1. El grid de iconos usa columnas explícitas derivadas del ancho medido del formulario y `ul/li` semánticos. Así mantiene flujo izquierda-a-derecha con dos filas visibles, y el catálogo expandido mantiene las mismas columnas en un área desplazable. La muestra amplia de la demo se conserva.
+  2. El control «Añadir Gastify a inicio» ahora ocupa una fila propia entre la explicación y los mockups, con separación flexible y alineación adaptada a móvil.
+  3. Se añadió una animación lenta de flotación diagonal a las ventanas de producto, carruseles, ejemplo conversacional de IA y dispositivos. Usa la propiedad independiente `translate` para preservar sus transformaciones/perspectiva y solo corre cuando no se solicitó movimiento reducido.
+- **Files Modified:** `src/components/multiUsedComp/IconDisplayerMenu.tsx`, `src/app/HomeTrustAndDevices.tsx`, `src/app/home-platform.css` y este log.
+- **Verification:** la vista de la landing se inspeccionó en `localhost:3001` en viewport móvil; el control de instalación queda en una fila propia y con espacio antes de los dispositivos. El navegador reportó `home-soft-float` aplicado a los paneles visibles con duración 8.5 s; el sistema no tiene `prefers-reduced-motion` activo. Pendiente visualización autenticada del selector real de categoría; no se cambiaron ni guardaron categorías. `npx tsc --noEmit --incremental false`, ESLint focalizado y `git diff --check` pasan. Sin build.
+- **Release:** cambios locales en la rama secundaria; sin commit, push, merge ni deploy. Se dejó la landing de `localhost:3001` abierta para revisión.
+
+### Entry #86 - Codex - 2026-10-30 - Flotación vertical más dinámica
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** acelerar ligeramente la animación de flotación y hacer que se aprecie como un vaivén vertical de arriba a abajo.
+- **Branch / Isolation:** `codex/growth-opportunities-polish`, worktree `/Users/luisjairvazqueznavarrete/.codex/worktrees/monetization-research`; preview `localhost:3001`.
+- **Actions Taken:** el ciclo pasó de 8.5 s a 6.2 s; la trayectoria ahora alterna elevación y descenso (±8 px) con un desplazamiento lateral discreto (±2 px), manteniendo `prefers-reduced-motion`.
+- **Files Modified:** `src/app/home-platform.css` y este log.
+- **Verification:** la landing recargada en `localhost:3001` reporta `home-soft-float` activo con duración de 6.2 s; la nueva trayectoria se elevó 8 px, regresó al centro y descendió 8 px, con ±2 px laterales. `git diff --check` pasa; sin cambios funcionales ni build.
+- **Release:** local, sin commit, push, merge ni deploy.

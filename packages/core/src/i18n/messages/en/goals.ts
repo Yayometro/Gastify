@@ -1,6 +1,6 @@
 const goals = {
   "goals.title": "Goals and savings",
-  "goals.subtitle": "Choose what you want to reach and by when. Progress uses reported savings or dedicated accounts; projects, categories, and tags only add context.",
+  "goals.subtitle": "Choose what you want to achieve, set an amount, and see how each step brings you closer.",
   "goals.new": "Create a goal",
   "goals.plusInfo": "Create a savings goal with a target amount, date, icon, color, and related context. This opens the same Gastify form.",
   "goals.plusSummary": "A savings goal with a plan and context",

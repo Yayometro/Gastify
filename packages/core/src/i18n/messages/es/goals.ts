@@ -1,6 +1,6 @@
 const goals = {
   "goals.title": "Objetivos y ahorro",
-  "goals.subtitle": "Define qué quieres alcanzar y para cuándo. El avance usa ahorro declarado o cuentas dedicadas; los proyectos, categorías y etiquetas solo aportan contexto.",
+  "goals.subtitle": "Elige qué quieres conseguir, cuánto necesitas y mira cómo vas acercándote paso a paso.",
   "goals.new": "Crear objetivo",
   "goals.plusInfo": "Crea una meta de ahorro con importe objetivo, fecha, icono, color y contexto relacionado. El ejemplo abre el mismo formulario de Gastify.",
   "goals.plusSummary": "Una meta de ahorro con plan y contexto",

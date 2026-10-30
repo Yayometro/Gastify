@@ -23,6 +23,7 @@ const navbar = {
   "navbar.icons.loadError": "No pudimos cargar los íconos. Revisa tu conexión.",
   "navbar.icons.none": "Ningún ícono coincide con la búsqueda.",
   "navbar.icons.more": "Mostrar más ({p1} restantes)",
+  "navbar.icons.less": "Mostrar menos",
   "navbar.seeBudget": "Ver mi presupuesto",
   "navbar.tools.open": "Abrir herramientas",
   "navbar.tools.drag": "Herramientas (arrástralo a otro borde)",

@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { CATEGORY_COLORS } from "@gastify/core/categories/categoryForm";
 import { COLOR_GRID, normalizeHex } from "@gastify/core/colors/palette";
 import { useT } from "@/i18n/client";
+
+const CLASSIC_COLOR_SET = new Set<string>(CATEGORY_COLORS.map((color) => color.toUpperCase()));
+const ADDITIONAL_COLORS = COLOR_GRID.filter((color) => !CLASSIC_COLOR_SET.has(color.toUpperCase()));
 
 export interface CategoryColorPickerProps {
   value: string;
@@ -14,16 +17,13 @@ export interface CategoryColorPickerProps {
 // hexadecimal color. The chosen one has a ring; the preview shows the color the field holds.
 function CategoryColorPicker({ value, onChange }: CategoryColorPickerProps): React.JSX.Element {
   const t = useT();
-  const [hex, setHex] = useState<string>(value);
+  const [hexDraft, setHexDraft] = useState({ source: value, draft: value });
+  const [showAllColors, setShowAllColors] = useState(false);
+  const hex = hexDraft.source === value ? hexDraft.draft : value;
   const valid = normalizeHex(hex);
 
-  // The form can change the color from outside (when a category loads): the field follows it.
-  useEffect(() => {
-    setHex(value);
-  }, [value]);
-
   const pick = (color: string) => {
-    setHex(color);
+    setHexDraft({ source: value, draft: color });
     onChange(color);
   };
 
@@ -51,10 +51,23 @@ function CategoryColorPicker({ value, onChange }: CategoryColorPickerProps): Rea
         <p className="label-tfp">{t("categories.colors.classic")}</p>
         <div className="flex flex-wrap gap-1">{CATEGORY_COLORS.map((color) => swatch(color, 34))}</div>
       </div>
-      <div className="flex flex-col gap-1.5">
-        <p className="label-tfp">{t("categories.colors.more")}</p>
-        <div className="flex flex-wrap gap-1">{COLOR_GRID.map((color) => swatch(color, 26))}</div>
-      </div>
+      <button
+        type="button"
+        aria-expanded={showAllColors}
+        onClick={() => setShowAllColors((shown) => !shown)}
+        className="self-start text-sm font-semibold text-purple-300 hover:text-white"
+      >
+        {showAllColors ? t("categories.colors.less") : t("categories.colors.more")}
+        {!showAllColors && <span className="ml-1 text-gf-text-muted">({ADDITIONAL_COLORS.length})</span>}
+      </button>
+      {showAllColors && (
+        <div className="flex flex-col gap-1.5">
+          <p className="label-tfp">{t("categories.colors.more")}</p>
+          <div className="max-h-48 overflow-y-auto pr-1">
+            <div className="flex flex-wrap gap-1">{ADDITIONAL_COLORS.map((color) => swatch(color, 26))}</div>
+          </div>
+        </div>
+      )}
       <div className="flex items-end gap-3">
         <label className="flex flex-1 flex-col gap-1">
           <span className="label-tfp">{t("categories.colors.hex")}</span>
@@ -64,7 +77,7 @@ function CategoryColorPicker({ value, onChange }: CategoryColorPickerProps): Rea
             maxLength={7}
             placeholder="#F57C00"
             onChange={(e) => {
-              setHex(e.target.value);
+              setHexDraft({ source: value, draft: e.target.value });
               const normalized = normalizeHex(e.target.value);
               if (normalized) onChange(normalized);
             }}

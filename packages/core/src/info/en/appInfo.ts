@@ -355,19 +355,41 @@ export const APP_INFO = {
   'tope_de_gasto_inesperado': { title: 'Unexpected expense limit', text: 'A manual amount that is added to your expense estimate, for expenses that do not have their own budget.' },
   'tope_de_ingreso_inesperado': { title: 'Unexpected income limit', text: 'A manual amount that is added to your income estimate, for money that comes in and is not tied to a recurring income source.' },
   'periodo_de_oportunidades': {
-    title: 'How to choose the analysis period',
-    text: 'The period defines the dates of observed expenses. The filters below narrow that selection; they do not change saved movements.',
+    title: 'What the analysis period is for',
+    text: 'Growth Opportunities does not label your spending as good or bad, and it does not assume that everything you spent could have been saved. Its purpose is to make opportunity cost visible: to help you imagine what part of that spending might mean if you chose to direct it toward another priority.',
     sections: [
-      { label: 'What is included', blocks: [
+      { label: 'The idea behind the analysis', blocks: [
+        { kind: 'p', text: 'The period defines the sample of your history used as a starting point. The question is not “where did I spend badly?” but “if some of this spending had gone somewhere else, what possibility might it have opened for me?”' },
+        { kind: 'p', text: 'The goal is to turn past movements into a useful perspective for future decisions and goals. This is a reflection tool, not a scolding or a recommendation to eliminate a particular expense.' },
+      ] },
+      { label: 'How to read the results', blocks: [
         { kind: 'bullets', items: [
-          'Current month, quarter and year start at the beginning of that period and end today.',
-          'Custom analyzes only the start and end dates you choose.',
-          'Then filter that range by category, subcategory, tag or concept text.',
-          'Only completed expenses recorded in Gastify are included; the page flags missing movements or conversions.',
+          'Observed spending is the amount of expenses matching the period and filters. It is shown in your main currency; the counter shows how many movements match.',
+          'The percentage you choose is a scenario: start with 5% or 10%, then adjust it if you wish. It is not a budget limit or money already set aside.',
+          'The cards below use that same hypothetical amount to illustrate alternatives such as investing, travel, or progress toward a savings goal.',
+          'Refunds and fees are shown separately. Movements without an available conversion are not added to the total, and the page flags data or exchange rates that may need review.',
         ] },
-        { kind: 'p', text: 'The observed figure is the sum of matching expenses in your main currency. Changing a period or filter does not edit or delete data.' },
+      ] },
+      { label: 'How it is calculated—and what it does not mean', blocks: [
+        { kind: 'bullets', items: [
+          'The current month, quarter, and year begin on the first day of that period and run through today. For Custom, you choose both dates; the start and end days are included.',
+          'It considers expense, refund, or fee movements recorded in Gastify within those dates; movements with a status other than completed are excluded. Category, subcategory, tag, or concept filters can then narrow the set.',
+          'Scenarios are hypothetical: they do not move money, create savings, or promise returns. The investment example uses the rate and horizon you enter; it is for comparison, not a prediction.',
+          'Changing dates or filters only recalculates the view. It does not edit or delete your movements.',
+        ] },
       ] },
     ],
+  },
+  'filtros_de_oportunidades': {
+    title: 'What “Analyze by” means',
+    text: 'Choose which part of your spending to review. This does not edit transactions or decide which expenses are good or bad.',
+    sections: [{ label: 'Options', blocks: [
+      { kind: 'definition', term: 'All expenses', text: 'Looks at recorded expenses in the period. Imagining 5% or 10% does not mean all spending was avoidable.' },
+      { kind: 'definition', term: 'Category or subcategory', text: 'Focuses on a group such as Restaurants. Use it to review a habit, not to label it unnecessary.' },
+      { kind: 'definition', term: 'Tag', text: 'Groups movements with the same tag, even across different categories.' },
+      { kind: 'definition', term: 'Concept', text: 'Searches words in the transaction name, such as a merchant. Review the matches: similar names can represent different spending.' },
+      { kind: 'p', text: 'The period applies first; the filter then narrows the movements. Only expenses with an amount in your main currency are added. Refunds and fees appear separately.' },
+    ] }],
   },
   'tres_alternativas_de_ese_monto': {
     title: 'Three alternatives for the same amount',
@@ -403,7 +425,7 @@ export const APP_INFO = {
       { label: '2. Observed spending and percentage', blocks: [
         { kind: 'equation', left: 'Observed spending', right: 'Sum of expenses matching the period and filters' },
         { kind: 'equation', left: 'Alternative amount', right: 'Observed spending × selected share' },
-        { kind: 'p', text: 'The 25%, 50% and 100% buttons are not ratings, alerts or returns: they let you ask “what if I set aside this fraction of that spending?” The editable field accepts another share. For example, 25% of $1,000 equals $250. The three cards compare alternatives for that same amount; they are not added together.' },
+        { kind: 'p', text: 'The percentage buttons are not ratings, alerts, or returns: they ask “what if I set aside this share of that spending?” The simple view suggests 5% or 10%; Customize offers larger shares. For example, 10% of $1,000 is $100.' },
       ] },
       { label: '3. Three alternatives, the same money', blocks: [
         { kind: 'table', head: ['Alternative', 'What it represents', 'What it does not mean'], rows: [
@@ -414,7 +436,7 @@ export const APP_INFO = {
         { kind: 'p', text: 'The investment shows two different readings: “if this amount were available today” models it as a single deposit from today; “if you set aside each expense when it happened” keeps the original expense dates. That is why their results can differ.' },
       ] },
       { label: 'How to read an example', blocks: [
-        { kind: 'example', text: 'If observed spending is $10,000 and you choose 25%, the alternative amount is $2,500. The cards show separately what that amount would represent as a hypothetical investment, how much of a trip goal it would cover, and how much it would add to a personal goal. These are not three pots of money; they are three possible uses of the same amount.' },
+        { kind: 'example', text: 'If observed spending is $10,000 and you choose 10%, the alternative amount is $1,000. The cards show different possibilities for that same $1,000, not three separate pots of money.' },
       ] },
     ],
   },
@@ -424,7 +446,7 @@ export const APP_INFO = {
     sections: [
       { label: 'Calculation', blocks: [
         { kind: 'equation', left: 'Alternative amount', right: 'Observed spending × selected share' },
-        { kind: 'table', head: ['Selection', 'If observed spending were $1,000'], rows: [['25%', '$250'], ['50%', '$500'], ['100%', '$1,000']] },
+        { kind: 'table', head: ['Selection', 'If observed spending were $1,000'], rows: [['5%', '$50'], ['10%', '$100'], ['25%', '$250']] },
         { kind: 'p', text: 'The current selection appears as the highlighted amount and feeds all three alternatives. Changing it does not alter transactions or budgets.' },
       ] },
     ],
@@ -458,8 +480,16 @@ export const APP_INFO = {
   },
   'objetivos_de_ahorro': {
     title: 'How savings goals work',
-    text: 'A goal is a target you define (for example, a trip, a car or an emergency fund). It can have an amount, date, contribution plan, icon, color and context links.',
+    text: 'A goal gives a name and direction to something you want to achieve: a trip, a car, your business, or an emergency fund. You can see what remains and which steps bring you closer.',
     sections: [
+      { label: 'How to use it', blocks: [
+        { kind: 'bullets', items: [
+          'Choose what you want to achieve and how much you need. Add a date if you want to see a contribution plan.',
+          'Report what you have saved or link a dedicated account. The bar shows progress toward your chosen amount.',
+          'You can change the target, date, and plan as your circumstances change. Pausing does not erase progress.',
+          'Growth Opportunities can compare a hypothetical amount with your goal, but it does not add real money or change actual progress.',
+        ] },
+      ] },
       { label: 'How progress is calculated and why it may be provisional', blocks: [
         { kind: 'equation', left: 'Progress', right: 'Recognized savings ÷ goal target' },
         { kind: 'bullets', items: [

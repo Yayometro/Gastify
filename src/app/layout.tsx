@@ -13,6 +13,17 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Gastify 💸",
     description: t("common.metaDescription"),
+    applicationName: "Gastify",
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      title: "Gastify",
+      statusBarStyle: "black-translucent",
+    },
+    icons: {
+      icon: "/icon",
+      apple: "/apple-icon",
+    },
   };
 }
 

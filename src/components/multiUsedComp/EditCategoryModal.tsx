@@ -10,6 +10,7 @@ import IconDisplayerMenu from "./IconDisplayerMenu";
 import CategoryColorPicker from "./CategoryColorPicker";
 import { useDispatch, useSelector } from "react-redux";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
+import BasicModal from "../modals/basicModal/BasicModal";
 import { CATEGORY_COLORS } from "@gastify/core/categories/categoryForm";
 import {
   addNewCategory,
@@ -64,7 +65,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
   });
   const [isSub, setIsSub] = useState(false);
   const [fatherCat, setFatherCat] = useState<CategoryData>({});
-  // The father picker opens in place, under its box (no window of its own).
+  // Parent categories use a dedicated searchable modal layered over this form.
   const [isFatherOpen, setIsFatherOpen] = useState(false);
   const toFetch = fetcher();
 
@@ -261,6 +262,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
       fatherCategory: cat._id,
     });
     setFatherCat(cat);
+    setIsFatherOpen(false);
   };
 
   const handleRemove = async () => {
@@ -374,7 +376,10 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                       <Space>
                         <Switch
                           checked={isSub}
-                          onChange={(checked) => setIsSub(checked)}
+                          onChange={(checked) => {
+                            setIsSub(checked);
+                            if (!checked) setIsFatherOpen(false);
+                          }}
                           style={{ border: "#9700FF" }}
                         />
                       </Space>
@@ -391,8 +396,11 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                   } flex-col gap-1 w-full mt-2`}
                 >
                   <p className="label-tfp !text-[12px] !text-purple-600">{t("categories.form.fatherSelected")}</p>
-                  <div
-                    onClick={() => setIsFatherOpen((open) => !open)}
+                  <button
+                    type="button"
+                    aria-haspopup="dialog"
+                    aria-expanded={isFatherOpen}
+                    onClick={() => setIsFatherOpen(true)}
                     className="w-full gf-glass-inset rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:brightness-110 transition-[filter]"
                   >
                     <div className="flex items-center gap-3">
@@ -405,14 +413,17 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                       </span>
                     </div>
                     <DownOutlined className="text-purple-600" />
-                  </div>
+                  </button>
                 </div>
                 {isSub && isFatherOpen && (
-                  <ModalCategoryContent
+                  <BasicModal
                     close={() => setIsFatherOpen(false)}
-                    getSelected={handleFatherCategory}
-                    onlyFathers={true}
-                    inline
+                    zIndexClass="z-[12000]"
+                    renderContent={<ModalCategoryContent
+                      close={() => setIsFatherOpen(false)}
+                      getSelected={handleFatherCategory}
+                      onlyFathers
+                    />}
                   />
                 )}
               </>
